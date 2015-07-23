@@ -1,0 +1,188 @@
+MODULE diagnostics
+!!!! --- This module contains useful diagnostics to test code correctness
+    USE constants
+    IMPLICIT NONE
+
+CONTAINS
+
+    !!! --- Computes charge density on grid
+    SUBROUTINE depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz, &
+                        l_particles_weight, l4symtry)
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: rho
+        REAL(num), DIMENSION(np) :: xp,yp,zp,w
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        LOGICAL :: l_particles_weight, l4symtry
+
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+        REAL(num) :: x,y,z,wq,invvol
+        REAL(num) :: sx(-int(nox/2):int((nox+1)/2)), &
+                     sy(-int(noy/2):int((noy+1)/2)), &
+                     sz(-int(noz/2):int((noz+1)/2))
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+   
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+
+        ixmin = -int(nox/2)
+        ixmax = int((nox+1)/2)
+        iymin = -int(noy/2)
+        iymax = int((noy+1)/2)
+        izmin = -int(noz/2)
+        izmax = int((noz+1)/2)
+
+        DO ip=1,np
+        
+            ! --- computes current position in grid units
+            x = (xp(ip)-xmin)*dxi
+            y = (yp(ip)-ymin)*dyi
+            z = (zp(ip)-zmin)*dzi
+        
+            ! --- applies 4-fold symmetry
+            IF (l4symtry) THEN
+                x=abs(x)
+                y=abs(y)
+            END IF
+      
+            ! --- finds node of cell containing particles for current positions
+            ! --- (different for odd/even spline orders)
+            IF (nox==2*(nox/2)) THEN
+                j=nint(x)
+            ELSE
+                j=floor(x)
+            END IF
+            IF (noy==2*(noy/2)) THEN
+                k=nint(y)
+            ELSE
+                k=floor(y)
+            END IF
+            IF(noz==2*(noz/2)) THEN
+                l=nint(z)
+            ELSE
+                l=floor(z)
+            END IF
+
+            ! --- computes distance between particle and node for current positions
+            xint = x-j
+            yint = y-k
+            zint = z-l
+
+            ! --- computes particles "weights"
+            IF (l_particles_weight) THEN
+                wq=q*w(ip)*invvol
+            ELSE
+                wq=q*invvol*w(1)
+            ENDIF
+      
+            ! --- computes coefficients for node centered quantities
+            SELECT CASE(nox)
+            CASE(0)
+                sx( 0) = 1.0_num
+            CASE(1)
+                sx( 0) = 1.0_num-xint
+                sx( 1) = xint
+            CASE(2)
+                xintsq = xint*xint
+                sx(-1) = 0.5_num*(0.5_num-xint)**2
+                sx( 0) = 0.75_num-xintsq
+                sx( 1) = 0.5_num*(0.5_num+xint)**2
+            CASE(3)
+                oxint = 1.0_num-xint
+                xintsq = xint*xint
+                oxintsq = oxint*oxint
+                sx(-1) = onesixth*oxintsq*oxint
+                sx( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
+                sx( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+                sx( 2) = onesixth*xintsq*xint
+            END SELECT
+
+            SELECT CASE(noy)
+            CASE(0)
+                sy( 0) = 1.0_num
+            CASE(1)
+                sy( 0) = 1.0_num-yint
+                sy( 1) = yint
+            CASE(2)
+                yintsq = yint*yint
+                sy(-1) = 0.5_num*(0.5_num-yint)**2
+                sy( 0) = 0.75_num-yintsq
+                sy( 1) = 0.5_num*(0.5_num+yint)**2
+            CASE(3)
+                oyint = 1.0_num-yint
+                yintsq = yint*yint
+                oyintsq = oyint*oyint
+                sy(-1) = onesixth*oyintsq*oyint
+                sy( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
+                sy( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+                sy( 2) = onesixth*yintsq*yint
+            END SELECT
+
+            SELECT CASE(noz)
+            CASE(0)
+                sz( 0) = 1.0_num
+            CASE(1)
+                sz( 0) = 1.0_num-zint
+                sz( 1) = zint
+            CASE(2)
+                zintsq = zint*zint
+                sz(-1) = 0.5_num*(0.5_num-zint)**2
+                sz( 0) = 0.75_num-zintsq
+                sz( 1) = 0.5_num*(0.5_num+zint)**2
+            CASE(3)
+                ozint = 1.0_num-zint
+                zintsq = zint*zint
+                ozintsq = ozint*ozint
+                sz(-1) = onesixth*ozintsq*ozint
+                sz( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
+                sz( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+                sz( 2) = onesixth*zintsq*zint
+            END SELECT
+
+            ! --- add charge density contributions
+            DO ll = izmin, izmax
+                DO kk = iymin, iymax
+                        DO jj = ixmin, ixmax
+                            rho(j+jj,k+kk,l+ll)=rho(j+jj,k+kk,l+ll)+sx(jj)*sy(kk)*sz(ll)*wq
+                        END DO
+                END DO
+            END DO
+        END DO
+        RETURN
+    END SUBROUTINE depose_rho_n
+
+    !!! --- Computes total electromagnetic energy in the simulation box
+    !SUBROUTINE total_em_energy
+
+
+    !END SUBROUTINE total_em_energy
+
+    !!! --- Computes field divergence
+    SUBROUTINE calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
+        IMPLICIT NONE
+        INTEGER ::  j,k,l
+        INTEGER :: nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in) :: ex,ey,ez
+        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: dive
+        REAL(num) :: dx, dy, dz, invdx, invdy, invdz
+
+        invdx=1.0_num/dx
+        invdy=1.0_num/dy
+        invdz=1.0_num/dz
+
+        DO l = 0, nz
+            DO k = 0, ny
+                DO j = 0, nx
+                    dive(j,k,l) = invdx*(ex(j,k,l)-ex(j-1,k,l))+ &
+                                invdy*(ey(j,k,l)-ey(j,k-1,l))+invdz*(ez(j,k,l)-ez(j,k,l-1))
+                END DO
+            END DO
+        END DO
+
+    END SUBROUTINE calc_field_div
+
+END MODULE diagnostics
