@@ -6,7 +6,7 @@ MODULE mpi_routines
   PRIVATE
   PUBLIC :: mpi_initialise, mpi_close, mpi_minimal_init, setup_communicator
 
-  REAL(dbl) :: start_time, end_time
+  REAL(num) :: start_time, end_time
 
 CONTAINS
 
