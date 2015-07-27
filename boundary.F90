@@ -175,7 +175,7 @@ CONTAINS
   END SUBROUTINE do_field_mpi_with_lengths
 
 !!! --- Routine for adding current contributions fron adjacent subdomains
-  SUBROUTINE processor_summation_bcs(array, ng)
+  SUBROUTINE summation_bcs(array, ng)
 
     INTEGER, INTENT(IN) :: ng
     REAL(num), DIMENSION(-ng:,-ng:,-ng:), INTENT(INOUT) :: array
@@ -268,7 +268,7 @@ CONTAINS
 
     CALL field_bc(array, ng)
 
-  END SUBROUTINE processor_summation_bcs
+  END SUBROUTINE summation_bcs
 
 !!! --- Boundary condition routine for electric field
   SUBROUTINE efield_bcs
@@ -302,11 +302,21 @@ CONTAINS
     ! domain is decomposed. We just add currents at subdomains borders
     ! Here we also assume nxguards=nyguards=nzguards
 
-    CALL processor_summation_bcs(jx, nxguards)
-    CALL processor_summation_bcs(jy, nxguards)
-    CALL processor_summation_bcs(jz, nxguards)
+    CALL summation_bcs(jx, nxguards)
+    CALL summation_bcs(jy, nxguards)
+    CALL summation_bcs(jz, nxguards)
 
   END SUBROUTINE current_bcs
+
+!!! --- Boundary conditions routine for charge density
+SUBROUTINE charge_bcs
+
+! domain is decomposed. We just add charge density at subdomains borders
+! Here we also assume nxguards=nyguards=nzguards
+
+    CALL summation_bcs(rho, nxguards)
+
+END SUBROUTINE charge_bcs
 
 
 !!! Boundary condition routine on electrons

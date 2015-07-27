@@ -33,7 +33,7 @@ DO i=1,nst
 !ixsource =NINT((xsource-x_min_local)/(x_max_local-x_min_local)*nx)
 !iysource =NINT((ysource-y_min_local)/(y_max_local-y_min_local)*ny)
 !izsource =NINT((zsource-z_min_local)/(z_max_local-z_min_local)*nz)
-!ey(ixsource,iysource,izsource) = 0.
+!ey(ixsource,iysource,izsource) = 0.0_num
 !!CALL smooth3d_121(ey,nx,ny,nz,npass,alpha)
 !ENDIF
 
@@ -73,7 +73,7 @@ CALL particle_bcs_e
 CALL particle_bcs_p
 
 jx = 0.0_num
-jy=  0.0_num
+jy = 0.0_num
 jz = 0.0_num
 
 
@@ -177,15 +177,13 @@ rho=0.0_num
 CALL depose_rho_n(rho, npartp,xp(1:npartp),yp(1:npartp),zp(1:npartp),wp(1:npartp),  &
 echarge,x_min_local,y_min_local,z_min_local,dx,dy,dz,nx,ny,nz,nxguards,    &
 nyguards,nzguards,nox,noy,noz,l_particles_weight,l4symtry)
+
 !! - Compute electron density on grid
 CALL depose_rho_n(rho, nparte,xe(1:nparte),ye(1:nparte),ze(1:nparte),we(1:nparte),  &
 -echarge,x_min_local,y_min_local,z_min_local,dx,dy,dz,nx,ny,nz,nxguards,   &
 nyguards,nzguards,nox,noy,noz,l_particles_weight,l4symtry)
 
-
-!!! --- Apply BC on particles
-CALL particle_bcs_e
-CALL particle_bcs_p
+CALL charge_bcs
 
 !!! --- Write output to disk
 WRITE(strtemp,'(I5)') it
@@ -256,11 +254,11 @@ npartp=0
 IF ((y_max_local .GT. ymax/2.0_num) .AND. (y_min_local .LT. ymax/2.0_num)) THEN
     nparte=1
     npartp=1
-    npartemp=2*nparte ! large fixed table size to avoid frequent alloc-de-alloc to increase size at runtime
+    npartemp=2*nppcell*nx*ny*nz ! large fixed table size to avoid frequent alloc-de-alloc to increase size at runtime
 ELSE
     nparte=0
     npartp=0
-    npartemp=2*nparte
+    npartemp=2*nppcell*nx*ny*nz
 END IF
 
 !!! --- Allocate particle arrays
@@ -312,9 +310,8 @@ IF ((y_max_local .GT. ymax/2.0_num) .AND. (y_min_local .LT. ymax/2.0_num)) THEN
     PRINT *, "yp", yp(1)/dy
     PRINT *, "zp", zp(1)/dz
 END IF
-!PRINT *, "xmin",xmin
-!PRINT *, "ymin",ymin
-!PRINT *, "zmin",zmin
+PRINT *, "rank", rank, "x_min_local", x_min_local, "y_min_local", y_min_local, "z_min_local", z_min_local
+PRINT *, "rank", rank, "x_max_local", x_max_local, "y_max_local", y_max_local, "z_max_local", z_max_local
 
 ! Species 2 : Electrons
 xe = xp
@@ -324,11 +321,11 @@ ze = zp
 !!! --- Initialize particles velocities (cold plasma here -simple case)
 ! Species 1 : Protons
 uxp=0.0_num*clight
-uyp=0.0_num*clight
+uyp=0.8_num*clight
 uzp=0.0_num*clight
 ! Species 2 : Electrons
-uxe=-0.5_num*clight
-uye=0.0_num*clight
+uxe=0.0_num*clight
+uye=-0.8_num*clight
 uze=0.0_num*clight
 
 !!! --- Initialize external field at t=0

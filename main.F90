@@ -86,7 +86,7 @@ zmax = nz_global*dz
 
 ! --- sets domain decomposition 
 nprocx = 1
-nprocy = 1
+nprocy = 3
 nprocz = 1
 
 

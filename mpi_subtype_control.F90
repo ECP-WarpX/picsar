@@ -47,8 +47,8 @@ CONTAINS
     ENDIF
 
     create_current_field_subtype = &
-        create_field_subtype(basetype, nx, ny, nz, nx_global_min, &
-            ny_global_min, nz_global_min)
+        create_field_subtype(basetype, nx, ny, nz, nx_global_grid_min, &
+            ny_global_grid_min, nz_global_grid_min)
 
   END FUNCTION create_current_field_subtype
 

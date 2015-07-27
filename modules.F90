@@ -4,13 +4,13 @@
 MODULE constants
 !===============================================================================
 INTEGER, PARAMETER :: num = KIND(1.d0)
-REAL(num), parameter :: emass   = 9.1093818800000006e-31,      &
-                        pmass   = 1.6726231000000001e-27,      &
-                        echarge = 1.6021764620000001e-19,      &
-                        clight  = 299792458.0,                 &
-                        mu0     = 1.2566370614359173e-06,      &
-                        eps0    = 8.8541878176203892e-12,      &
-                        pi      = 3.141592653589793
+REAL(num), parameter :: emass   = 9.1093818800000006e-31_num,      &
+                        pmass   = 1.6726231000000001e-27_num,      &
+                        echarge = 1.6021764620000001e-19_num,      &
+                        clight  = 299792458.0_num,                 &
+                        mu0     = 1.2566370614359173e-06_num,      &
+                        eps0    = 8.8541878176203892e-12_num,      &
+                        pi      = 3.141592653589793_num
 INTEGER, PARAMETER :: c_ndims = 3
 ! direction parameters
 INTEGER, PARAMETER :: c_dir_x = 1
@@ -89,10 +89,10 @@ INTEGER, DIMENSION(:), ALLOCATABLE :: cell_x_min, cell_x_max
 INTEGER, DIMENSION(:), ALLOCATABLE :: cell_y_min, cell_y_max
 INTEGER, DIMENSION(:), ALLOCATABLE :: cell_z_min, cell_z_max
 INTEGER, DIMENSION(:), ALLOCATABLE :: old_x_max, old_y_max, old_z_max
-INTEGER :: nx_global_min, nx_global_max
-INTEGER :: ny_global_min, ny_global_max
-INTEGER :: nz_global_min, nz_global_max
-INTEGER :: n_global_min(c_ndims), n_global_max(c_ndims)
+INTEGER :: nx_global_grid_min, nx_global_grid_max
+INTEGER :: ny_global_grid_min, ny_global_grid_max
+INTEGER :: nz_global_grid_min, nz_global_grid_max
+INTEGER :: n_global_grid_min(c_ndims), n_global_grid_max(c_ndims)
 ! domain and loadbalancing
 LOGICAL :: allow_cpu_reduce = .FALSE.
 REAL(num), DIMENSION(:), ALLOCATABLE :: x_global, y_global, z_global
@@ -101,8 +101,10 @@ REAL(num), DIMENSION(:), ALLOCATABLE :: xb_offset_global
 REAL(num), DIMENSION(:), ALLOCATABLE :: yb_offset_global
 REAL(num), DIMENSION(:), ALLOCATABLE :: zb_offset_global
 ! domain limits and size
-INTEGER  :: nx, ny, nz ! local sizes
-INTEGER  :: nx_global, ny_global, nz_global ! global sizes
+INTEGER  :: nx, ny, nz ! local number of cells
+INTEGER  :: nx_grid, ny_grid, nz_grid ! local number of grid points
+INTEGER  :: nx_global, ny_global, nz_global ! global number of cells
+INTEGER  :: nx_global_grid, ny_global_grid, nz_global_grid ! global number of grid points
 REAL(num):: dx, xmin, xmax, length_x
 REAL(num):: x_min_local, x_max_local
 REAL(num):: dy, ymin, ymax,length_y
@@ -115,7 +117,7 @@ INTEGER :: subarray_field, subarray_field_r4
 INTEGER :: subarray_field_big, subarray_field_big_r4
 
 ! Axis
-real(kind=8), pointer, dimension(:) :: x, y, z
+REAL(num), pointer, dimension(:) :: x, y, z
 REAL(num), DIMENSION(:), ALLOCATABLE :: x_grid_mins, x_grid_maxs
 REAL(num), DIMENSION(:), ALLOCATABLE :: y_grid_mins, y_grid_maxs
 REAL(num), DIMENSION(:), ALLOCATABLE :: z_grid_mins, z_grid_maxs
@@ -130,20 +132,20 @@ REAL(num) :: z_grid_min_local, z_grid_max_local
 REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 
 ! IO/ STATISTICS
-REAL(num) :: starttime=0., startsim=0., endsim=0.
-REAL(num) :: runtime=0.
+REAL(num) :: starttime=0.0_num, startsim=0.0_num, endsim=0.0_num
+REAL(num) :: runtime=0.0_num
 REAL(num), ALLOCATABLE, DIMENSION(:) :: pushb, bcs_pushb, pushe, bcs_pushe, &
                                         push_part, bcs_part, cs, bcs_cs, field_gath
 INTEGER, PARAMETER :: string_length = 264
-CHARACTER(LEN=string_length) :: fileex='ex'
-CHARACTER(LEN=string_length) :: fileey='ey'
-CHARACTER(LEN=string_length) :: fileez='ez'
-CHARACTER(LEN=string_length) :: filebx='bx'
-CHARACTER(LEN=string_length) :: fileby='by'
-CHARACTER(LEN=string_length) :: filebz='bz'
-CHARACTER(LEN=string_length) :: filejx='jx'
-CHARACTER(LEN=string_length) :: filedive='dive'
-CHARACTER(LEN=string_length) :: filerho='rho'
+CHARACTER(LEN=string_length) :: fileex   ='ex'
+CHARACTER(LEN=string_length) :: fileey   ='ey'
+CHARACTER(LEN=string_length) :: fileez   ='ez'
+CHARACTER(LEN=string_length) :: filebx   ='bx'
+CHARACTER(LEN=string_length) :: fileby   ='by'
+CHARACTER(LEN=string_length) :: filebz   ='bz'
+CHARACTER(LEN=string_length) :: filejx   ='jx'
+CHARACTER(LEN=string_length) :: filedive ='dive'
+CHARACTER(LEN=string_length) :: filerho  ='rho'
 END MODULE shared_data
 
 

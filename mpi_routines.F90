@@ -34,9 +34,14 @@ CONTAINS
     INTEGER :: ranges(3,1), nproc_orig, oldgroup, newgroup
     CHARACTER(LEN=11) :: str
 
+    !!! --- NB: CPU Split performed on number of grid points (not cells)
+    nx_global_grid = nx_global+1
+    ny_global_grid = ny_global+1
+    nz_global_grid = nz_global+1
+
     nproc_orig = nproc
 
-    IF (nx_global .LT. nxguards .OR. ny_global .LT. nyguards .OR. nz_global .LT. nzguards) THEN
+    IF (nx_global_grid .LT. nxguards .OR. ny_global_grid .LT. nyguards .OR. nz_global_grid .LT. nzguards) THEN
       IF (rank .EQ. 0) THEN
         PRINT*,'*** ERROR ***'
         PRINT*,'Simulation domain is too small.'
@@ -49,9 +54,9 @@ CONTAINS
       reset = .TRUE.
     ELSE IF (nprocx * nprocy * nprocz .GT. 0) THEN
       ! Sanity check
-      nxsplit = nx_global / nprocx
-      nysplit = ny_global / nprocy
-      nzsplit = nz_global / nprocz
+      nxsplit = nx_global_grid / nprocx
+      nysplit = ny_global_grid / nprocy
+      nzsplit = nz_global_grid / nprocz
       IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. nzguards) &
           reset = .TRUE.
     ENDIF
@@ -71,14 +76,14 @@ CONTAINS
         ! Find the processor split which minimizes surface area of
         ! the resulting domain
 
-        minarea = nx_global * ny_global + ny_global * nz_global &
-            + nz_global * nx_global
+        minarea = nx_global_grid * ny_global_grid + ny_global_grid * nz_global_grid &
+            + nz_global_grid * nx_global_grid
 
         DO ix = 1, nproc
           nprocyz = nproc / ix
           IF (ix * nprocyz .NE. nproc) CYCLE
 
-          nxsplit = nx_global / ix
+          nxsplit = nx_global_grid / ix
           ! Actual domain must be bigger than the number of ghostcells
           IF (nxsplit .LT. nxguards) CYCLE
 
@@ -86,8 +91,8 @@ CONTAINS
             iz = nprocyz / iy
             IF (iy * iz .NE. nprocyz) CYCLE
 
-            nysplit = ny_global / iy
-            nzsplit = nz_global / iz
+            nysplit = ny_global_grid / iy
+            nzsplit = nz_global_grid / iz
             ! Actual domain must be bigger than the number of ghostcells
             IF (nysplit .LT. nyguards .OR. nzsplit .LT. nzguards) CYCLE
 
@@ -243,32 +248,28 @@ CONTAINS
     ALLOCATE(cell_x_min(nprocx), cell_x_max(nprocx))
     ALLOCATE(cell_y_min(nprocy), cell_y_max(nprocy))
     ALLOCATE(cell_z_min(nprocz), cell_z_max(nprocz))
-    ALLOCATE(x(-nxguards:nx+nxguards), y(-nyguards:ny+nyguards), z(-nzguards:nz+nzguards))
-    ALLOCATE(x_global(-nxguards:nx_global+nxguards))
-    ALLOCATE(y_global(-nyguards:ny_global+nyguards))
-    ALLOCATE(z_global(-nzguards:nz_global+nzguards))
 
-    nx0 = nx_global / nprocx
-    ny0 = ny_global / nprocy
-    nz0 = nz_global / nprocz
+    nx0 = nx_global_grid / nprocx
+    ny0 = ny_global_grid / nprocy
+    nz0 = nz_global_grid / nprocz
 
     ! If the number of gridpoints cannot be exactly subdivided then fix
     ! The first nxp processors have nx0 grid points
     ! The remaining processors have nx0+1 grid points
-    IF (nx0 * nprocx .NE. nx_global) THEN
-        nxp = (nx0 + 1) * nprocx - nx_global
+    IF (nx0 * nprocx .NE. nx_global_grid) THEN
+        nxp = (nx0 + 1) * nprocx - nx_global_grid
     ELSE
         nxp = nprocx
     ENDIF
 
-    IF (ny0 * nprocy .NE. ny_global) THEN
-        nyp = (ny0 + 1) * nprocy - ny_global
+    IF (ny0 * nprocy .NE. ny_global_grid) THEN
+        nyp = (ny0 + 1) * nprocy - ny_global_grid
     ELSE
         nyp = nprocy
     ENDIF
 
-    IF (nz0 * nprocz .NE. nz_global) THEN
-        nzp = (nz0 + 1) * nprocz - nz_global
+    IF (nz0 * nprocz .NE. nz_global_grid) THEN
+        nzp = (nz0 + 1) * nprocz - nz_global_grid
     ELSE
         nzp = nprocz
     ENDIF
@@ -301,24 +302,35 @@ CONTAINS
 
     ENDDO
 
-    nx_global_min = cell_x_min(x_coords+1)
-    nx_global_max = cell_x_max(x_coords+1)
-    n_global_min(1) = nx_global_min
-    n_global_max(1) = nx_global_max
+    nx_global_grid_min = cell_x_min(x_coords+1)
+    nx_global_grid_max = cell_x_max(x_coords+1)
+    n_global_grid_min(1) = nx_global_grid_min
+    n_global_grid_max(1) = nx_global_grid_max
 
-    ny_global_min = cell_y_min(y_coords+1)
-    ny_global_max = cell_y_max(y_coords+1)
-    n_global_min(2) = ny_global_min
-    n_global_max(2) = ny_global_max
+    ny_global_grid_min = cell_y_min(y_coords+1)
+    ny_global_grid_max = cell_y_max(y_coords+1)
+    n_global_grid_min(2) = ny_global_grid_min
+    n_global_grid_max(2) = ny_global_grid_max
 
-    nz_global_min = cell_z_min(z_coords+1)
-    nz_global_max = cell_z_max(z_coords+1)
-    n_global_min(3) = nz_global_min
-    n_global_max(3) = nz_global_max
+    nz_global_grid_min = cell_z_min(z_coords+1)
+    nz_global_grid_max = cell_z_max(z_coords+1)
+    n_global_grid_min(3) = nz_global_grid_min
+    n_global_grid_max(3) = nz_global_grid_max
 
-    nx = nx_global_max - nx_global_min + 1
-    ny = ny_global_max - ny_global_min + 1
-    nz = nz_global_max - nz_global_min + 1
+    nx_grid = nx_global_grid_max - nx_global_grid_min + 1
+    ny_grid = ny_global_grid_max - ny_global_grid_min + 1
+    nz_grid = nz_global_grid_max - nz_global_grid_min + 1
+
+    !!! --- number of cells of each subdomain
+    nx=nx_grid-1
+    ny=ny_grid-1
+    nz=nz_grid-1
+
+    ALLOCATE(x(-nxguards:nx+nxguards), y(-nyguards:ny+nyguards), z(-nzguards:nz+nzguards))
+    ALLOCATE(x_global(-nxguards:nx_global+nxguards))
+    ALLOCATE(y_global(-nyguards:ny_global+nyguards))
+    ALLOCATE(z_global(-nzguards:nz_global+nzguards))
+
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin
@@ -368,16 +380,6 @@ CONTAINS
     z_min_local = z_grid_mins(z_coords)
     z_max_local = z_grid_maxs(z_coords)
 
-    !!! --- Setup local grid
-!    DO ix = -nxguards, nx + nxguards
-!        x(ix) = x_global(nx_global_min+ix-1)
-!    ENDDO
-!    DO iy = -nyguards, ny + nyguards
-!        y(iy) = y_global(ny_global_min+iy-1)
-!    ENDDO
-!    DO iz = -nzguards, nz + nzguards
-!        z(iz) = z_global(nz_global_min+iz-1)
-!    ENDDO
 
     ! --- Allocate grid quantities
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -398,12 +400,6 @@ CONTAINS
     ALLOCATE(rho(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
     start_time = MPI_WTIME()
-    PRINT *, "x_min_local", x_min_local
-    PRINT *, "y_min_local", y_min_local
-    PRINT *, "z_min_local", z_min_local
-    PRINT *, "x_max_local", x_max_local
-    PRINT *, "y_max_local", y_max_local
-    PRINT *, "z_max_local", z_max_local
 
   END SUBROUTINE mpi_initialise
 
