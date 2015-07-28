@@ -1,8 +1,9 @@
-Particle-In-Cell Scalable Application Record (PICSAR)
-=====================================================
+========================================================
+Particle-In-Cell Scalable Application Resource (PICSSAR)
+========================================================
 
-Overview
---------
+**Overview**
+------------
 
 The PICSAR code is a "mini-app" standalone Particle-In-Cell (PIC) code that includes
 the key functionalities of the WARP code main PIC loop. It is a 
@@ -26,13 +27,15 @@ Here are some high performance features of the PICSAR code :
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
 
-Compiling
----------
+**Compiling**
+-------------
 
 For compiling the code: make. Make file options can be changed by editing the `Makefile`. For the gfortran compiler, simply use the flag -fopenmp to add openMP features. To set "x" OpenMP threads per MPI task, use "export OMP_NUM_THREADS=x" before starting the simulation (default will be x=1)
 
-Running simulations
--------------------
+**Running simulations**
+-----------------------
+
+There is no input file in the current version but will come soon. For the moment, code paramaters (grid size, resolution, plasma parameters etc.) are set in main.F90. particle and field distributions are initialized in initall() subroutine in file submain.F90.
 
 To run the executable on n MPI processes: "mpirun -np n a.out"
 
