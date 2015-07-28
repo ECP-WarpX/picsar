@@ -1,4 +1,4 @@
-**Particle-In-Cell Scalable Application Resource (PICSSAR)**
+**Particle-In-Cell Scalable Application Resource (PICSAR)**
 ============================================================
 
 **Overview**
