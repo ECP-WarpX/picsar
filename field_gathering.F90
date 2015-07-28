@@ -1,3 +1,48 @@
+!===============================================================================
+! Gather electric field on particles
+!===============================================================================
+SUBROUTINE gather_ebfields_on_particles
+USE particles
+USE constants
+USE fields
+USE params
+USE shared_data
+IMPLICIT NONE
+INTEGER ispecies, count
+TYPE(particle_species), POINTER :: curr
+
+exsm = ex
+eysm = ey
+ezsm = ez
+bxsm = bx
+bysm = by
+bzsm = bz
+DO ispecies=1, nspecies
+    curr => species_parray(ispecies)
+    count= curr%species_npart
+    !!! --- Gather electric fields on particles
+    curr%part_ex=0.0_num
+    curr%part_ey=0.0_num
+    curr%part_ez=0.0_num
+    CALL gete3d_n_energy_conserving(count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count), &
+                                      curr%part_ex(1:count),curr%part_ey(1:count),curr%part_ez(1:count),  &
+                                      x_min_local,y_min_local,z_min_local,                                &
+                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,                       &
+                                      nox,noy,noz,exsm,eysm,ezsm,l_lower_order_in_v)
+    !!! --- Gather magnetic fields on particles
+    curr%part_bx=0.0_num
+    curr%part_by=0.0_num
+    curr%part_bz=0.0_num
+    CALL getb3d_n_energy_conserving(count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count), &
+                                      curr%part_bx(1:count),curr%part_by(1:count),curr%part_bz(1:count),  &
+                                      x_min_local,y_min_local,z_min_local,                                &
+                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,                       &
+                                      nox,noy,noz,bxsm,bysm,bzsm,l_lower_order_in_v)
+
+END DO
+
+END SUBROUTINE gather_ebfields_on_particles
+
 !=================================================================================
 ! gathering of electric field from Yee grid ("energy conserving")
 SUBROUTINE gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &

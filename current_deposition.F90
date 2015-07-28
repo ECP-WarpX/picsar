@@ -1,4 +1,33 @@
 !===============================================================================
+! deposit current using Esirkepov algorithm 
+!===============================================================================
+SUBROUTINE depose_currents_on_grid_jxjyjz
+USE particles
+USE constants
+USE fields
+USE params
+USE shared_data
+IMPLICIT NONE
+INTEGER ispecies, count
+TYPE(particle_species), POINTER :: curr
+
+jx = 0.0_num
+jy = 0.0_num
+jz = 0.0_num
+DO ispecies=1, nspecies
+    curr => species_parray(ispecies)
+    count= curr%species_npart
+    CALL depose_jxjyjz_esirkepov_n(jx,jy,jz,count,                       &
+    curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count),      &
+    curr%part_ux(1:count),curr%part_uy(1:count),curr%part_uz(1:count),   &
+    curr%weight(1:count),curr%charge,x_min_local,y_min_local,z_min_local,&
+    dt,dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards, nox,noy,noz,        &
+    l_particles_weight,l4symtry)
+END DO
+
+END SUBROUTINE depose_currents_on_grid_jxjyjz
+
+!===============================================================================
 ! deposit current using Esirkepov algorithm for linear, quadratic or cubic splines
 SUBROUTINE depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &

@@ -16,7 +16,6 @@ CONTAINS
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
     CALL MPI_COMM_SIZE(comm, nproc, errcode)
     CALL MPI_COMM_RANK(comm, rank, errcode)
-    !PRINT *, "rank ", rank
 
   END SUBROUTINE mpi_minimal_init
 
@@ -398,6 +397,7 @@ CONTAINS
     ALLOCATE(jy(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(jz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(rho(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
     start_time = MPI_WTIME()
 

@@ -3,7 +3,36 @@ MODULE diagnostics
     USE constants
     IMPLICIT NONE
 
+
 CONTAINS
+
+    !!! --- Computes derived physical quantities from simulation
+    SUBROUTINE calc_diags
+        USE fields
+        USE boundary
+        USE particles
+        USE params
+        USE shared_data
+        IMPLICIT NONE
+        INTEGER ispecies, count
+        TYPE(particle_species), POINTER :: curr
+
+        ! - Computes electric field divergence on grid at n+1
+        dive=0.0_num
+        CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+
+        ! - Computes total charge density
+        rho=0.0_num
+        DO ispecies=1, nspecies
+            curr => species_parray(ispecies)
+            count= curr%species_npart
+            CALL depose_rho_n(rho, count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count),      &
+            curr%weight(1:count), curr%charge,x_min_local,y_min_local,z_min_local,dx,dy,dz,nx,ny,nz,nxguards, &
+            nyguards,nzguards,nox,noy,noz,l_particles_weight,l4symtry)
+        END DO
+        CALL charge_bcs
+
+    END SUBROUTINE calc_diags
 
     !!! --- Computes charge density on grid
     SUBROUTINE depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz, &
@@ -11,7 +40,7 @@ CONTAINS
         IMPLICIT NONE
         INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: rho
-        REAL(num), DIMENSION(np) :: xp,yp,zp,w
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
         LOGICAL :: l_particles_weight, l4symtry
 
@@ -162,12 +191,12 @@ CONTAINS
     !END SUBROUTINE total_em_energy
 
     !!! --- Computes field divergence
-    SUBROUTINE calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
+    SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
         IMPLICIT NONE
         INTEGER ::  j,k,l
         INTEGER :: nx,ny,nz,nxguard,nyguard,nzguard
-        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in) :: ex,ey,ez
-        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: dive
+        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in) :: eex,eey,eez
+        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: divee
         REAL(num) :: dx, dy, dz, invdx, invdy, invdz
 
         invdx=1.0_num/dx
@@ -177,8 +206,8 @@ CONTAINS
         DO l = 0, nz
             DO k = 0, ny
                 DO j = 0, nx
-                    dive(j,k,l) = invdx*(ex(j,k,l)-ex(j-1,k,l))+ &
-                                invdy*(ey(j,k,l)-ey(j,k-1,l))+invdz*(ez(j,k,l)-ez(j,k,l-1))
+                    divee(j,k,l) = invdx*(eex(j,k,l)-eex(j-1,k,l))+ &
+                                invdy*(eey(j,k,l)-eey(j,k-1,l))+invdz*(eez(j,k,l)-eez(j,k,l-1))
                 END DO
             END DO
         END DO

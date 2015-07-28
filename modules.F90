@@ -17,7 +17,7 @@ INTEGER, PARAMETER :: c_dir_x = 1
 INTEGER, PARAMETER :: c_dir_y = 2
 INTEGER, PARAMETER :: c_dir_z = 3
 LOGICAL:: l_smooth_compensate
-
+INTEGER, PARAMETER :: string_length = 264
 ! Error handling
 INTEGER, PARAMETER :: c_err_bad_value = 2**4
 END MODULE constants
@@ -43,13 +43,38 @@ USE constants
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
 LOGICAL :: l4symtry = .FALSE.
-INTEGER :: nparte, npartp, nppcell
+INTEGER :: nparte, npartp, nppcell, nspecies, nppspecies_max
+INTEGER, PARAMETER :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
 REAL(num), POINTER, DIMENSION(:) :: xe, ye, ze, uxe, uye, uze, &
                                        exe, eye, eze, bxe, bye, bze
 REAL(num), POINTER, DIMENSION(:) :: xp, yp, zp, uxp, uyp, uzp, &
                                        exp, eyp, ezp, bxp, byp, bzp
 REAL(num), POINTER, DIMENSION(:) :: we, wp
+! Fortran object representing a particle species
+TYPE particle_species
+    ! Attributes of particle species object
+    CHARACTER(LEN=string_length) :: name
+    REAL(num) :: charge
+    REAL(num) :: mass
+    INTEGER   :: species_npart
+    ! For some stupid reason, cannot use ALLOCATABLE in derived types
+    REAL(num), POINTER, DIMENSION(:) :: part_x
+    REAL(num), POINTER, DIMENSION(:) :: part_y
+    REAL(num), POINTER, DIMENSION(:) :: part_z
+    REAL(num), POINTER, DIMENSION(:) :: part_ux
+    REAL(num), POINTER, DIMENSION(:) :: part_uy
+    REAL(num), POINTER, DIMENSION(:) :: part_uz
+    REAL(num), POINTER, DIMENSION(:) :: part_ex
+    REAL(num), POINTER, DIMENSION(:) :: part_ey
+    REAL(num), POINTER, DIMENSION(:) :: part_ez
+    REAL(num), POINTER, DIMENSION(:) :: part_bx
+    REAL(num), POINTER, DIMENSION(:) :: part_by
+    REAL(num), POINTER, DIMENSION(:) :: part_bz
+    REAL(num), POINTER, DIMENSION(:) :: weight
+END TYPE
+! Array of pointers to particle species objects
+TYPE(particle_species), POINTER, DIMENSION(:):: species_parray
 END MODULE particles
 
 !===============================================================================
@@ -70,7 +95,7 @@ USE constants
 !----------------------------------------------------------------------------
 ! MPI data
 !----------------------------------------------------------------------------
-INTEGER  :: mpireal = MPI_DOUBLE_PRECISION
+INTEGER  :: mpidbl = MPI_DOUBLE_PRECISION
 INTEGER :: coordinates(c_ndims), neighbour(-1:1, -1:1, -1:1)
 INTEGER :: x_coords, proc_x_min, proc_x_max
 INTEGER :: y_coords, proc_y_min, proc_y_max
@@ -111,11 +136,9 @@ REAL(num):: dy, ymin, ymax,length_y
 REAL(num):: y_min_local, y_max_local
 REAL(num):: dz, zmin, zmax,length_z
 REAL(num):: z_min_local, z_max_local
-! Subtypes (field exchange)
-INTEGER :: subtype_field, subtype_field_r4
-INTEGER :: subarray_field, subarray_field_r4
-INTEGER :: subarray_field_big, subarray_field_big_r4
-
+! Derived types (MPI exchange)
+INTEGER :: derived_type_grid
+INTEGER :: derived_subarray_grid
 ! Axis
 REAL(num), pointer, dimension(:) :: x, y, z
 REAL(num), DIMENSION(:), ALLOCATABLE :: x_grid_mins, x_grid_maxs
@@ -129,14 +152,15 @@ REAL(num) :: z_grid_min, z_grid_max
 REAL(num) :: z_grid_min_local, z_grid_max_local
 
 ! Total charge density
-REAL(num), POINTER, DIMENSION(:,:,:) :: rho
+REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: rho
+! Electric Field divergence
+REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: dive
 
 ! IO/ STATISTICS
 REAL(num) :: starttime=0.0_num, startsim=0.0_num, endsim=0.0_num
 REAL(num) :: runtime=0.0_num
 REAL(num), ALLOCATABLE, DIMENSION(:) :: pushb, bcs_pushb, pushe, bcs_pushe, &
                                         push_part, bcs_part, cs, bcs_cs, field_gath
-INTEGER, PARAMETER :: string_length = 264
 CHARACTER(LEN=string_length) :: fileex   ='ex'
 CHARACTER(LEN=string_length) :: fileey   ='ey'
 CHARACTER(LEN=string_length) :: fileez   ='ez'

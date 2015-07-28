@@ -14,15 +14,13 @@ USE simple_io
 
 IMPLICIT NONE
 INTEGER :: nst,i, k
-INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
-INTEGER :: err
-CHARACTER(LEN=string_length) :: strtemp
 INTEGER :: ixsource, iysource, izsource
 REAL(num) :: xsource, ysource, zsource
-REAL(num), DIMENSION(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards) :: dive
 
+!!! --- This is the PIC LOOP
 DO i=1,nst
 
+!!! --- External field
 !!!! --- Input external field in the simulation box
 !xsource=xmin+length_x/2.0
 !ysource=ymin+length_y/2.0
@@ -37,184 +35,50 @@ DO i=1,nst
 !!CALL smooth3d_121(ey,nx,ny,nz,npass,alpha)
 !ENDIF
 
-!!! --- Push velocity with B half step
-CALL bpush_v(npartp,uxp(1:npartp),uyp(1:npartp),uzp(1:npartp),        &
-bxp(1:npartp),byp(1:npartp),bzp(1:npartp),echarge,pmass,dt*0.5_num)
-CALL bpush_v(nparte,uxe(1:nparte),uye(1:nparte),uze(1:nparte),        &
-bxe(1:nparte),bye(1:nparte),bze(1:nparte),-echarge,emass,dt*0.5_num)
-
-!!! --- Push velocity with E half step
-CALL epush_v(npartp,uxp(1:npartp),uyp(1:npartp),uzp(1:npartp),          &
-exp(1:npartp),eyp(1:npartp),ezp(1:npartp),echarge,pmass,dt*0.5_num)
-CALL epush_v(nparte,uxe(1:nparte),uye(1:nparte),uze(1:nparte),          &
-exe(1:nparte),eye(1:nparte),eze(1:nparte),-echarge,emass,dt*0.5_num)
-
+!!! --- Advance velocity half a time step
+CALL push_particles_v
 
 !!! --- Push B field half a time step
-CALL push_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                                                  &
-                           0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-                           nx,ny,nz, norderx,nordery,norderz,                                  &
-                           nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-                           l_nodalgrid)
+CALL push_bfield
 
 !!! --- Boundary conditions for B
 CALL bfield_bcs
 
-!!!! --- push electrons positions a time step
-CALL pushxyz(nparte,xe(1:nparte),ye(1:nparte),ze(1:nparte),        &
-uxe(1:nparte),uye(1:nparte),uze(1:nparte),dt)
-!!! --- push protons positions a time step
-CALL pushxyz(npartp,xp(1:npartp),yp(1:npartp),zp(1:npartp),        &
-uxp(1:npartp),uyp(1:npartp),uzp(1:npartp),dt)
-
+!!! --- Push particles a full time step
+CALL push_particles_xyz
 
 !!! --- Apply BC on particles
-CALL particle_bcs_e
-CALL particle_bcs_p
+CALL particle_bcs
 
-jx = 0.0_num
-jy = 0.0_num
-jz = 0.0_num
-
-
-!!! --- Deposit current for electrons
-CALL depose_jxjyjz_esirkepov_n(jx,jy,jz,nparte,xe(1:nparte),ye(1:nparte),ze(1:nparte),                &
-                               uxe(1:nparte),uye(1:nparte),uze(1:nparte),                             &
-                               we(1:nparte),-echarge,x_min_local,y_min_local,z_min_local,dt,dx,dy,dz, &
-                               nx,ny,nz,nxguards,nyguards,nzguards,                                   &
-                               nox,noy,noz,l_particles_weight,l4symtry)
-!!! --- Deposit current for protons
-CALL depose_jxjyjz_esirkepov_n(jx,jy,jz,npartp,xp(1:npartp),yp(1:npartp),zp(1:npartp),                &
-                               uxp(1:npartp),uyp(1:npartp),uzp(1:npartp),                             &
-                               wp(1:npartp),echarge,x_min_local,y_min_local,z_min_local,dt,dx,dy,dz,  &
-                               nx,ny,nz,nxguards,nyguards,nzguards,                                   &
-                               nox,noy,noz,l_particles_weight,l4symtry)
-
+!!! --- Deposit current of particle species on the grid
+CALL depose_currents_on_grid_jxjyjz
 
 !!! --- Boundary conditions for currents
 CALL current_bcs
 
-
 !!! --- push E field  a full time step
-CALL push_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,    &
-                          clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs, &
-                          clight**2*dt/dz*zcoeffs,nx,ny,nz,                &
-                          norderx,nordery,norderz,                         &
-                          nxguards,nyguards,nzguards,nxs,nys,nzs,          &
-                          l_nodalgrid)
+CALL push_efield
 
 !!! --- Boundary conditions for E
 CALL efield_bcs
 
-! - Compute electric field divergence on grid at n+1
-dive=0.0_num
-CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
-
-
 !!! --- push B field half a time step
-CALL push_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                                                  &
-                           0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-                           nx,ny,nz, norderx,nordery,norderz,                                  &
-                           nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-                           l_nodalgrid)
+CALL push_bfield
 
 !!! --- Boundary conditions for B
 CALL bfield_bcs
 
-exsm = ex
-eysm = ey
-ezsm = ez
-bxsm = bx
-bysm = by
-bzsm = bz
+!!! --- Gather electromagnetic fields from the grid to particle species
+CALL gather_ebfields_on_particles
 
-!!! --- Gather electric fields on protons
-exp=0.0_num;eyp=0.0_num;ezp=0.0_num
-CALL gete3d_n_energy_conserving(npartp,xp(1:npartp),yp(1:npartp),zp(1:npartp),             &
-                                      exp(1:npartp),eyp(1:npartp),ezp(1:npartp),           &
-                                      x_min_local,y_min_local,z_min_local,                 &
-                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,        &
-                                      nox,noy,noz,exsm,eysm,ezsm,l_lower_order_in_v)
-!!! --- Gather electric fields on electrons
-exe=0.0_num;eye=0.0_num;eze=0.0_num
-CALL gete3d_n_energy_conserving(nparte,xe(1:nparte),ye(1:nparte),ze(1:nparte),             &
-                                      exe(1:nparte),eye(1:nparte),eze(1:nparte),           &
-                                      x_min_local,y_min_local,z_min_local,                 &
-                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,        &
-                                      nox,noy,noz,exsm,eysm,ezsm,l_lower_order_in_v)
-!!! --- Gather magnetic fields on protons
-bxp=0.0_num;byp=0.0_num;bzp=0.0_num
-CALL getb3d_n_energy_conserving(npartp,xp(1:npartp),yp(1:npartp),zp(1:npartp),             &
-                                      bxp(1:npartp),byp(1:npartp),bzp(1:npartp),           &
-                                      x_min_local,y_min_local,z_min_local,                 &
-                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,        &
-                                      nox,noy,noz,bxsm,bysm,bzsm,l_lower_order_in_v)
-!!! --- Gather magnetic fields on electrons
-bxe=0.0_num;bye=0.0_num;bze=0.0_num
-CALL getb3d_n_energy_conserving(nparte,xe(1:nparte),ye(1:nparte),ze(1:nparte),             &
-                                      bxe(1:nparte),bye(1:nparte),bze(1:nparte),           &
-                                      x_min_local,y_min_local,z_min_local,                 &
-                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,        &
-                                      nox,noy,noz,bxsm,bysm,bzsm,l_lower_order_in_v)
+!!! --- Advance velocity half a time step
+CALL push_particles_v
 
+!!! --- derived quantitites
+CALL calc_diags
 
-!!! --- Push velocity with E half step
-CALL epush_v(npartp,uxp(1:npartp),uyp(1:npartp),uzp(1:npartp),        &
-             exp(1:npartp),eyp(1:npartp),ezp(1:npartp),echarge,pmass,dt*0.5_num)
-CALL epush_v(nparte,uxe(1:nparte),uye(1:nparte),uze(1:nparte),        &
-            exe(1:nparte),eye(1:nparte),eze(1:nparte),-echarge,emass,dt*0.5_num)
-
-!!! --- Push velocity with B full step
-CALL bpush_v(npartp,uxp(1:npartp),uyp(1:npartp),uzp(1:npartp),        &
-            bxp(1:npartp),byp(1:npartp),bzp(1:npartp),echarge,pmass,dt*0.5_num)
-CALL bpush_v(nparte,uxe(1:nparte),uye(1:nparte),uze(1:nparte),        &
-            bxe(1:nparte),bye(1:nparte),bze(1:nparte),-echarge,emass,dt*0.5_num)
-
-
-!!! --- Compute charge density on grid at n+1
-!! - Compute proton density on grid
-rho=0.0_num
-CALL depose_rho_n(rho, npartp,xp(1:npartp),yp(1:npartp),zp(1:npartp),wp(1:npartp),  &
-echarge,x_min_local,y_min_local,z_min_local,dx,dy,dz,nx,ny,nz,nxguards,    &
-nyguards,nzguards,nox,noy,noz,l_particles_weight,l4symtry)
-
-!! - Compute electron density on grid
-CALL depose_rho_n(rho, nparte,xe(1:nparte),ye(1:nparte),ze(1:nparte),we(1:nparte),  &
--echarge,x_min_local,y_min_local,z_min_local,dx,dy,dz,nx,ny,nz,nxguards,   &
-nyguards,nzguards,nox,noy,noz,l_particles_weight,l4symtry)
-
-CALL charge_bcs
-
-!!! --- Write output to disk
-WRITE(strtemp,'(I5)') it
-!! -- Write grid quantities
-! - Write current density ex
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', ex, offset, err)
-! - Write current density jx
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileey))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', ey, offset, err)
-! - Write current density jx
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileez))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', ez, offset, err)
-! - Write current density jx
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebx))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', bx, offset, err)
-! - Write current density jx
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileby))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', by, offset, err)
-! - Write current density jx
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebz))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', bz, offset, err)
-! - Write current density jx
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejx))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', jx, offset, err)
-! - Write electric field divergence div E
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filedive))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', dive, offset, err)
-! - Write total charge density rho
-CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filerho))// &
-TRIM(ADJUSTL(strtemp))//'.pxr', rho, offset, err)
+!!! --- output 
+CALL output_routines
 
 it = it+1
 
@@ -237,7 +101,7 @@ USE particles
 USE shared_data
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
-INTEGER:: i,ierror,j,k,l
+INTEGER:: i,ierror,j,k,l, ispecies
 INTEGER :: npartemp
 INTEGER :: ixsource, iysource, izsource
 REAL(num) :: xsource, ysource, zsource
@@ -245,88 +109,100 @@ REAL(num) :: xsource, ysource, zsource
 
 !!! --- Set time step
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+it = 0
 
-!!! --- Set number of particles
-!nparte = nx*ny*nz*nppcell
-!npartp = nx*ny*nz*nppcell
-nparte=0
-npartp=0
-IF ((y_max_local .GT. ymax/2.0_num) .AND. (y_min_local .LT. ymax/2.0_num)) THEN
-    nparte=1
-    npartp=1
-    npartemp=2*nppcell*nx*ny*nz ! large fixed table size to avoid frequent alloc-de-alloc to increase size at runtime
-ELSE
-    nparte=0
-    npartp=0
-    npartemp=2*nppcell*nx*ny*nz
-END IF
-
-!!! --- Allocate particle arrays
+!!! --- Allocate arrays
 IF (.NOT. l_arrays_allocated) THEN
-  ! --- allocate field arrays -> See MPI_ROUTINES
-
-  ! --- allocate electron parameters
-  ALLOCATE(xe(npartemp),ye(npartemp),ze(npartemp),uxe(npartemp),uye(npartemp),uze(npartemp),we(npartemp), &
-           exe(npartemp),eye(npartemp),eze(npartemp),bxe(npartemp),bye(npartemp),bze(npartemp))
-  ! --- allocate proton parameters
-  ALLOCATE(xp(npartemp),yp(npartemp),zp(npartemp),uxp(npartemp),uyp(npartemp),uzp(npartemp),wp(npartemp), &
-           exp(npartemp),eyp(npartemp),ezp(npartemp),bxp(npartemp),byp(npartemp),bzp(npartemp))
-  l_arrays_allocated=.true.
-  ! --- allocate coefficient arrays
-  ALLOCATE(xcoeffs(norderx/2),ycoeffs(nordery/2),zcoeffs(norderz/2))
+    nppspecies_max=2*nppcell*nx*ny*nz
+    !! -- Allocate species arrays
+ALLOCATE(species_parray(1:nspecies_max))
+    DO ispecies=1,nspecies
+    ALLOCATE(species_parray(ispecies)%part_x(1:nppspecies_max),    &
+             species_parray(ispecies)%part_y(1:nppspecies_max),    &
+             species_parray(ispecies)%part_z(1:nppspecies_max),    &
+             species_parray(ispecies)%part_ux(1:nppspecies_max),   &
+             species_parray(ispecies)%part_uy(1:nppspecies_max),   &
+             species_parray(ispecies)%part_uz(1:nppspecies_max),   &
+             species_parray(ispecies)%part_ex(1:nppspecies_max),   &
+             species_parray(ispecies)%part_ey(1:nppspecies_max),   &
+             species_parray(ispecies)%part_ez(1:nppspecies_max),   &
+             species_parray(ispecies)%part_bx(1:nppspecies_max),   &
+             species_parray(ispecies)%part_by(1:nppspecies_max),   &
+             species_parray(ispecies)%part_bz(1:nppspecies_max),   &
+             species_parray(ispecies)%weight(1:nppspecies_max))
+    END DO
+    l_arrays_allocated=.TRUE.
+    ! --- allocate Maxwell solver coefficient arrays
+    ALLOCATE(xcoeffs(norderx/2),ycoeffs(nordery/2),zcoeffs(norderz/2))
 END IF
-
 !!! --- Initialize particle and field arrays
+! - Init grid arrays
 ex=0.0_num;ey=0.0_num;ez=0.0_num
 bx=0.0_num;by=0.0_num;bz=0.0_num
 exsm=0.0_num;eysm=0.0_num;ezsm=0.0_num
 bxsm=0.0_num;bysm=0.0_num;bzsm=0.0_num
 jx=0.0_num;jy=0.0_num;jz=0.0_num
-exe=0.0_num;eye=0.0_num;eze=0.0_num
-bxe=0.0_num;bye=0.0_num;bze=0.0_num
-uxe=0.0_num;uye=0.0_num;uze=0.0_num
-exp=0.0_num;eyp=0.0_num;ezp=0.0_num
-bxp=0.0_num;byp=0.0_num;bzp=0.0_num
-uxp=0.0_num;uyp=0.0_num;uzp=0.0_num
-we = nc*dx*dy*dz/(nppcell)
-wp = we
-it = 0
+
+! - Init particle species attributes/arrays (2 species here)
+! - Species 1: electron
+species_parray(1)%name='electron'
+species_parray(1)%mass=emass
+species_parray(1)%charge=-echarge
+species_parray(1)%species_npart=0
+species_parray(1)%part_x=0.0_num
+species_parray(1)%part_y=0.0_num
+species_parray(1)%part_z=0.0_num
+species_parray(1)%part_ux=0.0_num
+species_parray(1)%part_uy=0.0_num
+species_parray(1)%part_uz=0.0_num
+species_parray(1)%part_ex=0.0_num
+species_parray(1)%part_ey=0.0_num
+species_parray(1)%part_ez=0.0_num
+species_parray(1)%part_bx=0.0_num
+species_parray(1)%part_by=0.0_num
+species_parray(1)%part_bz=0.0_num
+species_parray(1)%weight=nc*dx*dy*dz/(nppcell)
+
+! - Species 2: proton
+species_parray(2)%name='proton'
+species_parray(2)%mass=pmass
+species_parray(2)%charge=echarge
+species_parray(2)%species_npart=0
+species_parray(2)%part_x=0.0_num
+species_parray(2)%part_y=0.0_num
+species_parray(2)%part_z=0.0_num
+species_parray(2)%part_ux=0.0_num
+species_parray(2)%part_uy=0.0_num
+species_parray(2)%part_uz=0.0_num
+species_parray(2)%part_ex=0.0_num
+species_parray(2)%part_ey=0.0_num
+species_parray(2)%part_ez=0.0_num
+species_parray(2)%part_bx=0.0_num
+species_parray(2)%part_by=0.0_num
+species_parray(2)%part_bz=0.0_num
+species_parray(2)%weight=nc*dx*dy*dz/(nppcell)
 
 !!! --- Initialize stencil coefficients array for Maxwell field solver
 CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
 CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
 
-!!! --- Initialize particle positions  in each subdomain
-! Species 1 : Protons
-DO i = 1, npartp
-    xp(i) = x_min_local+(x_max_local-x_min_local)/2.0_num
-    yp(i) = y_min_local+(y_max_local-y_min_local)/2.0_num
-    zp(i) = z_min_local+(z_max_local-z_min_local)/2.0_num
-END DO
-
+!!! --- Sets-up particle space/ velocity distribution
 IF ((y_max_local .GT. ymax/2.0_num) .AND. (y_min_local .LT. ymax/2.0_num)) THEN
-    PRINT *, "xp", xp(1)/dx
-    PRINT *, "yp", yp(1)/dy
-    PRINT *, "zp", zp(1)/dz
+    ! - 1 electron
+    species_parray(1)%species_npart=1
+    species_parray(1)%part_x(1)=x_min_local+(x_max_local-x_min_local)/2.0_num
+    species_parray(1)%part_y(1)=y_min_local+(y_max_local-y_min_local)/2.0_num
+    species_parray(1)%part_z(1)=z_min_local+(z_max_local-z_min_local)/2.0_num
+    species_parray(1)%part_uy(1)=-0.8_num*clight
+    ! - 1 proton
+    species_parray(2)%species_npart=1
+    species_parray(2)%part_x(1)=x_min_local+(x_max_local-x_min_local)/2.0_num
+    species_parray(2)%part_y(1)=y_min_local+(y_max_local-y_min_local)/2.0_num
+    species_parray(2)%part_z(1)=z_min_local+(z_max_local-z_min_local)/2.0_num
+    species_parray(2)%part_uy(1)=0.8_num*clight
 END IF
-PRINT *, "rank", rank, "x_min_local", x_min_local, "y_min_local", y_min_local, "z_min_local", z_min_local
-PRINT *, "rank", rank, "x_max_local", x_max_local, "y_max_local", y_max_local, "z_max_local", z_max_local
 
-! Species 2 : Electrons
-xe = xp
-ye = yp
-ze = zp
-
-!!! --- Initialize particles velocities (cold plasma here -simple case)
-! Species 1 : Protons
-uxp=0.0_num*clight
-uyp=0.8_num*clight
-uzp=0.0_num*clight
-! Species 2 : Electrons
-uxe=0.0_num*clight
-uye=-0.8_num*clight
-uze=0.0_num*clight
 
 !!! --- Initialize external field at t=0
 xsource=xmin+length_x/2.0_num

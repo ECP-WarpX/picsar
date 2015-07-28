@@ -49,7 +49,7 @@ tmax = 40.0_num
 
 !-------------------------------------------------------------------------------
 ! plasma parameters (cold plasma)
-l_particles_weight = .FALSE. ! particles have the same weight
+l_particles_weight = .FALSE. ! particles have different weights
 vthx   = 0.0_num*clight      ! initial velocity spread on x(electrons only)
 vthy   = 0.0_num*clight	! initial velocity spread on y (electrons only)
 vthz   = 0.0_num*clight      ! initial velocity spread on z (electrons only)
@@ -65,6 +65,9 @@ wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
 w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
 w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
 w0    = w0_l
+
+! --- sets # of species
+nspecies=2
 
 ! --- sets # of cells
 nx_global = 90

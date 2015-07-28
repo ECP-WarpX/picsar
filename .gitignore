@@ -9,3 +9,4 @@ submain_inlined.F90
 *.o
 *.mod
 a.out
+control_file.F90

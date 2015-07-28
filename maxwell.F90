@@ -1,4 +1,43 @@
 !===============================================================================
+! PUSH B field half a time step
+!==============================================================================
+SUBROUTINE push_bfield
+USE constants
+USE params
+USE fields
+USE shared_data
+IMPLICIT NONE
+
+CALL push_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
+    0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
+    nx,ny,nz, norderx,nordery,norderz,                                  &
+    nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
+    l_nodalgrid)
+
+END SUBROUTINE push_bfield
+
+
+!===============================================================================
+! PUSH E field a full  time step
+!==============================================================================
+SUBROUTINE push_efield
+USE constants
+USE params
+USE fields
+USE shared_data
+IMPLICIT NONE
+
+CALL push_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
+    clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
+    clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
+    norderx,nordery,norderz,                                                   &
+    nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
+    l_nodalgrid)
+
+END SUBROUTINE push_efield
+
+
+!===============================================================================
 ! PUSH ELECTRIC FIELD YEE 3D ARBITRARY ORDER
 subroutine push_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
