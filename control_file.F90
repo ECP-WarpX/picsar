@@ -16,7 +16,7 @@ CONTAINS
     SUBROUTINE read_input_file
         INTEGER :: ix = 0
         ! --- OPENS INPUT FILE
-        OPEN(fh_input, file='input_file.pxr')
+        OPEN(fh_input, file='input_file.pixr')
         DO WHILE(ios==0)
             READ(fh_input, '(A)', iostat=ios) buffer
             ix=INDEX(buffer,'section::')
@@ -26,11 +26,9 @@ CONTAINS
                 CASE('section::grid')
                     CALL read_grid_section
                 CASE('section::species')
-                    !CALL read_species_section
-                    PRINT *, "SPECIES SECTION"
+                    CALL read_species_section
                 CASE('section::output')
-                    !CALL read_output_section
-                    PRINT *, "OUTPUT SECTION"
+                    CALL read_output_section
                 CASE('section::cpusplit')
                     CALL read_cpusplit_section
                 END SELECT
@@ -104,11 +102,17 @@ CONTAINS
 
     SUBROUTINE read_species_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL :: end_section
         TYPE(particle_species), POINTER :: curr
         ! READS SPECIES SECTION OF INPUT FILE
+        IF (.NOT. l_species_allocated) THEN
+            nspecies=0
+            ALLOCATE(species_parray(1:nspecies_max))
+            l_species_allocated=.TRUE.
+        ENDIF
         nspecies = nspecies+1
-        curr=> species_parray(nspecies)
+        curr => species_parray(nspecies)
+        end_section=.FALSE.
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
             IF (INDEX(buffer,'name') .GT. 0) THEN
@@ -120,11 +124,11 @@ CONTAINS
                 curr%mass=curr%mass*emass
             ELSE IF (INDEX(buffer,'charge') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') curr%charge
+                READ(buffer(ix+1:string_length), *) curr%charge
                 curr%charge=curr%charge*echarge
             ELSEIF (INDEX(buffer,'nppcell') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),'(i10)') nppcell
+                READ(buffer(ix+1:string_length),'(i10)') curr%nppcell
             ELSE IF (INDEX(buffer,'x_min') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%x_min
@@ -158,5 +162,60 @@ CONTAINS
         END DO
         RETURN
     END SUBROUTINE read_species_section
+
+    SUBROUTINE read_output_section
+        INTEGER :: ix = 0
+        LOGICAL :: end_section = .FALSE.
+        ! READS GRID SECTION OF INPUT FILE
+        DO WHILE((.NOT. end_section) .AND. (ios==0))
+            READ(fh_input, '(A)', iostat=ios) buffer
+            IF (INDEX(buffer,'output_frequency') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') output_frequency
+            ELSE IF (INDEX(buffer,'output_step_min') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') output_step_min
+            ELSE IF (INDEX(buffer,'output_step_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') output_step_max
+            ELSEIF (INDEX(buffer,'ex') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_ex
+            ELSE IF (INDEX(buffer,'ey') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_ey
+            ELSE IF (INDEX(buffer,'ez') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_ez
+            ELSEIF (INDEX(buffer,'bx') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_bx
+            ELSE IF (INDEX(buffer,'by') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_by
+            ELSE IF (INDEX(buffer,'bz') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_bz
+            ELSEIF (INDEX(buffer,'jx') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_jx
+            ELSE IF (INDEX(buffer,'jy') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_jy
+            ELSE IF (INDEX(buffer,'jz') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_jz
+            ELSEIF (INDEX(buffer,'rho') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_rho
+            ELSE IF (INDEX(buffer,'dive') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_output_dive
+            ELSE IF (INDEX(buffer,'end::output') .GT. 0) THEN
+                end_section =.TRUE.
+            END IF
+        END DO
+        RETURN
+    END SUBROUTINE read_output_section
 
 END MODULE control_file

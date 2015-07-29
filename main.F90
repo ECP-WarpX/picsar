@@ -33,9 +33,6 @@ norderx = 2
 nordery = 2
 norderz = 2
 
-! --- number of particles per cell 
-nppcell=1
-
 ! --- smoothing
 npass = 0
 alpha = 0.5_num
@@ -66,9 +63,6 @@ wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
 w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
 w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
 w0    = w0_l
-
-! --- sets # of species
-nspecies=2
 
 
 !----------------------------------------------

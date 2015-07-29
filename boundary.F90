@@ -343,7 +343,6 @@ END SUBROUTINE charge_bcs
             ybd = 0
             zbd = 0
             out_of_bounds = .FALSE.
-
             part_xyz = curr%part_x(i)
             ! Particle has left this processor
             IF (part_xyz .LT. x_min_local) THEN

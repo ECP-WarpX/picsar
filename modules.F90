@@ -43,21 +43,28 @@ USE constants
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
 LOGICAL :: l4symtry = .FALSE.
-INTEGER :: nparte, npartp, nppcell, nspecies, nppspecies_max
+INTEGER :: nspecies
 INTEGER, PARAMETER :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
-REAL(num), POINTER, DIMENSION(:) :: xe, ye, ze, uxe, uye, uze, &
-                                       exe, eye, eze, bxe, bye, bze
-REAL(num), POINTER, DIMENSION(:) :: xp, yp, zp, uxp, uyp, uzp, &
-                                       exp, eyp, ezp, bxp, byp, bzp
-REAL(num), POINTER, DIMENSION(:) :: we, wp
+LOGICAL :: l_species_allocated=.FALSE.
 ! Fortran object representing a particle species
 TYPE particle_species
     ! Attributes of particle species object
     CHARACTER(LEN=string_length) :: name
     REAL(num) :: charge
     REAL(num) :: mass
+    REAL(num) :: x_min
+    REAL(num) :: x_max
+    REAL(num) :: y_min
+    REAL(num) :: y_max
+    REAL(num) :: z_min
+    REAL(num) :: z_max
+    REAL(num) :: vdrift_x
+    REAL(num) :: vdrift_y
+    REAL(num) :: vdrift_z
     INTEGER   :: species_npart
+    INTEGER   :: nppspecies_max
+    INTEGER   :: nppcell
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     REAL(num), POINTER, DIMENSION(:) :: part_x
     REAL(num), POINTER, DIMENSION(:) :: part_y
@@ -161,6 +168,26 @@ REAL(num) :: starttime=0.0_num, startsim=0.0_num, endsim=0.0_num
 REAL(num) :: runtime=0.0_num
 REAL(num), ALLOCATABLE, DIMENSION(:) :: pushb, bcs_pushb, pushe, bcs_pushe, &
                                         push_part, bcs_part, cs, bcs_cs, field_gath
+
+! output frequency
+INTEGER :: output_frequency = -1 !(Default is no output)
+INTEGER :: output_step_min = 0
+INTEGER :: output_step_max = 0
+
+! output quantity flag (Default=False)
+INTEGER :: c_output_ex = 0
+INTEGER :: c_output_ey = 0
+INTEGER :: c_output_ez = 0
+INTEGER :: c_output_bx = 0
+INTEGER :: c_output_by = 0
+INTEGER :: c_output_bz = 0
+INTEGER :: c_output_jx = 0
+INTEGER :: c_output_jy = 0
+INTEGER :: c_output_jz = 0
+INTEGER :: c_output_rho = 0
+INTEGER :: c_output_dive = 0
+
+! File names for output dumps
 CHARACTER(LEN=string_length) :: fileex   ='ex'
 CHARACTER(LEN=string_length) :: fileey   ='ey'
 CHARACTER(LEN=string_length) :: fileez   ='ez'
@@ -168,6 +195,8 @@ CHARACTER(LEN=string_length) :: filebx   ='bx'
 CHARACTER(LEN=string_length) :: fileby   ='by'
 CHARACTER(LEN=string_length) :: filebz   ='bz'
 CHARACTER(LEN=string_length) :: filejx   ='jx'
+CHARACTER(LEN=string_length) :: filejy   ='jy'
+CHARACTER(LEN=string_length) :: filejz   ='jz'
 CHARACTER(LEN=string_length) :: filedive ='dive'
 CHARACTER(LEN=string_length) :: filerho  ='rho'
 END MODULE shared_data

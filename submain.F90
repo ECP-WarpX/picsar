@@ -101,40 +101,42 @@ USE particles
 USE shared_data
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
-INTEGER:: i,ierror,j,k,l, ispecies
+INTEGER :: i,ierror,j,k,l, ispecies, ipart
+INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
 INTEGER :: npartemp
 INTEGER :: ixsource, iysource, izsource
 REAL(num) :: xsource, ysource, zsource
+TYPE(particle_species), POINTER :: curr
 !real(8) :: rand
 
 !!! --- Set time step
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
 
-!!! --- Allocate arrays
+!!! --- Allocate species arrays
 IF (.NOT. l_arrays_allocated) THEN
-    nppspecies_max=2*nppcell*nx*ny*nz
-    !! -- Allocate species arrays
-ALLOCATE(species_parray(1:nspecies_max))
     DO ispecies=1,nspecies
-    ALLOCATE(species_parray(ispecies)%part_x(1:nppspecies_max),    &
-             species_parray(ispecies)%part_y(1:nppspecies_max),    &
-             species_parray(ispecies)%part_z(1:nppspecies_max),    &
-             species_parray(ispecies)%part_ux(1:nppspecies_max),   &
-             species_parray(ispecies)%part_uy(1:nppspecies_max),   &
-             species_parray(ispecies)%part_uz(1:nppspecies_max),   &
-             species_parray(ispecies)%part_ex(1:nppspecies_max),   &
-             species_parray(ispecies)%part_ey(1:nppspecies_max),   &
-             species_parray(ispecies)%part_ez(1:nppspecies_max),   &
-             species_parray(ispecies)%part_bx(1:nppspecies_max),   &
-             species_parray(ispecies)%part_by(1:nppspecies_max),   &
-             species_parray(ispecies)%part_bz(1:nppspecies_max),   &
-             species_parray(ispecies)%weight(1:nppspecies_max))
+    curr=>species_parray(ispecies)
+    curr%nppspecies_max=2*(curr%nppcell)*nx*ny*nz
+    ALLOCATE(curr%part_x(1:curr%nppspecies_max),    &
+             curr%part_y(1:curr%nppspecies_max),    &
+             curr%part_z(1:curr%nppspecies_max),    &
+             curr%part_ux(1:curr%nppspecies_max),   &
+             curr%part_uy(1:curr%nppspecies_max),   &
+             curr%part_uz(1:curr%nppspecies_max),   &
+             curr%part_ex(1:curr%nppspecies_max),   &
+             curr%part_ey(1:curr%nppspecies_max),   &
+             curr%part_ez(1:curr%nppspecies_max),   &
+             curr%part_bx(1:curr%nppspecies_max),   &
+             curr%part_by(1:curr%nppspecies_max),   &
+             curr%part_bz(1:curr%nppspecies_max),   &
+             curr%weight(1:curr%nppspecies_max))
     END DO
     l_arrays_allocated=.TRUE.
     ! --- allocate Maxwell solver coefficient arrays
     ALLOCATE(xcoeffs(norderx/2),ycoeffs(nordery/2),zcoeffs(norderz/2))
 END IF
+
 !!! --- Initialize particle and field arrays
 ! - Init grid arrays
 ex=0.0_num;ey=0.0_num;ez=0.0_num
@@ -143,65 +145,60 @@ exsm=0.0_num;eysm=0.0_num;ezsm=0.0_num
 bxsm=0.0_num;bysm=0.0_num;bzsm=0.0_num
 jx=0.0_num;jy=0.0_num;jz=0.0_num
 
-! - Init particle species attributes/arrays (2 species here)
-! - Species 1: electron
-species_parray(1)%name='electron'
-species_parray(1)%mass=emass
-species_parray(1)%charge=-echarge
-species_parray(1)%species_npart=0
-species_parray(1)%part_x=0.0_num
-species_parray(1)%part_y=0.0_num
-species_parray(1)%part_z=0.0_num
-species_parray(1)%part_ux=0.0_num
-species_parray(1)%part_uy=0.0_num
-species_parray(1)%part_uz=0.0_num
-species_parray(1)%part_ex=0.0_num
-species_parray(1)%part_ey=0.0_num
-species_parray(1)%part_ez=0.0_num
-species_parray(1)%part_bx=0.0_num
-species_parray(1)%part_by=0.0_num
-species_parray(1)%part_bz=0.0_num
-species_parray(1)%weight=nc*dx*dy*dz/(nppcell)
+! - Init particle species arrays (2 species here)
+DO ispecies=1,nspecies
+    species_parray(ispecies)%species_npart=0
+    species_parray(ispecies)%part_x=0.0_num
+    species_parray(ispecies)%part_y=0.0_num
+    species_parray(ispecies)%part_z=0.0_num
+    species_parray(ispecies)%part_ux=0.0_num
+    species_parray(ispecies)%part_uy=0.0_num
+    species_parray(ispecies)%part_uz=0.0_num
+    species_parray(ispecies)%part_ex=0.0_num
+    species_parray(ispecies)%part_ey=0.0_num
+    species_parray(ispecies)%part_ez=0.0_num
+    species_parray(ispecies)%part_bx=0.0_num
+    species_parray(ispecies)%part_by=0.0_num
+    species_parray(ispecies)%part_bz=0.0_num
+    species_parray(ispecies)%weight=nc*dx*dy*dz/(curr%nppcell) !uniform density for the moment
+END DO
 
-! - Species 2: proton
-species_parray(2)%name='proton'
-species_parray(2)%mass=pmass
-species_parray(2)%charge=echarge
-species_parray(2)%species_npart=0
-species_parray(2)%part_x=0.0_num
-species_parray(2)%part_y=0.0_num
-species_parray(2)%part_z=0.0_num
-species_parray(2)%part_ux=0.0_num
-species_parray(2)%part_uy=0.0_num
-species_parray(2)%part_uz=0.0_num
-species_parray(2)%part_ex=0.0_num
-species_parray(2)%part_ey=0.0_num
-species_parray(2)%part_ez=0.0_num
-species_parray(2)%part_bx=0.0_num
-species_parray(2)%part_by=0.0_num
-species_parray(2)%part_bz=0.0_num
-species_parray(2)%weight=nc*dx*dy*dz/(nppcell)
-
+!!! --- Sets-up particle space distribution
+DO ispecies=1,nspecies
+    curr=>species_parray(ispecies)
+    IF ((((curr%x_min .GE. x_min_local) .AND. (curr%x_min .LT. x_max_local)) &
+        .OR. ((curr%x_max .GE. x_min_local) .AND. (curr%x_max .LT. x_max_local))) .AND. &
+        (((curr%x_min .GE. x_min_local) .AND. (curr%x_min .LT. x_max_local)) &
+        .OR. ((curr%x_max .GE. x_min_local) .AND. (curr%x_max .LT. x_max_local))) .AND. &
+        (((curr%x_min .GE. x_min_local) .AND. (curr%x_min .LT. x_max_local)) &
+        .OR. ((curr%x_max .GE. x_min_local) .AND. (curr%x_max .LT. x_max_local))))  THEN
+        jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
+        jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
+        kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
+        kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
+        lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
+        lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+        DO l=lmin+1,lmax-1
+            DO k=kmin+1,kmax-1
+                DO j=jmin+1,jmax-1
+                    DO ipart=1,curr%nppcell
+                        curr%species_npart=curr%species_npart+1
+                        curr%part_x(curr%species_npart) = x_min_local+(j-1)*dx+dx/curr%nppcell*ipart
+                        curr%part_y(curr%species_npart) = y_min_local+(k-1)*dy+dy/curr%nppcell*ipart
+                        curr%part_z(curr%species_npart) = z_min_local+(l-1)*dz+dz/curr%nppcell*ipart
+                        curr%part_ux(curr%species_npart)= curr%vdrift_x
+                        curr%part_uy(curr%species_npart)= curr%vdrift_y
+                        curr%part_uz(curr%species_npart)= curr%vdrift_z
+                    END DO
+                END DO
+            END DO
+        END DO
+    END IF
+END DO
 !!! --- Initialize stencil coefficients array for Maxwell field solver
 CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
 CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
-
-!!! --- Sets-up particle space/ velocity distribution
-IF ((y_max_local .GT. ymax/2.0_num) .AND. (y_min_local .LT. ymax/2.0_num)) THEN
-    ! - 1 electron
-    species_parray(1)%species_npart=1
-    species_parray(1)%part_x(1)=x_min_local+(x_max_local-x_min_local)/2.0_num
-    species_parray(1)%part_y(1)=y_min_local+(y_max_local-y_min_local)/2.0_num
-    species_parray(1)%part_z(1)=z_min_local+(z_max_local-z_min_local)/2.0_num
-    species_parray(1)%part_uy(1)=-0.8_num*clight
-    ! - 1 proton
-    species_parray(2)%species_npart=1
-    species_parray(2)%part_x(1)=x_min_local+(x_max_local-x_min_local)/2.0_num
-    species_parray(2)%part_y(1)=y_min_local+(y_max_local-y_min_local)/2.0_num
-    species_parray(2)%part_z(1)=z_min_local+(z_max_local-z_min_local)/2.0_num
-    species_parray(2)%part_uy(1)=0.8_num*clight
-END IF
 
 
 !!! --- Initialize external field at t=0
@@ -222,8 +219,6 @@ ENDIF
 nsteps = nint(tmax/(w0_l*dt))
 IF (rank .EQ. 0) THEN
     WRITE (0,*), "nsteps = ", nsteps
-    WRITE (0,*), "Loaded npart= ", nparte*nprocx*nprocy*nprocz, " of species electron"
-    WRITE (0,*), "Loaded npart= ", npartp*nprocx*nprocy*nprocz, " of species  proton "
 END IF
 
 !!! --- Allocate stats tables
