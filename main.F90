@@ -15,6 +15,7 @@ USE particles
 USE params
 USE shared_data
 USE mpi_routines
+USE control_file
 
 IMPLICIT NONE
 INTEGER :: i,ierror,j,l
@@ -69,33 +70,13 @@ w0    = w0_l
 ! --- sets # of species
 nspecies=2
 
-! --- sets # of cells
-nx_global = 90
-ny_global = 90
-nz_global = 90
-
-! --- sets resolution and grid size (in SI units)
-dx = 6.5e-7_num
-dy = 6.5e-7_num
-dz = 6.5e-7_num
-
-! --- sets simulation domain boundaries
-xmin = 0.0_num
-ymin = 0.0_num
-zmin = 0.0_num
-xmax = nx_global*dx
-ymax = ny_global*dy
-zmax = nz_global*dz
-
-! --- sets domain decomposition 
-nprocx = 1
-nprocy = 3
-nprocz = 1
-
 
 !----------------------------------------------
 ! SET-UP COMMUNICATOR, ALLOCATE/INIT ARRAYS
 !----------------------------------------------
+
+! --- reads input_file
+  CALL read_input_file
 
 ! --- sets mpi communicator
   CALL mpi_minimal_init

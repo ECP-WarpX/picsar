@@ -33,6 +33,8 @@ CONTAINS
     INTEGER :: ranges(3,1), nproc_orig, oldgroup, newgroup
     CHARACTER(LEN=11) :: str
 
+
+
     !!! --- NB: CPU Split performed on number of grid points (not cells)
     nx_global_grid = nx_global+1
     ny_global_grid = ny_global+1
@@ -330,6 +332,10 @@ CONTAINS
     ALLOCATE(y_global(-nyguards:ny_global+nyguards))
     ALLOCATE(z_global(-nzguards:nz_global+nzguards))
 
+    !!! -- sets xmax, ymax, zmax
+    xmax = nx_global*dx
+    ymax = ny_global*dy
+    zmax = nz_global*dz
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin
