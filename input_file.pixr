@@ -1,8 +1,7 @@
 ######################### INPUT FILE FOR THE CODE PICSAR
-
 section::cpusplit
  nprocx = 1
- nprocy = 1
+ nprocy = 2
  nprocz = 1
 end::cpusplit
 
@@ -23,15 +22,15 @@ section::species
  mass = 1
  charge = -1
  nppcell = 1
- x_min = 0.0
- y_min = 0.0
- z_min = 0.0
- x_max = 6.5e-5
- y_max = 6.5e-5
- z_max = 6.5e-5 
- vdrift_x = 0.0
- vdrift_y = 0.0 
- vdrift_z = 0.0
+ x_min = 4.4e-5
+ y_min = 4.4e-5
+ z_min = 4.4e-5
+ x_max = 4.5e-5
+ y_max = 4.5e-5
+ z_max = 4.5e-5 
+ vdrift_x = 1e8
+ vdrift_y = 0.0
+ vdrift_z = 1e8
 end::species
 
 section::species
@@ -39,21 +38,21 @@ section::species
  mass = 1836
  charge = 1
  nppcell = 1
- x_min = 0.0
- y_min = 0.0
- z_min = 0.0
- x_max = 6.5e-5
- y_max = 6.5e-5
- z_max = 6.5e-5 
+ x_min = 4.4e-5
+ y_min = 4.4e-5
+ z_min = 4.4e-5
+ x_max = 4.5e-5
+ y_max = 4.5e-5
+ z_max = 4.5e-5 
  vdrift_x = 0.0
- vdrift_y = 1e5 
+ vdrift_y = 0.0
  vdrift_z = 0.0
 end::species
 
 section::output
- output_frequency = 10
- output_step_min  = 1
- output_step_max  = 100
+ output_frequency = 1
+ output_step_min  = 0
+ output_step_max  = 110
  ex = 1
  ey = 1
  ez = 1

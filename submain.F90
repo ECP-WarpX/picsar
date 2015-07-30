@@ -36,7 +36,7 @@ DO i=1,nst
 !ENDIF
 
 !!! --- Advance velocity half a time step
-CALL push_particles_v
+!CALL push_particles_v
 
 !!! --- Push B field half a time step
 CALL push_bfield
@@ -72,7 +72,7 @@ CALL bfield_bcs
 CALL gather_ebfields_on_particles
 
 !!! --- Advance velocity half a time step
-CALL push_particles_v
+!CALL push_particles_v
 
 !!! --- derived quantitites
 CALL calc_diags
@@ -183,9 +183,9 @@ DO ispecies=1,nspecies
                 DO j=jmin+1,jmax-1
                     DO ipart=1,curr%nppcell
                         curr%species_npart=curr%species_npart+1
-                        curr%part_x(curr%species_npart) = x_min_local+(j-1)*dx+dx/curr%nppcell*ipart
-                        curr%part_y(curr%species_npart) = y_min_local+(k-1)*dy+dy/curr%nppcell*ipart
-                        curr%part_z(curr%species_npart) = z_min_local+(l-1)*dz+dz/curr%nppcell*ipart
+                        curr%part_x(curr%species_npart) = x_min_local+(j-1)*dx+dx/curr%nppcell*(ipart-1)
+                        curr%part_y(curr%species_npart) = y_min_local+(k-1)*dy+dy/curr%nppcell*(ipart-1)
+                        curr%part_z(curr%species_npart) = z_min_local+(l-1)*dz+dz/curr%nppcell*(ipart-1)
                         curr%part_ux(curr%species_npart)= curr%vdrift_x
                         curr%part_uy(curr%species_npart)= curr%vdrift_y
                         curr%part_uz(curr%species_npart)= curr%vdrift_z

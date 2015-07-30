@@ -147,13 +147,13 @@ CONTAINS
             ELSE IF (INDEX(buffer,'z_max') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%z_max
-            ELSE IF (INDEX(buffer,'v_driftx') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'vdrift_x') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%vdrift_x
-            ELSE IF (INDEX(buffer,'v_drifty') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'vdrift_y') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%vdrift_y
-            ELSE IF (INDEX(buffer,'v_driftz') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'vdrift_z') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%vdrift_z
             ELSE IF (INDEX(buffer,'end::species') .GT. 0) THEN
