@@ -36,6 +36,6 @@ To build the code just type "make" in the command prompt. Make file options can 
 
 PICSAR input parameters must be provided in an input file named "input_file.pxr" in the folder where the code is ran. An example of input file is provided in this repository.
 
-To run the executable on n MPI processes: "mpirun -np n a.out". Notice that n must be equal to nprocx*nprocy*nprocz with nprocx, nprocy, nprocz the number of processors along x,y,z directions. 
+To run the executable on n MPI processes: "mpirun -np n a.out". Notice that n must be equal to nprocx x nprocy x nprocz with nprocx, nprocy, nprocz the number of processors along x,y,z directions. 
 
 For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`
