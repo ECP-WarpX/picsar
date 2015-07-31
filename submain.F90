@@ -13,79 +13,60 @@ USE diagnostics
 USE simple_io
 
 IMPLICIT NONE
-INTEGER :: nst,i, k
-INTEGER :: ixsource, iysource, izsource
-REAL(num) :: xsource, ysource, zsource
+INTEGER :: nst,i
 
-!!! --- This is the PIC LOOP
+!!! --- This is the main PIC LOOP
 DO i=1,nst
+    !!! --- Advance velocity half a time step
+    CALL push_particles_v
 
-!!! --- External field
-!!!! --- Input external field in the simulation box
-!xsource=xmin+length_x/2.0
-!ysource=ymin+length_y/2.0
-!zsource=zmin+length_z/2.0
-!IF (((xsource .GT. x_min_local) .AND.(xsource .LT. x_max_local)) .AND. &
-!((ysource .GT. y_min_local) .AND.(ysource .LT. y_max_local)) .AND. &
-!((zsource .GT. z_min_local) .AND.(zsource .LT. z_max_local)) .AND. (it .EQ. 2)) THEN
-!ixsource =NINT((xsource-x_min_local)/(x_max_local-x_min_local)*nx)
-!iysource =NINT((ysource-y_min_local)/(y_max_local-y_min_local)*ny)
-!izsource =NINT((zsource-z_min_local)/(z_max_local-z_min_local)*nz)
-!ey(ixsource,iysource,izsource) = 0.0_num
-!!CALL smooth3d_121(ey,nx,ny,nz,npass,alpha)
-!ENDIF
+    !!! --- Push B field half a time step
+    CALL push_bfield
 
-!!! --- Advance velocity half a time step
-!CALL push_particles_v
+    !!! --- Boundary conditions for B
+    CALL bfield_bcs
 
-!!! --- Push B field half a time step
-CALL push_bfield
+    !!! --- Push particles a full time step
+    CALL push_particles_xyz
 
-!!! --- Boundary conditions for B
-CALL bfield_bcs
+    !!! --- Apply BC on particles
+    CALL particle_bcs
 
-!!! --- Push particles a full time step
-CALL push_particles_xyz
+    !!! --- Deposit current of particle species on the grid
+    CALL depose_currents_on_grid_jxjyjz
 
-!!! --- Apply BC on particles
-CALL particle_bcs
+    !!! --- Boundary conditions for currents
+    CALL current_bcs
 
-!!! --- Deposit current of particle species on the grid
-CALL depose_currents_on_grid_jxjyjz
+    !!! --- Push E field  a full time step
+    CALL push_efield
 
-!!! --- Boundary conditions for currents
-CALL current_bcs
+    !!! --- Boundary conditions for E
+    CALL efield_bcs
 
-!!! --- push E field  a full time step
-CALL push_efield
+    !!! --- push B field half a time step
+    CALL push_bfield
 
-!!! --- Boundary conditions for E
-CALL efield_bcs
+    !!! --- Boundary conditions for B
+    CALL bfield_bcs
 
-!!! --- push B field half a time step
-CALL push_bfield
+    !!! --- Gather electromagnetic fields from the grid to particle species
+    CALL gather_ebfields_on_particles
 
-!!! --- Boundary conditions for B
-CALL bfield_bcs
+    !!! --- Advance velocity half a time step
+    CALL push_particles_v
 
-!!! --- Gather electromagnetic fields from the grid to particle species
-CALL gather_ebfields_on_particles
+    !!! --- Computes derived quantities
+    CALL calc_diags
 
-!!! --- Advance velocity half a time step
-!CALL push_particles_v
+    !!! --- Output simulation results
+    CALL output_routines
 
-!!! --- derived quantitites
-CALL calc_diags
+    it = it+1
 
-!!! --- output 
-CALL output_routines
-
-it = it+1
-
-IF (rank .EQ. 0) THEN
-	write(0,*) 'it = ',it,'time = ',it*dt
-END IF
-
+    IF (rank .EQ. 0) THEN
+        write(0,*) 'it = ',it,'time = ',it*dt
+    END IF
 END DO
 
 END SUBROUTINE step
@@ -101,15 +82,14 @@ USE particles
 USE shared_data
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
-INTEGER :: i,ierror,j,k,l, ispecies, ipart
+INTEGER :: i,ierror,j,k,l, ispecies, ipart, count
 INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER :: npartemp
-INTEGER :: ixsource, iysource, izsource
-REAL(num) :: xsource, ysource, zsource
+INTEGER :: npartemp, ncurr
+REAL(num) :: v, th, phi
 TYPE(particle_species), POINTER :: curr
 !real(8) :: rand
 
-!!! --- Set time step
+!!! --- Set time step/ it
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
 
@@ -166,54 +146,44 @@ END DO
 !!! --- Sets-up particle space distribution
 DO ispecies=1,nspecies
     curr=>species_parray(ispecies)
-    IF ((((curr%x_min .GE. x_min_local) .AND. (curr%x_min .LT. x_max_local)) &
-        .OR. ((curr%x_max .GE. x_min_local) .AND. (curr%x_max .LT. x_max_local))) .AND. &
-        (((curr%x_min .GE. x_min_local) .AND. (curr%x_min .LT. x_max_local)) &
-        .OR. ((curr%x_max .GE. x_min_local) .AND. (curr%x_max .LT. x_max_local))) .AND. &
-        (((curr%x_min .GE. x_min_local) .AND. (curr%x_min .LT. x_max_local)) &
-        .OR. ((curr%x_max .GE. x_min_local) .AND. (curr%x_max .LT. x_max_local))))  THEN
         jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
         jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
         kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
         kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
         lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
         lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
-        DO l=lmin+1,lmax-1
-            DO k=kmin+1,kmax-1
-                DO j=jmin+1,jmax-1
+        DO l=lmin,lmax
+            DO k=kmin,kmax
+                DO j=jmin,jmax
                     DO ipart=1,curr%nppcell
                         curr%species_npart=curr%species_npart+1
-                        curr%part_x(curr%species_npart) = x_min_local+(j-1)*dx+dx/curr%nppcell*(ipart-1)
-                        curr%part_y(curr%species_npart) = y_min_local+(k-1)*dy+dy/curr%nppcell*(ipart-1)
-                        curr%part_z(curr%species_npart) = z_min_local+(l-1)*dz+dz/curr%nppcell*(ipart-1)
-                        curr%part_ux(curr%species_npart)= curr%vdrift_x
-                        curr%part_uy(curr%species_npart)= curr%vdrift_y
-                        curr%part_uz(curr%species_npart)= curr%vdrift_z
+                        curr%part_x(curr%species_npart) = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
+                        curr%part_y(curr%species_npart) = y_min_local+k*dy+dy/curr%nppcell*(ipart-1)
+                        curr%part_z(curr%species_npart) = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
                     END DO
                 END DO
             END DO
         END DO
-    END IF
 END DO
+
+!!! --- Sets-up particle velocities
+DO ispecies=1,nspecies
+    curr=>species_parray(ispecies)
+    count = curr%species_npart
+    DO ipart=1, count
+         v=MAX(1e-10_num,RAND())
+         th=2*pi*RAND()
+         phi=2*pi*RAND()
+         curr%part_ux(ipart)= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+         curr%part_uy(ipart)= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+         curr%part_uz(ipart)= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+    END DO
+END DO
+
 !!! --- Initialize stencil coefficients array for Maxwell field solver
 CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
 CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
-
-
-!!! --- Initialize external field at t=0
-xsource=xmin+length_x/2.0_num
-ysource=ymin+length_y/2.0_num
-zsource=zmin+length_z/2.0_num
-
-IF (((xsource .GE. x_min_local) .AND.(xsource .LE. x_max_local)) .AND. &
-    ((ysource .GT. y_min_local) .AND.(ysource .LE. y_max_local)) .AND. &
-    ((zsource .GE. z_min_local) .AND.(zsource .LE. z_max_local))) THEN
-    ixsource =NINT((xsource-x_min_local)/(x_max_local-x_min_local)*nx)
-    iysource =NINT((ysource-y_min_local)/(y_max_local-y_min_local)*ny)
-    izsource =NINT((zsource-z_min_local)/(z_max_local-z_min_local)*nz)
-    ey(ixsource,iysource,izsource) = 0.0_num
-ENDIF
 
 !!! --- set number of time steps
 nsteps = nint(tmax/(w0_l*dt))
@@ -221,24 +191,6 @@ IF (rank .EQ. 0) THEN
     WRITE (0,*), "nsteps = ", nsteps
 END IF
 
-!!! --- Allocate stats tables
-ALLOCATE(pushb(1:nsteps))
-ALLOCATE(bcs_pushb(1:nsteps))
-ALLOCATE(pushe(1:nsteps))
-ALLOCATE(bcs_pushe(1:nsteps))
-ALLOCATE(push_part(1:nsteps))
-ALLOCATE(bcs_part(1:nsteps))
-ALLOCATE(cs(1:nsteps))
-ALLOCATE(bcs_cs(1:nsteps))
-ALLOCATE(field_gath(1:nsteps))
-pushb=0.0_num
-bcs_pushb=0.0_num
-pushe=0.0_num
-bcs_pushe=0.0_num
-push_part=0.0_num
-bcs_part=0.0_num
-cs=0.0_num
-bcs_cs=0.0_num
 END SUBROUTINE initall
 
 !===============================================================================

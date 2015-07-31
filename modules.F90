@@ -62,6 +62,9 @@ TYPE particle_species
     REAL(num) :: vdrift_x
     REAL(num) :: vdrift_y
     REAL(num) :: vdrift_z
+    REAL(num) :: vth_x
+    REAL(num) :: vth_y
+    REAL(num) :: vth_z
     INTEGER   :: species_npart
     INTEGER   :: nppspecies_max
     INTEGER   :: nppcell
@@ -90,7 +93,7 @@ MODULE params
 USE constants
 INTEGER :: it,nsteps
 REAL(num) :: g0,b0,dt,w0,dtcoef,tmax
-REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t,r,th
+REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t
 LOGICAL :: l_arrays_allocated= .FALSE., l_ck=.FALSE.
 END MODULE params
 
@@ -163,11 +166,10 @@ REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: rho
 ! Electric Field divergence
 REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: dive
 
-! IO/ STATISTICS
-REAL(num) :: starttime=0.0_num, startsim=0.0_num, endsim=0.0_num
-REAL(num) :: runtime=0.0_num
-REAL(num), ALLOCATABLE, DIMENSION(:) :: pushb, bcs_pushb, pushe, bcs_pushe, &
-                                        push_part, bcs_part, cs, bcs_cs, field_gath
+
+! Simulation time statistics
+REAL(num) :: startsim =0.0_num
+REAL(num) :: endsim =0.0_num
 
 ! output frequency
 INTEGER :: output_frequency = -1 !(Default is no output)

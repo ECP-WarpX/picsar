@@ -1,36 +1,57 @@
 ######################### INPUT FILE FOR THE CODE PICSAR
 section::cpusplit
- nprocx = 1
- nprocy = 2
- nprocz = 1
+ nprocx = 3
+ nprocy = 3
+ nprocz = 3
 end::cpusplit
 
-section::grid
+section::main
+ # Number of cells in x,y,z
  nx = 90
  ny = 90
  nz = 90
+ # Mesh size
  dx = 6.5e-7
  dy = 6.5e-7
  dz = 6.5e-7 
+ # Origin of simulation axes
  x_grid_min = 0.0
  y_grid_min = 0.0
  z_grid_min = 0.0
-end::grid
+ # Simulation duration (in 1/w0)
+ t_max = 1.0
+end::main
+
+section::solver
+ # Maxwell solver
+ norderx = 2
+ nordery = 2
+ norderz = 2
+ # Current dep/field gath
+ nox = 3
+ noy = 3
+ noz = 3
+end::solver
 
 section::species
  name = electron
  mass = 1
  charge = -1
  nppcell = 1
- x_min = 4.4e-5
- y_min = 4.4e-5
- z_min = 4.4e-5
- x_max = 4.5e-5
- y_max = 4.5e-5
- z_max = 4.5e-5 
- vdrift_x = 1e8
- vdrift_y = 0.0
- vdrift_z = 1e8
+ x_min = 0.0
+ y_min = 0.0
+ z_min = 0.0
+ x_max = 6.85e-1
+ y_max = 6.85e-1
+ z_max = 6.85e-1 
+ ! Drift velocity (in clight)
+ vdrift_x = 0.
+ vdrift_y = 0.
+ vdrift_z = 0.99997041376
+ ! Thermal velocity (in clight)
+ vth_x = 0.001 
+ vth_y = 0.001
+ vth_z = 0.0
 end::species
 
 section::species
@@ -38,15 +59,20 @@ section::species
  mass = 1836
  charge = 1
  nppcell = 1
- x_min = 4.4e-5
- y_min = 4.4e-5
- z_min = 4.4e-5
- x_max = 4.5e-5
- y_max = 4.5e-5
- z_max = 4.5e-5 
- vdrift_x = 0.0
- vdrift_y = 0.0
- vdrift_z = 0.0
+ x_min = 0.0
+ y_min = 0.0
+ z_min = 0.0
+ x_max = 6.85e-1
+ y_max = 6.85e-1
+ z_max = 6.85e-1 
+ ! Drift velocity (in clight)
+ vdrift_x = 0.
+ vdrift_y = 0.
+ vdrift_z = 0.99997041376
+ ! Thermal velocity (in clight)
+ vth_x = 0.0 
+ vth_y = 0.0
+ vth_z = 0.0
 end::species
 
 section::output
@@ -56,7 +82,7 @@ section::output
  ex = 1
  ey = 1
  ez = 1
- rho=1
- dive=1
- jy=1
+ rho = 1
+ dive = 1
+ jy = 1
 end::output

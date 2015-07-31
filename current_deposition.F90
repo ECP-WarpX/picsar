@@ -15,20 +15,9 @@ jx = 0.0_num
 jy = 0.0_num
 jz = 0.0_num
 
-!PRINT *, "rank = ", rank, " ,x_min_local = ",x_min_local
-!PRINT *,  "rank = ", rank, " y_min_local = ",y_min_local
-!PRINT *,  "rank = ", rank, ", z_min_local = ",z_min_local
-
 DO ispecies=1, nspecies
     curr => species_parray(ispecies)
     count= curr%species_npart
-    !PRINT *,"species",TRIM(ADJUSTL(curr%name)), "rank= ", rank, " count", count
-    !PRINT *, "species",TRIM(ADJUSTL(curr%name)),"rank = ", rank, " MIN(xp) = ",MINVAL(curr%part_x(1:count))
-    !PRINT *, "species",TRIM(ADJUSTL(curr%name)), "rank = ", rank, " MIN(yp) = ",MINVAL(curr%part_y(1:count))
-    !PRINT *, "species",TRIM(ADJUSTL(curr%name)), "rank = ", rank, " MIN(zp) = ",MINVAL(curr%part_z(1:count))
-    !PRINT *, "species",TRIM(ADJUSTL(curr%name)),"rank = ", rank, " MAX(xp) = ",MAXVAL(curr%part_x(1:count))
-    !PRINT *, "species",TRIM(ADJUSTL(curr%name)), "rank = ", rank, " MAX(yp) = ",MAXVAL(curr%part_y(1:count))
-    !PRINT *,  "species",TRIM(ADJUSTL(curr%name)),"rank = ", rank, " MAX(zp) = ",MAXVAL(curr%part_z(1:count))
     CALL depose_jxjyjz_esirkepov_n(jx,jy,jz,count,                       &
     curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count),      &
     curr%part_ux(1:count),curr%part_uy(1:count),curr%part_uz(1:count),   &

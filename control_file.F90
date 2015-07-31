@@ -13,6 +13,45 @@ MODULE control_file
 
 CONTAINS
 
+    SUBROUTINE default_init
+        ! --- Order of Maxwell field solver (default is 2 in x,y,z)
+        norderx = 2
+        nordery = 2
+        norderz = 2
+        l_nodalgrid = .FALSE.
+        ! --- Order of current deposition/ field gathering 
+        ! (default is 2 in x,y,z)
+        nox = 3
+        noy = 3
+        noz = 3
+        l_lower_order_in_v = .FALSE.
+
+        ! --- sets coefficient multiplying Courant time step
+        dtcoef = 0.7_num
+        ! --- smoothing
+        npass = 0
+        alpha = 0.5_num
+        ! --- sets max time in the simulation (in 1/w0)
+        tmax = 40.0_num
+
+        !-------------------------------------------------------------------------------
+        ! plasma parameters (cold plasma)
+        l_particles_weight = .FALSE. ! .TRUE. if particles have different weights
+
+        ! --- quantities in plasma (or lab) frame
+        !-------------------------------------------------------------------------------
+        nlab  = 1.e23_num            ! plasma density in lab frame
+        g0    = 130.0_num          ! initial gamma
+        b0    = sqrt(1.0_num-1.0_num/g0**2)
+        nc    = nlab*g0          ! density (in the simulation frame)
+        wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
+        w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
+        w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
+        w0    = w0_l
+        RETURN
+    END SUBROUTINE default_init
+
+
     SUBROUTINE read_input_file
         INTEGER :: ix = 0
         ! --- OPENS INPUT FILE
@@ -23,8 +62,8 @@ CONTAINS
             IF (ix .GT. 0) THEN
                 section_name=buffer(ix:string_length)
                 SELECT CASE(TRIM(ADJUSTL(section_name)))
-                CASE('section::grid')
-                    CALL read_grid_section
+                CASE('section::main')
+                    CALL read_main_section
                 CASE('section::species')
                     CALL read_species_section
                 CASE('section::output')
@@ -60,7 +99,7 @@ CONTAINS
         RETURN
     END SUBROUTINE read_cpusplit_section
 
-    SUBROUTINE read_grid_section
+    SUBROUTINE read_main_section
         INTEGER :: ix = 0
         LOGICAL :: end_section = .FALSE.
         ! READS GRID SECTION OF INPUT FILE
@@ -93,12 +132,15 @@ CONTAINS
             ELSE IF (INDEX(buffer,'z_grid_min') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) zmin
-            ELSE IF (INDEX(buffer,'end::grid') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'t_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) tmax
+            ELSE IF (INDEX(buffer,'end::main') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
         END DO
         RETURN
-    END SUBROUTINE read_grid_section
+    END SUBROUTINE read_main_section
 
     SUBROUTINE read_species_section
         INTEGER :: ix = 0
@@ -112,6 +154,23 @@ CONTAINS
         ENDIF
         nspecies = nspecies+1
         curr => species_parray(nspecies)
+        ! minimal init for species attributes
+        curr%charge = -echarge
+        curr%mass = emass
+        curr%nppcell = 0
+        curr%x_min = 0._num
+        curr%x_max = 0._num
+        curr%y_min = 0._num
+        curr%y_max = 0._num
+        curr%z_min = 0._num
+        curr%z_max = 0._num
+        curr%vdrift_x =0._num
+        curr%vdrift_y =0._num
+        curr%vdrift_z =0._num
+        curr%vth_x =0._num
+        curr%vth_y =0._num
+        curr%vth_z =0._num
+        curr%species_npart=0
         end_section=.FALSE.
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -150,12 +209,27 @@ CONTAINS
             ELSE IF (INDEX(buffer,'vdrift_x') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%vdrift_x
+                curr%vdrift_x=curr%vdrift_x*clight
             ELSE IF (INDEX(buffer,'vdrift_y') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%vdrift_y
+                curr%vdrift_y=curr%vdrift_y*clight
             ELSE IF (INDEX(buffer,'vdrift_z') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) curr%vdrift_z
+                curr%vdrift_z=curr%vdrift_z*clight
+            ELSE IF (INDEX(buffer,'vth_x') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) curr%vth_x
+                curr%vth_x=curr%vth_x*clight
+            ELSE IF (INDEX(buffer,'vth_y') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) curr%vth_y
+                curr%vth_y=curr%vth_y*clight
+            ELSE IF (INDEX(buffer,'vth_z') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) curr%vth_z
+                curr%vth_z=curr%vth_z*clight
             ELSE IF (INDEX(buffer,'end::species') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
