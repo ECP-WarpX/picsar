@@ -29,13 +29,13 @@ Here are some high performance features of the PICSAR code :
 **Compiling**
 -------------
 
-For compiling the code: make. Make file options can be changed by editing the `Makefile`. For the gfortran compiler, simply use the flag -fopenmp to add openMP features. To set "x" OpenMP threads per MPI task, use "export OMP_NUM_THREADS=x" before starting the simulation (default will be x=1)
+To build the code just type "make" in the command prompt. Make file options can be changed by editing the `Makefile`. For the gfortran compiler, simply use the flag -fopenmp to add openMP features. To set "x" OpenMP threads per MPI task, use "export OMP_NUM_THREADS=x" before starting the simulation (default will be x=1)
 
 **Running simulations**
 -----------------------
 
-There is no input file in the current version but will come soon. For the moment, code paramaters (grid size, resolution, plasma parameters etc.) are set in main.F90. particle and field distributions are initialized in initall() subroutine in file submain.F90.
+PICSAR input parameters must be provided in an input file named "input_file.pxr" in the folder where the code is ran. An example of input file is provided in this repository.
 
-To run the executable on n MPI processes: "mpirun -np n a.out"
+To run the executable on n MPI processes: "mpirun -np n a.out". Notice that n must be equal to nprocx*nprocy*nprocz with nprocx, nprocy, nprocz the number of processors along x,y,z directions. 
 
 For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`
