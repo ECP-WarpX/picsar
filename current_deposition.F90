@@ -14,6 +14,7 @@ TYPE(particle_species), POINTER :: curr
 jx = 0.0_num
 jy = 0.0_num
 jz = 0.0_num
+
 DO ispecies=1, nspecies
     curr => species_parray(ispecies)
     count= curr%species_npart

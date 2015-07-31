@@ -13,79 +13,60 @@ USE diagnostics
 USE simple_io
 
 IMPLICIT NONE
-INTEGER :: nst,i, k
-INTEGER :: ixsource, iysource, izsource
-REAL(num) :: xsource, ysource, zsource
+INTEGER :: nst,i
 
-!!! --- This is the PIC LOOP
+!!! --- This is the main PIC LOOP
 DO i=1,nst
+    !!! --- Advance velocity half a time step
+    CALL push_particles_v
 
-!!! --- External field
-!!!! --- Input external field in the simulation box
-!xsource=xmin+length_x/2.0
-!ysource=ymin+length_y/2.0
-!zsource=zmin+length_z/2.0
-!IF (((xsource .GT. x_min_local) .AND.(xsource .LT. x_max_local)) .AND. &
-!((ysource .GT. y_min_local) .AND.(ysource .LT. y_max_local)) .AND. &
-!((zsource .GT. z_min_local) .AND.(zsource .LT. z_max_local)) .AND. (it .EQ. 2)) THEN
-!ixsource =NINT((xsource-x_min_local)/(x_max_local-x_min_local)*nx)
-!iysource =NINT((ysource-y_min_local)/(y_max_local-y_min_local)*ny)
-!izsource =NINT((zsource-z_min_local)/(z_max_local-z_min_local)*nz)
-!ey(ixsource,iysource,izsource) = 0.0_num
-!!CALL smooth3d_121(ey,nx,ny,nz,npass,alpha)
-!ENDIF
+    !!! --- Push B field half a time step
+    CALL push_bfield
 
-!!! --- Advance velocity half a time step
-CALL push_particles_v
+    !!! --- Boundary conditions for B
+    CALL bfield_bcs
 
-!!! --- Push B field half a time step
-CALL push_bfield
+    !!! --- Push particles a full time step
+    CALL push_particles_xyz
 
-!!! --- Boundary conditions for B
-CALL bfield_bcs
+    !!! --- Apply BC on particles
+    CALL particle_bcs
 
-!!! --- Push particles a full time step
-CALL push_particles_xyz
+    !!! --- Deposit current of particle species on the grid
+    CALL depose_currents_on_grid_jxjyjz
 
-!!! --- Apply BC on particles
-CALL particle_bcs
+    !!! --- Boundary conditions for currents
+    CALL current_bcs
 
-!!! --- Deposit current of particle species on the grid
-CALL depose_currents_on_grid_jxjyjz
+    !!! --- Push E field  a full time step
+    CALL push_efield
 
-!!! --- Boundary conditions for currents
-CALL current_bcs
+    !!! --- Boundary conditions for E
+    CALL efield_bcs
 
-!!! --- push E field  a full time step
-CALL push_efield
+    !!! --- push B field half a time step
+    CALL push_bfield
 
-!!! --- Boundary conditions for E
-CALL efield_bcs
+    !!! --- Boundary conditions for B
+    CALL bfield_bcs
 
-!!! --- push B field half a time step
-CALL push_bfield
+    !!! --- Gather electromagnetic fields from the grid to particle species
+    CALL gather_ebfields_on_particles
 
-!!! --- Boundary conditions for B
-CALL bfield_bcs
+    !!! --- Advance velocity half a time step
+    CALL push_particles_v
 
-!!! --- Gather electromagnetic fields from the grid to particle species
-CALL gather_ebfields_on_particles
+    !!! --- Computes derived quantities
+    CALL calc_diags
 
-!!! --- Advance velocity half a time step
-CALL push_particles_v
+    !!! --- Output simulation results
+    CALL output_routines
 
-!!! --- derived quantitites
-CALL calc_diags
+    it = it+1
 
-!!! --- output 
-CALL output_routines
-
-it = it+1
-
-IF (rank .EQ. 0) THEN
-	write(0,*) 'it = ',it,'time = ',it*dt
-END IF
-
+    IF (rank .EQ. 0) THEN
+        write(0,*) 'it = ',it,'time = ',it*dt
+    END IF
 END DO
 
 END SUBROUTINE step
@@ -101,40 +82,41 @@ USE particles
 USE shared_data
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
-INTEGER:: i,ierror,j,k,l, ispecies
-INTEGER :: npartemp
-INTEGER :: ixsource, iysource, izsource
-REAL(num) :: xsource, ysource, zsource
+INTEGER :: i,ierror,j,k,l, ispecies, ipart, count
+INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER :: npartemp, ncurr
+REAL(num) :: v, th, phi
+TYPE(particle_species), POINTER :: curr
 !real(8) :: rand
 
-!!! --- Set time step
+!!! --- Set time step/ it
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
 
-!!! --- Allocate arrays
+!!! --- Allocate species arrays
 IF (.NOT. l_arrays_allocated) THEN
-    nppspecies_max=2*nppcell*nx*ny*nz
-    !! -- Allocate species arrays
-ALLOCATE(species_parray(1:nspecies_max))
     DO ispecies=1,nspecies
-    ALLOCATE(species_parray(ispecies)%part_x(1:nppspecies_max),    &
-             species_parray(ispecies)%part_y(1:nppspecies_max),    &
-             species_parray(ispecies)%part_z(1:nppspecies_max),    &
-             species_parray(ispecies)%part_ux(1:nppspecies_max),   &
-             species_parray(ispecies)%part_uy(1:nppspecies_max),   &
-             species_parray(ispecies)%part_uz(1:nppspecies_max),   &
-             species_parray(ispecies)%part_ex(1:nppspecies_max),   &
-             species_parray(ispecies)%part_ey(1:nppspecies_max),   &
-             species_parray(ispecies)%part_ez(1:nppspecies_max),   &
-             species_parray(ispecies)%part_bx(1:nppspecies_max),   &
-             species_parray(ispecies)%part_by(1:nppspecies_max),   &
-             species_parray(ispecies)%part_bz(1:nppspecies_max),   &
-             species_parray(ispecies)%weight(1:nppspecies_max))
+    curr=>species_parray(ispecies)
+    curr%nppspecies_max=2*(curr%nppcell)*nx*ny*nz
+    ALLOCATE(curr%part_x(1:curr%nppspecies_max),    &
+             curr%part_y(1:curr%nppspecies_max),    &
+             curr%part_z(1:curr%nppspecies_max),    &
+             curr%part_ux(1:curr%nppspecies_max),   &
+             curr%part_uy(1:curr%nppspecies_max),   &
+             curr%part_uz(1:curr%nppspecies_max),   &
+             curr%part_ex(1:curr%nppspecies_max),   &
+             curr%part_ey(1:curr%nppspecies_max),   &
+             curr%part_ez(1:curr%nppspecies_max),   &
+             curr%part_bx(1:curr%nppspecies_max),   &
+             curr%part_by(1:curr%nppspecies_max),   &
+             curr%part_bz(1:curr%nppspecies_max),   &
+             curr%weight(1:curr%nppspecies_max))
     END DO
     l_arrays_allocated=.TRUE.
     ! --- allocate Maxwell solver coefficient arrays
     ALLOCATE(xcoeffs(norderx/2),ycoeffs(nordery/2),zcoeffs(norderz/2))
 END IF
+
 !!! --- Initialize particle and field arrays
 ! - Init grid arrays
 ex=0.0_num;ey=0.0_num;ez=0.0_num
@@ -143,107 +125,72 @@ exsm=0.0_num;eysm=0.0_num;ezsm=0.0_num
 bxsm=0.0_num;bysm=0.0_num;bzsm=0.0_num
 jx=0.0_num;jy=0.0_num;jz=0.0_num
 
-! - Init particle species attributes/arrays (2 species here)
-! - Species 1: electron
-species_parray(1)%name='electron'
-species_parray(1)%mass=emass
-species_parray(1)%charge=-echarge
-species_parray(1)%species_npart=0
-species_parray(1)%part_x=0.0_num
-species_parray(1)%part_y=0.0_num
-species_parray(1)%part_z=0.0_num
-species_parray(1)%part_ux=0.0_num
-species_parray(1)%part_uy=0.0_num
-species_parray(1)%part_uz=0.0_num
-species_parray(1)%part_ex=0.0_num
-species_parray(1)%part_ey=0.0_num
-species_parray(1)%part_ez=0.0_num
-species_parray(1)%part_bx=0.0_num
-species_parray(1)%part_by=0.0_num
-species_parray(1)%part_bz=0.0_num
-species_parray(1)%weight=nc*dx*dy*dz/(nppcell)
+! - Init particle species arrays (2 species here)
+DO ispecies=1,nspecies
+    species_parray(ispecies)%species_npart=0
+    species_parray(ispecies)%part_x=0.0_num
+    species_parray(ispecies)%part_y=0.0_num
+    species_parray(ispecies)%part_z=0.0_num
+    species_parray(ispecies)%part_ux=0.0_num
+    species_parray(ispecies)%part_uy=0.0_num
+    species_parray(ispecies)%part_uz=0.0_num
+    species_parray(ispecies)%part_ex=0.0_num
+    species_parray(ispecies)%part_ey=0.0_num
+    species_parray(ispecies)%part_ez=0.0_num
+    species_parray(ispecies)%part_bx=0.0_num
+    species_parray(ispecies)%part_by=0.0_num
+    species_parray(ispecies)%part_bz=0.0_num
+    species_parray(ispecies)%weight=nc*dx*dy*dz/(curr%nppcell) !uniform density for the moment
+END DO
 
-! - Species 2: proton
-species_parray(2)%name='proton'
-species_parray(2)%mass=pmass
-species_parray(2)%charge=echarge
-species_parray(2)%species_npart=0
-species_parray(2)%part_x=0.0_num
-species_parray(2)%part_y=0.0_num
-species_parray(2)%part_z=0.0_num
-species_parray(2)%part_ux=0.0_num
-species_parray(2)%part_uy=0.0_num
-species_parray(2)%part_uz=0.0_num
-species_parray(2)%part_ex=0.0_num
-species_parray(2)%part_ey=0.0_num
-species_parray(2)%part_ez=0.0_num
-species_parray(2)%part_bx=0.0_num
-species_parray(2)%part_by=0.0_num
-species_parray(2)%part_bz=0.0_num
-species_parray(2)%weight=nc*dx*dy*dz/(nppcell)
+!!! --- Sets-up particle space distribution
+DO ispecies=1,nspecies
+    curr=>species_parray(ispecies)
+        jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
+        jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
+        kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
+        kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
+        lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
+        lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+        DO l=lmin,lmax
+            DO k=kmin,kmax
+                DO j=jmin,jmax
+                    DO ipart=1,curr%nppcell
+                        curr%species_npart=curr%species_npart+1
+                        curr%part_x(curr%species_npart) = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
+                        curr%part_y(curr%species_npart) = y_min_local+k*dy+dy/curr%nppcell*(ipart-1)
+                        curr%part_z(curr%species_npart) = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
+                    END DO
+                END DO
+            END DO
+        END DO
+END DO
+
+!!! --- Sets-up particle velocities
+DO ispecies=1,nspecies
+    curr=>species_parray(ispecies)
+    count = curr%species_npart
+    DO ipart=1, count
+         v=MAX(1e-10_num,RAND())
+         th=2*pi*RAND()
+         phi=2*pi*RAND()
+         curr%part_ux(ipart)= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+         curr%part_uy(ipart)= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+         curr%part_uz(ipart)= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+    END DO
+END DO
 
 !!! --- Initialize stencil coefficients array for Maxwell field solver
 CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
 CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
 
-!!! --- Sets-up particle space/ velocity distribution
-IF ((y_max_local .GT. ymax/2.0_num) .AND. (y_min_local .LT. ymax/2.0_num)) THEN
-    ! - 1 electron
-    species_parray(1)%species_npart=1
-    species_parray(1)%part_x(1)=x_min_local+(x_max_local-x_min_local)/2.0_num
-    species_parray(1)%part_y(1)=y_min_local+(y_max_local-y_min_local)/2.0_num
-    species_parray(1)%part_z(1)=z_min_local+(z_max_local-z_min_local)/2.0_num
-    species_parray(1)%part_uy(1)=-0.8_num*clight
-    ! - 1 proton
-    species_parray(2)%species_npart=1
-    species_parray(2)%part_x(1)=x_min_local+(x_max_local-x_min_local)/2.0_num
-    species_parray(2)%part_y(1)=y_min_local+(y_max_local-y_min_local)/2.0_num
-    species_parray(2)%part_z(1)=z_min_local+(z_max_local-z_min_local)/2.0_num
-    species_parray(2)%part_uy(1)=0.8_num*clight
-END IF
-
-
-!!! --- Initialize external field at t=0
-xsource=xmin+length_x/2.0_num
-ysource=ymin+length_y/2.0_num
-zsource=zmin+length_z/2.0_num
-
-IF (((xsource .GE. x_min_local) .AND.(xsource .LE. x_max_local)) .AND. &
-    ((ysource .GT. y_min_local) .AND.(ysource .LE. y_max_local)) .AND. &
-    ((zsource .GE. z_min_local) .AND.(zsource .LE. z_max_local))) THEN
-    ixsource =NINT((xsource-x_min_local)/(x_max_local-x_min_local)*nx)
-    iysource =NINT((ysource-y_min_local)/(y_max_local-y_min_local)*ny)
-    izsource =NINT((zsource-z_min_local)/(z_max_local-z_min_local)*nz)
-    ey(ixsource,iysource,izsource) = 0.0_num
-ENDIF
-
 !!! --- set number of time steps
 nsteps = nint(tmax/(w0_l*dt))
 IF (rank .EQ. 0) THEN
     WRITE (0,*), "nsteps = ", nsteps
-    WRITE (0,*), "Loaded npart= ", nparte*nprocx*nprocy*nprocz, " of species electron"
-    WRITE (0,*), "Loaded npart= ", npartp*nprocx*nprocy*nprocz, " of species  proton "
 END IF
 
-!!! --- Allocate stats tables
-ALLOCATE(pushb(1:nsteps))
-ALLOCATE(bcs_pushb(1:nsteps))
-ALLOCATE(pushe(1:nsteps))
-ALLOCATE(bcs_pushe(1:nsteps))
-ALLOCATE(push_part(1:nsteps))
-ALLOCATE(bcs_part(1:nsteps))
-ALLOCATE(cs(1:nsteps))
-ALLOCATE(bcs_cs(1:nsteps))
-ALLOCATE(field_gath(1:nsteps))
-pushb=0.0_num
-bcs_pushb=0.0_num
-pushe=0.0_num
-bcs_pushe=0.0_num
-push_part=0.0_num
-bcs_part=0.0_num
-cs=0.0_num
-bcs_cs=0.0_num
 END SUBROUTINE initall
 
 !===============================================================================

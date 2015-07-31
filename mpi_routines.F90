@@ -29,7 +29,6 @@ CONTAINS
     INTEGER :: test_coords(ndims)
     INTEGER :: ix, iy, iz
     INTEGER :: nxsplit, nysplit, nzsplit
-    INTEGER :: area, minarea, nprocyz
     INTEGER :: ranges(3,1), nproc_orig, oldgroup, newgroup
     CHARACTER(LEN=11) :: str
 
@@ -38,7 +37,17 @@ CONTAINS
     ny_global_grid = ny_global+1
     nz_global_grid = nz_global+1
 
-    nproc_orig = nproc
+    CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
+
+    ! Initial CPU split verifications
+    IF (nproc .NE. nprocx*nprocy*nprocz) THEN
+        IF (rank .EQ. 0) THEN
+            PRINT *,'*** ERROR ***'
+            PRINT *,'nprocx*nprocy*nprocz =/ # of MPI processes'
+            PRINT *, ' Check input file '
+            CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+        ENDIF
+    ENDIF
 
     IF (nx_global_grid .LT. nxguards .OR. ny_global_grid .LT. nyguards .OR. nz_global_grid .LT. nzguards) THEN
       IF (rank .EQ. 0) THEN
@@ -48,101 +57,16 @@ CONTAINS
       CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
     ENDIF
 
-    reset = .FALSE.
-    IF (MAX(nprocx,1) * MAX(nprocy,1) * MAX(nprocz,1) .GT. nproc) THEN
-      reset = .TRUE.
-    ELSE IF (nprocx * nprocy * nprocz .GT. 0) THEN
-      ! Sanity check
+    IF (nprocx * nprocy * nprocz .GT. 0) THEN
       nxsplit = nx_global_grid / nprocx
       nysplit = ny_global_grid / nprocy
       nzsplit = nz_global_grid / nprocz
-      IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. nzguards) &
-          reset = .TRUE.
-    ENDIF
-
-    IF (reset) THEN
-      IF (rank .EQ. 0) THEN
-        PRINT *, 'Unable to use requested processor subdivision. Using ' &
-            // 'default division.'
-      ENDIF
-      nprocx = 0
-      nprocy = 0
-      nprocz = 0
-    ENDIF
-
-    IF (nprocx * nprocy * nprocz .EQ. 0) THEN
-      DO WHILE (nproc .GT. 1)
-        ! Find the processor split which minimizes surface area of
-        ! the resulting domain
-
-        minarea = nx_global_grid * ny_global_grid + ny_global_grid * nz_global_grid &
-            + nz_global_grid * nx_global_grid
-
-        DO ix = 1, nproc
-          nprocyz = nproc / ix
-          IF (ix * nprocyz .NE. nproc) CYCLE
-
-          nxsplit = nx_global_grid / ix
-          ! Actual domain must be bigger than the number of ghostcells
-          IF (nxsplit .LT. nxguards) CYCLE
-
-          DO iy = 1, nprocyz
-            iz = nprocyz / iy
-            IF (iy * iz .NE. nprocyz) CYCLE
-
-            nysplit = ny_global_grid / iy
-            nzsplit = nz_global_grid / iz
-            ! Actual domain must be bigger than the number of ghostcells
-            IF (nysplit .LT. nyguards .OR. nzsplit .LT. nzguards) CYCLE
-
-            area = nxsplit * nysplit + nysplit * nzsplit + nzsplit * nxsplit
-            IF (area .LT. minarea) THEN
-              nprocx = ix
-              nprocy = iy
-              nprocz = iz
-              minarea = area
-            ENDIF
-          ENDDO
-        ENDDO
-
-        IF (nprocx .GT. 0) EXIT
-
-        ! If we get here then no suitable split could be found. Decrease the
-        ! number of processors and try again.
-
-        nproc = nproc - 1
-      ENDDO
-    ENDIF
-
-    IF (nproc_orig .NE. nproc) THEN
-      IF (.NOT.allow_cpu_reduce) THEN
+      IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. nzguards) THEN
         IF (rank .EQ. 0) THEN
-          PRINT*,'*** ERROR ***'
-          PRINT*,'Cannot split the domain using the requested number of CPUs.'
-          PRINT*,'Try reducing the number of CPUs'
+            PRINT*, 'WRONG CPU SPLIT nlocal<nguards'
+            CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
         ENDIF
-        CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
-        STOP
       ENDIF
-      IF (rank .EQ. 0) THEN
-        PRINT*,'*** WARNING ***'
-        PRINT*,'Cannot split the domain using the requested number of CPUs.'
-        PRINT*,'Reducing the number of CPUs'
-      ENDIF
-      ranges(1,1) = nproc
-      ranges(2,1) = nproc_orig - 1
-      ranges(3,1) = 1
-      old_comm = comm
-      CALL MPI_COMM_GROUP(old_comm, oldgroup, errcode)
-      CALL MPI_GROUP_RANGE_EXCL(oldgroup, 1, ranges, newgroup, errcode)
-      CALL MPI_COMM_CREATE(old_comm, newgroup, comm, errcode)
-      IF (comm .EQ. MPI_COMM_NULL) THEN
-        CALL MPI_FINALIZE(errcode)
-        STOP
-      ENDIF
-      CALL MPI_GROUP_FREE(oldgroup, errcode)
-      CALL MPI_GROUP_FREE(newgroup, errcode)
-      CALL MPI_COMM_FREE(old_comm, errcode)
     ENDIF
 
     dims = (/nprocz, nprocy, nprocx/)
@@ -330,6 +254,10 @@ CONTAINS
     ALLOCATE(y_global(-nyguards:ny_global+nyguards))
     ALLOCATE(z_global(-nzguards:nz_global+nzguards))
 
+    !!! -- sets xmax, ymax, zmax
+    xmax = nx_global*dx
+    ymax = ny_global*dy
+    zmax = nz_global*dz
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin

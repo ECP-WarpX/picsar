@@ -308,9 +308,10 @@ END SUBROUTINE charge_bcs
     INTEGER, DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: sendbuf1d
     REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
     LOGICAL, ALLOCATABLE, DIMENSION(:) :: mask
-    INTEGER :: ibuff, isend, nout, nbuff
+    INTEGER :: ibuff, isend, nout, nbuff, ninit
     INTEGER :: xbd, ybd, zbd
     INTEGER :: ixp, iyp, izp
     INTEGER :: nsend_buf, nrecv_buf, npart_curr
@@ -319,7 +320,6 @@ END SUBROUTINE charge_bcs
     INTEGER :: ispecies, i, ip, ix, iy, iz
     REAL(num) :: part_xyz
     TYPE(particle_species), POINTER :: curr
-    ! Identify destination of particles to send and pack them
     DO ispecies=1, nspecies
         ! Init send recv buffers
         curr => species_parray(ispecies)
@@ -343,14 +343,13 @@ END SUBROUTINE charge_bcs
             ybd = 0
             zbd = 0
             out_of_bounds = .FALSE.
-
             part_xyz = curr%part_x(i)
             ! Particle has left this processor
             IF (part_xyz .LT. x_min_local) THEN
                 xbd = -1
                 IF (x_min_boundary) THEN
-                    xbd = -1
                     curr%part_x(i) = part_xyz + length_x
+                    !IF (curr%part_x(i) .LT. x_max_local) xbd=0
                 ENDIF
             ENDIF
 
@@ -358,8 +357,8 @@ END SUBROUTINE charge_bcs
             IF (part_xyz .GE. x_max_local) THEN
                 xbd = 1
                 IF (x_max_boundary) THEN
-                    xbd = 1
                     curr%part_x(i) = part_xyz - length_x
+                    !IF (curr%part_x(i) .GE. x_min_local) xbd=0
                 ENDIF
             ENDIF
 
@@ -369,6 +368,7 @@ END SUBROUTINE charge_bcs
                 ybd = -1
                 IF (y_min_boundary) THEN
                     curr%part_y(i) = part_xyz + length_y
+                    !IF (curr%part_y(i) .LT. y_max_local) ybd=0
                 ENDIF
             ENDIF
 
@@ -378,6 +378,7 @@ END SUBROUTINE charge_bcs
                 ybd = 1
                 IF (y_max_boundary) THEN
                     curr%part_y(i) = part_xyz - length_y
+                    !IF (curr%part_y(i) .GE. y_min_local) ybd=0
                 ENDIF
             ENDIF
 
@@ -387,6 +388,7 @@ END SUBROUTINE charge_bcs
                 zbd = -1
                 IF (z_min_boundary) THEN
                     curr%part_z(i) = part_xyz + length_z
+                    !IF (curr%part_z(i) .LT. z_max_local) zbd=0
                 ENDIF
             ENDIF
 
@@ -395,8 +397,8 @@ END SUBROUTINE charge_bcs
                 zbd = 1
                 ! Particle has left the system
                 IF (z_max_boundary) THEN
-                    zbd = 1
                     curr%part_z(i) = part_xyz - length_z
+                    !IF (curr%part_z(i) .GE. z_min_local) zbd=0
                 ENDIF
             ENDIF
 
@@ -404,7 +406,7 @@ END SUBROUTINE charge_bcs
             ! Particle has left processor, send it to its neighbour
                 mask(i)=.FALSE.
                 nout=nout+1
-                nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
+                ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
                 sendbuf(xbd,ybd,zbd,ibuff)    = curr%part_x(i)
                 sendbuf(xbd,ybd,zbd,ibuff+1)  = curr%part_y(i)
                 sendbuf(xbd,ybd,zbd,ibuff+2)  = curr%part_z(i)
@@ -412,23 +414,28 @@ END SUBROUTINE charge_bcs
                 sendbuf(xbd,ybd,zbd,ibuff+4)  = curr%part_uy(i)
                 sendbuf(xbd,ybd,zbd,ibuff+5)  = curr%part_uz(i)
                 sendbuf(xbd,ybd,zbd,ibuff+6)  = curr%weight(i)
-                ibuff=ibuff+nvar
+                nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
             ENDIF
         ENDDO
         ! REMOVE OUTBOUND PARTICLES FROM ARRAYS
         ! update positions and velocity arrays (fields are re-calculated)
         IF (nproc .GT. 1) THEN
             IF (nout .GT. 0) THEN
-                DO i = 1, curr%species_npart
+                ninit=curr%species_npart
+                DO i = ninit,1,-1
                     IF (.NOT. mask(i)) THEN
-                        curr%part_x(i)=curr%part_x(curr%species_npart)
-                        curr%part_y(i)=curr%part_y(curr%species_npart)
-                        curr%part_z(i)=curr%part_z(curr%species_npart)
-                        curr%part_ux(i)=curr%part_ux(curr%species_npart)
-                        curr%part_uy(i)=curr%part_uy(curr%species_npart)
-                        curr%part_uz(i)=curr%part_uz(curr%species_npart)
-                        curr%weight(i)=curr%weight(curr%species_npart)
-                        curr%species_npart=curr%species_npart-1
+                        IF (i .GE. curr%species_npart) THEN
+                            curr%species_npart=curr%species_npart-1
+                        ELSE
+                            curr%part_x(i)=curr%part_x(curr%species_npart)
+                            curr%part_y(i)=curr%part_y(curr%species_npart)
+                            curr%part_z(i)=curr%part_z(curr%species_npart)
+                            curr%part_ux(i)=curr%part_ux(curr%species_npart)
+                            curr%part_uy(i)=curr%part_uy(curr%species_npart)
+                            curr%part_uz(i)=curr%part_uz(curr%species_npart)
+                            curr%weight(i)=curr%weight(curr%species_npart)
+                            curr%species_npart=curr%species_npart-1
+                        END IF
                     ENDIF
                 ENDDO
             ENDIF
@@ -449,27 +456,21 @@ END SUBROUTINE charge_bcs
                             src  = neighbour(ixp,iyp,izp)
                             CALL MPI_SENDRECV(nsend_buf, 1, MPI_INTEGER, dest, tag, nrecv_buf, 1, &
                             MPI_INTEGER, src, tag, comm, status, errcode)
-                            ALLOCATE(recvbuf(nrecv_buf))
-
-                            !- Send/receive particles to/from neighbour
+                            ALLOCATE(recvbuf(1:nrecv_buf))
                             CALL MPI_SENDRECV(sendbuf(ix,iy,iz,1:nsend_buf), nsend_buf, mpidbl, dest, tag, &
                             recvbuf, nrecv_buf, mpidbl, src, tag, comm, status, errcode)
-
                             ! Add received particles to particle arrays
-                            ip=0
                             DO i =1, nrecv_buf, nvar
-                                ip=ip+1
-                                curr%part_x(curr%species_npart+ip)=recvbuf(i)
-                                curr%part_y(curr%species_npart+ip)=recvbuf(i+1)
-                                curr%part_z(curr%species_npart+ip)=recvbuf(i+2)
-                                curr%part_ux(curr%species_npart+ip)=recvbuf(i+3)
-                                curr%part_uy(curr%species_npart+ip)=recvbuf(i+4)
-                                curr%part_uz(curr%species_npart+ip)=recvbuf(i+5)
-                                curr%weight(curr%species_npart+ip)=recvbuf(i+6)
+                                curr%species_npart=curr%species_npart+1
+                                curr%part_x(curr%species_npart)=recvbuf(i)
+                                curr%part_y(curr%species_npart)=recvbuf(i+1)
+                                curr%part_z(curr%species_npart)=recvbuf(i+2)
+                                curr%part_ux(curr%species_npart)=recvbuf(i+3)
+                                curr%part_uy(curr%species_npart)=recvbuf(i+4)
+                                curr%part_uz(curr%species_npart)=recvbuf(i+5)
+                                curr%weight(curr%species_npart)=recvbuf(i+6)
                             END DO
                             DEALLOCATE(recvbuf)
-                            ! Increase final number of particles
-                            curr%species_npart=curr%species_npart+ip
                     ENDDO
                 ENDDO
             ENDDO
