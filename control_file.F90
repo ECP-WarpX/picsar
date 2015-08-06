@@ -48,6 +48,9 @@ CONTAINS
         w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
         w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
         w0    = w0_l
+        ! --- Init number of species
+        nspecies=0
+
         RETURN
     END SUBROUTINE default_init
 
