@@ -20,7 +20,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: nxg, nyg, nzg
     REAL(num), DIMENSION(-nxg:,-nyg:,-nzg:), INTENT(INOUT) :: field
 
-    CALL exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, nx, ny, nz)
+    CALL exchange_mpi_3d_grid_array_with_guards_nonblocking(field, nxg, nyg, nzg, nx, ny, nz)
 
   END SUBROUTINE field_bc
 
@@ -491,15 +491,15 @@ CONTAINS
 !!! --- Boundary conditions routine for currents
   SUBROUTINE current_bcs
     ! Add current contribution from adjacent subdomains
-    CALL summation_bcs(jx, nxguards, nyguards, nzguards)
-    CALL summation_bcs(jy, nxguards, nyguards, nzguards)
-    CALL summation_bcs(jz, nxguards, nyguards, nzguards)
+    CALL summation_bcs_nonblocking(jx, nxguards, nyguards, nzguards)
+    CALL summation_bcs_nonblocking(jy, nxguards, nyguards, nzguards)
+    CALL summation_bcs_nonblocking(jz, nxguards, nyguards, nzguards)
   END SUBROUTINE current_bcs
 
 !!! --- Boundary conditions routine for charge density
 SUBROUTINE charge_bcs
 ! Add charge contribution from adjacent subdomains
-    CALL summation_bcs(rho, nxguards, nyguards, nzguards)
+    CALL summation_bcs_nonblocking(rho, nxguards, nyguards, nzguards)
 END SUBROUTINE charge_bcs
 
 
