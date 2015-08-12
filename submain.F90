@@ -152,9 +152,9 @@ DO ispecies=1,nspecies
         kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
         lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
         lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
-        DO l=lmin,lmax
-            DO k=kmin,kmax
-                DO j=jmin,jmax
+        DO l=lmin,lmax-1
+            DO k=kmin,kmax-1
+                DO j=jmin,jmax-1
                     DO ipart=1,curr%nppcell
                         curr%species_npart=curr%species_npart+1
                         curr%part_x(curr%species_npart) = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
@@ -174,9 +174,9 @@ DO ispecies=1,nspecies
          v=MAX(1e-10_num,RAND())
          th=2*pi*RAND()
          phi=2*pi*RAND()
-         curr%part_ux(ipart)= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-         curr%part_uy(ipart)= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-         curr%part_uz(ipart)= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+         curr%part_ux(ipart)= curr%vdrift_x !+ curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+         curr%part_uy(ipart)= curr%vdrift_y !+ curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+         curr%part_uz(ipart)= curr%vdrift_z !+ curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
     END DO
 END DO
 

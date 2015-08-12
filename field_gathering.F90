@@ -35,7 +35,7 @@ DO ispecies=1, nspecies
     curr%part_bz=0.0_num
     CALL getb3d_n_energy_conserving(count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count), &
                                       curr%part_bx(1:count),curr%part_by(1:count),curr%part_bz(1:count),  &
-                                      x_min_local,y_min_local,z_min_local,                                &
+                                      x_grid_min_local,y_grid_min_local,z_grid_min_local,                                &
                                       dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,                       &
                                       nox,noy,noz,bxsm,bysm,bzsm,l_lower_order_in_v)
 

@@ -240,6 +240,7 @@ CONTAINS
     n_global_grid_min(3) = nz_global_grid_min
     n_global_grid_max(3) = nz_global_grid_max
 
+    !!! --- number of gridpoints of each subdomain
     nx_grid = nx_global_grid_max - nx_global_grid_min + 1
     ny_grid = ny_global_grid_max - ny_global_grid_min + 1
     nz_grid = nz_global_grid_max - nz_global_grid_min + 1
@@ -289,24 +290,30 @@ CONTAINS
     !!! --- Set up local grid maxima and minima
     DO iproc = 0, nprocx-1
         x_grid_mins(iproc) = x_global(cell_x_min(iproc+1)-1)
-        x_grid_maxs(iproc) = x_global(cell_x_max(iproc+1))
+        x_grid_maxs(iproc) = x_global(cell_x_max(iproc+1)-1)
     ENDDO
     DO iproc = 0, nprocy-1
         y_grid_mins(iproc) = y_global(cell_y_min(iproc+1)-1)
-        y_grid_maxs(iproc) = y_global(cell_y_max(iproc+1))
+        y_grid_maxs(iproc) = y_global(cell_y_max(iproc+1)-1)
     ENDDO
     DO iproc = 0, nprocz-1
         z_grid_mins(iproc) = z_global(cell_z_min(iproc+1)-1)
-        z_grid_maxs(iproc) = z_global(cell_z_max(iproc+1))
+        z_grid_maxs(iproc) = z_global(cell_z_max(iproc+1)-1)
     ENDDO
 
-    x_min_local = x_grid_mins(x_coords)
-    x_max_local = x_grid_maxs(x_coords)
-    y_min_local = y_grid_mins(y_coords)
-    y_max_local = y_grid_maxs(y_coords)
-    z_min_local = z_grid_mins(z_coords)
-    z_max_local = z_grid_maxs(z_coords)
+    x_min_local = x_grid_mins(x_coords)-dx/2
+    x_max_local = x_grid_maxs(x_coords)+dx/2
+    y_min_local = y_grid_mins(y_coords)-dx/2
+    y_max_local = y_grid_maxs(y_coords)+dx/2
+    z_min_local = z_grid_mins(z_coords)-dx/2
+    z_max_local = z_grid_maxs(z_coords)+dx/2
 
+    x_grid_min_local=x_min_local+dx/2
+    y_grid_min_local=y_min_local+dy/2
+    z_grid_min_local=z_min_local+dz/2
+    x_grid_max_local=x_max_local-dx/2
+    y_grid_max_local=y_max_local-dy/2
+    z_grid_max_local=z_max_local-dz/2
 
     ! --- Allocate grid quantities
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))

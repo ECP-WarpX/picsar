@@ -21,7 +21,7 @@ DO ispecies=1, nspecies
     CALL depose_jxjyjz_esirkepov_n(jx,jy,jz,count,                       &
     curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count),      &
     curr%part_ux(1:count),curr%part_uy(1:count),curr%part_uz(1:count),   &
-    curr%weight(1:count),curr%charge,x_min_local,y_min_local,z_min_local,&
+    curr%weight(1:count),curr%charge,x_grid_min_local,y_grid_min_local,z_grid_min_local,&
     dt,dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards, nox,noy,noz,        &
     l_particles_weight,l4symtry)
 END DO
