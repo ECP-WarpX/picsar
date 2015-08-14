@@ -38,8 +38,16 @@ CONTAINS
     nz_global_grid = nz_global+1
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
+    dims = (/nprocz, nprocy, nprocx/)
 
-    ! Initial CPU split verifications
+    ! Initial CPU split sanity check
+    IF ((nprocx .EQ. 0) .AND. (nprocy .EQ. 0) .AND. (nprocz .EQ. 0)) THEN
+        CALL MPI_DIMS_CREATE(nproc, ndims, dims, errcode)
+        nprocx = dims(3)
+        nprocy = dims(2)
+        nprocz = dims(1)
+    ENDIF
+
     IF (nproc .NE. nprocx*nprocy*nprocz) THEN
         IF (rank .EQ. 0) THEN
             PRINT *,'*** ERROR ***'
@@ -69,9 +77,6 @@ CONTAINS
       ENDIF
     ENDIF
 
-    dims = (/nprocz, nprocy, nprocx/)
-    CALL MPI_DIMS_CREATE(nproc, ndims, dims, errcode)
-
     periods = .FALSE.
     reorder = .TRUE.
 
@@ -90,9 +95,6 @@ CONTAINS
     CALL MPI_CART_SHIFT(comm, 1, 1, proc_y_min, proc_y_max, errcode)
     CALL MPI_CART_SHIFT(comm, 0, 1, proc_z_min, proc_z_max, errcode)
 
-    nprocx = dims(3)
-    nprocy = dims(2)
-    nprocz = dims(1)
     nprocdir = dims
 
     IF (rank .EQ. 0) THEN

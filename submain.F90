@@ -30,7 +30,7 @@ DO i=1,nst
     CALL push_particles_xyz
 
     !!! --- Apply BC on particles
-    CALL particle_bcs
+    CALL particle_bcs_nonblocking
 
     !!! --- Deposit current of particle species on the grid
     CALL depose_currents_on_grid_jxjyjz

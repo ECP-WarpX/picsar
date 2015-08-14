@@ -675,4 +675,221 @@ END SUBROUTINE charge_bcs
     END DO ! End loop on species
   END SUBROUTINE particle_bcs
 
+!!! Boundary condition routine on particles
+  SUBROUTINE particle_bcs_nonblocking
+    INTEGER, PARAMETER :: nvar=7 ! Simple implementation
+    INTEGER, DIMENSION(-1:1,-1:1,-1:1) :: nptoexch, nptorecv
+    INTEGER, DIMENSION(26) :: send_requests,recv_requests
+    REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
+    REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: recvbuf
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
+    LOGICAL, ALLOCATABLE, DIMENSION(:) :: mask
+    INTEGER :: ibuff, isend, nout, nbuff, ninit
+    INTEGER :: xbd, ybd, zbd
+    INTEGER :: ixp, iyp, izp
+    INTEGER :: nsend_buf, nrecv_buf, npart_curr
+    INTEGER :: dest, src
+    LOGICAL :: out_of_bounds
+    INTEGER :: ispecies, i, ip, ix, iy, iz, iexch
+    REAL(num) :: part_xyz
+    TYPE(particle_species), POINTER :: curr
+    INTEGER :: status(MPI_STATUS_SIZE)
+    DO ispecies=1, nspecies
+        ! Init send recv buffers
+        curr => species_parray(ispecies)
+        part_xyz=0._num
+        nptoexch=0
+        nsend_buf=0
+        nout=0
+        nptorecv=0
+        nrecv_buf=0
+        xbd = 0
+        ybd = 0
+        zbd = 0
+        nbuff=curr%species_npart*nvar
+        ibuff=1
+        ALLOCATE(sendbuf(1:nbuff,-1:1,-1:1,-1:1))
+        sendbuf=0._num
+        ALLOCATE(mask(1:curr%species_npart))
+        mask=.TRUE.
+        ! Identify outbounds particles
+        DO i = 1, curr%species_npart
+            xbd = 0
+            ybd = 0
+            zbd = 0
+            out_of_bounds = .FALSE.
+            part_xyz = curr%part_x(i)
+            ! Particle has left this processor
+            IF (part_xyz .LT. x_min_local) THEN
+                xbd = -1
+                IF (x_min_boundary) THEN
+                    curr%part_x(i) = part_xyz + length_x
+                ENDIF
+            ENDIF
+
+            ! Particle has left this processor
+            IF (part_xyz .GE. x_max_local) THEN
+                xbd = 1
+                IF (x_max_boundary) THEN
+                    curr%part_x(i) = part_xyz - length_x
+                ENDIF
+            ENDIF
+
+            part_xyz = curr%part_y(i)
+            ! Particle has left this processor
+            IF (part_xyz .LT. y_min_local) THEN
+                ybd = -1
+                IF (y_min_boundary) THEN
+                    curr%part_y(i) = part_xyz + length_y
+                ENDIF
+            ENDIF
+
+
+            ! Particle has left this processor
+            IF (part_xyz .GE. y_max_local) THEN
+                ybd = 1
+                IF (y_max_boundary) THEN
+                    curr%part_y(i) = part_xyz - length_y
+                ENDIF
+            ENDIF
+
+            part_xyz = curr%part_z(i)
+            ! Particle has left this processor
+            IF (part_xyz .LT. z_min_local) THEN
+                zbd = -1
+                IF (z_min_boundary) THEN
+                    curr%part_z(i) = part_xyz + length_z
+                ENDIF
+            ENDIF
+
+            ! Particle has left this processor
+            IF (part_xyz .GE. z_max_local) THEN
+                zbd = 1
+                ! Particle has left the system
+                IF (z_max_boundary) THEN
+                    curr%part_z(i) = part_xyz - length_z
+                ENDIF
+            ENDIF
+
+            IF ((ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) .AND. (nproc .GT. 1)) THEN
+            ! Particle has left processor, send it to its neighbour
+                mask(i)=.FALSE.
+                nout=nout+1
+                ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
+                sendbuf(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
+                sendbuf(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
+                sendbuf(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
+                sendbuf(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
+                sendbuf(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
+                sendbuf(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
+                sendbuf(ibuff+6,xbd,ybd,zbd)  = curr%weight(i)
+                nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
+            ENDIF
+        ENDDO
+        ! REMOVE OUTBOUND PARTICLES FROM ARRAYS
+        ! update positions and velocity arrays (fields are re-calculated)
+        IF (nproc .GT. 1) THEN
+            IF (nout .GT. 0) THEN
+                ninit=curr%species_npart
+                DO i = ninit,1,-1
+                    IF (.NOT. mask(i)) THEN
+                        IF (i .GE. curr%species_npart) THEN
+                            curr%species_npart=curr%species_npart-1
+                        ELSE
+                            curr%part_x(i)=curr%part_x(curr%species_npart)
+                            curr%part_y(i)=curr%part_y(curr%species_npart)
+                            curr%part_z(i)=curr%part_z(curr%species_npart)
+                            curr%part_ux(i)=curr%part_ux(curr%species_npart)
+                            curr%part_uy(i)=curr%part_uy(curr%species_npart)
+                            curr%part_uz(i)=curr%part_uz(curr%species_npart)
+                            curr%weight(i)=curr%weight(curr%species_npart)
+                            curr%species_npart=curr%species_npart-1
+                        END IF
+                    ENDIF
+                ENDDO
+            ENDIF
+            ! GET NUMBER OF PARTICLES TO BE RECEIVED
+            iexch=1
+            DO iz = -1, 1
+                DO iy = -1, 1
+                    DO ix = -1, 1
+                            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+                            ixp = -ix
+                            iyp = -iy
+                            izp = -iz
+                            dest = neighbour(ix,iy,iz)
+                            src  = neighbour(ixp,iyp,izp)
+                            CALL MPI_IRECV(nptorecv(ixp,iyp,izp),1, MPI_INTEGER, src, tag, &
+                            comm, recv_requests(iexch), errcode)
+                            CALL MPI_ISEND(nptoexch(ix,iy,iz)*nvar, 1, MPI_INTEGER, dest, tag, &
+                            comm, send_requests(iexch), errcode)
+                            iexch=iexch+1
+                    ENDDO
+                ENDDO
+            ENDDO
+            CALL MPI_WAITALL(26,recv_requests, MPI_STATUSES_IGNORE, errcode)
+            CALL MPI_WAITALL(26,send_requests, MPI_STATUSES_IGNORE, errcode)
+            ALLOCATE(recvbuf(1:MAXVAL(nptorecv),-1:1,-1:1,-1:1))
+            recvbuf=0._num
+            ! SEND/RECEIVE PARTICLES TO/FROM ADJACENT SUBDOMAINS
+            iexch=1
+            DO iz = -1, 1
+                DO iy = -1, 1
+                    DO ix = -1, 1
+                            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+                            ixp = -ix
+                            iyp = -iy
+                            izp = -iz
+                            ! SEND - RECEIVE PARTICLES IN BUFFERS
+                            !- Get number of particles in recvbuff
+                            dest = neighbour(ix,iy,iz)
+                            src  = neighbour(ixp,iyp,izp)
+                            !nsend_buf=nptoexch(ix,iy,iz)*nvar
+                            !nrecv_buf=nptorecv(ixp,iyp,izp)
+                            nsend_buf=nptoexch(ix,iy,iz)*nvar
+                            nrecv_buf=nptorecv(ixp,iyp,izp)
+                            CALL MPI_IRECV(recvbuf(1:nrecv_buf,ixp,iyp,izp), nrecv_buf, mpidbl, src, tag, &
+                            comm, recv_requests(iexch), errcode)
+                            CALL MPI_ISEND(sendbuf(1:nsend_buf,ix,iy,iz), nsend_buf, mpidbl, dest, tag, &
+                            comm, send_requests(iexch), errcode)
+                            iexch=iexch+1
+                    ENDDO
+                ENDDO
+            ENDDO
+            !CALL MPI_WAITALL(26,recv_requests, MPI_STATUSES_IGNORE, errcode)
+            !CALL MPI_WAITALL(26,send_requests, MPI_STATUSES_IGNORE, errcode)
+            ! ADD RECEIVED PARTICLES TO PARTICLE ARRAY
+            iexch=1
+            DO iz = -1, 1
+                DO iy = -1, 1
+                    DO ix = -1, 1
+                            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+                            ixp = -ix
+                            iyp = -iy
+                            izp = -iz
+                            ! WAIT FOR PARTICLES TO BE RECEIVED
+                            CALL MPI_WAIT(recv_requests(iexch), MPI_STATUS_IGNORE, errcode)
+                            nrecv_buf=nptorecv(ixp,iyp,izp)
+                            ! Add received particles to particle arrays
+                            DO i =1, nrecv_buf, nvar
+                                curr%species_npart=curr%species_npart+1
+                                curr%part_x(curr%species_npart)=recvbuf(i,ixp,iyp,izp)
+                                curr%part_y(curr%species_npart)=recvbuf(i+1,ixp,iyp,izp)
+                                curr%part_z(curr%species_npart)=recvbuf(i+2,ixp,iyp,izp)
+                                curr%part_ux(curr%species_npart)=recvbuf(i+3,ixp,iyp,izp)
+                                curr%part_uy(curr%species_npart)=recvbuf(i+4,ixp,iyp,izp)
+                                curr%part_uz(curr%species_npart)=recvbuf(i+5,ixp,iyp,izp)
+                                curr%weight(curr%species_npart)=recvbuf(i+6,ixp,iyp,izp)
+                            END DO
+                            iexch=iexch+1
+                    ENDDO
+                ENDDO
+            ENDDO
+            DEALLOCATE(recvbuf)
+          ENDIF
+        DEALLOCATE(sendbuf)
+        DEALLOCATE(mask)
+    END DO ! End loop on species
+  END SUBROUTINE particle_bcs_nonblocking
+
 END MODULE boundary
