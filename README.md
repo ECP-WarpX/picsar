@@ -22,7 +22,7 @@ Here are some of the specific algorithmic features of the PICSAR code :
 
 Here are some high performance features of the PICSAR code :
 
-* MPI parallelization for internode parallelism, 
+* MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
 
