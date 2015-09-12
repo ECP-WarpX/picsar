@@ -14,6 +14,11 @@ MODULE control_file
 CONTAINS
 
     SUBROUTINE default_init
+        ! --- Init tiling split
+        ntilex = 2
+        ntiley = 2
+        ntilez = 2
+
         ! --- Order of Maxwell field solver (default is 2 in x,y,z)
         norderx = 2
         nordery = 2

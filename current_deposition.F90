@@ -7,24 +7,49 @@ USE constants
 USE fields
 USE params
 USE shared_data
+USE tiling
 IMPLICIT NONE
-INTEGER ispecies, count
+INTEGER :: ispecies, ix, iy, iz, count
+INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
 
 jx = 0.0_num
 jy = 0.0_num
 jz = 0.0_num
 
-DO ispecies=1, nspecies
+DO ispecies=1, nspecies ! LOOP ON SPECIES
     curr => species_parray(ispecies)
-    count= curr%species_npart
-    CALL depose_jxjyjz_esirkepov_n(jx,jy,jz,count,                       &
-    curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count),      &
-    curr%part_ux(1:count),curr%part_uy(1:count),curr%part_uz(1:count),   &
-    curr%weight(1:count),curr%charge,x_grid_min_local,y_grid_min_local,z_grid_min_local,&
-    dt,dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards, nox,noy,noz,        &
-    l_particles_weight,l4symtry)
-END DO
+    DO iz=1,ntilez
+        DO iy=1,ntiley
+            DO ix=1,ntilex
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile
+                curr_tile%jx_tile = 0.0_num
+                curr_tile%jy_tile = 0.0_num
+                curr_tile%jz_tile = 0.0_num
+                jmin=curr_tile%nx_tile_min-nox
+                jmax=curr_tile%nx_tile_max+nox
+                kmin=curr_tile%ny_tile_min-noy
+                kmax=curr_tile%ny_tile_max+noy
+                lmin=curr_tile%nz_tile_min-noz
+                lmax=curr_tile%nz_tile_max+noz
+                ! Depose current in jtile
+                CALL depose_jxjyjz_esirkepov_n(curr_tile%jx_tile,curr_tile%jy_tile,curr_tile%jz_tile,count,     &
+                curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
+                curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
+                curr_tile%weight(1:count),curr%charge,curr_tile%x_tile_min,curr_tile%y_tile_min,                &
+                curr_tile%z_tile_min,dt,dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,               &
+                curr_tile%nz_cells_tile,nox,noy,noz, nox,noy,noz,l_particles_weight,l4symtry)
+                ! Reduce jxtile in j
+                jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%jx_tile
+                jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%jy_tile
+                jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%jz_tile
+            END DO
+        END DO
+    END DO !END LOOP ON TILES
+
+END DO ! END LOOP ON SPECIES
 
 END SUBROUTINE depose_currents_on_grid_jxjyjz
 

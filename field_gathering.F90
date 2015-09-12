@@ -7,39 +7,62 @@ USE constants
 USE fields
 USE params
 USE shared_data
+USE tiling
 IMPLICIT NONE
-INTEGER ispecies, count
+INTEGER :: ispecies, ix, iy, iz, count
+INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
 
-exsm = ex
-eysm = ey
-ezsm = ez
-bxsm = bx
-bysm = by
-bzsm = bz
-DO ispecies=1, nspecies
-    curr => species_parray(ispecies)
-    count= curr%species_npart
-    !!! --- Gather electric fields on particles
-    curr%part_ex=0.0_num
-    curr%part_ey=0.0_num
-    curr%part_ez=0.0_num
-    CALL gete3d_n_energy_conserving(count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count), &
-                                      curr%part_ex(1:count),curr%part_ey(1:count),curr%part_ez(1:count),  &
-                                      x_min_local,y_min_local,z_min_local,                                &
-                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,                       &
-                                      nox,noy,noz,exsm,eysm,ezsm,l_lower_order_in_v)
-    !!! --- Gather magnetic fields on particles
-    curr%part_bx=0.0_num
-    curr%part_by=0.0_num
-    curr%part_bz=0.0_num
-    CALL getb3d_n_energy_conserving(count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count), &
-                                      curr%part_bx(1:count),curr%part_by(1:count),curr%part_bz(1:count),  &
-                                      x_grid_min_local,y_grid_min_local,z_grid_min_local,                                &
-                                      dx,dy,dz,nx,ny,nz,nxguards,nyguards,nzguards,                       &
-                                      nox,noy,noz,bxsm,bysm,bzsm,l_lower_order_in_v)
+DO ispecies=1, nspecies ! LOOP ON SPECIES
+    curr=>species_parray(ispecies)
+    DO iz=1, ntilez ! LOOP ON TILES
+        DO iy=1, ntiley
+            DO ix=1, ntilex
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile
+                jmin=curr_tile%nx_tile_min-nox
+                jmax=curr_tile%nx_tile_max+nox
+                kmin=curr_tile%ny_tile_min-noy
+                kmax=curr_tile%ny_tile_max+noy
+                lmin=curr_tile%nz_tile_min-noz
+                lmax=curr_tile%nz_tile_max+noz
 
-END DO
+                !!! --- Gather electric fields on particles
+                curr_tile%part_ex = 0.0_num
+                curr_tile%part_ey = 0.0_num
+                curr_tile%part_ez = 0.0_num
+                curr_tile%ex_tile = ex(jmin:jmax,kmin:kmax,lmin:lmax)
+                curr_tile%ey_tile = ey(jmin:jmax,kmin:kmax,lmin:lmax)
+                curr_tile%ez_tile = ez(jmin:jmax,kmin:kmax,lmin:lmax)
+                CALL gete3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                                      curr_tile%part_z(1:count), curr_tile%part_ex(1:count),               &
+                                      curr_tile%part_ey(1:count),curr_tile%part_ez(1:count),               &
+                                      curr_tile%x_tile_min,curr_tile%y_tile_min,curr_tile%z_tile_min,      &
+                                      dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,            &
+                                      curr_tile%nz_cells_tile,nox,noy,noz,                                 &
+                                      nox,noy,noz,curr_tile%ex_tile,curr_tile%ey_tile,curr_tile%ez_tile,   &
+                                      l_lower_order_in_v)
+
+                !!! --- Gather magnetic fields on particles
+                curr_tile%part_bx=0.0_num
+                curr_tile%part_by=0.0_num
+                curr_tile%part_bz=0.0_num
+                curr_tile%bx_tile = bx(jmin:jmax,kmin:kmax,lmin:lmax)
+                curr_tile%by_tile = by(jmin:jmax,kmin:kmax,lmin:lmax)
+                curr_tile%bz_tile = bz(jmin:jmax,kmin:kmax,lmin:lmax)
+                CALL getb3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                                      curr_tile%part_z(1:count), curr_tile%part_bx(1:count),               &
+                                      curr_tile%part_by(1:count),curr_tile%part_bz(1:count),               &
+                                      curr_tile%x_tile_min,curr_tile%y_tile_min,curr_tile%z_tile_min,      &
+                                      dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,            &
+                                      curr_tile%nz_cells_tile,nox,noy,noz,                                 &
+                                      nox,noy,noz,curr_tile%bx_tile,curr_tile%by_tile,curr_tile%bz_tile,   &
+                                      l_lower_order_in_v)
+            END DO
+        END DO
+    END DO ! END LOOP ON TILES
+END DO ! END LOOP ON SPECIES
 
 END SUBROUTINE gather_ebfields_on_particles
 

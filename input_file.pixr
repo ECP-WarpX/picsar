@@ -2,9 +2,9 @@
 
 section::main
  # Number of cells in x,y,z
- nx = 40
- ny = 40
- nz = 40
+ nx = 79
+ ny = 79
+ nz = 79
  # Mesh size
  dx = 6.5e-7
  dy = 6.5e-7
@@ -32,7 +32,7 @@ section::species
  name = electron
  mass = 1
  charge = -1
- nppcell = 30
+ nppcell = 1
  x_min = 0.
  y_min = 0.
  z_min = 0.
@@ -53,7 +53,7 @@ section::species
  name = proton
  mass = 1836
  charge = 1
- nppcell = 30
+ nppcell = 1
  x_min = 0.
  y_min = 0.
  z_min = 0.

@@ -5,43 +5,62 @@ SUBROUTINE push_particles_v
 USE particles
 USE constants
 USE params
+USE tiling
 IMPLICIT NONE
-INTEGER ispecies, count
+INTEGER ispecies, ix, iy, iz, count
 TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
 
-DO ispecies=1, nspecies
+DO ispecies=1, nspecies ! LOOP ON SPECIES
     curr => species_parray(ispecies)
-    count= curr%species_npart
-    !! -- Push velocity with B half step
-    CALL bpush_v(count,curr%part_ux(1:count), curr%part_uy(1:count), curr%part_uz(1:count),     &
-                curr%part_bx(1:count), curr%part_by(1:count), curr%part_bz(1:count),            &
-                curr%charge,curr%mass,dt*0.5_num)
-    !! -- Push velocity with E half step
-    CALL epush_v(count,curr%part_ux(1:count), curr%part_uy(1:count), curr%part_uz(1:count),     &
-                curr%part_ex(1:count), curr%part_ey(1:count), curr%part_ez(1:count),            &
-                curr%charge,curr%mass,dt*0.5_num)
-END DO
+    DO iz=1, ntilez ! LOOP ON TILES
+        DO iy=1, ntiley
+            DO ix=1, ntilex
+                curr_tile=> curr%array_of_tiles(ix,iy,iz)
+                count= curr_tile%np_tile
+                !! -- Push velocity with B half step
+                CALL bpush_v(count,curr_tile%part_ux(1:count), curr_tile%part_uy(1:count), &
+                curr_tile%part_uz(1:count), curr_tile%part_bx(1:count), curr_tile%part_by(1:count), &
+                curr_tile%part_bz(1:count), curr%charge,curr%mass,dt*0.5_num)
+                !! -- Push velocity with E half step
+                CALL epush_v(count,curr_tile%part_ux(1:count), curr_tile%part_uy(1:count), &
+                curr_tile%part_uz(1:count), curr_tile%part_ex(1:count), curr_tile%part_ey(1:count), &
+                curr_tile%part_ez(1:count), curr%charge,curr%mass,dt*0.5_num)
+            END DO
+        END DO
+    END DO ! END LOOP ON TILES
+END DO ! END LOOP ON SPECIES
 
 END SUBROUTINE push_particles_v
 
 !===============================================================================
-!  Advance particls a full time step
+!  Advance particles a full time step
 !===============================================================================
 SUBROUTINE push_particles_xyz
 USE particles
 USE constants
 USE params
+USE tiling
 IMPLICIT NONE
-INTEGER ispecies, count
+INTEGER ispecies, ix, iy, iz, count
 TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
 
-DO ispecies=1, nspecies
+DO ispecies=1, nspecies ! LOOP ON SPECIES
     curr => species_parray(ispecies)
-    count= curr%species_npart
-    !!!! --- push electrons positions a time step
-    CALL pushxyz(count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count),   &
-    curr%part_ux(1:count),curr%part_uy(1:count),curr%part_uz(1:count),dt)
-END DO
+    DO iz=1,ntilez !LOOP ON TILES
+        DO iy=1,ntiley
+            DO ix=1,ntilex
+                curr_tile=> curr%array_of_tiles(ix,iy,iz)
+                count= curr_tile%np_tile
+                !!!! --- push particle species positions a time step
+                CALL pushxyz(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                curr_tile%part_z(1:count), curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),&
+                curr_tile%part_uz(1:count),dt)
+            END DO
+        END DO
+    END DO ! END LOOP ON TILES
+END DO! END LOOP ON SPECIES
 
 END SUBROUTINE push_particles_xyz
 
