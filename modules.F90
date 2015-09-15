@@ -43,6 +43,7 @@ USE constants
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
 LOGICAL :: l4symtry = .FALSE.
+INTEGER :: pdistr
 INTEGER :: nspecies
 INTEGER, PARAMETER :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
@@ -61,15 +62,35 @@ TYPE particle_tile
     ! Tile position
     REAL(num) :: x_tile_min, y_tile_min, z_tile_min
     REAL(num) :: x_tile_max, y_tile_max, z_tile_max
+    REAL(num) :: x_grid_tile_min, y_grid_tile_min, z_grid_tile_min
+    REAL(num) :: x_grid_tile_max, y_grid_tile_max, z_grid_tile_max
+    ! Subdomain border flags
+    LOGICAL :: subdomain_bound = .FALSE.
     ! Local grid quantities in the tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: jx_tile, jy_tile, jz_tile, rho_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: ex_tile, ey_tile, ez_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: bx_tile, by_tile, bz_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: jx_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: jy_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: jz_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: rho_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: ex_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: ey_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: ez_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: bx_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: by_tile
+    REAL(num), POINTER, DIMENSION(:,:,:) :: bz_tile
     ! Particle arrays
-    REAL(num), POINTER, DIMENSION(:) :: part_x, part_y, part_z
-    REAL(num), POINTER, DIMENSION(:) :: part_ux, part_uy, part_uz
-    REAL(num), POINTER, DIMENSION(:) :: part_ex, part_ey, part_ez
-    REAL(num), POINTER, DIMENSION(:) :: part_bx, part_by, part_bz
+    REAL(num), POINTER, DIMENSION(:) :: part_x
+    REAL(num), POINTER, DIMENSION(:) :: part_y
+    REAL(num), POINTER, DIMENSION(:) :: part_z
+    REAL(num), POINTER, DIMENSION(:) :: part_ux
+    REAL(num), POINTER, DIMENSION(:) :: part_uy
+    REAL(num), POINTER, DIMENSION(:) :: part_uz
+    REAL(num), POINTER, DIMENSION(:) :: part_ex
+    REAL(num), POINTER, DIMENSION(:) :: part_ey
+    REAL(num), POINTER, DIMENSION(:) :: part_ez
+    REAL(num), POINTER, DIMENSION(:) :: part_bx
+    REAL(num), POINTER, DIMENSION(:) :: part_by
+    REAL(num), POINTER, DIMENSION(:) :: part_bz
+
     REAL(num), POINTER, DIMENSION(:) :: weight
 END TYPE
 

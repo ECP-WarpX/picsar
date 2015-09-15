@@ -1,10 +1,10 @@
 ######################### INPUT FILE FOR THE CODE PICSAR
 
 section::main
- # Number of cells in x,y,z
- nx = 79
- ny = 79
- nz = 79
+ # Number of grid points in x,y,z
+ nx = 80
+ ny = 80
+ nz = 80
  # Mesh size
  dx = 6.5e-7
  dy = 6.5e-7
@@ -14,7 +14,7 @@ section::main
  y_grid_min = 0.0
  z_grid_min = 0.0
  # Simulation duration (in 1/w0)
- t_max = 0.5
+ t_max = 5
 end::main
 
 section::solver
@@ -42,11 +42,11 @@ section::species
  ! Drift velocity (in clight)
  vdrift_x = 0.
  vdrift_y = 0.
- vdrift_z = 0.9999
+ vdrift_z = 0.
  ! Thermal velocity (in clight)
- vth_x = 0.001
- vth_y = 0.001
- vth_z = 0.001
+ vth_x = 0.99
+ vth_y = 0.99
+ vth_z = 0.99
 end::species
 
 section::species
@@ -63,15 +63,15 @@ section::species
  ! Drift velocity (in clight)
  vdrift_x = 0.
  vdrift_y = 0.
- vdrift_z = 0.9999
+ vdrift_z = 0.
  ! Thermal velocity (in clight)
- vth_x = 0.0 
- vth_y = 0.0
- vth_z = 0.0
+ vth_x = 0.9
+ vth_y = 0.9
+ vth_z = 0.9
 end::species
 
 section::output
- output_frequency = -1
+ output_frequency = 1
  output_step_min  = 0
  output_step_max  = 1000
  ex = 1

@@ -24,6 +24,9 @@ CONTAINS
         PRINT *, "nx_grid", nx_grid, "ntilex", ntilex,"nx_grid_tile", nx0_grid_tile
         PRINT *, "ny_grid", ny_grid, "ntiley", ntiley,"ny_grid_tile", ny0_grid_tile
         PRINT *, "nz_grid", nz_grid, "ntilez", ntilez,"nz_grid_tile", nz0_grid_tile
+        PRINT *, "x_min_local", x_min_local, "x_max_local", x_max_local
+        PRINT *, "y_min_local", x_min_local, "y_max_local", x_max_local
+        PRINT *, "z_min_local", x_min_local, "z_max_local", x_max_local
         !-- N.B: If the number of grid points cannot be equally divided between
         !-- tiles then give remaining points to last tile in each dimension
         nx0_last_tile= nx0_grid_tile+(nx_grid-nx0_grid_tile*ntilex)
@@ -43,53 +46,74 @@ CONTAINS
                     DO ix=1,ntilex
                         curr=> curr_sp%array_of_tiles(ix,iy,iz)
                         ! X- Direction
+                        IF (ix .EQ. 1) curr%subdomain_bound = .TRUE.
                         IF (ix .LT. ntilex) THEN
                             curr%nx_grid_tile=nx0_grid_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
                             curr%x_tile_min=x_min_local+(ix-1)*nx0_grid_tile*dx
+                            curr%x_grid_tile_min=curr%x_tile_min+dx/2.0_num
                             curr%x_tile_max=curr%x_tile_min+nx0_grid_tile*dx
+                            curr%x_grid_tile_max=curr%x_tile_max-dx/2.0_num
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
-                        ELSE ! LAST TILE in X DIRECTION
+                        ELSE ! LAST TILE in X DIRECTION AND BORDER
+                            curr%subdomain_bound= .TRUE.
                             curr%nx_grid_tile=nx0_last_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
                             curr%x_tile_min=x_min_local+(ix-1)*nx0_grid_tile*dx
+                            curr%x_grid_tile_min=curr%x_tile_min+dx/2.0_num
                             curr%x_tile_max=curr%x_tile_min+nx0_last_tile*dx
+                            curr%x_grid_tile_max=curr%x_tile_max-dx/2.0_num
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
                         ENDIF
                         ! Y -DIRECTION
+                        IF (iy .EQ. 1) curr%subdomain_bound = .TRUE.
                         IF (iy .LT. ntiley) THEN
                             curr%ny_grid_tile=ny0_grid_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
                             curr%y_tile_min=y_min_local+(iy-1)*ny0_grid_tile*dy
+                            curr%y_grid_tile_min=curr%y_tile_min+dy/2.0_num
                             curr%y_tile_max=curr%y_tile_min+ny0_grid_tile*dy
+                            curr%y_grid_tile_max=curr%y_tile_max-dy/2.0_num
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
                         ELSE ! LAST TILE in Y DIRECTION
+                            curr%subdomain_bound= .TRUE.
                             curr%ny_grid_tile=ny0_last_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
                             curr%y_tile_min=y_min_local+(iy-1)*ny0_grid_tile*dy
+                            curr%y_grid_tile_min=curr%y_tile_min+dy/2.0_num
                             curr%y_tile_max=curr%y_tile_min+ny0_last_tile*dy
+                            curr%y_grid_tile_max=curr%y_tile_max-dy/2.0_num
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
                         ENDIF
                         ! Z- DIRECTION
+                        IF (iz .EQ. 1) curr%subdomain_bound = .TRUE.
                         IF (iz .LT. ntilez) THEN
                             curr%nz_grid_tile=nz0_grid_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
                             curr%z_tile_min=z_min_local+(iz-1)*nz0_grid_tile*dz
+                            curr%z_grid_tile_min=curr%z_tile_min+dz/2.0_num
                             curr%z_tile_max=curr%z_tile_min+nz0_grid_tile*dz
+                            curr%z_grid_tile_max=curr%z_tile_max-dz/2.0_num
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
                         ELSE ! LAST TILE in Z DIRECTION
+                            curr%subdomain_bound= .TRUE.
                             curr%nz_grid_tile=nz0_last_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
                             curr%z_tile_min=z_min_local+(iz-1)*nz0_grid_tile*dz
+                            curr%z_grid_tile_min=curr%z_tile_min+dz/2.0_num
                             curr%z_tile_max=curr%z_tile_min+nz0_last_tile*dz
+                            curr%z_grid_tile_max=curr%z_tile_max-dz/2.0_num
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
                         ENDIF
+                        !PRINT *, "ix",ix,"x_tile_min", curr%x_tile_min, "x_tile_grid_min", curr%x_grid_tile_min
+                        !PRINT *, "iy",iy,"y_tile_min", curr%y_tile_min, "y_tile_max", curr%y_tile_max
+                        !PRINT *, "iz",iz,"z_tile_min", curr%z_tile_min, "z_tile_max", curr%z_tile_max
                     END DO
                 END DO
             END DO
@@ -114,9 +138,9 @@ CONTAINS
         nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
 
         ! Get particle index in array of tile
-        ixtile = FLOOR((partx-x_min_local)/(nx0_grid_tile*dx))+1
-        iytile = FLOOR((party-y_min_local)/(ny0_grid_tile*dy))+1
-        iztile = FLOOR((partz-z_min_local)/(nz0_grid_tile*dz))+1
+        ixtile = MIN(FLOOR((partx-x_min_local)/(nx0_grid_tile*dx))+1,ntilex)
+        iytile = MIN(FLOOR((party-y_min_local)/(ny0_grid_tile*dy))+1,ntiley)
+        iztile = MIN(FLOOR((partz-z_min_local)/(nz0_grid_tile*dz))+1,ntilez)
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
@@ -154,6 +178,12 @@ CONTAINS
         curr%part_uy(count) = partuy
         curr%part_uz(count) = partuz
         curr%weight(count)  = partw
+        curr%part_ex(count)  = 0._num
+        curr%part_ey(count)  = 0._num
+        curr%part_ez(count)  = 0._num
+        curr%part_bx(count)  = 0._num
+        curr%part_by(count)  = 0._num
+        curr%part_bz(count)  = 0._num
     END SUBROUTINE add_particle_at_tile
 
     !!! --- Remove particles from tile using a mask variable
@@ -199,34 +229,28 @@ CONTAINS
         INTEGER :: nmax, nxc, nyc, nzc
         ! ALLOCATE PARTICLE ARRAYS
         nmax = curr_tile%npmax_tile
-        ALLOCATE(curr_tile%part_x(1:nmax))
-        ALLOCATE(curr_tile%part_y(1:nmax))
-        ALLOCATE(curr_tile%part_z(1:nmax))
-        ALLOCATE(curr_tile%part_ux(1:nmax))
-        ALLOCATE(curr_tile%part_uy(1:nmax))
-        ALLOCATE(curr_tile%part_uz(1:nmax))
-        ALLOCATE(curr_tile%weight(1:nmax))
-        ALLOCATE(curr_tile%part_ex(1:nmax))
-        ALLOCATE(curr_tile%part_ey(1:nmax))
-        ALLOCATE(curr_tile%part_ez(1:nmax))
-        ALLOCATE(curr_tile%part_bx(1:nmax))
-        ALLOCATE(curr_tile%part_by(1:nmax))
-        ALLOCATE(curr_tile%part_bz(1:nmax))
+        ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),    &
+                 curr_tile%part_z(1:nmax), curr_tile%part_ux(1:nmax),   &
+                 curr_tile%part_uy(1:nmax), curr_tile%part_uz(1:nmax),  &
+                 curr_tile%weight(1:nmax), curr_tile%part_ex(1:nmax),   &
+                 curr_tile%part_ey(1:nmax), curr_tile%part_ez(1:nmax),  &
+                 curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax),  &
+                 curr_tile%part_bz(1:nmax))
 
         ! ALLOCATE GRID ARRAYS
         nxc=curr_tile%nx_cells_tile
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
-        ALLOCATE(curr_tile%rho_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz), &
-                 curr_tile%jx_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%jy_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%jz_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%ex_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%ey_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%ez_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%bx_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%by_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz),  &
-                 curr_tile%bz_tile(-nox:nxc+nox,-noy:nyc+noy,-noz:nzc+noz))
+        ALLOCATE(curr_tile%rho_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards), &
+                 curr_tile%jx_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%jy_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%jz_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%ex_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%ey_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%ez_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%bx_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%by_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
+                 curr_tile%bz_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards))
 
         curr_tile%l_arrays_allocated = .TRUE.
 
@@ -255,6 +279,9 @@ CONTAINS
                         ! - Allocate arrays of current tile
                         CALL allocate_tile_arrays(curr_tile)
                         ! - Init array of current tile
+                        ! - For some reason, don't set all values to zero?????
+                        ! - Have to set it manually for each element through
+                        ! - a DO loop see add_particle_at_tile
                         curr_tile%part_x=0.0_num
                         curr_tile%part_y=0.0_num
                         curr_tile%part_z=0.0_num
@@ -281,39 +308,71 @@ CONTAINS
         INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
         REAL(num) :: phi, th, v
-        !!! --- Sets-up particle space distribution (default is homogeneous)
-        DO ispecies=1,nspecies
-            curr=>species_parray(ispecies)
-            jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
-            jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
-            kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
-            kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
-            lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
-            lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
-            DO l=lmin,lmax-1
-                DO k=kmin,kmax-1
-                    DO j=jmin,jmax-1
-                        DO ipart=1,curr%nppcell
-                            ! Sets positions and weight
-                            partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
-                            party = y_min_local+k*dy+dy/curr%nppcell*(ipart-1)
-                            partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
-                            partw = nc*dx*dy*dz/(curr%nppcell)
-                            ! Sets velocity
-                            v=MAX(1e-10_num,RAND())
-                            th=2*pi*RAND()
-                            phi=2*pi*RAND()
-                            partux= curr%vdrift_x !+ curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                            partuy= curr%vdrift_y !+ curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                            partuz= curr%vdrift_z !+ curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                            ! Adds particle to array of tiles of current species
-                            CALL add_particle_to_species(curr, partx, party, partz, &
-                            partux, partuy, partuz, partw)
+        !!! --- Sets-up particle space distribution (homogeneous case - default)
+        IF (pdistr .EQ. 1) THEN
+            DO ispecies=1,nspecies
+                curr=>species_parray(ispecies)
+                jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
+                jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
+                kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
+                kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
+                lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
+                lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+                DO l=lmin,lmax-1
+                    DO k=kmin,kmax-1
+                        DO j=jmin,jmax-1
+                            DO ipart=1,curr%nppcell
+                                ! Sets positions and weight
+                                partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
+                                party = y_min_local+k*dy+dy/curr%nppcell*(ipart-1)
+                                partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
+                                partw = nc*dx*dy*dz/(curr%nppcell)
+                                ! Sets velocity
+                                v=MAX(1e-10_num,RAND())
+                                th=2*pi*RAND()
+                                phi=2*pi*RAND()
+                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                ! Adds particle to array of tiles of current species
+                                CALL add_particle_to_species(curr, partx, party, partz, &
+                                partux, partuy, partuz, partw)
+                            END DO
                         END DO
                     END DO
                 END DO
-            END DO
-        END DO ! END LOOP ON SPECIES
+            END DO ! END LOOP ON SPECIES
+        ENDIF
+
+        IF (pdistr .EQ. 2) THEN
+            DO ispecies=1,nspecies
+                curr=>species_parray(ispecies)
+                DO j=0,nz-1
+                    DO k=0,ny-1
+                        DO l=0,nz-1
+                            DO ipart=1,curr%nppcell
+                                ! Sets positions and weight
+                                partx = x_min_local+MIN(RAND(),0.999)*(x_max_local-x_min_local)
+                                party = y_min_local+MIN(RAND(),0.999)*(y_max_local-y_min_local)
+                                partz = z_min_local+MIN(RAND(),0.999)*(z_max_local-z_min_local)
+                                partw = nc*dx*dy*dz/(curr%nppcell)
+                                ! Sets velocity
+                                v=MAX(1e-10_num,RAND())
+                                th=2*pi*RAND()
+                                phi=2*pi*RAND()
+                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                ! Adds particle to array of tiles of current species
+                                CALL add_particle_to_species(curr, partx, party, partz, &
+                                partux, partuy, partuz, partw)
+                            END DO
+                        END DO
+                    END DO
+                END DO
+            END DO ! END LOOP ON SPECIES
+        ENDIF
+
     END SUBROUTINE load_particles
 
     SUBROUTINE resize_particle_arrays(curr, old_size, new_size)

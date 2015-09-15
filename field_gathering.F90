@@ -21,12 +21,12 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
             DO ix=1, ntilex
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile
-                jmin=curr_tile%nx_tile_min-nox
-                jmax=curr_tile%nx_tile_max+nox
-                kmin=curr_tile%ny_tile_min-noy
-                kmax=curr_tile%ny_tile_max+noy
-                lmin=curr_tile%nz_tile_min-noz
-                lmax=curr_tile%nz_tile_max+noz
+                jmin=curr_tile%nx_tile_min-nxguards
+                jmax=curr_tile%nx_tile_max+nxguards
+                kmin=curr_tile%ny_tile_min-nyguards
+                kmax=curr_tile%ny_tile_max+nyguards
+                lmin=curr_tile%nz_tile_min-nzguards
+                lmax=curr_tile%nz_tile_max+nzguards
 
                 !!! --- Gather electric fields on particles
                 curr_tile%part_ex = 0.0_num
@@ -38,9 +38,9 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
                 CALL gete3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
                                       curr_tile%part_z(1:count), curr_tile%part_ex(1:count),               &
                                       curr_tile%part_ey(1:count),curr_tile%part_ez(1:count),               &
-                                      curr_tile%x_tile_min,curr_tile%y_tile_min,curr_tile%z_tile_min,      &
-                                      dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,            &
-                                      curr_tile%nz_cells_tile,nox,noy,noz,                                 &
+                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
+                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,         &
+                                      curr_tile%ny_cells_tile, curr_tile%nz_cells_tile,nxguards,nyguards,nzguards,        &
                                       nox,noy,noz,curr_tile%ex_tile,curr_tile%ey_tile,curr_tile%ez_tile,   &
                                       l_lower_order_in_v)
 
@@ -54,9 +54,9 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
                 CALL getb3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
                                       curr_tile%part_z(1:count), curr_tile%part_bx(1:count),               &
                                       curr_tile%part_by(1:count),curr_tile%part_bz(1:count),               &
-                                      curr_tile%x_tile_min,curr_tile%y_tile_min,curr_tile%z_tile_min,      &
-                                      dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,            &
-                                      curr_tile%nz_cells_tile,nox,noy,noz,                                 &
+                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
+                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,         &
+                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxguards,nyguards,nzguards,         &
                                       nox,noy,noz,curr_tile%bx_tile,curr_tile%by_tile,curr_tile%bz_tile,   &
                                       l_lower_order_in_v)
             END DO

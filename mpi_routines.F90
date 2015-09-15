@@ -33,9 +33,6 @@ CONTAINS
     CHARACTER(LEN=11) :: str
 
     !!! --- NB: CPU Split performed on number of grid points (not cells)
-    nx_global_grid = nx_global+1
-    ny_global_grid = ny_global+1
-    nz_global_grid = nz_global+1
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
     dims = (/nprocz, nprocy, nprocx/)
@@ -263,18 +260,18 @@ CONTAINS
     zmax = nz_global*dz
 
     !!! --- Set up global grid limits
-    length_x = xmax - xmin
-    dx = length_x / REAL(nx_global, num)
+    length_x = xmax - xmin +dx
+    dx = length_x / REAL(nx_global+1, num)
     x_grid_min = xmin
     x_grid_max = xmax
 
-    length_y = ymax - ymin
-    dy = length_y / REAL(ny_global, num)
+    length_y = ymax - ymin +dy
+    dy = length_y / REAL(ny_global+1, num)
     y_grid_min = ymin
     y_grid_max = ymax
 
-    length_z = zmax - zmin
-    dz = length_z / REAL(nz_global, num)
+    length_z = zmax - zmin +dz
+    dz = length_z / REAL(nz_global+1, num)
     z_grid_min = zmin
     z_grid_max = zmax
 
@@ -337,6 +334,8 @@ CONTAINS
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
     start_time = MPI_WTIME()
+    PRINT *, "length_x", length_x
+    PRINT *, "x_max_local-x_min_local", x_max_local-x_min_local
 
   END SUBROUTINE mpi_initialise
 

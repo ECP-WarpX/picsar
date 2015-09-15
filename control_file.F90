@@ -14,10 +14,10 @@ MODULE control_file
 CONTAINS
 
     SUBROUTINE default_init
-        ! --- Init tiling split
-        ntilex = 2
-        ntiley = 2
-        ntilez = 2
+        ! --- Init particle tiling split
+        ntilex = 1
+        ntiley = 1
+        ntilez = 1
 
         ! --- Order of Maxwell field solver (default is 2 in x,y,z)
         norderx = 2
@@ -26,9 +26,9 @@ CONTAINS
         l_nodalgrid = .FALSE.
         ! --- Order of current deposition/ field gathering 
         ! (default is 2 in x,y,z)
-        nox = 2
-        noy = 2
-        noz = 2
+        nox = 1
+        noy = 1
+        noz = 1
         l_lower_order_in_v = .FALSE.
 
         ! --- sets coefficient multiplying Courant time step
@@ -55,6 +55,9 @@ CONTAINS
         w0    = w0_l
         ! --- Init number of species
         nspecies=0
+
+        ! --- Particle distribution
+        pdistr=1
 
         RETURN
     END SUBROUTINE default_init
@@ -115,13 +118,16 @@ CONTAINS
             READ(fh_input, '(A)', iostat=ios) buffer
             IF (INDEX(buffer,'nx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nx_global
+                READ(buffer(ix+1:string_length), '(i10)') nx_global_grid
+                nx_global=nx_global_grid-1
             ELSE IF (INDEX(buffer,'ny') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') ny_global
+                READ(buffer(ix+1:string_length), '(i10)') ny_global_grid
+                ny_global=ny_global_grid-1
             ELSE IF (INDEX(buffer,'nz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nz_global
+                READ(buffer(ix+1:string_length), '(i10)') nz_global_grid
+                nz_global=nz_global_grid-1
             ELSEIF (INDEX(buffer,'dx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) dx

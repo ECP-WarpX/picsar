@@ -31,6 +31,7 @@ DO i=1,nst
 
     !!! --- Apply BC on particles
     CALL particle_bcs
+
     !!! --- Deposit current of particle species on the grid
     CALL depose_currents_on_grid_jxjyjz
 

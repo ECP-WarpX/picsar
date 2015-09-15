@@ -18,6 +18,7 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
             DO ix=1, ntilex
                 curr_tile=> curr%array_of_tiles(ix,iy,iz)
                 count= curr_tile%np_tile
+                !PRINT *, "MAXVAL EZ TILE", ix,iy,iz, " = ",MAXVAL(curr_tile%part_ez(1:count))
                 !! -- Push velocity with B half step
                 CALL bpush_v(count,curr_tile%part_ux(1:count), curr_tile%part_uy(1:count), &
                 curr_tile%part_uz(1:count), curr_tile%part_bx(1:count), curr_tile%part_by(1:count), &

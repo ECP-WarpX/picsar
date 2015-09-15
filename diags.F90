@@ -34,19 +34,19 @@ CONTAINS
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count= curr_tile%np_tile
                         curr_tile%rho_tile=0.0_num
-                        jmin=curr_tile%nx_tile_min-nox
-                        jmax=curr_tile%nx_tile_max+nox
-                        kmin=curr_tile%ny_tile_min-noy
-                        kmax=curr_tile%ny_tile_max+noy
-                        lmin=curr_tile%nz_tile_min-noz
-                        lmax=curr_tile%nz_tile_max+noz
+                        jmin=curr_tile%nx_tile_min-nxguards
+                        jmax=curr_tile%nx_tile_max+nxguards
+                        kmin=curr_tile%ny_tile_min-nyguards
+                        kmax=curr_tile%ny_tile_max+nyguards
+                        lmin=curr_tile%nz_tile_min-nzguards
+                        lmax=curr_tile%nz_tile_max+nzguards
                         ! Depose charge in rho_tile
                         CALL depose_rho_n(curr_tile%rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
-                             curr_tile%weight(1:count), curr%charge,curr_tile%x_tile_min,      &
-                             curr_tile%y_tile_min, curr_tile%z_tile_min,dx,dy,dz,              &
+                             curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
+                             curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
                              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
-                             curr_tile%nz_cells_tile,nox,noy,noz,nox,noy,noz,                  &
+                             curr_tile%nz_cells_tile,nxguards,nyguards,nzguards,nox,noy,noz,                  &
                              l_particles_weight,l4symtry)
                         ! Reduce rho_tile in rho
                         rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%rho_tile

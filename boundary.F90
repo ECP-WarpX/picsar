@@ -520,13 +520,18 @@ END SUBROUTINE charge_bcs
   SUBROUTINE particle_bcs_tiles
     IMPLICIT NONE
     INTEGER :: i, ispecies, ix, iy, iz, indx, indy, indz
-    INTEGER :: nptile
+    INTEGER :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
     REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
+    INTEGER :: test =0
 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
+        ! Get first tiles dimensions (may be different from last tile)
+        nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
+        ny0_grid_tile = curr%array_of_tiles(1,1,1)%ny_grid_tile
+        nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
         DO iz=1, ntilez! LOOP ON TILES
             DO iy=1, ntiley
                 DO ix=1, ntilex
@@ -541,20 +546,22 @@ END SUBROUTINE charge_bcs
                         partuz=curr_tile%part_uz(i)
                         partw=curr_tile%weight(i)
 
-                        ! Get new indexes of particle in array of tiles
-                        indx= FLOOR(partx/(curr_tile%nx_grid_tile*dx))+1
-                        indy= FLOOR(party/(curr_tile%ny_grid_tile*dy))+1
-                        indz= FLOOR(partz/(curr_tile%nz_grid_tile*dz))+1
-
                         ! Case 1: if particle did not leave tile nothing to do
-                        IF ((indx .EQ. ix) .AND. (indy .EQ. iy) .AND. (indz .EQ. iz)) CYCLE
+                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max)) &
+                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max)) &
+                        .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+                        CYCLE
 
                         ! Case 2: if particle left MPI domain nothing to do now
-                        IF ((indx .LT. 0) .OR. (indx .GT. ntilex)) CYCLE
-                        IF ((indy .LT. 0) .OR. (indy .GT. ntilex)) CYCLE
-                        IF ((indz .LT. 0) .OR. (indz .GT. ntilex)) CYCLE
+                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
+                        IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
+                        IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
 
                         ! Case 3: particles changed tile. Tranfer particle to new tile
+                        ! Get new indexes of particle in array of tiles
+                        indx = MIN(FLOOR((partx-x_min_local)/(nx0_grid_tile*dx))+1,ntilex)
+                        indy = MIN(FLOOR((party-y_min_local)/(ny0_grid_tile*dy))+1,ntiley)
+                        indz = MIN(FLOOR((partz-z_min_local)/(nz0_grid_tile*dz))+1,ntilez)
                         CALL rm_particle_at_tile(curr_tile,i)
                         curr_tile_add=>curr%array_of_tiles(indx,indy,indz)
                         CALL add_particle_at_tile(curr_tile_add, &
@@ -602,6 +609,9 @@ END SUBROUTINE charge_bcs
             DO iytile=1, ntiley
                 DO ixtile=1, ntilex
                     curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+                    ! If not subdomain border, nothing to do
+                    IF (.NOT. curr%subdomain_bound) CYCLE
+                    ! Else, search for outbound particles
                     ALLOCATE(mask(1:curr%np_tile))
                     mask=.TRUE.
                     xbd = 0
@@ -665,7 +675,7 @@ END SUBROUTINE charge_bcs
                             ENDIF
                         ENDIF
 
-                        IF ((ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) .AND. (nproc .GT. 1)) THEN
+                        IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
                         ! Particle has left processor, send it to its neighbour
                             mask(i)=.FALSE.
                             nout=nout+1
@@ -680,8 +690,10 @@ END SUBROUTINE charge_bcs
                             nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
+                    !PRINT *, "Number of particles before ", curr%np_tile
                     ! Remove outbound particles from current tile
                     CALL rm_particles_from_species(currsp, curr, mask)
+                    !PRINT *, "Number of particles after ", curr%np_tile
                     DEALLOCATE(mask)
                   ENDDO
                ENDDO
