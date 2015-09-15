@@ -17,16 +17,25 @@ CONTAINS
         INTEGER :: nx0_last_tile, ny0_last_tile, nz0_last_tile
         TYPE(particle_species), POINTER :: curr_sp
         TYPE(particle_tile), POINTER :: curr
+
         ! Tile-split
         nx0_grid_tile = nx_grid / ntilex
         ny0_grid_tile = ny_grid / ntiley
         nz0_grid_tile = nz_grid / ntilez
-        PRINT *, "nx_grid", nx_grid, "ntilex", ntilex,"nx_grid_tile", nx0_grid_tile
-        PRINT *, "ny_grid", ny_grid, "ntiley", ntiley,"ny_grid_tile", ny0_grid_tile
-        PRINT *, "nz_grid", nz_grid, "ntilez", ntilez,"nz_grid_tile", nz0_grid_tile
-        PRINT *, "x_min_local", x_min_local, "x_max_local", x_max_local
-        PRINT *, "y_min_local", x_min_local, "y_max_local", x_max_local
-        PRINT *, "z_min_local", x_min_local, "z_max_local", x_max_local
+
+        ! Some sanity check
+        IF (nx0_grid_tile .LT. 4) THEN
+            IF (rank .EQ. 0) PRINT *, "number of tiles in X to high, settting back to default value 1"
+            ntilex=1
+        END IF
+        IF (ny0_grid_tile .LT. 4) THEN
+            IF (rank .EQ. 0) PRINT *, "number of tiles in Y to high, setting back to default value 1"
+            ntiley=1
+        END IF
+        IF (nz0_grid_tile .LT. 4) THEN
+            IF (rank .EQ. 0) PRINT *, "number of tiles in Z to high, setting back to default value 1"
+            ntilez=1
+        END IF
         !-- N.B: If the number of grid points cannot be equally divided between
         !-- tiles then give remaining points to last tile in each dimension
         nx0_last_tile= nx0_grid_tile+(nx_grid-nx0_grid_tile*ntilex)
@@ -111,9 +120,6 @@ CONTAINS
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
                         ENDIF
-                        !PRINT *, "ix",ix,"x_tile_min", curr%x_tile_min, "x_tile_grid_min", curr%x_grid_tile_min
-                        !PRINT *, "iy",iy,"y_tile_min", curr%y_tile_min, "y_tile_max", curr%y_tile_max
-                        !PRINT *, "iz",iz,"z_tile_min", curr%z_tile_min, "z_tile_max", curr%z_tile_max
                     END DO
                 END DO
             END DO

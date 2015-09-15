@@ -690,10 +690,8 @@ END SUBROUTINE charge_bcs
                             nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
-                    !PRINT *, "Number of particles before ", curr%np_tile
                     ! Remove outbound particles from current tile
                     CALL rm_particles_from_species(currsp, curr, mask)
-                    !PRINT *, "Number of particles after ", curr%np_tile
                     DEALLOCATE(mask)
                   ENDDO
                ENDDO

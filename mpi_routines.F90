@@ -334,8 +334,6 @@ CONTAINS
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
     start_time = MPI_WTIME()
-    PRINT *, "length_x", length_x
-    PRINT *, "x_max_local-x_min_local", x_max_local-x_min_local
 
   END SUBROUTINE mpi_initialise
 

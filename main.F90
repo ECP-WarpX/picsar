@@ -1,10 +1,11 @@
 !===============================================================================
-! WARPCORE 3D version 1.0, H. VINCENTI&J-L Vay 05/07/2015
+! PICSAR 3D version 2.0 with tiling, H. VINCENTI&J-L Vay 09/15/2015
 ! INCLUDES: 
 ! - Arbitrary order field solver (Maxwell.F90)
 ! - High order current deposition/field gathering (current_deposition.F90, field_gathering.F90)
 ! - MPI-parallelization (mpi_subtype_control.F90, mpi_routines.F90, boundary.F90)
 ! - OpenMP Paralelization (current_deposition.F90, field_gathering.F90, particle_push.F90, Maxwell.F90) 
+! - Tiling of particles for better memory locality
 !===============================================================================
 
 PROGRAM main
@@ -25,6 +26,9 @@ INTEGER :: i,ierror,j,l
 
 ! --- reads input_file
   CALL read_input_file
+
+! --- reads from command line
+  CALL read_from_cl
 
 ! --- mpi init communicator
   CALL mpi_minimal_init

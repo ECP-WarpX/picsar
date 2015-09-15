@@ -12,7 +12,7 @@ MODULE control_file
   CHARACTER(LEN=string_length) :: section_name
 
 CONTAINS
-
+    ! Routine that proceeds to default init
     SUBROUTINE default_init
         ! --- Init particle tiling split
         ntilex = 1
@@ -62,7 +62,27 @@ CONTAINS
         RETURN
     END SUBROUTINE default_init
 
+    ! Routine that reads command line arguments
+    ! Useful for parametric studies
+    SUBROUTINE read_from_cl
+        INTEGER :: i, ix
+        DO i = 1, IARGC()-1,2
+            CALL GETARG(i, buffer)
+            IF (INDEX(buffer,'ntilex') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, '(i10)') ntilex
+            ELSE IF (INDEX(buffer,'ntiley') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, '(i10)') ntiley
+            ELSE IF (INDEX(buffer,'ntilez') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, '(i10)') ntilez
+            END IF
+        END DO
+        RETURN
+    END SUBROUTINE read_from_cl
 
+    ! Routine that reads simulation parameters from input file
     SUBROUTINE read_input_file
         INTEGER :: ix = 0
         ! --- OPENS INPUT FILE
@@ -128,6 +148,15 @@ CONTAINS
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nz_global_grid
                 nz_global=nz_global_grid-1
+            ELSE IF (INDEX(buffer,'ntilex') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') ntilex
+            ELSE IF (INDEX(buffer,'ntiley') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') ntiley
+            ELSE IF (INDEX(buffer,'ntilez') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') ntilez
             ELSEIF (INDEX(buffer,'dx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) dx
