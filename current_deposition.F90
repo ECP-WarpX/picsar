@@ -35,7 +35,7 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
                 lmin=curr_tile%nz_tile_min-nzjguards
                 lmax=curr_tile%nz_tile_max+nzjguards
                 ! Depose current in jtile
-                CALL depose_jxjyjz_esirkepov_1_1_1(curr_tile%jx_tile,curr_tile%jy_tile,curr_tile%jz_tile,count, &
+                CALL depose_jxjyjz_scalar_1_1_1(curr_tile%jx_tile,curr_tile%jy_tile,curr_tile%jz_tile,count,    &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
@@ -52,6 +52,122 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
 END DO ! END LOOP ON SPECIES
 
 END SUBROUTINE depose_currents_on_grid_jxjyjz
+
+
+!!! --- Order 1 3D scalar current deposition routine (rho*v)
+!!! This version does not vectorize on SIMD architectures
+SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+    USE constants
+    IMPLICIT NONE
+    INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+    REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w
+    REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+    REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+    REAL(num) :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz
+    REAL(num) :: wq, wqx, wqy, wqz, gaminv, usq, clightsq
+    REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
+    REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+    INTEGER :: j,k,l,ip
+    dxi = 1.0_num/dx
+    dyi = 1.0_num/dy
+    dzi = 1.0_num/dz
+    invvol = dxi*dyi*dzi
+    dts2dx = 0.5_num*dt*dxi
+    dts2dy = 0.5_num*dt*dyi
+    dts2dz = 0.5_num*dt*dzi
+    clightsq = 1.0_num/clight**2
+    sx=0.0_num;sy=0.0_num;sz=0.0_num;
+    sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
+
+    ! LOOP ON PARTICLES
+    DO ip=1,np
+        ! --- computes position in  grid units at (n+1)
+        x = (xp(ip)-xmin)*dxi
+        y = (yp(ip)-ymin)*dyi
+        z = (zp(ip)-zmin)*dzi
+
+        ! Computes velocity
+        usq = (uxp(ip)**2 + uyp(ip)**2+uzp(ip)**2)*clightsq
+        gaminv = 1.0_num/sqrt(1.0_num + usq)
+        vx = uxp(ip)*gaminv
+        vy = uyp(ip)*gaminv
+        vz = uzp(ip)*gaminv
+
+        ! --- computes particles weights
+        wq=q*w(ip)
+        wqx=wq*invvol*vx
+        wqy=wq*invvol*vy
+        wqz=wq*invvol*vz
+
+        ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
+        xmid=x-dts2dx*vx
+        ymid=y-dts2dy*vy
+        zmid=z-dts2dz*vz
+
+        ! --- finds node of cell containing particles for current positions
+        j=floor(xmid)
+        k=floor(ymid)
+        l=floor(zmid)
+
+        ! --- computes set of coefficients for node centered quantities
+        xint = xmid-j
+        yint = ymid-k
+        zint = zmid-l
+        sx( 0) = 1.0_num-xint
+        sx( 1) = xint
+        sy( 0) = 1.0_num-yint
+        sy( 1) = yint
+        sz( 0) = 1.0_num-zint
+        sz( 1) = zint
+
+        ! --- computes set of coefficients for staggered quantities
+        xint = xmid-j-0.5_num
+        yint = ymid-k-0.5_num
+        zint = zmid-l-0.5_num
+        sx0( 0) = 1.0_num-xint
+        sx0( 1) = xint
+        sy0( 0) = 1.0_num-yint
+        sy0( 1) = yint
+        sz0( 0) = 1.0_num-zint
+        sz0( 1) = zint
+
+        ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
+        ! - JX
+        jx(j,k,l)      = jx(j,k,l)+sx0(0)*sy(0)*sz(0)*wqx
+        jx(j+1,k,l)    = jx(j+1,k,l)+sx0(1)*sy(0)*sz(0)*wqx
+        jx(j,k+1,l)    = jx(j,k+1,l)+sx0(0)*sy(1)*sz(0)*wqx
+        jx(j+1,k+1,l)  = jx(j+1,k+1,l)+sx0(1)*sy(1)*sz(0)*wqx
+        jx(j,k,l+1)    = jx(j,k,l+1)+sx0(0)*sy(0)*sz(1)*wqx
+        jx(j+1,k,l+1)  = jx(j+1,k,l+1)+sx0(1)*sy(0)*sz(1)*wqx
+        jx(j,k+1,l+1)  = jx(j,k+1,l+1)+sx0(0)*sy(1)*sz(1)*wqx
+        jx(j+1,k+1,l+1)= jx(j+1,k+1,l+1)+sx0(1)*sy(1)*sz(1)*wqx
+
+        ! - JY
+        jy(j,k,l)      = jy(j,k,l)+sx(0)*sy0(0)*sz(0)*wqy
+        jy(j+1,k,l)    = jy(j+1,k,l)+sx(1)*sy0(0)*sz(0)*wqy
+        jy(j,k+1,l)    = jy(j,k+1,l)+sx(0)*sy0(1)*sz(0)*wqy
+        jy(j+1,k+1,l)  = jy(j+1,k+1,l)+sx(1)*sy0(1)*sz(0)*wqy
+        jy(j,k,l+1)    = jy(j,k,l+1)+sx(0)*sy0(0)*sz(1)*wqy
+        jy(j+1,k,l+1)  = jy(j+1,k,l+1)+sx(1)*sy0(0)*sz(1)*wqy
+        jy(j,k+1,l+1)  = jy(j,k+1,l+1)+sx(0)*sy0(1)*sz(1)*wqy
+        jy(j+1,k+1,l+1)= jy(j+1,k+1,l+1)+sx(1)*sy0(1)*sz(1)*wqy
+
+        ! - JZ
+        jz(j,k,l)      = jz(j,k,l)+sx(0)*sy(0)*sz0(0)*wqz
+        jz(j+1,k,l)    = jz(j+1,k,l)+sx(1)*sy(0)*sz0(0)*wqz
+        jz(j,k+1,l)    = jz(j,k+1,l)+sx(0)*sy(1)*sz0(0)*wqz
+        jz(j+1,k+1,l)  = jz(j+1,k+1,l)+sx(1)*sy(1)*sz0(0)*wqz
+        jz(j,k,l+1)    = jz(j,k,l+1)+sx(0)*sy(0)*sz0(1)*wqz
+        jz(j+1,k,l+1)  = jz(j+1,k,l+1)+sx(1)*sy(0)*sz0(1)*wqz
+        jz(j,k+1,l+1)  = jz(j,k+1,l+1)+sx(0)*sy(1)*sz0(1)*wqz
+        jz(j+1,k+1,l+1)= jz(j+1,k+1,l+1)+sx(1)*sy(1)*sz0(1)*wqz
+    END DO
+    RETURN
+END SUBROUTINE depose_jxjyjz_scalar_1_1_1
+
 
 !===========================================================================================
 ! Esirkepov current deposition algorithm at order 1 in x, y, z (nox=noy=noz=1)
@@ -168,11 +284,11 @@ DO ip=1,np
     dsy = sy - sy0
     dsz = sz - sz0
     ! --- computes min/max positions of current contributions
-    ixmin = min(0,dix)-0
+    ixmin = min(0,dix)
     ixmax = max(0,dix)+1
-    iymin = min(0,diy)-0
+    iymin = min(0,diy)
     iymax = max(0,diy)+1
-    izmin = min(0,diz)-0
+    izmin = min(0,diz)
     izmax = max(0,diz)+1
     
     ! --- add current contributions

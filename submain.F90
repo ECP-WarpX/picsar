@@ -60,10 +60,10 @@ DO i=1,nst
     CALL push_particles_v
 
     !!! --- Computes derived quantities
-    !CALL calc_diags
+    CALL calc_diags
 
     !!! --- Output simulation results
-    !CALL output_routines
+    CALL output_routines
 
     it = it+1
 
