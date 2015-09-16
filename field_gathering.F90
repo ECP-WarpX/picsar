@@ -21,12 +21,12 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
             DO ix=1, ntilex
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile
-                jmin=curr_tile%nx_tile_min-nxguards
-                jmax=curr_tile%nx_tile_max+nxguards
-                kmin=curr_tile%ny_tile_min-nyguards
-                kmax=curr_tile%ny_tile_max+nyguards
-                lmin=curr_tile%nz_tile_min-nzguards
-                lmax=curr_tile%nz_tile_max+nzguards
+                jmin=curr_tile%nx_tile_min-nxjguards
+                jmax=curr_tile%nx_tile_max+nxjguards
+                kmin=curr_tile%ny_tile_min-nyjguards
+                kmax=curr_tile%ny_tile_max+nyjguards
+                lmin=curr_tile%nz_tile_min-nzjguards
+                lmax=curr_tile%nz_tile_max+nzjguards
 
                 !!! --- Gather electric fields on particles
                 curr_tile%part_ex = 0.0_num
@@ -35,14 +35,14 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr_tile%ex_tile = ex(jmin:jmax,kmin:kmax,lmin:lmax)
                 curr_tile%ey_tile = ey(jmin:jmax,kmin:kmax,lmin:lmax)
                 curr_tile%ez_tile = ez(jmin:jmax,kmin:kmax,lmin:lmax)
-                CALL gete3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
-                                      curr_tile%part_z(1:count), curr_tile%part_ex(1:count),               &
-                                      curr_tile%part_ey(1:count),curr_tile%part_ez(1:count),               &
-                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
-                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,         &
-                                      curr_tile%ny_cells_tile, curr_tile%nz_cells_tile,nxguards,nyguards,nzguards,        &
-                                      nox,noy,noz,curr_tile%ex_tile,curr_tile%ey_tile,curr_tile%ez_tile,   &
-                                      l_lower_order_in_v)
+                CALL gete3d_energy_conserving_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                                      curr_tile%part_z(1:count), curr_tile%part_ex(1:count),                   &
+                                      curr_tile%part_ey(1:count),curr_tile%part_ez(1:count),                   &
+                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
+                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,             &
+                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,     &
+                                      nzjguards,curr_tile%ex_tile,curr_tile%ey_tile,                           &
+                                      curr_tile%ez_tile)
 
                 !!! --- Gather magnetic fields on particles
                 curr_tile%part_bx=0.0_num
@@ -51,14 +51,14 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr_tile%bx_tile = bx(jmin:jmax,kmin:kmax,lmin:lmax)
                 curr_tile%by_tile = by(jmin:jmax,kmin:kmax,lmin:lmax)
                 curr_tile%bz_tile = bz(jmin:jmax,kmin:kmax,lmin:lmax)
-                CALL getb3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
-                                      curr_tile%part_z(1:count), curr_tile%part_bx(1:count),               &
-                                      curr_tile%part_by(1:count),curr_tile%part_bz(1:count),               &
-                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
-                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,         &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxguards,nyguards,nzguards,         &
-                                      nox,noy,noz,curr_tile%bx_tile,curr_tile%by_tile,curr_tile%bz_tile,   &
-                                      l_lower_order_in_v)
+                CALL getb3d_energy_conserving_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                                      curr_tile%part_z(1:count), curr_tile%part_bx(1:count),                   &
+                                      curr_tile%part_by(1:count),curr_tile%part_bz(1:count),                   &
+                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
+                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,             &
+                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,     &
+                                      nzjguards,curr_tile%bx_tile,curr_tile%by_tile,                           &
+                                      curr_tile%bz_tile)
             END DO
         END DO
     END DO ! END LOOP ON TILES
@@ -66,8 +66,225 @@ END DO ! END LOOP ON SPECIES
 
 END SUBROUTINE gather_ebfields_on_particles
 
+
 !=================================================================================
-! gathering of electric field from Yee grid ("energy conserving")
+! Gathering of electric field from Yee grid ("energy conserving") on particles
+! at order 1
+SUBROUTINE gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg)
+!=================================================================================
+
+USE omp_lib
+USE constants
+IMPLICIT NONE
+INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+REAL(num), DIMENSION(np) :: xp,yp,zp,ex,ey,ez
+REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+REAL(num) :: xmin,ymin,zmin,dx,dy,dz
+INTEGER :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+REAL(num), DIMENSION(0:1) :: sx
+REAL(num), DIMENSION(0:1) :: sy
+REAL(num), DIMENSION(0:1) :: sz
+REAL(num), DIMENSION(:), ALLOCATABLE :: sx0,sy0,sz0
+REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+
+dxi = 1.0_num/dx
+dyi = 1.0_num/dy
+dzi = 1.0_num/dz
+ALLOCATE(sx0(0:1),sy0(0:1),sz0(0:1))
+sx=0.0_num
+sy=0.0_num
+sz=0.0_num
+sx0=0.0_num
+sy0=0.0_num
+sz0=0.0_num
+!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
+!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+DO ip=1,np
+    
+    x = (xp(ip)-xmin)*dxi
+    y = (yp(ip)-ymin)*dyi
+    z = (zp(ip)-zmin)*dzi
+    
+    ! Compute index of particle
+    j=floor(x)
+    j0=floor(x-0.5_num)
+    k=floor(y)
+    k0=floor(y-0.5_num)
+    l=floor(z)
+    l0=floor(z-0.5_num)
+    xint=x-j
+    yint=y-k
+    zint=z-l
+    
+    ! Compute shape factors
+    sx( 0) = 1.0_num-xint
+    sx( 1) = xint
+    sy( 0) = 1.0_num-yint
+    sy( 1) = yint
+    sz( 0) = 1.0_num-zint
+    sz( 1) = zint
+    xint=x-0.5_num-j0
+    yint=y-0.5_num-k0
+    zint=z-0.5_num-l0
+    sx0( 0) = 1.0_num-xint
+    sx0( 1) = xint
+    sy0( 0) = 1.0_num-yint
+    sy0( 1) = yint
+    sz( 0) = 1.0_num-zint
+    sz( 1) = zint
+    
+    ! Compute Ex on particle
+    ex(ip) = ex(ip) + sx(0)*sy0(0)*sz0(0)*exg(j0,k,l)
+    ex(ip) = ex(ip) + sx(1)*sy0(0)*sz0(0)*exg(j0+1,k,l)
+    ex(ip) = ex(ip) + sx(0)*sy0(1)*sz0(0)*exg(j0,k+1,l)
+    ex(ip) = ex(ip) + sx(1)*sy0(1)*sz0(0)*exg(j0+1,k+1,l)
+    ex(ip) = ex(ip) + sx(0)*sy0(0)*sz0(1)*exg(j0,k,l+1)
+    ex(ip) = ex(ip) + sx(1)*sy0(0)*sz0(1)*exg(j0+1,k,l+1)
+    ex(ip) = ex(ip) + sx(0)*sy0(1)*sz0(1)*exg(j0,k+1,l+1)
+    ex(ip) = ex(ip) + sx(1)*sy0(1)*sz0(1)*exg(j0+1,k+1,l+1)
+    
+    ! Compute Ey on particle
+    ey(ip) = ey(ip) + sx0(0)*sy(0)*sz0(0)*eyg(j,k0,l)
+    ey(ip) = ey(ip) + sx0(1)*sy(0)*sz0(0)*eyg(j+1,k0,l)
+    ey(ip) = ey(ip) + sx0(0)*sy(1)*sz0(0)*eyg(j,k0+1,l)
+    ey(ip) = ey(ip) + sx0(1)*sy(1)*sz0(0)*eyg(j+1,k0+1,l)
+    ey(ip) = ey(ip) + sx0(0)*sy(0)*sz0(1)*eyg(j,k0,l+1)
+    ey(ip) = ey(ip) + sx0(1)*sy(0)*sz0(1)*eyg(j+1,k0,l+1)
+    ey(ip) = ey(ip) + sx0(0)*sy(1)*sz0(1)*eyg(j,k0+1,l+1)
+    ey(ip) = ey(ip) + sx0(1)*sy(1)*sz0(1)*eyg(j+1,k0+1,l+1)
+    
+    ! Compute Ez on particle
+    ez(ip) = ez(ip) + sx0(0)*sy0(0)*sz(0)*ezg(j,k,l0)
+    ez(ip) = ez(ip) + sx0(1)*sy0(0)*sz(0)*ezg(j+1,k,l0)
+    ez(ip) = ez(ip) + sx0(0)*sy0(1)*sz(0)*ezg(j,k+1,l0)
+    ez(ip) = ez(ip) + sx0(1)*sy0(1)*sz(0)*ezg(j+1,k+1,l0)
+    ez(ip) = ez(ip) + sx0(0)*sy0(0)*sz(1)*ezg(j,k,l0+1)
+    ez(ip) = ez(ip) + sx0(1)*sy0(0)*sz(1)*ezg(j+1,k,l0+1)
+    ez(ip) = ez(ip) + sx0(0)*sy0(1)*sz(1)*ezg(j,k+1,l0+1)
+    ez(ip) = ez(ip) + sx0(1)*sy0(1)*sz(1)*ezg(j+1,k+1,l0+1)
+END DO
+!$OMP END PARALLEL DO
+DEALLOCATE(sx0,sz0)
+RETURN
+END SUBROUTINE gete3d_energy_conserving_1_1_1
+
+
+
+!=================================================================================
+! Gathering of Magnetic field from Yee grid ("energy conserving") on particles
+! at order 1
+SUBROUTINE getb3d_energy_conserving_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      bxg,byg,bzg)
+!=================================================================================
+
+USE omp_lib
+USE constants
+IMPLICIT NONE
+INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
+REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
+REAL(num) :: xmin,ymin,zmin,dx,dy,dz
+INTEGER :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+REAL(num), DIMENSION(0:1) :: sx
+REAL(num), DIMENSION(0:1) :: sy
+REAL(num), DIMENSION(0:1) :: sz
+REAL(num), DIMENSION(:), ALLOCATABLE :: sx0,sy0,sz0
+REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+
+dxi = 1.0_num/dx
+dyi = 1.0_num/dy
+dzi = 1.0_num/dz
+ALLOCATE(sx0(0:1),sy0(0:1),sz0(0:1))
+sx=0.0_num
+sy=0.0_num
+sz=0.0_num
+sx0=0.0_num
+sy0=0.0_num
+sz0=0.0_num
+!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
+!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+DO ip=1,np
+    
+    x = (xp(ip)-xmin)*dxi
+    y = (yp(ip)-ymin)*dyi
+    z = (zp(ip)-zmin)*dzi
+    
+    ! Compute index of particle
+    j=floor(x)
+    j0=floor(x-0.5_num)
+    k=floor(y)
+    k0=floor(y-0.5_num)
+    l=floor(z)
+    l0=floor(z-0.5_num)
+    xint=x-j
+    yint=y-k
+    zint=z-l
+    
+    ! Compute shape factors
+    sx( 0) = 1.0_num-xint
+    sx( 1) = xint
+    sy( 0) = 1.0_num-yint
+    sy( 1) = yint
+    sz( 0) = 1.0_num-zint
+    sz( 1) = zint
+    xint=x-0.5_num-j0
+    yint=y-0.5_num-k0
+    zint=z-0.5_num-l0
+    sx0( 0) = 1.0_num-xint
+    sx0( 1) = xint
+    sy0( 0) = 1.0_num-yint
+    sy0( 1) = yint
+    sz( 0) = 1.0_num-zint
+    sz( 1) = zint
+    
+    ! Compute Bx on particle
+    bx(ip) = bx(ip) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
+    bx(ip) = bx(ip) + sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
+    bx(ip) = bx(ip) + sx(0)*sy0(1)*sz0(0)*bxg(j,k0+1,l0)
+    bx(ip) = bx(ip) + sx(1)*sy0(1)*sz0(0)*bxg(j+1,k0+1,l0)
+    bx(ip) = bx(ip) + sx(0)*sy0(0)*sz0(1)*bxg(j,k0,l0+1)
+    bx(ip) = bx(ip) + sx(1)*sy0(0)*sz0(1)*bxg(j+1,k0,l0+1)
+    bx(ip) = bx(ip) + sx(0)*sy0(1)*sz0(1)*bxg(j,k0+1,l0+1)
+    bx(ip) = bx(ip) + sx(1)*sy0(1)*sz0(1)*bxg(j+1,k0+1,l0+1)
+    
+    ! Compute By on particle
+    by(ip) = by(ip) + sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
+    by(ip) = by(ip) + sx0(1)*sy(0)*sz0(0)*byg(j0+1,k,l0)
+    by(ip) = by(ip) + sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
+    by(ip) = by(ip) + sx0(1)*sy(1)*sz0(0)*byg(j0+1,k+1,l0)
+    by(ip) = by(ip) + sx0(0)*sy(0)*sz0(1)*byg(j0,k,l0+1)
+    by(ip) = by(ip) + sx0(1)*sy(0)*sz0(1)*byg(j0+1,k,l0+1)
+    by(ip) = by(ip) + sx0(0)*sy(1)*sz0(1)*byg(j0,k+1,l0+1)
+    by(ip) = by(ip) + sx0(1)*sy(1)*sz0(1)*byg(j0+1,k+1,l0+1)
+    
+    ! Compute Bz on particle
+    bz(ip) = bz(ip) + sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
+    bz(ip) = bz(ip) + sx0(1)*sy0(0)*sz(0)*bzg(j0+1,k0,l)
+    bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(0)*bzg(j0,k0+1,l)
+    bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(0)*bzg(j0+1,k0+1,l)
+    bz(ip) = bz(ip) + sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1)
+    bz(ip) = bz(ip) + sx0(1)*sy0(0)*sz(1)*bzg(j0+1,k0,l+1)
+    bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
+    bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
+END DO
+!$OMP END PARALLEL DO
+DEALLOCATE(sx0,sz0)
+RETURN
+END SUBROUTINE getb3d_energy_conserving_1_1_1
+
+
+!=================================================================================
+! Gathering of electric field from Yee grid ("energy conserving") on particles
+! At arbitrary order. WARNING: Highly unoptimized routine
 SUBROUTINE gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,exg,eyg,ezg,l_lower_order_in_v)
@@ -365,7 +582,8 @@ RETURN
 END SUBROUTINE gete3d_n_energy_conserving
 
 !=================================================================================
-! gathering of magnetic field from Yee grid ("energy conserving")
+! Gathering of Magnetic field from Yee grid ("energy conserving") on particles
+! At arbitrary order. WARNING: Highly unoptimized routine
 SUBROUTINE getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,bxg,byg,bzg,l_lower_order_in_v)
@@ -429,7 +647,6 @@ sz0=0.0_num
 !$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
 !$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
 DO ip=1,np
-
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
@@ -556,7 +773,7 @@ DO ip=1,np
         END IF
 
         IF (noy==1) THEN
-            sy0( 0) = 1.0-num
+            sy0( 0) = 1.0_num
         ELSEIF (noy==2) THEN
             sy0( 0) = 1.0_num-yint
             sy0( 1) = yint
@@ -568,7 +785,7 @@ DO ip=1,np
         END IF
 
         IF (noz==1) THEN
-            sz0( 0) = 1.0-num
+            sz0( 0) = 1.0_num
         ELSEIF (noz==2) THEN
             sz0( 0) = 1.0_num-zint
             sz0( 1) = zint

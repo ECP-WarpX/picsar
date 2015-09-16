@@ -57,7 +57,7 @@ CONTAINS
         nspecies=0
 
         ! --- Particle distribution
-        pdistr=1
+        pdistr=2
 
         RETURN
     END SUBROUTINE default_init

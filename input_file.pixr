@@ -3,13 +3,9 @@
 
 section::main
  # Number of grid points in x,y,z
- nx = 80
- ny = 80
- nz = 80
- # Tiling
- ntilex = 1
- ntiley = 1
- ntilez = 1
+ nx = 200
+ ny = 200
+ nz = 200
  # Mesh size
  dx = 6.5e-7
  dy = 6.5e-7
@@ -37,7 +33,7 @@ section::species
  name = electron
  mass = 1
  charge = -1
- nppcell = 5
+ nppcell = 2
  x_min = 0.
  y_min = 0.
  z_min = 0.
@@ -49,16 +45,16 @@ section::species
  vdrift_y = 0.
  vdrift_z = 0.
  ! Thermal velocity (in clight)
- vth_x = 0.99
- vth_y = 0.99
- vth_z = 0.99
+ vth_x = 0.
+ vth_y = 0.
+ vth_z = 0.
 end::species
 
 section::species
  name = proton
  mass = 1836
  charge = 1
- nppcell = 5
+ nppcell = 2
  x_min = 0.
  y_min = 0.
  z_min = 0.
@@ -70,13 +66,13 @@ section::species
  vdrift_y = 0.
  vdrift_z = 0.
  ! Thermal velocity (in clight)
- vth_x = 0.9
- vth_y = 0.9
- vth_z = 0.9
+ vth_x = 0.
+ vth_y = 0.
+ vth_z = 0.
 end::species
 
 section::output
- output_frequency = 1
+ output_frequency = -1
  output_step_min  = 0
  output_step_max  = 1000
  ex = 1

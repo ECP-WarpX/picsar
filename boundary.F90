@@ -492,15 +492,15 @@ CONTAINS
 !!! --- Boundary conditions routine for currents
   SUBROUTINE current_bcs
     ! Add current contribution from adjacent subdomains
-    CALL summation_bcs_nonblocking(jx, nxguards, nyguards, nzguards)
-    CALL summation_bcs_nonblocking(jy, nxguards, nyguards, nzguards)
-    CALL summation_bcs_nonblocking(jz, nxguards, nyguards, nzguards)
+    CALL summation_bcs_nonblocking(jx, nxjguards, nyjguards, nzjguards)
+    CALL summation_bcs_nonblocking(jy, nxjguards, nyjguards, nzjguards)
+    CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards)
   END SUBROUTINE current_bcs
 
 !!! --- Boundary conditions routine for charge density
 SUBROUTINE charge_bcs
 ! Add charge contribution from adjacent subdomains
-    CALL summation_bcs_nonblocking(rho, nxguards, nyguards, nzguards)
+    CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards)
 END SUBROUTINE charge_bcs
 
 
@@ -579,7 +579,6 @@ END SUBROUTINE charge_bcs
     INTEGER, DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
-    REAL(num), ALLOCATABLE, DIMENSION(:) :: sendbuf1d
     REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
     LOGICAL, ALLOCATABLE, DIMENSION(:) :: mask
     INTEGER :: ibuff, isend, nout, nbuff, ninit
@@ -604,7 +603,6 @@ END SUBROUTINE charge_bcs
         nbuff=currsp%species_npart*nvar
         ibuff=1
         ALLOCATE(sendbuf(-1:1,-1:1,-1:1,1:nbuff))
-        sendbuf=0.
         DO iztile=1, ntilez !LOOP ON TILES
             DO iytile=1, ntiley
                 DO ixtile=1, ntilex
@@ -696,7 +694,6 @@ END SUBROUTINE charge_bcs
                   ENDDO
                ENDDO
             ENDDO ! END LOOP ON TILES
-
             ! SEND/RECEIVE PARTICLES TO/FROM ADJACENT SUBDOMAINS
             DO iz = -1, 1
                 DO iy = -1, 1

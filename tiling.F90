@@ -247,16 +247,16 @@ CONTAINS
         nxc=curr_tile%nx_cells_tile
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
-        ALLOCATE(curr_tile%rho_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards), &
-                 curr_tile%jx_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%jy_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%jz_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%ex_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%ey_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%ez_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%bx_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%by_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards),  &
-                 curr_tile%bz_tile(-nxguards:nxc+nxguards,-nyguards:nyc+nyguards,-nzguards:nzc+nzguards))
+        ALLOCATE(curr_tile%rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards), &
+                 curr_tile%jx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%jy_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%jz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%ex_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%ey_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%ez_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%bx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%by_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%bz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
 
         curr_tile%l_arrays_allocated = .TRUE.
 

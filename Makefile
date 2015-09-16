@@ -8,7 +8,7 @@ FC=mpif90 -O3  -fdefault-real-8 -fdefault-double-8  -fbounds-check
 
 all:modules.o maxwell.o tiling.o particles_push.o current_deposition.o field_gathering.o mpi_derived_types.o boundary.o simple_io.o diags.o submain.o mpi_routines.o control_file.o  main.o
 
-	$(FC) $(FARGS) -o a.out *.o
+	$(FC) $(FARGS) -o picsar *.o
 	
 clean:
-	rm -rf *.o *.mod a.out *.pxr
+	rm -rf *.o *.mod picsar *.pxr

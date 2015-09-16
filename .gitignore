@@ -8,4 +8,4 @@ submain_inlined.F90
 *.pxr
 *.o
 *.mod
-a.out
+picsar

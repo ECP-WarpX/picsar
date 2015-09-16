@@ -30,6 +30,7 @@ LOGICAL:: l_lower_order_in_v, l_nodalgrid
 INTEGER:: nxs=0, nys=0, nzs=0
 INTEGER:: norderx, nordery, norderz
 INTEGER:: nxguards,nyguards, nzguards, nox, noy, noz, npass(3)
+INTEGER:: nxjguards,nyjguards, nzjguards
 REAL(num):: alpha(3)
 REAL(num), POINTER, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz,xx,yy,zz, &
                                            exsm,eysm,ezsm,bxsm,bysm,bzsm
@@ -219,6 +220,7 @@ REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: dive
 ! Simulation time statistics
 REAL(num) :: startsim =0.0_num
 REAL(num) :: endsim =0.0_num
+REAL(num) :: startit, timeit
 
 ! output frequency
 INTEGER :: output_frequency = -1 !(Default is no output)

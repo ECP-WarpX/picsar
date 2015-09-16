@@ -15,8 +15,11 @@ USE simple_io
 IMPLICIT NONE
 INTEGER :: nst,i
 
+
 !!! --- This is the main PIC LOOP
 DO i=1,nst
+    IF (rank .EQ. 0) startit=MPI_WTIME()
+    
     !!! --- Advance velocity half a time step
     CALL push_particles_v
 
@@ -57,15 +60,16 @@ DO i=1,nst
     CALL push_particles_v
 
     !!! --- Computes derived quantities
-    CALL calc_diags
+    !CALL calc_diags
 
     !!! --- Output simulation results
-    CALL output_routines
+    !CALL output_routines
 
     it = it+1
 
     IF (rank .EQ. 0) THEN
-        write(0,*) 'it = ',it,'time = ',it*dt
+        timeit=MPI_WTIME()
+        write(0,*) 'it = ',it,'time = ',it*dt, "cputime/it(s)= ", timeit-startit
     END IF
 END DO
 

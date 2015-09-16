@@ -155,6 +155,10 @@ CONTAINS
     nxguards = MAX(nox,norderx)+npass(1)
     nyguards = MAX(noy,nordery)+npass(2)
     nzguards = MAX(noz,norderz)+npass(3)
+    nxjguards = MAX(nox,2)
+    nyjguards = MAX(noy,2)
+    nzjguards = MAX(noz,2)
+
     IF (l_smooth_compensate) THEN
         nxguards = nxguards + 1
         nyguards = nyguards + 1
@@ -327,10 +331,10 @@ CONTAINS
     ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(jx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(jy(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(jz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(rho(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+    ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+    ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+    ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
     start_time = MPI_WTIME()
