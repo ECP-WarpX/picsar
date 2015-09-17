@@ -77,6 +77,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'ntilez') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, '(i10)') ntilez
+            ELSE IF (INDEX(buffer,'distr') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, '(i10)') pdistr
             END IF
         END DO
         RETURN

@@ -32,20 +32,22 @@ INTEGER:: norderx, nordery, norderz
 INTEGER:: nxguards,nyguards, nzguards, nox, noy, noz, npass(3)
 INTEGER:: nxjguards,nyjguards, nzjguards
 REAL(num):: alpha(3)
-REAL(num), POINTER, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz,xx,yy,zz, &
-                                           exsm,eysm,ezsm,bxsm,bysm,bzsm
-REAL(num), POINTER, DIMENSION(:) :: xcoeffs, ycoeffs, zcoeffs ! Fonberg coefficients
+REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz
+! Fonberg coefficients
+REAL(num), POINTER, DIMENSION(:) :: xcoeffs, ycoeffs, zcoeffs
 END MODULE fields
 
 !===============================================================================
 MODULE particles
 !===============================================================================
 USE constants
+INTEGER, PARAMETER  :: nthreads_tile=1
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
 LOGICAL :: l4symtry = .FALSE.
 INTEGER :: pdistr
 INTEGER :: nspecies
+INTEGER :: ntot ! total number of particles (all species, all subdomains -> useful for stat)
 INTEGER, PARAMETER :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
 LOGICAL :: l_species_allocated=.FALSE.
@@ -67,32 +69,20 @@ TYPE particle_tile
     REAL(num) :: x_grid_tile_max, y_grid_tile_max, z_grid_tile_max
     ! Subdomain border flags
     LOGICAL :: subdomain_bound = .FALSE.
-    ! Local grid quantities in the tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: jx_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: jy_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: jz_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: rho_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: ex_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: ey_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: ez_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: bx_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: by_tile
-    REAL(num), POINTER, DIMENSION(:,:,:) :: bz_tile
     ! Particle arrays
-    REAL(num), POINTER, DIMENSION(:) :: part_x
-    REAL(num), POINTER, DIMENSION(:) :: part_y
-    REAL(num), POINTER, DIMENSION(:) :: part_z
-    REAL(num), POINTER, DIMENSION(:) :: part_ux
-    REAL(num), POINTER, DIMENSION(:) :: part_uy
-    REAL(num), POINTER, DIMENSION(:) :: part_uz
-    REAL(num), POINTER, DIMENSION(:) :: part_ex
-    REAL(num), POINTER, DIMENSION(:) :: part_ey
-    REAL(num), POINTER, DIMENSION(:) :: part_ez
-    REAL(num), POINTER, DIMENSION(:) :: part_bx
-    REAL(num), POINTER, DIMENSION(:) :: part_by
-    REAL(num), POINTER, DIMENSION(:) :: part_bz
-
-    REAL(num), POINTER, DIMENSION(:) :: weight
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: weight
 END TYPE
 
 ! Fortran object representing a particle species
@@ -119,7 +109,7 @@ TYPE particle_species
     LOGICAL   :: l_arrayoftiles_allocated =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
-    TYPE(particle_tile), DIMENSION(:,:,:), POINTER :: array_of_tiles    
+    TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE :: array_of_tiles
 END TYPE
 ! Array of pointers to particle species objects
 TYPE(particle_species), POINTER, DIMENSION(:):: species_parray
@@ -221,6 +211,7 @@ REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: dive
 REAL(num) :: startsim =0.0_num
 REAL(num) :: endsim =0.0_num
 REAL(num) :: startit, timeit
+REAL(num) :: pushtime
 
 ! output frequency
 INTEGER :: output_frequency = -1 !(Default is no output)

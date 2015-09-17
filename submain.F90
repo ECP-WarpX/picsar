@@ -19,6 +19,7 @@ INTEGER :: nst,i
 !!! --- This is the main PIC LOOP
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
+    pushtime=0._num
     
     !!! --- Advance velocity half a time step
     CALL push_particles_v
@@ -66,10 +67,11 @@ DO i=1,nst
     CALL output_routines
 
     it = it+1
-
+    timeit=MPI_WTIME()
+    
     IF (rank .EQ. 0) THEN
-        timeit=MPI_WTIME()
-        write(0,*) 'it = ',it,'time = ',it*dt, "cputime/it(s)= ", timeit-startit
+        WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime, &
+        " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF
 END DO
 
@@ -114,8 +116,6 @@ CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
 ! - Init grid arrays
 ex=0.0_num;ey=0.0_num;ez=0.0_num
 bx=0.0_num;by=0.0_num;bz=0.0_num
-exsm=0.0_num;eysm=0.0_num;ezsm=0.0_num
-bxsm=0.0_num;bysm=0.0_num;bzsm=0.0_num
 jx=0.0_num;jy=0.0_num;jz=0.0_num
 
 !!! --- Set tile split for particles
@@ -201,78 +201,3 @@ DO i=1, norder/2
 END DO
 RETURN
 END SUBROUTINE FD_weights
-
-!===============================================================================
-!     --- performs a smoothing sequence of n passes of a three points stencil
-!     --- with coefficients [(1-alpha)/2, alpha, (1-alpha)/2] along x, y and/or z.
-SUBROUTINE smooth3d_121(q,nx,ny,nz,npass,alpha)
-!===============================================================================
-USE constants
-IMPLICIT NONE
-INTEGER :: nx,ny,nz,i,j,k,l,npass(3)
-
-REAL(num), DIMENSION(1:nx,1:ny,1:nz) :: q
-REAL(num) :: temp0, temp1, alpha(3), a, b
-
-!!! ---  x smoothing
-IF (nx>0) THEN
-    a = alpha(1)
-    b = (1.0_num-a)/2.0_num
-    DO i=1,npass(1)
-        DO  l=1,nz
-            DO  k=1,ny
-                temp0 = q(1,k,l)
-                j=1; q(j,k,l) = q(j,k,l)*(1.-b)+b*q(j+1,k,l)
-                DO  j=1,nx-1
-                    temp1 = q(j,k,l)
-                    q(j,k,l) = a*q(j,k,l)+b*(temp0+q(j+1,k,l))
-                    temp0 = temp1
-                END DO
-                j=nx;q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*temp0
-            END DO
-        END DO
-    END DO
-END IF
-
-!!! ---   y smoothing
-IF (ny>0) THEN
-    a = alpha(2)
-    b = (1.0_num-a)/2.0_num
-        DO i=1,npass(2)
-            DO  l=1,nz
-                DO  j=1,nx
-                    temp0 = q(j,1,l)
-                    k=1; q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*q(j,k+1,l)
-                    DO  k=1,ny-1
-                        temp1 = q(j,k,l)
-                        q(j,k,l) = a*q(j,k,l)+b*(temp0+q(j,k+1,l))
-                        temp0 = temp1
-                    END DO
-                    k=ny;q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*temp0
-                END DO
-            END DO
-        END DO
-END IF
-
-!!! ---   z smoothing
-IF (nz>0) THEN
-    a = alpha(3)
-    b = (1.0_num-a)/2.0_num
-        DO i=1,npass(3)
-            DO  k=1,ny
-                DO  j=1,nx
-                    temp0 = q(j,k,1)
-                    l=1; q(j,k,l) = q(j,k,l)*(10_num-b)+b*q(j,k,l+1)
-                    DO  l=1,nz-1
-                        temp1 = q(j,k,l)
-                        q(j,k,l) = a*q(j,k,l)+b*(temp0+q(j,k,l+1))
-                        temp0 = temp1
-                    END DO
-                    l=nz;q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*temp0
-                END DO
-            END DO
-        END DO
-END IF
-
-RETURN
-END SUBROUTINE smooth3d_121

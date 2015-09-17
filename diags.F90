@@ -19,6 +19,8 @@ CONTAINS
         INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
         TYPE(particle_species), POINTER :: curr
         TYPE(particle_tile), POINTER :: curr_tile
+        REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rho_tile
+        INTEGER :: nxc, nyc, nzc
 
         ! - Computes electric field divergence on grid at n+1
         dive=0.0_num
@@ -26,33 +28,44 @@ CONTAINS
 
         ! - Computes total charge density
         rho=0.0_num
-        DO ispecies=1, nspecies! LOOP ON SPECIES
-            curr => species_parray(ispecies)
-            DO iz=1, ntilez ! LOOP ON TILES
-                DO iy=1, ntiley
-                    DO ix=1, ntilex
+        !$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(guided) DEFAULT(NONE) &
+        !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
+        !$OMP nyjguards,nzjguards,dx,dy,dz) &
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc) &
+        !$OMP REDUCTION(+:rho)
+        DO iz=1, ntilez ! LOOP ON TILES
+            DO iy=1, ntiley
+                DO ix=1, ntilex
+                    DO ispecies=1, nspecies! LOOP ON SPECIES
+                        curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count= curr_tile%np_tile
-                        curr_tile%rho_tile=0.0_num
                         jmin=curr_tile%nx_tile_min-nxjguards
                         jmax=curr_tile%nx_tile_max+nxjguards
                         kmin=curr_tile%ny_tile_min-nyjguards
                         kmax=curr_tile%ny_tile_max+nyjguards
                         lmin=curr_tile%nz_tile_min-nzjguards
                         lmax=curr_tile%nz_tile_max+nzjguards
+                        nxc=curr_tile%nx_cells_tile
+                        nyc=curr_tile%ny_cells_tile
+                        nzc=curr_tile%nz_cells_tile
+                        ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
+                        rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_1_1_1(curr_tile%rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_scalar_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
                              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
                              curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
                         ! Reduce rho_tile in rho
-                        rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%rho_tile
-                    END DO
+                        rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ rho_tile
+                        DEALLOCATE(rho_tile)
+                    END DO! END LOOP ON SPECIES
                 END DO
-            END DO !END LOOP ON TILES
-        END DO !END LOOP ON SPECIES
+            END DO
+        END DO !END LOOP ON TILES!
+        !$OMP END PARALLEL DO
         CALL charge_bcs
 
     END SUBROUTINE calc_diags

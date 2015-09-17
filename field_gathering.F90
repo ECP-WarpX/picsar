@@ -13,12 +13,21 @@ INTEGER :: ispecies, ix, iy, iz, count
 INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
+REAL(num) :: tdeb, tend
+REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: ex_tile, ey_tile, ez_tile, bx_tile, by_tile, bz_tile
+INTEGER :: nxc, nyc, nzc
 
-DO ispecies=1, nspecies ! LOOP ON SPECIES
-    curr=>species_parray(ispecies)
-    DO iz=1, ntilez ! LOOP ON TILES
-        DO iy=1, ntiley
-            DO ix=1, ntilex
+!tdeb=MPI_WTIME()
+!$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(runtime) DEFAULT(NONE) &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
+!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz) &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
+!$OMP lmax,ex_tile,ey_tile,ez_tile,bx_tile,by_tile,bz_tile,nxc,nyc,nzc) 
+DO iz=1, ntilez ! LOOP ON TILES
+    DO iy=1, ntiley
+        DO ix=1, ntilex
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile
                 jmin=curr_tile%nx_tile_min-nxjguards
@@ -27,42 +36,54 @@ DO ispecies=1, nspecies ! LOOP ON SPECIES
                 kmax=curr_tile%ny_tile_max+nyjguards
                 lmin=curr_tile%nz_tile_min-nzjguards
                 lmax=curr_tile%nz_tile_max+nzjguards
-
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ALLOCATE(ex_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                         ey_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                         ez_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                         bx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                         by_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                         bz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
                 !!! --- Gather electric fields on particles
                 curr_tile%part_ex = 0.0_num
                 curr_tile%part_ey = 0.0_num
                 curr_tile%part_ez = 0.0_num
-                curr_tile%ex_tile = ex(jmin:jmax,kmin:kmax,lmin:lmax)
-                curr_tile%ey_tile = ey(jmin:jmax,kmin:kmax,lmin:lmax)
-                curr_tile%ez_tile = ez(jmin:jmax,kmin:kmax,lmin:lmax)
+                ex_tile = ex(jmin:jmax,kmin:kmax,lmin:lmax)
+                ey_tile = ey(jmin:jmax,kmin:kmax,lmin:lmax)
+                ez_tile = ez(jmin:jmax,kmin:kmax,lmin:lmax)
                 CALL gete3d_energy_conserving_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
                                       curr_tile%part_z(1:count), curr_tile%part_ex(1:count),                   &
                                       curr_tile%part_ey(1:count),curr_tile%part_ez(1:count),                   &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
                                       curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,             &
                                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,     &
-                                      nzjguards,curr_tile%ex_tile,curr_tile%ey_tile,                           &
-                                      curr_tile%ez_tile)
+                                      nzjguards,ex_tile,ey_tile,                           &
+                                      ez_tile)
 
                 !!! --- Gather magnetic fields on particles
                 curr_tile%part_bx=0.0_num
                 curr_tile%part_by=0.0_num
                 curr_tile%part_bz=0.0_num
-                curr_tile%bx_tile = bx(jmin:jmax,kmin:kmax,lmin:lmax)
-                curr_tile%by_tile = by(jmin:jmax,kmin:kmax,lmin:lmax)
-                curr_tile%bz_tile = bz(jmin:jmax,kmin:kmax,lmin:lmax)
+                bx_tile = bx(jmin:jmax,kmin:kmax,lmin:lmax)
+                by_tile = by(jmin:jmax,kmin:kmax,lmin:lmax)
+                bz_tile = bz(jmin:jmax,kmin:kmax,lmin:lmax)
                 CALL getb3d_energy_conserving_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
                                       curr_tile%part_z(1:count), curr_tile%part_bx(1:count),                   &
                                       curr_tile%part_by(1:count),curr_tile%part_bz(1:count),                   &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
                                       curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,             &
                                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,     &
-                                      nzjguards,curr_tile%bx_tile,curr_tile%by_tile,                           &
-                                      curr_tile%bz_tile)
-            END DO
+                                      nzjguards,bx_tile,by_tile,                           &
+                                      bz_tile)
+                DEALLOCATE(ex_tile, ey_tile, ez_tile, bx_tile,by_tile,bz_tile)
+            END DO! END LOOP ON SPECIES
         END DO
-    END DO ! END LOOP ON TILES
-END DO ! END LOOP ON SPECIES
+    END DO
+END DO! END LOOP ON TILES
+!$OMP END PARALLEL DO
+!tend=MPI_WTIME()
+!pushtime=pushtime+(tend-tdeb)
 
 END SUBROUTINE gather_ebfields_on_particles
 
@@ -102,8 +123,8 @@ sz=0.0_num
 sx0=0.0_num
 sy0=0.0_num
 sz0=0.0_num
-!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
-!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+!!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
+!!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
 DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi
@@ -168,7 +189,7 @@ DO ip=1,np
     ez(ip) = ez(ip) + sx0(0)*sy0(1)*sz(1)*ezg(j,k+1,l0+1)
     ez(ip) = ez(ip) + sx0(1)*sy0(1)*sz(1)*ezg(j+1,k+1,l0+1)
 END DO
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
 DEALLOCATE(sx0,sz0)
 RETURN
 END SUBROUTINE gete3d_energy_conserving_1_1_1
@@ -210,8 +231,8 @@ sz=0.0_num
 sx0=0.0_num
 sy0=0.0_num
 sz0=0.0_num
-!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
-!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+!!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
+!!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
 DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi
@@ -276,7 +297,7 @@ DO ip=1,np
     bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
     bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
 END DO
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
 DEALLOCATE(sx0,sz0)
 RETURN
 END SUBROUTINE getb3d_energy_conserving_1_1_1

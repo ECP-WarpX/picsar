@@ -47,17 +47,17 @@ CONTAINS
 
     IF (nproc .NE. nprocx*nprocy*nprocz) THEN
         IF (rank .EQ. 0) THEN
-            PRINT *,'*** ERROR ***'
-            PRINT *,'nprocx*nprocy*nprocz =/ # of MPI processes'
-            PRINT *, ' Check input file '
+            WRITE(0,*) '*** ERROR ***'
+            WRITE(0,*) 'nprocx*nprocy*nprocz =/ # of MPI processes'
+            WRITE(0,*) ' Check input file '
             CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
         ENDIF
     ENDIF
 
     IF (nx_global_grid .LT. nxguards .OR. ny_global_grid .LT. nyguards .OR. nz_global_grid .LT. nzguards) THEN
       IF (rank .EQ. 0) THEN
-        PRINT*,'*** ERROR ***'
-        PRINT*,'Simulation domain is too small.'
+        WRITE(0,*) '*** ERROR ***'
+        WRITE(0,*) 'Simulation domain is too small.'
       ENDIF
       CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
     ENDIF
@@ -68,7 +68,7 @@ CONTAINS
       nzsplit = nz_global_grid / nprocz
       IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. nzguards) THEN
         IF (rank .EQ. 0) THEN
-            PRINT*, 'WRONG CPU SPLIT nlocal<nguards'
+            WRITE(0,*) 'WRONG CPU SPLIT nlocal<nguards'
             CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
         ENDIF
       ENDIF
@@ -95,7 +95,7 @@ CONTAINS
     nprocdir = dims
 
     IF (rank .EQ. 0) THEN
-      PRINT *, 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
+      WRITE(0,*) 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
     ENDIF
 
     x_coords = coordinates(c_ndims)
@@ -322,12 +322,6 @@ CONTAINS
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(exsm(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(eysm(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(ezsm(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(bxsm(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(bysm(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(bzsm(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))

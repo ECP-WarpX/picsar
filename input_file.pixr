@@ -1,11 +1,9 @@
 ######################### INPUT FILE FOR THE CODE PICSAR
-
-
 section::main
  # Number of grid points in x,y,z
- nx = 100
- ny = 100
- nz = 100
+ nx = 80
+ ny = 80
+ nz = 80
  # Mesh size
  dx = 6.5e-7
  dy = 6.5e-7
@@ -23,17 +21,13 @@ section::solver
  norderx = 2
  nordery = 2
  norderz = 2
- # Current dep/field gath
- nox = 3
- noy = 3
- noz = 3
 end::solver
 
 section::species
  name = electron
  mass = 1
  charge = -1
- nppcell = 1
+ nppcell = 10
  x_min = 0.
  y_min = 0.
  z_min = 0.
@@ -45,16 +39,16 @@ section::species
  vdrift_y = 0.
  vdrift_z = 0.
  ! Thermal velocity (in clight)
- vth_x = 0.1
- vth_y = 0.1
- vth_z = 0.1
+ vth_x = 0.
+ vth_y = 0.
+ vth_z = 0.
 end::species
 
 section::species
  name = proton
  mass = 1836
  charge = 1
- nppcell = 1
+ nppcell = 10
  x_min = 0.
  y_min = 0.
  z_min = 0.

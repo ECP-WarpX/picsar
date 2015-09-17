@@ -1,5 +1,5 @@
 !===============================================================================
-! deposit current using Esirkepov algorithm 
+! Deposit current in each tile
 !===============================================================================
 SUBROUTINE depose_currents_on_grid_jxjyjz
 USE particles
@@ -8,48 +8,67 @@ USE fields
 USE params
 USE shared_data
 USE tiling
+USE omp_lib
 IMPLICIT NONE
 INTEGER :: ispecies, ix, iy, iz, count
 INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
+REAL(num) :: tdeb, tend
+REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: jx_tile,jy_tile,jz_tile
+INTEGER :: nxc, nyc, nzc
 
 jx = 0.0_num
 jy = 0.0_num
 jz = 0.0_num
 
-DO ispecies=1, nspecies ! LOOP ON SPECIES
-    curr => species_parray(ispecies)
-    DO iz=1,ntilez
-        DO iy=1,ntiley
-            DO ix=1,ntilex
+tdeb=MPI_WTIME()
+!$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(runtime) DEFAULT(NONE) &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards,nyjguards,nzjguards,dx,dy,dz,dt) &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
+!$OMP lmax,jx_tile,jy_tile,jz_tile,nxc,nyc,nzc) &
+!$OMP REDUCTION(+:jx,jy,jz) 
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile
-                curr_tile%jx_tile = 0.0_num
-                curr_tile%jy_tile = 0.0_num
-                curr_tile%jz_tile = 0.0_num
                 jmin=curr_tile%nx_tile_min-nxjguards
                 jmax=curr_tile%nx_tile_max+nxjguards
                 kmin=curr_tile%ny_tile_min-nyjguards
                 kmax=curr_tile%ny_tile_max+nyjguards
                 lmin=curr_tile%nz_tile_min-nzjguards
                 lmax=curr_tile%nz_tile_max+nzjguards
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ALLOCATE(jx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                         jy_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                         jz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
+                jx_tile = 0.0_num
+                jy_tile = 0.0_num
+                jz_tile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_scalar_1_1_1(curr_tile%jx_tile,curr_tile%jy_tile,curr_tile%jz_tile,count,    &
+                CALL depose_jxjyjz_esirkepov_1_1_1(jx_tile,jy_tile,jz_tile,count,    &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
                 curr_tile%z_grid_tile_min,dt,dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,          &
                 curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
-                ! Reduce jxtile in j
-                jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%jx_tile
-                jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%jy_tile
-                jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax)+ curr_tile%jz_tile
-            END DO
+                ! Reduce jtile in j
+                jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + jx_tile
+                jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + jy_tile
+                jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax) + jz_tile
+                DEALLOCATE(jx_tile,jy_tile,jz_tile)
+            END DO! END LOOP ON SPECIES
         END DO
-    END DO !END LOOP ON TILES
-
-END DO ! END LOOP ON SPECIES
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END PARALLEL DO
+tend=MPI_WTIME()
+pushtime=pushtime+(tend-tdeb)
 
 END SUBROUTINE depose_currents_on_grid_jxjyjz
 
@@ -210,19 +229,20 @@ ALLOCATE(sdx(-1:2,-1:2,-1:2),sdy(-1:2,-1:2,-1:2),sdz(-1:2,-1:2,-1:2))
 ALLOCATE(sx(-1:2), sx0(-1:2), dsx(-1:2))
 ALLOCATE(sy(-1:2), sy0(-1:2), dsy(-1:2))
 ALLOCATE(sz(-1:2), sz0(-1:2), dsz(-1:2))
+clghtisq = 1.0_num/clight**2
+dtsdz0 = dt*dzi
+sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
+sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
 ALLOCATE(jx1(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
          jy1(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
          jz1(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
-clghtisq = 1.0_num/clight**2
-sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
-jx1=0.0_num;jy1=0.0_num;jz1=0.0_num
-dtsdz0 = dt*dzi
-!!$OMP PARALLEL PRIVATE(ip,x,y,z,usq,vx,vy,vz,gaminv,xold,yold,zold, &
-!$OMP wq,wqx,wqy,wqz,iixp0,ijxp0,ikxp0, xint,yint,zint, oxint,xintsq, oxintsq,dix,diy,diz, &
-!$OMP dsx, dsy, dsz, oyint,yintsq, oyintsq, ozint,zintsq, ozintsq,ixmin, ixmax, iymin, iymax, izmin, izmax,  &
-!$OMP k,j,i,kc,jc,ic, iixp, ijxp, ikxp,sx,sy,sz) FIRSTPRIVATE(sx0,sy0,sz0,sdx,sdy,sdz,jx1,jy1,jz1)&
-!$OMP DO
+!!$OMP PARALLEL DEFAULT(NONE) PRIVATE(ip,x,y,z,usq,vx,vy,vz,gaminv,xold,yold,zold, &
+!!$OMP wq,wqx,wqy,wqz,iixp0,ijxp0,ikxp0, xint,yint,zint, oxint,xintsq, oxintsq,dix,diy,diz, &
+!!$OMP dsx, dsy, dsz, oyint,yintsq, oyintsq, ozint,zintsq, ozintsq,ixmin, ixmax, iymin, iymax, izmin, izmax,  &
+!!$OMP k,j,i,kc,jc,ic, iixp, ijxp, ikxp,sx,sy,sz, sx0,sy0,sz0,sdx,sdy,sdz,jx1,jy1,jz1) &
+!!$OMP SHARED(np,xp,yp,zp,uxp,uyp,uzp,w,dxi,dyi,dzi,invdtdx,invdtdy,invdtdz,xmin,ymin,zmin,clghtisq,dtsdx0,dtsdy0,dtsdz0,q,jx,jy,jz)
+jx1=0.0_num; jy1=0.0_num; jz1=0.0_num
+!!$OMP DO
 DO ip=1,np
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
@@ -251,7 +271,9 @@ DO ip=1,np
     xint=x-iixp0
     yint=y-ijxp0
     zint=z-ikxp0
+
     ! --- computes coefficients for node centered quantities
+    sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
     sx0( 0) = 1.0_num-xint
     sx0( 1) = xint
     sy0( 0) = 1.0_num-yint
@@ -320,13 +342,13 @@ DO ip=1,np
       END DO
     END DO
 END DO
-!$OMP END DO
-!$OMP CRITICAL
+!!$OMP END DO
+!!$OMP CRITICAL
 jx=jx+jx1
 jy=jy+jy1
 jz=jz+jz1
-!$OMP END CRITICAL
-!$OMP END PARALLEL
+!!$OMP END CRITICAL
+!!$OMP END PARALLEL
 DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz,jx1,jy1,jz1)
 RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1

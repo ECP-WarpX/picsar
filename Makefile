@@ -1,4 +1,4 @@
-FC=mpif90 -O3  -fdefault-real-8 -fdefault-double-8  -fbounds-check
+FC=mpif90 -O3 -fopenmp -fdefault-real-8 -fdefault-double-8  -fbounds-check
 #FARGS=-g -fdefault-real-8 -fdefault-double-8  -fbounds-check
 #FARGS=-O3 -fdefault-real-8 -fdefault-double-8 
 #FC=ifort -mmic

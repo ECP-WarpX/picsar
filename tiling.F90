@@ -244,19 +244,19 @@ CONTAINS
                  curr_tile%part_bz(1:nmax))
 
         ! ALLOCATE GRID ARRAYS
-        nxc=curr_tile%nx_cells_tile
-        nyc=curr_tile%ny_cells_tile
-        nzc=curr_tile%nz_cells_tile
-        ALLOCATE(curr_tile%rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards), &
-                 curr_tile%jx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%jy_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%jz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%ex_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%ey_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%ez_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%bx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%by_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%bz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
+        !nxc=curr_tile%nx_cells_tile
+        !nyc=curr_tile%ny_cells_tile
+        !nzc=curr_tile%nz_cells_tile
+        !ALLOCATE(curr_tile%rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards), &
+        !         curr_tile%jx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%jy_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%jz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%ex_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%ey_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%ez_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%bx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%by_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+        !         curr_tile%bz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
 
         curr_tile%l_arrays_allocated = .TRUE.
 
@@ -314,6 +314,7 @@ CONTAINS
         INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
         REAL(num) :: phi, th, v
+        INTEGER :: err, npart
         !!! --- Sets-up particle space distribution (homogeneous case - default)
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
@@ -379,6 +380,19 @@ CONTAINS
             END DO ! END LOOP ON SPECIES
         ENDIF
 
+        ! Collects total number of particles from other subdomains (useful for statistics)
+        ntot=0
+        DO ispecies=1,nspecies
+            curr=>species_parray(ispecies)
+            CALL MPI_ALLREDUCE(curr%species_npart,npart,1, MPI_INTEGER,MPI_SUM,comm, err)
+            ntot=ntot+npart
+            IF (rank .EQ. 0) THEN
+                WRITE (0,*) 'Loaded npart = ', npart,' particles of species ', &
+                TRIM(ADJUSTL(curr%name))
+            END IF
+        END DO
+
+        RETURN
     END SUBROUTINE load_particles
 
     SUBROUTINE resize_particle_arrays(curr, old_size, new_size)
@@ -405,8 +419,8 @@ CONTAINS
 
     SUBROUTINE resize_array_real(arr, old_size, new_size)
         IMPLICIT NONE
-        REAL(num), DIMENSION(:), POINTER, INTENT(IN OUT) :: arr
-        REAL(num), DIMENSION(:), POINTER :: temp
+        REAL(num), ALLOCATABLE, DIMENSION(:), INTENT(IN OUT) :: arr
+        REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
         INTEGER old_size, new_size
 
         ALLOCATE(temp(1:new_size))
