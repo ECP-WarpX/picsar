@@ -70,7 +70,7 @@ DO i=1,nst
     timeit=MPI_WTIME()
     
     IF (rank .EQ. 0) THEN
-        WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime, &
+        WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
         " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF
 END DO
@@ -91,7 +91,8 @@ USE tiling
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
 INTEGER :: i,ierror,j,k,l, ispecies, ipart, count
-INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER :: jmin, jmax, lmin, lmax, kmin, kmax
+INTEGER :: ix, iy, iz
 INTEGER :: npartemp, ncurr
 REAL(num) :: v, th, phi
 TYPE(particle_species), POINTER :: curr
@@ -112,12 +113,7 @@ CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
 CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
 
-!!! --- Initialize field/currents arrays
-! - Init grid arrays
-ex=0.0_num;ey=0.0_num;ez=0.0_num
-bx=0.0_num;by=0.0_num;bz=0.0_num
-jx=0.0_num;jy=0.0_num;jz=0.0_num
-
+! ------ INIT PARTICLE DISTRIBUTIONS
 !!! --- Set tile split for particles
 CALL set_tile_split
 
@@ -126,6 +122,13 @@ CALL init_tile_arrays
 
 ! - Load particle distribution on each tile
 CALL load_particles
+
+! ----- INIT FIELD ARRAYS
+!!! --- Initialize field/currents arrays
+! - Init grid arrays
+ex=0.0_num;ey=0.0_num;ez=0.0_num
+bx=0.0_num;by=0.0_num;bz=0.0_num
+jx=0.0_num;jy=0.0_num;jz=0.0_num
 
 !!! --- set number of time steps
 nsteps = nint(tmax/(w0_l*dt))

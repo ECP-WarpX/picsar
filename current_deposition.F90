@@ -23,7 +23,7 @@ jy = 0.0_num
 jz = 0.0_num
 
 tdeb=MPI_WTIME()
-!$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(runtime) DEFAULT(NONE) &
+!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards,nyjguards,nzjguards,dx,dy,dz,dt) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,jx_tile,jy_tile,jz_tile,nxc,nyc,nzc) &
@@ -51,7 +51,7 @@ DO iz=1,ntilez
                 jy_tile = 0.0_num
                 jz_tile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_esirkepov_1_1_1(jx_tile,jy_tile,jz_tile,count,    &
+                CALL depose_jxjyjz_scalar_1_1_1(jx_tile,jy_tile,jz_tile,count,    &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &

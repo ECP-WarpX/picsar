@@ -12,8 +12,8 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 
-!tdeb=MPI_WTIME()
-!$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(runtime) DEFAULT(NONE) &
+tdeb=MPI_WTIME()
+!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez, nspecies,species_parray, dt) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -36,8 +36,8 @@ DO iz=1, ntilez ! LOOP ON TILES
     END DO
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
-!tend=MPI_WTIME()
-!pushtime=pushtime+(tend-tdeb)
+tend=MPI_WTIME()
+pushtime=pushtime+(tend-tdeb)
 
 END SUBROUTINE push_particles_v
 
@@ -55,8 +55,8 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 
-!tdeb=MPI_WTIME()
-!$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(runtime) DEFAULT(NONE) &
+tdeb=MPI_WTIME()
+!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,dt) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count)
 DO iz=1,ntilez !LOOP ON TILES
@@ -75,8 +75,8 @@ DO iz=1,ntilez !LOOP ON TILES
     END DO
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
-!tend=MPI_WTIME()
-!pushtime=pushtime+(tend-tdeb)
+tend=MPI_WTIME()
+pushtime=pushtime+(tend-tdeb)
 
 END SUBROUTINE push_particles_xyz
 

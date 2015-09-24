@@ -243,21 +243,6 @@ CONTAINS
                  curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax),  &
                  curr_tile%part_bz(1:nmax))
 
-        ! ALLOCATE GRID ARRAYS
-        !nxc=curr_tile%nx_cells_tile
-        !nyc=curr_tile%ny_cells_tile
-        !nzc=curr_tile%nz_cells_tile
-        !ALLOCATE(curr_tile%rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards), &
-        !         curr_tile%jx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%jy_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%jz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%ex_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%ey_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%ez_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%bx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%by_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-        !         curr_tile%bz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
-
         curr_tile%l_arrays_allocated = .TRUE.
 
     END SUBROUTINE allocate_tile_arrays
@@ -269,6 +254,7 @@ CONTAINS
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
+        ! Allocate array by master thread
         DO ispecies=1,nspecies ! LOOP ON SPECIES
             curr=>species_parray(ispecies)
             curr%species_npart=0
@@ -284,10 +270,25 @@ CONTAINS
                         curr_tile%np_tile=0
                         ! - Allocate arrays of current tile
                         CALL allocate_tile_arrays(curr_tile)
-                        ! - Init array of current tile
-                        ! - For some reason, don't set all values to zero?????
-                        ! - Have to set it manually for each element through
-                        ! - a DO loop see add_particle_at_tile
+                    END DO
+                END DO
+            END DO
+        END DO
+        ! Init tile arrays in parallel - first touch policy
+        ! - Init array of current tile
+        ! - For some reason, don't set all values to zero?????
+        ! - Have to set it manually for each element through
+        ! - a DO loop see add_particle_at_tile
+        !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+        !$OMP SHARED(species_parray, ntilex, ntiley, ntilez, nspecies) &
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile)
+        DO iz=1, ntilez ! LOOP ON TILES
+            DO iy=1, ntiley
+                DO ix=1, ntilex
+                    DO ispecies=1, nspecies ! LOOP ON SPECIES
+                        curr=>species_parray(ispecies)
+                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                        !!! --- Init tile arrays
                         curr_tile%part_x=0.0_num
                         curr_tile%part_y=0.0_num
                         curr_tile%part_z=0.0_num
@@ -301,10 +302,12 @@ CONTAINS
                         curr_tile%part_by=0.0_num
                         curr_tile%part_bz=0.0_num
                         curr_tile%weight=0.0_num
-                    END DO
+                    END DO! END LOOP ON SPECIES
                 END DO
             END DO
-        END DO
+        END DO! END LOOP ON TILES
+        !$OMP END PARALLEL DO
+
     END SUBROUTINE init_tile_arrays
 
     SUBROUTINE load_particles
@@ -354,7 +357,7 @@ CONTAINS
         IF (pdistr .EQ. 2) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
-                DO j=0,nz-1
+                DO j=0,nx-1
                     DO k=0,ny-1
                         DO l=0,nz-1
                             DO ipart=1,curr%nppcell

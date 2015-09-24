@@ -17,8 +17,8 @@ REAL(num) :: tdeb, tend
 REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: ex_tile, ey_tile, ez_tile, bx_tile, by_tile, bz_tile
 INTEGER :: nxc, nyc, nzc
 
-!tdeb=MPI_WTIME()
-!$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(runtime) DEFAULT(NONE) &
+tdeb=MPI_WTIME()
+!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
 !$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
@@ -82,8 +82,8 @@ DO iz=1, ntilez ! LOOP ON TILES
     END DO
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
-!tend=MPI_WTIME()
-!pushtime=pushtime+(tend-tdeb)
+tend=MPI_WTIME()
+pushtime=pushtime+(tend-tdeb)
 
 END SUBROUTINE gather_ebfields_on_particles
 
