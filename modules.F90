@@ -150,7 +150,7 @@ INTEGER :: coordinates(c_ndims), neighbour(-1:1, -1:1, -1:1)
 INTEGER :: x_coords, proc_x_min, proc_x_max
 INTEGER :: y_coords, proc_y_min, proc_y_max
 INTEGER :: z_coords, proc_z_min, proc_z_max
-INTEGER :: errcode, comm, tag, rank
+INTEGER :: errcode, provided, comm, tag, rank
 INTEGER :: nproc, nprocx, nprocy, nprocz
 INTEGER :: nprocdir(c_ndims)
 INTEGER :: status(MPI_STATUS_SIZE)

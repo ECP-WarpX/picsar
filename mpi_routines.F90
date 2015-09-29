@@ -12,7 +12,7 @@ CONTAINS
 
   SUBROUTINE mpi_minimal_init
 
-    CALL MPI_INIT(errcode)
+    CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
     CALL MPI_COMM_SIZE(comm, nproc, errcode)
     CALL MPI_COMM_RANK(comm, rank, errcode)
