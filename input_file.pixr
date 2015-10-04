@@ -66,7 +66,7 @@ section::species
 end::species
 
 section::output
- output_frequency = 1
+ output_frequency = -1
  output_step_min  = 0
  output_step_max  = 1000
  ex = 1
