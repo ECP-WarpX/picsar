@@ -78,11 +78,6 @@ CONTAINS
         ENDIF
     END SUBROUTINE output_routines
 
-
-
-
-
-
   !----------------------------------------------------------------------------
   ! This subroutine writes a grid quantity (e.g EM fields, Currents)
   ! to disk using MPI-IO (H. VINCENTI)

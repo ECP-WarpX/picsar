@@ -59,8 +59,8 @@ else
     ist = 1
 end if
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(3)
 ! advance Ex
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
@@ -75,8 +75,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
 ! advance Ey
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
@@ -91,8 +91,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
 ! advance Ez
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
@@ -107,8 +107,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 end subroutine push_em3d_evec_norder
 
@@ -184,8 +184,8 @@ else
 ist = 1
 end if
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(3)
 ! advance Bx
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
@@ -199,8 +199,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
 ! advance By
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
@@ -214,8 +214,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
 ! advance Bz
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
@@ -229,8 +229,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 
 end subroutine push_em3d_bvec_norder

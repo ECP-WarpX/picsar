@@ -22,49 +22,49 @@ DO i=1,nst
     pushtime=0._num
     
     !!! --- Advance velocity half a time step
-    CALL push_particles_v
+    !CALL push_particles_v
 
     !!! --- Push B field half a time step
-    CALL push_bfield
+    !CALL push_bfield
 
     !!! --- Boundary conditions for B
-    CALL bfield_bcs
+    !CALL bfield_bcs
 
     !!! --- Push particles a full time step
-    CALL push_particles_xyz
+    !CALL push_particles_xyz
 
     !!! --- Apply BC on particles
-    CALL particle_bcs
+    !CALL particle_bcs
 
     !!! --- Deposit current of particle species on the grid
-    CALL depose_currents_on_grid_jxjyjz
+    !CALL depose_currents_on_grid_jxjyjz
 
     !!! --- Boundary conditions for currents
-    CALL current_bcs
+    !CALL current_bcs
 
     !!! --- Push E field  a full time step
-    CALL push_efield
+    !CALL push_efield
 
     !!! --- Boundary conditions for E
-    CALL efield_bcs
+    !CALL efield_bcs
 
     !!! --- push B field half a time step
-    CALL push_bfield
+    !CALL push_bfield
 
     !!! --- Boundary conditions for B
-    CALL bfield_bcs
+    !CALL bfield_bcs
 
     !!! --- Gather electromagnetic fields from the grid to particle species
-    CALL gather_ebfields_on_particles
+    !CALL gather_ebfields_on_particles
 
     !!! --- Advance velocity half a time step
-    CALL push_particles_v
+    !CALL push_particles_v
 
     !!! --- Computes derived quantities
     CALL calc_diags
 
     !!! --- Output simulation results
-    CALL output_routines
+    !CALL output_routines
 
     it = it+1
     timeit=MPI_WTIME()

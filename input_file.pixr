@@ -1,9 +1,9 @@
 ######################### INPUT FILE FOR THE CODE PICSAR
 section::main
  # Number of grid points in x,y,z
- nx = 80
- ny = 80
- nz = 80
+ nx = 100
+ ny = 100
+ nz = 100
  # Mesh size
  dx = 6.5e-7
  dy = 6.5e-7
@@ -13,7 +13,7 @@ section::main
  y_grid_min = 0.0
  z_grid_min = 0.0
  # Simulation duration (in 1/w0)
- t_max = 5
+ t_max = 0.5
 end::main
 
 section::solver
@@ -66,7 +66,7 @@ section::species
 end::species
 
 section::output
- output_frequency = 1
+ output_frequency = -1
  output_step_min  = 0
  output_step_max  = 1000
  ex = 1

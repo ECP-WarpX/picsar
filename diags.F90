@@ -52,7 +52,7 @@ CONTAINS
                         ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
                         rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_vecHVv2_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -123,6 +123,416 @@ CONTAINS
         END DO
         RETURN
     END SUBROUTINE depose_rho_scalar_1_1_1
+
+!!! --- Order 1 3D vector charge deposition routine
+!!! --- Computes charge density on grid vectorized with Schwarzmeier and Hewitt scheme
+!!! --- This routine does vectorize on SIMD architecture but poor performances
+    SUBROUTINE depose_rho_vecSH_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        USE constants
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+        REAL(num) :: x,y,z,wq,invvol, sx0, sy0, sz0, sx1, sy1, sz1
+        REAL(num), ALLOCATABLE :: ww(:,:),ll(:,:)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: j,k,l,nn,ip,n,m,ixmin, ixmax, iymin, iymax, izmin, izmax
+        INTEGER :: nblk
+        INTEGER :: nnx, nnxy, ind0
+        INTEGER :: moff(1:8)
+
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        ! Vectorization parameters init
+        nblk=4 ! multiple of vector instruction length (32 bytes on Avx)
+        ALLOCATE(ww(1:8,1:nblk),ll(1:8,1:nblk))
+
+        nnx = nx + 1 + 2*nxguard
+        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+        moff(1) = 0
+        moff(2) = 1
+        moff(3) = nnx
+        moff(4) = nnx+1
+        moff(5) = nnxy
+        moff(6) = nnxy+1
+        moff(7) = nnxy+nnx
+        moff(8) = nnxy+nnx+1
+
+        DO ip=1,np,nblk
+            !DIR$ ASSUME_ALIGNED xp:32
+            !DIR$ ASSUME_ALIGNED yp:32
+            !DIR$ ASSUME_ALIGNED zp:32
+            !DIR$ ASSUME_ALIGNED w:32
+            !DIR$ ASSUME_ALIGNED ww:32
+            !DIR$ IVDEP
+            DO n=ip,MIN(ip+nblk-1,np) !!!! vector
+                nn=n-ip+1
+                !- Computations relative to particle n
+            	! --- computes current position in grid units
+            	x = (xp(n)-xmin)*dxi
+            	y = (yp(n)-ymin)*dyi
+            	z = (zp(n)-zmin)*dzi
+            	! --- finds node of cell containing particles for current positions
+            	j=floor(x)
+            	k=floor(y)
+            	l=floor(z)
+            	! --- computes distance between particle and node for current positions
+            	xint = x-j
+            	yint = y-k
+            	zint = z-l
+            	! --- computes particles weights
+            	wq=q*w(n)*invvol
+                ! --- computes coefficients for node centered quantities
+            	sx0 = 1.0_num-xint
+            	sx1 = xint
+            	sy0 = 1.0_num-yint
+            	sy1 = yint
+            	sz0 = 1.0_num-zint
+            	sz1 = zint
+            	! --- computes weight for each of the 8-vertices surrounding particle n
+                ind0 = (j+nxguard+1) + (k+nyguard+1)*nnx + (l+nzguard+1)*nnxy
+            	ww(1,nn) = sx0*sy0*sz0*wq
+                ll(1,nn) = ind0+moff(1)
+                ww(2,nn) = sx1*sy0*sz0*wq
+                ll(2,nn) = ind0+moff(2)
+                ww(3,nn) = sx0*sy1*sz0*wq
+                ll(3,nn) = ind0+moff(3)
+                ww(4,nn) = sx1*sy1*sz0*wq
+                ll(4,nn) = ind0+moff(4)
+                ww(5,nn) = sx0*sy0*sz1*wq
+                ll(5,nn) = ind0+moff(5)
+                ww(6,nn) = sx1*sy0*sz1*wq
+                ll(6,nn) = ind0+moff(6)
+                ww(7,nn) = sx0*sy1*sz1*wq
+                ll(7,nn) = ind0+moff(7)
+                ww(8,nn) = sx1*sy1*sz1*wq
+                ll(8,nn) = ind0+moff(8)
+            END DO
+            ! --- add charge density contributions
+            DO m= 1,MIN(nblk,np-ip+1)
+                !DIR$ ASSUME_ALIGNED ww:32
+                !DIR$ IVDEP
+                DO l=1,8  !!!! Vector
+            		rho(ll(l,m)) = rho(ll(l,m))+ww(l,m)
+                END DO
+            END DO
+        END DO
+        DEALLOCATE(ww,ll)
+        RETURN
+    END SUBROUTINE depose_rho_vecSH_1_1_1
+
+    !!! --- Order 1 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized with Nishiguchi, Orii and Yabe scheme (NOY)
+    !!! --- This routine does vectorize on SIMD architecture but poor performances
+    SUBROUTINE depose_rho_vecNOY_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        USE constants
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
+        REAL(num), DIMENSION(:,:,:,:), ALLOCATABLE :: rho1
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+        REAL(num) :: x,y,z,wq,invvol
+        REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: j,k,l,vv,n,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+        INTEGER, PARAMETER :: LVEC=4
+        REAL(num), DIMENSION(LVEC,8) :: ww
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        ALLOCATE(rho1(1:LVEC,-nxguard:nx+nxguard,-nyguard:ny+nyguard, &
+                -nzguard:nz+nzguard))
+        rho1=0.0_num
+        DO ip=1,np, LVEC
+            !DIR$ ASSUME_ALIGNED xp:32
+            !DIR$ ASSUME_ALIGNED yp:32
+            !DIR$ ASSUME_ALIGNED zp:32
+            !DIR$ ASSUME_ALIGNED w:32
+            !DIR$ ASSUME_ALIGNED ww:32
+            !DIR$ IVDEP
+            DO vv=1, MIN(LVEC,np-ip+1) !!! Vector
+                n=vv+ip-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x = (xp(n)-xmin)*dxi
+                y = (yp(n)-ymin)*dyi
+                z = (zp(n)-zmin)*dzi
+                ! --- finds node of cell containing particles for current positions
+                j=floor(x)
+                k=floor(y)
+                l=floor(z)
+                ! --- computes distance between particle and node for current positions
+                xint = x-j
+                yint = y-k
+                zint = z-l
+                ! --- computes particles weights
+                wq=q*w(n)*invvol
+                ! --- computes coefficients for node centered quantities
+                sx( 0) = 1.0_num-xint
+                sx( 1) = xint
+                sy( 0) = 1.0_num-yint
+                sy( 1) = yint
+                sz( 0) = (1.0_num-zint)*wq
+                sz( 1) = zint*wq
+                ww(vv,1) = sx(0)*sy(0)*sz(0)
+                ww(vv,2) = sx(1)*sy(0)*sz(0)
+                ww(vv,3) = sx(0)*sy(1)*sz(0)
+                ww(vv,4) = sx(1)*sy(1)*sz(0)
+                ww(vv,5) = sx(0)*sy(0)*sz(1)
+                ww(vv,6) = sx(1)*sy(0)*sz(1)
+                ww(vv,7) = sx(0)*sy(1)*sz(1)
+                ww(vv,8) = sx(1)*sy(1)*sz(1)
+            END DO
+!            j=1;k=1;l=1
+!            !DIR$ ASSUME_ALIGNED rho1:32
+!            !DIR$ ASSUME_ALIGNED ww:32
+!            !DIR$ IVDEP
+!            DO vv=1, MIN(LVEC,np-ip+1) !!! Vector
+!                ! --- add charge density contributions
+!                rho1(vv,j,k,l)      = rho1(vv,j,k,l)+ww(vv,1)
+!                rho1(vv,j+1,k,l)    = rho1(vv,j+1,k,l)+ww(vv,2)
+!                rho1(vv,j,k+1,l)    = rho1(vv,j,k+1,l)+ww(vv,3)
+!                rho1(vv,j+1,k+1,l)  = rho1(vv,j+1,k+1,l)+ww(vv,4)
+!                rho1(vv,j,k,l+1)    = rho1(vv,j,k,l+1)+ww(vv,5)
+!                rho1(vv,j+1,k,l+1)  = rho1(vv,j+1,k,l+1)+ww(vv,6)
+!                rho1(vv,j,k+1,l+1)  = rho1(vv,j,k+1,l+1)+ww(vv,7)
+!                rho1(vv,j+1,k+1,l+1)= rho1(vv,j+1,k+1,l+1)+ww(vv,8)
+!            END DO
+        END DO
+
+        DO jj=-nxguard,nxguard+nx !!! Vector
+            DO vv=1,LVEC
+                rho(jj,:,:)=rho(jj,:,:)+rho1(vv,jj,:,:)
+            END DO
+        END DO
+        DEALLOCATE(rho1)
+        RETURN
+    END SUBROUTINE depose_rho_vecNOY_1_1_1
+    !!! --- Order 1 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized (HV-SCHEME v2)
+    !!! --- This routine does vectorize on SIMD architecture but poor performances
+    SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        USE constants
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
+        INTEGER, PARAMETER :: LVEC=8
+        INTEGER, DIMENSION(LVEC) :: ICELL
+        REAL(num) :: wq
+        INTEGER :: NCELLS
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        REAL(num) :: dxi,dyi,dzi
+        REAL(num) :: xint,yint,zint
+        REAL(num) :: x,y,z,invvol
+        REAL(num) :: sx(0:1), sy(0:1), sz(0:1)
+        REAL(num) :: ww(1:LVEC,8)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER :: nnx, nnxy
+        INTEGER :: moff(1:8)
+
+        ! Init parameters
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+        ALLOCATE(rhocells(8,NCELLS))
+        rhocells=0.0_num
+        nnx = nx + 1 + 2*nxguard
+        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+        moff(1) = 0
+        moff(2) = 1
+        moff(3) = nnx
+        moff(4) = nnx+1
+        moff(5) = nnxy
+        moff(6) = nnxy+1
+        moff(7) = nnxy+nnx
+        moff(8) = nnxy+nnx+1
+
+        ! FIRST LOOP: computes cell index of particle and their weight on vertices
+        DO ip=1,np,LVEC
+            !DIR$ ASSUME_ALIGNED xp:64
+            !DIR$ ASSUME_ALIGNED yp:64
+            !DIR$ ASSUME_ALIGNED zp:64
+            !DIR$ ASSUME_ALIGNED w:64
+            !DIR$ ASSUME_ALIGNED ww:64
+            !DIR$ ASSUME_ALIGNED ICELL:64
+            !DIR$ IVDEP
+            DO n=1,MIN(LVEC,np-ip+1)
+                nn=ip+n-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x= (xp(nn)-xmin)*dxi
+                y = (yp(nn)-ymin)*dyi
+                z = (zp(nn)-zmin)*dzi
+                ! --- finds cell containing particles for current positions
+                j=floor(x)
+                k=floor(y)
+                l=floor(z)
+                ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+                ! --- computes distance between particle and node for current positions
+                xint = x-j
+                yint = y-k
+                zint = z-l
+                ! --- computes particles weights
+                wq=q*w(nn)*invvol
+                ! --- Compute weight
+                sx( 0) = 1.0_num-xint
+                sx( 1) = xint
+                sy( 0) = 1.0_num-yint
+                sy( 1) = yint
+                sz( 0) = (1.0_num-zint)*wq
+                sz( 1) = zint*wq
+                ww(n,1) = sx(0)*sy(0)*sz(0)
+                ww(n,2) = sx(1)*sy(0)*sz(0)
+                ww(n,3) = sx(0)*sy(1)*sz(0)
+                ww(n,4) = sx(1)*sy(1)*sz(0)
+                ww(n,5) = sx(0)*sy(0)*sz(1)
+                ww(n,6) = sx(1)*sy(0)*sz(1)
+                ww(n,7) = sx(0)*sy(1)*sz(1)
+                ww(n,8) = sx(1)*sy(1)*sz(1)
+            END DO
+            ! Current deposition on vertices
+            DO n=1,MIN(LVEC,np-ip+1)
+                ! --- add charge density contributions to vertices of the current cell
+                ic=ICELL(n)
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !DIR$ ASSUME_ALIGNED ww:64
+                !DIR$ ASSUME_ALIGNED sx:64
+                !DIR$ ASSUME_ALIGNED sy:64
+                !DIR$ ASSUME_ALIGNED sz:64
+                !DIR$ IVDEP
+                DO nv=1,8 !!! - VECTOR
+                    rhocells(nv,ic)=rhocells(nv,ic)+ww(n,nv)
+                END DO
+            END DO
+        END DO
+        DO nv=1,8
+            !DIR$ ASSUME_ALIGNED rhocells:64
+            !DIR$ ASSUME_ALIGNED rho:64
+            !DIR$ IVDEP
+            DO ic=1,NCELLS  !!! VECTOR
+                rho(ic+moff(nv))=rho(ic+moff(nv))+rhocells(nv,ic)
+            END DO
+        END DO
+        DEALLOCATE(rhocells)
+        RETURN
+    END SUBROUTINE depose_rho_vecHV_1_1_1
+
+    !!! --- Order 1 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized (HV-SCHEME v2)
+    !!! --- This routine does vectorize on SIMD architecture but poor performances
+    SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        USE constants
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
+        INTEGER, PARAMETER :: LVEC=8
+        INTEGER, DIMENSION(LVEC) :: ICELL
+        REAL(num) :: ww
+        INTEGER :: NCELLS
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        REAL(num) :: dxi,dyi,dzi
+        REAL(num) :: xint,yint,zint
+        REAL(num) :: x,y,z,invvol
+        REAL(num) :: sx(LVEC), sy(LVEC), sz(LVEC), wq(LVEC)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER :: nnx, nnxy
+        INTEGER :: moff(1:8), mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+
+        ! Init parameters
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+        ALLOCATE(rhocells(8,NCELLS))
+        rhocells=0.0_num
+        nnx = nx + 1 + 2*nxguard
+        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+        moff(1) = 0
+        moff(2) = 1
+        moff(3) = nnx
+        moff(4) = nnx+1
+        moff(5) = nnxy
+        moff(6) = nnxy+1
+        moff(7) = nnxy+nnx
+        moff(8) = nnxy+nnx+1
+        mx=(/0,1,0,1,0,1,0,1/)
+        my=(/0,0,1,1,0,0,1,1/)
+        mz=(/0,0,0,0,1,1,1,1/)
+        sgn=(/1,-1,-1,1,-1,1,1,-1/)
+	
+        ! FIRST LOOP: computes cell index of particle and their weight on vertices
+        DO ip=1,np,LVEC
+            !DIR$ ASSUME_ALIGNED xp:64
+            !DIR$ ASSUME_ALIGNED yp:64
+            !DIR$ ASSUME_ALIGNED zp:64
+            !DIR$ ASSUME_ALIGNED w:64
+            !DIR$ ASSUME_ALIGNED ICELL:64
+            !DIR$ IVDEP
+            DO n=1,MIN(LVEC,np-ip+1)
+                nn=ip+n-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x= (xp(nn)-xmin)*dxi
+                y = (yp(nn)-ymin)*dyi
+                z = (zp(nn)-zmin)*dzi
+                ! --- finds cell containing particles for current positions
+                j=floor(x)
+                k=floor(y)
+                l=floor(z)
+                ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+                ! --- computes distance between particle and node for current positions
+                sx(n) = x-j
+                sy(n) = y-k
+                sz(n) = z-l
+                ! --- computes particles weights
+                wq(n)=q*w(nn)*invvol
+            END DO
+            ! Current deposition on vertices
+            DO n=1,MIN(LVEC,np-ip+1)
+                ! --- add charge density contributions to vertices of the current cell
+                ic=ICELL(n)
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !DIR$ ASSUME_ALIGNED ww:64
+                !DIR$ ASSUME_ALIGNED sx:64
+                !DIR$ ASSUME_ALIGNED sy:64
+                !DIR$ ASSUME_ALIGNED sz:64
+                !DIR$ IVDEP
+                DO nv=1,8 !!! - VECTOR
+                    ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* &
+                        (-mz(nv)+sz(n))*wq(n)*sgn(nv)
+                    rhocells(nv,ic)=rhocells(nv,ic)+ww
+                END DO
+            END DO
+        END DO
+        DO nv=1,8
+            !DIR$ ASSUME_ALIGNED rhocells:64
+            !DIR$ ASSUME_ALIGNED rho:64
+            !DIR$ IVDEP
+            DO ic=1,NCELLS  !!! VECTOR
+                rho(ic+moff(nv))=rho(ic+moff(nv))+rhocells(nv,ic)
+            END DO
+        END DO
+        DEALLOCATE(rhocells)
+        RETURN
+    END SUBROUTINE depose_rho_vecHVv2_1_1_1
 
     !!! --- General charge deposition routine (Warning: Highly unoptimized routine)
     !!! Computes charge density on grid at arbitrary orders nox, noy and noz

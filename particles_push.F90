@@ -67,9 +67,9 @@ DO iz=1,ntilez !LOOP ON TILES
                 curr_tile=> curr%array_of_tiles(ix,iy,iz)
                 count= curr_tile%np_tile
                 !!!! --- push particle species positions a time step
-                CALL pushxyz(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
-                curr_tile%part_z(1:count), curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),&
-                curr_tile%part_uz(1:count),dt)
+                CALL pushxyz(count,curr_tile%part_x(1),curr_tile%part_y(1), &
+                curr_tile%part_z(1), curr_tile%part_ux(1),curr_tile%part_uy(1),&
+                curr_tile%part_uz(1),dt)
             END DO! END LOOP ON SPECIES
         END DO
     END DO
