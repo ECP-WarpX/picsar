@@ -220,6 +220,7 @@ REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
 INTEGER :: nnx, nnxy, ic, NCELLS, icx,icy,icz, n, nv, nn
 INTEGER   :: moff(1:8)
 REAL(num) :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+REAL(num), DIMENSION(8,LVEC) :: extemp,eytemp,eztemp
 
 NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
 dxi = 1.0_num/dx
@@ -307,15 +308,25 @@ DO ip=1,np, LVEC
             wwz=(-mx(nv)+sx0(n))*(-my(nv)+sy0(n))* &
             (-mz(nv)+sz(n))*sgn(nv)
             ! Compute Ex on particle
-            ex(ip) = ex(ip) + wwx*excells(nv,icx)
+            extemp(nv,n) = extemp(nv,n) + wwx*excells(nv,icx)
     
             ! Compute Ey on particle
-            ey(ip) = ey(ip) + wwy*eycells(nv,icy)
+            eytemp(nv,n) = eytemp(nv,n) + wwy*eycells(nv,icy)
     
             ! Compute Ez on particle
-            ez(ip) = ez(ip) + wwz*ezcells(nv,icz)
+            eztemp(nv,n) = eztemp(nv,n) + wwz*ezcells(nv,icz)
         END DO
     END DO 
+    DO nv=1,8
+        !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
+        !DIR$ ASSUME_ALIGNED extemp:64,eytemp:64,eztemp:64
+        DO n=1,MIN(LVEC,np-ip+1)
+           nn=ip+n-1
+           ex(nn)=ex(nn)+extemp(nv,n)
+           ey(nn)=ey(nn)+eytemp(nv,n)
+           ez(nn)=ez(nn)+eztemp(nv,n)
+        END DO
+    END DO
 END DO
 !!$OMP END PARALLEL DO
 DEALLOCATE(excells,eycells,ezcells)
