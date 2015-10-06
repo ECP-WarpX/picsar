@@ -17,6 +17,8 @@ CONTAINS
         INTEGER :: nx0_last_tile, ny0_last_tile, nz0_last_tile
         TYPE(particle_species), POINTER :: curr_sp
         TYPE(particle_tile), POINTER :: curr
+         
+         
 
         ! Tile-split
         nx0_grid_tile = nx_grid / ntilex
@@ -311,6 +313,7 @@ CONTAINS
     END SUBROUTINE init_tile_arrays
 
     SUBROUTINE load_particles
+        USE ifport
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER :: ispecies, l, k, j, ipart

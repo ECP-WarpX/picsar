@@ -125,6 +125,10 @@ sy0=0.0_num
 sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+!DIR$ ASSUME_ALIGNED xp: 64
+!DIR$ ASSUME_ALIGNED yp: 64
+!DIR$ ASSUME_ALIGNED zp: 64
+!DIR$ SIMD
 DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi

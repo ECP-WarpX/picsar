@@ -375,8 +375,8 @@ CONTAINS
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
                 x= (xp(nn)-xmin)*dxi
-                y = (yp(nn)-ymin)*dyi
                 z = (zp(nn)-zmin)*dzi
+                y = (yp(nn)-ymin)*dyi
                 ! --- finds cell containing particles for current positions
                 j=floor(x)
                 k=floor(y)
@@ -410,10 +410,7 @@ CONTAINS
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !DIR$ ASSUME_ALIGNED ww:64
-                !DIR$ ASSUME_ALIGNED sx:64
-                !DIR$ ASSUME_ALIGNED sy:64
-                !DIR$ ASSUME_ALIGNED sz:64
-                !DIR$ IVDEP
+                !!DIR$ NOUNROLL
                 DO nv=1,8 !!! - VECTOR
                     rhocells(nv,ic)=rhocells(nv,ic)+ww(n,nv)
                 END DO
@@ -453,7 +450,8 @@ CONTAINS
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER :: nnx, nnxy
-        INTEGER :: moff(1:8), mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+        INTEGER :: moff(1:8) 
+        REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
 
         ! Init parameters
         dxi = 1.0_num/dx
@@ -473,10 +471,10 @@ CONTAINS
         moff(6) = nnxy+1
         moff(7) = nnxy+nnx
         moff(8) = nnxy+nnx+1
-        mx=(/0,1,0,1,0,1,0,1/)
-        my=(/0,0,1,1,0,0,1,1/)
-        mz=(/0,0,0,0,1,1,1,1/)
-        sgn=(/1,-1,-1,1,-1,1,1,-1/)
+        mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
+        my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
+        mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
+        sgn=(/1_num,-1_num,-1_num,1_num,-1_num,1_num,1_num,-1_num/)
 	
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC
@@ -510,11 +508,10 @@ CONTAINS
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
-                !DIR$ ASSUME_ALIGNED ww:64
                 !DIR$ ASSUME_ALIGNED sx:64
                 !DIR$ ASSUME_ALIGNED sy:64
                 !DIR$ ASSUME_ALIGNED sz:64
-                !DIR$ IVDEP
+                !DIR$ SIMD
                 DO nv=1,8 !!! - VECTOR
                     ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* &
                         (-mz(nv)+sz(n))*wq(n)*sgn(nv)
@@ -526,6 +523,7 @@ CONTAINS
             !DIR$ ASSUME_ALIGNED rhocells:64
             !DIR$ ASSUME_ALIGNED rho:64
             !DIR$ IVDEP
+            !DIR$ NOUNROLL
             DO ic=1,NCELLS  !!! VECTOR
                 rho(ic+moff(nv))=rho(ic+moff(nv))+rhocells(nv,ic)
             END DO
