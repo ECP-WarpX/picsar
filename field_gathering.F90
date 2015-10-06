@@ -52,7 +52,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 ex_tile = ex(jmin:jmax,kmin:kmax,lmin:lmax)
                 ey_tile = ey(jmin:jmax,kmin:kmax,lmin:lmax)
                 ez_tile = ez(jmin:jmax,kmin:kmax,lmin:lmax)
-                CALL gete3d_energy_conserving_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                CALL gete3d_energy_conserving_vec_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
                                       curr_tile%part_z(1:count), curr_tile%part_ex(1:count),                   &
                                       curr_tile%part_ey(1:count),curr_tile%part_ez(1:count),                   &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
@@ -125,10 +125,6 @@ sy0=0.0_num
 sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
-!DIR$ ASSUME_ALIGNED xp: 64
-!DIR$ ASSUME_ALIGNED yp: 64
-!DIR$ ASSUME_ALIGNED zp: 64
-!DIR$ SIMD
 DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi
@@ -198,6 +194,133 @@ DEALLOCATE(sx0,sz0)
 RETURN
 END SUBROUTINE gete3d_energy_conserving_1_1_1
 
+!=================================================================================
+! Gathering of electric field from Yee grid ("energy conserving") on particles
+! at order 1
+SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg)
+!=================================================================================
+
+USE omp_lib
+USE constants
+IMPLICIT NONE
+INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+REAL(num), DIMENSION(np) :: xp,yp,zp,ex,ey,ez
+REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)) :: exg,eyg,ezg
+REAL(num), DIMENSION(:,:), ALLOCATABLE :: excells, eycells, ezcells
+REAL(num) :: xmin,ymin,zmin,dx,dy,dz
+INTEGER :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+REAL(num) :: dxi, dyi, dzi, x, y, z, wwx,wwy,wwz
+INTEGER, PARAMETER :: LVEC=8
+REAL(num) :: sx(LVEC), sy(LVEC), sz(LVEC), sx0(LVEC), sy0(LVEC), sz0(LVEC), wq(LVEC)
+INTEGER :: ICELLSx(LVEC), ICELLSy(LVEC), ICELLSz(LVEC)
+REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+INTEGER :: nnx, nnxy, ic, NCELLS, icx,icy,icz, n, nv, nn
+INTEGER   :: moff(1:8)
+REAL(num) :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+
+NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+dxi = 1.0_num/dx
+dyi = 1.0_num/dy
+dzi = 1.0_num/dz
+ALLOCATE(excells(8,NCELLS),eycells(8,NCELLS),ezcells(8,NCELLS))
+sx=0.0_num
+sy=0.0_num
+sz=0.0_num
+sx0=0.0_num
+sy0=0.0_num
+sz0=0.0_num
+nnx = nx + 1 + 2*nxguard
+nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+moff(1) = 0
+moff(2) = 1
+moff(3) = nnx
+moff(4) = nnx+1
+moff(5) = nnxy
+moff(6) = nnxy+1
+moff(7) = nnxy+nnx
+moff(8) = nnxy+nnx+1
+mx=(/0,1,0,1,0,1,0,1/)
+my=(/0,0,1,1,0,0,1,1/)
+mz=(/0,0,0,0,1,1,1,1/)
+sgn=(/1,-1,-1,1,-1,1,1,-1/)
+
+! Reduction of ex,ey,ez into excells,eycells,ezcells
+DO ic=1,NCELLS  !!! VECTOR
+    !DIR$ ASSUME_ALIGNED excells:64, eycells:64, ezcells:64
+    !DIR$ IVDEP
+    DO nv=1,8
+        excells(nv,ic)=excells(nv,ic)+exg(ic+moff(nv))
+        eycells(nv,ic)=eycells(nv,ic)+eyg(ic+moff(nv))
+        ezcells(nv,ic)=ezcells(nv,ic)+ezg(ic+moff(nv))
+    END DO
+END DO
+
+!!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
+!!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+DO ip=1,np, LVEC
+    !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
+    !DIR$ ASSUME_ALIGNED sx0:64, sy0:64, sz0:64
+    !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !DIR$ ASSUME_ALIGNED ICELLSx:64, ICELLSy:64, ICELLSz:64
+    !DIR$ IVDEP
+    DO n=1, MIN(LVEC,np-ip+1)
+        nn=ip+n-1
+        x = (xp(nn)-xmin)*dxi
+        y = (yp(nn)-ymin)*dyi
+        z = (zp(nn)-zmin)*dzi
+    
+        ! Compute index of particle
+        j=floor(x)
+        j0=floor(x-0.5_num)
+        k=floor(y)
+        k0=floor(y-0.5_num)
+        l=floor(z)
+        l0=floor(z-0.5_num)
+        ICELLSx(n)=1+j0+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+        ICELLSy(n)=1+j+nxguard+(k0+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+        ICELLSz(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l0+nzguard+1)*(ny+2*nyguard)
+
+        ! Particle relative position to nodes
+        sx(n)=x-j
+        sy(n)=y-k
+        sz(n)=z-l
+        sx0(n)=x-0.5_num-j0
+        sy0(n)=y-0.5_num-k0
+        sz0(n)=z-0.5_num-l0
+    END DO
+    DO n=1, MIN(LVEC,np-ip+1)
+        icx=ICELLSx(n)
+        icy=ICELLSy(n)
+        icz=ICELLSz(n)
+        !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
+        !DIR$ ASSUME_ALIGNED excells:64, eycells:64, ezcells:64
+        !DIR$ SIMD
+        DO nv=1,8
+            ! Compute weight for vertex nv of cells icx,icy,icz
+            wwx=(-mx(nv)+sx(n))*(-my(nv)+sy0(n))* &
+            (-mz(nv)+sz0(n))*sgn(nv)
+            wwy=(-mx(nv)+sx0(n))*(-my(nv)+sy(n))* &
+            (-mz(nv)+sz0(n))*sgn(nv)
+            wwz=(-mx(nv)+sx0(n))*(-my(nv)+sy0(n))* &
+            (-mz(nv)+sz(n))*sgn(nv)
+            ! Compute Ex on particle
+            ex(ip) = ex(ip) + wwx*excells(nv,icx)
+    
+            ! Compute Ey on particle
+            ey(ip) = ey(ip) + wwy*eycells(nv,icy)
+    
+            ! Compute Ez on particle
+            ez(ip) = ez(ip) + wwz*ezcells(nv,icz)
+        END DO
+    END DO 
+END DO
+!!$OMP END PARALLEL DO
+DEALLOCATE(excells,eycells,ezcells)
+RETURN
+END SUBROUTINE gete3d_energy_conserving_vec_1_1_1
 
 
 !=================================================================================
