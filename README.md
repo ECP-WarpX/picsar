@@ -30,7 +30,7 @@ Here are some high performance features of the PICSAR code :
 **Compiling**
 -------------
 
-To build the code just type "make" in the command prompt. Make file options can be changed by editing the `Makefile`. For the gfortran compiler, simply use the flag -fopenmp to add openMP features. For the intel compiler, use -openmp instead. To set "x" OpenMP threads per MPI task, use "export OMP_NUM_THREADS=x" before starting the simulation (default will be x=1). OpenMP scheduling for balancing loads between tiles can be adjusted at runtime by setting the environment variable OMP_SCHEDULE to either static, guided or dynamic. 
+To build the code just type "make" in the command prompt. Make file options can be changed by editing the `Makefile`. For the gfortran compiler, simply use the flag -fopenmp to add openMP features. For the intel compiler, use -openmp instead. 
 
 **Running simulations**
 -----------------------
@@ -38,6 +38,8 @@ To build the code just type "make" in the command prompt. Make file options can 
 PICSAR input parameters must be provided in an input file named "input_file.pxr" in the folder where the code is ran. An example of input file is provided in this repository.
 
 To run the executable on n MPI processes: "mpirun -np n ./picsar". Notice that if nprocx, nprocy and nprocz are provided in the input file as part of the "cpusplit" section, then n must be equal to nprocx x nprocy x nprocz with nprocx, nprocy, nprocz the number of processors along x,y,z directions. Otherwise, if nprocx, nprocy and nprocz are not defined, the code performs automatic CPU split in each direction. 
+
+To set "x" OpenMP threads per MPI task, use "export OMP_NUM_THREADS=x" before starting the simulation (default will be x=1). OpenMP scheduling for balancing loads between tiles can be adjusted at runtime by setting the environment variable OMP_SCHEDULE to either static, guided or dynamic. To ensure that threads have enough memory space on the stack, set OMP_STACKSIZE to high enough value. In practice, export OMP_STACKSIZE=32M should be sufficient for most of test cases. 
 
 User can specify some arguments in the command line. For the moments this feature supports only the number of tiles in each dimension and the init of particle distribution. Ex: 
 
