@@ -28,7 +28,7 @@ CONTAINS
 
         ! - Computes total charge density
         rho=0.0_num
-        !$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(guided) DEFAULT(NONE) &
+	!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
         !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
         !$OMP nyjguards,nzjguards,dx,dy,dz) &
         !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc) &
