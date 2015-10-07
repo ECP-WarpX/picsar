@@ -15,8 +15,12 @@ USE simple_io
 IMPLICIT NONE
 INTEGER :: nst,i
 
+
 !!! --- This is the main PIC LOOP
 DO i=1,nst
+    IF (rank .EQ. 0) startit=MPI_WTIME()
+    pushtime=0._num
+    
     !!! --- Advance velocity half a time step
     CALL push_particles_v
 
@@ -30,7 +34,7 @@ DO i=1,nst
     CALL push_particles_xyz
 
     !!! --- Apply BC on particles
-    CALL particle_bcs_nonblocking
+    CALL particle_bcs
 
     !!! --- Deposit current of particle species on the grid
     CALL depose_currents_on_grid_jxjyjz
@@ -63,16 +67,18 @@ DO i=1,nst
     CALL output_routines
 
     it = it+1
-
+    timeit=MPI_WTIME()
+    
     IF (rank .EQ. 0) THEN
-        write(0,*) 'it = ',it,'time = ',it*dt
+        WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
+        " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF
 END DO
 
 END SUBROUTINE step
 
 !===============================================================================
-! ALLOCATE/INIT PLASMA AND FIELD ARRAYS
+! INIT PLASMA AND FIELD ARRAYS AT it=0
 SUBROUTINE initall
 !===============================================================================
 USE constants
@@ -80,110 +86,49 @@ USE params
 USE fields
 USE particles
 USE shared_data
+USE tiling
+
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
 INTEGER :: i,ierror,j,k,l, ispecies, ipart, count
-INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER :: jmin, jmax, lmin, lmax, kmin, kmax
+INTEGER :: ix, iy, iz
 INTEGER :: npartemp, ncurr
 REAL(num) :: v, th, phi
 TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
 !real(8) :: rand
 
 !!! --- Set time step/ it
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
 
-!!! --- Allocate species arrays
-IF (.NOT. l_arrays_allocated) THEN
-    DO ispecies=1,nspecies
-    curr=>species_parray(ispecies)
-    curr%nppspecies_max=2*(curr%nppcell)*nx*ny*nz
-    ALLOCATE(curr%part_x(1:curr%nppspecies_max),    &
-             curr%part_y(1:curr%nppspecies_max),    &
-             curr%part_z(1:curr%nppspecies_max),    &
-             curr%part_ux(1:curr%nppspecies_max),   &
-             curr%part_uy(1:curr%nppspecies_max),   &
-             curr%part_uz(1:curr%nppspecies_max),   &
-             curr%part_ex(1:curr%nppspecies_max),   &
-             curr%part_ey(1:curr%nppspecies_max),   &
-             curr%part_ez(1:curr%nppspecies_max),   &
-             curr%part_bx(1:curr%nppspecies_max),   &
-             curr%part_by(1:curr%nppspecies_max),   &
-             curr%part_bz(1:curr%nppspecies_max),   &
-             curr%weight(1:curr%nppspecies_max))
-    END DO
-    l_arrays_allocated=.TRUE.
-    ! --- allocate Maxwell solver coefficient arrays
+!!! --- Allocate coefficient arrays for Maxwell solver
+IF (.NOT. l_coeffs_allocated) THEN
     ALLOCATE(xcoeffs(norderx/2),ycoeffs(nordery/2),zcoeffs(norderz/2))
 END IF
-
-!!! --- Initialize particle and field arrays
-! - Init grid arrays
-ex=0.0_num;ey=0.0_num;ez=0.0_num
-bx=0.0_num;by=0.0_num;bz=0.0_num
-exsm=0.0_num;eysm=0.0_num;ezsm=0.0_num
-bxsm=0.0_num;bysm=0.0_num;bzsm=0.0_num
-jx=0.0_num;jy=0.0_num;jz=0.0_num
-
-! - Init particle species arrays (2 species here)
-DO ispecies=1,nspecies
-    species_parray(ispecies)%species_npart=0
-    species_parray(ispecies)%part_x=0.0_num
-    species_parray(ispecies)%part_y=0.0_num
-    species_parray(ispecies)%part_z=0.0_num
-    species_parray(ispecies)%part_ux=0.0_num
-    species_parray(ispecies)%part_uy=0.0_num
-    species_parray(ispecies)%part_uz=0.0_num
-    species_parray(ispecies)%part_ex=0.0_num
-    species_parray(ispecies)%part_ey=0.0_num
-    species_parray(ispecies)%part_ez=0.0_num
-    species_parray(ispecies)%part_bx=0.0_num
-    species_parray(ispecies)%part_by=0.0_num
-    species_parray(ispecies)%part_bz=0.0_num
-    species_parray(ispecies)%weight=nc*dx*dy*dz/(curr%nppcell) !uniform density for the moment
-END DO
-
-!!! --- Sets-up particle space distribution
-DO ispecies=1,nspecies
-    curr=>species_parray(ispecies)
-        jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
-        jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
-        kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
-        kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
-        lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
-        lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
-        DO l=lmin,lmax-1
-            DO k=kmin,kmax-1
-                DO j=jmin,jmax-1
-                    DO ipart=1,curr%nppcell
-                        curr%species_npart=curr%species_npart+1
-                        curr%part_x(curr%species_npart) = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
-                        curr%part_y(curr%species_npart) = y_min_local+k*dy+dy/curr%nppcell*(ipart-1)
-                        curr%part_z(curr%species_npart) = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
-                    END DO
-                END DO
-            END DO
-        END DO
-END DO
-
-!!! --- Sets-up particle velocities
-DO ispecies=1,nspecies
-    curr=>species_parray(ispecies)
-    count = curr%species_npart
-    DO ipart=1, count
-         v=MAX(1e-10_num,RAND())
-         th=2*pi*RAND()
-         phi=2*pi*RAND()
-         curr%part_ux(ipart)= curr%vdrift_x !+ curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-         curr%part_uy(ipart)= curr%vdrift_y !+ curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-         curr%part_uz(ipart)= curr%vdrift_z !+ curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-    END DO
-END DO
 
 !!! --- Initialize stencil coefficients array for Maxwell field solver
 CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
 CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
+
+! ------ INIT PARTICLE DISTRIBUTIONS
+!!! --- Set tile split for particles
+CALL set_tile_split
+
+! - Allocate particle arrays for each tile of each species
+CALL init_tile_arrays
+
+! - Load particle distribution on each tile
+CALL load_particles
+
+! ----- INIT FIELD ARRAYS
+!!! --- Initialize field/currents arrays
+! - Init grid arrays
+ex=0.0_num;ey=0.0_num;ez=0.0_num
+bx=0.0_num;by=0.0_num;bz=0.0_num
+jx=0.0_num;jy=0.0_num;jz=0.0_num
 
 !!! --- set number of time steps
 nsteps = nint(tmax/(w0_l*dt))
@@ -259,78 +204,3 @@ DO i=1, norder/2
 END DO
 RETURN
 END SUBROUTINE FD_weights
-
-!===============================================================================
-!     --- performs a smoothing sequence of n passes of a three points stencil
-!     --- with coefficients [(1-alpha)/2, alpha, (1-alpha)/2] along x, y and/or z.
-SUBROUTINE smooth3d_121(q,nx,ny,nz,npass,alpha)
-!===============================================================================
-USE constants
-IMPLICIT NONE
-INTEGER :: nx,ny,nz,i,j,k,l,npass(3)
-
-REAL(num), DIMENSION(1:nx,1:ny,1:nz) :: q
-REAL(num) :: temp0, temp1, alpha(3), a, b
-
-!!! ---  x smoothing
-IF (nx>0) THEN
-    a = alpha(1)
-    b = (1.0_num-a)/2.0_num
-    DO i=1,npass(1)
-        DO  l=1,nz
-            DO  k=1,ny
-                temp0 = q(1,k,l)
-                j=1; q(j,k,l) = q(j,k,l)*(1.-b)+b*q(j+1,k,l)
-                DO  j=1,nx-1
-                    temp1 = q(j,k,l)
-                    q(j,k,l) = a*q(j,k,l)+b*(temp0+q(j+1,k,l))
-                    temp0 = temp1
-                END DO
-                j=nx;q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*temp0
-            END DO
-        END DO
-    END DO
-END IF
-
-!!! ---   y smoothing
-IF (ny>0) THEN
-    a = alpha(2)
-    b = (1.0_num-a)/2.0_num
-        DO i=1,npass(2)
-            DO  l=1,nz
-                DO  j=1,nx
-                    temp0 = q(j,1,l)
-                    k=1; q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*q(j,k+1,l)
-                    DO  k=1,ny-1
-                        temp1 = q(j,k,l)
-                        q(j,k,l) = a*q(j,k,l)+b*(temp0+q(j,k+1,l))
-                        temp0 = temp1
-                    END DO
-                    k=ny;q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*temp0
-                END DO
-            END DO
-        END DO
-END IF
-
-!!! ---   z smoothing
-IF (nz>0) THEN
-    a = alpha(3)
-    b = (1.0_num-a)/2.0_num
-        DO i=1,npass(3)
-            DO  k=1,ny
-                DO  j=1,nx
-                    temp0 = q(j,k,1)
-                    l=1; q(j,k,l) = q(j,k,l)*(10_num-b)+b*q(j,k,l+1)
-                    DO  l=1,nz-1
-                        temp1 = q(j,k,l)
-                        q(j,k,l) = a*q(j,k,l)+b*(temp0+q(j,k,l+1))
-                        temp0 = temp1
-                    END DO
-                    l=nz;q(j,k,l) = q(j,k,l)*(1.0_num-b)+b*temp0
-                END DO
-            END DO
-        END DO
-END IF
-
-RETURN
-END SUBROUTINE smooth3d_121

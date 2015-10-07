@@ -1,3 +1,6 @@
+Tiing_SpeedUp_i7.nb
+speeduptile.pdf
+timeperittile.pdf
 Makefile_babbage
 Makefile_edison
 batchscript_babbage
@@ -8,4 +11,4 @@ submain_inlined.F90
 *.pxr
 *.o
 *.mod
-a.out
+picsar

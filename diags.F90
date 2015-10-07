@@ -13,9 +13,14 @@ CONTAINS
         USE particles
         USE params
         USE shared_data
+        USE tiling
         IMPLICIT NONE
-        INTEGER ispecies, count
+        INTEGER :: ispecies, ix, iy, iz, count
+        INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
         TYPE(particle_species), POINTER :: curr
+        TYPE(particle_tile), POINTER :: curr_tile
+        REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rho_tile
+        INTEGER :: nxc, nyc, nzc
 
         ! - Computes electric field divergence on grid at n+1
         dive=0.0_num
@@ -23,18 +28,104 @@ CONTAINS
 
         ! - Computes total charge density
         rho=0.0_num
-        DO ispecies=1, nspecies
-            curr => species_parray(ispecies)
-            count= curr%species_npart
-            CALL depose_rho_n(rho, count,curr%part_x(1:count),curr%part_y(1:count),curr%part_z(1:count),      &
-            curr%weight(1:count), curr%charge,x_min_local,y_min_local,z_min_local,dx,dy,dz,nx,ny,nz,nxguards, &
-            nyguards,nzguards,nox,noy,noz,l_particles_weight,l4symtry)
-        END DO
+        !$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(guided) DEFAULT(NONE) &
+        !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
+        !$OMP nyjguards,nzjguards,dx,dy,dz) &
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc) &
+        !$OMP REDUCTION(+:rho)
+        DO iz=1, ntilez ! LOOP ON TILES
+            DO iy=1, ntiley
+                DO ix=1, ntilex
+                    DO ispecies=1, nspecies! LOOP ON SPECIES
+                        curr => species_parray(ispecies)
+                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                        count= curr_tile%np_tile
+                        jmin=curr_tile%nx_tile_min-nxjguards
+                        jmax=curr_tile%nx_tile_max+nxjguards
+                        kmin=curr_tile%ny_tile_min-nyjguards
+                        kmax=curr_tile%ny_tile_max+nyjguards
+                        lmin=curr_tile%nz_tile_min-nzjguards
+                        lmax=curr_tile%nz_tile_max+nzjguards
+                        nxc=curr_tile%nx_cells_tile
+                        nyc=curr_tile%ny_cells_tile
+                        nzc=curr_tile%nz_cells_tile
+                        ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
+                        rho_tile = 0.0_num
+                        ! Depose charge in rho_tile
+                        CALL depose_rho_scalar_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
+                             curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
+                             curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
+                             curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
+                             curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
+                             curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
+                        ! Reduce rho_tile in rho
+                        rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ rho_tile
+                        DEALLOCATE(rho_tile)
+                    END DO! END LOOP ON SPECIES
+                END DO
+            END DO
+        END DO !END LOOP ON TILES!
+        !$OMP END PARALLEL DO
         CALL charge_bcs
 
     END SUBROUTINE calc_diags
 
-    !!! --- Computes charge density on grid
+    !!! --- Order 1 3D scalar charge deposition routine
+    !!! This version does not vectorize on SIMD architectures
+    SUBROUTINE depose_rho_scalar_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        USE constants
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+        REAL(num) :: x,y,z,wq,invvol
+        REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        DO ip=1,np
+            ! --- computes current position in grid units
+            x = (xp(ip)-xmin)*dxi
+            y = (yp(ip)-ymin)*dyi
+            z = (zp(ip)-zmin)*dzi
+            ! --- finds node of cell containing particles for current positions
+            j=floor(x)
+            k=floor(y)
+            l=floor(z)
+            ! --- computes distance between particle and node for current positions
+            xint = x-j
+            yint = y-k
+            zint = z-l
+            ! --- computes particles weights
+            wq=q*w(ip)*invvol
+            ! --- computes coefficients for node centered quantities
+            sx( 0) = 1.0_num-xint
+            sx( 1) = xint
+            sy( 0) = 1.0_num-yint
+            sy( 1) = yint
+            sz( 0) = 1.0_num-zint
+            sz( 1) = zint
+            ! --- add charge density contributions
+            rho(j,k,l)      = rho(j,k,l)+sx(0)*sy(0)*sz(0)*wq
+            rho(j+1,k,l)    = rho(j+1,k,l)+sx(1)*sy(0)*sz(0)*wq
+            rho(j,k+1,l)    = rho(j,k+1,l)+sx(0)*sy(1)*sz(0)*wq
+            rho(j+1,k+1,l)  = rho(j+1,k+1,l)+sx(1)*sy(1)*sz(0)*wq
+            rho(j,k,l+1)    = rho(j,k,l+1)+sx(0)*sy(0)*sz(1)*wq
+            rho(j+1,k,l+1)  = rho(j+1,k,l+1)+sx(1)*sy(0)*sz(1)*wq
+            rho(j,k+1,l+1)  = rho(j,k+1,l+1)+sx(0)*sy(1)*sz(1)*wq
+            rho(j+1,k+1,l+1)= rho(j+1,k+1,l+1)+sx(1)*sy(1)*sz(1)*wq
+        END DO
+        RETURN
+    END SUBROUTINE depose_rho_scalar_1_1_1
+
+    !!! --- General charge deposition routine (Warning: Highly unoptimized routine)
+    !!! Computes charge density on grid at arbitrary orders nox, noy and noz
     SUBROUTINE depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz, &
                         l_particles_weight, l4symtry)
         IMPLICIT NONE
@@ -183,12 +274,6 @@ CONTAINS
         END DO
         RETURN
     END SUBROUTINE depose_rho_n
-
-    !!! --- Computes total electromagnetic energy in the simulation box
-    !SUBROUTINE total_em_energy
-
-
-    !END SUBROUTINE total_em_energy
 
     !!! --- Computes field divergence
     SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)

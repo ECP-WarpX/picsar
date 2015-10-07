@@ -30,23 +30,61 @@ LOGICAL:: l_lower_order_in_v, l_nodalgrid
 INTEGER:: nxs=0, nys=0, nzs=0
 INTEGER:: norderx, nordery, norderz
 INTEGER:: nxguards,nyguards, nzguards, nox, noy, noz, npass(3)
+INTEGER:: nxjguards,nyjguards, nzjguards
 REAL(num):: alpha(3)
-REAL(num), POINTER, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz,xx,yy,zz, &
-                                           exsm,eysm,ezsm,bxsm,bysm,bzsm
-REAL(num), POINTER, DIMENSION(:) :: xcoeffs, ycoeffs, zcoeffs ! Fonberg coefficients
+REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz
+! Fonberg coefficients
+REAL(num), POINTER, DIMENSION(:) :: xcoeffs, ycoeffs, zcoeffs
 END MODULE fields
 
 !===============================================================================
 MODULE particles
 !===============================================================================
 USE constants
+INTEGER, PARAMETER  :: nthreads_tile=1
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
 LOGICAL :: l4symtry = .FALSE.
+INTEGER :: pdistr
 INTEGER :: nspecies
+INTEGER :: ntot ! total number of particles (all species, all subdomains -> useful for stat)
 INTEGER, PARAMETER :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
 LOGICAL :: l_species_allocated=.FALSE.
+! # of particle tiles in each dimension
+INTEGER :: ntilex, ntiley, ntilez
+! Fortran object representing a particle tile
+TYPE particle_tile
+    LOGICAL :: l_arrays_allocated= .FALSE.
+    ! Current number of particles in tile
+    INTEGER :: np_tile, npmax_tile
+    INTEGER :: nx_grid_tile, ny_grid_tile, nz_grid_tile
+    INTEGER :: nx_cells_tile, ny_cells_tile, nz_cells_tile
+    INTEGER :: nx_tile_min, nx_tile_max, ny_tile_min, ny_tile_max, &
+               nz_tile_min, nz_tile_max
+    ! Tile position
+    REAL(num) :: x_tile_min, y_tile_min, z_tile_min
+    REAL(num) :: x_tile_max, y_tile_max, z_tile_max
+    REAL(num) :: x_grid_tile_min, y_grid_tile_min, z_grid_tile_min
+    REAL(num) :: x_grid_tile_max, y_grid_tile_max, z_grid_tile_max
+    ! Subdomain border flags
+    LOGICAL :: subdomain_bound = .FALSE.
+    ! Particle arrays
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: weight
+END TYPE
+
 ! Fortran object representing a particle species
 TYPE particle_species
     ! Attributes of particle species object
@@ -68,20 +106,10 @@ TYPE particle_species
     INTEGER   :: species_npart
     INTEGER   :: nppspecies_max
     INTEGER   :: nppcell
+    LOGICAL   :: l_arrayoftiles_allocated =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
-    REAL(num), POINTER, DIMENSION(:) :: part_x
-    REAL(num), POINTER, DIMENSION(:) :: part_y
-    REAL(num), POINTER, DIMENSION(:) :: part_z
-    REAL(num), POINTER, DIMENSION(:) :: part_ux
-    REAL(num), POINTER, DIMENSION(:) :: part_uy
-    REAL(num), POINTER, DIMENSION(:) :: part_uz
-    REAL(num), POINTER, DIMENSION(:) :: part_ex
-    REAL(num), POINTER, DIMENSION(:) :: part_ey
-    REAL(num), POINTER, DIMENSION(:) :: part_ez
-    REAL(num), POINTER, DIMENSION(:) :: part_bx
-    REAL(num), POINTER, DIMENSION(:) :: part_by
-    REAL(num), POINTER, DIMENSION(:) :: part_bz
-    REAL(num), POINTER, DIMENSION(:) :: weight
+    ! in Fortran 90 - Need to use POINTER instead
+    TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE :: array_of_tiles
 END TYPE
 ! Array of pointers to particle species objects
 TYPE(particle_species), POINTER, DIMENSION(:):: species_parray
@@ -94,7 +122,8 @@ USE constants
 INTEGER :: it,nsteps
 REAL(num) :: g0,b0,dt,w0,dtcoef,tmax
 REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t
-LOGICAL :: l_arrays_allocated= .FALSE., l_ck=.FALSE.
+LOGICAL :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
+REAL(num), PARAMETER :: resize_factor=1.5_num
 END MODULE params
 
 !===============================================================================
@@ -121,7 +150,7 @@ INTEGER :: coordinates(c_ndims), neighbour(-1:1, -1:1, -1:1)
 INTEGER :: x_coords, proc_x_min, proc_x_max
 INTEGER :: y_coords, proc_y_min, proc_y_max
 INTEGER :: z_coords, proc_z_min, proc_z_max
-INTEGER :: errcode, comm, tag, rank
+INTEGER :: errcode, provided, comm, tag, rank
 INTEGER :: nproc, nprocx, nprocy, nprocz
 INTEGER :: nprocdir(c_ndims)
 INTEGER :: status(MPI_STATUS_SIZE)
@@ -181,6 +210,8 @@ REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: dive
 ! Simulation time statistics
 REAL(num) :: startsim =0.0_num
 REAL(num) :: endsim =0.0_num
+REAL(num) :: startit, timeit
+REAL(num) :: pushtime
 
 ! output frequency
 INTEGER :: output_frequency = -1 !(Default is no output)
