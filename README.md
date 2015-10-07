@@ -47,4 +47,6 @@ mpirun -np 1 ./picsar -ntilex ntx -ntiley nty -ntilez ntz -distr 1
 
 with ntx, nty and ntz the number of tiles in each dimension (default is one) and distr the type of particle init ("1" for init on the x-axis of the grid and "2" for Random). 
 
-For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`
+**Outputs**
+-----------------------
+For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`. Output frequency is controlled by setting the flag output_frequency in the output section of the input_file.pixr. Use output_frequency=-1 to disable outputs. The code places output files in a "RESULTS" directory where the code is ran. This directory has to be created before running the code in your submission script. 
