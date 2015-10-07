@@ -26,15 +26,15 @@ CONTAINS
         nz0_grid_tile = nz_grid / ntilez
 
         ! Some sanity check
-        IF (nx0_grid_tile .LT. 4) THEN
+        IF (nx0_grid_tile .LT. 2) THEN
             IF (rank .EQ. 0) PRINT *, "number of tiles in X to high, settting back to default value 1"
             ntilex=1
         END IF
-        IF (ny0_grid_tile .LT. 4) THEN
+        IF (ny0_grid_tile .LT. 2) THEN
             IF (rank .EQ. 0) PRINT *, "number of tiles in Y to high, setting back to default value 1"
             ntiley=1
         END IF
-        IF (nz0_grid_tile .LT. 4) THEN
+        IF (nz0_grid_tile .LT. 2) THEN
             IF (rank .EQ. 0) PRINT *, "number of tiles in Z to high, setting back to default value 1"
             ntilez=1
         END IF
