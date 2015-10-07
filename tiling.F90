@@ -318,6 +318,8 @@ CONTAINS
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
         REAL(num) :: phi, th, v
         INTEGER :: err, npart
+        REAL(num), DIMENSION(6) :: rng=0_num
+
         !!! --- Sets-up particle space distribution (homogeneous case - default)
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
@@ -338,9 +340,10 @@ CONTAINS
                                 partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
                                 partw = nc*dx*dy*dz/(curr%nppcell)
                                 ! Sets velocity
-                                v=MAX(1e-10_num,RAND())
-                                th=2*pi*RAND()
-                                phi=2*pi*RAND()
+                                CALL RANDOM_NUMBER(rng(1:3))
+                                v=MAX(1e-10_num,rng(1))
+                                th=2*pi*rng(2)
+                                phi=2*pi*rng(3)
                                 partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
                                 partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
@@ -361,15 +364,16 @@ CONTAINS
                     DO k=0,ny-1
                         DO l=0,nz-1
                             DO ipart=1,curr%nppcell
+                                CALL RANDOM_NUMBER(rng(1:6))
                                 ! Sets positions and weight
-                                partx = x_min_local+MIN(RAND(),0.999)*(x_max_local-x_min_local)
-                                party = y_min_local+MIN(RAND(),0.999)*(y_max_local-y_min_local)
-                                partz = z_min_local+MIN(RAND(),0.999)*(z_max_local-z_min_local)
+                                partx = x_min_local+MIN(rng(1),0.999)*(x_max_local-x_min_local)
+                                party = y_min_local+MIN(rng(2),0.999)*(y_max_local-y_min_local)
+                                partz = z_min_local+MIN(rng(3),0.999)*(z_max_local-z_min_local)
                                 partw = nc*dx*dy*dz/(curr%nppcell)
                                 ! Sets velocity
-                                v=MAX(1e-10_num,RAND())
-                                th=2*pi*RAND()
-                                phi=2*pi*RAND()
+                                v=MAX(1e-10_num,rng(4))
+                                th=2*pi*rng(5)
+                                phi=2*pi*rng(6)
                                 partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
                                 partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
