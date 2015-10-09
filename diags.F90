@@ -52,7 +52,7 @@ CONTAINS
                         ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
                         rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_vecHV_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -123,6 +123,111 @@ CONTAINS
         END DO
         RETURN
     END SUBROUTINE depose_rho_scalar_1_1_1
+
+    !!! --- Order 1 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized (HV-SCHEME)
+    !!! --- This routine does vectorize on SIMD architecture with good performances
+    !!! ---  Speedup>2 on AVX 256 bits
+    SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        USE constants
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
+        INTEGER, PARAMETER :: LVEC=8
+        INTEGER, DIMENSION(LVEC) :: ICELL
+        REAL(num) :: ww
+        INTEGER :: NCELLS
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        REAL(num) :: dxi,dyi,dzi
+        REAL(num) :: xint,yint,zint
+        REAL(num) :: x,y,z,invvol
+        REAL(num) :: sx(LVEC), sy(LVEC), sz(LVEC), wq(LVEC)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER :: nnx, nnxy
+        INTEGER :: moff(1:8) 
+        REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+
+        ! Init parameters
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+        ALLOCATE(rhocells(8,NCELLS))
+        rhocells=0.0_num
+        nnx = nx + 1 + 2*nxguard
+        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+        moff(1) = 0
+        moff(2) = 1
+        moff(3) = nnx
+        moff(4) = nnx+1
+        moff(5) = nnxy
+        moff(6) = nnxy+1
+        moff(7) = nnxy+nnx
+        moff(8) = nnxy+nnx+1
+        mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
+        my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
+        mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
+        sgn=(/1_num,-1_num,-1_num,1_num,-1_num,1_num,1_num,-1_num/)
+	
+        ! FIRST LOOP: computes cell index of particle and their weight on vertices
+        DO ip=1,np,LVEC
+            !DIR$ ASSUME_ALIGNED xp:64
+            !DIR$ ASSUME_ALIGNED yp:64
+            !DIR$ ASSUME_ALIGNED zp:64
+            !DIR$ ASSUME_ALIGNED w:64
+            !DIR$ ASSUME_ALIGNED ICELL:64
+            !DIR$ IVDEP
+            DO n=1,MIN(LVEC,np-ip+1)
+                nn=ip+n-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x= (xp(nn)-xmin)*dxi
+                y = (yp(nn)-ymin)*dyi
+                z = (zp(nn)-zmin)*dzi
+                ! --- finds cell containing particles for current positions
+                j=floor(x)
+                k=floor(y)
+                l=floor(z)
+                ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+                ! --- computes distance between particle and node for current positions
+                sx(n) = x-j
+                sy(n) = y-k
+                sz(n) = z-l
+                ! --- computes particles weights
+                wq(n)=q*w(nn)*invvol
+            END DO
+            ! Current deposition on vertices
+            DO n=1,MIN(LVEC,np-ip+1)
+                ! --- add charge density contributions to vertices of the current cell
+                ic=ICELL(n)
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !DIR$ ASSUME_ALIGNED sx:64
+                !DIR$ ASSUME_ALIGNED sy:64
+                !DIR$ ASSUME_ALIGNED sz:64
+                !DIR$ SIMD
+                DO nv=1,8 !!! - VECTOR
+                    ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* &
+                        (-mz(nv)+sz(n))*wq(n)*sgn(nv)
+                    rhocells(nv,ic)=rhocells(nv,ic)+ww
+                END DO
+            END DO
+        END DO
+        DO nv=1,8
+            !DIR$ ASSUME_ALIGNED rhocells:64
+            !DIR$ ASSUME_ALIGNED rho:64
+            !DIR$ IVDEP
+            !DIR$ NOUNROLL
+            DO ic=1,NCELLS  !!! VECTOR
+                rho(ic+moff(nv))=rho(ic+moff(nv))+rhocells(nv,ic)
+            END DO
+        END DO
+        DEALLOCATE(rhocells)
+        RETURN
+    END SUBROUTINE depose_rho_vecHV_1_1_1
 
     !!! --- General charge deposition routine (Warning: Highly unoptimized routine)
     !!! Computes charge density on grid at arbitrary orders nox, noy and noz
