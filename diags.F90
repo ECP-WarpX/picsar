@@ -148,7 +148,10 @@ CONTAINS
         INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER :: nnx, nnxy
         INTEGER :: moff(1:8) 
-        REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+        REAL(num), PARAMETER, DIMENSION(8):: mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
+        REAL(num), PARAMETER, DIMENSION(8):: my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
+        REAL(num), PARAMETER, DIMENSION(8):: mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
+        REAL(num), PARAMETER, DIMENSION(8):: sgn=(/1_num,-1_num,-1_num,1_num,-1_num,1_num,1_num,-1_num/)
 
         ! Init parameters
         dxi = 1.0_num/dx
@@ -168,18 +171,12 @@ CONTAINS
         moff(6) = nnxy+1
         moff(7) = nnxy+nnx
         moff(8) = nnxy+nnx+1
-        mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
-        my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
-        mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
-        sgn=(/1_num,-1_num,-1_num,1_num,-1_num,1_num,1_num,-1_num/)
-	
+
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC
-            !DIR$ ASSUME_ALIGNED xp:64
-            !DIR$ ASSUME_ALIGNED yp:64
-            !DIR$ ASSUME_ALIGNED zp:64
-            !DIR$ ASSUME_ALIGNED w:64
-            !DIR$ ASSUME_ALIGNED ICELL:64
+            !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+            !DIR$ ASSUME_ALIGNED w:64,ICELL:64,wq:64
+            !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
             !DIR$ IVDEP
             DO n=1,MIN(LVEC,np-ip+1)
                 nn=ip+n-1
@@ -205,9 +202,9 @@ CONTAINS
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
-                !DIR$ ASSUME_ALIGNED sx:64
-                !DIR$ ASSUME_ALIGNED sy:64
-                !DIR$ ASSUME_ALIGNED sz:64
+                !DIR$ ASSUME_ALIGNED mx:64
+                !DIR$ ASSUME_ALIGNED my:64
+                !DIR$ ASSUME_ALIGNED mz:64
                 !DIR$ SIMD
                 DO nv=1,8 !!! - VECTOR
                     ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* &
