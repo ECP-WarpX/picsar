@@ -176,7 +176,7 @@ CONTAINS
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-            !DIR$ ASSUME_ALIGNED w:64,wp:64, ICELL:64
+            !DIR$ ASSUME_ALIGNED w:64,wq:64, ICELL:64
             !DIR$ ASSUME_ALIGNED sx:64,sy:64, sz:64
             !DIR$ IVDEP
             DO n=1,MIN(LVEC,np-ip+1)
