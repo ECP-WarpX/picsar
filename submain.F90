@@ -55,13 +55,13 @@ DO i=1,nst
     !CALL bfield_bcs
 
     !!! --- Gather electromagnetic fields from the grid to particle species
-    CALL gather_ebfields_on_particles
+    !CALL gather_ebfields_on_particles
 
     !!! --- Advance velocity half a time step
     !CALL push_particles_v
 
     !!! --- Computes derived quantities
-    !CALL calc_diags
+    CALL calc_diags
 
     !!! --- Output simulation results
     !CALL output_routines

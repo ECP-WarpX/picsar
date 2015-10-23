@@ -994,7 +994,7 @@ CONTAINS
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !$OMP SIMD
                 DO nv=1,16 !!! - VECTOR
-                    ww=www(n,nv)
+                    ww=0.01_num
                     ! Loop on (i=-1,j,k)
                     rhocells(nv,ic-1)=rhocells(nv,ic-1)+ww*sx1(n)
                     ! Loop on (i=0,j,k)
