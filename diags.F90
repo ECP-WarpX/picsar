@@ -28,11 +28,10 @@ CONTAINS
 
         ! - Computes total charge density
         rho=0.0_num
-        !$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(guided) DEFAULT(NONE) &
-        !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
+        !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(guided) DEFAULT(NONE) &
+        !$OMP SHARED(rho,ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
         !$OMP nyjguards,nzjguards,dx,dy,dz) &
-        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc) &
-        !$OMP REDUCTION(+:rho)
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc)
         DO iz=1, ntilez ! LOOP ON TILES
             DO iy=1, ntiley
                 DO ix=1, ntilex
@@ -40,27 +39,22 @@ CONTAINS
                         curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count= curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min-nxjguards
-                        jmax=curr_tile%nx_tile_max+nxjguards
-                        kmin=curr_tile%ny_tile_min-nyjguards
-                        kmax=curr_tile%ny_tile_max+nyjguards
-                        lmin=curr_tile%nz_tile_min-nzjguards
-                        lmax=curr_tile%nz_tile_max+nzjguards
+                        jmin=curr_tile%nx_tile_min-nxjguards+(ix-1)*nxjguards
+                        jmax=curr_tile%nx_tile_max+nxjguards+(ix-1)*nxjguards
+                        kmin=curr_tile%ny_tile_min-nyjguards+(iy-1)*nyjguards
+                        kmax=curr_tile%ny_tile_max+nyjguards+(iy-1)*nyjguards
+                        lmin=curr_tile%nz_tile_min-nzjguards+(iz-1)*nzjguards
+                        lmax=curr_tile%nz_tile_max+nzjguards++(iz-1)*nzjguards
                         nxc=curr_tile%nx_cells_tile
                         nyc=curr_tile%ny_cells_tile
                         nzc=curr_tile%nz_cells_tile
-                        ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
-                        rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_vecHVv2_3_3_3(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_scalar_2_2_2(rho(jmin:jmax,kmin:kmax,lmin:lmax), count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
                              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
                              curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
-                        ! Reduce rho_tile in rho
-                        !rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ rho_tile
-                        DEALLOCATE(rho_tile)
                     END DO! END LOOP ON SPECIES
                 END DO
             END DO
@@ -947,7 +941,11 @@ CONTAINS
                 l=floor(z)
                 ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
                 wq=w(nn)*wq0
-            ! --- computes coefficients for node centered quantities
+                ! --- computes distance between particle and node for current positions
+                xint = x-j
+                yint = y-k
+                zint = z-l
+                ! --- computes coefficients for node centered quantities
                 oxint = 1.0_num-xint
                 xintsq = xint*xint
                 oxintsq = oxint*oxint
@@ -995,6 +993,7 @@ CONTAINS
                 !$OMP SIMD
                 DO nv=1,16 !!! - VECTOR
                     ww=www(n,nv)
+                    !ww=0.1_num
                     ! Loop on (i=-1,j,k)
                     rhocells(nv,ic-1)=rhocells(nv,ic-1)+ww*sx1(n)
                     ! Loop on (i=0,j,k)
@@ -1020,6 +1019,146 @@ CONTAINS
         DEALLOCATE(rhocells)
         RETURN
     END SUBROUTINE depose_rho_vecHVv2_3_3_3
+
+
+    !!! --- Order 3 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized (HV-SCHEME)
+    !!! --- This routine does vectorize on SIMD architecture with good performances
+    !!! ---  Speedup>2 on AVX 256 bits
+    SUBROUTINE depose_rho_vecHVv3_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        USE constants
+        IMPLICIT NONE
+        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
+        INTEGER, PARAMETER :: LVEC=64
+        INTEGER, DIMENSION(LVEC) :: ICELL
+        REAL(num) :: ww, wwx,wwy,wwz
+        INTEGER :: NCELLS
+        REAL(num) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+        REAL(num) :: dxi,dyi,dzi,xint,yint(1:LVEC),zint, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+        REAL(num) :: x,y,z,invvol, wq0, wq
+        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC), sz1(LVEC), sz2(LVEC), sz3(LVEC),sz4(LVEC)
+        REAL(num) :: sy(-1:2), sz(-1:2)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER :: ic,ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER :: nnx, nnxy, off0, ind0
+        INTEGER :: moff(1:16)
+        REAL(num):: www(1:16,1:LVEC), ydec(1:4), h1(1:4), h11(1:4), h12(1:4), sgn(1:4), syy(1:4)
+
+        ! Init parameters
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        wq0=q*invvol
+        NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+        ALLOCATE(rhocells(8,NCELLS))
+        rhocells=0.0_num
+        nnx = nx + 1 + 2*nxguard
+        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+        moff = (/-1-nnx-nnxy,-nnx-nnxy,1-nnx-nnxy,-1-nnxy,-nnxy,1-nnxy,-1+nnx-nnxy,nnx-nnxy, &
+                -1-nnx-nnxy,-nnx-nnxy,1-nnx-nnxy,-1-nnxy,-nnxy,1-nnxy,-1+nnx-nnxy,nnx-nnxy/)
+        off0=1+nnx+nnxy
+        h1=(/1_num,0_num,1_num,0_num/); sgn=(/1_num,-1_num,1_num,-1_num/)
+        h11=(/1_num,0_num,1_num,0_num/); h12=(/1_num,-1_num,1_num,-1_num/)
+
+        ! FIRST LOOP: computes cell index of particle and their weight on vertices
+        DO ip=1,np,LVEC
+            !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+            !DIR$ ASSUME_ALIGNED w:64
+            !DIR$ ASSUME_ALIGNED ICELL:64
+            !$OMP SIMD
+            DO n=1,MIN(LVEC,np-ip+1)
+                nn=ip+n-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x= (xp(nn)-xmin)*dxi
+                y = (yp(nn)-ymin)*dyi
+                z = (zp(nn)-zmin)*dzi
+                ! --- finds cell containing particles for current positions
+                j=floor(x)
+                k=floor(y)
+                l=floor(z)
+                ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+                wq=w(nn)*wq0
+                ! --- computes distance between particle and node for current positions
+                xint = x-j
+                yint(n) = y-k
+                zint = z-l
+                ! --- computes coefficients for node centered quantities
+                oxint = 1.0_num-xint
+                xintsq = xint*xint
+                oxintsq = oxint*oxint
+                sx1(n) = onesixth*oxintsq*oxint
+                sx2(n) = twothird-xintsq*(1.0_num-xint*0.5_num)
+                sx3(n) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+                sx4(n) = onesixth*xintsq*xint
+                ozint = 1.0_num-zint
+                zintsq = zint*zint
+                ozintsq = ozint*ozint
+                sz1(n) = onesixth*ozintsq*ozint*wq
+                sz2(n) = (twothird-zintsq*(1.0_num-zint*0.5_num))*wq
+                sz3(n) = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
+                sz4(n) = onesixth*zintsq*zint*wq
+            END DO
+            !$OMP END SIMD
+            DO n=1,MIN(LVEC,np-ip+1)
+                !$OMP SIMD
+                DO nv=1,4 !!! Vector
+                    ydec(nv)=(h1(nv)-yint(n))*sgn(nv)
+                    syy(nv)= (twothird-ydec(nv)*(1.0_num-ydec(nv)*0.5_num))*h11(nv)+onesixth*ydec(nv)*h12(nv)
+                    www(nv,n)=syy(nv)*sz1(n)
+                    www(nv+4,n)=syy(nv)*sz2(n)
+                    www(nv+8,n)=syy(nv)*sz3(n)
+                    www(nv+12,n)=syy(nv)*sz4(n)
+                ENDDO
+                !$OMP END SIMD
+            END DO
+            ! Current deposition on vertices
+            DO n=1,MIN(LVEC,np-ip+1)
+                ! --- add charge density contributions to vertices of the current cell
+                ic=ICELL(n)
+                ic0=ic++nnx-1
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !$OMP SIMD
+                DO nv=1,8 !!! - VECTOR
+                    ! Loop on (i=-1,j,k)
+                    rhocells(nv,ic-1)=rhocells(nv,ic-1)+www(nv,n)*sx1(n)
+                    ! Loop on (i=0,j,k)
+                    rhocells(nv,ic)=rhocells(nv,ic)+www(nv,n)*sx2(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic+1)=rhocells(nv,ic+1)+www(nv,n)*sx3(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic+2)=rhocells(nv,ic+2)+www(nv,n)*sx4(n)
+                    ! Loop on (i=-1,j,k)
+                    rhocells(nv,ic0-1)=rhocells(nv,ic0-1)+www(nv+8,n)*sx1(n)
+                    ! Loop on (i=0,j,k)
+                    rhocells(nv,ic0)=rhocells(nv,ic0)+www(nv+8,n)*sx2(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic0+1)=rhocells(nv,ic0+1)+www(nv+8,n)*sx3(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic0+2)=rhocells(nv,ic0+2)+www(nv+8,n)*sx4(n)
+                END DO
+                !$OMP END SIMD
+            END DO
+        END DO
+        DO nv=1,8
+            ind0=off0+moff(nv)
+            !DIR$ ASSUME_ALIGNED rhocells:64
+            !DIR$ ASSUME_ALIGNED rho:64
+            !$OMP SIMD
+            DO ic=1,NCELLS  !!! VECTOR
+                rho(ic+ind0)=rho(ic+ind0)+rhocells(nv,ic)
+            END DO
+            !$OMP END SIMD
+        END DO
+        DEALLOCATE(rhocells)
+        RETURN
+    END SUBROUTINE depose_rho_vecHVv3_3_3_3
+
 
     !!! --- General charge deposition routine (Warning: Highly unoptimized routine)
     !!! Computes charge density on grid at arbitrary orders nox, noy and noz
