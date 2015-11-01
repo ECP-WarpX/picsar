@@ -20,15 +20,12 @@ INTEGER :: nst,i
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
     pushtime=0._num
+
+    !!! --- Gather electromagnetic fields from the grid to particle species
+    CALL gather_ebfields_on_particles
     
-    !!! --- Advance velocity half a time step
+    !!! --- Advance velocity a full time step
     CALL push_particles_v
-
-    !!! --- Push B field half a time step
-    CALL push_bfield
-
-    !!! --- Boundary conditions for B
-    CALL bfield_bcs
 
     !!! --- Push particles a full time step
     CALL push_particles_xyz
@@ -42,6 +39,12 @@ DO i=1,nst
     !!! --- Boundary conditions for currents
     CALL current_bcs
 
+    !!! --- Push B field half a time step
+    CALL push_bfield
+
+    !!! --- Boundary conditions for B
+    CALL bfield_bcs
+
     !!! --- Push E field  a full time step
     CALL push_efield
 
@@ -53,12 +56,6 @@ DO i=1,nst
 
     !!! --- Boundary conditions for B
     CALL bfield_bcs
-
-    !!! --- Gather electromagnetic fields from the grid to particle species
-    CALL gather_ebfields_on_particles
-
-    !!! --- Advance velocity half a time step
-    CALL push_particles_v
 
     !!! --- Computes derived quantities
     CALL calc_diags

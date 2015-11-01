@@ -1,5 +1,5 @@
 !===============================================================================
-!  Advance velocity half a time step
+!  Advance velocity a full time step
 !===============================================================================
 SUBROUTINE push_particles_v
 USE particles
@@ -30,7 +30,11 @@ DO iz=1, ntilez ! LOOP ON TILES
                 !! -- Push velocity with E half step
                 CALL epush_v(count,curr_tile%part_ux(1:count), curr_tile%part_uy(1:count), &
                 curr_tile%part_uz(1:count), curr_tile%part_ex(1:count), curr_tile%part_ey(1:count), &
-                curr_tile%part_ez(1:count), curr%charge,curr%mass,dt*0.5_num)
+                curr_tile%part_ez(1:count), curr%charge,curr%mass,dt)
+                !! -- Push velocity with B half step
+                CALL bpush_v(count,curr_tile%part_ux(1:count), curr_tile%part_uy(1:count), &
+                curr_tile%part_uz(1:count), curr_tile%part_bx(1:count), curr_tile%part_by(1:count), &
+                curr_tile%part_bz(1:count), curr%charge,curr%mass,dt*0.5_num)
             END DO! END LOOP ON SPECIES
         END DO
     END DO
