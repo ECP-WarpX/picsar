@@ -248,7 +248,8 @@ CONTAINS
         nzc=curr_tile%nz_cells_tile
         ALLOCATE(curr_tile%jxtile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
                  curr_tile%jytile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%jztile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
+                 curr_tile%jztile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
+                 curr_tile%rhotile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
         curr_tile%l_arrays_allocated = .TRUE.
 
     END SUBROUTINE allocate_tile_arrays

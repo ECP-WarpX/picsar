@@ -17,9 +17,9 @@ CONTAINS
         IMPLICIT NONE
         INTEGER :: ispecies, ix, iy, iz, count
         INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
+        INTEGER :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
         TYPE(particle_species), POINTER :: curr
         TYPE(particle_tile), POINTER :: curr_tile
-        REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rho_tile
         INTEGER :: nxc, nyc, nzc
 
         ! - Computes electric field divergence on grid at n+1
@@ -28,11 +28,12 @@ CONTAINS
 
         ! - Computes total charge density
         rho=0.0_num
-        !$OMP PARALLEL DO COLLAPSE(4) SCHEDULE(guided) DEFAULT(NONE) &
-        !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
+        !$OMP PARALLEL DEFAULT(NONE) &
+        !$OMP SHARED(rho,ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
         !$OMP nyjguards,nzjguards,dx,dy,dz) &
-        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc) &
-        !$OMP REDUCTION(+:rho)
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,nxc,nyc,nzc, &
+        !$OMP jminc,jmaxc,kminc,kmaxc,lminc,lmaxc)
+        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
         DO iz=1, ntilez ! LOOP ON TILES
             DO iy=1, ntiley
                 DO ix=1, ntilex
@@ -40,32 +41,77 @@ CONTAINS
                         curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count= curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min-nxjguards
-                        jmax=curr_tile%nx_tile_max+nxjguards
-                        kmin=curr_tile%ny_tile_min-nyjguards
-                        kmax=curr_tile%ny_tile_max+nyjguards
-                        lmin=curr_tile%nz_tile_min-nzjguards
-                        lmax=curr_tile%nz_tile_max+nzjguards
+                        jmin=curr_tile%nx_tile_min
+                        jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min
+                        kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min
+                        lmax=curr_tile%nz_tile_max
                         nxc=curr_tile%nx_cells_tile
                         nyc=curr_tile%ny_cells_tile
                         nzc=curr_tile%nz_cells_tile
-                        ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
-                        rho_tile = 0.0_num
+                        curr_tile%rhotile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_vecHV_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_vecHV_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
                              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
                              curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
                         ! Reduce rho_tile in rho
-                        rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ rho_tile
-                        DEALLOCATE(rho_tile)
+                        rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ &
+                        curr_tile%rhotile(0:nxc,0:nyc,0:nzc)
                     END DO! END LOOP ON SPECIES
                 END DO
             END DO
         END DO !END LOOP ON TILES!
-        !$OMP END PARALLEL DO
+        !$OMP END DO
+        !! Adding charge from guard cells of current tile to adjacent subdomains (AVOIDS REDUCTION OPERATION)
+        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+        DO iz=1,ntilez
+            DO iy=1,ntiley
+                DO ix=1,ntilex
+                    DO ispecies=1, nspecies ! LOOP ON SPECIES
+                        curr => species_parray(ispecies)
+                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                        count=curr_tile%np_tile
+                        jmin=curr_tile%nx_tile_min
+                        jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min
+                        kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min
+                        lmax=curr_tile%nz_tile_max
+                        jminc=jmin-nxjguards
+                        jmaxc=jmax+nxjguards
+                        kminc=kmin-nyjguards
+                        kmaxc=kmax+nyjguards
+                        lminc=lmin-nzjguards
+                        lmaxc=lmax+nzjguards
+                        nxc=curr_tile%nx_cells_tile
+                        nyc=curr_tile%ny_cells_tile
+                        nzc=curr_tile%nz_cells_tile
+                        ! ----- Add guardcells in adjacent tiles
+                        ! - FACES +/- X
+                        rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                        curr_tile%rhotile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                        rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                        curr_tile%rhotile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                        ! - FACES +/- Y
+                        rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                        curr_tile%rhotile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
+                        rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                        curr_tile%rhotile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                        ! - FACES +/- Z
+                        rho(jmin:jmax,kmin:kmax,lminc:lmin-1) = rho(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                        curr_tile%rhotile(0:nxc, 0:nyc,-nzjguards:-1)
+                        rho(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = rho(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                        curr_tile%rhotile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
+                    END DO! END LOOP ON SPECIES
+                END DO
+            END DO
+        END DO!END LOOP ON TILES
+        !$OMP END DO
+        !$OMP END PARALLEL
         CALL charge_bcs
 
     END SUBROUTINE calc_diags
