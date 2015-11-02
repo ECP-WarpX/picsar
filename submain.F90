@@ -21,14 +21,8 @@ DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
     pushtime=0._num
 
-    !!! --- Gather electromagnetic fields from the grid to particle species
-    CALL gather_ebfields_on_particles
-    
-    !!! --- Advance velocity a full time step
-    CALL push_particles_v
-
-    !!! --- Push particles a full time step
-    CALL push_particles_xyz
+    !!! --- Field gather & particle push
+    CALL push_particles
 
     !!! --- Apply BC on particles
     CALL particle_bcs

@@ -83,6 +83,10 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
     REAL(num), ALLOCATABLE, DIMENSION(:) :: weight
+    ! Current arrays
+    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jxtile
+    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jytile
+    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jztile
 END TYPE
 
 ! Fortran object representing a particle species

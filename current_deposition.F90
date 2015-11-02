@@ -12,6 +12,7 @@ USE omp_lib
 IMPLICIT NONE
 INTEGER :: ispecies, ix, iy, iz, count
 INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
@@ -23,11 +24,12 @@ jy = 0.0_num
 jz = 0.0_num
 
 tdeb=MPI_WTIME()
-!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards,nyjguards,nzjguards,dx,dy,dz,dt) &
+!$OMP PARALLEL DEFAULT(NONE) &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards,nyjguards,nzjguards,dx,dy,dz,dt,jx,jy,jz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,jx_tile,jy_tile,jz_tile,nxc,nyc,nzc) &
-!$OMP REDUCTION(+:jx,jy,jz) 
+!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,jx_tile,jy_tile,jz_tile,nxc,nyc,nzc)
+!! Current deposition
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
@@ -35,38 +37,113 @@ DO iz=1,ntilez
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile
-                jmin=curr_tile%nx_tile_min-nxjguards
-                jmax=curr_tile%nx_tile_max+nxjguards
-                kmin=curr_tile%ny_tile_min-nyjguards
-                kmax=curr_tile%ny_tile_max+nyjguards
-                lmin=curr_tile%nz_tile_min-nzjguards
-                lmax=curr_tile%nz_tile_max+nzjguards
+                jmin=curr_tile%nx_tile_min
+                jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min
+                kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min
+                lmax=curr_tile%nz_tile_max
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
-                ALLOCATE(jx_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                         jy_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                         jz_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
-                jx_tile = 0.0_num
-                jy_tile = 0.0_num
-                jz_tile = 0.0_num
+                curr_tile%jxtile = 0.0_num
+                curr_tile%jytile = 0.0_num
+                curr_tile%jztile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_scalar_1_1_1(jx_tile,jy_tile,jz_tile,count,    &
+                CALL depose_jxjyjz_scalar_1_1_1(curr_tile%jxtile,curr_tile%jytile,curr_tile%jztile,count,       &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
                 curr_tile%z_grid_tile_min,dt,dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,          &
                 curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
                 ! Reduce jtile in j
-                jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + jx_tile
-                jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + jy_tile
-                jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax) + jz_tile
-                DEALLOCATE(jx_tile,jy_tile,jz_tile)
+                jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jxtile(0:nxc,0:nyc,0:nzc)
+                jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jytile(0:nxc,0:nyc,0:nzc)
+                jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jztile(0:nxc,0:nyc,0:nzc)
             END DO! END LOOP ON SPECIES
         END DO
     END DO
 END DO!END LOOP ON TILES
-!$OMP END PARALLEL DO
+!$OMP END DO
+!! Adding currents from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile
+                jmin=curr_tile%nx_tile_min
+                jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min
+                kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min
+                lmax=curr_tile%nz_tile_max
+                jminc=jmin-nxjguards
+                jmaxc=jmax+nxjguards
+                kminc=kmin-nyjguards
+                kmaxc=kmax+nyjguards
+                lminc=lmin-nzjguards
+                lmaxc=lmax+nzjguards
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- JX
+                ! - FACES +/- X
+                jx(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jx(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jxtile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                jx(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jx(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jxtile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                ! - FACES +/- Y
+                jx(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jx(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                curr_tile%jxtile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
+                jx(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jx(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jxtile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                ! - FACES +/- Z
+                jx(jmin:jmax,kmin:kmax,lminc:lmin-1) = jx(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                curr_tile%jxtile(0:nxc, 0:nyc,-nzjguards:-1)
+                jx(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jx(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                curr_tile%jxtile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
+                ! --- JY
+                ! - FACES +/- X
+                jy(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jy(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jytile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                jy(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jy(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jytile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                ! - FACES +/- Y
+                jy(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jy(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                curr_tile%jytile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
+                jy(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jy(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jytile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                ! - FACES +/- Z
+                jy(jmin:jmax,kmin:kmax,lminc:lmin-1) = jy(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                curr_tile%jytile(0:nxc, 0:nyc,-nzjguards:-1)
+                jy(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jy(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                curr_tile%jytile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
+                ! --- JZ
+                ! - FACES +/- X
+                jz(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jz(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jztile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                jz(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jz(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jztile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                ! - FACES +/- Y
+                jz(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jz(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                curr_tile%jztile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
+                jz(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jz(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                curr_tile%jztile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                ! - FACES +/- Z
+                jz(jmin:jmax,kmin:kmax,lminc:lmin-1) = jz(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                curr_tile%jztile(0:nxc, 0:nyc,-nzjguards:-1)
+                jz(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jz(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                curr_tile%jztile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
+            END DO! END LOOP ON SPECIES
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!$OMP END PARALLEL
 tend=MPI_WTIME()
 pushtime=pushtime+(tend-tdeb)
 
