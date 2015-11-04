@@ -37,7 +37,7 @@ DO i=1,nst
     !CALL particle_bcs
 
     !!! --- Deposit current of particle species on the grid
-    !CALL depose_currents_on_grid_jxjyjz
+    CALL depose_currents_on_grid_jxjyjz
 
     !!! --- Boundary conditions for currents
     !CALL current_bcs
@@ -61,7 +61,7 @@ DO i=1,nst
     !CALL push_particles_v
 
     !!! --- Computes derived quantities
-    CALL calc_diags
+    !CALL calc_diags
 
     !!! --- Output simulation results
     !CALL output_routines

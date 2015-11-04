@@ -313,7 +313,7 @@ CONTAINS
     END SUBROUTINE init_tile_arrays
 
     SUBROUTINE load_particles
-        USE ifport
+        !USE ifport
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER :: ispecies, l, k, j, ipart

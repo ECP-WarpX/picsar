@@ -1,4 +1,5 @@
-FC=mpiifort -g -O3 -xCORE-AVX2 -align array64byte -openmp -qopt-report=5 
+FC=mpif90 -g -O3 
+#-xCORE-AVX2 -align array64byte -openmp -qopt-report=5 
 #-ftree-vectorizer-verbose=3
 #FARGS=-g -fdefault-real-8 -fdefault-double-8  -fbounds-check
 #FARGS=-O3 -fdefault-real-8 -fdefault-double-8 

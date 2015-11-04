@@ -27,11 +27,13 @@ CONTAINS
         !CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
 
         ! - Computes total charge density
+        ! - Computes total charge density
         rho=0.0_num
         !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(guided) DEFAULT(NONE) &
-        !$OMP SHARED(rho,ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
+        !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
         !$OMP nyjguards,nzjguards,dx,dy,dz) &
-        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc)
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,rho_tile,nxc,nyc,nzc) &
+        !$OMP REDUCTION(+:rho)
         DO iz=1, ntilez ! LOOP ON TILES
             DO iy=1, ntiley
                 DO ix=1, ntilex
@@ -39,22 +41,27 @@ CONTAINS
                         curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count= curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min-nxjguards+(ix-1)*nxjguards
-                        jmax=curr_tile%nx_tile_max+nxjguards+(ix-1)*nxjguards
-                        kmin=curr_tile%ny_tile_min-nyjguards+(iy-1)*nyjguards
-                        kmax=curr_tile%ny_tile_max+nyjguards+(iy-1)*nyjguards
-                        lmin=curr_tile%nz_tile_min-nzjguards+(iz-1)*nzjguards
-                        lmax=curr_tile%nz_tile_max+nzjguards++(iz-1)*nzjguards
+                        jmin=curr_tile%nx_tile_min-nxjguards
+                        jmax=curr_tile%nx_tile_max+nxjguards
+                        kmin=curr_tile%ny_tile_min-nyjguards
+                        kmax=curr_tile%ny_tile_max+nyjguards
+                        lmin=curr_tile%nz_tile_min-nzjguards
+                        lmax=curr_tile%nz_tile_max+nzjguards
                         nxc=curr_tile%nx_cells_tile
                         nyc=curr_tile%ny_cells_tile
                         nzc=curr_tile%nz_cells_tile
+                        ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
+                        rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_2_2_2(rho(jmin:jmax,kmin:kmax,lmin:lmax), count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_vecHVv2_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
                              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
                              curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
+                        ! Reduce rho_tile in rho
+                        rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ rho_tile
+                        DEALLOCATE(rho_tile)
                     END DO! END LOOP ON SPECIES
                 END DO
             END DO
