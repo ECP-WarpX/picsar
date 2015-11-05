@@ -58,9 +58,9 @@ DO iz=1,ntilez
                 curr_tile%z_grid_tile_min,dt,dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,          &
                 curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
                 ! Reduce jtile in j
-                jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + jx_tile
-                jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + jy_tile
-                jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax) + jz_tile
+                !jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + jx_tile
+                !jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + jy_tile
+                !jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax) + jz_tile
                 DEALLOCATE(jx_tile,jy_tile,jz_tile)
             END DO! END LOOP ON SPECIES
         END DO
@@ -89,7 +89,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
     REAL(num) :: wq, wqx, wqy, wqz, gaminv, usq, clightsq
     REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,ip
+    INTEGER :: j,k,l,j0,k0,l0,ip
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
     dzi = 1.0_num/dz
@@ -130,7 +130,9 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         j=floor(xmid)
         k=floor(ymid)
         l=floor(zmid)
-
+        j0=floor(xmid-0.5_num)
+        k0=floor(ymid-0.5_num)
+        l0=floor(zmid-0.5_num)
         ! --- computes set of coefficients for node centered quantities
         xint = xmid-j
         yint = ymid-k
@@ -143,9 +145,9 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         sz( 1) = zint
 
         ! --- computes set of coefficients for staggered quantities
-        xint = xmid-j-0.5_num
-        yint = ymid-k-0.5_num
-        zint = zmid-l-0.5_num
+        xint = xmid-j0-0.5_num
+        yint = ymid-k0-0.5_num
+        zint = zmid-l0-0.5_num
         sx0( 0) = 1.0_num-xint
         sx0( 1) = xint
         sy0( 0) = 1.0_num-yint
@@ -155,34 +157,34 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
 
         ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
         ! - JX
-        jx(j,k,l)      = jx(j,k,l)+sx0(0)*sy(0)*sz(0)*wqx
-        jx(j+1,k,l)    = jx(j+1,k,l)+sx0(1)*sy(0)*sz(0)*wqx
-        jx(j,k+1,l)    = jx(j,k+1,l)+sx0(0)*sy(1)*sz(0)*wqx
-        jx(j+1,k+1,l)  = jx(j+1,k+1,l)+sx0(1)*sy(1)*sz(0)*wqx
-        jx(j,k,l+1)    = jx(j,k,l+1)+sx0(0)*sy(0)*sz(1)*wqx
-        jx(j+1,k,l+1)  = jx(j+1,k,l+1)+sx0(1)*sy(0)*sz(1)*wqx
-        jx(j,k+1,l+1)  = jx(j,k+1,l+1)+sx0(0)*sy(1)*sz(1)*wqx
-        jx(j+1,k+1,l+1)= jx(j+1,k+1,l+1)+sx0(1)*sy(1)*sz(1)*wqx
+        jx(j0  ,k  ,l  )    = jx(j0  ,k  ,l  )  +   sx0(0)*sy(0)*sz(0)*wqx
+        jx(j0+1,k  ,l  )    = jx(j0+1,k  ,l  )  +   sx0(1)*sy(0)*sz(0)*wqx
+        jx(j0  ,k+1,l  )    = jx(j0  ,k+1,l  )  +   sx0(0)*sy(1)*sz(0)*wqx
+        jx(j0+1,k+1,l  )    = jx(j0+1,k+1,l  )  +   sx0(1)*sy(1)*sz(0)*wqx
+        jx(j0  ,k  ,l+1)    = jx(j0  ,k  ,l+1)  +   sx0(0)*sy(0)*sz(1)*wqx
+        jx(j0+1,k  ,l+1)    = jx(j0+1,k  ,l+1)  +   sx0(1)*sy(0)*sz(1)*wqx
+        jx(j0  ,k+1,l+1)    = jx(j0  ,k+1,l+1)  +   sx0(0)*sy(1)*sz(1)*wqx
+        jx(j0+1,k+1,l+1)    = jx(j0+1,k+1,l+1)  +   sx0(1)*sy(1)*sz(1)*wqx
 
         ! - JY
-        jy(j,k,l)      = jy(j,k,l)+sx(0)*sy0(0)*sz(0)*wqy
-        jy(j+1,k,l)    = jy(j+1,k,l)+sx(1)*sy0(0)*sz(0)*wqy
-        jy(j,k+1,l)    = jy(j,k+1,l)+sx(0)*sy0(1)*sz(0)*wqy
-        jy(j+1,k+1,l)  = jy(j+1,k+1,l)+sx(1)*sy0(1)*sz(0)*wqy
-        jy(j,k,l+1)    = jy(j,k,l+1)+sx(0)*sy0(0)*sz(1)*wqy
-        jy(j+1,k,l+1)  = jy(j+1,k,l+1)+sx(1)*sy0(0)*sz(1)*wqy
-        jy(j,k+1,l+1)  = jy(j,k+1,l+1)+sx(0)*sy0(1)*sz(1)*wqy
-        jy(j+1,k+1,l+1)= jy(j+1,k+1,l+1)+sx(1)*sy0(1)*sz(1)*wqy
+        jy(j  ,k0  ,l  )    = jy(j  ,k0  ,l  )  +   sx(0)*sy0(0)*sz(0)*wqy
+        jy(j+1,k0  ,l  )    = jy(j+1,k0  ,l  )  +   sx(1)*sy0(0)*sz(0)*wqy
+        jy(j  ,k0+1,l  )    = jy(j  ,k0+1,l  )  +   sx(0)*sy0(1)*sz(0)*wqy
+        jy(j+1,k0+1,l  )    = jy(j+1,k0+1,l  )  +   sx(1)*sy0(1)*sz(0)*wqy
+        jy(j  ,k0  ,l+1)    = jy(j  ,k0  ,l+1)  +   sx(0)*sy0(0)*sz(1)*wqy
+        jy(j+1,k0  ,l+1)    = jy(j+1,k0  ,l+1)  +   sx(1)*sy0(0)*sz(1)*wqy
+        jy(j  ,k0+1,l+1)    = jy(j  ,k0+1,l+1)  +   sx(0)*sy0(1)*sz(1)*wqy
+        jy(j+1,k0+1,l+1)    = jy(j+1,k0+1,l+1)  +   sx(1)*sy0(1)*sz(1)*wqy
 
         ! - JZ
-        jz(j,k,l)      = jz(j,k,l)+sx(0)*sy(0)*sz0(0)*wqz
-        jz(j+1,k,l)    = jz(j+1,k,l)+sx(1)*sy(0)*sz0(0)*wqz
-        jz(j,k+1,l)    = jz(j,k+1,l)+sx(0)*sy(1)*sz0(0)*wqz
-        jz(j+1,k+1,l)  = jz(j+1,k+1,l)+sx(1)*sy(1)*sz0(0)*wqz
-        jz(j,k,l+1)    = jz(j,k,l+1)+sx(0)*sy(0)*sz0(1)*wqz
-        jz(j+1,k,l+1)  = jz(j+1,k,l+1)+sx(1)*sy(0)*sz0(1)*wqz
-        jz(j,k+1,l+1)  = jz(j,k+1,l+1)+sx(0)*sy(1)*sz0(1)*wqz
-        jz(j+1,k+1,l+1)= jz(j+1,k+1,l+1)+sx(1)*sy(1)*sz0(1)*wqz
+        jz(j  ,k  ,l0  )    = jz(j  ,k  ,l0  )  +   sx(0)*sy(0)*sz0(0)*wqz
+        jz(j+1,k  ,l0  )    = jz(j+1,k  ,l0  )  +   sx(1)*sy(0)*sz0(0)*wqz
+        jz(j  ,k+1,l0  )    = jz(j  ,k+1,l0  )  +   sx(0)*sy(1)*sz0(0)*wqz
+        jz(j+1,k+1,l0  )    = jz(j+1,k+1,l0  )  +   sx(1)*sy(1)*sz0(0)*wqz
+        jz(j  ,k  ,l0+1)    = jz(j  ,k  ,l0+1)  +   sx(0)*sy(0)*sz0(1)*wqz
+        jz(j+1,k  ,l0+1)    = jz(j+1,k  ,l0+1)  +   sx(1)*sy(0)*sz0(1)*wqz
+        jz(j  ,k+1,l0+1)    = jz(j  ,k+1,l0+1)  +   sx(0)*sy(1)*sz0(1)*wqz
+        jz(j+1,k+1,l0+1)    = jz(j+1,k+1,l0+1)  +   sx(1)*sy(1)*sz0(1)*wqz
     END DO
     RETURN
 END SUBROUTINE depose_jxjyjz_scalar_1_1_1
@@ -207,14 +209,15 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) ::  wwx, wwy, wwz, gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,ip, NCELLS, ic
+    INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic
     INTEGER :: nnx, nnxy, n,nn,nv
     INTEGER :: moff(1:8) 
     REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
     INTEGER, PARAMETER :: LVEC=8
-    INTEGER, DIMENSION(LVEC) :: ICELL
+    INTEGER, DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: sx, sy, sz, sx0, sy0, sz0,vx,vy,vz,wq
     REAL(num) :: ww
+    INTEGER :: orig
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -226,7 +229,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     clightsq = 1.0_num/clight**2
     sx=0.0_num;sy=0.0_num;sz=0.0_num;
     sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
-    NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+    NCELLS=(nx+1)*(ny+1)*(nz+1)
     ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
     jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
     nnx = nx + 1 + 2*nxguard
@@ -239,6 +242,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     moff(6) = nnxy+1
     moff(7) = nnxy+nnx
     moff(8) = nnxy+nnx+1
+    orig=nnx+nnxy
     mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
     my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
     mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
@@ -278,7 +282,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             j=floor(xmid)
             k=floor(ymid)
             l=floor(zmid)
-            ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+            j0=floor(xmid-0.5_num)
+            k0=floor(ymid-0.5_num)
+            l0=floor(zmid-0.5_num)
+            ICELL(n,1)=2+j0+(k+1)*(nx+1)+(l+1)*(ny+1)
+            ICELL(n,2)=2+j+(k0+1)*(nx+1)+(l+1)*(ny+1)
+            ICELL(n,3)=2+j+(k+1)*(nx+1)+(l0+1)*(ny+1)
 
             ! --- computes set of coefficients for node centered quantities
             sx(n) = xmid-j
@@ -286,13 +295,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             sz(n) = zmid-l
 
             ! --- computes set of coefficients for staggered quantities
-            sx0(n) = xmid-j-0.5_num
-            sy0(n) = ymid-k-0.5_num
-            sz0(n) = zmid-l-0.5_num
+            sx0(n) = xmid-j0-0.5_num
+            sy0(n) = ymid-k0-0.5_num
+            sz0(n) = zmid-l0-0.5_num
         END DO
         !$OMP END SIMD
         DO n=1,MIN(LVEC,np-ip+1)
-            ic=ICELL(n)
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
             !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
             !$OMP SIMD
@@ -305,11 +313,11 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
                 (-mz(nv)+sz0(n))*wq(n)*sgn(nv)*vz(n)
                 ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
                 ! - JX
-                jxcells(nv,ic)=jxcells(nv,ic)+wwx
+                jxcells(nv,ICELL(n,1))=jxcells(nv,ICELL(n,1))+wwx
                 ! - JY
-                jycells(nv,ic)=jycells(nv,ic)+wwy
+                jycells(nv,ICELL(n,2))=jycells(nv,ICELL(n,2))+wwy
                 ! - JZ
-                jzcells(nv,ic)=jzcells(nv,ic)+wwz
+                jzcells(nv,ICELL(n,3))=jzcells(nv,ICELL(n,3))+wwz
             END DO
             !$OMP END SIMD
         END DO
@@ -319,9 +327,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
         !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
         !$OMP SIMD
         DO ic=1,NCELLS  !!! VECTOR
-            jx(ic+moff(nv))=jx(ic+moff(nv))+jxcells(nv,ic)
-            jy(ic+moff(nv))=jy(ic+moff(nv))+jycells(nv,ic)
-            jz(ic+moff(nv))=jz(ic+moff(nv))+jzcells(nv,ic)
+            jx(orig+ic+moff(nv))=jx(orig+ic+moff(nv))+jxcells(nv,ic)
+            jy(orig+ic+moff(nv))=jy(orig+ic+moff(nv))+jycells(nv,ic)
+            jz(orig+ic+moff(nv))=jz(orig+ic+moff(nv))+jzcells(nv,ic)
         END DO
         !$OMP END SIMD
     END DO
@@ -343,9 +351,9 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
     REAL(num) :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) :: wq, wqx, wqy, wqz, gaminv, usq, clightsq
-    REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
+    REAL(num), DIMENSION(2) :: sx(-1:1), sy(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1)
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,ip
+    INTEGER :: j,k,l,j0,k0,l0,ip
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
     dzi = 1.0_num/dz
@@ -386,64 +394,138 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         j=floor(xmid)
         k=floor(ymid)
         l=floor(zmid)
+        j0=floor(xmid-0.5_num)
+        k0=floor(ymid-0.5_num)
+        l0=floor(zmid-0.5_num)
 
         ! --- computes set of coefficients for node centered quantities
         xint = xmid-j
         yint = ymid-k
         zint = zmid-l
-        sx( 0) = 1.0_num-xint
-        sx( 1) = xint
-        sy( 0) = 1.0_num-yint
-        sy( 1) = yint
-        sz( 0) = 1.0_num-zint
-        sz( 1) = zint
+        xintsq = xint*xint
+        sx(-1) = 0.5_num*(0.5_num-xint)**2
+        sx( 0) = 0.75_num-xintsq
+        sx( 1) = 0.5_num*(0.5_num+xint)**2
+        yintsq = yint*yint
+        sy(-1) = 0.5_num*(0.5_num-yint)**2
+        sy( 0) = 0.75_num-yintsq
+        sy( 1) = 0.5_num*(0.5_num+yint)**2
+        zintsq = zint*zint
+        sz(-1) = 0.5_num*(0.5_num-zint)**2*wq
+        sz( 0) = 0.75_num-zintsq*wq
+        sz( 1) = 0.5_num*(0.5_num+zint)**2*wq
 
         ! --- computes set of coefficients for staggered quantities
-        xint = xmid-j-0.5_num
-        yint = ymid-k-0.5_num
-        zint = zmid-l-0.5_num
-        sx0( 0) = 1.0_num-xint
-        sx0( 1) = xint
-        sy0( 0) = 1.0_num-yint
-        sy0( 1) = yint
-        sz0( 0) = 1.0_num-zint
-        sz0( 1) = zint
+        xint = xmid-j0-0.5_num
+        yint = ymid-k0-0.5_num
+        zint = zmid-l0-0.5_num
+        xintsq = xint*xint
+        sx0(-1) = 0.5_num*(0.5_num-xint)**2
+        sx0( 0) = 0.75_num-xintsq
+        sx0( 1) = 0.5_num*(0.5_num+xint)**2
+        yintsq = yint*yint
+        sy0(-1) = 0.5_num*(0.5_num-yint)**2
+        sy0( 0) = 0.75_num-yintsq
+        sy0( 1) = 0.5_num*(0.5_num+yint)**2
+        zintsq = zint*zint
+        sz0(-1) = 0.5_num*(0.5_num-zint)**2*wq
+        sz0( 0) = 0.75_num-zintsq*wq
+        sz0( 1) = 0.5_num*(0.5_num+zint)**2*wq
 
         ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
+        ! --- to the 27 nearest vertices
         ! - JX
-        jx(j,k,l)      = jx(j,k,l)+sx0(0)*sy(0)*sz(0)*wqx
-        jx(j+1,k,l)    = jx(j+1,k,l)+sx0(1)*sy(0)*sz(0)*wqx
-        jx(j,k+1,l)    = jx(j,k+1,l)+sx0(0)*sy(1)*sz(0)*wqx
-        jx(j+1,k+1,l)  = jx(j+1,k+1,l)+sx0(1)*sy(1)*sz(0)*wqx
-        jx(j,k,l+1)    = jx(j,k,l+1)+sx0(0)*sy(0)*sz(1)*wqx
-        jx(j+1,k,l+1)  = jx(j+1,k,l+1)+sx0(1)*sy(0)*sz(1)*wqx
-        jx(j,k+1,l+1)  = jx(j,k+1,l+1)+sx0(0)*sy(1)*sz(1)*wqx
-        jx(j+1,k+1,l+1)= jx(j+1,k+1,l+1)+sx0(1)*sy(1)*sz(1)*wqx
+        jx(j0-1,k-1,l-1)  = jx(j0-1,k-1,l-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqx
+        jx(j0  ,k-1,l-1)  = jx(j0  ,k-1,l-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqx
+        jx(j0+1,k-1,l-1)  = jx(j0+1,k-1,l-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqx
+        jx(j0-1,k  ,l-1)  = jx(j0-1,k  ,l-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqx
+        jx(j0  ,k  ,l-1)  = jx(j0  ,k  ,l-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqx
+        jx(j0+1,k  ,l-1)  = jx(j0+1,k  ,l-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqx
+        jx(j0-1,k+1,l-1)  = jx(j0-1,k+1,l-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqx
+        jx(j0  ,k+1,l-1)  = jx(j0  ,k+1,l-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqx
+        jx(j0+1,k+1,l-1)  = jx(j0+1,k+1,l-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqx
+        jx(j0-1,k-1,l  )  = jx(j0-1,k-1,l  )  +   sx0(-1)*sy(-1)*sz(0 )*wqx
+        jx(j0  ,k-1,l  )  = jx(j0  ,k-1,l  )  +   sx0(0 )*sy(-1)*sz(0 )*wqx
+        jx(j0+1,k-1,l  )  = jx(j0+1,k-1,l  )  +   sx0(1 )*sy(-1)*sz(0 )*wqx
+        jx(j0-1,k  ,l  )  = jx(j0-1,k  ,l  )  +   sx0(-1)*sy(0 )*sz(0 )*wqx
+        jx(j0  ,k  ,l  )  = jx(j0  ,k  ,l  )  +   sx0(0 )*sy(0 )*sz(0 )*wqx
+        jx(j0+1,k  ,l  )  = jx(j0+1,k  ,l  )  +   sx0(1 )*sy(0 )*sz(0 )*wqx
+        jx(j0-1,k+1,l  )  = jx(j0-1,k+1,l  )  +   sx0(-1)*sy(1 )*sz(0 )*wqx
+        jx(j0  ,k+1,l  )  = jx(j0  ,k+1,l  )  +   sx0(0 )*sy(1 )*sz(0 )*wqx
+        jx(j0+1,k+1,l  )  = jx(j0+1,k+1,l  )  +   sx0(1 )*sy(1 )*sz(0 )*wqx
+        jx(j0-1,k-1,l+1)  = jx(j0-1,k-1,l+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqx
+        jx(j0  ,k-1,l+1)  = jx(j0  ,k-1,l+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqx
+        jx(j0+1,k-1,l+1)  = jx(j0+1,k-1,l+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqx
+        jx(j0-1,k  ,l+1)  = jx(j0-1,k  ,l+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqx
+        jx(j0  ,k  ,l+1)  = jx(j0  ,k  ,l+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqx
+        jx(j0+1,k  ,l+1)  = jx(j0+1,k  ,l+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqx
+        jx(j0-1,k+1,l+1)  = jx(j0-1,k+1,l+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqx
+        jx(j0  ,k+1,l+1)  = jx(j0  ,k+1,l+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqx
+        jx(j0+1,k+1,l+1)  = jx(j0+1,k+1,l+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqx
+
 
         ! - JY
-        jy(j,k,l)      = jy(j,k,l)+sx(0)*sy0(0)*sz(0)*wqy
-        jy(j+1,k,l)    = jy(j+1,k,l)+sx(1)*sy0(0)*sz(0)*wqy
-        jy(j,k+1,l)    = jy(j,k+1,l)+sx(0)*sy0(1)*sz(0)*wqy
-        jy(j+1,k+1,l)  = jy(j+1,k+1,l)+sx(1)*sy0(1)*sz(0)*wqy
-        jy(j,k,l+1)    = jy(j,k,l+1)+sx(0)*sy0(0)*sz(1)*wqy
-        jy(j+1,k,l+1)  = jy(j+1,k,l+1)+sx(1)*sy0(0)*sz(1)*wqy
-        jy(j,k+1,l+1)  = jy(j,k+1,l+1)+sx(0)*sy0(1)*sz(1)*wqy
-        jy(j+1,k+1,l+1)= jy(j+1,k+1,l+1)+sx(1)*sy0(1)*sz(1)*wqy
+        jy(j-1,k0-1,l-1)  = jy(j-1,k0-1,l-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqy
+        jy(j  ,k0-1,l-1)  = jy(j  ,k0-1,l-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqy
+        jy(j+1,k0-1,l-1)  = jy(j+1,k0-1,l-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqy
+        jy(j-1,k0  ,l-1)  = jy(j-1,k0  ,l-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqy
+        jy(j  ,k0  ,l-1)  = jy(j  ,k0  ,l-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqy
+        jy(j+1,k0  ,l-1)  = jy(j+1,k0  ,l-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqy
+        jy(j-1,k0+1,l-1)  = jy(j-1,k0+1,l-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqy
+        jy(j  ,k0+1,l-1)  = jy(j  ,k0+1,l-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqy
+        jy(j+1,k0+1,l-1)  = jy(j+1,k0+1,l-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqy
+        jy(j-1,k0-1,l  )  = jy(j-1,k0-1,l  )  +   sx0(-1)*sy(-1)*sz(0 )*wqy
+        jy(j  ,k0-1,l  )  = jy(j  ,k0-1,l  )  +   sx0(0 )*sy(-1)*sz(0 )*wqy
+        jy(j+1,k0-1,l  )  = jy(j+1,k0-1,l  )  +   sx0(1 )*sy(-1)*sz(0 )*wqy
+        jy(j-1,k0  ,l  )  = jy(j-1,k0  ,l  )  +   sx0(-1)*sy(0 )*sz(0 )*wqy
+        jy(j  ,k0  ,l  )  = jy(j  ,k0  ,l  )  +   sx0(0 )*sy(0 )*sz(0 )*wqy
+        jy(j+1,k0  ,l  )  = jy(j+1,k0  ,l  )  +   sx0(1 )*sy(0 )*sz(0 )*wqy
+        jy(j-1,k0+1,l  )  = jy(j-1,k0+1,l  )  +   sx0(-1)*sy(1 )*sz(0 )*wqy
+        jy(j  ,k0+1,l  )  = jy(j  ,k0+1,l  )  +   sx0(0 )*sy(1 )*sz(0 )*wqy
+        jy(j+1,k0+1,l  )  = jy(j+1,k0+1,l  )  +   sx0(1 )*sy(1 )*sz(0 )*wqy
+        jy(j-1,k0-1,l+1)  = jy(j-1,k0-1,l+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqy
+        jy(j  ,k0-1,l+1)  = jy(j  ,k0-1,l+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqy
+        jy(j+1,k0-1,l+1)  = jy(j+1,k0-1,l+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqy
+        jy(j-1,k0  ,l+1)  = jy(j-1,k0  ,l+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqy
+        jy(j  ,k0  ,l+1)  = jy(j  ,k0  ,l+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqy
+        jy(j+1,k0  ,l+1)  = jy(j+1,k0  ,l+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqy
+        jy(j-1,k0+1,l+1)  = jy(j-1,k0+1,l+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqy
+        jy(j  ,k0+1,l+1)  = jy(j  ,k0+1,l+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqy
+        jy(j+1,k0+1,l+1)  = jy(j+1,k0+1,l+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqy
 
         ! - JZ
-        jz(j,k,l)      = jz(j,k,l)+sx(0)*sy(0)*sz0(0)*wqz
-        jz(j+1,k,l)    = jz(j+1,k,l)+sx(1)*sy(0)*sz0(0)*wqz
-        jz(j,k+1,l)    = jz(j,k+1,l)+sx(0)*sy(1)*sz0(0)*wqz
-        jz(j+1,k+1,l)  = jz(j+1,k+1,l)+sx(1)*sy(1)*sz0(0)*wqz
-        jz(j,k,l+1)    = jz(j,k,l+1)+sx(0)*sy(0)*sz0(1)*wqz
-        jz(j+1,k,l+1)  = jz(j+1,k,l+1)+sx(1)*sy(0)*sz0(1)*wqz
-        jz(j,k+1,l+1)  = jz(j,k+1,l+1)+sx(0)*sy(1)*sz0(1)*wqz
-        jz(j+1,k+1,l+1)= jz(j+1,k+1,l+1)+sx(1)*sy(1)*sz0(1)*wqz
+        jz(j-1,k-1,l0-1)  = jz(j-1,k-1,l0-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqz
+        jz(j  ,k-1,l0-1)  = jz(j  ,k-1,l0-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqz
+        jz(j+1,k-1,l0-1)  = jz(j+1,k-1,l0-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqz
+        jz(j-1,k  ,l0-1)  = jz(j-1,k  ,l0-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqz
+        jz(j  ,k  ,l0-1)  = jz(j  ,k  ,l0-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqz
+        jz(j+1,k  ,l0-1)  = jz(j+1,k  ,l0-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqz
+        jz(j-1,k+1,l0-1)  = jz(j-1,k+1,l0-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqz
+        jz(j  ,k+1,l0-1)  = jz(j  ,k+1,l0-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqz
+        jz(j+1,k+1,l0-1)  = jz(j+1,k+1,l0-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqz
+        jz(j-1,k-1,l0  )  = jz(j-1,k-1,l0  )  +   sx0(-1)*sy(-1)*sz(0 )*wqz
+        jz(j  ,k-1,l0  )  = jz(j  ,k-1,l0  )  +   sx0(0 )*sy(-1)*sz(0 )*wqz
+        jz(j+1,k-1,l0  )  = jz(j+1,k-1,l0  )  +   sx0(1 )*sy(-1)*sz(0 )*wqz
+        jz(j-1,k  ,l0  )  = jz(j-1,k  ,l0  )  +   sx0(-1)*sy(0 )*sz(0 )*wqz
+        jz(j  ,k  ,l0  )  = jz(j  ,k  ,l0  )  +   sx0(0 )*sy(0 )*sz(0 )*wqz
+        jz(j+1,k  ,l0  )  = jz(j+1,k  ,l0  )  +   sx0(1 )*sy(0 )*sz(0 )*wqz
+        jz(j-1,k+1,l0  )  = jz(j-1,k+1,l0  )  +   sx0(-1)*sy(1 )*sz(0 )*wqz
+        jz(j  ,k+1,l0  )  = jz(j  ,k+1,l0  )  +   sx0(0 )*sy(1 )*sz(0 )*wqz
+        jz(j+1,k+1,l0  )  = jz(j+1,k+1,l0  )  +   sx0(1 )*sy(1 )*sz(0 )*wqz
+        jz(j-1,k-1,l0+1)  = jz(j-1,k-1,l0+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqz
+        jz(j  ,k-1,l0+1)  = jz(j  ,k-1,l0+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqz
+        jz(j+1,k-1,l0+1)  = jz(j+1,k-1,l0+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqz
+        jz(j-1,k  ,l0+1)  = jz(j-1,k  ,l0+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqz
+        jz(j  ,k  ,l0+1)  = jz(j  ,k  ,l0+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqz
+        jz(j+1,k  ,l0+1)  = jz(j+1,k  ,l0+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqz
+        jz(j-1,k+1,l0+1)  = jz(j-1,k+1,l0+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqz
+        jz(j  ,k+1,l0+1)  = jz(j  ,k+1,l0+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqz
+        jz(j+1,k+1,l0+1)  = jz(j+1,k+1,l0+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqz
     END DO
     RETURN
 END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 
-!!! --- Order 2 3D scalar current deposition routine (rho*v)
+!!! --- Order 3 3D scalar current deposition routine (rho*v)
 !!! This version does not vectorize on SIMD architectures
 SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
@@ -457,9 +539,9 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
     REAL(num) :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) :: wq, wqx, wqy, wqz, gaminv, usq, clightsq
-    REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
+    REAL(num), DIMENSION(4) :: sx(-1:2), sy(-1:2), sz(-1:2), sx0(-1:2), sy0(-1:2), sz0(-1:2)
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,ip
+    INTEGER :: j,k,l,j0,k0,l0,ip
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
     dzi = 1.0_num/dz
@@ -500,59 +582,260 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         j=floor(xmid)
         k=floor(ymid)
         l=floor(zmid)
-
+        j0=floor(xmid-0.5_num)
+        k0=floor(ymid-0.5_num)
+        l0=floor(zmid-0.5_num)
         ! --- computes set of coefficients for node centered quantities
         xint = xmid-j
         yint = ymid-k
         zint = zmid-l
-        sx( 0) = 1.0_num-xint
-        sx( 1) = xint
-        sy( 0) = 1.0_num-yint
-        sy( 1) = yint
-        sz( 0) = 1.0_num-zint
-        sz( 1) = zint
+        oxint = 1.0_num-xint
+        xintsq = xint*xint
+        oxintsq = oxint*oxint
+        sx(-1) = onesixth*oxintsq*oxint
+        sx( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
+        sx( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+        sx( 2) = onesixth*xintsq*xint
+        oyint = 1.0_num-yint
+        yintsq = yint*yint
+        oyintsq = oyint*oyint
+        sy(-1) = onesixth*oyintsq*oyint
+        sy( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
+        sy( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+        sy( 2) = onesixth*yintsq*yint
+        ozint = 1.0_num-zint
+        zintsq = zint*zint
+        ozintsq = ozint*ozint
+        sz(-1) = onesixth*ozintsq*ozint
+        sz( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
+        sz( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+        sz( 2) = onesixth*zintsq*zint
 
         ! --- computes set of coefficients for staggered quantities
         xint = xmid-j-0.5_num
         yint = ymid-k-0.5_num
         zint = zmid-l-0.5_num
-        sx0( 0) = 1.0_num-xint
-        sx0( 1) = xint
-        sy0( 0) = 1.0_num-yint
-        sy0( 1) = yint
-        sz0( 0) = 1.0_num-zint
-        sz0( 1) = zint
+        oxint = 1.0_num-xint
+        xintsq = xint*xint
+        oxintsq = oxint*oxint
+        sx0(-1) = onesixth*oxintsq*oxint
+        sx0( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
+        sx0( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+        sx0( 2) = onesixth*xintsq*xint
+        oyint = 1.0_num-yint
+        yintsq = yint*yint
+        oyintsq = oyint*oyint
+        sy0(-1) = onesixth*oyintsq*oyint
+        sy0( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
+        sy0( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+        sy0( 2) = onesixth*yintsq*yint
+        ozint = 1.0_num-zint
+        zintsq = zint*zint
+        ozintsq = ozint*ozint
+        sz0(-1) = onesixth*ozintsq*ozint
+        sz0( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
+        sz0( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+        sz0( 2) = onesixth*zintsq*zint
 
         ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
+        ! --- to the 64 nearest vertices
         ! - JX
-        jx(j,k,l)      = jx(j,k,l)+sx0(0)*sy(0)*sz(0)*wqx
-        jx(j+1,k,l)    = jx(j+1,k,l)+sx0(1)*sy(0)*sz(0)*wqx
-        jx(j,k+1,l)    = jx(j,k+1,l)+sx0(0)*sy(1)*sz(0)*wqx
-        jx(j+1,k+1,l)  = jx(j+1,k+1,l)+sx0(1)*sy(1)*sz(0)*wqx
-        jx(j,k,l+1)    = jx(j,k,l+1)+sx0(0)*sy(0)*sz(1)*wqx
-        jx(j+1,k,l+1)  = jx(j+1,k,l+1)+sx0(1)*sy(0)*sz(1)*wqx
-        jx(j,k+1,l+1)  = jx(j,k+1,l+1)+sx0(0)*sy(1)*sz(1)*wqx
-        jx(j+1,k+1,l+1)= jx(j+1,k+1,l+1)+sx0(1)*sy(1)*sz(1)*wqx
+        jx(j0-1,k-1,l-1)  = jx(j0-1,k-1,l-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqx
+        jx(j0  ,k-1,l-1)  = jx(j0  ,k-1,l-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqx
+        jx(j0+1,k-1,l-1)  = jx(j0+1,k-1,l-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqx
+        jx(j0+2,k-1,l-1)  = jx(j0+2,k-1,l-1)  +   sx0(2 )*sy(-1)*sz(-1)*wqx
+        jx(j0-1,k  ,l-1)  = jx(j0-1,k  ,l-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqx
+        jx(j0  ,k  ,l-1)  = jx(j0  ,k  ,l-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqx
+        jx(j0+1,k  ,l-1)  = jx(j0+1,k  ,l-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqx
+        jx(j0+2,k  ,l-1)  = jx(j0+2,k  ,l-1)  +   sx0(2 )*sy(0 )*sz(-1)*wqx
+        jx(j0-1,k+1,l-1)  = jx(j0-1,k+1,l-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqx
+        jx(j0  ,k+1,l-1)  = jx(j0  ,k+1,l-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqx
+        jx(j0+1,k+1,l-1)  = jx(j0+1,k+1,l-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqx
+        jx(j0+2,k+1,l-1)  = jx(j0+2,k+1,l-1)  +   sx0(2 )*sy(1 )*sz(-1)*wqx
+        jx(j0-1,k+2,l-1)  = jx(j0-1,k+2,l-1)  +   sx0(-1)*sy(2 )*sz(-1)*wqx
+        jx(j0  ,k+2,l-1)  = jx(j0  ,k+2,l-1)  +   sx0(0 )*sy(2 )*sz(-1)*wqx
+        jx(j0+1,k+2,l-1)  = jx(j0+1,k+2,l-1)  +   sx0(1 )*sy(2 )*sz(-1)*wqx
+        jx(j0+2,k+2,l-1)  = jx(j0+2,k+2,l-1)  +   sx0(2 )*sy(2 )*sz(-1)*wqx
+        jx(j0-1,k-1,l  )  = jx(j0-1,k-1,l  )  +   sx0(-1)*sy(-1)*sz(0 )*wqx
+        jx(j0  ,k-1,l  )  = jx(j0  ,k-1,l  )  +   sx0(0 )*sy(-1)*sz(0 )*wqx
+        jx(j0+1,k-1,l  )  = jx(j0+1,k-1,l  )  +   sx0(1 )*sy(-1)*sz(0 )*wqx
+        jx(j0+2,k-1,l  )  = jx(j0+2,k-1,l  )  +   sx0(2 )*sy(-1)*sz(0 )*wqx
+        jx(j0-1,k  ,l  )  = jx(j0-1,k  ,l  )  +   sx0(-1)*sy(0 )*sz(0 )*wqx
+        jx(j0  ,k  ,l  )  = jx(j0  ,k  ,l  )  +   sx0(0 )*sy(0 )*sz(0 )*wqx
+        jx(j0+1,k  ,l  )  = jx(j0+1,k  ,l  )  +   sx0(1 )*sy(0 )*sz(0 )*wqx
+        jx(j0+2,k  ,l  )  = jx(j0+2,k  ,l  )  +   sx0(2 )*sy(0 )*sz(0 )*wqx
+        jx(j0-1,k+1,l  )  = jx(j0-1,k+1,l  )  +   sx0(-1)*sy(1 )*sz(0 )*wqx
+        jx(j0  ,k+1,l  )  = jx(j0  ,k+1,l  )  +   sx0(0 )*sy(1 )*sz(0 )*wqx
+        jx(j0+1,k+1,l  )  = jx(j0+1,k+1,l  )  +   sx0(1 )*sy(1 )*sz(0 )*wqx
+        jx(j0+2,k+1,l  )  = jx(j0+2,k+1,l  )  +   sx0(2 )*sy(1 )*sz(0 )*wqx
+        jx(j0-1,k+2,l  )  = jx(j0-1,k+2,l  )  +   sx0(-1)*sy(2 )*sz(0 )*wqx
+        jx(j0  ,k+2,l  )  = jx(j0  ,k+2,l  )  +   sx0(0 )*sy(2 )*sz(0 )*wqx
+        jx(j0+1,k+2,l  )  = jx(j0+1,k+2,l  )  +   sx0(1 )*sy(2 )*sz(0 )*wqx
+        jx(j0+2,k+2,l  )  = jx(j0+2,k+2,l  )  +   sx0(2 )*sy(2 )*sz(0 )*wqx
+        jx(j0-1,k-1,l+1)  = jx(j0-1,k-1,l+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqx
+        jx(j0  ,k-1,l+1)  = jx(j0  ,k-1,l+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqx
+        jx(j0+1,k-1,l+1)  = jx(j0+1,k-1,l+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqx
+        jx(j0+2,k-1,l+1)  = jx(j0+2,k-1,l+1)  +   sx0(2 )*sy(-1)*sz(1 )*wqx
+        jx(j0-1,k  ,l+1)  = jx(j0-1,k  ,l+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqx
+        jx(j0  ,k,  l+1)  = jx(j0  ,k  ,l+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqx
+        jx(j0+1,k  ,l+1)  = jx(j0+1,k  ,l+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqx
+        jx(j0+2,k  ,l+1)  = jx(j0+2,k  ,l+1)  +   sx0(2 )*sy(0 )*sz(1 )*wqx
+        jx(j0-1,k+1,l+1)  = jx(j0-1,k+1,l+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqx
+        jx(j0  ,k+1,l+1)  = jx(j0  ,k+1,l+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqx
+        jx(j0+1,k+1,l+1)  = jx(j0+1,k+1,l+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqx
+        jx(j0+2,k+1,l+1)  = jx(j0+2,k+1,l+1)  +   sx0(2 )*sy(1 )*sz(1 )*wqx
+        jx(j0-1,k+2,l+1)  = jx(j0-1,k+2,l+1)  +   sx0(-1)*sy(2 )*sz(1 )*wqx
+        jx(j0  ,k+2,l+1)  = jx(j0  ,k+2,l+1)  +   sx0(0 )*sy(2 )*sz(1 )*wqx
+        jx(j0+1,k+2,l+1)  = jx(j0+1,k+2,l+1)  +   sx0(1 )*sy(2 )*sz(1 )*wqx
+        jx(j0+2,k+2,l+1)  = jx(j0+2,k+2,l+1)  +   sx0(2 )*sy(2 )*sz(1 )*wqx
+        jx(j0-1,k-1,l+2)  = jx(j0-1,k-1,l+2)  +   sx0(-1)*sy(-1)*sz(2 )*wqx
+        jx(j0  ,k-1,l+2)  = jx(j0  ,k-1,l+2)  +   sx0(0 )*sy(-1)*sz(2 )*wqx
+        jx(j0+1,k-1,l+2)  = jx(j0+1,k-1,l+2)  +   sx0(1 )*sy(-1)*sz(2 )*wqx
+        jx(j0+2,k-1,l+2)  = jx(j0+2,k-1,l+2)  +   sx0(2 )*sy(-1)*sz(2 )*wqx
+        jx(j0-1,k  ,l+2)  = jx(j0-1,k  ,l+2)  +   sx0(-1)*sy(0 )*sz(2 )*wqx
+        jx(j0  ,k  ,l+2)  = jx(j0  ,k  ,l+2)  +   sx0(0 )*sy(0 )*sz(2 )*wqx
+        jx(j0+1,k  ,l+2)  = jx(j0+1,k  ,l+2)  +   sx0(1 )*sy(0 )*sz(2 )*wqx
+        jx(j0+2,k  ,l+2)  = jx(j0+2,k  ,l+2)  +   sx0(2 )*sy(0 )*sz(2 )*wqx
+        jx(j0-1,k+1,l+2)  = jx(j0-1,k+1,l+2)  +   sx0(-1)*sy(1 )*sz(2 )*wqx
+        jx(j0  ,k+1,l+2)  = jx(j0  ,k+1,l+2)  +   sx0(0 )*sy(1 )*sz(2 )*wqx
+        jx(j0+1,k+1,l+2)  = jx(j0+1,k+1,l+2)  +   sx0(1 )*sy(1 )*sz(2 )*wqx
+        jx(j0+2,k+1,l+2)  = jx(j0+2,k+1,l+2)  +   sx0(2 )*sy(1 )*sz(2 )*wqx
+        jx(j0-1,k+2,l+2)  = jx(j0-1,k+2,l+2)  +   sx0(-1)*sy(2 )*sz(2 )*wqx
+        jx(j0  ,k+2,l+2)  = jx(j0  ,k+2,l+2)  +   sx0(0 )*sy(2 )*sz(2 )*wqx
+        jx(j0+1,k+2,l+2)  = jx(j0+1,k+2,l+2)  +   sx0(1 )*sy(2 )*sz(2 )*wqx
+        jx(j0+2,k+2,l+2)  = jx(j0+2,k+2,l+2)  +   sx0(2 )*sy(2 )*sz(2 )*wqx
 
         ! - JY
-        jy(j,k,l)      = jy(j,k,l)+sx(0)*sy0(0)*sz(0)*wqy
-        jy(j+1,k,l)    = jy(j+1,k,l)+sx(1)*sy0(0)*sz(0)*wqy
-        jy(j,k+1,l)    = jy(j,k+1,l)+sx(0)*sy0(1)*sz(0)*wqy
-        jy(j+1,k+1,l)  = jy(j+1,k+1,l)+sx(1)*sy0(1)*sz(0)*wqy
-        jy(j,k,l+1)    = jy(j,k,l+1)+sx(0)*sy0(0)*sz(1)*wqy
-        jy(j+1,k,l+1)  = jy(j+1,k,l+1)+sx(1)*sy0(0)*sz(1)*wqy
-        jy(j,k+1,l+1)  = jy(j,k+1,l+1)+sx(0)*sy0(1)*sz(1)*wqy
-        jy(j+1,k+1,l+1)= jy(j+1,k+1,l+1)+sx(1)*sy0(1)*sz(1)*wqy
+        jy(j-1,k0-1,l-1)  = jy(j-1,k0-1,l-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqy
+        jy(j  ,k0-1,l-1)  = jy(j  ,k0-1,l-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqy
+        jy(j+1,k0-1,l-1)  = jy(j+1,k0-1,l-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqy
+        jy(j+2,k0-1,l-1)  = jy(j+2,k0-1,l-1)  +   sx0(2 )*sy(-1)*sz(-1)*wqy
+        jy(j-1,k0  ,l-1)  = jy(j-1,k0  ,l-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqy
+        jy(j  ,k0  ,l-1)  = jy(j  ,k0  ,l-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqy
+        jy(j+1,k0  ,l-1)  = jy(j+1,k0  ,l-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqy
+        jy(j+2,k0  ,l-1)  = jy(j+2,k0  ,l-1)  +   sx0(2 )*sy(0 )*sz(-1)*wqy
+        jy(j-1,k0+1,l-1)  = jy(j-1,k0+1,l-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqy
+        jy(j  ,k0+1,l-1)  = jy(j  ,k0+1,l-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqy
+        jy(j+1,k0+1,l-1)  = jy(j+1,k0+1,l-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqy
+        jy(j+2,k0+1,l-1)  = jy(j+2,k0+1,l-1)  +   sx0(2 )*sy(1 )*sz(-1)*wqy
+        jy(j-1,k0+2,l-1)  = jy(j-1,k0+2,l-1)  +   sx0(-1)*sy(2 )*sz(-1)*wqy
+        jy(j  ,k0+2,l-1)  = jy(j  ,k0+2,l-1)  +   sx0(0 )*sy(2 )*sz(-1)*wqy
+        jy(j+1,k0+2,l-1)  = jy(j+1,k0+2,l-1)  +   sx0(1 )*sy(2 )*sz(-1)*wqy
+        jy(j+2,k0+2,l-1)  = jy(j+2,k0+2,l-1)  +   sx0(2 )*sy(2 )*sz(-1)*wqy
+        jy(j-1,k0-1,l  )  = jy(j-1,k0-1,l  )  +   sx0(-1)*sy(-1)*sz(0 )*wqy
+        jy(j  ,k0-1,l  )  = jy(j  ,k0-1,l  )  +   sx0(0 )*sy(-1)*sz(0 )*wqy
+        jy(j+1,k0-1,l  )  = jy(j+1,k0-1,l  )  +   sx0(1 )*sy(-1)*sz(0 )*wqy
+        jy(j+2,k0-1,l  )  = jy(j+2,k0-1,l  )  +   sx0(2 )*sy(-1)*sz(0 )*wqy
+        jy(j-1,k0  ,l  )  = jy(j-1,k0  ,l  )  +   sx0(-1)*sy(0 )*sz(0 )*wqy
+        jy(j  ,k0  ,l  )  = jy(j  ,k0  ,l  )  +   sx0(0 )*sy(0 )*sz(0 )*wqy
+        jy(j+1,k0  ,l  )  = jy(j+1,k0  ,l  )  +   sx0(1 )*sy(0 )*sz(0 )*wqy
+        jy(j+2,k0  ,l  )  = jy(j+2,k0  ,l  )  +   sx0(2 )*sy(0 )*sz(0 )*wqy
+        jy(j-1,k0+1,l  )  = jy(j-1,k0+1,l  )  +   sx0(-1)*sy(1 )*sz(0 )*wqy
+        jy(j  ,k0+1,l  )  = jy(j  ,k0+1,l  )  +   sx0(0 )*sy(1 )*sz(0 )*wqy
+        jy(j+1,k0+1,l  )  = jy(j+1,k0+1,l  )  +   sx0(1 )*sy(1 )*sz(0 )*wqy
+        jy(j+2,k0+1,l  )  = jy(j+2,k0+1,l  )  +   sx0(2 )*sy(1 )*sz(0 )*wqy
+        jy(j-1,k0+2,l  )  = jy(j-1,k0+2,l  )  +   sx0(-1)*sy(2 )*sz(0 )*wqy
+        jy(j  ,k0+2,l  )  = jy(j  ,k0+2,l  )  +   sx0(0 )*sy(2 )*sz(0 )*wqy
+        jy(j+1,k0+2,l  )  = jy(j+1,k0+2,l  )  +   sx0(1 )*sy(2 )*sz(0 )*wqy
+        jy(j+2,k0+2,l  )  = jy(j+2,k0+2,l  )  +   sx0(2 )*sy(2 )*sz(0 )*wqy
+        jy(j-1,k0-1,l+1)  = jy(j-1,k0-1,l+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqy
+        jy(j  ,k0-1,l+1)  = jy(j  ,k0-1,l+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqy
+        jy(j+1,k0-1,l+1)  = jy(j+1,k0-1,l+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqy
+        jy(j+2,k0-1,l+1)  = jy(j+2,k0-1,l+1)  +   sx0(2 )*sy(-1)*sz(1 )*wqy
+        jy(j-1,k0  ,l+1)  = jy(j-1,k0  ,l+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqy
+        jy(j  ,k0,  l+1)  = jy(j  ,k0  ,l+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqy
+        jy(j+1,k0  ,l+1)  = jy(j+1,k0  ,l+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqy
+        jy(j+2,k0  ,l+1)  = jy(j+2,k0  ,l+1)  +   sx0(2 )*sy(0 )*sz(1 )*wqy
+        jy(j-1,k0+1,l+1)  = jy(j-1,k0+1,l+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqy
+        jy(j  ,k0+1,l+1)  = jy(j  ,k0+1,l+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqy
+        jy(j+1,k0+1,l+1)  = jy(j+1,k0+1,l+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqy
+        jy(j+2,k0+1,l+1)  = jy(j+2,k0+1,l+1)  +   sx0(2 )*sy(1 )*sz(1 )*wqy
+        jy(j-1,k0+2,l+1)  = jy(j-1,k0+2,l+1)  +   sx0(-1)*sy(2 )*sz(1 )*wqy
+        jy(j  ,k0+2,l+1)  = jy(j  ,k0+2,l+1)  +   sx0(0 )*sy(2 )*sz(1 )*wqy
+        jy(j+1,k0+2,l+1)  = jy(j+1,k0+2,l+1)  +   sx0(1 )*sy(2 )*sz(1 )*wqy
+        jy(j+2,k0+2,l+1)  = jy(j+2,k0+2,l+1)  +   sx0(2 )*sy(2 )*sz(1 )*wqy
+        jy(j-1,k0-1,l+2)  = jy(j-1,k0-1,l+2)  +   sx0(-1)*sy(-1)*sz(2 )*wqy
+        jy(j  ,k0-1,l+2)  = jy(j  ,k0-1,l+2)  +   sx0(0 )*sy(-1)*sz(2 )*wqy
+        jy(j+1,k0-1,l+2)  = jy(j+1,k0-1,l+2)  +   sx0(1 )*sy(-1)*sz(2 )*wqy
+        jy(j+2,k0-1,l+2)  = jy(j+2,k0-1,l+2)  +   sx0(2 )*sy(-1)*sz(2 )*wqy
+        jy(j-1,k0  ,l+2)  = jy(j-1,k0  ,l+2)  +   sx0(-1)*sy(0 )*sz(2 )*wqy
+        jy(j  ,k0  ,l+2)  = jy(j  ,k0  ,l+2)  +   sx0(0 )*sy(0 )*sz(2 )*wqy
+        jy(j+1,k0  ,l+2)  = jy(j+1,k0  ,l+2)  +   sx0(1 )*sy(0 )*sz(2 )*wqy
+        jy(j+2,k0  ,l+2)  = jy(j+2,k0  ,l+2)  +   sx0(2 )*sy(0 )*sz(2 )*wqy
+        jy(j-1,k0+1,l+2)  = jy(j-1,k0+1,l+2)  +   sx0(-1)*sy(1 )*sz(2 )*wqy
+        jy(j  ,k0+1,l+2)  = jy(j  ,k0+1,l+2)  +   sx0(0 )*sy(1 )*sz(2 )*wqy
+        jy(j+1,k0+1,l+2)  = jy(j+1,k0+1,l+2)  +   sx0(1 )*sy(1 )*sz(2 )*wqy
+        jy(j+2,k0+1,l+2)  = jy(j+2,k0+1,l+2)  +   sx0(2 )*sy(1 )*sz(2 )*wqy
+        jy(j-1,k0+2,l+2)  = jy(j-1,k0+2,l+2)  +   sx0(-1)*sy(2 )*sz(2 )*wqy
+        jy(j  ,k0+2,l+2)  = jy(j  ,k0+2,l+2)  +   sx0(0 )*sy(2 )*sz(2 )*wqy
+        jy(j+1,k0+2,l+2)  = jy(j+1,k0+2,l+2)  +   sx0(1 )*sy(2 )*sz(2 )*wqy
+        jy(j+2,k0+2,l+2)  = jy(j+2,k0+2,l+2)  +   sx0(2 )*sy(2 )*sz(2 )*wqy
 
         ! - JZ
-        jz(j,k,l)      = jz(j,k,l)+sx(0)*sy(0)*sz0(0)*wqz
-        jz(j+1,k,l)    = jz(j+1,k,l)+sx(1)*sy(0)*sz0(0)*wqz
-        jz(j,k+1,l)    = jz(j,k+1,l)+sx(0)*sy(1)*sz0(0)*wqz
-        jz(j+1,k+1,l)  = jz(j+1,k+1,l)+sx(1)*sy(1)*sz0(0)*wqz
-        jz(j,k,l+1)    = jz(j,k,l+1)+sx(0)*sy(0)*sz0(1)*wqz
-        jz(j+1,k,l+1)  = jz(j+1,k,l+1)+sx(1)*sy(0)*sz0(1)*wqz
-        jz(j,k+1,l+1)  = jz(j,k+1,l+1)+sx(0)*sy(1)*sz0(1)*wqz
-        jz(j+1,k+1,l+1)= jz(j+1,k+1,l+1)+sx(1)*sy(1)*sz0(1)*wqz
+        jz(j-1,k-1,l0-1)  = jz(j-1,k-1,l0-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqz
+        jz(j  ,k-1,l0-1)  = jz(j  ,k-1,l0-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqz
+        jz(j+1,k-1,l0-1)  = jz(j+1,k-1,l0-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqz
+        jz(j+2,k-1,l0-1)  = jz(j+2,k-1,l0-1)  +   sx0(2 )*sy(-1)*sz(-1)*wqz
+        jz(j-1,k  ,l0-1)  = jz(j-1,k  ,l0-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqz
+        jz(j  ,k  ,l0-1)  = jz(j  ,k  ,l0-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqz
+        jz(j+1,k  ,l0-1)  = jz(j+1,k  ,l0-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqz
+        jz(j+2,k  ,l0-1)  = jz(j+2,k  ,l0-1)  +   sx0(2 )*sy(0 )*sz(-1)*wqz
+        jz(j-1,k+1,l0-1)  = jz(j-1,k+1,l0-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqz
+        jz(j  ,k+1,l0-1)  = jz(j  ,k+1,l0-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqz
+        jz(j+1,k+1,l0-1)  = jz(j+1,k+1,l0-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqz
+        jz(j+2,k+1,l0-1)  = jz(j+2,k+1,l0-1)  +   sx0(2 )*sy(1 )*sz(-1)*wqz
+        jz(j-1,k+2,l0-1)  = jz(j-1,k+2,l0-1)  +   sx0(-1)*sy(2 )*sz(-1)*wqz
+        jz(j  ,k+2,l0-1)  = jz(j  ,k+2,l0-1)  +   sx0(0 )*sy(2 )*sz(-1)*wqz
+        jz(j+1,k+2,l0-1)  = jz(j+1,k+2,l0-1)  +   sx0(1 )*sy(2 )*sz(-1)*wqz
+        jz(j+2,k+2,l0-1)  = jz(j+2,k+2,l0-1)  +   sx0(2 )*sy(2 )*sz(-1)*wqz
+        jz(j-1,k-1,l0  )  = jz(j-1,k-1,l0  )  +   sx0(-1)*sy(-1)*sz(0 )*wqz
+        jz(j  ,k-1,l0  )  = jz(j  ,k-1,l0  )  +   sx0(0 )*sy(-1)*sz(0 )*wqz
+        jz(j+1,k-1,l0  )  = jz(j+1,k-1,l0  )  +   sx0(1 )*sy(-1)*sz(0 )*wqz
+        jz(j+2,k-1,l0  )  = jz(j+2,k-1,l0  )  +   sx0(2 )*sy(-1)*sz(0 )*wqz
+        jz(j-1,k  ,l0  )  = jz(j-1,k  ,l0  )  +   sx0(-1)*sy(0 )*sz(0 )*wqz
+        jz(j  ,k  ,l0  )  = jz(j  ,k  ,l0  )  +   sx0(0 )*sy(0 )*sz(0 )*wqz
+        jz(j+1,k  ,l0  )  = jz(j+1,k  ,l0  )  +   sx0(1 )*sy(0 )*sz(0 )*wqz
+        jz(j+2,k  ,l0  )  = jz(j+2,k  ,l0  )  +   sx0(2 )*sy(0 )*sz(0 )*wqz
+        jz(j-1,k+1,l0  )  = jz(j-1,k+1,l0  )  +   sx0(-1)*sy(1 )*sz(0 )*wqz
+        jz(j  ,k+1,l0  )  = jz(j  ,k+1,l0  )  +   sx0(0 )*sy(1 )*sz(0 )*wqz
+        jz(j+1,k+1,l0  )  = jz(j+1,k+1,l0  )  +   sx0(1 )*sy(1 )*sz(0 )*wqz
+        jz(j+2,k+1,l0  )  = jz(j+2,k+1,l0  )  +   sx0(2 )*sy(1 )*sz(0 )*wqz
+        jz(j-1,k+2,l0  )  = jz(j-1,k+2,l0  )  +   sx0(-1)*sy(2 )*sz(0 )*wqz
+        jz(j  ,k+2,l0  )  = jz(j  ,k+2,l0  )  +   sx0(0 )*sy(2 )*sz(0 )*wqz
+        jz(j+1,k+2,l0  )  = jz(j+1,k+2,l0  )  +   sx0(1 )*sy(2 )*sz(0 )*wqz
+        jz(j+2,k+2,l0  )  = jz(j+2,k+2,l0  )  +   sx0(2 )*sy(2 )*sz(0 )*wqz
+        jz(j-1,k-1,l0+1)  = jz(j-1,k-1,l0+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqz
+        jz(j  ,k-1,l0+1)  = jz(j  ,k-1,l0+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqz
+        jz(j+1,k-1,l0+1)  = jz(j+1,k-1,l0+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqz
+        jz(j+2,k-1,l0+1)  = jz(j+2,k-1,l0+1)  +   sx0(2 )*sy(-1)*sz(1 )*wqz
+        jz(j-1,k  ,l0+1)  = jz(j-1,k  ,l0+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqz
+        jz(j  ,k,  l0+1)  = jz(j  ,k  ,l0+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqz
+        jz(j+1,k  ,l0+1)  = jz(j+1,k  ,l0+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqz
+        jz(j+2,k  ,l0+1)  = jz(j+2,k  ,l0+1)  +   sx0(2 )*sy(0 )*sz(1 )*wqz
+        jz(j-1,k+1,l0+1)  = jz(j-1,k+1,l0+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqz
+        jz(j  ,k+1,l0+1)  = jz(j  ,k+1,l0+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqz
+        jz(j+1,k+1,l0+1)  = jz(j+1,k+1,l0+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqz
+        jz(j+2,k+1,l0+1)  = jz(j+2,k+1,l0+1)  +   sx0(2 )*sy(1 )*sz(1 )*wqz
+        jz(j-1,k+2,l0+1)  = jz(j-1,k+2,l0+1)  +   sx0(-1)*sy(2 )*sz(1 )*wqz
+        jz(j  ,k+2,l0+1)  = jz(j  ,k+2,l0+1)  +   sx0(0 )*sy(2 )*sz(1 )*wqz
+        jz(j+1,k+2,l0+1)  = jz(j+1,k+2,l0+1)  +   sx0(1 )*sy(2 )*sz(1 )*wqz
+        jz(j+2,k+2,l0+1)  = jz(j+2,k+2,l0+1)  +   sx0(2 )*sy(2 )*sz(1 )*wqz
+        jz(j-1,k-1,l0+2)  = jz(j-1,k-1,l0+2)  +   sx0(-1)*sy(-1)*sz(2 )*wqz
+        jz(j  ,k-1,l0+2)  = jz(j  ,k-1,l0+2)  +   sx0(0 )*sy(-1)*sz(2 )*wqz
+        jz(j+1,k-1,l0+2)  = jz(j+1,k-1,l0+2)  +   sx0(1 )*sy(-1)*sz(2 )*wqz
+        jz(j+2,k-1,l0+2)  = jz(j+2,k-1,l0+2)  +   sx0(2 )*sy(-1)*sz(2 )*wqz
+        jz(j-1,k  ,l0+2)  = jz(j-1,k  ,l0+2)  +   sx0(-1)*sy(0 )*sz(2 )*wqz
+        jz(j  ,k  ,l0+2)  = jz(j  ,k  ,l0+2)  +   sx0(0 )*sy(0 )*sz(2 )*wqz
+        jz(j+1,k  ,l0+2)  = jz(j+1,k  ,l0+2)  +   sx0(1 )*sy(0 )*sz(2 )*wqz
+        jz(j+2,k  ,l0+2)  = jz(j+2,k  ,l0+2)  +   sx0(2 )*sy(0 )*sz(2 )*wqz
+        jz(j-1,k+1,l0+2)  = jz(j-1,k+1,l0+2)  +   sx0(-1)*sy(1 )*sz(2 )*wqz
+        jz(j  ,k+1,l0+2)  = jz(j  ,k+1,l0+2)  +   sx0(0 )*sy(1 )*sz(2 )*wqz
+        jz(j+1,k+1,l0+2)  = jz(j+1,k+1,l0+2)  +   sx0(1 )*sy(1 )*sz(2 )*wqz
+        jz(j+2,k+1,l0+2)  = jz(j+2,k+1,l0+2)  +   sx0(2 )*sy(1 )*sz(2 )*wqz
+        jz(j-1,k+2,l0+2)  = jz(j-1,k+2,l0+2)  +   sx0(-1)*sy(2 )*sz(2 )*wqz
+        jz(j  ,k+2,l0+2)  = jz(j  ,k+2,l0+2)  +   sx0(0 )*sy(2 )*sz(2 )*wqz
+        jz(j+1,k+2,l0+2)  = jz(j+1,k+2,l0+2)  +   sx0(1 )*sy(2 )*sz(2 )*wqz
+        jz(j+2,k+2,l0+2)  = jz(j+2,k+2,l0+2)  +   sx0(2 )*sy(2 )*sz(2 )*wqz
     END DO
     RETURN
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
