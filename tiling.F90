@@ -317,7 +317,7 @@ CONTAINS
 
     SUBROUTINE load_particles
         USE constants
-        USE IFPORT
+        !USE IFPORT
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER :: ispecies, l, k, j, ipart
