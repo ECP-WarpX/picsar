@@ -43,6 +43,7 @@ CONTAINS
         nx0_last_tile= nx0_grid_tile+(nx_grid-nx0_grid_tile*ntilex)
         ny0_last_tile= ny0_grid_tile+(ny_grid-ny0_grid_tile*ntiley)
         nz0_last_tile= nz0_grid_tile+(nz_grid-nz0_grid_tile*ntilez)
+        PRINT *, "x_min_local",x_min_local, "x_max_local",x_max_local
 
         !- Allocate object array of tiles
         DO ispecies =1, nspecies
@@ -61,20 +62,20 @@ CONTAINS
                         IF (ix .LT. ntilex) THEN
                             curr%nx_grid_tile=nx0_grid_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
-                            curr%x_tile_min=x_min_local+(ix-1)*nx0_grid_tile*dx
-                            curr%x_grid_tile_min=curr%x_tile_min+dx/2.0_num
-                            curr%x_tile_max=curr%x_tile_min+nx0_grid_tile*dx
-                            curr%x_grid_tile_max=curr%x_tile_max-dx/2.0_num
+                            curr%x_tile_min=x_min_local+DBLE((ix-1)*nx0_grid_tile)*dx
+                            curr%x_grid_tile_min=curr%x_tile_min+dx*0.5_num
+                            curr%x_tile_max=curr%x_tile_min+DBLE(nx0_grid_tile)*dx
+                            curr%x_grid_tile_max=curr%x_tile_max-dx*0.5_num
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
                         ELSE ! LAST TILE in X DIRECTION AND BORDER
                             curr%subdomain_bound= .TRUE.
                             curr%nx_grid_tile=nx0_last_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
-                            curr%x_tile_min=x_min_local+(ix-1)*nx0_grid_tile*dx
-                            curr%x_grid_tile_min=curr%x_tile_min+dx/2.0_num
-                            curr%x_tile_max=curr%x_tile_min+nx0_last_tile*dx
-                            curr%x_grid_tile_max=curr%x_tile_max-dx/2.0_num
+                            curr%x_tile_min=x_min_local+DBLE((ix-1)*nx0_grid_tile)*dx
+                            curr%x_grid_tile_min=curr%x_tile_min+dx*0.5_num
+                            curr%x_tile_max=curr%x_tile_min+DBLE(nx0_last_tile)*dx
+                            curr%x_grid_tile_max=curr%x_tile_max-dx*0.5_num
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
                         ENDIF
@@ -83,20 +84,20 @@ CONTAINS
                         IF (iy .LT. ntiley) THEN
                             curr%ny_grid_tile=ny0_grid_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
-                            curr%y_tile_min=y_min_local+(iy-1)*ny0_grid_tile*dy
-                            curr%y_grid_tile_min=curr%y_tile_min+dy/2.0_num
-                            curr%y_tile_max=curr%y_tile_min+ny0_grid_tile*dy
-                            curr%y_grid_tile_max=curr%y_tile_max-dy/2.0_num
+                            curr%y_tile_min=y_min_local+DBLE((iy-1)*ny0_grid_tile)*dy
+                            curr%y_grid_tile_min=curr%y_tile_min+dy*0.5_num
+                            curr%y_tile_max=curr%y_tile_min+DBLE(ny0_grid_tile)*dy
+                            curr%y_grid_tile_max=curr%y_tile_max-dy*0.5_num
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
                         ELSE ! LAST TILE in Y DIRECTION
                             curr%subdomain_bound= .TRUE.
                             curr%ny_grid_tile=ny0_last_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
-                            curr%y_tile_min=y_min_local+(iy-1)*ny0_grid_tile*dy
-                            curr%y_grid_tile_min=curr%y_tile_min+dy/2.0_num
-                            curr%y_tile_max=curr%y_tile_min+ny0_last_tile*dy
-                            curr%y_grid_tile_max=curr%y_tile_max-dy/2.0_num
+                            curr%y_tile_min=y_min_local+DBLE((iy-1)*ny0_grid_tile)*dy
+                            curr%y_grid_tile_min=curr%y_tile_min+dy*0.5_num
+                            curr%y_tile_max=curr%y_tile_min+DBLE(ny0_last_tile)*dy
+                            curr%y_grid_tile_max=curr%y_tile_max-dy*0.5_num
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
                         ENDIF
@@ -105,23 +106,25 @@ CONTAINS
                         IF (iz .LT. ntilez) THEN
                             curr%nz_grid_tile=nz0_grid_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
-                            curr%z_tile_min=z_min_local+(iz-1)*nz0_grid_tile*dz
-                            curr%z_grid_tile_min=curr%z_tile_min+dz/2.0_num
-                            curr%z_tile_max=curr%z_tile_min+nz0_grid_tile*dz
-                            curr%z_grid_tile_max=curr%z_tile_max-dz/2.0_num
+                            curr%z_tile_min=z_min_local+DBLE((iz-1)*nz0_grid_tile)*dz
+                            curr%z_grid_tile_min=curr%z_tile_min+dz*0.5_num
+                            curr%z_tile_max=curr%z_tile_min+DBLE(nz0_grid_tile)*dz
+                            curr%z_grid_tile_max=curr%z_tile_max-dz*0.5_num
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
                         ELSE ! LAST TILE in Z DIRECTION
                             curr%subdomain_bound= .TRUE.
                             curr%nz_grid_tile=nz0_last_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
-                            curr%z_tile_min=z_min_local+(iz-1)*nz0_grid_tile*dz
-                            curr%z_grid_tile_min=curr%z_tile_min+dz/2.0_num
-                            curr%z_tile_max=curr%z_tile_min+nz0_last_tile*dz
-                            curr%z_grid_tile_max=curr%z_tile_max-dz/2.0_num
+                            curr%z_tile_min=z_min_local+DBLE((iz-1)*nz0_grid_tile)*dz
+                            curr%z_grid_tile_min=curr%z_tile_min+dz*0.5_num
+                            curr%z_tile_max=curr%z_tile_min+DBLE(nz0_last_tile)*dz
+                            curr%z_grid_tile_max=curr%z_tile_max-dz*0.5_num
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
                         ENDIF
+                        PRINT *, "x_tile_min",curr%x_tile_min, "x_grid_tile_min",curr%x_grid_tile_min
+                        PRINT *, "x_tile_max",curr%x_tile_max, "x_grid_tile_max",curr%x_grid_tile_max
                     END DO
                 END DO
             END DO
@@ -146,9 +149,9 @@ CONTAINS
         nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
 
         ! Get particle index in array of tile
-        ixtile = MIN(FLOOR((partx-x_min_local)/(nx0_grid_tile*dx))+1,ntilex)
-        iytile = MIN(FLOOR((party-y_min_local)/(ny0_grid_tile*dy))+1,ntiley)
-        iztile = MIN(FLOOR((partz-z_min_local)/(nz0_grid_tile*dz))+1,ntilez)
+        ixtile = MIN(INT(FLOOR((partx-x_min_local)*1.0_num/dx)/nx0_grid_tile+1),ntilex)
+        iytile = MIN(INT(FLOOR((party-y_min_local)*1.0_num/dy)/ny0_grid_tile+1),ntiley)
+        iztile = MIN(INT(FLOOR((partz-z_min_local)*1.0_num/dz)/nz0_grid_tile+1),ntilez)
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
@@ -313,13 +316,14 @@ CONTAINS
     END SUBROUTINE init_tile_arrays
 
     SUBROUTINE load_particles
-        !USE ifport
+        USE constants
+        USE IFPORT
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER :: ispecies, l, k, j, ipart
         INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
-        REAL(num) :: phi, th, v
+        REAL(num) :: phi, th, v, vx, vy, vz, gam, usq
         INTEGER :: err, npart
         !!! --- Sets-up particle space distribution (homogeneous case - default)
         IF (pdistr .EQ. 1) THEN
@@ -344,9 +348,12 @@ CONTAINS
                                 v=MAX(1e-10_num,RAND())
                                 th=2*pi*RAND()
                                 phi=2*pi*RAND()
-                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                vx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                vy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                vz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                usq= (vx**2 + vy**2 + vz**2)/clight**2
+                                gam = 1.0_num/sqrt(1.0_num - usq)
+                                partux=gam*vx; partuy=gam*vy;partuz=gam*vz
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
                                 partux, partuy, partuz, partw)
@@ -373,9 +380,12 @@ CONTAINS
                                 v=MAX(1e-10_num,RAND())
                                 th=2*pi*RAND()
                                 phi=2*pi*RAND()
-                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                vx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                vy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                vz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                usq= (vx**2 + vy**2+vz**2)/clight**2
+                                gam = 1.0_num/sqrt(1.0_num - usq)
+                                partux=gam*vx; partuy=gam*vy;partuz=gam*vz
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
                                 partux, partuy, partuz, partw)

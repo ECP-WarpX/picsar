@@ -304,19 +304,19 @@ CONTAINS
         z_grid_maxs(iproc) = z_global(cell_z_max(iproc+1)-1)
     ENDDO
 
-    x_min_local = x_grid_mins(x_coords)-dx/2
-    x_max_local = x_grid_maxs(x_coords)+dx/2
-    y_min_local = y_grid_mins(y_coords)-dx/2
-    y_max_local = y_grid_maxs(y_coords)+dx/2
-    z_min_local = z_grid_mins(z_coords)-dx/2
-    z_max_local = z_grid_maxs(z_coords)+dx/2
+    x_min_local = x_grid_mins(x_coords)-0.5_num*dx
+    x_max_local = x_grid_maxs(x_coords)+0.5_num*dx
+    y_min_local = y_grid_mins(y_coords)-0.5_num*dx
+    y_max_local = y_grid_maxs(y_coords)+0.5_num*dx
+    z_min_local = z_grid_mins(z_coords)-0.5_num*dx
+    z_max_local = z_grid_maxs(z_coords)+0.5_num*dx
 
-    x_grid_min_local=x_min_local+dx/2
-    y_grid_min_local=y_min_local+dy/2
-    z_grid_min_local=z_min_local+dz/2
-    x_grid_max_local=x_max_local-dx/2
-    y_grid_max_local=y_max_local-dy/2
-    z_grid_max_local=z_max_local-dz/2
+    x_grid_min_local=x_min_local+0.5_num*dx
+    y_grid_min_local=y_min_local+0.5_num*dx
+    z_grid_min_local=z_min_local+0.5_num*dx
+    x_grid_max_local=x_max_local-0.5_num*dx
+    y_grid_max_local=y_max_local-0.5_num*dx
+    z_grid_max_local=z_max_local-0.5_num*dx
 
     ! --- Allocate grid quantities
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
