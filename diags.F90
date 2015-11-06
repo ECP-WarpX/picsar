@@ -1128,7 +1128,7 @@ CONTAINS
             DO n=1,MIN(LVEC,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
-                ic0=ic++2*nnx-1
+                ic0=ic+2*nnx-1
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !$OMP SIMD
                 DO nv=1,8 !!! - VECTOR

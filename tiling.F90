@@ -43,7 +43,6 @@ CONTAINS
         nx0_last_tile= nx0_grid_tile+(nx_grid-nx0_grid_tile*ntilex)
         ny0_last_tile= ny0_grid_tile+(ny_grid-ny0_grid_tile*ntiley)
         nz0_last_tile= nz0_grid_tile+(nz_grid-nz0_grid_tile*ntilez)
-        PRINT *, "x_min_local",x_min_local, "x_max_local",x_max_local
 
         !- Allocate object array of tiles
         DO ispecies =1, nspecies
@@ -123,8 +122,6 @@ CONTAINS
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
                         ENDIF
-                        PRINT *, "x_tile_min",curr%x_tile_min, "x_grid_tile_min",curr%x_grid_tile_min
-                        PRINT *, "x_tile_max",curr%x_tile_max, "x_grid_tile_max",curr%x_grid_tile_max
                     END DO
                 END DO
             END DO
