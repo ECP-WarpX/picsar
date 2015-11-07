@@ -53,7 +53,7 @@ CONTAINS
                         ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
                         rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_3_3_3(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_vecHVv2_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -434,7 +434,7 @@ CONTAINS
     SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
         USE constants
         IMPLICIT NONE
-        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER, INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
         INTEGER, PARAMETER :: LVEC=8
@@ -452,30 +452,28 @@ CONTAINS
         INTEGER :: nnx, nnxy
         INTEGER :: moff(1:8) 
         REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+        INTEGER :: orig, jorig, korig, lorig
+        INTEGER :: ncx, ncy, ncz
 
         ! Init parameters
         dxi = 1.0_num/dx
         dyi = 1.0_num/dy
         dzi = 1.0_num/dz
         invvol = dxi*dyi*dzi
-        NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+        ncx=nx+2*nxguard;ncy=ny+2*nyguard;ncz=nz+2*nzguard
+        NCELLS=ncx*ncy*ncz
         ALLOCATE(rhocells(8,NCELLS))
         rhocells=0.0_num
         nnx = nx + 1 + 2*nxguard
         nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
-        moff(1) = 0
-        moff(2) = 1
-        moff(3) = nnx
-        moff(4) = nnx+1
-        moff(5) = nnxy
-        moff(6) = nnxy+1
-        moff(7) = nnxy+nnx
-        moff(8) = nnxy+nnx+1
+        moff = (/0,1,nnx,nnx+1,nnxy,nnxy+1,nnxy+nnx,nnxy+nnx+1/)
         mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
         my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
         mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
         sgn=(/1_num,-1_num,-1_num,1_num,-1_num,1_num,1_num,-1_num/)
-	
+        jorig=-nxguard; korig=-nyguard;lorig=-nzguard
+        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC
             !DIR$ ASSUME_ALIGNED xp:64
@@ -495,7 +493,7 @@ CONTAINS
                 j=floor(x)
                 k=floor(y)
                 l=floor(z)
-                ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+                ICELL(n)=1+(j-jorig)+(k-korig)*ncx+(l-lorig)*ncy
                 ! --- computes distance between particle and node for current positions
                 sx(n) = x-j
                 sy(n) = y-k
@@ -527,7 +525,7 @@ CONTAINS
             !DIR$ IVDEP
             !$OMP SIMD
             DO ic=1,NCELLS  !!! VECTOR
-                rho(ic+moff(nv))=rho(ic+moff(nv))+rhocells(nv,ic)
+                rho(orig+ic+moff(nv))=rho(orig+ic+moff(nv))+rhocells(nv,ic)
             END DO
             !$OMP END SIMD
         END DO
