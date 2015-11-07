@@ -137,7 +137,7 @@ CONTAINS
         TYPE(particle_tile), POINTER :: curr
         INTEGER :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, nptile
         INTEGER :: ixtile, iytile, iztile
-        REAL(num) :: resize_factor = 1.5_num
+        REAL(num) :: resize_factor = 1.5_num, x1, y1, z1
 
 
         ! Get first tiles dimensions (may be different from last tile)
@@ -149,6 +149,10 @@ CONTAINS
         ixtile = MIN(INT(FLOOR((partx-x_min_local)*1.0_num/dx)/nx0_grid_tile+1),ntilex)
         iytile = MIN(INT(FLOOR((party-y_min_local)*1.0_num/dy)/ny0_grid_tile+1),ntiley)
         iztile = MIN(INT(FLOOR((partz-z_min_local)*1.0_num/dz)/nz0_grid_tile+1),ntilez)
+
+        x1=currsp%array_of_tiles(ixtile,iytile,iztile)%x_tile_min
+        y1=currsp%array_of_tiles(ixtile,iytile,iztile)%y_tile_min
+        z1=currsp%array_of_tiles(ixtile,iytile,iztile)%z_tile_min
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
@@ -326,12 +330,12 @@ CONTAINS
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
-                jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
-                jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
-                kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
-                kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
-                lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
-                lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+                jmin = INT(MAX(curr%x_min-x_min_local,0.0_num)*1.0_num/dx)
+                jmax = INT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)*1.0_num/dx)
+                kmin = INT(MAX(curr%y_min-y_min_local,0.0_num)*1.0_num/dy)
+                kmax = INT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)*1.0_num/dy)
+                lmin = INT(MAX(curr%z_min-z_min_local,0.0_num)*1.0_num/dz)
+                lmax = INT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)*1.0_num/dz)
                 DO l=lmin,lmax-1
                     DO k=kmin,kmax-1
                         DO j=jmin,jmax-1
@@ -369,9 +373,9 @@ CONTAINS
                         DO l=0,nz-1
                             DO ipart=1,curr%nppcell
                                 ! Sets positions and weight
-                                partx = x_min_local+MIN(RAND(),0.999)*(x_max_local-x_min_local)
-                                party = y_min_local+MIN(RAND(),0.999)*(y_max_local-y_min_local)
-                                partz = z_min_local+MIN(RAND(),0.999)*(z_max_local-z_min_local)
+                                partx = x_min_local+MIN(RAND(),0.999_num)*(x_max_local-x_min_local)
+                                party = y_min_local+MIN(RAND(),0.999_num)*(y_max_local-y_min_local)
+                                partz = z_min_local+MIN(RAND(),0.999_num)*(z_max_local-z_min_local)
                                 partw = nc*dx*dy*dz/(curr%nppcell)
                                 ! Sets velocity
                                 v=MAX(1e-10_num,RAND())

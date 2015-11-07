@@ -23,8 +23,8 @@ CONTAINS
         INTEGER :: nxc, nyc, nzc
 
         ! - Computes electric field divergence on grid at n+1
-        !dive=0.0_num
-        !CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+        dive=0.0_num
+        CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
 
         ! - Computes total charge density
         ! - Computes total charge density
@@ -53,7 +53,7 @@ CONTAINS
                         ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
                         rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_vecHVv2_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_scalar_3_3_3(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -579,7 +579,7 @@ CONTAINS
             sy( 1) = 0.5_num*(0.5_num+yint)**2
             zintsq = zint*zint
             sz(-1) = 0.5_num*(0.5_num-zint)**2*wq
-            sz( 0) = 0.75_num-zintsq*wq
+            sz( 0) = (0.75_num-zintsq)*wq
             sz( 1) = 0.5_num*(0.5_num+zint)**2*wq
             sx1=sx(-1)*sy(-1)
             sx2=sx(0)*sy(-1)

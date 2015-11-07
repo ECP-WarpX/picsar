@@ -52,14 +52,14 @@ DO iz=1, ntilez ! LOOP ON TILES
                 ex_tile = ex(jmin:jmax,kmin:kmax,lmin:lmax)
                 ey_tile = ey(jmin:jmax,kmin:kmax,lmin:lmax)
                 ez_tile = ez(jmin:jmax,kmin:kmax,lmin:lmax)
-                CALL gete3d_energy_conserving_vec_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                CALL gete3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
                                       curr_tile%part_z(1:count), curr_tile%part_ex(1:count),                   &
                                       curr_tile%part_ey(1:count),curr_tile%part_ez(1:count),                   &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
                                       curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,             &
                                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,     &
-                                      nzjguards,ex_tile,ey_tile,                           &
-                                      ez_tile)
+                                      nzjguards,nox,noy,noz,ex_tile,ey_tile,                           &
+                                      ez_tile,.FALSE.)
 
                 !!! --- Gather magnetic fields on particles
                 curr_tile%part_bx=0.0_num
@@ -68,14 +68,14 @@ DO iz=1, ntilez ! LOOP ON TILES
                 bx_tile = bx(jmin:jmax,kmin:kmax,lmin:lmax)
                 by_tile = by(jmin:jmax,kmin:kmax,lmin:lmax)
                 bz_tile = bz(jmin:jmax,kmin:kmax,lmin:lmax)
-                CALL getb3d_energy_conserving_1_1_1(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
+                CALL getb3d_n_energy_conserving(count,curr_tile%part_x(1:count),curr_tile%part_y(1:count), &
                                       curr_tile%part_z(1:count), curr_tile%part_bx(1:count),                   &
                                       curr_tile%part_by(1:count),curr_tile%part_bz(1:count),                   &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
                                       curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,             &
                                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,     &
-                                      nzjguards,bx_tile,by_tile,                           &
-                                      bz_tile)
+                                      nzjguards,nox,noy,noz,bx_tile,by_tile,                           &
+                                      bz_tile,.FALSE.)
                 DEALLOCATE(ex_tile, ey_tile, ez_tile, bx_tile,by_tile,bz_tile)
             END DO! END LOOP ON SPECIES
         END DO
