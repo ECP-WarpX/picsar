@@ -448,12 +448,12 @@ CONTAINS
         REAL(num) :: x,y,z,invvol
         REAL(num) :: sx(LVEC), sy(LVEC), sz(LVEC), wq(LVEC)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER :: nnx, nnxy
         INTEGER :: moff(1:8) 
         REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
         INTEGER :: orig, jorig, korig, lorig
-        INTEGER :: ncx, ncy, ncz
+        INTEGER :: ncx, ncy, ncz,ix,iy,iz
 
         ! Init parameters
         dxi = 1.0_num/dx
@@ -465,12 +465,12 @@ CONTAINS
         ALLOCATE(rhocells(8,NCELLS))
         rhocells=0.0_num
         nnx = nx + 1 + 2*nxguard
-        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+        nnxy = nnx*(ny+1+2*nyguard)
         moff = (/0,1,nnx,nnx+1,nnxy,nnxy+1,nnxy+nnx,nnxy+nnx+1/)
-        mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
-        my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
-        mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
-        sgn=(/1_num,-1_num,-1_num,1_num,-1_num,1_num,1_num,-1_num/)
+        mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
+        my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
+        mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
+        sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
         jorig=-nxguard; korig=-nyguard;lorig=-nzguard
         orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
 
@@ -493,7 +493,7 @@ CONTAINS
                 j=floor(x)
                 k=floor(y)
                 l=floor(z)
-                ICELL(n)=1+(j-jorig)+(k-korig)*ncx+(l-lorig)*ncy
+                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncy*ncx
                 ! --- computes distance between particle and node for current positions
                 sx(n) = x-j
                 sy(n) = y-k
@@ -519,15 +519,22 @@ CONTAINS
                 !$OMP END SIMD
             END DO
         END DO
+        ! - reduction of rhocells in rho
         DO nv=1,8
-            !DIR$ ASSUME_ALIGNED rhocells:64
-            !DIR$ ASSUME_ALIGNED rho:64
-            !DIR$ IVDEP
-            !$OMP SIMD
-            DO ic=1,NCELLS  !!! VECTOR
-                rho(orig+ic+moff(nv))=rho(orig+ic+moff(nv))+rhocells(nv,ic)
+            DO iz=1, ncz
+                DO iy=1,ncy
+                    !DIR$ ASSUME_ALIGNED rhocells:64
+                    !DIR$ ASSUME_ALIGNED rho:64
+                    !DIR$ IVDEP
+                    !$OMP SIMD
+                    DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                        ic=ix+(iy-1)*ncx+(iz-1)*ncy*ncx
+                        igrid=ic+(iy-1)+(iz-1)*(ncx+ncy+1)
+                        rho(orig+igrid+moff(nv))=rho(orig+igrid+moff(nv))+rhocells(nv,ic)
+                    END DO
+                    !$OMP END SIMD
+                END DO
             END DO
-            !$OMP END SIMD
         END DO
         DEALLOCATE(rhocells)
         RETURN
