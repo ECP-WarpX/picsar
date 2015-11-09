@@ -388,12 +388,12 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         zmid=z-dts2dz*vz
 
         ! --- finds node of cell containing particles for current positions
-        j=floor(xmid)
-        k=floor(ymid)
-        l=floor(zmid)
-        j0=floor(xmid-0.5_num)
-        k0=floor(ymid-0.5_num)
-        l0=floor(zmid-0.5_num)
+        j=nint(xmid)
+        k=nint(ymid)
+        l=nint(zmid)
+        j0=nint(xmid-0.5_num)
+        k0=nint(ymid-0.5_num)
+        l0=nint(zmid-0.5_num)
         ! --- computes set of coefficients for node centered quantities
         xint = xmid-j
         yint = ymid-k

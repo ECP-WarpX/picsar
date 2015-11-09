@@ -53,7 +53,7 @@ CONTAINS
                         ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
                         rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_vecHVv2_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_vecHVv2_2_2_2(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -453,27 +453,29 @@ CONTAINS
         INTEGER :: moff(1:8) 
         REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
         INTEGER :: orig, jorig, korig, lorig
-        INTEGER :: ncx, ncy, ncz,ix,iy,iz
+        INTEGER :: ncx, ncy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
         ! Init parameters
         dxi = 1.0_num/dx
         dyi = 1.0_num/dy
         dzi = 1.0_num/dz
         invvol = dxi*dyi*dzi
-        ncx=nx+2*nxguard;ncy=ny+2*nyguard;ncz=nz+2*nzguard
+        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
+        ncx=nx+2;ncy=ny+2;ncz=nz+2
         NCELLS=ncx*ncy*ncz
         ALLOCATE(rhocells(8,NCELLS))
         rhocells=0.0_num
-        nnx = nx + 1 + 2*nxguard
-        nnxy = nnx*(ny+1+2*nyguard)
+        nnx = ngridx
+        nnxy = nnx*ngridy
         moff = (/0,1,nnx,nnx+1,nnxy,nnxy+1,nnxy+nnx,nnxy+nnx+1/)
         mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
         my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
         mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
         sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
-        jorig=-nxguard; korig=-nyguard;lorig=-nzguard
+        jorig=-1; korig=-1;lorig=-1
         orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-
+        ngx=(ngridx-ncx)
+        ngxy=(ngridx*ngridy-ncx*ncy)
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC
             !DIR$ ASSUME_ALIGNED xp:64
@@ -529,7 +531,7 @@ CONTAINS
                     !$OMP SIMD
                     DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                         ic=ix+(iy-1)*ncx+(iz-1)*ncy*ncx
-                        igrid=ic+(iy-1)+(iz-1)*(ncx+ncy+1)
+                        igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
                         rho(orig+igrid+moff(nv))=rho(orig+igrid+moff(nv))+rhocells(nv,ic)
                     END DO
                     !$OMP END SIMD
@@ -638,22 +640,22 @@ CONTAINS
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
         INTEGER, PARAMETER :: LVEC=128
-        INTEGER, DIMENSION(LVEC) :: ICELL
+        INTEGER, DIMENSION(LVEC) :: ICELL, IG
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
         REAL(num) :: dxi,dyi,dzi
         REAL(num) :: xint,yint,zint,xintsq,yintsq,zintsq
-        REAL(num) :: x,y,z,invvol, wq0, wq, sxy, syy0,syy1,syy2,szz0,szz1,szz2
-        REAL(num) :: sx0(LVEC), sy0(LVEC), sz0(LVEC),sx1(LVEC), sy1(LVEC), sz1(LVEC), &
-                    sx2(LVEC), sy2(LVEC), sz2(LVEC)
+        REAL(num) :: x,y,z,invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
+        REAL(num) :: sx0(LVEC), sx1(LVEC), sx2(LVEC)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER :: nnx, nnxy, off0, ind0
         INTEGER :: moff(1:8)
-        REAL(num):: mx0(1:8),mx1(1:8),mx2(1:8)
-        REAL(num):: my0(1:8),my1(1:8),my2(1:8), ww0(1:LVEC,1:8),www(1:LVEC,1:8)
+        REAL(num):: ww0(1:LVEC,1:8),www(1:LVEC,1:8)
+        INTEGER :: orig, jorig, korig, lorig
+        INTEGER :: ncx, ncy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
         ! Init parameters
         dxi = 1.0_num/dx
@@ -661,21 +663,19 @@ CONTAINS
         dzi = 1.0_num/dz
         invvol = dxi*dyi*dzi
         wq0=q*invvol
-        NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
+        ncx=nx+3;ncy=ny+3;ncz=nz+3
+        NCELLS=ncx*ncy*ncz
         ALLOCATE(rhocells(8,NCELLS))
         rhocells=0.0_num
         nnx = nx + 1 + 2*nxguard
-        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
-        moff = (/-1-nnx-nnxy,-nnx-nnxy,1-nnx-nnxy,-1-nnxy,-nnxy,1-nnxy,-1+nnx-nnxy,nnx-nnxy/)
-        off0=1+nnx+nnxy
-        mx0=(/1_num,0_num,0_num,1_num,0_num,0_num,1_num,0_num/);
-        mx1=(/0_num,1_num,0_num,0_num,1_num,0_num,0_num,1_num/);
-        mx2=(/0_num,0_num,1_num,0_num,0_num,1_num,0_num,0_num/);
-        my0=(/1_num,1_num,1_num,0_num,0_num,0_num,0_num,0_num/);
-        my1=(/0_num,0_num,0_num,1_num,1_num,1_num,0_num,0_num/);
-        my2=(/0_num,0_num,0_num,0_num,0_num,0_num,1_num,1_num/);
-	    ww0=0_num
-
+        nnxy = nnx*(ny+1+2*nyguard)
+        moff = (/-nnx-nnxy,-nnxy,nnx-nnxy,-nnx,nnx,-nnx+nnxy,nnxy,nnx+nnxy/)
+	    ww0=0.0_num
+        jorig=-1; korig=-1;lorig=-1
+        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+        ngx=(ngridx-ncx)
+        ngxy=(ngridx*ngridy-ncx*ncy)
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -690,10 +690,11 @@ CONTAINS
                 y = (yp(nn)-ymin)*dyi
                 z = (zp(nn)-zmin)*dzi
                 ! --- finds cell containing particles for current positions
-                j=floor(x)
-                k=floor(y)
-                l=floor(z)
-                ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+                j=nint(x)
+                k=nint(y)
+                l=nint(z)
+                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncy*ncx
+                IG(n)=ICELL(n)+(k-korig)*ngx+(l-lorig)*ngxy
                 ! --- computes distance between particle and node for current positions
                 xint = x-j
                 yint = y-k
@@ -706,30 +707,29 @@ CONTAINS
                 sx0(n)=0.5_num*(0.5_num-xint)**2
                 sx1(n)=(0.75_num-xintsq)
                 sx2(n)=0.5_num*(0.5_num+xint)**2
-                sy0=0.5_num*(0.5_num-yint)**2
+                syy0=0.5_num*(0.5_num-yint)**2
                 syy1=(0.75_num-yintsq)
                 syy2=0.5_num*(0.5_num+yint)**2
                 szz0=0.5_num*(0.5_num-zint)**2*wq
                 szz1=(0.75_num-zintsq)*wq
                 szz2=0.5_num*(0.5_num+zint)**2*wq
-                www(n,1) = szz0*syy0
-                www(n,2) = szz1*syy0
-                www(n,3) = szz2*syy0
-                www(n,4) = szz0*syy1
-                www(n,5) = szz1*syy1
-                www(n,6) = szz2*syy1
-                www(n,7) = szz0*syy2
-                www(n,8) = szz1*syy2
-                sxy=sx2(n)*syy2
-                ww0(n,1)=sxy*sx0(n)
-                ww0(n,2)=sxy*sx1(n)
-                ww0(n,3)=sxy*sx2(n)
+                www(n,1) = syy0*szz0
+                www(n,2) = syy1*szz0
+                www(n,3) = syy2*szz0
+                www(n,4) = syy0*szz1
+                www(n,5) = syy2*szz1
+                www(n,6) = syy0*szz2
+                www(n,7) = syy1*szz2
+                www(n,8) = syy2*szz2
+                szy=syy1*szz1 ! central point
+                ww0(n,1)=szy*sx0(n)
+                ww0(n,2)=szy*sx1(n)
+                ww0(n,3)=szy*sx2(n)
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
             DO n=1,MIN(LVEC,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
-                ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED mx0:64,mx1:64,mx2:64
                 !DIR$ ASSUME_ALIGNED my0:64,my1:64,my2:64
                 !DIR$ ASSUME_ALIGNED rhocells:64
@@ -737,30 +737,38 @@ CONTAINS
                 DO nv=1,8 !!! - VECTOR
                     ww=www(n,nv)
                     ! Loop on (i=-1,j,k)
-                    rhocells(nv,ic-1)=rhocells(nv,ic-1)+ww*sx0(n)
+                    rhocells(nv,ICELL(n)-1)=rhocells(nv,ICELL(n)-1)+ww*sx0(n)
                     ! Loop on (i=0,j,k)
-                    rhocells(nv,ic)=rhocells(nv,ic)+ww*sx1(n)
+                    rhocells(nv,ICELL(n))=rhocells(nv,ICELL(n))+ww*sx1(n)
                     !Loop on (i=1,j,k)
-                    rhocells(nv,ic+1)=rhocells(nv,ic+1)+ww*sx2(n)
+                    rhocells(nv,ICELL(n)+1)=rhocells(nv,ICELL(n)+1)+ww*sx2(n)
                 END DO
                 !$OMP END SIMD
                 !$OMP SIMD
                 DO nv=1,4
-                    rho(ic+nv-2)=rho(ic+nv-2)+ww0(n,nv)
+                    rho(orig+IG(n)+nv-2)=rho(orig+IG(n)+nv-2)+ww0(n,nv)
                 END DO
                 !$OMP END SIMD
             END DO
         END DO
+        ! - reduction of rhocells in rho
         DO nv=1,8
-            ind0=off0+moff(nv)
-            !DIR$ ASSUME_ALIGNED rhocells:64
-            !DIR$ ASSUME_ALIGNED rho:64
-            !$OMP SIMD
-            DO ic=1,NCELLS  !!! VECTOR
-                rho(ic+ind0)=rho(ic+ind0)+rhocells(nv,ic)
+            DO iz=1, ncz
+                DO iy=1,ncy
+                    !DIR$ ASSUME_ALIGNED rhocells:64
+                    !DIR$ ASSUME_ALIGNED rho:64
+                    !DIR$ IVDEP
+                    !$OMP SIMD
+                    DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                        ic=ix+(iy-1)*ncx+(iz-1)*ncy*ncx
+                        igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                        rho(orig+igrid+moff(nv))=rho(orig+igrid+moff(nv))+rhocells(nv,ic)
+                    END DO
+                    !$OMP END SIMD
+                END DO
             END DO
-            !$OMP END SIMD
         END DO
+
         DEALLOCATE(rhocells)
         RETURN
     END SUBROUTINE depose_rho_vecHVv2_2_2_2
