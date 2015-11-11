@@ -51,12 +51,12 @@ DO iz=1,ntilez
                 jy_tile = 0.0_num
                 jz_tile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_esirkepov_n(jx_tile,jy_tile,jz_tile,count,    &
+                CALL depose_jxjyjz_scalar_1_1_1(jx_tile,jy_tile,jz_tile,count,    &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
                 curr_tile%z_grid_tile_min,dt,dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,          &
-                curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards,nox,noy,noz,.TRUE.,.FALSE.)
+                curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
                 ! Reduce jtile in j
                 jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + jx_tile
                 jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + jy_tile
