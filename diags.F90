@@ -1057,16 +1057,17 @@ CONTAINS
         INTEGER :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi,xint,yint(1:LVEC),zint, &
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC), &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC), sz1(LVEC), sz2(LVEC), sz3(LVEC),sz4(LVEC)
-        REAL(num) :: sy(-1:2), sz(-1:2)
+        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC), sy1(LVEC), sy2(LVEC), sy3(LVEC),sy4(LVEC)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER :: ic,ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER :: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER :: nnx, nnxy, off0, ind0
-        INTEGER :: moff(1:16)
-        REAL(num):: www(1:16,1:LVEC), ydec(1:4), h1(1:4), h11(1:4), h12(1:4), sgn(1:4), syy(1:4)
+        INTEGER :: moff(1:8)
+        REAL(num):: www(1:16,1:LVEC), zdec(1:4), h1(1:4), h11(1:4), h12(1:4), sgn(1:4), szz(1:4)
+        INTEGER :: orig, jorig, korig, lorig
+        INTEGER :: ncx, ncy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
         ! Init parameters
         dxi = 1.0_num/dx
@@ -1074,16 +1075,22 @@ CONTAINS
         dzi = 1.0_num/dz
         invvol = dxi*dyi*dzi
         wq0=q*invvol
-        NCELLS=(2*nxguard+nx)*(2*nyguard+ny)*(2*nzguard+nz)
+        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
+        ncx=nx+5; ncy=ny+4; ncz=nz+2
+        NCELLS=ncx*ncy*ncz
         ALLOCATE(rhocells(8,NCELLS))
-        rhocells=0.0_num
-        nnx = nx + 1 + 2*nxguard
-        nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
-        moff = (/-1-nnx-nnxy,-nnx-nnxy,1-nnx-nnxy,-1-nnxy,-nnxy,1-nnxy,-1+nnx-nnxy,nnx-nnxy, &
-                -1-nnx-nnxy,-nnx-nnxy,1-nnx-nnxy,-1-nnxy,-nnxy,1-nnxy,-1+nnx-nnxy,nnx-nnxy/)
-        off0=1+nnx+nnxy
+        rhocells=0_num
+        nnx = ngridx
+        nnxy = ngridx*ngridy
+        moff = (/-nnxy,0,nnxy,2*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2*nnxy/)
+        !moff = (/0,1,nnx,nnx+1,nnxy,nnxy+1,nnxy+nnx,nnxy+nnx+1/)
+        jorig=-2; korig=-2;lorig=-1
+        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+        ngx=(ngridx-ncx)
+        ngxy=(ngridx*ngridy-ncx*ncy)
+
         h1=(/1_num,0_num,1_num,0_num/); sgn=(/1_num,-1_num,1_num,-1_num/)
-        h11=(/1_num,0_num,1_num,0_num/); h12=(/1_num,-1_num,1_num,-1_num/)
+        h11=(/0_num,1_num,1_num,0_num/); h12=(/1_num,0_num,0_num,1_num/)
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC
@@ -1102,12 +1109,14 @@ CONTAINS
                 j=floor(x)
                 k=floor(y)
                 l=floor(z)
-                ICELL(n)=1+j+nxguard+(k+nyguard+1)*(nx+2*nxguard)+(l+nzguard+1)*(ny+2*nyguard)
+                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncy*ncx
+                IF(ICELL(n) .LT. 1) PRINT *, "ICELL LT 1, j,k,l",j,k,l
+                IF(ICELL(n) .GT. NCELLS) PRINT *, "ICELL GT NCELLS, j,k,l",j,k,l, "ncx,ncy,ncz",ncx,ncy,ncz
                 wq=w(nn)*wq0
                 ! --- computes distance between particle and node for current positions
                 xint = x-j
-                yint(n) = y-k
-                zint = z-l
+                yint= y-k
+                zint(n) = z-l
                 ! --- computes coefficients for node centered quantities
                 oxint = 1.0_num-xint
                 xintsq = xint*xint
@@ -1116,24 +1125,24 @@ CONTAINS
                 sx2(n) = twothird-xintsq*(1.0_num-xint*0.5_num)
                 sx3(n) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
                 sx4(n) = onesixth*xintsq*xint
-                ozint = 1.0_num-zint
-                zintsq = zint*zint
-                ozintsq = ozint*ozint
-                sz1(n) = onesixth*ozintsq*ozint*wq
-                sz2(n) = (twothird-zintsq*(1.0_num-zint*0.5_num))*wq
-                sz3(n) = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
-                sz4(n) = onesixth*zintsq*zint*wq
+                oyint = 1.0_num-yint
+                yintsq = yint*yint
+                oyintsq = oyint*oyint
+                sy1(n) = onesixth*oyintsq*oyint*wq
+                sy2(n) = (twothird-yintsq*(1.0_num-yint*0.5_num))*wq
+                sy3(n) = (twothird-oyintsq*(1.0_num-oyint*0.5_num))*wq
+                sy4(n) = onesixth*yintsq*yint*wq
             END DO
             !$OMP END SIMD
             DO n=1,MIN(LVEC,np-ip+1)
                 !$OMP SIMD
                 DO nv=1,4 !!! Vector
-                    ydec(nv)=(h1(nv)-yint(n))*sgn(nv)
-                    syy(nv)= (twothird-ydec(nv)*(1.0_num-ydec(nv)*0.5_num))*h11(nv)+onesixth*ydec(nv)*h12(nv)
-                    www(nv,n)=syy(nv)*sz1(n)
-                    www(nv+4,n)=syy(nv)*sz2(n)
-                    www(nv+8,n)=syy(nv)*sz3(n)
-                    www(nv+12,n)=syy(nv)*sz4(n)
+                    zdec(nv)     = (h1(nv)-zint(n))*sgn(nv)
+                    szz(nv)      = (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv)+onesixth*zdec(nv)**3*h12(nv)
+                    www(nv,n)    = szz(nv)*sy1(n)
+                    www(nv+4,n)  = szz(nv)*sy2(n)
+                    www(nv+8,n)  = szz(nv)*sy3(n)
+                    www(nv+12,n) = szz(nv)*sy4(n)
                 ENDDO
                 !$OMP END SIMD
             END DO
@@ -1141,39 +1150,47 @@ CONTAINS
             DO n=1,MIN(LVEC,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
-                ic0=ic+2*nnx-1
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !$OMP SIMD
                 DO nv=1,8 !!! - VECTOR
                     ! Loop on (i=-1,j,k)
-                    rhocells(nv,ic-1)=rhocells(nv,ic-1)+www(nv,n)*sx1(n)
+                    !IF ((ic-ncx-1) .LT. 1) PRINT *, "ic",ic,"ic-ncx-1",ic-ncx-1
+                    rhocells(nv,ic-ncx-1) = rhocells(nv,ic-ncx-1) + www(nv,n)*sx1(n)
                     ! Loop on (i=0,j,k)
-                    rhocells(nv,ic)=rhocells(nv,ic)+www(nv,n)*sx2(n)
+                    rhocells(nv,ic-ncx)   = rhocells(nv,ic-ncx)   + www(nv,n)*sx2(n)
                     !Loop on (i=1,j,k)
-                    rhocells(nv,ic+1)=rhocells(nv,ic+1)+www(nv,n)*sx3(n)
+                    rhocells(nv,ic-ncx+1) = rhocells(nv,ic-ncx+1) + www(nv,n)*sx3(n)
                     !Loop on (i=1,j,k)
-                    rhocells(nv,ic+2)=rhocells(nv,ic+2)+www(nv,n)*sx4(n)
+                    rhocells(nv,ic-ncx+2) = rhocells(nv,ic-ncx+2) + www(nv,n)*sx4(n)
                     ! Loop on (i=-1,j,k)
-                    rhocells(nv,ic0-1)=rhocells(nv,ic0-1)+www(nv+8,n)*sx1(n)
+                    rhocells(nv,ic+ncx-1) = rhocells(nv,ic+ncx-1) + www(nv+8,n)*sx1(n)
                     ! Loop on (i=0,j,k)
-                    rhocells(nv,ic0)=rhocells(nv,ic0)+www(nv+8,n)*sx2(n)
+                    rhocells(nv,ic+ncx)   = rhocells(nv,ic+ncx)   + www(nv+8,n)*sx2(n)
                     !Loop on (i=1,j,k)
-                    rhocells(nv,ic0+1)=rhocells(nv,ic0+1)+www(nv+8,n)*sx3(n)
+                    rhocells(nv,ic+ncx+1) = rhocells(nv,ic+ncx+1) + www(nv+8,n)*sx3(n)
                     !Loop on (i=1,j,k)
-                    rhocells(nv,ic0+2)=rhocells(nv,ic0+2)+www(nv+8,n)*sx4(n)
+                    rhocells(nv,ic+ncx+2) = rhocells(nv,ic+ncx+2) + www(nv+8,n)*sx4(n)
+                   ! IF ((ic+ncx+2) .GT. NCELLS) PRINT *, "ic",ic,"ic+ncx+2",ic+ncx+2, "NCELLS", NCELLS, "ncx",ncx
                 END DO
                 !$OMP END SIMD
             END DO
         END DO
+        ! - reduction of rhocells in rho
         DO nv=1,8
-            ind0=off0+moff(nv)
-            !DIR$ ASSUME_ALIGNED rhocells:64
-            !DIR$ ASSUME_ALIGNED rho:64
-            !$OMP SIMD
-            DO ic=1,NCELLS  !!! VECTOR
-                rho(ic+ind0)=rho(ic+ind0)+rhocells(nv,ic)
+            DO iz=1, ncz
+                DO iy=1,ncy
+                    !DIR$ ASSUME_ALIGNED rhocells:64
+                    !DIR$ ASSUME_ALIGNED rho:64
+                    !DIR$ IVDEP
+                    !$OMP SIMD
+                    DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                        ic=ix+(iy-1)*ncx+(iz-1)*ncy*ncx
+                        igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                        rho(orig+igrid+moff(nv))=rho(orig+igrid+moff(nv))+rhocells(nv,ic)
+                    END DO
+                    !$OMP END SIMD
+                END DO
             END DO
-            !$OMP END SIMD
         END DO
         DEALLOCATE(rhocells)
         RETURN
