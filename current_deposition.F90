@@ -51,12 +51,12 @@ DO iz=1,ntilez
                 jy_tile = 0.0_num
                 jz_tile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_esirkepov_n(jx_tile,jy_tile,jz_tile,count,    &
+                CALL depose_jxjyjz_vecHVv2_1_1_1(jx_tile,jy_tile,jz_tile,count,    &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
                 curr_tile%z_grid_tile_min,dt,dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,          &
-                curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards,nox,noy,noz,.TRUE., .FALSE.)
+                curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
                 ! Reduce jtile in j
                 jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + jx_tile
                 jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + jy_tile
@@ -208,7 +208,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
-    REAL(num) ::  wwx, wwy, wwz, gaminv, usq, clightsq
+    REAL(num) ::  gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
     INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic
     INTEGER :: nnx, nnxy, n,nn,nv
@@ -217,9 +217,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     INTEGER, PARAMETER :: LVEC=8
     INTEGER, DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: sx, sy, sz, sx0, sy0, sz0,vx,vy,vz,wq
-    REAL(num) :: ww
-    INTEGER :: orig, jorig, korig, lorig
-    INTEGER :: ncx, ncy, ncz
+    REAL(num) :: wwx,wwy,wwz
+    INTEGER :: orig, jorig, korig, lorig, igrid
+    INTEGER :: ncx, ncy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -231,19 +231,23 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     clightsq = 1.0_num/clight**2
     sx=0.0_num;sy=0.0_num;sz=0.0_num
     sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-    ncx=nx+2;ncy=ny+2;ncz=nz+2
+    ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
+    ncx=nx+3;ncy=ny+3;ncz=nz+3
     NCELLS=ncx*ncy*ncz
     ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
     jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
-    nnx = nx + 1 + 2*nxguard
-    nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+    nnx = ngridx
+    nnxy = nnx*ngridy
     moff = (/0,1,nnx,nnx+1,nnxy,nnxy+1,nnxy+nnx,nnxy+nnx+1/)
-    jorig=-2; korig=-1;lorig=-1
-    orig=jorig+nnx*(korig+nyguard)+(lorig+nzguard)*nnx
-    mx=(/0_num,1_num,0_num,1_num,0_num,1_num,0_num,1_num/)
-    my=(/0_num,0_num,1_num,1_num,0_num,0_num,1_num,1_num/)
-    mz=(/0_num,0_num,0_num,0_num,1_num,1_num,1_num,1_num/)
-    sgn=(/1_num,-1_num,-1_num,1_num,-1_num,1_num,1_num,-1_num/)
+    mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
+    my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
+    mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
+    sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
+    jorig=-2; korig=-2;lorig=-2
+    orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+    ngx=(ngridx-ncx)
+    ngxy=(ngridx*ngridy-ncx*ncy)
+
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -282,9 +286,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             j0=floor(xmid-0.5_num)
             k0=floor(ymid-0.5_num)
             l0=floor(zmid-0.5_num)
-            ICELL(n,1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncy
-            ICELL(n,2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncy
-            ICELL(n,3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncy
+            ICELL(n,1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncy*ncx
+            ICELL(n,2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncy*ncx
+            ICELL(n,3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncy*ncx
 
             ! --- computes set of coefficients for node centered quantities
             sx(n) = xmid-j
@@ -321,14 +325,22 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     END DO
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
     DO nv=1,8
-        !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-        !$OMP SIMD
-        DO ic=1,NCELLS  !!! VECTOR
-            jx(orig+ic+moff(nv))=jx(orig+ic+moff(nv))+jxcells(nv,ic)
-            jy(orig+ic+moff(nv))=jy(orig+ic+moff(nv))+jycells(nv,ic)
-            jz(orig+ic+moff(nv))=jz(orig+ic+moff(nv))+jzcells(nv,ic)
+        DO iz=1, ncz
+            DO iy=1,ncy
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !DIR$ ASSUME_ALIGNED rho:64
+                !DIR$ IVDEP
+                !$OMP SIMD
+                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                    ic=ix+(iy-1)*ncx+(iz-1)*ncy*ncx
+                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                    jx(orig+igrid+moff(nv))=jx(orig+igrid+moff(nv))+jxcells(nv,ic)
+                    jy(orig+igrid+moff(nv))=jy(orig+igrid+moff(nv))+jycells(nv,ic)
+                    jz(orig+igrid+moff(nv))=jz(orig+igrid+moff(nv))+jzcells(nv,ic)
+                END DO
+                !$OMP END SIMD
+            END DO
         END DO
-        !$OMP END SIMD
     END DO
     DEALLOCATE(jxcells,jycells,jzcells)
     RETURN
