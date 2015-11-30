@@ -51,7 +51,7 @@ DO iz=1,ntilez
                 jy_tile = 0.0_num
                 jz_tile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_vecHVv2_1_1_1(jx_tile,jy_tile,jz_tile,count,    &
+                CALL depose_jxjyjz_vecHVv2_3_3_3(jx_tile,jy_tile,jz_tile,count,    &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
@@ -389,10 +389,10 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         vz = uzp(ip)*gaminv
 
         ! --- computes particles weights
-        wq=q*w(ip)
-        wqx=wq*invvol*vx
-        wqy=wq*invvol*vy
-        wqz=wq*invvol*vz
+        wq=q*w(ip)*invvol
+        wqx=wq*vx
+        wqy=wq*vy
+        wqz=wq*vz
 
         ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
         xmid=x-dts2dx*vx
@@ -419,9 +419,9 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         sy( 0) = 0.75_num-yintsq
         sy( 1) = 0.5_num*(0.5_num+yint)**2
         zintsq = zint*zint
-        sz(-1) = 0.5_num*(0.5_num-zint)**2*wq
-        sz( 0) = 0.75_num-zintsq*wq
-        sz( 1) = 0.5_num*(0.5_num+zint)**2*wq
+        sz(-1) = 0.5_num*(0.5_num-zint)**2
+        sz( 0) = (0.75_num-zintsq)
+        sz( 1) = 0.5_num*(0.5_num+zint)**2
 
         ! --- computes set of coefficients for staggered quantities
         xint = xmid-j0-0.5_num
@@ -436,9 +436,9 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         sy0( 0) = 0.75_num-yintsq
         sy0( 1) = 0.5_num*(0.5_num+yint)**2
         zintsq = zint*zint
-        sz0(-1) = 0.5_num*(0.5_num-zint)**2*wq
-        sz0( 0) = 0.75_num-zintsq*wq
-        sz0( 1) = 0.5_num*(0.5_num+zint)**2*wq
+        sz0(-1) = 0.5_num*(0.5_num-zint)**2
+        sz0( 0) = (0.75_num-zintsq)
+        sz0( 1) = 0.5_num*(0.5_num+zint)**2
 
         ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
         ! --- to the 27 nearest vertices
@@ -549,13 +549,13 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
-    REAL(num) ::   ww, wwx, wwy, wwz, gaminv, usq, clightsq
+    REAL(num) ::   wqx,wqy,wqz,ww, wwx, wwy, wwz, gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
     INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic
     INTEGER :: nnx, nnxy, n,nn,nv
     INTEGER :: moff(1:8)
     INTEGER, PARAMETER :: LVEC=8
-    INTEGER, DIMENSION(LVEC,3) :: ICELL
+    INTEGER, DIMENSION(LVEC,3) :: ICELL, IG
     REAL(num), DIMENSION(LVEC) :: vx,vy,vz
     REAL(num) :: ww0x(LVEC,4),ww0y(LVEC,4),ww0z(LVEC,4), wwwx(LVEC,8), &
     wwwy(LVEC,8),wwwz(LVEC,8), wq
@@ -563,7 +563,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: sx00(LVEC),sx01(LVEC),sx02(LVEC)
     REAL(num) :: sy0,sy1,sy2,sy00,sy01,sy02
     REAL(num) :: sz0,sz1,sz2,sz00,sz01,sz02, syz
-    INTEGER :: orig, jorig, korig, lorig, ncx, ncy, ncz
+    INTEGER :: igrid,orig, jorig, korig, lorig
+    INTEGER :: ncx, ncy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -574,15 +575,18 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     dts2dz = 0.5_num*dt*dzi
     clightsq = 1.0_num/clight**2
     ww0x=0._num; ww0y=0._num; ww0z=0._num
-    ncx=nx+4; ncy=ny+2; ncz=nz+2
+    ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
+    ncx=nx+4;ncy=ny+4;ncz=nz+4
     NCELLS=ncx*ncy*ncz
     ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
     jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num
     nnx = nx + 1 + 2*nxguard
-    nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
-    moff = (/-1-nnx-nnxy,-nnx-nnxy,1-nnx-nnxy,-1-nnxy,-nnxy,1-nnxy,-1+nnx-nnxy,nnx-nnxy/)
-    jorig=-2; korig=-1;lorig=-1
-    orig=jorig+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+    nnxy = nnx*(ny+1+2*nyguard)
+    moff = (/-nnx-nnxy,-nnxy,nnx-nnxy,-nnx,nnx,-nnx+nnxy,nnxy,nnx+nnxy/)
+    jorig=-2; korig=-2;lorig=-2
+    orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+    ngx=(ngridx-ncx)
+    ngxy=(ngridx*ngridy-ncx*ncy)
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -608,6 +612,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
 
             ! --- computes particles weights
             wq=q*w(nn)*invvol
+            wqx=wq*vx(n)
+            wqy=wq*vy(n)
+            wqz=wq*vz(n)
 
             ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
             xmid=x-dts2dx*vx(n)
@@ -615,87 +622,94 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             zmid=z-dts2dz*vz(n)
 
             ! --- finds node of cell containing particles for current positions
-            j=floor(xmid)
-            k=floor(ymid)
-            l=floor(zmid)
-            j0=floor(xmid-0.5_num)
-            k0=floor(ymid-0.5_num)
-            l0=floor(zmid-0.5_num)
-            ICELL(n,1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncy
-            ICELL(n,2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncy
-            ICELL(n,3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncy
+            j=nint(xmid)
+            k=nint(ymid)
+            l=nint(zmid)
+            j0=nint(xmid-0.5_num)
+            k0=nint(ymid-0.5_num)
+            l0=nint(zmid-0.5_num)
+            ICELL(n,1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncy*ncx
+            ICELL(n,2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncy*ncx
+            ICELL(n,3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncy*ncx
+            IG(n,1)=ICELL(n,1)+(k-korig)*ngx+(l-lorig)*ngxy
+            IG(n,2)=ICELL(n,2)+(k0-korig)*ngx+(l-lorig)*ngxy
+            IG(n,3)=ICELL(n,3)+(k-korig)*ngx+(l0-lorig)*ngxy
 
             ! --- computes set of coefficients for node centered quantities
             xint = xmid-j
             yint = ymid-k
             zint = zmid-l
             xintsq= xint**2
+            yintsq= yint**2
+            zintsq= zint**2
             sx0(n)=0.5_num*(0.5_num-xint)**2
             sx1(n)=(0.75_num-xintsq)
             sx2(n)=0.5_num*(0.5_num+xint)**2
             sy0=0.5_num*(0.5_num-yint)**2
             sy1=(0.75_num-yintsq)
             sy2=0.5_num*(0.5_num+yint)**2
-            sz0=0.5_num*(0.5_num-zint)**2*wq
-            sz1=(0.75_num-zintsq)*wq
-            sz2=0.5_num*(0.5_num+zint)**2*wq
+            sz0=0.5_num*(0.5_num-zint)**2
+            sz1=(0.75_num-zintsq)
+            sz2=0.5_num*(0.5_num+zint)**2
 
             ! --- computes set of coefficients for staggered quantities
             xint = xmid-j0-0.5_num
             yint = ymid-k0-0.5_num
             zint = zmid-l0-0.5_num
             xintsq= xint**2
+            yintsq= yint**2
+            zintsq= zint**2
             sx00(n)=0.5_num*(0.5_num-xint)**2
             sx01(n)=(0.75_num-xintsq)
             sx02(n)=0.5_num*(0.5_num+xint)**2
             sy00=0.5_num*(0.5_num-yint)**2
             sy01=(0.75_num-yintsq)
             sy02=0.5_num*(0.5_num+yint)**2
-            sz00=0.5_num*(0.5_num-zint)**2*wq
-            sz01=(0.75_num-zintsq)*wq
-            sz02=0.5_num*(0.5_num+zint)**2*wq
+            sz00=0.5_num*(0.5_num-zint)**2
+            sz01=(0.75_num-zintsq)
+            sz02=0.5_num*(0.5_num+zint)**2
 
             ! -- Weights for planes of 8  vertices
             ! Weights - X
-            wwwx(n,1) = sz0*sy0
-            wwwx(n,2) = sz1*sy0
-            wwwx(n,3) = sz2*sy0
-            wwwx(n,4) = sz0*sy1
-            wwwx(n,5) = sz1*sy1
-            wwwx(n,6) = sz2*sy1
-            wwwx(n,7) = sz0*sy2
-            wwwx(n,8) = sz1*sy2
+            wwwx(n,1) = sy0*sz0*wqx
+            wwwx(n,2) = sy1*sz0*wqx
+            wwwx(n,3) = sy2*sz0*wqx
+            wwwx(n,4) = sy0*sz1*wqx
+            wwwx(n,5) = sy2*sz1*wqx
+            wwwx(n,6) = sy0*sz2*wqx
+            wwwx(n,7) = sy1*sz2*wqx
+            wwwx(n,8) = sy2*sz2*wqx
 
             ! Weights - Y
-            wwwy(n,1) = sz0*sy00
-            wwwy(n,2) = sz1*sy00
-            wwwy(n,3) = sz2*sy00
-            wwwy(n,4) = sz0*sy01
-            wwwy(n,5) = sz1*sy01
-            wwwy(n,6) = sz2*sy01
-            wwwy(n,7) = sz0*sy02
-            wwwy(n,8) = sz1*sy02
+            wwwy(n,1) = sy00*sz0*wqy
+            wwwy(n,2) = sy01*sz0*wqy
+            wwwy(n,3) = sy02*sz0*wqy
+            wwwy(n,4) = sy00*sz1*wqy
+            wwwy(n,5) = sy02*sz1*wqy
+            wwwy(n,6) = sy00*sz2*wqy
+            wwwy(n,7) = sy01*sz2*wqy
+            wwwy(n,8) = sy02*sz2*wqy
 
             ! Weights - Z
-            wwwz(n,1) = sz00*sy0
-            wwwz(n,2) = sz01*sy0
-            wwwz(n,3) = sz02*sy0
-            wwwz(n,4) = sz00*sy1
-            wwwz(n,5) = sz01*sy1
-            wwwz(n,6) = sz02*sy1
-            wwwz(n,7) = sz00*sy2
-            wwwz(n,8) = sz01*sy2
+            wwwz(n,1) = sy0*sz00*wqz
+            wwwz(n,2) = sy1*sz00*wqz
+            wwwz(n,3) = sy2*sz00*wqz
+            wwwz(n,4) = sy0*sz01*wqz
+            wwwz(n,5) = sy2*sz01*wqz
+            wwwz(n,6) = sy0*sz02*wqz
+            wwwz(n,7) = sy1*sz02*wqz
+            wwwz(n,8) = sy2*sz02*wqz
 
-            ! -- Weights for 3 remaining points
-            syz=sz2*sy2
+            ! -- 3 remaining central points
+            syz=sz1*sy1*wqx
             ww0x(n,1)=syz*sx00(n)
             ww0x(n,2)=syz*sx01(n)
             ww0x(n,3)=syz*sx02(n)
-            syz=sz2*sy02
+            syz=sz1*sy01*wqy
             ww0y(n,1)=syz*sx0(n)
             ww0y(n,2)=syz*sx1(n)
             ww0y(n,3)=syz*sx2(n)
-            syz=sz02*sy2
+            syz=sz01*sy1*wqz
             ww0z(n,1)=syz*sx0(n)
             ww0z(n,2)=syz*sx1(n)
             ww0z(n,3)=syz*sx2(n)
@@ -734,23 +748,31 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             !$OMP END SIMD
             !$OMP SIMD
             DO nv=1,4
-                jx(ICELL(n,1)+orig+nv-2)=jx(ICELL(n,1)+orig+nv-2)+ww0x(n,nv)
-                jy(ICELL(n,2)+orig+nv-2)=jy(ICELL(n,2)+orig+nv-2)+ww0y(n,nv)
-                jz(ICELL(n,3)+orig+nv-2)=jz(ICELL(n,3)+orig+nv-2)+ww0z(n,nv)
+                jx(orig+IG(n,1)+nv-2)=jx(orig+IG(n,1)+nv-2)+ww0x(n,nv)
+                jy(orig+IG(n,2)+nv-2)=jy(orig+IG(n,2)+nv-2)+ww0y(n,nv)
+                jz(orig+IG(n,3)+nv-2)=jz(orig+IG(n,3)+nv-2)+ww0z(n,nv)
             END DO
             !$OMP END SIMD
         END DO
     END DO
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
     DO nv=1,8
-        !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-        !$OMP SIMD
-        DO ic=1,NCELLS  !!! VECTOR
-            jx(orig+ic+moff(nv))=jx(orig+ic+moff(nv))+jxcells(nv,ic)
-            jy(orig+ic+moff(nv))=jy(orig+ic+moff(nv))+jycells(nv,ic)
-            jz(orig+ic+moff(nv))=jz(orig+ic+moff(nv))+jzcells(nv,ic)
+        DO iz=1, ncz
+            DO iy=1,ncy
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !DIR$ ASSUME_ALIGNED rho:64
+                !DIR$ IVDEP
+                !$OMP SIMD
+                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                    ic=ix+(iy-1)*ncx+(iz-1)*ncy*ncx
+                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                    jx(orig+igrid+moff(nv))=jx(orig+igrid+moff(nv))+jxcells(nv,ic)
+                    jy(orig+igrid+moff(nv))=jy(orig+igrid+moff(nv))+jycells(nv,ic)
+                    jz(orig+igrid+moff(nv))=jz(orig+igrid+moff(nv))+jzcells(nv,ic)
+                END DO
+                !$OMP END SIMD
+            END DO
         END DO
-        !$OMP END SIMD
     END DO
     DEALLOCATE(jxcells,jycells,jzcells)
     RETURN
@@ -800,10 +822,10 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
         vz = uzp(ip)*gaminv
 
         ! --- computes particles weights
-        wq=q*w(ip)
-        wqx=wq*invvol*vx
-        wqy=wq*invvol*vy
-        wqz=wq*invvol*vz
+        wq=q*w(ip)*invvol
+        wqx=wq*vx
+        wqy=wq*vy
+        wqz=wq*vz
 
         ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
         xmid=x-dts2dx*vx
@@ -1091,8 +1113,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) ::   ww, wwx, wwy, wwz, gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic
-    INTEGER :: nnx, nnxy, n,nn,nv
+    INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
+    INTEGER :: nnx, nnxy,ngridx, ngridy, n,nn,nv
     INTEGER :: moff(1:8)
     INTEGER, PARAMETER :: LVEC=8
     REAL(num) :: zint(LVEC),zint0(LVEC)
@@ -1104,7 +1126,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: sy1(LVEC),sy2(LVEC),sy3(LVEC),sy4(LVEC)
     REAL(num) :: sy01(LVEC),sy02(LVEC),sy03(LVEC),sy04(LVEC)
     REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
-    INTEGER :: orig, ncx, ncy, ncz, jorig, korig, lorig
+    INTEGER :: orig, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -1114,19 +1136,21 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     dts2dy = 0.5_num*dt*dyi
     dts2dz = 0.5_num*dt*dzi
     clightsq = 1.0_num/clight**2
-    ncx=nx+4
-    ncy=ny+3
-    ncz=nz+2
+    ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
+    ncx=nx+6; ncy=ny+6; ncz=nz+6
     NCELLS=ncx*ncy*ncz
     ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
     jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
-    nnx = nx + 1 + 2*nxguard
-    nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
+    nnx = ngridx
+    nnxy = ngridx*ngridy
     moff = (/-nnxy,0,nnxy,2*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2*nnxy/)
-    jorig=-2; korig=-2;lorig=-1
-    orig=jorig+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+    jorig=-3; korig=-3;lorig=-3
+    orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+    ngx=(ngridx-ncx)
+    ngxy=(ngridx*ngridy-ncx*ncy)
+
     h1=(/1_num,0_num,1_num,0_num/); sgn=(/1_num,-1_num,1_num,-1_num/)
-    h11=(/1_num,0_num,1_num,0_num/); h12=(/0_num,1_num,0_num,-1_num/)
+    h11=(/0_num,1_num,1_num,0_num/); h12=(/1_num,0_num,0_num,1_num/)
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -1166,46 +1190,47 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             j0=floor(xmid-0.5_num)
             k0=floor(ymid-0.5_num)
             l0=floor(zmid-0.5_num)
-            ICELL(n,1)=1+(j0-jorig)+(k-korig)*(ncx)+(l-lorig)*(ncy)
-            ICELL(n,2)=1+(j-jorig)+(k0-korig)*(ncx)+(l-lorig)*(ncy)
-            ICELL(n,3)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*(ncy)
+            ICELL(n,1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncy*ncx
+            ICELL(n,2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncy*ncx
+            ICELL(n,3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncy*ncx
+
             ! --- computes set of coefficients for node centered quantities
+            xint    = xmid-j
+            yint    = ymid-k
             zint(n) = zmid-l
-            xint = xmid-j
-            zint = zmid-k
-            oxint = 1.0_num-xint
-            xintsq = xint*xint
+            oxint   = 1.0_num-xint
+            xintsq  = xint*xint
             oxintsq = oxint*oxint
-            sx1(n) = onesixth*oxintsq*oxint
-            sx2(n) = twothird-xintsq*(1.0_num-xint*0.5_num)
-            sx3(n) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
-            sx4(n) = onesixth*xintsq*xint
-            oyint = 1.0_num-yint
-            yintsq = yint*yint
+            sx1(n)  = onesixth*oxintsq*oxint
+            sx2(n)  = twothird-xintsq*(1.0_num-xint*0.5_num)
+            sx3(n)  = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+            sx4(n)  = onesixth*xintsq*xint
+            oyint   = 1.0_num-yint
+            yintsq  = yint*yint
             oyintsq = oyint*oyint
-            sy1(n) = onesixth*oyintsq*oyint*wq
-            sy2(n) = (twothird-yintsq*(1.0_num-yint*0.5_num))*wq
-            sy3(n) = (twothird-oyintsq*(1.0_num-oyint*0.5_num))*wq
-            sy4(n) = onesixth*yintsq*yint*wq
+            sy1(n)  = onesixth*oyintsq*oyint*wq
+            sy2(n)  = (twothird-yintsq*(1.0_num-yint*0.5_num))*wq
+            sy3(n)  = (twothird-oyintsq*(1.0_num-oyint*0.5_num))*wq
+            sy4(n)  = onesixth*yintsq*yint*wq
 
             ! --- computes set of coefficients for staggered quantities
+            xint     = xmid-j0-0.5_num
+            yint     = ymid-k0-0.5_num
             zint0(n) = zmid-l0-0.5_num
-            xint = xmid-j0-0.5_num
-            yint = ymid-k0-0.5_num
-            oxint = 1.0_num-xint
-            xintsq = xint*xint
-            oxintsq = oxint*oxint
-            sx01(n) = onesixth*oxintsq*oxint
-            sx02(n) = twothird-xintsq*(1.0_num-xint*0.5_num)
-            sx03(n) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
-            sx04(n) = onesixth*xintsq*xint
-            oyint = 1.0_num-yint
-            yintsq = yint*yint
-            oyintsq = oyint*oyint
-            sy01(n) = onesixth*oyintsq*oyint*wq
-            sy02(n) = (twothird-yintsq*(1.0_num-yint*0.5_num))*wq
-            sy03(n) = (twothird-oyintsq*(1.0_num-oyint*0.5_num))*wq
-            sy04(n) = onesixth*yintsq*yint*wq
+            oxint    = 1.0_num-xint
+            xintsq   = xint*xint
+            oxintsq  = oxint*oxint
+            sx01(n)  = onesixth*oxintsq*oxint
+            sx02(n)  = twothird-xintsq*(1.0_num-xint*0.5_num)
+            sx03(n)  = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+            sx04(n)  = onesixth*xintsq*xint
+            oyint    = 1.0_num-yint
+            yintsq   = yint*yint
+            oyintsq  = oyint*oyint
+            sy01(n)  = onesixth*oyintsq*oyint*wq
+            sy02(n)  = (twothird-yintsq*(1.0_num-yint*0.5_num))*wq
+            sy03(n)  = (twothird-oyintsq*(1.0_num-oyint*0.5_num))*wq
+            sy04(n)  = onesixth*yintsq*yint*wq
         END DO
         !$OMP END SIMD
 
@@ -1215,24 +1240,26 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             !$OMP SIMD
             DO nv=1,4 !!! Vector
                 ! - Weiths for jx
-                zdec(nv)=(h1(nv)-zint(n))*sgn(nv)
-                szz(nv)= (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv)+onesixth*zdec(nv)**3*h12(nv)
-                wwwx(nv,n)=szz(nv)*sy1(n)*vx(n)
-                wwwx(nv+4,n)=szz(nv)*sy2(n)*vx(n)
-                wwwx(nv+8,n)=szz(nv)*sy3(n)*vx(n)
-                wwwx(nv+12,n)=szz(nv)*sy4(n)*vx(n)
+                zdec(nv)      = (h1(nv)-zint(n))*sgn(nv)
+                szz(nv)       = (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv) &
+                              +onesixth*zdec(nv)**3*h12(nv)
+                wwwx(nv,n)    = szz(nv)*sy1(n)*vx(n)
+                wwwx(nv+4,n)  = szz(nv)*sy2(n)*vx(n)
+                wwwx(nv+8,n)  = szz(nv)*sy3(n)*vx(n)
+                wwwx(nv+12,n) = szz(nv)*sy4(n)*vx(n)
                 ! - Weiths for jy
-                wwwy(nv,n)=szz(nv)*sy01(n)*vy(n)
-                wwwy(nv+4,n)=szz(nv)*sy02(n)*vy(n)
-                wwwy(nv+8,n)=szz(nv)*sy03(n)*vy(n)
-                wwwy(nv+12,n)=szz(nv)*sy04(n)*vy(n)
+                wwwy(nv,n)    = szz(nv)*sy01(n)*vy(n)
+                wwwy(nv+4,n)  = szz(nv)*sy02(n)*vy(n)
+                wwwy(nv+8,n)  = szz(nv)*sy03(n)*vy(n)
+                wwwy(nv+12,n) = szz(nv)*sy04(n)*vy(n)
                 ! - Weiths for jz
-                zdec(nv)=(h1(nv)-zint0(n))*sgn(nv)
-                szz(nv)= (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv)+onesixth*zdec(nv)**3*h12(nv)
-                wwwz(nv,n)=szz(nv)*sy1(n)*vz(n)
-                wwwz(nv+4,n)=szz(nv)*sy2(n)*vz(n)
-                wwwz(nv+8,n)=szz(nv)*sy3(n)*vz(n)
-                wwwz(nv+12,n)=szz(nv)*sy4(n)*vz(n)
+                zdec(nv)      = (h1(nv)-zint0(n))*sgn(nv)
+                szz(nv)       = (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv) &
+                              +onesixth*zdec(nv)**3*h12(nv)
+                wwwz(nv,n)    = szz(nv)*sy1(n)*vz(n)
+                wwwz(nv+4,n)  = szz(nv)*sy2(n)*vz(n)
+                wwwz(nv+8,n)  = szz(nv)*sy3(n)*vz(n)
+                wwwz(nv+12,n) = szz(nv)*sy4(n)*vz(n)
 
             ENDDO
             !$OMP END SIMD
@@ -1245,71 +1272,79 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
             DO nv=1,8
                 ! --- JX
                 ! Loop on (i=-1,j,k)
-                jxcells(nv,ICELL(n,1)-ncx-1)=jxcells(nv,ICELL(n,1)-ncx-1)+wwwx(nv,n)*sx01(n)
+                jxcells(nv,ICELL(n,1)-ncx-1) = jxcells(nv,ICELL(n,1)-ncx-1) + wwwx(nv,n)*sx01(n)
                 ! Loop on (i=0,j,k)
-                jxcells(nv,ICELL(n,1)-ncx)=jxcells(nv,ICELL(n,1)-ncx)+wwwx(nv,n)*sx02(n)
+                jxcells(nv,ICELL(n,1)-ncx)   = jxcells(nv,ICELL(n,1)-ncx)   + wwwx(nv,n)*sx02(n)
                 !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)-ncx+1)=jxcells(nv,ICELL(n,1)-ncx+1)+wwwx(nv,n)*sx03(n)
+                jxcells(nv,ICELL(n,1)-ncx+1) = jxcells(nv,ICELL(n,1)-ncx+1) + wwwx(nv,n)*sx03(n)
                 !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)-ncx+2)=jxcells(nv,ICELL(n,1)-ncx+2)+wwwx(nv,n)*sx04(n)
+                jxcells(nv,ICELL(n,1)-ncx+2) = jxcells(nv,ICELL(n,1)-ncx+2) + wwwx(nv,n)*sx04(n)
                 ! Loop on (i=-1,j,k)
-                jxcells(nv,ICELL(n,1)+ncx-1)=jxcells(nv,ICELL(n,1)+ncx-1)+wwwx(nv+8,n)*sx01(n)
+                jxcells(nv,ICELL(n,1)+ncx-1) = jxcells(nv,ICELL(n,1)+ncx-1) + wwwx(nv+8,n)*sx01(n)
                 ! Loop on (i=0,j,k)
-                jxcells(nv,ICELL(n,1)+ncx)=jxcells(nv,ICELL(n,1)+ncx)+wwwx(nv+8,n)*sx02(n)
+                jxcells(nv,ICELL(n,1)+ncx)   = jxcells(nv,ICELL(n,1)+ncx)   + wwwx(nv+8,n)*sx02(n)
                 !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)+ncx+1)=jxcells(nv,ICELL(n,1)+ncx+1)+wwwx(nv+8,n)*sx03(n)
+                jxcells(nv,ICELL(n,1)+ncx+1) = jxcells(nv,ICELL(n,1)+ncx+1) + wwwx(nv+8,n)*sx03(n)
                 !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)+ncx+2)=jxcells(nv,ICELL(n,1)+ncx+2)+wwwx(nv+8,n)*sx04(n)
+                jxcells(nv,ICELL(n,1)+ncx+2) = jxcells(nv,ICELL(n,1)+ncx+2) + wwwx(nv+8,n)*sx04(n)
 
                 ! --- JY
                 ! Loop on (i=-1,j,k)
-                jycells(nv,ICELL(n,2)-ncx-1)=jycells(nv,ICELL(n,2)-ncx-1)+wwwy(nv,n)*sx1(n)
+                jycells(nv,ICELL(n,2)-ncx-1) = jycells(nv,ICELL(n,2)-ncx-1) + wwwy(nv,n)*sx1(n)
                 ! Loop on (i=0,j,k)
-                jycells(nv,ICELL(n,2)-ncx)=jycells(nv,ICELL(n,2)-ncx)+wwwy(nv,n)*sx2(n)
+                jycells(nv,ICELL(n,2)-ncx)   = jycells(nv,ICELL(n,2)-ncx)   + wwwy(nv,n)*sx2(n)
                 !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)-ncx+1)=jycells(nv,ICELL(n,2)-ncx+1)+wwwy(nv,n)*sx3(n)
+                jycells(nv,ICELL(n,2)-ncx+1) = jycells(nv,ICELL(n,2)-ncx+1) + wwwy(nv,n)*sx3(n)
                 !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)-ncx+2)=jycells(nv,ICELL(n,2)-ncx+2)+wwwy(nv,n)*sx4(n)
+                jycells(nv,ICELL(n,2)-ncx+2) = jycells(nv,ICELL(n,2)-ncx+2) + wwwy(nv,n)*sx4(n)
                 ! Loop on (i=-1,j,k)
-                jycells(nv,ICELL(n,2)+ncx-1)=jycells(nv,ICELL(n,2)+ncx-1)+wwwy(nv+8,n)*sx1(n)
+                jycells(nv,ICELL(n,2)+ncx-1) = jycells(nv,ICELL(n,2)+ncx-1) + wwwy(nv+8,n)*sx1(n)
                 ! Loop on (i=0,j,k)
-                jycells(nv,ICELL(n,2)+ncx)=jycells(nv,ICELL(n,2)+ncx)+wwwy(nv+8,n)*sx2(n)
+                jycells(nv,ICELL(n,2)+ncx)   = jycells(nv,ICELL(n,2)+ncx)   + wwwy(nv+8,n)*sx2(n)
                 !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)+ncx+1)=jycells(nv,ICELL(n,2)+ncx+1)+wwwy(nv+8,n)*sx3(n)
+                jycells(nv,ICELL(n,2)+ncx+1) = jycells(nv,ICELL(n,2)+ncx+1) + wwwy(nv+8,n)*sx3(n)
                 !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)+ncx+2)=jycells(nv,ICELL(n,2)+ncx+2)+wwwy(nv+8,n)*sx4(n)
+                jycells(nv,ICELL(n,2)+ncx+2) = jycells(nv,ICELL(n,2)+ncx+2) + wwwy(nv+8,n)*sx4(n)
 
                 ! --- JZ
                 ! Loop on (i=-1,j,k)
-                jzcells(nv,ICELL(n,3)-ncx-1)=jzcells(nv,ICELL(n,3)-ncx-1)+wwwz(nv,n)*sx1(n)
+                jzcells(nv,ICELL(n,3)-ncx-1) = jzcells(nv,ICELL(n,3)-ncx-1) + wwwz(nv,n)*sx1(n)
                 ! Loop on (i=0,j,k)
-                jzcells(nv,ICELL(n,3)-ncx)=jzcells(nv,ICELL(n,3)-ncx)+wwwz(nv,n)*sx2(n)
+                jzcells(nv,ICELL(n,3)-ncx)   = jzcells(nv,ICELL(n,3)-ncx)   + wwwz(nv,n)*sx2(n)
                 !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)-ncx+1)=jzcells(nv,ICELL(n,3)-ncx+1)+wwwz(nv,n)*sx3(n)
+                jzcells(nv,ICELL(n,3)-ncx+1) = jzcells(nv,ICELL(n,3)-ncx+1) + wwwz(nv,n)*sx3(n)
                 !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)-ncx+2)=jzcells(nv,ICELL(n,3)-ncx+2)+wwwz(nv,n)*sx4(n)
+                jzcells(nv,ICELL(n,3)-ncx+2) = jzcells(nv,ICELL(n,3)-ncx+2) + wwwz(nv,n)*sx4(n)
                 ! Loop on (i=-1,j,k)
-                jzcells(nv,ICELL(n,3)+ncx-1)=jzcells(nv,ICELL(n,3)+ncx-1)+wwwz(nv+8,n)*sx1(n)
+                jzcells(nv,ICELL(n,3)+ncx-1) = jzcells(nv,ICELL(n,3)+ncx-1) + wwwz(nv+8,n)*sx1(n)
                 ! Loop on (i=0,j,k)
-                jzcells(nv,ICELL(n,3)+ncx)=jzcells(nv,ICELL(n,3)+ncx)+wwwz(nv+8,n)*sx2(n)
+                jzcells(nv,ICELL(n,3)+ncx)   = jzcells(nv,ICELL(n,3)+ncx)   + wwwz(nv+8,n)*sx2(n)
                 !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)+ncx+1)=jzcells(nv,ICELL(n,3)+ncx+1)+wwwz(nv+8,n)*sx3(n)
+                jzcells(nv,ICELL(n,3)+ncx+1) = jzcells(nv,ICELL(n,3)+ncx+1) + wwwz(nv+8,n)*sx3(n)
                 !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)+ncx+2)=jzcells(nv,ICELL(n,3)+ncx+2)+wwwz(nv+8,n)*sx4(n)
+                jzcells(nv,ICELL(n,3)+ncx+2) = jzcells(nv,ICELL(n,3)+ncx+2) + wwwz(nv+8,n)*sx4(n)
             END DO
             !$OMP END SIMD
         END DO
     END DO
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
     DO nv=1,8
-        !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-        !$OMP SIMD
-        DO ic=1,NCELLS  !!! VECTOR
-            jx(orig+ic-1+moff(nv))=jx(orig+ic-1+moff(nv))+jxcells(nv,ic)
-            jy(orig+ic-1+moff(nv))=jy(orig+ic-1+moff(nv))+jycells(nv,ic)
-            jz(orig+ic-1+moff(nv))=jz(orig+ic-1+moff(nv))+jzcells(nv,ic)
+        DO iz=1, ncz
+            DO iy=1,ncy
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !DIR$ ASSUME_ALIGNED rho:64
+                !DIR$ IVDEP
+                !$OMP SIMD
+                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                    ic=ix+(iy-1)*ncx+(iz-1)*ncy*ncx
+                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                    jx(orig+igrid+moff(nv))=jx(orig+igrid+moff(nv))+jxcells(nv,ic)
+                    jy(orig+igrid+moff(nv))=jy(orig+igrid+moff(nv))+jycells(nv,ic)
+                    jz(orig+igrid+moff(nv))=jz(orig+igrid+moff(nv))+jzcells(nv,ic)
+                END DO
+                !$OMP END SIMD
+            END DO
         END DO
-        !$OMP END SIMD
     END DO
     DEALLOCATE(jxcells,jycells,jzcells)
     RETURN

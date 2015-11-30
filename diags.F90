@@ -53,7 +53,7 @@ CONTAINS
                         ALLOCATE(rho_tile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
                         rho_tile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_vecHVv2_1_1_1(rho_tile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_scalar_3_3_3(rho_tile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -1083,7 +1083,6 @@ CONTAINS
         nnx = ngridx
         nnxy = ngridx*ngridy
         moff = (/-nnxy,0,nnxy,2*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2*nnxy/)
-        !moff = (/0,1,nnx,nnx+1,nnxy,nnxy+1,nnxy+nnx,nnxy+nnx+1/)
         jorig=-2; korig=-2;lorig=-1
         orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
         ngx=(ngridx-ncx)
@@ -1110,8 +1109,6 @@ CONTAINS
                 k=floor(y)
                 l=floor(z)
                 ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncy*ncx
-                IF(ICELL(n) .LT. 1) PRINT *, "ICELL LT 1, j,k,l",j,k,l
-                IF(ICELL(n) .GT. NCELLS) PRINT *, "ICELL GT NCELLS, j,k,l",j,k,l, "ncx,ncy,ncz",ncx,ncy,ncz
                 wq=w(nn)*wq0
                 ! --- computes distance between particle and node for current positions
                 xint = x-j
@@ -1154,7 +1151,6 @@ CONTAINS
                 !$OMP SIMD
                 DO nv=1,8 !!! - VECTOR
                     ! Loop on (i=-1,j,k)
-                    !IF ((ic-ncx-1) .LT. 1) PRINT *, "ic",ic,"ic-ncx-1",ic-ncx-1
                     rhocells(nv,ic-ncx-1) = rhocells(nv,ic-ncx-1) + www(nv,n)*sx1(n)
                     ! Loop on (i=0,j,k)
                     rhocells(nv,ic-ncx)   = rhocells(nv,ic-ncx)   + www(nv,n)*sx2(n)
@@ -1170,7 +1166,6 @@ CONTAINS
                     rhocells(nv,ic+ncx+1) = rhocells(nv,ic+ncx+1) + www(nv+8,n)*sx3(n)
                     !Loop on (i=1,j,k)
                     rhocells(nv,ic+ncx+2) = rhocells(nv,ic+ncx+2) + www(nv+8,n)*sx4(n)
-                   ! IF ((ic+ncx+2) .GT. NCELLS) PRINT *, "ic",ic,"ic+ncx+2",ic+ncx+2, "NCELLS", NCELLS, "ncx",ncx
                 END DO
                 !$OMP END SIMD
             END DO
