@@ -26,9 +26,9 @@ CONTAINS
         l_nodalgrid = .FALSE.
         ! --- Order of current deposition/ field gathering 
         ! (default is 2 in x,y,z)
-        nox = 2
-        noy = 2
-        noz = 2
+        nox = 3
+        noy = 3
+        noz = 3
         l_lower_order_in_v = .FALSE.
 
         ! --- sets coefficient multiplying Courant time step
