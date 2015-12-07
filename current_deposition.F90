@@ -87,20 +87,18 @@ DO iz=1,ntilez
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
                 ! ----- Add guardcells in adjacent tiles
-                ! --- JX
                 ! - FACES +/- X
+                ! --- JX
                 jx(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jx(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
                 curr_tile%jxtile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                 jx(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jx(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
                 curr_tile%jxtile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                 ! --- JY
-                ! - FACES +/- X
                 jy(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jy(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
                 curr_tile%jytile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                 jy(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jy(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
                 curr_tile%jytile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                 ! --- JZ
-                ! - FACES +/- X
                 jz(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jz(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
                 curr_tile%jztile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                 jz(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jz(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
@@ -129,20 +127,18 @@ DO iz=1,ntilez
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
                 ! ----- Add guardcells in adjacent tiles
-                ! --- JX
                 ! - FACES +/- Y
+                ! --- JX
                 jx(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jx(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
                 curr_tile%jxtile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
                 jx(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jx(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
                 curr_tile%jxtile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                 ! --- JY
-                ! - FACES +/- Y
                 jy(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jy(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
                 curr_tile%jytile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
                 jy(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jy(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
                 curr_tile%jytile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                 ! --- JZ
-                ! - FACES +/- Y
                 jz(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jz(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
                 curr_tile%jztile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
                 jz(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jz(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
@@ -171,20 +167,18 @@ DO iz=1,ntilez
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
                 ! ----- Add guardcells in adjacent tiles
-                ! --- JX
                 ! - FACES +/- Z
+                ! --- JX
                 jx(jmin:jmax,kmin:kmax,lminc:lmin-1) = jx(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
                 curr_tile%jxtile(0:nxc, 0:nyc,-nzjguards:-1)
                 jx(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jx(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
                 curr_tile%jxtile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
                 ! --- JY
-                ! - FACES +/- Z
                 jy(jmin:jmax,kmin:kmax,lminc:lmin-1) = jy(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
                 curr_tile%jytile(0:nxc, 0:nyc,-nzjguards:-1)
                 jy(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jy(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
                 curr_tile%jytile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
                 ! --- JZ
-                ! - FACES +/- Z
                 jz(jmin:jmax,kmin:kmax,lminc:lmin-1) = jz(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
                 curr_tile%jztile(0:nxc, 0:nyc,-nzjguards:-1)
                 jz(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jz(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
