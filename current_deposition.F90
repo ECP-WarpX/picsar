@@ -24,6 +24,11 @@ jy = 0.0_num
 jz = 0.0_num
 
 tdeb=MPI_WTIME()
+!!! ------------------------------------------------------------------------------------------------------
+!!! --- Adding currents from tiles to global arrays (THIS ALGO AVOIDS REDUCTION OPERATION)
+!!! ------------------------------------------------------------------------------------------------------
+
+!! **** STEP 1:  Each tile adds current contribution to their local cells (not guardcells)
 !$OMP PARALLEL DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards,nyjguards,nzjguards,dx,dy,dz,dt,jx,jy,jz,nox,noy,noz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
@@ -60,7 +65,10 @@ DO iz=1,ntilez
     END DO
 END DO!END LOOP ON TILES
 !$OMP END DO
-!! Adding currents from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
+
+!! **** STEP 2:  Each tile adds charge contribution to adjacent tiles
+!! **** This step requires sync for each dimension to avoid thread contention
+!----  +/- X direction
 !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
 DO iz=1,ntilez
     DO iy=1,ntiley
@@ -102,7 +110,7 @@ DO iz=1,ntilez
     END DO
 END DO!END LOOP ON TILES
 !$OMP END DO
-!+/- Y
+!----  +/- Y direction
 !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
 DO iz=1,ntilez
     DO iy=1,ntiley
@@ -144,7 +152,7 @@ DO iz=1,ntilez
     END DO
 END DO!END LOOP ON TILES
 !$OMP END DO
-! +/-Z
+!----  +/- Z direction
 !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
 DO iz=1,ntilez
     DO iy=1,ntiley

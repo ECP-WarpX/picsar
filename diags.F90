@@ -28,6 +28,12 @@ CONTAINS
 
         ! - Computes total charge density
         rho=0.0_num
+
+        !!! ------------------------------------------------------------------------------------------------------
+        !!! --- Adding charge from tiles to global arrays (THIS ALGO AVOIDS REDUCTION OPERATION)
+        !!! ------------------------------------------------------------------------------------------------------
+
+        !! **** STEP 1:  Each tile adds charge contribution to their local cells (not guardcells)
         !$OMP PARALLEL DEFAULT(NONE) &
         !$OMP SHARED(rho,ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
         !$OMP nyjguards,nzjguards,dx,dy,dz) &
@@ -62,8 +68,9 @@ CONTAINS
             END DO
         END DO !END LOOP ON TILES!
         !$OMP END DO
-        !! Adding charge from guard cells of current tile to adjacent subdomains (AVOIDS REDUCTION OPERATION)
-        ! +/- X direction
+        !! **** STEP 2:  Each tile adds charge contribution to adjacent tiles 
+        !! **** This step requires sync for each dimension to avoid thread contention
+        !----  +/- X direction
         !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
         DO iz=1,ntilez
             DO iy=1,ntiley
@@ -91,7 +98,7 @@ CONTAINS
             END DO
         END DO!END LOOP ON TILES
         !$OMP END DO
-        ! +/- Y direction
+        !----  +/- Y direction
         !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
         DO iz=1,ntilez
             DO iy=1,ntiley
@@ -120,7 +127,7 @@ CONTAINS
             END DO
         END DO!END LOOP ON TILES
         !$OMP END DO
-        ! +/- Z direction
+        !----  +/- Z direction
         !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
         DO iz=1,ntilez
             DO iy=1,ntiley
