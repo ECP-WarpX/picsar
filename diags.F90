@@ -41,18 +41,14 @@ CONTAINS
                         curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count= curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min
-                        jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min
-                        kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min
-                        lmax=curr_tile%nz_tile_max
-                        nxc=curr_tile%nx_cells_tile
-                        nyc=curr_tile%ny_cells_tile
+                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                        nxc=curr_tile%nx_cells_tile;  nyc=curr_tile%ny_cells_tile
                         nzc=curr_tile%nz_cells_tile
                         curr_tile%rhotile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_vecHV_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_scalar_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -67,6 +63,7 @@ CONTAINS
         END DO !END LOOP ON TILES!
         !$OMP END DO
         !! Adding charge from guard cells of current tile to adjacent subdomains (AVOIDS REDUCTION OPERATION)
+        ! +/- X direction
         !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
         DO iz=1,ntilez
             DO iy=1,ntiley
@@ -75,32 +72,72 @@ CONTAINS
                         curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count=curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min
-                        jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min
-                        kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min
-                        lmax=curr_tile%nz_tile_max
-                        jminc=jmin-nxjguards
-                        jmaxc=jmax+nxjguards
-                        kminc=kmin-nyjguards
-                        kmaxc=kmax+nyjguards
-                        lminc=lmin-nzjguards
-                        lmaxc=lmax+nzjguards
-                        nxc=curr_tile%nx_cells_tile
-                        nyc=curr_tile%ny_cells_tile
+                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
+                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
+                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
+                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
                         nzc=curr_tile%nz_cells_tile
-                        ! ----- Add guardcells in adjacent tiles
+                        ! ----- Add guardcells from adjacent tiles
                         ! - FACES +/- X
                         rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
                         curr_tile%rhotile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                         rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
                         curr_tile%rhotile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                    END DO! END LOOP ON SPECIES
+                END DO
+            END DO
+        END DO!END LOOP ON TILES
+        !$OMP END DO
+        ! +/- Y direction
+        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+        DO iz=1,ntilez
+            DO iy=1,ntiley
+                DO ix=1,ntilex
+                    DO ispecies=1, nspecies ! LOOP ON SPECIES
+                        curr => species_parray(ispecies)
+                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                        count=curr_tile%np_tile
+                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
+                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
+                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
+                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+                        nzc=curr_tile%nz_cells_tile
+                        ! ----- Add guardcells from adjacent tiles
                         ! - FACES +/- Y
                         rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
                         curr_tile%rhotile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
                         rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
                         curr_tile%rhotile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+
+                    END DO! END LOOP ON SPECIES
+                END DO
+            END DO
+        END DO!END LOOP ON TILES
+        !$OMP END DO
+        ! +/- Z direction
+        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+        DO iz=1,ntilez
+            DO iy=1,ntiley
+                DO ix=1,ntilex
+                    DO ispecies=1, nspecies ! LOOP ON SPECIES
+                        curr => species_parray(ispecies)
+                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                        count=curr_tile%np_tile
+                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
+                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
+                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
+                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+                        nzc=curr_tile%nz_cells_tile
+                        ! ----- Add guardcells from adjacent tiles
                         ! - FACES +/- Z
                         rho(jmin:jmax,kmin:kmax,lminc:lmin-1) = rho(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
                         curr_tile%rhotile(0:nxc, 0:nyc,-nzjguards:-1)
