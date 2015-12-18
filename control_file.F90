@@ -6,8 +6,8 @@ MODULE control_file
   USE particles
   IMPLICIT NONE
 
-  INTEGER :: ios=0
-  INTEGER, PARAMETER :: fh_input = 15
+  INTEGER(idp) :: ios=0
+  INTEGER(idp), PARAMETER :: fh_input = 15
   CHARACTER(LEN=string_length) :: buffer
   CHARACTER(LEN=string_length) :: section_name
 

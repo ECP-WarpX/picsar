@@ -15,12 +15,12 @@ CONTAINS
         USE shared_data
         USE tiling
         IMPLICIT NONE
-        INTEGER :: ispecies, ix, iy, iz, count
-        INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
-        INTEGER :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+        INTEGER(idp) :: ispecies, ix, iy, iz, count
+        INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+        INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
         TYPE(particle_species), POINTER :: curr
         TYPE(particle_tile), POINTER :: curr_tile
-        INTEGER :: nxc, nyc, nzc
+        INTEGER(idp) :: nxc, nyc, nzc
 
         ! - Computes electric field divergence on grid at n+1
         dive=0.0_num
@@ -28,12 +28,6 @@ CONTAINS
 
         ! - Computes total charge density
         rho=0.0_num
-
-        !!! ------------------------------------------------------------------------------------------------------
-        !!! --- Adding charge from tiles to global arrays (THIS ALGO AVOIDS REDUCTION OPERATION)
-        !!! ------------------------------------------------------------------------------------------------------
-
-        !! **** STEP 1:  Each tile adds charge contribution to their local cells (not guardcells)
         !$OMP PARALLEL DEFAULT(NONE) &
         !$OMP SHARED(rho,ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
         !$OMP nyjguards,nzjguards,dx,dy,dz) &
@@ -47,14 +41,18 @@ CONTAINS
                         curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count= curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        nxc=curr_tile%nx_cells_tile;  nyc=curr_tile%ny_cells_tile
+                        jmin=curr_tile%nx_tile_min
+                        jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min
+                        kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min
+                        lmax=curr_tile%nz_tile_max
+                        nxc=curr_tile%nx_cells_tile
+                        nyc=curr_tile%ny_cells_tile
                         nzc=curr_tile%nz_cells_tile
                         curr_tile%rhotile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_vecHV_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
@@ -68,9 +66,7 @@ CONTAINS
             END DO
         END DO !END LOOP ON TILES!
         !$OMP END DO
-        !! **** STEP 2:  Each tile adds charge contribution to adjacent tiles 
-        !! **** This step requires sync for each dimension to avoid thread contention
-        !----  +/- X direction
+        !! Adding charge from guard cells of current tile to adjacent subdomains (AVOIDS REDUCTION OPERATION)
         !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
         DO iz=1,ntilez
             DO iy=1,ntiley
@@ -79,72 +75,32 @@ CONTAINS
                         curr => species_parray(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         count=curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
-                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+                        jmin=curr_tile%nx_tile_min
+                        jmax=curr_tile%nx_tile_max
+                        kmin=curr_tile%ny_tile_min
+                        kmax=curr_tile%ny_tile_max
+                        lmin=curr_tile%nz_tile_min
+                        lmax=curr_tile%nz_tile_max
+                        jminc=jmin-nxjguards
+                        jmaxc=jmax+nxjguards
+                        kminc=kmin-nyjguards
+                        kmaxc=kmax+nyjguards
+                        lminc=lmin-nzjguards
+                        lmaxc=lmax+nzjguards
+                        nxc=curr_tile%nx_cells_tile
+                        nyc=curr_tile%ny_cells_tile
                         nzc=curr_tile%nz_cells_tile
-                        ! ----- Add guardcells from adjacent tiles
+                        ! ----- Add guardcells in adjacent tiles
                         ! - FACES +/- X
                         rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
                         curr_tile%rhotile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
                         rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
                         curr_tile%rhotile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-                    END DO! END LOOP ON SPECIES
-                END DO
-            END DO
-        END DO!END LOOP ON TILES
-        !$OMP END DO
-        !----  +/- Y direction
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=1,ntilez
-            DO iy=1,ntiley
-                DO ix=1,ntilex
-                    DO ispecies=1, nspecies ! LOOP ON SPECIES
-                        curr => species_parray(ispecies)
-                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                        count=curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
-                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-                        nzc=curr_tile%nz_cells_tile
-                        ! ----- Add guardcells from adjacent tiles
                         ! - FACES +/- Y
                         rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
                         curr_tile%rhotile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
                         rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
                         curr_tile%rhotile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-
-                    END DO! END LOOP ON SPECIES
-                END DO
-            END DO
-        END DO!END LOOP ON TILES
-        !$OMP END DO
-        !----  +/- Z direction
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=1,ntilez
-            DO iy=1,ntiley
-                DO ix=1,ntilex
-                    DO ispecies=1, nspecies ! LOOP ON SPECIES
-                        curr => species_parray(ispecies)
-                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                        count=curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
-                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-                        nzc=curr_tile%nz_cells_tile
-                        ! ----- Add guardcells from adjacent tiles
                         ! - FACES +/- Z
                         rho(jmin:jmax,kmin:kmax,lminc:lmin-1) = rho(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
                         curr_tile%rhotile(0:nxc, 0:nyc,-nzjguards:-1)
@@ -165,7 +121,7 @@ CONTAINS
     SUBROUTINE depose_rho_scalar_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
         USE constants
         IMPLICIT NONE
-        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
@@ -174,7 +130,7 @@ CONTAINS
         REAL(num) :: x,y,z,wq,invvol
         REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+        INTEGER(idp) :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
         dxi = 1.0_num/dx
         dyi = 1.0_num/dy
         dzi = 1.0_num/dz
@@ -221,13 +177,13 @@ CONTAINS
     SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
         USE constants
         IMPLICIT NONE
-        INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER, PARAMETER :: LVEC=8
-        INTEGER, DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC=8
+        INTEGER(idp), DIMENSION(LVEC) :: ICELL
         REAL(num) :: ww
-        INTEGER :: NCELLS
+        INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
         REAL(num) :: dxi,dyi,dzi
@@ -235,9 +191,9 @@ CONTAINS
         REAL(num) :: x,y,z,invvol
         REAL(num) :: sx(LVEC), sy(LVEC), sz(LVEC), wq(LVEC)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-        INTEGER :: nnx, nnxy
-        INTEGER :: moff(1:8) 
+        INTEGER(KIND=4) :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER(KIND=4) :: nnx, nnxy
+        INTEGER(KIND=4) :: moff(1:8)
         REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
 
         ! Init parameters
@@ -319,7 +275,7 @@ CONTAINS
     SUBROUTINE depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz, &
                         l_particles_weight, l4symtry)
         IMPLICIT NONE
-        INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+        INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: rho
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
@@ -332,7 +288,7 @@ CONTAINS
                      sy(-int(noy/2):int((noy+1)/2)), &
                      sz(-int(noz/2):int((noz+1)/2))
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+        INTEGER(idp) :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
    
         dxi = 1.0_num/dx
         dyi = 1.0_num/dy
@@ -468,8 +424,8 @@ CONTAINS
     !!! --- Computes field divergence
     SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
         IMPLICIT NONE
-        INTEGER ::  j,k,l
-        INTEGER :: nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER(idp) ::  j,k,l
+        INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in) :: eex,eey,eez
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: divee
         REAL(num) :: dx, dy, dz, invdx, invdy, invdz

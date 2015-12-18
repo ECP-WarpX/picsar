@@ -16,10 +16,11 @@ CONTAINS
 
 !!! --- Exchange field values at processor boundaries and apply field
 !!! --- boundary conditions
-  SUBROUTINE field_bc(field, nxg, nyg, nzg)
+  SUBROUTINE field_bc(field, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
-    INTEGER, INTENT(IN) :: nxg, nyg, nzg
-    REAL(num), DIMENSION(-nxg:,-nyg:,-nzg:), INTENT(INOUT) :: field
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
 
     CALL exchange_mpi_3d_grid_array_with_guards_nonblocking(field, nxg, nyg, nzg, nx, ny, nz)
 
@@ -29,11 +30,11 @@ CONTAINS
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, &
              nx_local, ny_local, nz_local)
 
-    INTEGER, INTENT(IN) :: nxg, nyg, nzg
-    REAL(num), DIMENSION(-nxg:,-nyg:,-nzg:), INTENT(INOUT) :: field
-    INTEGER, INTENT(IN) :: nx_local, ny_local, nz_local
-    INTEGER, DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER :: subarray, basetype, sz, szmax, i, j, k, n
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: subarray, basetype, sz, szmax, i, j, k, n
     REAL(num), ALLOCATABLE :: temp(:)
 
     basetype = mpidbl
@@ -60,7 +61,7 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG X
-    CALL MPI_SENDRECV(field(0,-nyg,-nzg), 1, subarray, proc_x_min, &
+    CALL MPI_SENDRECV(field(0,-nyg,-nzg), 1_isp, subarray, proc_x_min, &
         tag, temp, sz, basetype, proc_x_max, tag, comm, status, errcode)
 
     IF (proc_x_max .NE. MPI_PROC_NULL) THEN
@@ -75,7 +76,7 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(nx_local+1-nxg,-nyg,-nzg), 1, subarray, proc_x_max, &
+    CALL MPI_SENDRECV(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_max, &
         tag, temp, sz, basetype, proc_x_min, tag, comm, status, errcode)
 
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
@@ -101,7 +102,7 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG Y
-    CALL MPI_SENDRECV(field(-nxg,0,-nzg), 1, subarray, proc_y_min, &
+    CALL MPI_SENDRECV(field(-nxg,0,-nzg), 1_isp, subarray, proc_y_min, &
         tag, temp, sz, basetype, proc_y_max, tag, comm, status, errcode)
 
     IF (proc_y_max .NE. MPI_PROC_NULL) THEN
@@ -116,7 +117,7 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg,ny_local+1-nyg,-nzg), 1, subarray, proc_y_max, &
+    CALL MPI_SENDRECV(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, proc_y_max, &
         tag, temp, sz, basetype, proc_y_min, tag, comm, status, errcode)
 
     IF (proc_y_min .NE. MPI_PROC_NULL) THEN
@@ -142,7 +143,7 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG Z
-    CALL MPI_SENDRECV(field(-nxg,-nyg,0), 1, subarray, proc_z_min, &
+    CALL MPI_SENDRECV(field(-nxg,-nyg,0), 1_isp, subarray, proc_z_min, &
         tag, temp, sz, basetype, proc_z_max, tag, comm, status, errcode)
 
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
@@ -157,7 +158,7 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg,-nyg,nz_local+1-nzg), 1, subarray, proc_z_max, &
+    CALL MPI_SENDRECV(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, proc_z_max, &
         tag, temp, sz, basetype, proc_z_min, tag, comm, status, errcode)
 
     IF (proc_z_min .NE. MPI_PROC_NULL) THEN
@@ -183,13 +184,13 @@ CONTAINS
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking(field, nxg, nyg, nzg, &
              nx_local, ny_local, nz_local)
 
-    INTEGER, INTENT(IN) :: nxg, nyg, nzg
-    REAL(num), DIMENSION(-nxg:,-nyg:,-nzg:), INTENT(INOUT) :: field
-    INTEGER, INTENT(IN) :: nx_local, ny_local, nz_local
-    INTEGER, DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER :: subarray, basetype, sz, szmax, i, j, k, n
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: subarray, basetype, sz, szmax, i, j, k, n
     REAL(num), ALLOCATABLE :: temp(:)
-    INTEGER :: requests(4)
+    INTEGER(isp):: requests(4)
 
     basetype = mpidbl
 
@@ -205,20 +206,20 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(0,-nyg,-nzg), 1, subarray, proc_x_min, tag, &
+    CALL MPI_ISEND(field(0,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(nx_local+1,-nyg,-nzg), 1, subarray, proc_x_max, tag, &
+    CALL MPI_IRECV(field(nx_local+1,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(nx_local+1-nxg,-nyg,-nzg), 1, subarray, proc_x_max, tag, &
+    CALL MPI_ISEND(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1, subarray, proc_x_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
         comm, requests(4), errcode)
 
     CALL MPI_TYPE_FREE(subarray, errcode)
 
     ! NEED TO WAIT BEFORE EXCHANGING ALONG Y (DIAGONAL TERMS)
-    CALL MPI_WAITALL(4, requests, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
     ! MOVE EDGES ALONG Y
     subsizes(1) = sizes(1)
@@ -227,18 +228,18 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(-nxg,0,-nzg), 1, subarray, proc_y_min, tag, &
+    CALL MPI_ISEND(field(-nxg,0,-nzg), 1_isp, subarray, proc_y_min, tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg,ny_local+1,-nzg), 1, subarray, proc_y_max, tag, &
+    CALL MPI_IRECV(field(-nxg,ny_local+1,-nzg), 1_isp, subarray, proc_y_max, tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(-nxg,ny_local+1-nyg,-nzg), 1, subarray, proc_y_max, tag, &
+    CALL MPI_ISEND(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, proc_y_max, tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1, subarray, proc_y_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_y_min, tag, &
         comm, requests(4), errcode)
 
     ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
-    CALL MPI_WAITALL(4, requests, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
 
     CALL MPI_TYPE_FREE(subarray, errcode)
@@ -252,17 +253,17 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(-nxg,-nyg,0), 1, subarray, proc_z_min, tag, &
+    CALL MPI_ISEND(field(-nxg,-nyg,0), 1_isp, subarray, proc_z_min, tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,nz_local+1), 1, subarray, proc_z_max, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,nz_local+1), 1_isp, subarray, proc_z_max, tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(-nxg,-nyg,nz_local+1-nzg), 1, subarray, proc_z_max, tag, &
+    CALL MPI_ISEND(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, proc_z_max, tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1, subarray, proc_z_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_z_min, tag, &
         comm, requests(4), errcode)
 
-    CALL MPI_WAITALL(4, requests, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
     CALL MPI_TYPE_FREE(subarray, errcode)
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
@@ -271,13 +272,14 @@ CONTAINS
 
 
 !!! --- Routine for adding current contributions fron adjacent subdomains
-  SUBROUTINE summation_bcs(array, nxg, nyg, nzg)
+  SUBROUTINE summation_bcs(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
-    INTEGER, INTENT(IN) :: nxg, nyg, nzg
-    REAL(num), DIMENSION(-nxg:,-nyg:,-nzg:), INTENT(INOUT) :: array
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp
-    INTEGER, DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER :: subarray, nn, sz, i
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: subarray, nn, sz, i
 
     sizes(1) = nx + 1 + 2 * nxg
     sizes(2) = ny + 1 + 2 * nyg
@@ -296,13 +298,13 @@ CONTAINS
     ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
 
     temp = 0.0_num
-    CALL MPI_SENDRECV(array(nn+1,-nyg,-nzg), 1, subarray, &
+    CALL MPI_SENDRECV(array(nn+1,-nyg,-nzg), 1_isp, subarray, &
         neighbour( 1,0,0), tag, temp, sz, mpidbl, &
         neighbour(-1,0,0), tag, comm, status, errcode)
     array(0:nxg-1,:,:) = array(0:nxg-1,:,:) + temp
 
     temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1, subarray, &
+    CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1_isp, subarray, &
         neighbour(-1,0,0), tag, temp, sz, mpidbl, &
         neighbour( 1,0,0), tag, comm, status, errcode)
     array(nn+1-nxg:nn,:,:) = array(nn+1-nxg:nn,:,:) + temp
@@ -322,13 +324,13 @@ CONTAINS
     ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
 
     temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg,nn+1,-nzg), 1, subarray, &
+    CALL MPI_SENDRECV(array(-nxg,nn+1,-nzg), 1_isp, subarray, &
         neighbour(0, 1,0), tag, temp, sz, mpidbl, &
         neighbour(0,-1,0), tag, comm, status, errcode)
     array(:,0:nyg-1,:) = array(:,0:nyg-1,:) + temp
 
     temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1, subarray, &
+    CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1_isp, subarray, &
         neighbour(0,-1,0), tag, temp, sz, mpidbl, &
         neighbour(0, 1,0), tag, comm, status, errcode)
     array(:,nn+1-nyg:nn,:) = array(:,nn+1-nyg:nn,:) + temp
@@ -348,13 +350,13 @@ CONTAINS
     ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
 
     temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg,-nyg,nn+1), 1, subarray, &
+    CALL MPI_SENDRECV(array(-nxg,-nyg,nn+1), 1_isp, subarray, &
         neighbour(0,0, 1), tag, temp, sz, mpidbl, &
         neighbour(0,0,-1), tag, comm, status, errcode)
     array(:,:,0:nzg-1) = array(:,:,0:nzg-1) + temp
 
     temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1, subarray, &
+    CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1_isp, subarray, &
         neighbour(0,0,-1), tag, temp, sz, mpidbl, &
         neighbour(0,0, 1), tag, comm, status, errcode)
     array(:,:,nn+1-nzg:nn) = array(:,:,nn+1-nzg:nn) + temp
@@ -362,19 +364,20 @@ CONTAINS
     DEALLOCATE(temp)
     CALL MPI_TYPE_FREE(subarray, errcode)
 
-    CALL field_bc(array, nxg, nyg, nzg)
+    CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
   END SUBROUTINE summation_bcs
 
 !!! --- Routine for adding current contributions fron adjacent subdomains
-  SUBROUTINE summation_bcs_nonblocking(array, nxg, nyg, nzg)
+  SUBROUTINE summation_bcs_nonblocking(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
-    INTEGER, INTENT(IN) :: nxg, nyg, nzg
-    REAL(num), DIMENSION(-nxg:,-nyg:,-nzg:), INTENT(INOUT) :: array
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
-    INTEGER, DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER :: subarray, nn, sz, i
-    INTEGER :: requests(4)
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: subarray, nn, sz, i
+    INTEGER(isp) :: requests(4)
 
     sizes(1) = nx + 1 + 2 * nxg
     sizes(2) = ny + 1 + 2 * nyg
@@ -394,15 +397,15 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(nn+1,-nyg,-nzg), 1, subarray, proc_x_max, tag, &
+    CALL MPI_ISEND(array(nn+1,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
     comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1, subarray, proc_x_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
     comm, requests(3), errcode)
     CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
     comm, requests(4), errcode)
-    CALL MPI_WAITALL(4, requests, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
     array(0:nxg-1,:,:) = array(0:nxg-1,:,:) + temp1
     array(nn+1-nxg:nn,:,:) = array(nn+1-nxg:nn,:,:) + temp2
@@ -423,15 +426,15 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,nn+1,-nzg), 1, subarray, proc_y_max, tag, &
+    CALL MPI_ISEND(array(-nxg,nn+1,-nzg), 1_isp, subarray, proc_y_max, tag, &
     comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1, subarray, proc_y_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_y_min, tag, &
     comm, requests(3), errcode)
     CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
     comm, requests(4), errcode)
-    CALL MPI_WAITALL(4, requests, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
     array(:,0:nyg-1,:) = array(:,0:nyg-1,:) + temp1
     array(:,nn+1-nyg:nn,:) = array(:,nn+1-nyg:nn,:) + temp2
@@ -452,15 +455,15 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,-nyg,nn+1), 1, subarray, proc_z_max, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,nn+1), 1_isp, subarray, proc_z_max, tag, &
     comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1, subarray, proc_z_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_z_min, tag, &
     comm, requests(3), errcode)
     CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
     comm, requests(4), errcode)
-    CALL MPI_WAITALL(4, requests, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
     array(:,:,0:nzg-1) = array(:,:,0:nzg-1) + temp1
     array(:,:,nn+1-nzg:nn) = array(:,:,nn+1-nzg:nn) + temp2
@@ -468,39 +471,39 @@ CONTAINS
     DEALLOCATE(temp1,temp2)
     CALL MPI_TYPE_FREE(subarray, errcode)
 
-    CALL field_bc(array, nxg, nyg, nzg)
+    CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
   END SUBROUTINE summation_bcs_nonblocking
 
 !!! --- Boundary condition routine for electric field
   SUBROUTINE efield_bcs
     ! Electric field MPI exchange between subdomains
-    CALL field_bc(ex, nxguards, nyguards, nzguards)
-    CALL field_bc(ey, nxguards, nyguards, nzguards)
-    CALL field_bc(ez, nxguards, nyguards, nzguards)
+    CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+    CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
+    CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
   END SUBROUTINE efield_bcs
 
 !!! --- Boundary condition routine for magnetic field
   SUBROUTINE bfield_bcs
     ! Magnetic field MPI exchange between subdomains
-    CALL field_bc(bx, nxguards, nyguards, nzguards)
-    CALL field_bc(by, nxguards, nyguards, nzguards)
-    CALL field_bc(bz, nxguards, nyguards, nzguards)
+    CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+    CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
+    CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
 
   END SUBROUTINE bfield_bcs
 
 !!! --- Boundary conditions routine for currents
   SUBROUTINE current_bcs
     ! Add current contribution from adjacent subdomains
-    CALL summation_bcs_nonblocking(jx, nxjguards, nyjguards, nzjguards)
-    CALL summation_bcs_nonblocking(jy, nxjguards, nyjguards, nzjguards)
-    CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards)
+    CALL summation_bcs_nonblocking(jx, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+    CALL summation_bcs_nonblocking(jy, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+    CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
   END SUBROUTINE current_bcs
 
 !!! --- Boundary conditions routine for charge density
 SUBROUTINE charge_bcs
 ! Add charge contribution from adjacent subdomains
-    CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards)
+    CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
 END SUBROUTINE charge_bcs
 
 
@@ -519,12 +522,12 @@ END SUBROUTINE charge_bcs
 !!! Boundary condition on tiles
   SUBROUTINE particle_bcs_tiles
     IMPLICIT NONE
-    INTEGER :: i, ispecies, ix, iy, iz, indx, indy, indz
-    INTEGER :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+    INTEGER:: i, ispecies, ix, iy, iz, indx, indy, indz
+    INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
     REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
-    INTEGER :: test =0
+    INTEGER(idp) :: test =0
 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
@@ -575,20 +578,20 @@ END SUBROUTINE charge_bcs
 
 !!! MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
-    INTEGER, PARAMETER :: nvar=7 ! Simple implementation
-    INTEGER, DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
+    INTEGER(isp), PARAMETER :: nvar=7 ! Simple implementation
+    INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
     LOGICAL, ALLOCATABLE, DIMENSION(:) :: mask
-    INTEGER :: ibuff, isend, nout, nbuff, ninit
-    INTEGER :: xbd, ybd, zbd
-    INTEGER :: ixp, iyp, izp
-    INTEGER :: nsend_buf, nrecv_buf, npart_curr
-    INTEGER :: dest, src
+    INTEGER(isp) :: ibuff, isend, nout, nbuff, ninit
+    INTEGER(isp) :: xbd, ybd, zbd
+    INTEGER(isp) :: ixp, iyp, izp
+    INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
+    INTEGER(isp) :: dest, src
     LOGICAL :: out_of_bounds
-    INTEGER :: ispecies, i, ip, ix, iy, iz
-    INTEGER :: ixtile, iytile, iztile
+    INTEGER(isp) :: ispecies, i, ip, ix, iy, iz
+    INTEGER(isp) :: ixtile, iytile, iztile
     REAL(num) :: part_xyz
     TYPE(particle_species), POINTER :: currsp
     TYPE(particle_tile), POINTER :: curr
@@ -708,7 +711,7 @@ END SUBROUTINE charge_bcs
                             nrecv_buf=0
                             dest = neighbour(ix,iy,iz)
                             src  = neighbour(ixp,iyp,izp)
-                            CALL MPI_SENDRECV(nsend_buf, 1, MPI_INTEGER, dest, tag, nrecv_buf, 1, &
+                            CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER, dest, tag, nrecv_buf, 1_isp, &
                             MPI_INTEGER, src, tag, comm, status, errcode)
                             ALLOCATE(recvbuf(1:nrecv_buf))
                             CALL MPI_SENDRECV(sendbuf(ix,iy,iz,1:nsend_buf), nsend_buf, mpidbl, dest, tag, &
