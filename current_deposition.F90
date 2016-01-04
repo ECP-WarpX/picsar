@@ -51,7 +51,7 @@ DO iz=1,ntilez
                 jy_tile = 0.0_num
                 jz_tile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_vecHVv3_3_3_3(jx_tile,jy_tile,jz_tile,count,    &
+                CALL depose_jxjyjz_scalar_2_2_2(jx_tile,jy_tile,jz_tile,count,    &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
@@ -579,7 +579,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic
     INTEGER :: nnx, nnxy, n,nn,nv
     INTEGER :: moff(1:8)
-    INTEGER, PARAMETER :: LVEC=64
+    INTEGER, PARAMETER :: LVEC=8
     INTEGER, DIMENSION(LVEC,3) :: ICELL, IG
     REAL(num) :: vx,vy,vz
     REAL(num) :: ww0x(LVEC,4),ww0y(LVEC,4),ww0z(LVEC,4), wwwx(LVEC,8), &
@@ -1161,7 +1161,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
     INTEGER :: nnx, nnxy,ngridx, ngridy, n,nn,nv
     INTEGER :: moff(1:8)
-    INTEGER, PARAMETER :: LVEC=8
+    INTEGER, PARAMETER :: LVEC=32
     REAL(num) :: zint(LVEC),zint0(LVEC)
     INTEGER, DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: vx,vy,vz
@@ -1481,9 +1481,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
         !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
-        !DIR$ ASSUME_ALIGNED sy1:64,sy2:64,sy3:64,sy4:64
         !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
-        !DIR$ ASSUME_ALIGNED sy01:64,sy02:64,sy03:64,sy04:64
         !DIR$ ASSUME_ALIGNED ICELL:64
         !$OMP SIMD
         DO n=1,MIN(LVEC,np-ip+1)
