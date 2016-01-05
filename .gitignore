@@ -12,3 +12,5 @@ submain_inlined.F90
 *.o
 *.mod
 picsar
+python_bin/
+src/build/
