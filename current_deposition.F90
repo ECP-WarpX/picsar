@@ -335,7 +335,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     INTEGER :: nnx, nnxy, n,nn,nv
     INTEGER :: moff(1:8) 
     REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
-    INTEGER, PARAMETER :: LVEC=32
+    INTEGER, PARAMETER :: LVEC=8
     INTEGER, DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: sx, sy, sz, sx0, sy0, sz0,wqx,wqy,wqz
     REAL(num) :: wwx,wwy,wwz, wq,vx,vy,vz, wx,wx0, wy,wy0, wz,wz0

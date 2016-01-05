@@ -54,12 +54,12 @@ CONTAINS
                         nzc=curr_tile%nz_cells_tile
                         curr_tile%rhotile = 0.0_num
                         ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
+                        CALL depose_rho_n(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
                              curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
                              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
-                             curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
+                             curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards,nox,noy,noz,.TRUE.,.FALSE.)
                         ! Reduce rho_tile in rho
                         rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ &
                         curr_tile%rhotile(0:nxc,0:nyc,0:nzc)
