@@ -118,15 +118,8 @@ INTEGER :: ntilex, ntiley, ntilez
 END MODULE tile_params
 
 
-
-!===============================================================================
-MODULE particles
-!===============================================================================
+MODULE particle_properties
 USE constants
-USE tile_params
-USE particle_tilemodule
-USE particle_speciesmodule
-
 INTEGER(idp), PARAMETER  :: nthreads_tile=1
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
@@ -137,6 +130,18 @@ INTEGER(idp) :: ntot ! total number of particles (all species, all subdomains ->
 INTEGER(idp), PARAMETER :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
 LOGICAL :: l_species_allocated=.FALSE.
+END MODULE particle_properties
+
+
+
+!===============================================================================
+MODULE particles
+!===============================================================================
+USE constants
+USE tile_params
+USE particle_tilemodule
+USE particle_speciesmodule
+USE particle_properties
 
 ! Array of pointers to particle species objects
 TYPE(particle_species), POINTER, DIMENSION(:):: species_parray

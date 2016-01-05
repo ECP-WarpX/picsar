@@ -962,7 +962,7 @@ def remove_file(filename):
 ###### ----------------------------------------------------
 
 appname="picsar"
-workdir="/Users/henrivincenti/FORTHON_PARSER/TESTS/PICSAR_APP"
+workdir="src/"
 os.chdir(workdir)
 remove_file(appname+".F90")
 remove_file(appname+".v")

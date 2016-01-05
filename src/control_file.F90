@@ -58,8 +58,12 @@ CONTAINS
 
         ! --- Particle distribution
         pdistr=1
-
-        RETURN
+		! Init species array
+		IF (.NOT. l_species_allocated) THEN
+			nspecies=0
+			ALLOCATE(species_parray(1:nspecies_max))
+			l_species_allocated=.TRUE.
+		ENDIF
     END SUBROUTINE default_init
 
     ! Routine that reads command line arguments

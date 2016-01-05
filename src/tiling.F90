@@ -466,4 +466,35 @@ CONTAINS
 
     END SUBROUTINE point_to_tile
 
+    !This subroutine returns pointer arrays on a given tile 
+    ! of a given species (USED mainly by python interface)
+    SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
+		vdxs,vdys,vdzs,vthxs,vthys,vthzs)
+        IMPLICIT NONE
+        INTEGER(idp), INTENT(IN) :: nsp, nppc
+		REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
+		CHARACTER(LEN=*), INTENT(IN) :: sname
+        TYPE(particle_species), POINTER  :: currsp
+
+        currsp=> species_parray(nsp)
+		currsp%charge=chrg
+		currsp%mass=mss
+		currsp%x_min=xsmin
+		currsp%y_min=ysmin
+		currsp%z_min=zsmin
+		currsp%x_max=xsmax
+		currsp%y_max=ysmax
+		currsp%z_max=zsmax
+		currsp%vdrift_x=vdxs
+		currsp%vdrift_y=vdys
+		currsp%vdrift_z=vdzs
+		currsp%vth_x=vthxs
+		currsp%vth_y=vthys
+		currsp%vth_z=vthzs
+		currsp%nppcell=nppc
+		!currsp%name=sname
+
+    END SUBROUTINE set_particle_species_properties
+
+
 END MODULE tiling
