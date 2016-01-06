@@ -17,7 +17,7 @@ First edit the file Makefile_Forthon and indicate the following environment vari
 your version of open-mpi, you should use -lmpi_usempif08 instead of -lmpi_usempi.  
 
 
-**Compiling and Testind**
+**Compiling and Testing**
 -------------------------
 
 To compile and test, invoke the rule "all": 
