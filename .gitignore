@@ -21,3 +21,4 @@ src/picsar_modules.F90
 src/picsar_subroutines.F90
 example_scripts_python/picsarpy.so
 Makefile_Forthon_JLV
+RESULTS/
