@@ -22,42 +22,42 @@ END IF
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
     pushtime=0._num
-!
-!    !!! --- Field gather & particle push
+
+    !!! --- Field gather & particle push
      CALL push_particles
-!
-!    !!! --- Apply BC on particles
+
+    !!! --- Apply BC on particles
     CALL particle_bcs
-!
-!    !!! --- Deposit current of particle species on the grid
+
+    !!! --- Deposit current of particle species on the grid
     CALL depose_currents_on_grid_jxjyjz
-!
-!    !!! --- Boundary conditions for currents
+
+    !!! --- Boundary conditions for currents
     CALL current_bcs
-!
-!    !!! --- Push B field half a time step
+
+    !!! --- Push B field half a time step
     CALL push_bfield
-!
-!    !!! --- Boundary conditions for B
+
+    !!! --- Boundary conditions for B
     CALL bfield_bcs
-!
-!    !!! --- Push E field  a full time step
+
+    !!! --- Push E field  a full time step
     CALL push_efield
-!
-!    !!! --- Boundary conditions for E
+
+    !!! --- Boundary conditions for E
     CALL efield_bcs
-!
-!    !!! --- push B field half a time step
+
+    !!! --- push B field half a time step
     CALL push_bfield
-!
-!    !!! --- Boundary conditions for B
+
+    !!! --- Boundary conditions for B
     CALL bfield_bcs
-!
-!    !!! --- Computes derived quantities
+
+    !!! --- Computes derived quantities
     CALL calc_diags
-!
-!    !!! --- Output simulation results
-!    CALL output_routines
+
+    !!! --- Output simulation results
+    CALL output_routines
 
     it = it+1
     timeit=MPI_WTIME()
@@ -83,10 +83,10 @@ USE tiling
 
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
-INTEGER :: i,ierror,j,k,l, ispecies, ipart, count
-INTEGER :: jmin, jmax, lmin, lmax, kmin, kmax
-INTEGER :: ix, iy, iz
-INTEGER :: npartemp, ncurr
+INTEGER(idp) :: i,ierror,j,k,l, ispecies, ipart, count
+INTEGER(idp) :: jmin, jmax, lmin, lmax, kmin, kmax
+INTEGER(idp) :: ix, iy, iz
+INTEGER(idp) :: npartemp, ncurr
 REAL(num) :: v, th, phi
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
@@ -142,7 +142,7 @@ SUBROUTINE FD_weights(coeffs, norder, l_nodal)
 !successive rows the weights for derivatives 0,1,...,m.
 USE constants
 IMPLICIT NONE
-INTEGER(KIND=4) :: norder, n, m, mn, i, j, k
+INTEGER(idp) :: norder, n, m, mn, i, j, k
 LOGICAL :: l_nodal
 REAL(num) :: z, fact, c1, c2, c3, c4, c5
 REAL(num), INTENT(IN OUT), DIMENSION(norder/2) :: coeffs

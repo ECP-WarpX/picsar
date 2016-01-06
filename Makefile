@@ -17,7 +17,7 @@ build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o $(SRCDIR)/tiling.o $(SRCDIR)/parti
 	mv $(APPNAME) $(BINDIR)
 	
 clean:
-	rm -rf $(SRCDIR)/*.o $(SRCDIR)/*.mod $(BINDIR) RESULTS
+	rm -rf $(SRCDIR)/*.o *.mod $(BINDIR) RESULTS
 
 test:
 	mkdir -p RESULTS

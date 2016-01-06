@@ -10,14 +10,14 @@ USE shared_data
 USE tiling
 USE omp_lib
 IMPLICIT NONE
-INTEGER :: ispecies, ix, iy, iz, count
-INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+INTEGER(idp) :: ispecies, ix, iy, iz, count
+INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: jx_tile,jy_tile,jz_tile
-INTEGER :: nxc, nyc, nzc
+INTEGER(idp) :: nxc, nyc, nzc
 
 jx = 0.0_num
 jy = 0.0_num
@@ -318,7 +318,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
     IMPLICIT NONE
-    INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -330,16 +330,16 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) ::  gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic
-    INTEGER :: nnx, nnxy, n,nn,nv
-    INTEGER :: moff(1:8) 
+    INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic
+    INTEGER(idp) :: nnx, nnxy, n,nn,nv
+    INTEGER(idp) :: moff(1:8)
     REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
-    INTEGER, PARAMETER :: LVEC=8
-    INTEGER, DIMENSION(LVEC,3) :: ICELL
+    INTEGER(idp), PARAMETER :: LVEC=8
+    INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: sx, sy, sz, sx0, sy0, sz0,wqx,wqy,wqz
     REAL(num) :: wwx,wwy,wwz, wq,vx,vy,vz, wx,wx0, wy,wy0, wz,wz0
-    INTEGER :: orig, jorig, korig, lorig, igrid
-    INTEGER :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
+    INTEGER(idp) :: orig, jorig, korig, lorig, igrid
+    INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -358,7 +358,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
     nnx = ngridx
     nnxy = nnx*ngridy
-    moff = (/0,1,nnx,nnx+1,nnxy,nnxy+1,nnxy+nnx,nnxy+nnx+1/)
+    moff = (/0_idp,1_idp,nnx,nnx+1_idp,nnxy,nnxy+1_idp,nnxy+nnx,nnxy+nnx+1_idp/)
     mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
     my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
     mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
@@ -496,7 +496,7 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
     IMPLICIT NONE
-    INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w
     REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
@@ -506,7 +506,7 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
     REAL(num) :: wq, wqx, wqy, wqz, gaminv, usq, clightsq
     REAL(num), DIMENSION(3) :: sx(-1:1), sy(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1)
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,j0,k0,l0,ip
+    INTEGER(idp) :: j,k,l,j0,k0,l0,ip
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
     dzi = 1.0_num/dz
@@ -684,7 +684,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
     IMPLICIT NONE
-    INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -696,11 +696,11 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) ::   wqx,wqy,wqz,ww, wwx, wwy, wwz, gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic
-    INTEGER :: nnx, nnxy, n,nn,nv
-    INTEGER :: moff(1:8)
-    INTEGER, PARAMETER :: LVEC=8
-    INTEGER, DIMENSION(LVEC,3) :: ICELL, IG
+    INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic
+    INTEGER(idp) :: nnx, nnxy, n,nn,nv
+    INTEGER(idp) :: moff(1:8)
+    INTEGER(idp), PARAMETER :: LVEC=8
+    INTEGER(idp), DIMENSION(LVEC,3) :: ICELL, IG
     REAL(num) :: vx,vy,vz
     REAL(num) :: ww0x(LVEC,4),ww0y(LVEC,4),ww0z(LVEC,4), wwwx(LVEC,8), &
     wwwy(LVEC,8),wwwz(LVEC,8), wq
@@ -708,8 +708,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: sx00(LVEC),sx01(LVEC),sx02(LVEC)
     REAL(num) :: sy0,sy1,sy2,sy00,sy01,sy02
     REAL(num) :: sz0,sz1,sz2,sz00,sz01,sz02, syz
-    INTEGER :: igrid,orig, jorig, korig, lorig
-    INTEGER :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
+    INTEGER(idp) :: igrid,orig, jorig, korig, lorig
+    INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -949,7 +949,7 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
     IMPLICIT NONE
-    INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w
     REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
@@ -959,7 +959,7 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,
     REAL(num) :: wq, wqx, wqy, wqz, gaminv, usq, clightsq
     REAL(num), DIMENSION(4) :: sx(-1:2), sy(-1:2), sz(-1:2), sx0(-1:2), sy0(-1:2), sz0(-1:2)
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,j0,k0,l0,ip
+    INTEGER(idp) :: j,k,l,j0,k0,l0,ip
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
     dzi = 1.0_num/dz
@@ -1266,7 +1266,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
     IMPLICIT NONE
-    INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -1278,12 +1278,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) ::   ww, wwx, wwy, wwz, gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
-    INTEGER :: nnx, nnxy,ngridx, ngridy, n,nn,nv
-    INTEGER :: moff(1:8)
-    INTEGER, PARAMETER :: LVEC=32
+    INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
+    INTEGER(idp) :: nnx, nnxy,ngridx, ngridy, n,nn,nv
+    INTEGER(idp) :: moff(1:8)
+    INTEGER(idp), PARAMETER :: LVEC=32
     REAL(num) :: zint(LVEC),zint0(LVEC)
-    INTEGER, DIMENSION(LVEC,3) :: ICELL
+    INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: vx,vy,vz
     REAL(num) ::  wwwx(LVEC,16), wwwy(LVEC,16),wwwz(LVEC,16), wq
     REAL(num) :: sx1(LVEC),sx2(LVEC),sx3(LVEC),sx4(LVEC)
@@ -1291,7 +1291,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: sy1(LVEC),sy2(LVEC),sy3(LVEC),sy4(LVEC)
     REAL(num) :: sy01(LVEC),sy02(LVEC),sy03(LVEC),sy04(LVEC)
     REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
-    INTEGER :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
+    INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -1308,8 +1308,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
     nnx = ngridx
     nnxy = ngridx*ngridy
-    moff = (/-nnxy,0,nnxy,2*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2*nnxy/)
-    jorig=-3; korig=-3;lorig=-3
+    moff = (/-nnxy,0_idp,nnxy,2_idp*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2_idp*nnxy/)
+    jorig=-3_idp; korig=-3_idp;lorig=-3_idp
     orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
     ngx=(ngridx-ncx)
     ngxy=(ngridx*ngridy-ncx*ncy)
@@ -1544,7 +1544,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
     IMPLICIT NONE
-    INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -1556,11 +1556,11 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) ::   ww, wwx, wwy, wwz, gaminv, usq, clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
-    INTEGER :: nnx, nnxy,ngridx, ngridy, n,nn,nv
-    INTEGER :: moff(1:8)
-    INTEGER, PARAMETER :: LVEC=8
-    INTEGER, DIMENSION(LVEC,3) :: ICELL
+    INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
+    INTEGER(idp) :: nnx, nnxy,ngridx, ngridy, n,nn,nv
+    INTEGER(idp) :: moff(1:8)
+    INTEGER(idp), PARAMETER :: LVEC=8
+    INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: vx,vy,vz
     REAL(num) ::  wwwx(LVEC,16), wwwy(LVEC,16),wwwz(LVEC,16), wq
     REAL(num) :: sx1(LVEC),sx2(LVEC),sx3(LVEC),sx4(LVEC)
@@ -1570,7 +1570,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
     REAL(num):: wwwx1(LVEC,8),wwwx2(LVEC,8),wwwy1(LVEC,8),wwwy2(LVEC,8),wwwz1(LVEC,8),wwwz2(LVEC,8)
     REAL(num):: wx1,wx2,wy1,wy2,wz1,wz2
-    INTEGER :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
+    INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
 
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
@@ -1587,8 +1587,8 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin
     jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
     nnx = ngridx
     nnxy = ngridx*ngridy
-    moff = (/-nnxy,0,nnxy,2*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2*nnxy/)
-    jorig=-2; korig=-2;lorig=-2
+    moff = (/-nnxy,0_idp,nnxy,2_idp*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2_idp*nnxy/)
+    jorig=-2_idp; korig=-2_idp;lorig=-2_idp
     orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
     ngx=(ngridx-ncx)
     ngxy=(ngridx*ngridy-ncx*ncy)
@@ -2100,11 +2100,11 @@ sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
 sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
 jx1=0.0_num;jy1=0.0_num;jz1=0.0_num
 
-!$OMP PARALLEL PRIVATE(ip,x,y,z,usq,vx,vy,vz,gaminv,xold,yold,zold,ncells,dtsdx,dtsdy,dtsdz,dts2dx,dts2dy,dts2dz, &
-!$OMP icell, wq,wqx,wqy,wqz,iixp0,ijxp0,ikxp0, xint,yint,zint, oxint,xintsq, oxintsq,dix,diy,diz, &
-!$OMP dsx, dsy, dsz, oyint,yintsq, oyintsq, ozint,zintsq, ozintsq,ixmin, ixmax, iymin, iymax, izmin, izmax,  &
-!$OMP k,j,i,kc,jc,ic, iixp, ijxp, ikxp,sx,sy,sz) FIRSTPRIVATE(sx0,sy0,sz0,sdx,sdy,sdz,jx1,jy1,jz1)
-!$OMP DO
+!!$OMP PARALLEL PRIVATE(ip,x,y,z,usq,vx,vy,vz,gaminv,xold,yold,zold,ncells,dtsdx,dtsdy,dtsdz,dts2dx,dts2dy,dts2dz, &
+!!$OMP icell, wq,wqx,wqy,wqz,iixp0,ijxp0,ikxp0, xint,yint,zint, oxint,xintsq, oxintsq,dix,diy,diz, &
+!!$OMP dsx, dsy, dsz, oyint,yintsq, oyintsq, ozint,zintsq, ozintsq,ixmin, ixmax, iymin, iymax, izmin, izmax,  &
+!!$OMP k,j,i,kc,jc,ic, iixp, ijxp, ikxp,sx,sy,sz) FIRSTPRIVATE(sx0,sy0,sz0,sdx,sdy,sdz,jx1,jy1,jz1)
+!!$OMP DO
 DO ip=1,np
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
@@ -2385,14 +2385,14 @@ DO ip=1,np
         END DO
     END DO
 END DO
-!$OMP END DO
+!!$OMP END DO
 
-!$OMP CRITICAL
+!!$OMP CRITICAL
 jx=jx+jx1
 jy=jy+jy1
 jz=jz+jz1
-!$OMP END CRITICAL
-!$OMP END PARALLEL
+!!$OMP END CRITICAL
+!!$OMP END PARALLEL
 DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz,jx1,jy1,jz1)
 
 RETURN
