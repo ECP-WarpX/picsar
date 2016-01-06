@@ -94,8 +94,6 @@ def steppy(nt):
 
 
 #### PIC LOOP written in python
-
-
 start=MPI.Wtime()
 steppy(ntsteps)
 endt=MPI.Wtime()
