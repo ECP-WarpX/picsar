@@ -3,34 +3,38 @@ MODULE mpi_routines
   USE fields
   USE mpi
   IMPLICIT NONE
-  PRIVATE
-  PUBLIC :: mpi_initialise, mpi_close, mpi_minimal_init, setup_communicator
+  !PRIVATE
+  !PUBLIC :: mpi_initialise, mpi_close, mpi_minimal_init, setup_communicator
 
   REAL(num) :: start_time, end_time
 
 CONTAINS
 
-  SUBROUTINE mpi_minimal_init
-
-    CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
+  SUBROUTINE mpi_minimal_init()
+    LOGICAL(isp) :: isinitialized
+    CALL MPI_INITIALIZED(isinitialized,errcode)
+    IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
     CALL MPI_COMM_SIZE(comm, nproc, errcode)
     CALL MPI_COMM_RANK(comm, rank, errcode)
-
   END SUBROUTINE mpi_minimal_init
 
 
 
   SUBROUTINE setup_communicator
 
-    INTEGER, PARAMETER :: ndims = 3
-    INTEGER :: dims(ndims), idim, old_comm, ierr
-    LOGICAL :: periods(ndims), reorder, op, reset
-    INTEGER :: test_coords(ndims)
-    INTEGER :: ix, iy, iz
-    INTEGER :: nxsplit, nysplit, nzsplit
-    INTEGER :: ranges(3,1), nproc_orig, oldgroup, newgroup
+    INTEGER(isp), PARAMETER :: ndims = 3
+    INTEGER(isp) :: dims(ndims), idim, old_comm, ierr
+    LOGICAL(isp) :: periods(ndims), reorder, op, reset
+    INTEGER(isp) :: test_coords(ndims)
+    INTEGER(isp) :: ix, iy, iz
+    INTEGER(idp) :: nxsplit, nysplit, nzsplit
+    INTEGER(isp) :: ranges(3,1), nproc_orig, oldgroup, newgroup
     CHARACTER(LEN=11) :: str
+
+    nx_global=nx_global_grid-1
+    ny_global=ny_global_grid-1
+    nz_global=nz_global_grid-1
 
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
@@ -88,9 +92,9 @@ CONTAINS
     CALL MPI_COMM_FREE(old_comm, errcode)
     CALL MPI_COMM_RANK(comm, rank, errcode)
     CALL MPI_CART_COORDS(comm, rank, ndims, coordinates, errcode)
-    CALL MPI_CART_SHIFT(comm, 2, 1, proc_x_min, proc_x_max, errcode)
-    CALL MPI_CART_SHIFT(comm, 1, 1, proc_y_min, proc_y_max, errcode)
-    CALL MPI_CART_SHIFT(comm, 0, 1, proc_z_min, proc_z_max, errcode)
+    CALL MPI_CART_SHIFT(comm, 2_isp, 1_isp, proc_x_min, proc_x_max, errcode)
+    CALL MPI_CART_SHIFT(comm, 1_isp, 1_isp, proc_y_min, proc_y_max, errcode)
+    CALL MPI_CART_SHIFT(comm, 0_isp, 1_isp, proc_z_min, proc_z_max, errcode)
 
     nprocdir = dims
 
@@ -145,11 +149,11 @@ CONTAINS
 
   SUBROUTINE mpi_initialise
 
-    INTEGER :: idim
-    INTEGER :: nx0, nxp
-    INTEGER :: ny0, nyp
-    INTEGER :: nz0, nzp
-    INTEGER :: iproc, ix, iy, iz
+    INTEGER(isp) :: idim
+    INTEGER(isp) :: nx0, nxp
+    INTEGER(isp) :: ny0, nyp
+    INTEGER(isp) :: nz0, nzp
+    INTEGER(isp) :: iproc, ix, iy, iz
 
     ! Init number of guard cells of subdomains in each dimension
     nxguards = MAX(nox,norderx)+npass(1)

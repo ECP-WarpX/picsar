@@ -1,4 +1,4 @@
-MODULE mpi_derived_types
+MODULE mpi_derived_types !#do not parse
 
   !----------------------------------------------------------------------------
   ! This module contains the subroutines which create the subarray used
@@ -18,7 +18,7 @@ CONTAINS
 
   FUNCTION create_current_grid_derived_type()
 
-    INTEGER :: create_current_grid_derived_type
+    INTEGER(isp) :: create_current_grid_derived_type
 
     create_current_grid_derived_type = &
         create_grid_derived_type(mpidbl, nx, ny, nz, nx_global_grid_min, &
@@ -33,13 +33,17 @@ CONTAINS
 
   FUNCTION create_current_grid_subarray(ngx,ngy,ngz)
 
-    INTEGER :: create_current_grid_subarray
-    INTEGER, INTENT(IN) :: ngx, ngy, ngz
+    INTEGER(isp) :: create_current_grid_subarray
+    INTEGER(idp), INTENT(IN) :: ngx, ngy, ngz
+    INTEGER(idp) :: nxloc, nyloc, nzloc
+    nxloc=nx+1
+    nyloc=ny+1
+    nzloc=nz+1
 
 
     create_current_grid_subarray = &
     create_grid_subarray(mpidbl, ngx, ngy, ngz, &
-                              nx+1, ny+1, nz+1)
+                              nxloc, nyloc, nzloc)
 
   END FUNCTION create_current_grid_subarray
 
@@ -52,15 +56,15 @@ CONTAINS
   FUNCTION create_grid_derived_type(mpitype, nx_local, ny_local, nz_local, &
       cell_start_x_local, cell_start_y_local, cell_start_z_local)
 
-    INTEGER, INTENT(IN) :: mpitype
-    INTEGER, INTENT(IN) :: nx_local
-    INTEGER, INTENT(IN) :: ny_local
-    INTEGER, INTENT(IN) :: nz_local
-    INTEGER, INTENT(IN) :: cell_start_x_local
-    INTEGER, INTENT(IN) :: cell_start_y_local
-    INTEGER, INTENT(IN) :: cell_start_z_local
-    INTEGER :: create_grid_derived_type
-    INTEGER, DIMENSION(c_ndims) :: n_local, n_global, start
+    INTEGER(isp), INTENT(IN) :: mpitype
+    INTEGER(idp), INTENT(IN) :: nx_local
+    INTEGER(idp), INTENT(IN) :: ny_local
+    INTEGER(idp), INTENT(IN) :: nz_local
+    INTEGER(idp), INTENT(IN) :: cell_start_x_local
+    INTEGER(idp), INTENT(IN) :: cell_start_y_local
+    INTEGER(idp), INTENT(IN) :: cell_start_z_local
+    INTEGER(isp) :: create_grid_derived_type
+    INTEGER(idp), DIMENSION(c_ndims) :: n_local, n_global, start
 
     n_local = (/nx_local+1, ny_local+1, nz_local+1/)
     n_global = (/nx_global+1, ny_global+1, nz_global+1/)
@@ -79,17 +83,17 @@ CONTAINS
   FUNCTION create_3d_array_derived_type(mpitype, n_local, n_global, start) &
       RESULT(vec3d_sub)
 
-    INTEGER, INTENT(IN) :: mpitype
-    INTEGER, DIMENSION(3), INTENT(IN) :: n_local
-    INTEGER, DIMENSION(3), INTENT(IN) :: n_global
-    INTEGER, DIMENSION(3), INTENT(IN) :: start
-    INTEGER, DIMENSION(3) :: lengths, types
+    INTEGER(isp), INTENT(IN) :: mpitype
+    INTEGER(idp), DIMENSION(c_ndims), INTENT(IN) :: n_local
+    INTEGER(idp), DIMENSION(c_ndims), INTENT(IN) :: n_global
+    INTEGER(idp), DIMENSION(c_ndims), INTENT(IN) :: start
+    INTEGER(isp), DIMENSION(c_ndims) :: lengths, types
     INTEGER(KIND=MPI_ADDRESS_KIND) :: disp(3), starts(3)
-    INTEGER :: vec2d, vec2d_sub
-    INTEGER :: vec3d, vec3d_sub, typesize
+    INTEGER(isp) :: vec2d, vec2d_sub
+    INTEGER(isp) :: vec3d, vec3d_sub, typesize
 
     vec2d = MPI_DATATYPE_NULL
-    CALL MPI_TYPE_VECTOR(n_local(2), n_local(1), n_global(1), mpitype, &
+    CALL MPI_TYPE_VECTOR(INT(n_local(2),isp), INT(n_local(1),isp), INT(n_global(1),isp), mpitype, &
         vec2d, errcode)
     CALL MPI_TYPE_COMMIT(vec2d, errcode)
 
@@ -105,11 +109,11 @@ CONTAINS
     types(3) = MPI_UB
 
     vec2d_sub = MPI_DATATYPE_NULL
-    CALL MPI_TYPE_CREATE_STRUCT(3, lengths, disp, types, vec2d_sub, errcode)
+    CALL MPI_TYPE_CREATE_STRUCT(c_ndims, lengths, disp, types, vec2d_sub, errcode)
     CALL MPI_TYPE_COMMIT(vec2d_sub, errcode)
 
     vec3d = MPI_DATATYPE_NULL
-    CALL MPI_TYPE_CONTIGUOUS(n_local(3), vec2d_sub, vec3d, errcode)
+    CALL MPI_TYPE_CONTIGUOUS(INT(n_local(3),isp), vec2d_sub, vec3d, errcode)
     CALL MPI_TYPE_COMMIT(vec3d, errcode)
 
     disp(1) = 0
@@ -120,7 +124,7 @@ CONTAINS
     types(3) = MPI_UB
 
     vec3d_sub = MPI_DATATYPE_NULL
-    CALL MPI_TYPE_CREATE_STRUCT(3, lengths, disp, types, vec3d_sub, errcode)
+    CALL MPI_TYPE_CREATE_STRUCT(c_ndims, lengths, disp, types, vec3d_sub, errcode)
     CALL MPI_TYPE_COMMIT(vec3d_sub, errcode)
 
     CALL MPI_TYPE_FREE(vec2d, errcode)
@@ -133,9 +137,10 @@ CONTAINS
 
   FUNCTION create_grid_subarray(mpitype, ng1, ng2, ng3, n1, n2, n3)
 
-    INTEGER, INTENT(IN) :: mpitype, ng1,ng2,ng3, n1, n2, n3
-    INTEGER, DIMENSION(3) :: n_local, ng, n_global, start
-    INTEGER :: i, ndim, create_grid_subarray
+    INTEGER(isp), INTENT(IN) :: mpitype
+    INTEGER(idp),INTENT(IN) :: ng1,ng2,ng3, n1, n2, n3
+    INTEGER(idp), DIMENSION(3) :: n_local, ng, n_global, start
+    INTEGER(isp) :: i, ndim, create_grid_subarray
 
     n_local(1) = n1
     n_local(2) = n2

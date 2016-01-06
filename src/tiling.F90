@@ -12,9 +12,9 @@ CONTAINS
     !!! --- Set particle tile split in space
     SUBROUTINE set_tile_split
         IMPLICIT NONE
-        INTEGER :: ix, iy, iz, ispecies
-        INTEGER :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-        INTEGER :: nx0_last_tile, ny0_last_tile, nz0_last_tile
+        INTEGER(KIND=4) :: ix, iy, iz, ispecies
+        INTEGER(KIND=4) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+        INTEGER(KIND=4) :: nx0_last_tile, ny0_last_tile, nz0_last_tile
         TYPE(particle_species), POINTER :: curr_sp
         TYPE(particle_tile), POINTER :: curr
 
@@ -135,7 +135,6 @@ CONTAINS
         TYPE(particle_tile), POINTER :: curr
         INTEGER :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, nptile
         INTEGER :: ixtile, iytile, iztile
-        REAL(num) :: resize_factor = 1.5_num
 
 
         ! Get first tiles dimensions (may be different from last tile)
@@ -256,8 +255,8 @@ CONTAINS
 
     SUBROUTINE init_tile_arrays
         IMPLICIT NONE
-        INTEGER :: ispecies, ix, iy, iz
-        INTEGER :: n1, n2, n3
+        INTEGER(KIND=4) :: ispecies, ix, iy, iz
+        INTEGER(KIND=4) :: n1, n2, n3
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
@@ -320,11 +319,11 @@ CONTAINS
     SUBROUTINE load_particles
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
-        INTEGER :: ispecies, l, k, j, ipart
-        INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
+        INTEGER(KIND=4) :: ispecies, l, k, j, ipart
+        INTEGER(KIND=4) :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
         REAL(num) :: phi, th, v
-        INTEGER :: err, npart
+        INTEGER(KIND=4) :: err, npart
         REAL(num), DIMENSION(6) :: rng=0_num
 
         !!! --- Sets-up particle space distribution (homogeneous case - default)
@@ -398,7 +397,7 @@ CONTAINS
         ntot=0
         DO ispecies=1,nspecies
             curr=>species_parray(ispecies)
-            CALL MPI_ALLREDUCE(curr%species_npart,npart,1, MPI_INTEGER,MPI_SUM,comm, err)
+            CALL MPI_ALLREDUCE(curr%species_npart,npart,1_isp, MPI_INTEGER,MPI_SUM,comm, err)
             ntot=ntot+npart
             IF (rank .EQ. 0) THEN
                 WRITE (0,*) 'Loaded npart = ', npart,' particles of species ', &
@@ -413,7 +412,7 @@ CONTAINS
         IMPLICIT NONE
 
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
-        INTEGER old_size, new_size
+        INTEGER :: old_size, new_size
 
         curr%npmax_tile=new_size
         CALL resize_array_real(curr%part_x, old_size, new_size)
@@ -433,9 +432,9 @@ CONTAINS
 
     SUBROUTINE resize_array_real(arr, old_size, new_size)
         IMPLICIT NONE
-        REAL(num), ALLOCATABLE, DIMENSION(:), INTENT(IN OUT) :: arr
-        REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
-        INTEGER old_size, new_size
+        REAL(num), DIMENSION(:),ALLOCATABLE, INTENT(IN OUT) :: arr
+        REAL(num), DIMENSION(:),ALLOCATABLE :: temp
+        INTEGER :: old_size, new_size
 
         ALLOCATE(temp(1:new_size))
         ! reshape array
@@ -445,5 +444,87 @@ CONTAINS
         arr(1:old_size) = temp(1:old_size)
         DEALLOCATE(temp)
     END SUBROUTINE
+
+    !This subroutine returns pointer arrays on a given tile 
+    ! of a given species (USED mainly by python interface)
+    SUBROUTINE point_to_tile(ispecies, ix, iy, iz)
+        USE python_pointers
+        IMPLICIT NONE
+        INTEGER(idp), INTENT(IN) :: ix,iy,iz,ispecies
+        TYPE(particle_species), POINTER  :: currsp
+        TYPE(particle_tile), POINTER ::curr_tile
+
+        currsp=> species_parray(ispecies)
+        curr_tile=>currsp%array_of_tiles(ix,iy,iz)
+		! Tile extent and dimension
+		nxgt=curr_tile%nx_grid_tile
+		nygt=curr_tile%ny_grid_tile
+		nzgt=curr_tile%nz_grid_tile
+		nxct=curr_tile%nx_cells_tile
+		nyct=curr_tile%ny_cells_tile
+		nzct=curr_tile%nz_cells_tile
+		nxmin=curr_tile%nx_tile_min
+		nxmax=curr_tile%nx_tile_max
+		nymin=curr_tile%ny_tile_min
+		nymax=curr_tile%ny_tile_max
+		nzmin=curr_tile%nz_tile_min
+		nzmax=curr_tile%nz_tile_max
+		xtmin=curr_tile%x_tile_min
+		xtmax=curr_tile%x_tile_max
+		ytmin=curr_tile%y_tile_min
+		ytmax=curr_tile%y_tile_max
+		ztmin=curr_tile%z_tile_min
+		ztmax=curr_tile%z_tile_max
+		xgtmin=curr_tile%x_grid_tile_min
+		xgtmax=curr_tile%x_grid_tile_max
+		ygtmin=curr_tile%y_grid_tile_min
+		ygtmax=curr_tile%y_grid_tile_max
+		zgtmin=curr_tile%z_grid_tile_min
+		zgtmax=curr_tile%z_grid_tile_max
+		! Number of particles in the tile
+		partn = curr_tile%np_tile
+		partnmax = curr_tile%npmax_tile
+		! Particle arrays in the tile
+        partx=>curr_tile%part_x
+        party=>curr_tile%part_y
+        partz=>curr_tile%part_z
+        partux=>curr_tile%part_ux
+        partuy=>curr_tile%part_uy
+        partuz=>curr_tile%part_uz
+        partw=>curr_tile%weight
+
+
+    END SUBROUTINE point_to_tile
+
+    !This subroutine returns pointer arrays on a given tile
+    ! of a given species (USED mainly by python interface)
+    SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
+		vdxs,vdys,vdzs,vthxs,vthys,vthzs)
+        IMPLICIT NONE
+        INTEGER(idp), INTENT(IN) :: nsp, nppc
+		REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
+		CHARACTER(LEN=*), INTENT(IN) :: sname
+        TYPE(particle_species), POINTER  :: currsp
+
+        currsp=> species_parray(nsp)
+		currsp%charge=chrg
+		currsp%mass=mss
+		currsp%x_min=xsmin
+		currsp%y_min=ysmin
+		currsp%z_min=zsmin
+		currsp%x_max=xsmax
+		currsp%y_max=ysmax
+		currsp%z_max=zsmax
+		currsp%vdrift_x=vdxs
+		currsp%vdrift_y=vdys
+		currsp%vdrift_z=vdzs
+		currsp%vth_x=vthxs
+		currsp%vth_y=vthys
+		currsp%vth_z=vthzs
+		currsp%nppcell=nppc
+		currsp%name=sname
+
+    END SUBROUTINE set_particle_species_properties
+
 
 END MODULE tiling

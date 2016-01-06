@@ -11,13 +11,13 @@ USE params
 USE shared_data
 USE tiling
 IMPLICIT NONE
-INTEGER :: ispecies, ix, iy, iz, count
-INTEGER :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp) :: ispecies, ix, iy, iz, count
+INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
-INTEGER :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-INTEGER :: nblk=1000000
+INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
+INTEGER(idp) :: nblk=1000000
 
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -105,10 +105,10 @@ SUBROUTINE pushxyz(np,xp,yp,zp,uxp,uyp,uzp,dt)
 USE constants
 USE omp_lib
 IMPLICIT NONE
-INTEGER   :: np
+INTEGER(idp)   :: np
 REAL(num) :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np)
 REAL(num) :: dt,gaminv,clghtisq,usq
-INTEGER   :: ip
+INTEGER(idp)  :: ip
 
 clghtisq = 1.0_num/clight**2
 !!$OMP PARALLEL DO PRIVATE(ip, usq, gaminv)
@@ -122,7 +122,7 @@ ENDDO
 !!$OMP END PARALLEL DO
 
 RETURN
-END
+END SUBROUTINE pushxyz
 
 !===============================================================================
 !  Push the particle velocity with E field
@@ -131,12 +131,12 @@ SUBROUTINE epush_v(np,uxp,uyp,uzp,ex,ey,ez,q,m,dt)
 
 USE constants
 IMPLICIT NONE
-INTEGER :: np
+INTEGER(idp) :: np
 REAL(num):: uxp(np),uyp(np),uzp(np)
 REAL(num):: ex(np),ey(np),ez(np)
 REAL(num):: q,m,dt
 
-INTEGER :: ip
+INTEGER(idp) :: ip
 REAL(num):: const
 
 const = q*dt/m
@@ -159,11 +159,11 @@ SUBROUTINE bpush_v(np,uxp,uyp,uzp,bx,by,bz,q,m,dt)
 
 USE constants
 IMPLICIT NONE
-INTEGER   :: np
+INTEGER(idp)   :: np
 REAL(num) :: uxp(np), uyp(np), uzp(np)
 REAL(num) :: bx(np), by(np), bz(np)
 REAL(num) :: q,m,dt,gaminv
-INTEGER   :: ip
+INTEGER(idp)   :: ip
 REAL(num) :: const,clghtisq,sx,sy,sz,tx,ty,tz,tsqi,uxppr,uyppr,uzppr,usq
 
 const = q*dt*0.5_num/m

@@ -9,11 +9,11 @@ SUBROUTINE gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
 USE omp_lib
 USE constants
 IMPLICIT NONE
-INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np) :: xp,yp,zp,ex,ey,ez
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
 REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-INTEGER :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
               ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
 REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
               xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
@@ -117,11 +117,11 @@ SUBROUTINE getb3d_energy_conserving_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
 USE omp_lib
 USE constants
 IMPLICIT NONE
-INTEGER :: np,nx,ny,nz,nxguard,nyguard,nzguard
+INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-INTEGER :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
               ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
 REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
               xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
@@ -223,12 +223,12 @@ SUBROUTINE gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,      
 USE omp_lib
 USE constants
 IMPLICIT NONE
-INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
 LOGICAL :: l4symtry,l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
 REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-INTEGER :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
 ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
 REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
 xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
@@ -522,12 +522,12 @@ SUBROUTINE getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,      
 USE omp_lib
 USE constants
 IMPLICIT NONE
-INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
 LOGICAL :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-INTEGER :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
               ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
 REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
               xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy

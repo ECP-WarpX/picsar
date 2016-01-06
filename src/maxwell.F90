@@ -46,11 +46,11 @@ subroutine push_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  l_nodalgrid)
 !===============================================================================
 use constants
-integer :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
+integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
 real(num), intent(IN) :: mudt,dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
-integer :: i,j,k,l,ist
+integer(idp) :: i,j,k,l,ist
 logical :: l_nodalgrid
 
 if (l_nodalgrid) then
@@ -120,11 +120,12 @@ subroutine push_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                  l_nodalgrid)
 use constants
-integer :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
+integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: jx,jy,jz
 real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
-integer :: j,k,l
+integer(idp):: j,k,l
+logical :: l_nodalgrid
 
 ! advance Ex
 do l = -nzs, nz+nzs
@@ -172,10 +173,10 @@ subroutine push_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
                                 l_nodalgrid)
 !===============================================================================
 use constants
-integer :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
+integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
-integer :: i,j,k,l,ist
+integer(idp) :: i,j,k,l,ist
 logical :: l_nodalgrid
 
 if (l_nodalgrid) then
@@ -243,10 +244,11 @@ subroutine push_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
                           nxguard,nyguard,nzguard,nxs,nys,nzs, &
                           l_nodalgrid)
 use constants
-integer :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
+integer(idp):: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
-integer :: j,k,l
+integer(idp) :: j,k,l
+logical :: l_nodalgrid
 
 ! advance Bx
 do l = -nzs, nz+nzs-1

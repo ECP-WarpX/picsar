@@ -2,7 +2,7 @@ MODULE simple_io
 
   USE mpi_derived_types
   USE fields
-
+  USE shared_data
   IMPLICIT NONE
 
 CONTAINS
@@ -13,7 +13,7 @@ CONTAINS
         IMPLICIT NONE
         CHARACTER(LEN=string_length) :: strtemp
         INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
-        INTEGER :: err=0
+        INTEGER(KIND=4) :: err=0
         IF (output_frequency .LT. 1) RETURN
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
@@ -23,57 +23,57 @@ CONTAINS
             IF (c_output_ex .EQ. 1) THEN
                 ! - Write current density ex
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', ex, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', ex, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_ey .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileey))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', ey, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', ey, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_ez .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileez))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', ez, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', ez, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_bx .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebx))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', bx, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', bx, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_by .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileby))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', by, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', by, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_bz .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebz))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', bz, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', bz, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_jx .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejx))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', jx, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', jx, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_jy .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejy))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', jy, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', jy, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_jz .EQ. 1) THEN
                 ! - Write current density jx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejz))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', jz, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', jz, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_dive .EQ. 1) THEN
                 ! - Write electric field divergence div E
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filedive))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', dive, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', dive, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_rho .EQ. 1) THEN
                 ! - Write total charge density rho
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filerho))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', rho, offset, err)
+                TRIM(ADJUSTL(strtemp))//'.pxr', rho, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
             ENDIF
         ENDIF
     END SUBROUTINE output_routines
@@ -88,13 +88,15 @@ CONTAINS
   ! to disk using MPI-IO (H. VINCENTI)
   !----------------------------------------------------------------------------
 
-  SUBROUTINE write_single_array_to_file(filename, array, offset, err)
+  SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, ny_local, nz_local, offset, err)
 
     CHARACTER(LEN=*), INTENT(IN) :: filename
-    REAL(num), DIMENSION(:,:,:), INTENT(INOUT) :: array
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     INTEGER(KIND=MPI_OFFSET_KIND), INTENT(IN) :: offset
-    INTEGER, INTENT(INOUT) :: err
-    INTEGER :: subt, suba, fh, i
+    INTEGER(isp), INTENT(INOUT) :: err
+    INTEGER(isp) :: subt, suba, fh, i
 
     CALL MPI_FILE_OPEN(comm, TRIM(filename), MPI_MODE_CREATE + MPI_MODE_WRONLY, &
         MPI_INFO_NULL, fh, errcode)
@@ -110,7 +112,7 @@ CONTAINS
     CALL MPI_FILE_SET_VIEW(fh, offset, MPI_BYTE, subt, 'native', &
         MPI_INFO_NULL, errcode)
 
-    CALL MPI_FILE_WRITE_ALL(fh, array, 1, suba, MPI_STATUS_IGNORE, errcode)
+    CALL MPI_FILE_WRITE_ALL(fh, array, 1_isp, suba, MPI_STATUS_IGNORE, errcode)
 
     CALL MPI_FILE_CLOSE(fh, errcode)
     CALL MPI_TYPE_FREE(subt, errcode)

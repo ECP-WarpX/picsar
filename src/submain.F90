@@ -15,52 +15,54 @@ USE simple_io
 IMPLICIT NONE
 INTEGER :: nst,i
 
-
 !!! --- This is the main PIC LOOP
+IF (rank .EQ. 0) THEN
+WRITE (0,*), "nsteps = ", nst
+END IF
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
     pushtime=0._num
-
-    !!! --- Field gather & particle push
-    CALL push_particles
-
-    !!! --- Apply BC on particles
+!
+!    !!! --- Field gather & particle push
+     CALL push_particles
+!
+!    !!! --- Apply BC on particles
     CALL particle_bcs
-
-    !!! --- Deposit current of particle species on the grid
+!
+!    !!! --- Deposit current of particle species on the grid
     CALL depose_currents_on_grid_jxjyjz
-
-    !!! --- Boundary conditions for currents
+!
+!    !!! --- Boundary conditions for currents
     CALL current_bcs
-
-    !!! --- Push B field half a time step
+!
+!    !!! --- Push B field half a time step
     CALL push_bfield
-
-    !!! --- Boundary conditions for B
+!
+!    !!! --- Boundary conditions for B
     CALL bfield_bcs
-
-    !!! --- Push E field  a full time step
+!
+!    !!! --- Push E field  a full time step
     CALL push_efield
-
-    !!! --- Boundary conditions for E
+!
+!    !!! --- Boundary conditions for E
     CALL efield_bcs
-
-    !!! --- push B field half a time step
+!
+!    !!! --- push B field half a time step
     CALL push_bfield
-
-    !!! --- Boundary conditions for B
+!
+!    !!! --- Boundary conditions for B
     CALL bfield_bcs
-
-    !!! --- Computes derived quantities
+!
+!    !!! --- Computes derived quantities
     CALL calc_diags
-
-    !!! --- Output simulation results
-    CALL output_routines
+!
+!    !!! --- Output simulation results
+!    CALL output_routines
 
     it = it+1
     timeit=MPI_WTIME()
-    
-    IF (rank .EQ. 0) THEN
+
+   IF (rank .EQ. 0) THEN
         WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
         " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF
@@ -104,6 +106,7 @@ CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
 CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
 
+
 ! ------ INIT PARTICLE DISTRIBUTIONS
 !!! --- Set tile split for particles
 CALL set_tile_split
@@ -123,9 +126,6 @@ jx=0.0_num;jy=0.0_num;jz=0.0_num
 
 !!! --- set number of time steps
 nsteps = nint(tmax/(w0_l*dt))
-IF (rank .EQ. 0) THEN
-    WRITE (0,*), "nsteps = ", nsteps
-END IF
 
 END SUBROUTINE initall
 
@@ -142,7 +142,7 @@ SUBROUTINE FD_weights(coeffs, norder, l_nodal)
 !successive rows the weights for derivatives 0,1,...,m.
 USE constants
 IMPLICIT NONE
-INTEGER :: norder, n, m, mn, i, j, k
+INTEGER(KIND=4) :: norder, n, m, mn, i, j, k
 LOGICAL :: l_nodal
 REAL(num) :: z, fact, c1, c2, c3, c4, c5
 REAL(num), INTENT(IN OUT), DIMENSION(norder/2) :: coeffs

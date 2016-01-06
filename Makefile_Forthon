@@ -1,0 +1,34 @@
+SRCDIR= src
+BINDIR = python_bin
+APPNAME=picsar
+PYTHON_NAME=picsarpy
+UTIL=utils
+FC=Forthon
+FCARGS=-v --no2underscores  --nowritemodules
+FCOMP=gfortran
+FCOMPEXEC=mpif90
+FARGS="-fopenmp -O3 -ffree-line-length-none"
+LIBDIR=-L/usr/local/Cellar/open-mpi/1.8.6/lib/
+LIBS=-lmpi -lmpi_usempi -lmpi_mpifh -lgomp
+TESTDIR=example_scripts_python
+
+
+
+all: clean parse build test
+
+
+build: $(SRCDIR)/$(APPNAME).F90 $(SRCDIR)/$(APPNAME).v
+	cd $(SRCDIR) &&\
+	$(FC) $(FCARGS) --fcomp=$(FCOMP) --fcompexec=$(FCOMPEXEC) --fargs=$(FARGS) $(LIBDIR) $(LIBS) -g $(APPNAME)
+	mkdir -p $(BINDIR)
+	cp $(SRCDIR)/build/*/*/$(PYTHON_NAME).so $(BINDIR)
+
+parse:
+	python $(UTIL)/forthon_parser.py
+
+clean:
+	rm -rf $(SRCDIR)/build
+	rm -rf $(BINDIR)
+
+test:
+	mpirun -np 8 python $(TESTDIR)/test.py
