@@ -12,7 +12,11 @@ LIBDIR=-lmpi -lmpi_usempi -lmpi_mpifh -lgomp
 TESTDIR=example_scripts_python
 
 
-$(APPNAME): $(SRCDIR)/$(APPNAME).F90 $(SRCDIR)/$(APPNAME).v
+
+all: clean parse build test
+
+
+build: $(SRCDIR)/$(APPNAME).F90 $(SRCDIR)/$(APPNAME).v
 	cd $(SRCDIR) &&\
 	$(FC) $(FCARGS) --fcomp=$(FCOMP) --fcompexec=$(FCOMPEXEC) --fargs=$(FARGS) $(LIBDIR) -g $(APPNAME)
 	mkdir -p $(BINDIR)
