@@ -493,7 +493,7 @@ CONTAINS
 		currsp%vth_y=vthys
 		currsp%vth_z=vthzs
 		currsp%nppcell=nppc
-		!currsp%name=sname
+		currsp%name=sname
 
     END SUBROUTINE set_particle_species_properties
 
