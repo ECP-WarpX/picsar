@@ -456,7 +456,35 @@ CONTAINS
 
         currsp=> species_parray(ispecies)
         curr_tile=>currsp%array_of_tiles(ix,iy,iz)
-        partn = curr_tile%np_tile
+		! Tile extent and dimension
+		nxgt=curr_tile%nx_grid_tile
+		nygt=curr_tile%ny_grid_tile
+		nzgt=curr_tile%nz_grid_tile
+		nxct=curr_tile%nx_cells_tile
+		nyct=curr_tile%ny_cells_tile
+		nzct=curr_tile%nz_cells_tile
+		nxmin=curr_tile%nx_tile_min
+		nxmax=curr_tile%nx_tile_max
+		nymin=curr_tile%ny_tile_min
+		nymax=curr_tile%ny_tile_max
+		nzmin=curr_tile%nz_tile_min
+		nzmax=curr_tile%nz_tile_max
+		xtmin=curr_tile%x_tile_min
+		xtmax=curr_tile%x_tile_max
+		ytmin=curr_tile%y_tile_min
+		ytmax=curr_tile%y_tile_max
+		ztmin=curr_tile%z_tile_min
+		ztmax=curr_tile%z_tile_max
+		xgtmin=curr_tile%x_grid_tile_min
+		xgtmax=curr_tile%x_grid_tile_max
+		ygtmin=curr_tile%y_grid_tile_min
+		ygtmax=curr_tile%y_grid_tile_max
+		zgtmin=curr_tile%z_grid_tile_min
+		zgtmax=curr_tile%z_grid_tile_max
+		! Number of particles in the tile
+		partn = curr_tile%np_tile
+		partnmax = curr_tile%npmax_tile
+		! Particle arrays in the tile
         partx=>curr_tile%part_x
         party=>curr_tile%part_y
         partz=>curr_tile%part_z
@@ -465,9 +493,10 @@ CONTAINS
         partuz=>curr_tile%part_uz
         partw=>curr_tile%weight
 
+
     END SUBROUTINE point_to_tile
 
-    !This subroutine returns pointer arrays on a given tile 
+    !This subroutine returns pointer arrays on a given tile
     ! of a given species (USED mainly by python interface)
     SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
 		vdxs,vdys,vdzs,vthxs,vthys,vthzs)

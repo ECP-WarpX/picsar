@@ -290,7 +290,16 @@ END MODULE shared_data
 
 MODULE python_pointers
 USE constants
-INTEGER(idp) :: partn
+INTEGER(idp) :: partn, partnmax
+INTEGER(idp) :: nxgt, nygt, nzgt
+INTEGER(idp) :: nxct, nyct, nzct
+INTEGER(idp) :: nxmin, nxmax, nymin, nymax, &
+nzmin, nzmax
+! Tile position
+REAL(num) :: xtmin, ytmin, ztmin
+REAL(num) :: xtmax, ytmax, ztmax
+REAL(num) :: xgtmin, ygtmin, zgtmin
+REAL(num) :: xgtmax, ygtmax, zgtmax
 REAL(num), DIMENSION(:), POINTER :: partx
 REAL(num), DIMENSION(:), POINTER :: party
 REAL(num), DIMENSION(:), POINTER :: partz
