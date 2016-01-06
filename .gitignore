@@ -13,6 +13,7 @@ submain_inlined.F90
 *.mod
 picsar
 python_bin/
+fortran_bin/
 src/build/
 src/picsar.v
 src/picsar.F90

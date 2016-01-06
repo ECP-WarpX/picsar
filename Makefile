@@ -1,14 +1,17 @@
-FC=mpif90 -O3 -fopenmp -fdefault-real-8 -fdefault-double-8  -fbounds-check
-#FARGS=-g -fdefault-real-8 -fdefault-double-8  -fbounds-check
-#FARGS=-O3 -fdefault-real-8 -fdefault-double-8 
-#FC=ifort -mmic
+FC=mpif90
+FARGS= -O3 -fopenmp
+SRCDIR= src
+BINDIR = fortran_bin
+APPNAME=picsar
 
-%.o:%.F90
+
+$(SRCDIR)/%.o:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 
-all:modules.o maxwell.o tiling.o particles_push.o current_deposition.o field_gathering.o mpi_derived_types.o boundary.o simple_io.o diags.o submain.o mpi_routines.o control_file.o  main.o
-
-	$(FC) $(FARGS) -o picsar *.o
+all:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o $(SRCDIR)/tiling.o $(SRCDIR)/particles_push.o $(SRCDIR)/current_deposition.o $(SRCDIR)/field_gathering.o $(SRCDIR)/mpi_derived_types.o $(SRCDIR)/boundary.o $(SRCDIR)/simple_io.o $(SRCDIR)/diags.o $(SRCDIR)/submain.o $(SRCDIR)/mpi_routines.o $(SRCDIR)/control_file.o  $(SRCDIR)/main.o
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o
+	mkdir -p $(BINDIR)
+	mv $(APPNAME) $(BINDIR)
 	
 clean:
-	rm -rf *.o *.mod picsar *.pxr
+	rm -rf *.o *.mod $(APPNAME) *.pxr
