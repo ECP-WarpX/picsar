@@ -14,3 +14,7 @@ submain_inlined.F90
 picsar
 python_bin/
 src/build/
+src/picsar.v
+src/picsar.F90
+example_scripts_python/picsarpy.so
+Makefile_Forthon_JLV

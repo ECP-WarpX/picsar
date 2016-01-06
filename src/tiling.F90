@@ -456,6 +456,7 @@ CONTAINS
 
         currsp=> species_parray(ispecies)
         curr_tile=>currsp%array_of_tiles(ix,iy,iz)
+        partn = curr_tile%np_tile
         partx=>curr_tile%part_x
         party=>curr_tile%part_y
         partz=>curr_tile%part_z

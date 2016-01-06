@@ -32,6 +32,10 @@ CONTAINS
     INTEGER(isp) :: ranges(3,1), nproc_orig, oldgroup, newgroup
     CHARACTER(LEN=11) :: str
 
+    nx_global=nx_global_grid-1
+    ny_global=ny_global_grid-1
+    nz_global=nz_global_grid-1
+
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)

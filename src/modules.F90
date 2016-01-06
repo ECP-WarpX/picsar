@@ -290,6 +290,7 @@ END MODULE shared_data
 
 MODULE python_pointers
 USE constants
+INTEGER(idp) :: partn
 REAL(num), DIMENSION(:), POINTER :: partx
 REAL(num), DIMENSION(:), POINTER :: party
 REAL(num), DIMENSION(:), POINTER :: partz
