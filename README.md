@@ -13,21 +13,21 @@ Since WARP is a very large code written in a mix of FORTRAN95, C and Python
 PICSAR will be essential for studying multi-level parallelization on the next
 generation of exascale computers. 
 
-####A.  Here are some of the specific algorithmic features of the PICSAR code :  
+#####A.  Here are some of the specific algorithmic features of the PICSAR code :  
 
 * The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered), 
 * The particle pusher uses the Boris algorithm,
 * The field gathering routine is energy conserving, 
 * The current deposition and field gathering routines include high order particle shape factors.
 
-####B.  Here are some high performance features of the PICSAR code :
+#####B.  Here are some high performance features of the PICSAR code :
 
 * Particle tiling to help increase memory locality
 * MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
 
-####C.  Python glue: 
+#####C.  Python glue: 
 
 * We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`. 
 * Thanks to Forthon, we are able to access all high performance routines of PICSAR from python. This allows us to use PICSAR routines from WARP and vice-versa. 
@@ -50,6 +50,6 @@ generation of exascale computers.
 
 * If the code (Fortran or python version) was compiled with OpenMP, you can set "x" OpenMP threads per MPI task by defining "export OMP_NUM_THREADS=x" before starting the simulation (default varies with the OS). OpenMP scheduling for balancing loads between tiles can be adjusted at runtime by setting the environment variable OMP_SCHEDULE to either static, guided or dynamic. To ensure that threads have enough memory space on the stack, set OMP_STACKSIZE to high enough value. In practice, export OMP_STACKSIZE=32M should be sufficient for most of test cases.   
 
-**Outputs**
+**4. Outputs**
 -----------------------
 For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`. In the Fotran version, the output frequency is controlled by setting the flag output_frequency in the output section of the input_file.pixr. Use output_frequency=-1 to disable outputs. The code places output files in a "RESULTS" directory where the code is ran. This directory has to be created before running the code in your submission script. 
