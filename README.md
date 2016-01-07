@@ -1,7 +1,7 @@
 **Particle-In-Cell Scalable Application Resource (PICSAR)**
 ============================================================
 
-**Overview**
+**1. Overview**
 ------------
 
 The PICSAR code is a "mini-app" standalone Particle-In-Cell (PIC) code that includes
@@ -13,27 +13,27 @@ Since WARP is a very large code written in a mix of FORTRAN95, C and Python
 PICSAR will be essential for studying multi-level parallelization on the next
 generation of exascale computers. 
 
-#### Here are some of the specific algorithmic features of the PICSAR code :  
+####A.  Here are some of the specific algorithmic features of the PICSAR code :  
 
 * The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered), 
 * The particle pusher uses the Boris algorithm,
 * The field gathering routine is energy conserving, 
 * The current deposition and field gathering routines include high order particle shape factors.
 
-### Here are some high performance features of the PICSAR code :
+###B.  Here are some high performance features of the PICSAR code :
 
 * Particle tiling to help increase memory locality
 * MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
 
-### Python glue: 
+###C.  Python glue: 
 
 * We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`. 
 * Thanks to Forthon, we are able to access all high performance routines of PICSAR from python. This allows us to use PICSAR routines from WARP and vice-versa. 
 
 
-**Compiling**
+**2. Compiling**
 -------------
 
 * Python installation: in order to install picsar in the form of a Python module, read detailed instructions in the file `INSTALL_PYTHON.md`
@@ -41,7 +41,7 @@ generation of exascale computers.
 
 * Fortran installation: To build the code in full Fotran 90 read instructions from the file  `INSTALL_FORTRAN.md` 
 
-**Running simulations**
+**3. Running simulations**
 -----------------------
 
 * Python mode: an example of python script `test.py` is provided in `example_scripts_python`. To run this script in parallel, simply type : mpirun -np NMPI python test.py with NMPI the number of MPI processes. 
