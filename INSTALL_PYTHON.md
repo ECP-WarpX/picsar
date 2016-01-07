@@ -2,8 +2,27 @@
 ============================================================
 
 
-**Makefile_Forthon config**
+**2. Installing python and packages **
+--------------------------------------
+
+* Install python 2 or later. We recommend python from anaconda (`http://docs.continuum.io/anaconda/install`)
+* Install numpy (pip install numpy)
+* Install mpi4py (pip install mpi4py)
+
+
+**2. Installing Forthon **
 -------------------------
+
+Before creating the python module picsarpy for picsar, you must install the Forthon compiler. To do so: 
+
+* Copy the last stable version of Forthon by typing: `git clone https://github.com/dpgrote/Forthon.git`
+
+* Follow installation steps detailed in README 
+
+
+
+**3. Makefile_Forthon config**
+------------------------------
 
 First edit the file Makefile_Forthon and indicate the following environment variables:
 
@@ -17,8 +36,8 @@ First edit the file Makefile_Forthon and indicate the following environment vari
 your version of open-mpi, you should use -lmpi_usempif08 instead of -lmpi_usempi.  
 
 
-**Compiling and Testing**
--------------------------
+**4. Compiling and Testing**
+----------------------------
 
 To compile and test, invoke the rule "all": 
 
