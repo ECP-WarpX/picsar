@@ -16,5 +16,5 @@ First edit the file Makefile and indicate the following environment variables:
 
 To compile and test, invoke the rule "all": 
 
-* Make -f Makefile_Forthon all
+* Make -f Makefile all
 
