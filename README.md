@@ -20,14 +20,14 @@ generation of exascale computers.
 * The field gathering routine is energy conserving, 
 * The current deposition and field gathering routines include high order particle shape factors.
 
-###B.  Here are some high performance features of the PICSAR code :
+####B.  Here are some high performance features of the PICSAR code :
 
 * Particle tiling to help increase memory locality
 * MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
 
-###C.  Python glue: 
+####C.  Python glue: 
 
 * We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`. 
 * Thanks to Forthon, we are able to access all high performance routines of PICSAR from python. This allows us to use PICSAR routines from WARP and vice-versa. 
