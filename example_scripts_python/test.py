@@ -79,25 +79,26 @@ def py_load_particles():
                     for ispecies in range(0,pxr.picsar.nspecies):
                         partw = dens*pxr.picsar.nc*pxr.picsar.dx*pxr.picsar.dy*pxr.picsar.dz/(nppcell[ispecies])
                         for ip in range(0,nppcell[ispecies]):
-                            pxr.py_add_particle_to_species(ispecies+1, x, y, z, 0., 0., 0., partw)
+                            pxr.py_add_particle_to_species(ispecies+1, x+pxr.picsar.dx/100., y+pxr.picsar.dy/100., z+pxr.picsar.dz/100., 0., 0., 0., partw)
 
 
 def initallpy():
+    # Set time step
+    pxr.picsar.dtcoef=0.7
+    pxr.picsar.dt = pxr.picsar.dtcoef/(pxr.picsar.clight* \
+    np.sqrt(1.0/pxr.picsar.dx**2+1.0/pxr.picsar.dy**2+1.0/pxr.picsar.dz**2))
     # Set tile split
     pxr.set_tile_split()
     # Allocate and init array of tiles
     pxr.init_tile_arrays()
     # Load particles
     py_load_particles()
+    # Init stencil coefficients
+    pxr.init_stencil_coefficients()
 
-pxr.initall()
 #### PIC LOOP with intrinsic step function
 ntsteps=10
-start=MPI.Wtime()
-pxr.step(ntsteps)
-endt=MPI.Wtime()
-if (mpirank==0):
-    print("Total simulation time with step in Fortran 90 (s) ="+str(endt-start))
+#    print("Total simulation time with step in Fortran 90 (s) ="+str(endt-start))
 def steppy(nt):
     for i in range(0,nt):
         # Push particles
@@ -124,7 +125,8 @@ def steppy(nt):
             print("Iteration number "+str(i)+"|| time (s) ="+str(pxr.picsar.dt*i))
 
 
-#### PIC LOOP written in python
+#### INIT+ PIC LOOP written in python
+initallpy()
 start=MPI.Wtime()
 steppy(ntsteps)
 endt=MPI.Wtime()

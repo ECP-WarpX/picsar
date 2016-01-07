@@ -6,7 +6,7 @@ MODULE constants
 INTEGER, PARAMETER :: num = 8
 INTEGER, PARAMETER :: isp = 4
 INTEGER, PARAMETER :: idp = 8
-REAL(num), parameter :: emass   = 9.1093818800000006e-31_num,      &
+REAL(num), PARAMETER :: emass   = 9.1093818800000006e-31_num,      &
                         pmass   = 1.6726231000000001e-27_num,      &
                         echarge = 1.6021764620000001e-19_num,      &
                         clight  = 299792458.0_num,                 &

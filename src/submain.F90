@@ -24,7 +24,7 @@ DO i=1,nst
     pushtime=0._num
 
     !!! --- Field gather & particle push
-     CALL push_particles
+    CALL push_particles
 
     !!! --- Apply BC on particles
     CALL particle_bcs
@@ -96,16 +96,8 @@ TYPE(particle_tile), POINTER :: curr_tile
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
 
-!!! --- Allocate coefficient arrays for Maxwell solver
-IF (.NOT. l_coeffs_allocated) THEN
-    ALLOCATE(xcoeffs(norderx/2),ycoeffs(nordery/2),zcoeffs(norderz/2))
-END IF
-
-!!! --- Initialize stencil coefficients array for Maxwell field solver
-CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
-CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
-CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
-
+!- Init stencil coefficients
+CALL init_stencil_coefficients()
 
 ! ------ INIT PARTICLE DISTRIBUTIONS
 !!! --- Set tile split for particles
@@ -128,6 +120,41 @@ jx=0.0_num;jy=0.0_num;jz=0.0_num
 nsteps = nint(tmax/(w0_l*dt))
 
 END SUBROUTINE initall
+
+!===============================================================================
+! INIT STENCIL COEFFICIENTS
+!===============================================================================
+
+SUBROUTINE init_stencil_coefficients()
+USE constants
+USE params
+USE fields
+USE particles
+USE shared_data
+USE tiling
+IMPLICIT NONE
+
+!!! --- Allocate coefficient arrays for Maxwell solver
+IF (.NOT. l_coeffs_allocated) THEN
+    ALLOCATE(xcoeffs(norderx/2),ycoeffs(nordery/2),zcoeffs(norderz/2))
+    l_coeffs_allocated=.TRUE.
+END IF
+
+!!! --- Initialize stencil coefficients array for Maxwell field solver
+CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
+CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
+CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
+
+END SUBROUTINE init_stencil_coefficients
+
+
+
+
+
+
+
+
+
 
 !===============================================================================
 ! COMPUTE STENCIL COEFFICIENTS FOR MAXWELL FIELD SOLVER
