@@ -445,6 +445,9 @@ CONTAINS
         DEALLOCATE(temp)
     END SUBROUTINE
 
+
+    ! ----- SUBROUTINES DEDICATED FOR PYTHON INTERFACE
+
     !This subroutine returns pointer arrays on a given tile 
     ! of a given species (USED mainly by python interface)
     SUBROUTINE point_to_tile(ispecies, ix, iy, iz)
@@ -525,6 +528,20 @@ CONTAINS
 		currsp%name=sname
 
     END SUBROUTINE set_particle_species_properties
+
+    !!! --- Add particle to array of tiles
+    SUBROUTINE py_add_particle_to_species(nsp, partx, party, partz, &
+               partux, partuy, partuz, partw)
+        IMPLICIT NONE
+        INTEGER(idp), INTENT(IN) :: nsp
+        REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, partw
+        TYPE(particle_species), POINTER :: currsp
+
+        currsp=>species_parray(nsp)
+
+        CALL add_particle_to_species(currsp, partx, party, partz, &
+               partux, partuy, partuz, partw)
+    END SUBROUTINE py_add_particle_to_species
 
 
 END MODULE tiling

@@ -34,8 +34,7 @@ First edit the file Makefile_Forthon and indicate the following environment vari
 
 - LIBDIR: your library folder containing MPI libraries (e.g /usr/local/Cellar/open-mpi/1.8.6/lib/ for an Homebrew install of open-mpi on MACOSX),
 
-- LIBS: required libraries for the install. With Open-MPI, the compilation of picsar requires the following libraries: -lmpi, -lmpi_usempi, -lmpi_mpifh, -lgomp. Depending on 
-your version of open-mpi, you should use -lmpi_usempif08 instead of -lmpi_usempi.  
+- LIBS: required libraries for the install. With Open-MPI, the compilation of picsar requires the following libraries: -lmpi, -lmpi_usempi, -lmpi_mpifh, -lgomp. For open-mpi>1.8.x, you should use -lmpi_usempif08 instead of -lmpi_usempi.  
 
 
 **4. Compiling and Testing**

@@ -39,15 +39,23 @@ pxr.picsar.ntilex=5
 pxr.picsar.ntiley=5
 pxr.picsar.ntilez=5
 
-## Particles species
-pxr.picsar.nspecies=2 # Set number of particle species
-pxr.pdistr=2 # Random distribution for particles
-# Set particle species 1 properties
-pxr.set_particle_species_properties(1,"electron",1.,-1.,10,0.,0.,0.,1.3,1.3,1.3,0.,0.,0.,0.,0.,0.)
-# Set particle species 2 properties
-pxr.set_particle_species_properties(2,"proton",1836.,-1.,10,0.,0.,0.,1.3,1.3,1.3,0.,0.,0.,0.,0.,0.)
+#### Init particle distribution
+## Set number of particle species
+pxr.picsar.nspecies=2
 
+## Properties of particle species
+name=["electron","proton"]
+charge=[-1.,1.]
+mass=[1.,1836.]
+nppcell=[10,10]
+xmin=[0.,0.];ymin=[0.,0.];zmin=[0.,0.]
+xmax=[1.3,1.3];ymax=[1.3,1.3];zmax=[1.3,1.3]
+vdriftx=[0.,0.]; vdrifty=[0.,0.]; vdriftz=[0.,0.]
+vthx=[0.,0.]; vthy=[0.,0.]; vthz=[0.,0.]
 
+## Set particle species  properties in PICSAR
+for i in range(0,pxr.picsar.nspecies):
+    pxr.set_particle_species_properties(i+1,name[i],mass[i],charge[i],nppcell[i],xmin[i],ymin[i],zmin[i],xmax[i],ymax[i],zmax[i],vdriftx[i],vdrifty[i],vdriftz[i],vthx[i],vthy[i],vthz[i])
 
 #### MPI INIT
 pxr.mpi_minimal_init()
@@ -56,10 +64,33 @@ mpirank= pxr.picsar.rank
 
 
 #### Init particle distributions  for each species (with tiles)
-pxr.initall() #Fortran routine
-#initall_py() # Python init (To be written)
+def density_profile_global(x,y,z):
+    return 1.
+
+def py_load_particles():
+    for ix in range(0,pxr.picsar.nx):
+        for iy in range(0,pxr.picsar.ny):
+            for iz in range(0,pxr.picsar.nz):
+                x=pxr.picsar.x_grid_min_local+ix*pxr.picsar.dx;
+                y=pxr.picsar.y_grid_min_local+iy*pxr.picsar.dy;
+                z=pxr.picsar.z_grid_min_local+iz*pxr.picsar.dz;
+                dens=density_profile_global(x,y,z)
+                if (dens>0.):
+                    for ispecies in range(0,pxr.picsar.nspecies):
+                        partw = dens*pxr.picsar.nc*pxr.picsar.dx*pxr.picsar.dy*pxr.picsar.dz/(nppcell[ispecies])
+                        for ip in range(0,nppcell[ispecies]):
+                            pxr.py_add_particle_to_species(ispecies+1, x, y, z, 0., 0., 0., partw)
 
 
+def initallpy():
+    # Set tile split
+    pxr.set_tile_split()
+    # Allocate and init array of tiles
+    pxr.init_tile_arrays()
+    # Load particles
+    py_load_particles()
+
+pxr.initall()
 #### PIC LOOP with intrinsic step function
 ntsteps=10
 start=MPI.Wtime()
