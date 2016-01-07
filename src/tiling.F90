@@ -530,18 +530,20 @@ CONTAINS
     END SUBROUTINE set_particle_species_properties
 
     !!! --- Add particle to array of tiles
-    SUBROUTINE py_add_particle_to_species(nsp, partx, party, partz, &
+    SUBROUTINE py_add_particles_to_species(nsp, npart, partx, party, partz, &
                partux, partuy, partuz, partw)
         IMPLICIT NONE
-        INTEGER(idp), INTENT(IN) :: nsp
-        REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, partw
+        INTEGER(idp), INTENT(IN) :: nsp, npart
+        REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, partw
         TYPE(particle_species), POINTER :: currsp
-
+        INTEGER(idp) :: i
         currsp=>species_parray(nsp)
 
-        CALL add_particle_to_species(currsp, partx, party, partz, &
-               partux, partuy, partuz, partw)
-    END SUBROUTINE py_add_particle_to_species
+        DO i=1,npart
+            CALL add_particle_to_species(currsp, partx(i), party(i), partz(i), &
+                partux(i), partuy(i), partuz(i), partw(i))
+        END DO
+    END SUBROUTINE py_add_particles_to_species
 
 
 END MODULE tiling

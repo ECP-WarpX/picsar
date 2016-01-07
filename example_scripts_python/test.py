@@ -65,21 +65,30 @@ mpirank= pxr.picsar.rank
 
 #### Init particle distributions  for each species (with tiles)
 def density_profile_global(x,y,z):
-    return 1.
+    # Use defined plasma profile goes here
+    # e.g: plasma disk of radius Rd
+    r=np.sqrt(x**2+y**2+z**2)
+    Rd=20*pxr.picsar.dx
+    return np.where(r>Rd,0.,1.)
 
 def py_load_particles():
-    for ix in range(0,pxr.picsar.nx):
-        for iy in range(0,pxr.picsar.ny):
-            for iz in range(0,pxr.picsar.nz):
-                x=pxr.picsar.x_grid_min_local+ix*pxr.picsar.dx;
-                y=pxr.picsar.y_grid_min_local+iy*pxr.picsar.dy;
-                z=pxr.picsar.z_grid_min_local+iz*pxr.picsar.dz;
+        for ispecies in range(0,pxr.picsar.nspecies):
+                x,y,z=np.mgrid[0:pxr.picsar.nx,0:pxr.picsar.ny,0:pxr.picsar.nz]
+                x=x.flatten()
+                y=y.flatten()
+                z=z.flatten()
+                x=x+pxr.picsar.x_grid_min_local+(x-0.5)*pxr.picsar.dx;
+                y=y+pxr.picsar.y_grid_min_local+(y-0.5)*pxr.picsar.dy;
+                z=z+pxr.picsar.z_grid_min_local+(z-0.5)*pxr.picsar.dz;
                 dens=density_profile_global(x,y,z)
-                if (dens>0.):
-                    for ispecies in range(0,pxr.picsar.nspecies):
-                        partw = dens*pxr.picsar.nc*pxr.picsar.dx*pxr.picsar.dy*pxr.picsar.dz/(nppcell[ispecies])
-                        for ip in range(0,nppcell[ispecies]):
-                            pxr.py_add_particle_to_species(ispecies+1, x+pxr.picsar.dx/100., y+pxr.picsar.dy/100., z+pxr.picsar.dz/100., 0., 0., 0., partw)
+                x=np.extract(dens>0.,x)
+                y=np.extract(dens>0.,y)
+                z=np.extract(dens>0.,z)
+                dens=np.extract(dens>0.,dens)
+                partw = dens*pxr.picsar.nc*pxr.picsar.dx*pxr.picsar.dy*pxr.picsar.dz/(nppcell[ispecies])
+                for i in range(0,nppcell[ispecies]):
+                    pxr.py_add_particles_to_species(ispecies+1,len(x),x+pxr.picsar.dx*i/nppcell[ispecies],\
+                    y+pxr.picsar.dy*i/nppcell[ispecies], z+pxr.picsar.dz*i/nppcell[ispecies], 0., 0., 0., partw)
 
 
 def initallpy():
