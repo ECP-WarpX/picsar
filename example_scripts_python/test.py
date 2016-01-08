@@ -1,3 +1,4 @@
+from warp import *
 from mpi4py import MPI
 import sys
 import os
@@ -6,6 +7,7 @@ sys.path.append(currentdir+'/python_bin/')
 print(currentdir+'/python_bin/')
 import picsarpy as pxr
 import numpy as np
+
 
 #### Input parameters (replace input file)
 pxr.default_init()
@@ -40,8 +42,6 @@ pxr.picsar.ntiley=5
 pxr.picsar.ntilez=5
 
 #### Init particle distribution
-## Set number of particle species
-pxr.picsar.nspecies=2
 
 ## Properties of particle species
 name=["electron","proton"]
@@ -53,6 +53,9 @@ xmax=[1.3,1.3];ymax=[1.3,1.3];zmax=[1.3,1.3]
 vdriftx=[0.,0.]; vdrifty=[0.,0.]; vdriftz=[0.,0.]
 vthx=[0.,0.]; vthy=[0.,0.]; vthz=[0.,0.]
 
+## Set number of particle species
+pxr.picsar.nspecies=len(name)
+
 ## Set particle species  properties in PICSAR
 for i in range(0,pxr.picsar.nspecies):
     pxr.set_particle_species_properties(i+1,name[i],mass[i],charge[i],nppcell[i],xmin[i],ymin[i],zmin[i],xmax[i],ymax[i],zmax[i],vdriftx[i],vdrifty[i],vdriftz[i],vthx[i],vthy[i],vthz[i])
@@ -63,7 +66,7 @@ pxr.mpi_initialise()
 mpirank= pxr.picsar.rank
 
 
-#### Init particle distributions  for each species (with tiles)
+#### Routine that Init particle distributions  for each species (with tiles)
 def density_profile_global(x,y,z):
     # Use defined plasma profile goes here
     # e.g: plasma disk of radius Rd
@@ -71,6 +74,8 @@ def density_profile_global(x,y,z):
     Rd=20*pxr.picsar.dx
     return np.where(r>Rd,0.,1.)
 
+#### Routine that load particles in PICSAR with the density profile
+#### specified in routine density_profile_global
 def py_load_particles():
         for ispecies in range(0,pxr.picsar.nspecies):
                 x,y,z=np.mgrid[0:pxr.picsar.nx,0:pxr.picsar.ny,0:pxr.picsar.nz]

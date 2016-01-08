@@ -31,4 +31,4 @@ clean:
 	rm -rf $(BINDIR)
 
 test:
-	mpirun -np 8 python $(TESTDIR)/test.py
+	mpirun -np 1 python $(TESTDIR)/test.py
