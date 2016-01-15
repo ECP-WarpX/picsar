@@ -127,7 +127,8 @@ LOGICAL :: l4symtry = .FALSE.
 INTEGER(idp) :: pdistr
 INTEGER(idp) :: nspecies
 INTEGER(idp) :: ntot ! total number of particles (all species, all subdomains -> useful for stat)
-INTEGER(idp), PARAMETER :: nspecies_max=4 ! Max number of particle species
+!INTEGER(idp), PARAMETER :: nspecies_max=4 ! Max number of particle species
+INTEGER(idp) :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
 LOGICAL :: l_species_allocated=.FALSE.
 END MODULE particle_properties
@@ -307,6 +308,12 @@ REAL(num), DIMENSION(:), POINTER :: partux
 REAL(num), DIMENSION(:), POINTER :: partuy
 REAL(num), DIMENSION(:), POINTER :: partuz
 REAL(num), DIMENSION(:), POINTER :: partw
+REAL(num), DIMENSION(:), POINTER :: partex
+REAL(num), DIMENSION(:), POINTER :: partey
+REAL(num), DIMENSION(:), POINTER :: partez
+REAL(num), DIMENSION(:), POINTER :: partbx
+REAL(num), DIMENSION(:), POINTER :: partby
+REAL(num), DIMENSION(:), POINTER :: partbz
 END MODULE python_pointers
 
 
