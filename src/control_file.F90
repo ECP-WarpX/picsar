@@ -342,4 +342,12 @@ CONTAINS
         RETURN
     END SUBROUTINE read_output_section
 
+    SUBROUTINE init_species_section
+        ! INIT SPECIES SECTION 
+        IF (.NOT. l_species_allocated) THEN
+            nspecies=0
+            ALLOCATE(species_parray(1:nspecies_max))
+            l_species_allocated=.TRUE.
+        ENDIF
+    END SUBROUTINE init_species_section
 END MODULE control_file
