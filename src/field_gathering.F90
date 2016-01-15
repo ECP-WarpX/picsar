@@ -66,8 +66,8 @@ DO ip=1,np
     sx0( 1) = xint
     sy0( 0) = 1.0_num-yint
     sy0( 1) = yint
-    sz( 0) = 1.0_num-zint
-    sz( 1) = zint
+    sz0( 0) = 1.0_num-zint
+    sz0( 1) = zint
     
     ! Compute Ex on particle
     ex(ip) = ex(ip) + sx(0)*sy0(0)*sz0(0)*exg(j0,k,l)
@@ -174,8 +174,8 @@ DO ip=1,np
     sx0( 1) = xint
     sy0( 0) = 1.0_num-yint
     sy0( 1) = yint
-    sz( 0) = 1.0_num-zint
-    sz( 1) = zint
+    sz0( 0) = 1.0_num-zint
+    sz0( 1) = zint
     
     ! Compute Bx on particle
     bx(ip) = bx(ip) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
