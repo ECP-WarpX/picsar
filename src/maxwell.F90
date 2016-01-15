@@ -8,7 +8,7 @@ USE fields
 USE shared_data
 IMPLICIT NONE
 
-CALL push_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
+CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
     0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
     nx,ny,nz, norderx,nordery,norderz,                                  &
     nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
@@ -27,7 +27,7 @@ USE fields
 USE shared_data
 IMPLICIT NONE
 
-CALL push_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
+CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
     clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
     clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
     norderx,nordery,norderz,                                                   &
@@ -39,7 +39,82 @@ END SUBROUTINE push_efield
 
 !===============================================================================
 ! PUSH ELECTRIC FIELD YEE 3D ARBITRARY ORDER
-subroutine push_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
+subroutine pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
+                                 dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
+                                 norderx,nordery,norderz,             &
+                                 nxguard,nyguard,nzguard,nxs,nys,nzs, &
+                                 l_nodalgrid)
+!===============================================================================
+use constants
+use omp_lib
+integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
+real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
+real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
+real(num), intent(IN) :: mudt,dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
+integer(idp) :: i,j,k,l,ist
+logical :: l_nodalgrid
+
+if (l_nodalgrid) then
+    ist = 0
+else
+    ist = 1
+end if
+
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(3)
+! advance Ex
+do l = -nzs, nz+nzs
+    do k = -nys, ny+nys
+        do j = -nxs, nx+nxs
+            Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
+            do i = 1, nordery/2
+                Ex(j,k,l) = Ex(j,k,l) + dtsdy(i) * (Bz(j,k+i-ist,l)   - Bz(j,k-i,l  ))
+            end do
+            do i = 1, norderz/2
+                Ex(j,k,l) = Ex(j,k,l) - dtsdz(i) * (By(j,k,l+i-ist)   - By(j,k  ,l-i))
+            end do
+        end do
+    end do
+end do
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
+! advance Ey
+do l = -nzs, nz+nzs
+    do k = -nys, ny+nys
+        do j = -nxs, nx+nxs
+            Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
+            do i = 1, norderx/2
+                Ey(j,k,l) = Ey(j,k,l) - dtsdx(i) * (Bz(j+i-ist,k,l)   - Bz(j-i,k,l))
+            end do
+            do i = 1, norderz/2
+                Ey(j,k,l) = Ey(j,k,l) + dtsdz(i) * (Bx(j,k,l+i-ist)   - Bx(j,k,l-i))
+            end do
+        end do
+    end do
+end do
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
+! advance Ez
+do l = -nzs, nz+nzs
+    do k = -nys, ny+nys
+        do j = -nxs, nx+nxs
+            Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
+            do i = 1, norderx/2
+                Ez(j,k,l) = Ez(j,k,l) + dtsdx(i) * (By(j+i-ist,k,l) - By(j-i,k  ,l))
+            end do
+            do i = 1, nordery/2
+                Ez(j,k,l) = Ez(j,k,l) - dtsdy(i) * (Bx(j,k+i-ist,l) - Bx(j  ,k-i,l))
+            end do
+        end do
+    end do
+end do
+!$OMP END DO
+!$OMP END PARALLEL
+
+return
+end subroutine pxrpush_em3d_evec_norder
+
+subroutine pxrpush_em2d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
                                  norderx,nordery,norderz,             &
                                  nxguard,nyguard,nzguard,nxs,nys,nzs, &
@@ -59,27 +134,24 @@ else
     ist = 1
 end if
 
+k = 0
+
 !!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
 !!$OMP DO COLLAPSE(3)
 ! advance Ex
+
 do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
-            do i = 1, nordery/2
-                Ex(j,k,l) = Ex(j,k,l) + dtsdy(i) * (Bz(j,k+i-ist,l)   - Bz(j,k-i,l  ))
-            end do
             do i = 1, norderz/2
                 Ex(j,k,l) = Ex(j,k,l) - dtsdz(i) * (By(j,k,l+i-ist)   - By(j,k  ,l-i))
             end do
         end do
-    end do
 end do
 !!$OMP END DO
 !!$OMP DO COLLAPSE(3)
 ! advance Ey
 do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
             do i = 1, norderx/2
@@ -88,29 +160,23 @@ do l = -nzs, nz+nzs
             do i = 1, norderz/2
                 Ey(j,k,l) = Ey(j,k,l) + dtsdz(i) * (Bx(j,k,l+i-ist)   - Bx(j,k,l-i))
             end do
-        end do
     end do
 end do
 !!$OMP END DO
 !!$OMP DO COLLAPSE(3)
 ! advance Ez
 do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
             do i = 1, norderx/2
                 Ez(j,k,l) = Ez(j,k,l) + dtsdx(i) * (By(j+i-ist,k,l) - By(j-i,k  ,l))
             end do
-            do i = 1, nordery/2
-                Ez(j,k,l) = Ez(j,k,l) - dtsdy(i) * (Bx(j,k+i-ist,l) - Bx(j  ,k-i,l))
-            end do
         end do
-    end do
 end do
 !!$OMP END DO
 !!$OMP END PARALLEL
 return
-end subroutine push_em3d_evec_norder
+end subroutine pxrpush_em2d_evec_norder
 
 !===============================================================================
 ! PUSH ELECTRIC FIELD YEE 3D ORDER 2
@@ -120,6 +186,7 @@ subroutine push_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                  l_nodalgrid)
 use constants
+
 integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: jx,jy,jz
@@ -166,7 +233,78 @@ end subroutine push_em3d_evec
 
 !===============================================================================
 ! PUSH MAGNETIC FIELD YEE 3D ARBITRARY ORDER
-subroutine push_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
+subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
+                                dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
+                                norderx,nordery,norderz,             &
+                                nxguard,nyguard,nzguard,nxs,nys,nzs, &
+                                l_nodalgrid)
+!===============================================================================
+use constants
+use omp_lib
+integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
+real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
+real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
+integer(idp) :: i,j,k,l,ist
+logical :: l_nodalgrid
+
+if (l_nodalgrid) then
+ist = 0
+else
+ist = 1
+end if
+
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(3)
+! advance Bx
+do l = -nzs, nz+nzs
+    do k = -nys, ny+nys
+        do j = -nxs, nx+nxs
+            do i = 1, nordery/2
+                Bx(j,k,l) = Bx(j,k,l) - dtsdy(i) * (Ez(j,k+i,l  ) - Ez(j,k-i+ist,l))
+            end do
+            do i = 1, norderz/2
+                Bx(j,k,l) = Bx(j,k,l) + dtsdz(i) * (Ey(j,k,  l+i) - Ey(j,k,l-i+ist))
+            end do
+        end do
+    end do
+end do
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
+! advance By
+do l = -nzs, nz+nzs
+    do k = -nys, ny+nys
+        do j = -nxs, nx+nxs
+            do i = 1, norderx/2
+                By(j,k,l) = By(j,k,l) + dtsdx(i) * (Ez(j+i,k,l  ) - Ez(j-i+ist,k,l))
+            end do
+            do i = 1, norderz/2
+                By(j,k,l) = By(j,k,l) - dtsdz(i) * (Ex(j  ,k,l+i) - Ex(j,k,l-i+ist))
+            end do
+        end do
+    end do
+end do
+!$OMP END DO
+!$OMP DO COLLAPSE(3)
+! advance Bz
+do l = -nzs, nz+nzs
+    do k = -nys, ny+nys
+        do j = -nxs, nx+nxs
+            do i = 1, norderx/2
+                Bz(j,k,l) = Bz(j,k,l) - dtsdx(i) * (Ey(j+i,k,l) - Ey(j-i+ist,k,l))
+            end do
+            do i = 1, nordery/2
+                Bz(j,k,l) = Bz(j,k,l) + dtsdy(i) * (Ex(j,k+i,l) - Ex(j,k-i+ist,l))
+            end do
+        end do
+    end do
+end do
+!$OMP END DO
+!$OMP END PARALLEL
+return
+
+end subroutine pxrpush_em3d_bvec_norder
+
+subroutine pxrpush_em2d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
                                 dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
                                 norderx,nordery,norderz,             &
                                 nxguard,nyguard,nzguard,nxs,nys,nzs, &
@@ -185,26 +323,22 @@ else
 ist = 1
 end if
 
+k = 0
+
 !!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
 !!$OMP DO COLLAPSE(3)
 ! advance Bx
 do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
         do j = -nxs, nx+nxs
-            do i = 1, nordery/2
-                Bx(j,k,l) = Bx(j,k,l) - dtsdy(i) * (Ez(j,k+i,l  ) - Ez(j,k-i+ist,l))
-            end do
             do i = 1, norderz/2
                 Bx(j,k,l) = Bx(j,k,l) + dtsdz(i) * (Ey(j,k,  l+i) - Ey(j,k,l-i+ist))
             end do
         end do
-    end do
 end do
 !!$OMP END DO
 !!$OMP DO COLLAPSE(3)
 ! advance By
 do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             do i = 1, norderx/2
                 By(j,k,l) = By(j,k,l) + dtsdx(i) * (Ez(j+i,k,l  ) - Ez(j-i+ist,k,l))
@@ -213,28 +347,22 @@ do l = -nzs, nz+nzs
                 By(j,k,l) = By(j,k,l) - dtsdz(i) * (Ex(j  ,k,l+i) - Ex(j,k,l-i+ist))
             end do
         end do
-    end do
 end do
 !!$OMP END DO
 !!$OMP DO COLLAPSE(3)
 ! advance Bz
 do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             do i = 1, norderx/2
                 Bz(j,k,l) = Bz(j,k,l) - dtsdx(i) * (Ey(j+i,k,l) - Ey(j-i+ist,k,l))
             end do
-            do i = 1, nordery/2
-                Bz(j,k,l) = Bz(j,k,l) + dtsdy(i) * (Ex(j,k+i,l) - Ex(j,k-i+ist,l))
-            end do
         end do
-    end do
 end do
 !!$OMP END DO
 !!$OMP END PARALLEL
 return
 
-end subroutine push_em3d_bvec_norder
+end subroutine pxrpush_em2d_bvec_norder
 
 !===============================================================================
 ! PUSH MAGNETIC FIELD YEE 3D ORDER 2
