@@ -495,6 +495,12 @@ CONTAINS
         partuy=>curr_tile%part_uy
         partuz=>curr_tile%part_uz
         partw=>curr_tile%weight
+        partex=>curr_tile%part_ex
+        partey=>curr_tile%part_ey
+        partez=>curr_tile%part_ez
+        partbx=>curr_tile%part_bx
+        partby=>curr_tile%part_by
+        partbz=>curr_tile%part_bz
 
 
     END SUBROUTINE point_to_tile
