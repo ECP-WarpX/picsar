@@ -54,11 +54,6 @@ DO iz=1, ntilez ! LOOP ON TILES
                     np=MIN(count-ip+1,nblk)
                     ipmin=ip
                     ipmax=ip+np-1
-                    write(0,*) '#1',curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                             &
-                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,                     &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards
-                    write(0,*)  '#2',jmin,jmax,kmin,kmax,lmin,lmax,ip,np,ipmin,ipmax
-                    write(0,*) 'max ey',maxval(ey)
                     !!! --- Gather electric field on particles
                     CALL gete3d_energy_conserving_1_1_1(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
                                       curr_tile%part_z(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax),                   &
@@ -77,7 +72,6 @@ DO iz=1, ntilez ! LOOP ON TILES
                                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,                &
                                       nzjguards,bx(jmin:jmax,kmin:kmax,lmin:lmax),by(jmin:jmax,kmin:kmax,lmin:lmax),      &
                                       bz(jmin:jmax,kmin:kmax,lmin:lmax))
-                    write(0,*) 'max eyp',maxval(curr_tile%part_ey(ipmin:ipmax))
                     !!! --- Push velocity with E half step
                     CALL epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
                     curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &
