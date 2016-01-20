@@ -464,6 +464,7 @@ diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
 diag_ions_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_H" : ions_H},
             comm_world=comm_world, lparallel_output=lparallel )
+
 #installafterstep( diag_f.write )
 #installafterstep( diag_elec_C.write )
 #installafterstep( diag_elec_H.write )

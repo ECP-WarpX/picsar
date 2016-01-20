@@ -53,11 +53,8 @@ class EM3DPXR(EM3DFFT):
         pxr.nprocx=0
         pxr.nprocy=0
         pxr.nprocz=0
-        pxr.mpi_minimal_init()
-        pxr.mpi_initialise()
-#        print 'nprocx',pxr.nprocx
-        
-        # --- number of guard cells
+		
+		# --- number of guard cells
         pxr.nxguards = self.nxguard
         pxr.nyguards = self.nyguard
         pxr.nzguards = self.nzguard
@@ -79,6 +76,14 @@ class EM3DPXR(EM3DFFT):
         pxr.y_max_local = self.fields.ymax
         pxr.z_min_local = self.fields.zmin
         pxr.z_max_local = self.fields.zmax
+		
+		
+		
+        pxr.mpi_minimal_init()
+        pxr.mpi_initialise()
+#        print 'nprocx',pxr.nprocx
+        
+
         
         pxr.dt = top.dt
 

@@ -12,11 +12,14 @@ CONTAINS
 
   SUBROUTINE mpi_minimal_init()
     LOGICAL(isp) :: isinitialized
+	INTEGER(isp) :: nproc_comm, rank_in_comm
     CALL MPI_INITIALIZED(isinitialized,errcode)
     IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
-    CALL MPI_COMM_SIZE(comm, nproc, errcode)
-    CALL MPI_COMM_RANK(comm, rank, errcode)
+    CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
+	nproc=INT(nproc_comm,idp)
+    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+	rank=INT(rank_in_comm,idp)
   END SUBROUTINE mpi_minimal_init
 
 
@@ -24,10 +27,11 @@ CONTAINS
   SUBROUTINE setup_communicator
 
     INTEGER(isp), PARAMETER :: ndims = 3
-    INTEGER(isp) :: dims(ndims), idim, old_comm, ierr
+    INTEGER(idp) :: idim
+	INTEGER(isp) :: nproc_comm,dims(ndims), old_comm, ierr
     LOGICAL(isp) :: periods(ndims), reorder, op, reset
-    INTEGER(isp) :: test_coords(ndims)
-    INTEGER(isp) :: ix, iy, iz
+    INTEGER(isp) :: test_coords(ndims), rank_in_comm
+    INTEGER(idp) :: ix, iy, iz
     INTEGER(idp) :: nxsplit, nysplit, nzsplit
     INTEGER(isp) :: ranges(3,1), nproc_orig, oldgroup, newgroup
     CHARACTER(LEN=11) :: str
@@ -38,15 +42,17 @@ CONTAINS
 
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
-    CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
+    CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)
+	nproc=INT(nproc_comm,idp)
+
     dims = (/nprocz, nprocy, nprocx/)
 
     ! Initial CPU split sanity check
     IF ((nprocx .EQ. 0) .AND. (nprocy .EQ. 0) .AND. (nprocz .EQ. 0)) THEN
-        CALL MPI_DIMS_CREATE(nproc, ndims, dims, errcode)
-        nprocx = dims(3)
-        nprocy = dims(2)
-        nprocz = dims(1)
+        CALL MPI_DIMS_CREATE(nproc_comm, ndims, dims, errcode)
+        nprocx = INT(dims(3),idp)
+        nprocy = INT(dims(2),idp)
+        nprocz = INT(dims(1),idp)
     ENDIF
 
     IF (nproc .NE. nprocx*nprocy*nprocz) THEN
@@ -90,8 +96,9 @@ CONTAINS
     old_comm = comm
     CALL MPI_CART_CREATE(old_comm, ndims, dims, periods, reorder, comm, errcode)
     CALL MPI_COMM_FREE(old_comm, errcode)
-    CALL MPI_COMM_RANK(comm, rank, errcode)
-    CALL MPI_CART_COORDS(comm, rank, ndims, coordinates, errcode)
+    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+    CALL MPI_CART_COORDS(comm, rank_in_comm, ndims, coordinates, errcode)
+	rank=INT(rank_in_comm,idp)
     CALL MPI_CART_SHIFT(comm, 2_isp, 1_isp, proc_x_min, proc_x_max, errcode)
     CALL MPI_CART_SHIFT(comm, 1_isp, 1_isp, proc_y_min, proc_y_max, errcode)
     CALL MPI_CART_SHIFT(comm, 0_isp, 1_isp, proc_z_min, proc_z_max, errcode)
@@ -150,9 +157,9 @@ CONTAINS
   SUBROUTINE mpi_initialise
 
     INTEGER(isp) :: idim
-    INTEGER(isp) :: nx0, nxp
-    INTEGER(isp) :: ny0, nyp
-    INTEGER(isp) :: nz0, nzp
+    INTEGER(isp) :: nx0, nxp, nx_tot_grid
+    INTEGER(isp) :: ny0, nyp, ny_tot_grid
+    INTEGER(isp) :: nz0, nzp, nz_tot_grid
     INTEGER(isp) :: iproc, ix, iy, iz
 
     ! Init number of guard cells of subdomains in each dimension
@@ -171,81 +178,89 @@ CONTAINS
 
     CALL setup_communicator
 
-    ALLOCATE(npart_each_rank(nproc))
-    ALLOCATE(x_grid_mins(0:nprocx-1), x_grid_maxs(0:nprocx-1))
+	ALLOCATE(x_grid_mins(0:nprocx-1), x_grid_maxs(0:nprocx-1))
     ALLOCATE(y_grid_mins(0:nprocy-1), y_grid_maxs(0:nprocy-1))
     ALLOCATE(z_grid_mins(0:nprocz-1), z_grid_maxs(0:nprocz-1))
     ALLOCATE(cell_x_min(nprocx), cell_x_max(nprocx))
     ALLOCATE(cell_y_min(nprocy), cell_y_max(nprocy))
     ALLOCATE(cell_z_min(nprocz), cell_z_max(nprocz))
 
-    nx0 = nx_global_grid / nprocx
-    ny0 = ny_global_grid / nprocy
-    nz0 = nz_global_grid / nprocz
+	! Split is done on the total number of grid nodes
+	! Initial WARP split is used with each processor boundary 
+	! being shared by two adjacent MPI processes 
+	nx_tot_grid = nx_global_grid+nprocx-1 ! Total number of grid points along x
+	ny_tot_grid = ny_global_grid+nprocy-1 ! Total number of grid points along y
+	nz_tot_grid = nz_global_grid+nprocz-1 ! Total number of grid points along z
 
-    ! If the number of gridpoints cannot be exactly subdivided then fix
+    nx0 = nx_tot_grid / nprocx
+    ny0 = ny_tot_grid / nprocy
+    nz0 = nz_tot_grid / nprocz
+
+    ! If the total number of gridpoints cannot be exactly subdivided then fix
     ! The first nxp processors have nx0 grid points
     ! The remaining processors have nx0+1 grid points
-    IF (nx0 * nprocx .NE. nx_global_grid) THEN
-        nxp = (nx0 + 1) * nprocx - nx_global_grid
+    IF (nx0 * nprocx .NE. nx_tot_grid) THEN
+        nxp = (nx0 + 1) * nprocx - nx_tot_grid
     ELSE
         nxp = nprocx
     ENDIF
 
-    IF (ny0 * nprocy .NE. ny_global_grid) THEN
-        nyp = (ny0 + 1) * nprocy - ny_global_grid
+    IF (ny0 * nprocy .NE. ny_tot_grid) THEN
+        nyp = (ny0 + 1) * nprocy - ny_tot_grid
     ELSE
         nyp = nprocy
     ENDIF
 
-    IF (nz0 * nprocz .NE. nz_global_grid) THEN
-        nzp = (nz0 + 1) * nprocz - nz_global_grid
+    IF (nz0 * nprocz .NE. nz_tot_grid) THEN
+        nzp = (nz0 + 1) * nprocz - nz_tot_grid
     ELSE
         nzp = nprocz
     ENDIF
 
-    DO idim = 1, nxp
-        cell_x_min(idim) = (idim - 1) * nx0 + 1
-        cell_x_max(idim) = idim * nx0
+	cell_x_min(1)=1
+	cell_x_max(1)=1+nx0-1
+    DO idim = 2, nxp
+        cell_x_min(idim) = cell_x_max(idim-1)
+        cell_x_max(idim) = cell_x_min(idim)+nx0-1
     ENDDO
     DO idim = nxp + 1, nprocx
-        cell_x_min(idim) = nxp * nx0 + (idim - nxp - 1) * (nx0 + 1) + 1
-        cell_x_max(idim) = nxp * nx0 + (idim - nxp) * (nx0 + 1)
+        cell_x_min(idim) = cell_x_max(idim-1)
+        cell_x_max(idim) = cell_x_min(idim)+nx0
     ENDDO
 
-    DO idim = 1, nyp
-        cell_y_min(idim) = (idim - 1) * ny0 + 1
-        cell_y_max(idim) = idim * ny0
+	cell_y_min(1)=1
+	cell_y_max(1)=1+ny0-1
+    DO idim = 2, nyp
+        cell_y_min(idim) = cell_y_max(idim-1)
+        cell_y_max(idim) = cell_y_min(idim)+ny0-1
     ENDDO
     DO idim = nyp + 1, nprocy
-        cell_y_min(idim) = nyp * ny0 + (idim - nyp - 1) * (ny0 + 1) + 1
-        cell_y_max(idim) = nyp * ny0 + (idim - nyp) * (ny0 + 1)
+        cell_y_min(idim) = cell_y_max(idim-1)
+        cell_y_max(idim) = cell_y_min(idim)+ny0
     ENDDO
 
-    DO idim = 1, nzp
-        cell_z_min(idim) = (idim - 1) * nz0 + 1
-        cell_z_max(idim) = idim * nz0
+	cell_z_min(1)=1
+	cell_z_max(1)=1+nz0-1
+    DO idim = 2, nzp
+        cell_z_min(idim) = cell_z_max(idim-1)
+        cell_z_max(idim) = cell_z_min(idim)+nz0-1
     ENDDO
     DO idim = nzp + 1, nprocz
-        cell_z_min(idim) = nzp * nz0 + (idim - nzp - 1) * (nz0 + 1) + 1
-        cell_z_max(idim) = nzp * nz0 + (idim - nzp) * (nz0 + 1)
-
+        cell_z_min(idim) = cell_z_max(idim-1)
+        cell_z_max(idim) = cell_z_min(idim)+nz0
     ENDDO
+
 
     nx_global_grid_min = cell_x_min(x_coords+1)
     nx_global_grid_max = cell_x_max(x_coords+1)
-    n_global_grid_min(1) = nx_global_grid_min
-    n_global_grid_max(1) = nx_global_grid_max
+
 
     ny_global_grid_min = cell_y_min(y_coords+1)
     ny_global_grid_max = cell_y_max(y_coords+1)
-    n_global_grid_min(2) = ny_global_grid_min
-    n_global_grid_max(2) = ny_global_grid_max
 
     nz_global_grid_min = cell_z_min(z_coords+1)
     nz_global_grid_max = cell_z_max(z_coords+1)
-    n_global_grid_min(3) = nz_global_grid_min
-    n_global_grid_max(3) = nz_global_grid_max
+
 
     !!! --- number of gridpoints of each subdomain
     nx_grid = nx_global_grid_max - nx_global_grid_min + 1
@@ -257,28 +272,33 @@ CONTAINS
     ny=ny_grid-1
     nz=nz_grid-1
 
+	!print *,"X split: RANK, nx_global_grid, nx_grid, nx_global_grid_min, nx_global_grid_maxx",rank,nx_global_grid,nx_grid,nx_global_grid_min,nx_global_grid_max
+	!print *, "Y split: RANK, ny_global_grid, ny_grid, ny_global_grid_min, ny_global_grid_maxx",rank,ny_global_grid,ny_grid,ny_global_grid_min,ny_global_grid_max
+	!print *, "Z split: RANK, nz_global_grid, nz_grid, nz_global_grid_min, nz_global_grid_maxx",rank,nz_global_grid,nz_grid,nz_global_grid_min,nz_global_grid_max
+
+	! Allocate arrays of axis
     ALLOCATE(x(-nxguards:nx+nxguards), y(-nyguards:ny+nyguards), z(-nzguards:nz+nzguards))
     ALLOCATE(x_global(-nxguards:nx_global+nxguards))
     ALLOCATE(y_global(-nyguards:ny_global+nyguards))
     ALLOCATE(z_global(-nzguards:nz_global+nzguards))
 
     !!! -- sets xmax, ymax, zmax
-    xmax = nx_global*dx
-    ymax = ny_global*dy
-    zmax = nz_global*dz
+    !xmax = nx_global*dx
+    !ymax = ny_global*dy
+    !zmax = nz_global*dz
 
     !!! --- Set up global grid limits
-    length_x = xmax - xmin +dx
-    dx = length_x / REAL(nx_global+1, num)
+    length_x = xmax - xmin
+    dx = length_x / REAL(nx_global, num)
     x_grid_min = xmin
     x_grid_max = xmax
 
-    length_y = ymax - ymin +dy
-    dy = length_y / REAL(ny_global+1, num)
+    length_y = ymax - ymin
+    dy = length_y / REAL(ny_global, num)
     y_grid_min = ymin
     y_grid_max = ymax
 
-    length_z = zmax - zmin +dz
+    length_z = zmax - zmin
     dz = length_z / REAL(nz_global+1, num)
     z_grid_min = zmin
     z_grid_max = zmax
@@ -308,19 +328,24 @@ CONTAINS
         z_grid_maxs(iproc) = z_global(cell_z_max(iproc+1)-1)
     ENDDO
 
-    x_min_local = x_grid_mins(x_coords)-dx/2
-    x_max_local = x_grid_maxs(x_coords)+dx/2
-    y_min_local = y_grid_mins(y_coords)-dx/2
-    y_max_local = y_grid_maxs(y_coords)+dx/2
-    z_min_local = z_grid_mins(z_coords)-dx/2
-    z_max_local = z_grid_maxs(z_coords)+dx/2
+    x_min_local = x_grid_mins(x_coords)
+    x_max_local = x_grid_maxs(x_coords)
+    y_min_local = y_grid_mins(y_coords)
+    y_max_local = y_grid_maxs(y_coords)
+    z_min_local = z_grid_mins(z_coords)
+    z_max_local = z_grid_maxs(z_coords)
 
-    x_grid_min_local=x_min_local+dx/2
-    y_grid_min_local=y_min_local+dy/2
-    z_grid_min_local=z_min_local+dz/2
-    x_grid_max_local=x_max_local-dx/2
-    y_grid_max_local=y_max_local-dy/2
-    z_grid_max_local=z_max_local-dz/2
+    x_grid_min_local=x_min_local
+    y_grid_min_local=y_min_local
+    z_grid_min_local=z_min_local
+    x_grid_max_local=x_max_local
+    y_grid_max_local=y_max_local
+    z_grid_max_local=z_max_local
+
+
+print *,"X split: RANK, xmin, xmax, dx, x_min_local, x_max_local",rank, xmin, xmax, dx, x_min_local, x_max_local
+print *,"Y split: RANK, ymin, ymax, dy, y_min_local, y_max_local",rank, ymin, ymax, dy, y_min_local, y_max_local
+print *,"Z split: RANK, zmin, zmax, dz, z_min_local, z_max_local",rank, zmin, zmax, dz, z_min_local, z_max_local
 
     ! --- Allocate grid quantities
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))

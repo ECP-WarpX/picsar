@@ -229,15 +229,15 @@ USE output_data
 !----------------------------------------------------------------------------
 ! MPI subdomain data
 !----------------------------------------------------------------------------
-INTEGER(isp) :: errcode, provided, comm, tag, rank
+INTEGER(isp) :: errcode, provided, comm, tag
+INTEGER(idp) :: rank
 INTEGER(isp) :: coordinates(3), neighbour(-1:1, -1:1, -1:1)
 INTEGER(isp) :: x_coords, proc_x_min, proc_x_max
 INTEGER(isp):: y_coords, proc_y_min, proc_y_max
 INTEGER(isp) :: z_coords, proc_z_min, proc_z_max
-INTEGER(isp) :: nproc, nprocx, nprocy, nprocz
+INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
 INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
-INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: npart_each_rank
 LOGICAL :: x_min_boundary, x_max_boundary
 LOGICAL :: y_min_boundary, y_max_boundary
 LOGICAL :: z_min_boundary, z_max_boundary
@@ -249,7 +249,6 @@ INTEGER(idp), DIMENSION(:), ALLOCATABLE :: old_x_max, old_y_max, old_z_max
 INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
 INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
 INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max
-INTEGER(idp) :: n_global_grid_min(3), n_global_grid_max(3)
 ! domain and loadbalancing
 LOGICAL :: allow_cpu_reduce = .FALSE.
 REAL(num), DIMENSION(:), ALLOCATABLE :: x_global, y_global, z_global
