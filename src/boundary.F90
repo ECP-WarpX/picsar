@@ -385,7 +385,7 @@ CONTAINS
     starts = 1
 
     !! -- Summation along X- direction
-    subsizes(1) = nxg
+    subsizes(1) = nxg+1
     subsizes(2) = sizes(2)
     subsizes(3) = sizes(3)
     nn = nx
@@ -397,7 +397,7 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(nn+1,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
+    CALL MPI_ISEND(array(nn,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
     comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
     comm, requests(2), errcode)
@@ -407,15 +407,15 @@ CONTAINS
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
-    array(0:nxg-1,:,:) = array(0:nxg-1,:,:) + temp1
-    array(nn+1-nxg:nn,:,:) = array(nn+1-nxg:nn,:,:) + temp2
+    array(0:nxg,:,:) = array(0:nxg,:,:) + temp1
+    array(nn-nxg:nn,:,:) = array(nn-nxg:nn,:,:) + temp2
 
     DEALLOCATE(temp1,temp2)
     CALL MPI_TYPE_FREE(subarray, errcode)
 
     !! -- Summation along Y- direction
     subsizes(1) = sizes(1)
-    subsizes(2) = nyg
+    subsizes(2) = nyg+1
     subsizes(3) = sizes(3)
     nn = ny
 
@@ -426,7 +426,7 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,nn+1,-nzg), 1_isp, subarray, proc_y_max, tag, &
+    CALL MPI_ISEND(array(-nxg,nn,-nzg), 1_isp, subarray, proc_y_max, tag, &
     comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
     comm, requests(2), errcode)
@@ -436,8 +436,8 @@ CONTAINS
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
-    array(:,0:nyg-1,:) = array(:,0:nyg-1,:) + temp1
-    array(:,nn+1-nyg:nn,:) = array(:,nn+1-nyg:nn,:) + temp2
+    array(:,0:nyg,:) = array(:,0:nyg,:) + temp1
+    array(:,nn-nyg:nn,:) = array(:,nn-nyg:nn,:) + temp2
 
     DEALLOCATE(temp1,temp2)
     CALL MPI_TYPE_FREE(subarray, errcode)
@@ -445,7 +445,7 @@ CONTAINS
     !! -- Summation along Z- direction
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
-    subsizes(3) = nzg
+    subsizes(3) = nzg+1
     nn = nz
 
     subarray = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
@@ -455,7 +455,7 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,-nyg,nn+1), 1_isp, subarray, proc_z_max, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,nn), 1_isp, subarray, proc_z_max, tag, &
     comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
     comm, requests(2), errcode)
@@ -465,8 +465,8 @@ CONTAINS
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
-    array(:,:,0:nzg-1) = array(:,:,0:nzg-1) + temp1
-    array(:,:,nn+1-nzg:nn) = array(:,:,nn+1-nzg:nn) + temp2
+    array(:,:,0:nzg) = array(:,:,0:nzg) + temp1
+    array(:,:,nn-nzg:nn) = array(:,:,nn-nzg:nn) + temp2
 
     DEALLOCATE(temp1,temp2)
     CALL MPI_TYPE_FREE(subarray, errcode)
@@ -562,9 +562,9 @@ END SUBROUTINE charge_bcs
 
                         ! Case 3: particles changed tile. Tranfer particle to new tile
                         ! Get new indexes of particle in array of tiles
-                        indx = MIN(FLOOR((partx-x_min_local)/(nx0_grid_tile*dx))+1,ntilex)
-                        indy = MIN(FLOOR((party-y_min_local)/(ny0_grid_tile*dy))+1,ntiley)
-                        indz = MIN(FLOOR((partz-z_min_local)/(nz0_grid_tile*dz))+1,ntilez)
+                        indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+                        indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
+                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
                         CALL rm_particle_at_tile(curr_tile,i)
                         curr_tile_add=>curr%array_of_tiles(indx,indy,indz)
                         CALL add_particle_at_tile(curr_tile_add, &

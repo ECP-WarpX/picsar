@@ -69,7 +69,7 @@ dim = "3d"                 # 3D calculation
 #dim = "2d"                 # 2D calculation 
 #dim = "1d"                 # 1D calculation 
 dpi=100                     # graphics resolution
-l_test             = 1      # Will open output window on screen 
+l_test             = 1      # Will open output window on screen
                             # and stop before entering main loop.
 l_gist             = 1      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
@@ -496,6 +496,7 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
+  #step(100)
 #  raise('')
 else:
   step(N_step)

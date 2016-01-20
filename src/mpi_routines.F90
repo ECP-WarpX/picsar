@@ -163,12 +163,13 @@ CONTAINS
     INTEGER(isp) :: iproc, ix, iy, iz
 
     ! Init number of guard cells of subdomains in each dimension
-    nxguards = MAX(nox,norderx)+npass(1)
-    nyguards = MAX(noy,nordery)+npass(2)
-    nzguards = MAX(noz,norderz)+npass(3)
-    nxjguards = MAX(nox,2)
-    nyjguards = MAX(noy,2)
-    nzjguards = MAX(noz,2)
+	! Init in Python 
+    !nxguards = MAX(nox,norderx)+npass(1)
+    !nyguards = MAX(noy,nordery)+npass(2)
+    !nzguards = MAX(noz,norderz)+npass(3)
+    !nxjguards = MAX(nox,2)
+    !nyjguards = MAX(noy,2)
+    !nzjguards = MAX(noz,2)
 
     IF (l_smooth_compensate) THEN
         nxguards = nxguards + 1
@@ -299,7 +300,7 @@ CONTAINS
     y_grid_max = ymax
 
     length_z = zmax - zmin
-    dz = length_z / REAL(nz_global+1, num)
+    dz = length_z / REAL(nz_global, num)
     z_grid_min = zmin
     z_grid_max = zmax
 
@@ -343,11 +344,13 @@ CONTAINS
     z_grid_max_local=z_max_local
 
 
-print *,"X split: RANK, xmin, xmax, dx, x_min_local, x_max_local",rank, xmin, xmax, dx, x_min_local, x_max_local
-print *,"Y split: RANK, ymin, ymax, dy, y_min_local, y_max_local",rank, ymin, ymax, dy, y_min_local, y_max_local
-print *,"Z split: RANK, zmin, zmax, dz, z_min_local, z_max_local",rank, zmin, zmax, dz, z_min_local, z_max_local
+	!print *, "X split: RANK, xmin, xmax, dx, x_min_local, x_max_local", rank, xmin, xmax, dx, x_min_local, x_max_local
+	!print *, "Y split: RANK, ymin, ymax, dy, y_min_local, y_max_local", rank, ymin, ymax, dy, y_min_local, y_max_local
+	!print *, "Z split: RANK, zmin, zmax, dz, z_min_local, z_max_local", rank, zmin, zmax, dz, z_min_local, z_max_local
 
     ! --- Allocate grid quantities
+	PRINT *, "nxjguards,nyjguards,nzjguards", nxjguards,nyjguards,nzjguards
+	PRINT *, "nxguards,nyguards,nzguards", nxguards,nyguards,nzguards
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))

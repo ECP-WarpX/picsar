@@ -78,9 +78,10 @@ class EM3DPXR(EM3DFFT):
         pxr.z_max_local = self.fields.zmax
 		
 		
-		
+        print "#1 pxr.nxguards", pxr.nxguards
         pxr.mpi_minimal_init()
         pxr.mpi_initialise()
+        print "#2 pxr.nxguards", pxr.nxguards
 #        print 'nprocx',pxr.nprocx
         
 
@@ -113,6 +114,12 @@ class EM3DPXR(EM3DFFT):
         pxr.nxs = 0
         pxr.nys = 0
         pxr.nzs = 0
+
+
+		# Current deposition
+        pxr.nox=1
+        pxr.noy=1
+        pxr.noz=1
 
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
@@ -423,6 +430,7 @@ class EM3DPXR(EM3DFFT):
         if l_first:
             if l_pxr:
                 pxr.pxrpush_particles_part2()
+                pxr.particle_bcs()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
                         self.set_gamma(0,pg)
@@ -435,6 +443,7 @@ class EM3DPXR(EM3DFFT):
         else:        
             if l_pxr:
                 pxr.push_particles()
+                pxr.particle_bcs()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
                         self.set_gamma(0,pg)

@@ -22,3 +22,11 @@ src/picsar_subroutines.F90
 example_scripts_python/picsarpy.so
 Makefile_Forthon_JLV
 RESULTS/
+em3dsolverPXR.pyc
+ion acceleration.000.cgm
+ion acceleration.000.cgmlog
+ion acceleration.001.cgm
+ion acceleration.001.cgmlog
+ion acceleration.002.cgm
+ion acceleration.002.cgmlog
+sim_params.pck

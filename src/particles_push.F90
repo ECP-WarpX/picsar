@@ -19,13 +19,10 @@ REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 INTEGER(idp) :: nblk=1000000
 
-nox=1
-noy=1
-noz=1
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
-!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,nblk,nox,noy,noz) &
+!$OMP nxjguards,nyjguards,nzguards,nxguards,nyguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,nblk,nox,noy,noz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -52,12 +49,30 @@ DO iz=1, ntilez ! LOOP ON TILES
                 curr_tile%part_bx=0.0_num
                 curr_tile%part_by=0.0_num
                 curr_tile%part_bz=0.0_num
+				PRINT *, "x_grid_tile_min, x_grid_tile_max", curr_tile%x_grid_tile_min, curr_tile%x_grid_tile_max
+				PRINT *, "y_grid_tile_min, y_grid_tile_max", curr_tile%y_grid_tile_min, curr_tile%y_grid_tile_max
+				PRINT *, "z_grid_tile_min, z_grid_tile_max", curr_tile%z_grid_tile_min, curr_tile%z_grid_tile_max
+				PRINT *, "nx_tile_min, nx_tile_max", curr_tile%nx_tile_min, curr_tile%nx_tile_max
+				PRINT *, "ny_tile_min, ny_tile_max", curr_tile%ny_tile_min, curr_tile%ny_tile_max
+				PRINT *, "nz_tile_min, nz_tile_max", curr_tile%nz_tile_min, curr_tile%nz_tile_max
+				PRINT *, "MIN(xp), MAX(xp)", MINVAL(curr_tile%part_x), MAXVAL(curr_tile%part_x)
+				PRINT *, "MIN(yp), MAX(yp)", MINVAL(curr_tile%part_y), MAXVAL(curr_tile%part_y)
+				PRINT *, "MIN(zp), MAX(zp)", MINVAL(curr_tile%part_z), MAXVAL(curr_tile%part_z)
+				PRINT *, "jmin,jmax,kmin,kmax,lmin,lmax",jmin,jmax,kmin,kmax,lmin,lmax
+				PRINT *, "nxc,nyc,nzc",nxc,nyc,nzc
+				PRINT *, "dx,dy,dz",dx, dy, dz
+
                 !!! ---- Loop by blocks over particles in a tile (blocking)
                 DO ip=1,count,nblk
                     np=MIN(count-ip+1,nblk)
                     ipmin=ip
                     ipmax=ip+np-1
                     !!! --- Gather electric field on particles
+					PRINT *, "np", np
+					PRINT *, "curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min", curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min
+					PRINT *, "nxjguards,nyjguards,nzjguards", nxjguards,nyjguards,nzjguards
+					PRINT *, "nxguards,nyguards,nzguards", nxguards,nyguards,nzguards
+					PRINT *, "nox,noy,noz", nox, noy, noz
                     CALL gete3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
                                       curr_tile%part_z(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax),                   &
                                       curr_tile%part_ey(ipmin:ipmax),curr_tile%part_ez(ipmin:ipmax),                   &
@@ -66,15 +81,16 @@ DO iz=1, ntilez ! LOOP ON TILES
                                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,             &
                                       nzjguards,nox,noy,noz,ex(jmin:jmax,kmin:kmax,lmin:lmax),ey(jmin:jmax,kmin:kmax,lmin:lmax),   &
                                       ez(jmin:jmax,kmin:kmax,lmin:lmax),.FALSE.)
+					PRINT *, "APRES"
                     !!! --- Gather magnetic fields on particles
-                    CALL getb3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
-                                      curr_tile%part_z(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax),                      &
-                                      curr_tile%part_by(ipmin:ipmax),curr_tile%part_bz(ipmin:ipmax),                      &
-                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                                &
-                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,                        &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,                &
-                                      nzjguards,nox,noy,noz,bx(jmin:jmax,kmin:kmax,lmin:lmax),by(jmin:jmax,kmin:kmax,lmin:lmax),      &
-                                      bz(jmin:jmax,kmin:kmax,lmin:lmax),.FALSE.)
+                    !CALL getb3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
+                    !                  curr_tile%part_z(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax),                      &
+                    !                  curr_tile%part_by(ipmin:ipmax),curr_tile%part_bz(ipmin:ipmax),                      &
+                    !                  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                                &
+                    !                  curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,                        &
+                    !                  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,                &
+                    !                  nzjguards,nox,noy,noz,bx(jmin:jmax,kmin:kmax,lmin:lmax),by(jmin:jmax,kmin:kmax,lmin:lmax),      &
+                    !                  bz(jmin:jmax,kmin:kmax,lmin:lmax),.FALSE.)
                     !!! --- Push velocity with E half step
                     CALL epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
                     curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &
@@ -184,6 +200,7 @@ REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 INTEGER(idp) :: nblk=1000000
 
+
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
@@ -220,23 +237,23 @@ DO iz=1, ntilez ! LOOP ON TILES
                     ipmin=ip
                     ipmax=ip+np-1
                     !!! --- Gather electric field on particles
-                    CALL gete3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
-                                      curr_tile%part_z(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax),                   &
-                                      curr_tile%part_ey(ipmin:ipmax),curr_tile%part_ez(ipmin:ipmax),                   &
-                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                             &
-                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,                     &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,             &
-                                      nzjguards,nox,noy,noz,ex(jmin:jmax,kmin:kmax,lmin:lmax),ey(jmin:jmax,kmin:kmax,lmin:lmax),   &
-                                      ez(jmin:jmax,kmin:kmax,lmin:lmax),.FALSE.)
+                    !CALL gete3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
+                    !                  curr_tile%part_z(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax),                   &
+                    !                  curr_tile%part_ey(ipmin:ipmax),curr_tile%part_ez(ipmin:ipmax),                   &
+                    !                  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                             &
+                    !                  curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,                     &
+                    !                  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,             &
+                    !                  nzjguards,nox,noy,noz,ex(jmin:jmax,kmin:kmax,lmin:lmax),ey(jmin:jmax,kmin:kmax,lmin:lmax),   &
+                    !                  ez(jmin:jmax,kmin:kmax,lmin:lmax),.FALSE.)
                     !!! --- Gather magnetic fields on particles
-                    CALL getb3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
-                                      curr_tile%part_z(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax),                      &
-                                      curr_tile%part_by(ipmin:ipmax),curr_tile%part_bz(ipmin:ipmax),                      &
-                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                                &
-                                      curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,                        &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,                &
-                                      nzjguards,nox,noy,noz,bx(jmin:jmax,kmin:kmax,lmin:lmax),by(jmin:jmax,kmin:kmax,lmin:lmax),      &
-                                      bz(jmin:jmax,kmin:kmax,lmin:lmax),.FALSE.)
+                    !CALL getb3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),&
+                    !                  curr_tile%part_z(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax),                      &
+                    !                  curr_tile%part_by(ipmin:ipmax),curr_tile%part_bz(ipmin:ipmax),                      &
+                    !                  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                                &
+                    !                  curr_tile%z_grid_tile_min, dx,dy,dz,curr_tile%nx_cells_tile,                        &
+                    !                  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguards,nyjguards,                &
+                    !                  nzjguards,nox,noy,noz,bx(jmin:jmax,kmin:kmax,lmin:lmax),by(jmin:jmax,kmin:kmax,lmin:lmax),      &
+                    !                  bz(jmin:jmax,kmin:kmax,lmin:lmax),.FALSE.)
                     !!! --- Push velocity with E half step
                     CALL epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
                     curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &
