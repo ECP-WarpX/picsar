@@ -216,7 +216,7 @@ END SUBROUTINE getb3d_energy_conserving_1_1_1
 !=================================================================================
 ! Gathering of electric field from Yee grid ("energy conserving") on particles
 ! At arbitrary order. WARNING: Highly unoptimized routine
-SUBROUTINE gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
+SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,exg,eyg,ezg,l_lower_order_in_v)
 !=================================================================================
@@ -237,6 +237,7 @@ REAL(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
 REAL(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
 REAL(num), dimension(:), allocatable :: sx0,sy0,sz0
 REAL(num), parameter :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+
 
 dxi = 1.0_num/dx
 dyi = 1.0_num/dy
@@ -269,8 +270,8 @@ ALLOCATE(sx0(ixmin0:ixmax0),sy0(iymin0:iymax0),sz0(izmin0:izmax0))
 
 signx = 1.0_num
 signy = 1.0_num
-!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint, &
-!$OMP   sx,sy,sz,sx0,sy0,sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq,ozint,zintsq,ozintsq)
+!!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint, &
+!!$OMP   sx,sy,sz,sx0,sy0,sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq,ozint,zintsq,ozintsq)
 DO ip=1,np
 
     x = (xp(ip)-xmin)*dxi
@@ -506,16 +507,16 @@ DO ip=1,np
     END DO
 
 END DO
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
 DEALLOCATE(sx0,sy0,sz0)
 
 RETURN
-END SUBROUTINE gete3d_n_energy_conserving
+END SUBROUTINE pxrgete3d_n_energy_conserving
 
 !=================================================================================
 ! Gathering of Magnetic field from Yee grid ("energy conserving") on particles
 ! At arbitrary order. WARNING: Highly unoptimized routine
-SUBROUTINE getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
+SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,    &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,bxg,byg,bzg,l_lower_order_in_v)
 !=================================================================================
@@ -575,8 +576,8 @@ sz=0.0_num
 sx0=0.0_num
 sy0=0.0_num
 sz0=0.0_num
-!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
-!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+!!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
+!!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
 DO ip=1,np
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -807,8 +808,16 @@ DO ip=1,np
         END DO
     END DO
 END DO
-!OMP END PARALLEL DO
+!!OMP END PARALLEL DO
 DEALLOCATE(sx0,sz0)
 
 RETURN
-END SUBROUTINE getb3d_n_energy_conserving
+END SUBROUTINE pxrgetb3d_n_energy_conserving
+
+
+
+
+
+
+
+

@@ -30,3 +30,5 @@ ion acceleration.001.cgmlog
 ion acceleration.002.cgm
 ion acceleration.002.cgmlog
 sim_params.pck
+example_scripts_python/ion_accelerationHV.py
+example_scripts_python/tottime.pdb

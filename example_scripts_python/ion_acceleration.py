@@ -227,7 +227,7 @@ else:
 #-------------------------------------------------------------------------------
 # set particles weights
 #-------------------------------------------------------------------------------
-weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C) 
+weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
 weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C) 
 top.wpid = nextpid() # Activate variable weights in the method addpart
 
@@ -236,6 +236,8 @@ elec_C = Species(type=Electron,weight=weight_C,name='elec_C')
 elec_H = Species(type=Electron,weight=weight_H,name='elec_H')
 ions_C = Species(type=Carbon,weight=weight_C/6,charge_state=6.,name='ions_C')
 ions_H = Species(type=Proton,weight=weight_H,name='ions_H')
+
+
 
 top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
 top.efetch[...] = top.efetch[0] # same for field gathering

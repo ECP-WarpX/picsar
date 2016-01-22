@@ -78,10 +78,8 @@ class EM3DPXR(EM3DFFT):
         pxr.z_max_local = self.fields.zmax
 		
 		
-        print "#1 pxr.nxguards", pxr.nxguards
         pxr.mpi_minimal_init()
         pxr.mpi_initialise()
-        print "#2 pxr.nxguards", pxr.nxguards
 #        print 'nprocx',pxr.nprocx
         
 

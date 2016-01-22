@@ -6,13 +6,13 @@ MODULE constants
 INTEGER, PARAMETER :: num = 8
 INTEGER, PARAMETER :: isp = 4
 INTEGER, PARAMETER :: idp = 8
-REAL(num), PARAMETER :: emass   = 9.1093818800000006e-31_num,      &
+REAL(num), PARAMETER :: emass   = 9.10938291e-31_num,      &
                         pmass   = 1.6726231000000001e-27_num,      &
                         echarge = 1.6021764620000001e-19_num,      &
-                        clight  = 299792458.0_num,                 &
+                        clight  = 2.99792458e8_num,                 &
                         mu0     = 1.2566370614359173e-06_num,      &
-                        eps0    = 8.8541878176203892e-12_num,      &
-                        pi      = 3.141592653589793_num
+                        eps0    = 8.854187817620389e-12_num,      &
+                        pi      = 3.14159265358979323_num
 INTEGER(isp), PARAMETER :: c_ndims = 3
 ! direction parameters
 INTEGER, PARAMETER :: c_dir_x = 1
