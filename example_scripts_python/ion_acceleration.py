@@ -202,14 +202,14 @@ w3d.dz = (w3d.zmmax-w3d.zmmin)/w3d.nz
 
 # --- sets field boundary conditions
 # --- longitudinal
-w3d.bound0  = w3d.boundnz = openbc
+w3d.bound0  = w3d.boundnz = periodic
 # --- transverse
 w3d.boundxy = periodic
 
 # --- sets particles boundary conditions
 # --- longitudinal
-top.pbound0  = absorb
-top.pboundnz = absorb
+top.pbound0  = periodic
+top.pboundnz = periodic
 # --- transverse
 top.pboundxy = periodic
 

@@ -343,14 +343,7 @@ CONTAINS
     y_grid_max_local=y_max_local
     z_grid_max_local=z_max_local
 
-
-	!print *, "X split: RANK, xmin, xmax, dx, x_min_local, x_max_local", rank, xmin, xmax, dx, x_min_local, x_max_local
-	!print *, "Y split: RANK, ymin, ymax, dy, y_min_local, y_max_local", rank, ymin, ymax, dy, y_min_local, y_max_local
-	!print *, "Z split: RANK, zmin, zmax, dz, z_min_local, z_max_local", rank, zmin, zmax, dz, z_min_local, z_max_local
-
     ! --- Allocate grid quantities
-	PRINT *, "nxjguards,nyjguards,nzjguards", nxjguards,nyjguards,nzjguards
-	PRINT *, "nxguards,nyguards,nzguards", nxguards,nyguards,nzguards
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))

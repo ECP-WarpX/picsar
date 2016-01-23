@@ -22,7 +22,6 @@ INTEGER(idp) :: nxc, nyc, nzc
 jx = 0.0_num
 jy = 0.0_num
 jz = 0.0_num
-
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards,nyjguards,nzjguards,dx,dy,dz,dt,jx,jy,jz,nox,noy,noz) &
@@ -45,7 +44,7 @@ DO iz=1,ntilez
                 curr_tile%jxtile = 0.0_num; curr_tile%jytile = 0.0_num
                 curr_tile%jztile = 0.0_num
                 ! Depose current in jtile
-                CALL depose_jxjyjz_esirkepov_n(curr_tile%jxtile,curr_tile%jytile,curr_tile%jztile,count,        &
+                CALL pxr_depose_jxjyjz_esirkepov_n(curr_tile%jxtile,curr_tile%jytile,curr_tile%jztile,count,        &
                 curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
                 curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
                 curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
@@ -2037,7 +2036,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 !===========================================================================================
 ! ! Esirkepov current deposition algorithm for linear, quadratic or cubic splines
 ! WARNING: Highly unoptimized routine ---> USE INLINED ROUTINE
-SUBROUTINE depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
+SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
 nox,noy,noz,l_particles_weight,l4symtry)
 !===========================================================================================
@@ -2062,7 +2061,7 @@ REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
 INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
 ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
 xl,xu,yl,yu,zl,zu
-LOGICAL :: l_particles_weight,l4symtry
+LOGICAL(idp) :: l_particles_weight,l4symtry
 
 ! PARAMETER INIT
 ndtodx = int(clight*dt/dx)
@@ -2396,4 +2395,4 @@ jz=jz+jz1
 DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz,jx1,jy1,jz1)
 
 RETURN
-END SUBROUTINE depose_jxjyjz_esirkepov_n
+END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n

@@ -245,25 +245,23 @@ class EM3DPXR(EM3DFFT):
                 f=self.fields
                 l_pushe=False
                 if self.l_2dxz:
-                    pxr.pxrpush_em2d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                    pxr.pxrpush_em2d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               f.J[...,0],f.J[...,1],f.J[...,2],
                                               clight**2*mu0*dt,        
-                                              clight**2*dt/f.dx*f.xcoefs,
-                                              clight**2*dt/f.dy*f.ycoefs,
-                                              clight**2*dt/f.dz*f.zcoefs,
+                                              clight**2*dt/f.dx*f.xcoefs[0],
+                                              clight**2*dt/f.dy*f.ycoefs[0],
+                                              clight**2*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
                 else:
-                    pxr.pxrpush_em3d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                    pxr.pxrpush_em3d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               f.J[...,0],f.J[...,1],f.J[...,2],
                                               clight**2*mu0*dt,        
-                                              clight**2*dt/f.dx*f.xcoefs,
-                                              clight**2*dt/f.dy*f.ycoefs,
-                                              clight**2*dt/f.dz*f.zcoefs,
+                                              clight**2*dt/f.dx*f.xcoefs[0],
+                                              clight**2*dt/f.dy*f.ycoefs[0],
+                                              clight**2*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
             else:
@@ -293,21 +291,19 @@ class EM3DPXR(EM3DFFT):
                 f=self.fields
                 l_pushb=False
                 if self.l_2dxz:
-                    pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
+                    pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
                 else:
-                    pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
+                    pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
             else:
@@ -331,21 +327,19 @@ class EM3DPXR(EM3DFFT):
                 f=self.fields
                 l_pushb=False
                 if self.l_2dxz:
-                    pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
+                    pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
                 else:
-                    pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
+                    pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
             else:
