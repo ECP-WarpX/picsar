@@ -35,12 +35,12 @@ carbon_layer_start     = 2
 carbon_layer_width     = 6
 carbon_layer_thickness = 0.075
 carbon_layer_e_density = 4.
-nppcell_carbon         = 25
+nppcell_carbon         = 250
 #Hydrogen layer
 hydrogen_layer_width     = 6
 hydrogen_layer_thickness = 0.05
 hydrogen_layer_e_density = 2.
-nppcell_hydrogen         = 16
+nppcell_hydrogen         = 160
 
 #Laser at the left border:
 a0             = 100
@@ -159,13 +159,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 1#5
-nppcelly_C = 1#5
-nppcellz_C = 1#5
+nppcellx_C = 2#5
+nppcelly_C = 2#5
+nppcellz_C = 2#5
 
-nppcellx_H = 1#4
-nppcelly_H = 1#4
-nppcellz_H = 1#4
+nppcellx_H = 2#4
+nppcelly_H = 2#4
+nppcellz_H = 2#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -359,8 +359,8 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 3#max(1,w3d.nx/30)
-    ntiley = 3#max(1,w3d.ny/30)
+    ntilex = 7#max(1,w3d.nx/30)
+    ntiley = 7#max(1,w3d.ny/30)
     ntilez = 3#max(1,w3d.nz/30)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,

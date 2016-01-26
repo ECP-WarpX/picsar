@@ -41,7 +41,7 @@ END MODULE fields
 
 
 ! Fortran object representing a particle tile
-MODULE particle_tilemodule !#do not parse
+MODULE particle_tilemodule
 USE constants
 TYPE particle_tile
     LOGICAL :: l_arrays_allocated= .FALSE.

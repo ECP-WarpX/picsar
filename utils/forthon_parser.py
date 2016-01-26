@@ -399,7 +399,7 @@ def parse_forthon_app(appname):
     ## Identify and sparse blocks in order
     # - 1 Parse module blocks
     [namesmod,istartmod,iendmod,procmod] = get_module_blocks(listlines_modules)
-    parse_module_blocks(fw,listlines_modules, namesmod, istartmod, iendmod)
+    listlines_modules=parse_module_blocks(fw,listlines_modules, namesmod, istartmod, iendmod)
 
     # - 2 Parse subroutine blocks
     [names,istart,iend,proceduremod] = get_subroutine_blocks(listlines_subroutines)
@@ -442,7 +442,7 @@ def parse_file(fileread):
     print("Pre-processing "+str(Nlines)+" lines of file "+fileread)
     listlines=(preprocess_file(listlines))
     
-    ## Identify and sparse blocks in order
+    ## Identify and parse blocks in order
     # - 1 Parse module blocks
     [namesmod,istart,iend,procmod] = get_module_blocks(listlines)
     parse_module_blocks(fw,listlines, namesmod, istart, iend)
@@ -496,6 +496,7 @@ def get_module_blocks(listlines):
 #### - PARSE EACH SUBROUTINE BLOCK
 def parse_module_blocks(fw,listlines,names,istart,iend):
     nblocks=len(names)
+    listlines_new=[]
     # Get each module block and parse it
     print("Parsed "+str(nblocks)+" module block(s) in file .v file\n")
     for iblock in range(0,nblocks):
@@ -504,23 +505,79 @@ def parse_module_blocks(fw,listlines,names,istart,iend):
         if (names[iblock].find("#do not parse")==-1):
             # This is a Type module block
             if(names[iblock].find("moduletype")>=0):
+                modinv=[]
+                # Print module in .v with % instead of #
                 names[iblock]=names[iblock].replace("moduletype","")
                 names[iblock]=names[iblock].replace("module","")
                 fw.write("%%%%% "+names[iblock].strip()+":\n")
+                modinv.append("%%%%% "+names[iblock].strip()+":\n")
                 print("derived type "+names[iblock])
+                # Parse module variable names and types
+                [listvars,listtypes,listinitv] = parse_module_vars(listlines[istart[iblock]:iend[iblock]+1])
+                # Write parsed module in .v file
+                for i in range(0,len(listvars)):
+                    if (listvars[i].find("cobj__")==-1):
+                        if(listinitv[i]==""):
+                            fw.write(listvars[i]+" "+listtypes[i]+"\n")
+                            modinv.append(listvars[i]+" "+listtypes[i]+"\n")
+                        else:
+                            fw.write(listvars[i]+" "+listtypes[i]+" /"+listinitv[i]+"/ \n")
+                            modinv.append(listvars[i]+" "+listtypes[i]+"\n")
+                # Generate Fortran module procedure for derived type
+                # using Forthon
+                newmod=gen_forthon_dtypef90(names[iblock],modinv)
+                listlines_new=listlines_new+newmod
             # This is a standard module block
             else:
                 fw.write("***** "+names[iblock].strip()+":\n")
                 print("module "+names[iblock])
-            # Parse module variable names and types
-            [listvars,listtypes,listinitv] = parse_module_vars(listlines[istart[iblock]:iend[iblock]+1])
-            # Write parsed module in .v file
-            for i in range(0,len(listvars)):
-                if (listvars[i].find("cobj__")==-1):
-                    if(listinitv[i]==""):
-                        fw.write(listvars[i]+" "+listtypes[i]+"\n")
-                    else:
-                        fw.write(listvars[i]+" "+listtypes[i]+" /"+listinitv[i]+"/ \n")
+                # Parse module variable names and types
+                [listvars,listtypes,listinitv] = parse_module_vars(listlines[istart[iblock]:iend[iblock]+1])
+                # Write parsed module in .v file
+                for i in range(0,len(listvars)):
+                    if (listvars[i].find("cobj__")==-1):
+                        if(listinitv[i]==""):
+                            fw.write(listvars[i]+" "+listtypes[i]+"\n")
+                        else:
+                            fw.write(listvars[i]+" "+listtypes[i]+" /"+listinitv[i]+"/ \n")
+                listlines_new=listlines_new+listlines[istart[iblock]:iend[iblock]+1]
+        else:
+            listlines_new=listlines_new+listlines[istart[iblock]:iend[iblock]+1]
+    return listlines_new
+
+def gen_forthon_dtypef90(modname,modinv):
+    fmod=open("tempapp"+".F90","w")
+    fmod.writelines("! FORTRAN FILE")
+    fmod.close()
+    fv=open("tempapp"+".v","w")
+    fv.write("tempapp\n")
+    fv.write("")
+    fv.writelines(modinv)
+    fv.close()
+    os.system("Forthon -v --no2underscores -g tempapp")
+    dirs=[x[0] for x in os.walk("build/")]
+    print(dirs)
+    filedir=dirs[3]
+    fnewmod=open(filedir+"/tempapp_p.F90","r")
+    newmod_pre= fnewmod.readlines()
+    newmod_post=[]
+    # Only get procedure module (not additional subroutines)
+    isinmod=True
+    i=0
+    while(isinmod):
+    	newmod_post.append(newmod_pre[i])
+        i=i+1
+        if (newmod_pre[i].find("END MODULE")>=0):
+        	newmod_post.append(newmod_pre[i])
+        	isinmod=False
+    
+    fnewmod.close()
+    os.system("rm -rf build/")
+    os.system("rm -f tempapp.v")
+    os.system("rm -f tempapp.F90")
+    return newmod_post
+
+
 ### - PARSE SUBROUTINE ARGS AND TYPES
 def parse_module_vars(listlines):
     len_block=len(listlines)
@@ -748,7 +805,8 @@ def reformat_file(listline):
     # Make everything lower case (Fortran is case insensitive)
     for i in range(0,lenlist):
         curr_line=listline[i]
-        curr_line=curr_line+"\n"
+        if curr_line.find("\n"):
+        	curr_line=curr_line+"\n"
         curr_line=curr_line.replace("#do not parse","")
         listline[i]=curr_line
 
