@@ -34,12 +34,12 @@ N_step = 20000/dtfact
 carbon_layer_start     = 2
 carbon_layer_width     = 6
 carbon_layer_thickness = 0.075
-carbon_layer_e_density = 400.
+carbon_layer_e_density = 4.
 nppcell_carbon         = 25
 #Hydrogen layer
 hydrogen_layer_width     = 6
 hydrogen_layer_thickness = 0.05
-hydrogen_layer_e_density = 21.
+hydrogen_layer_e_density = 2.
 nppcell_hydrogen         = 16
 
 #Laser at the left border:
@@ -227,8 +227,8 @@ else:
 #-------------------------------------------------------------------------------
 # set particles weights
 #-------------------------------------------------------------------------------
-weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
-weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C) 
+weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)*0.
+weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)*0.
 top.wpid = nextpid() # Activate variable weights in the method addpart
 
 # --- create plasma species
@@ -359,9 +359,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 1#max(1,w3d.nx/30)
-    ntiley = 1#max(1,w3d.ny/30)
-    ntilez = 1#max(1,w3d.nz/30)
+    ntilex = 3#max(1,w3d.nx/30)
+    ntiley = 3#max(1,w3d.ny/30)
+    ntilez = 3#max(1,w3d.nz/30)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -442,10 +442,16 @@ def liveplots():
       ptitles('n','z [um]','X [um]')
       em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
       ptitles('Ez [GV/m]','z [um]','X [um]')
-      ions_C.ppzx(view=6)
-      elec_C.ppzx(color=red,view=6)
-      ions_H.ppzx(color=blue,view=6)
-      elec_H.ppzx(color=cyan,view=6)
+      if l_pxr:
+      	em.ppzx_ptiles_v2(3,ppgeneric,view=6)
+        em.ppzx_ptiles_v2(1,ppgeneric,color=red,view=6)
+        em.ppzx_ptiles_v2(4,ppgeneric,color=blue,view=6)
+        em.ppzx_ptiles_v2(2,ppgeneric,color=cyan,view=6)
+      else:
+      	ions_C.ppzx(view=6)
+    	elec_C.ppzx(color=red,view=6)
+      	ions_H.ppzx(color=blue,view=6)
+      	elec_H.ppzx(color=cyan,view=6)
       refresh()
 
 installafterstep(liveplots)

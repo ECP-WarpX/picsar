@@ -159,6 +159,17 @@ CONTAINS
 							curr%z_tile_min= curr%z_grid_tile_min-dz/2.0_num
 							curr%z_tile_max= z_max_local
                         ENDIF
+!						PRINT *, "Species name", ix,iy,iz
+!						PRINT *, "Tile number (ix,iy,iz)", ix,iy,iz
+!						PRINT *, "x_tile_min, x_tile_max", curr%x_tile_min, curr%x_tile_max
+!						PRINT *, "y_tile_min, y_tile_max", curr%y_tile_min, curr%y_tile_max
+!						PRINT *, "z_tile_min, z_tile_max", curr%z_tile_min, curr%z_tile_max
+!						PRINT *, "x_grid_tile_min, x_grid_tile_max", curr%x_grid_tile_min, curr%x_grid_tile_max
+!						PRINT *, "y_grid_tile_min, y_grid_tile_max", curr%y_grid_tile_min, curr%y_grid_tile_max
+!						PRINT *, "z_grid_tile_min, z_grid_tile_max", curr%z_grid_tile_min, curr%z_grid_tile_max
+!						PRINT *, "nx_tile_min, nx_tile_max", curr%nx_tile_min, curr%nx_tile_max
+!						PRINT *, "ny_tile_min, ny_tile_max", curr%ny_tile_min, curr%ny_tile_max
+!						PRINT *, "nz_tile_min, nz_tile_max", curr%nz_tile_min, curr%nz_tile_max
                     END DO
                 END DO
             END DO
