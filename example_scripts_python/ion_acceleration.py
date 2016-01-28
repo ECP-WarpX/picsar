@@ -176,7 +176,7 @@ if dim=="1d":
 #-------------------------------------------------------------------------------
 # grid dimensions, nb cells and BC
 #-------------------------------------------------------------------------------
-w3d.zmmax = carbon_layer_start*2*lambda_laser
+w3d.zmmax = carbon_layer_start*2.*lambda_laser
 w3d.zmmin = 0.
 w3d.xmmin = -0.5*carbon_layer_width*lambda_laser
 w3d.xmmax = -w3d.xmmin
@@ -189,12 +189,12 @@ w3d.nz = nint((w3d.zmmax-w3d.zmmin)/(dz*lambda_laser))
 
 if dim in ["1d"]:
     w3d.nx = 2
-    w3d.xmmin = -float(w3d.nx)/2
-    w3d.xmmax = float(w3d.nx)/2
+    w3d.xmmin = -float(w3d.nx)/2.
+    w3d.xmmax = float(w3d.nx)/2.
 if dim in ["1d","2d"]:
     w3d.ny = 2
-    w3d.ymmin = -float(w3d.ny)/2
-    w3d.ymmax = float(w3d.ny)/2
+    w3d.ymmin = -float(w3d.ny)/2.
+    w3d.ymmax = float(w3d.ny)/2.
 
 w3d.dx = (w3d.xmmax-w3d.xmmin)/w3d.nx
 w3d.dy = (w3d.ymmax-w3d.ymmin)/w3d.ny
@@ -202,7 +202,7 @@ w3d.dz = (w3d.zmmax-w3d.zmmin)/w3d.nz
 
 # --- sets field boundary conditions
 # --- longitudinal
-w3d.bound0  = w3d.boundnz = periodic
+w3d.bound0  = w3d.boundnz = openbc
 # --- transverse
 w3d.boundxy = periodic
 
@@ -227,14 +227,14 @@ else:
 #-------------------------------------------------------------------------------
 # set particles weights
 #-------------------------------------------------------------------------------
-weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)*0.
-weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)*0.
+weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
+weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
 top.wpid = nextpid() # Activate variable weights in the method addpart
 
 # --- create plasma species
 elec_C = Species(type=Electron,weight=weight_C,name='elec_C')
 elec_H = Species(type=Electron,weight=weight_H,name='elec_H')
-ions_C = Species(type=Carbon,weight=weight_C/6,charge_state=6.,name='ions_C')
+ions_C = Species(type=Carbon,weight=weight_C/6.,charge_state=6.,name='ions_C')
 ions_H = Species(type=Proton,weight=weight_H,name='ions_H')
 
 
@@ -359,9 +359,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 7#max(1,w3d.nx/30)
-    ntiley = 7#max(1,w3d.ny/30)
-    ntilez = 3#max(1,w3d.nz/30)
+    ntilex = 1#max(1,w3d.nx/30)
+    ntiley = 1#max(1,w3d.ny/30)
+    ntilez = 1#max(1,w3d.nz/30)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -442,16 +442,10 @@ def liveplots():
       ptitles('n','z [um]','X [um]')
       em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
       ptitles('Ez [GV/m]','z [um]','X [um]')
-      if l_pxr:
-      	em.ppzx_ptiles_v2(3,ppgeneric,view=6)
-        em.ppzx_ptiles_v2(1,ppgeneric,color=red,view=6)
-        em.ppzx_ptiles_v2(4,ppgeneric,color=blue,view=6)
-        em.ppzx_ptiles_v2(2,ppgeneric,color=cyan,view=6)
-      else:
-      	ions_C.ppzx(view=6)
-    	elec_C.ppzx(color=red,view=6)
-      	ions_H.ppzx(color=blue,view=6)
-      	elec_H.ppzx(color=cyan,view=6)
+      ions_C.ppzx(view=6)
+      elec_C.ppzx(color=red,view=6)
+      ions_H.ppzx(color=blue,view=6)
+      elec_H.ppzx(color=cyan,view=6)
       refresh()
 
 installafterstep(liveplots)

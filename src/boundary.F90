@@ -539,7 +539,7 @@ END SUBROUTINE charge_bcs
             DO iy=1, ntiley
                 DO ix=1, ntilex
                     curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                    nptile=curr_tile%np_tile
+                    nptile=curr_tile%np_tile(1)
                     DO i=nptile, 1, -1! LOOP ON PARTICLES
                         partx=curr_tile%part_x(i)
                         party=curr_tile%part_y(i)
@@ -613,14 +613,14 @@ END SUBROUTINE charge_bcs
                     ! If not subdomain border, nothing to do
                     IF (.NOT. curr%subdomain_bound) CYCLE
                     ! Else, search for outbound particles
-                    ALLOCATE(mask(1:curr%np_tile))
+                    ALLOCATE(mask(1:curr%np_tile(1)))
                     mask=.TRUE.
                     xbd = 0
                     ybd = 0
                     zbd = 0
                     part_xyz=0.
                     ! Identify outbounds particles
-                    DO i = 1, curr%np_tile !LOOP ON PARTICLES
+                    DO i = 1, curr%np_tile(1) !LOOP ON PARTICLES
                         xbd = 0
                         ybd = 0
                         zbd = 0

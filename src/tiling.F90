@@ -218,14 +218,14 @@ CONTAINS
         ENDIF
 
         ! Sanity check for max number of particles in tile
-        count = curr%np_tile+1
+        count = curr%np_tile(1)+1
         nmax  = curr%npmax_tile
         IF (count .GT. nmax) THEN
         ! Resize particle tile arrays if tile is full
             CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1))
         ENDIF
         ! Finally, add particle to tile
-        curr%np_tile=count
+        curr%np_tile(1)=count
         curr%part_x(count)  = partx
         curr%part_y(count)  = party
         curr%part_z(count)  = partz
@@ -248,7 +248,7 @@ CONTAINS
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
         LOGICAL, DIMENSION (:), INTENT(IN) :: mask
         INTEGER :: ninit, i
-        ninit= curr%np_tile
+        ninit= curr%np_tile(1)
         DO i = ninit,1,-1
             IF (.NOT. mask(i)) THEN
                 CALL rm_particle_at_tile(curr,i)
@@ -261,21 +261,21 @@ CONTAINS
         IMPLICIT NONE
         INTEGER :: index
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
-        IF (index .EQ. curr%np_tile) THEN
+        IF (index .EQ. curr%np_tile(1)) THEN
             ! If particle i is last element
             ! Simply decreases particle number
-            curr%np_tile=curr%np_tile-1
+            curr%np_tile(1)=curr%np_tile(1)-1
         ELSE
             ! Particle i replaced by last element
             ! Particle number is decreased
-            curr%part_x(index)=curr%part_x(curr%np_tile)
-            curr%part_y(index)=curr%part_y(curr%np_tile)
-            curr%part_z(index)=curr%part_z(curr%np_tile)
-            curr%part_ux(index)=curr%part_ux(curr%np_tile)
-            curr%part_uy(index)=curr%part_uy(curr%np_tile)
-            curr%part_uz(index)=curr%part_uz(curr%np_tile)
-            curr%weight(index)=curr%weight(curr%np_tile)
-            curr%np_tile=curr%np_tile-1
+            curr%part_x(index)=curr%part_x(curr%np_tile(1))
+            curr%part_y(index)=curr%part_y(curr%np_tile(1))
+            curr%part_z(index)=curr%part_z(curr%np_tile(1))
+            curr%part_ux(index)=curr%part_ux(curr%np_tile(1))
+            curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
+            curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
+            curr%weight(index)=curr%weight(curr%np_tile(1))
+            curr%np_tile=curr%np_tile(1)-1
         END IF
     END SUBROUTINE rm_particle_at_tile
 
@@ -323,7 +323,7 @@ CONTAINS
                         n2=curr_tile%ny_cells_tile
                         n3=curr_tile%nz_cells_tile
                         curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
-                        curr_tile%np_tile=0
+                        curr_tile%np_tile(1)=0
                         ! - Allocate arrays of current tile
                         CALL allocate_tile_arrays(curr_tile)
                     END DO
@@ -535,7 +535,7 @@ CONTAINS
 		zgtmin=curr_tile%z_grid_tile_min
 		zgtmax=curr_tile%z_grid_tile_max
 		! Number of particles in the tile
-		partn = curr_tile%np_tile
+		partn => curr_tile%np_tile
 		partnmax = curr_tile%npmax_tile
 		! Particle arrays in the tile
         partx=>curr_tile%part_x

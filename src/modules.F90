@@ -46,7 +46,8 @@ USE constants
 TYPE particle_tile
     LOGICAL :: l_arrays_allocated= .FALSE.
     ! Current number of particles in tile
-    INTEGER(idp) :: np_tile, npmax_tile
+    INTEGER(idp), DIMENSION(1) :: np_tile
+    INTEGER(idp) :: npmax_tile
     INTEGER(idp) :: nx_grid_tile, ny_grid_tile, nz_grid_tile
     INTEGER(idp) :: nx_cells_tile, ny_cells_tile, nz_cells_tile
     INTEGER(idp) :: nx_tile_min, nx_tile_max, ny_tile_min, ny_tile_max, &
@@ -290,7 +291,8 @@ END MODULE shared_data
 
 MODULE python_pointers
 USE constants
-INTEGER(idp) :: partn, partnmax
+INTEGER(idp), POINTER :: partn(:)
+INTEGER(idp) :: partnmax
 INTEGER(idp) :: nxgt, nygt, nzgt
 INTEGER(idp) :: nxct, nyct, nzct
 INTEGER(idp) :: nxmin, nxmax, nymin, nymax, &

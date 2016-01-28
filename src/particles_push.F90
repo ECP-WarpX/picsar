@@ -49,7 +49,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 ! - Init current tile variables
                 curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile
+                count=curr_tile%np_tile(1)
                 jmin=curr_tile%nx_tile_min-nxjguard
                 jmax=curr_tile%nx_tile_max+nxjguard
                 kmin=curr_tile%ny_tile_min-nyjguard
@@ -144,7 +144,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 ! - Init current tile variables
                 curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile
+                count=curr_tile%np_tile(1)
                 jmin=curr_tile%nx_tile_min-nxjguards
                 jmax=curr_tile%nx_tile_max+nxjguards
                 kmin=curr_tile%ny_tile_min-nyjguards
@@ -230,7 +230,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 ! - Init current tile variables
                 curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile
+                count=curr_tile%np_tile(1)
                 jmin=curr_tile%nx_tile_min-nxjguard
                 jmax=curr_tile%nx_tile_max+nxjguard
                 kmin=curr_tile%ny_tile_min-nyjguard

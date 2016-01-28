@@ -176,7 +176,7 @@ class EM3DPXR(EM3DFFT):
                         pg.sm = s.mass
                         pg.sw = 1.
                         pg.npmax = pxr.partnmax
-                        pg.nps[0] = pxr.partn
+                        pg.nps = pxr.partn
                         pg.ins[0] = 1
                         pg.xp = pxr.partx
                         pg.yp = pxr.party
@@ -210,7 +210,7 @@ class EM3DPXR(EM3DFFT):
             for iy in range(1,self.ntiley+1):
                 for ix in range(1,self.ntilex+1):
                     pxr.point_to_tile(ispecies, ix, iy, iz)
-                    print ix,iy,iz,pxr.partn
+                    print ix,iy,iz,pxr.partn[0]
     
     def ppzx_ptiles(self,ispecies,ppg,colors=['black','blue','red','green'],msize=2):
         ncolor = len(colors)
@@ -219,7 +219,7 @@ class EM3DPXR(EM3DFFT):
             for iy in range(1,self.ntiley+1):
                 for ix in range(1,self.ntilex+1):
                     pxr.point_to_tile(ispecies, ix, iy, iz)
-                    ppg(pxr.partx[:pxr.partn],pxr.partz[:pxr.partn],color=colors[ic%ncolor],msize=msize)
+                    ppg(pxr.partx[:pxr.partn[0]],pxr.partz[:pxr.partn[0]],color=colors[ic%ncolor],msize=msize)
                     ic+=1
 
     def ppzx_ptiles_v2(self,ispecies,ppg,**kw):
@@ -227,7 +227,7 @@ class EM3DPXR(EM3DFFT):
             for iy in range(1,self.ntiley+1):
                 for ix in range(1,self.ntilex+1):
                     pxr.point_to_tile(ispecies, ix, iy, iz)
-                    ppg(pxr.partx[:pxr.partn],pxr.partz[:pxr.partn],kwdict=kw)
+                    ppg(pxr.partx[:pxr.partn[0]],pxr.partz[:pxr.partn[0]],kwdict=kw)
 
     def push_e(self,dir=1.):
         dt = dir*top.dt/self.ntsub
@@ -435,10 +435,11 @@ class EM3DPXR(EM3DFFT):
         if l_first:
             if l_pxr:
                 pxr.pxrpush_particles_part2()
-                pxr.particle_bcs()
+                #pxr.particle_bcs()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
                         self.set_gamma(0,pg)
+                        particleboundaries3d(pg,-1,False)
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -448,10 +449,11 @@ class EM3DPXR(EM3DFFT):
         else:        
             if l_pxr:
                 pxr.push_particles()
-                pxr.particle_bcs()
+                #pxr.particle_bcs()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
                         self.set_gamma(0,pg)
+                        particleboundaries3d(pg,-1,False)
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
