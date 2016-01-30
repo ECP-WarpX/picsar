@@ -199,6 +199,7 @@ CONTAINS
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+        
         CALL add_particle_at_tile(curr, partx, party, partz, &
                 partux, partuy, partuz, partw)
 
@@ -232,7 +233,7 @@ CONTAINS
         curr%part_ux(count) = partux
         curr%part_uy(count) = partuy
         curr%part_uz(count) = partuz
-        curr%weight(count)  = partw
+        curr%pid(count,wpid) = partw
         curr%part_ex(count)  = 0._num
         curr%part_ey(count)  = 0._num
         curr%part_ez(count)  = 0._num
@@ -274,7 +275,7 @@ CONTAINS
             curr%part_ux(index)=curr%part_ux(curr%np_tile(1))
             curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
             curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
-            curr%weight(index)=curr%weight(curr%np_tile(1))
+            curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
             curr%np_tile=curr%np_tile(1)-1
         END IF
     END SUBROUTINE rm_particle_at_tile
@@ -284,12 +285,12 @@ CONTAINS
         INTEGER :: nmax, nxc, nyc, nzc
         ! ALLOCATE PARTICLE ARRAYS
         nmax = curr_tile%npmax_tile
-        ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),    &
-                 curr_tile%part_z(1:nmax), curr_tile%part_ux(1:nmax),   &
-                 curr_tile%part_uy(1:nmax), curr_tile%part_uz(1:nmax),  &
-                 curr_tile%weight(1:nmax), curr_tile%part_ex(1:nmax),   &
-                 curr_tile%part_ey(1:nmax), curr_tile%part_ez(1:nmax),  &
-                 curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax),  &
+        ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),    	   &
+                 curr_tile%part_z(1:nmax), curr_tile%part_ux(1:nmax),          &
+                 curr_tile%part_uy(1:nmax), curr_tile%part_uz(1:nmax),         &
+                 curr_tile%pid(1:nmax,1:npid), curr_tile%part_ex(1:nmax),      &
+                 curr_tile%part_ey(1:nmax), curr_tile%part_ez(1:nmax),         &
+                 curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax),         &
                  curr_tile%part_bz(1:nmax))
         ! ALLOCATE CURRENT ARRAYS jxtile, jytile, jztile
         nxc=curr_tile%nx_cells_tile
@@ -322,7 +323,7 @@ CONTAINS
                         n1=curr_tile%nx_cells_tile
                         n2=curr_tile%ny_cells_tile
                         n3=curr_tile%nz_cells_tile
-                        curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
+                        curr_tile%npmax_tile=n1*n2*n3*curr%nppcell*nspecies
                         curr_tile%np_tile(1)=0
                         ! - Allocate arrays of current tile
                         CALL allocate_tile_arrays(curr_tile)
@@ -357,7 +358,7 @@ CONTAINS
                         curr_tile%part_bx=0.0_num
                         curr_tile%part_by=0.0_num
                         curr_tile%part_bz=0.0_num
-                        curr_tile%weight=0.0_num
+                        curr_tile%pid=0.0_num
                     END DO! END LOOP ON SPECIES
                 END DO
             END DO
@@ -465,22 +466,22 @@ CONTAINS
         INTEGER :: old_size, new_size
 
         curr%npmax_tile=new_size
-        CALL resize_array_real(curr%part_x, old_size, new_size)
-        CALL resize_array_real(curr%part_y, old_size, new_size)
-        CALL resize_array_real(curr%part_z, old_size, new_size)
-        CALL resize_array_real(curr%part_ux, old_size, new_size)
-        CALL resize_array_real(curr%part_uy, old_size, new_size)
-        CALL resize_array_real(curr%part_uz, old_size, new_size)
-        CALL resize_array_real(curr%weight, old_size, new_size)
-        CALL resize_array_real(curr%part_ex, old_size, new_size)
-        CALL resize_array_real(curr%part_ey, old_size, new_size)
-        CALL resize_array_real(curr%part_ez, old_size, new_size)
-        CALL resize_array_real(curr%part_bx, old_size, new_size)
-        CALL resize_array_real(curr%part_by, old_size, new_size)
-        CALL resize_array_real(curr%part_bz, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_x, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_y, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_z, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_ux, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_uy, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_uz, old_size, new_size)
+        CALL resize_2D_array_real(curr%pid, old_size, new_size,npid,npid)
+        CALL resize_1D_array_real(curr%part_ex, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_ey, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_ez, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_bx, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_by, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_bz, old_size, new_size)
     END SUBROUTINE resize_particle_arrays
 
-    SUBROUTINE resize_array_real(arr, old_size, new_size)
+    SUBROUTINE resize_1D_array_real(arr, old_size, new_size)
         IMPLICIT NONE
         REAL(num), DIMENSION(:),ALLOCATABLE, INTENT(IN OUT) :: arr
         REAL(num), DIMENSION(:),ALLOCATABLE :: temp
@@ -493,7 +494,22 @@ CONTAINS
         ALLOCATE(arr(1:new_size))
         arr(1:old_size) = temp(1:old_size)
         DEALLOCATE(temp)
-    END SUBROUTINE
+    END SUBROUTINE resize_1D_array_real
+    
+    SUBROUTINE resize_2D_array_real(arr, nx_old,nx_new,ny_old,ny_new)
+        IMPLICIT NONE
+        REAL(num), DIMENSION(:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
+        INTEGER(idp),INTENT(IN) :: nx_old,ny_old,nx_new,ny_new
+        REAL(num), DIMENSION(:,:),ALLOCATABLE :: temp
+
+        ALLOCATE(temp(1:nx_new,1:ny_new))
+        ! reshape array
+        temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
+        DEALLOCATE(arr)
+        ALLOCATE(arr(1:nx_new,1:ny_new))
+        arr(1:nx_old,1:ny_old) = temp(1:nx_old,1:ny_old)
+        DEALLOCATE(temp)
+    END SUBROUTINE resize_2D_array_real
 
 
     ! ----- SUBROUTINES DEDICATED FOR PYTHON INTERFACE
@@ -544,7 +560,7 @@ CONTAINS
         partux=>curr_tile%part_ux
         partuy=>curr_tile%part_uy
         partuz=>curr_tile%part_uz
-        partw=>curr_tile%weight
+        pid=>curr_tile%pid
         partex=>curr_tile%part_ex
         partey=>curr_tile%part_ey
         partez=>curr_tile%part_ez
@@ -602,7 +618,7 @@ CONTAINS
             CALL add_particle_to_species(currsp, partx(i), party(i), partz(i), &
                 partux(i), partuy(i), partuz(i), partw(i))
         END DO
-    END SUBROUTINE py_add_particles_to_species
+        END SUBROUTINE py_add_particles_to_species
 
 
 END MODULE tiling

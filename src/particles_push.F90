@@ -4,8 +4,10 @@ USE shared_data
 USE params
 IMPLICIT NONE
 
+
 CALL push_particles_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+	 
 END SUBROUTINE push_particles
 
 

@@ -106,6 +106,9 @@ class EM3DPXR(EM3DFFT):
         pxr.bx = self.fields.Bx
         pxr.by = self.fields.By
         pxr.bz = self.fields.Bz
+        pxr.jx = self.fields.J[:,:,:,0]
+        pxr.jy = self.fields.J[:,:,:,1]
+        pxr.jz = self.fields.J[:,:,:,2]
         
         pxr.l_nodalgrid = self.l_nodalgrid
         
@@ -178,6 +181,7 @@ class EM3DPXR(EM3DFFT):
                         pg.npmax = pxr.partnmax
                         pg.nps = pxr.partn
                         pg.ins[0] = 1
+                        pg.sid[0]=0
                         pg.xp = pxr.partx
                         pg.yp = pxr.party
                         pg.zp = pxr.partz
@@ -185,7 +189,7 @@ class EM3DPXR(EM3DFFT):
                         pg.uyp = pxr.partuy
                         pg.uzp = pxr.partuz
                         pg.pid = fzeros([pg.npmax,top.npid])
-                        pg.pid[:,top.wpid-1] = pxr.partw
+                        pg.pid = pxr.pid
                         pg.gaminv = zeros(pg.npmax)
                         self.set_gamma(js=0,pg=pg)
                         pg.ex = pxr.partex
@@ -210,8 +214,15 @@ class EM3DPXR(EM3DFFT):
             for iy in range(1,self.ntiley+1):
                 for ix in range(1,self.ntilex+1):
                     pxr.point_to_tile(ispecies, ix, iy, iz)
-                    print ix,iy,iz,pxr.partn[0]
-    
+                    print ix,iy,iz,pxr.partn[0], pxr.partnmax
+    def print_nptiles_sp0(self):
+    	s=self.listofallspecies[0]
+        for iz in range(1,self.ntilez+1):
+            for iy in range(1,self.ntiley+1):
+                for ix in range(1,self.ntilex+1):
+                    pxr.point_to_tile(1, ix, iy, iz)
+                    print ix,iy,iz,pxr.partn, pxr.partnmax
+                    print ix,iy,iz,s.pgroups[iz-1][iy-1][ix-1].nps, s.pgroups[iz-1][iy-1][ix-1].npmax
     def ppzx_ptiles(self,ispecies,ppg,colors=['black','blue','red','green'],msize=2):
         ncolor = len(colors)
         ic=0
@@ -438,8 +449,11 @@ class EM3DPXR(EM3DFFT):
                 #pxr.particle_bcs()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
                         particleboundaries3d(pg,-1,False)
+                pxr.particle_bcs_tiles()
+                for i,s in enumerate(self.listofallspecies):
+                    for pg in s.flatten(s.pgroups):
+                        self.set_gamma(0,pg)
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -452,8 +466,11 @@ class EM3DPXR(EM3DFFT):
                 #pxr.particle_bcs()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
                         particleboundaries3d(pg,-1,False)
+                pxr.particle_bcs_tiles()
+                for i,s in enumerate(self.listofallspecies):
+                    for pg in s.flatten(s.pgroups):
+                        self.set_gamma(0,pg)
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -469,8 +486,8 @@ class EM3DPXR(EM3DFFT):
         self.pgroups = pgroups
 #        self.loadsource(pgroups=pgroups)
         self.loadrho(pgroups=pgroups)
-        self.loadj(pgroups=pgroups)
-                      
+        self.loadj(pgroups=pgroups)         
+#        pxr.depose_currents_on_grid_jxjyjz()
 #        self.solve2ndhalf()
         self.dosolve()
     

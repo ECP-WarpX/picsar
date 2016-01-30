@@ -50,7 +50,7 @@ CONTAINS
                         ! Depose charge in rho_tile
                         CALL depose_rho_scalar_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
                              curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
-                             curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
+                             curr_tile%pid(1:count,wpid), curr%charge,curr_tile%x_grid_tile_min, &
                              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
                              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
                              curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)

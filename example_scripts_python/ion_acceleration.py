@@ -208,8 +208,8 @@ w3d.boundxy = periodic
 
 # --- sets particles boundary conditions
 # --- longitudinal
-top.pbound0  = periodic
-top.pboundnz = periodic
+top.pbound0  = absorb
+top.pboundnz = absorb
 # --- transverse
 top.pboundxy = periodic
 
@@ -442,11 +442,16 @@ def liveplots():
       ptitles('n','z [um]','X [um]')
       em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
       ptitles('Ez [GV/m]','z [um]','X [um]')
-      ions_C.ppzx(view=6)
-      elec_C.ppzx(color=red,view=6)
-      ions_H.ppzx(color=blue,view=6)
-      elec_H.ppzx(color=cyan,view=6)
-      refresh()
+      if 0:#l_pxr:
+      	em.ppzx_ptiles_v2(3,ppgeneric,view=6)
+        em.ppzx_ptiles_v2(1,ppgeneric,color=red,view=6)
+        em.ppzx_ptiles_v2(4,ppgeneric,color=blue,view=6)
+        em.ppzx_ptiles_v2(2,ppgeneric,color=cyan,view=6)
+      else:
+      	ions_C.ppzx(view=6)
+    	elec_C.ppzx(color=red,view=6)
+      	ions_H.ppzx(color=blue,view=6)
+      	elec_H.ppzx(color=cyan,view=6)
 
 installafterstep(liveplots)
 

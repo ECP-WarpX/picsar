@@ -72,7 +72,7 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
-    REAL(num), ALLOCATABLE, DIMENSION(:) :: weight
+    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
     ! Current/charge arrays
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jxtile
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jytile
@@ -121,7 +121,8 @@ END MODULE tile_params
 
 MODULE particle_properties
 USE constants
-INTEGER(idp), PARAMETER  :: nthreads_tile=1
+INTEGER(idp), PARAMETER :: npid=1
+INTEGER(idp), PARAMETER :: wpid=1
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
 LOGICAL :: l4symtry = .FALSE.
@@ -308,7 +309,7 @@ REAL(num), DIMENSION(:), POINTER :: partz
 REAL(num), DIMENSION(:), POINTER :: partux
 REAL(num), DIMENSION(:), POINTER :: partuy
 REAL(num), DIMENSION(:), POINTER :: partuz
-REAL(num), DIMENSION(:), POINTER :: partw
+REAL(num), DIMENSION(:,:), POINTER :: pid
 REAL(num), DIMENSION(:), POINTER :: partex
 REAL(num), DIMENSION(:), POINTER :: partey
 REAL(num), DIMENSION(:), POINTER :: partez

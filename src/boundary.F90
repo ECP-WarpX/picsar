@@ -547,7 +547,7 @@ END SUBROUTINE charge_bcs
                         partux=curr_tile%part_ux(i)
                         partuy=curr_tile%part_uy(i)
                         partuz=curr_tile%part_uz(i)
-                        partw=curr_tile%weight(i)
+                        partw=curr_tile%pid(i,wpid)
 
                         ! Case 1: if particle did not leave tile nothing to do
                         IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max)) &
@@ -687,7 +687,7 @@ END SUBROUTINE charge_bcs
                             sendbuf(xbd,ybd,zbd,ibuff+3)  = curr%part_ux(i)
                             sendbuf(xbd,ybd,zbd,ibuff+4)  = curr%part_uy(i)
                             sendbuf(xbd,ybd,zbd,ibuff+5)  = curr%part_uz(i)
-                            sendbuf(xbd,ybd,zbd,ibuff+6)  = curr%weight(i)
+                            sendbuf(xbd,ybd,zbd,ibuff+6)  = curr%pid(i,wpid)
                             nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
