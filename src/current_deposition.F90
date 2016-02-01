@@ -2412,3 +2412,18 @@ DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz,jx1,jy1,jz1)
 
 RETURN
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
+
+SUBROUTINE add_pxrjxjyjz_towarp_j(jwarp,cdims,nxx,nyy,nzz,nxg,nyg,nzg)
+USE fields
+USE shared_data
+IMPLICIT NONE 
+INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxg, nyg, nzg, cdims
+REAL(num), INTENT (IN OUT), DIMENSION(-nxg:nxx+nxg,-nyg:nyy+nyg,-nzg:nzz+nzg,cdims) :: jwarp
+INTEGER(idp) :: idim
+
+jwarp(:,:,:,1)=jwarp(:,:,:,1)+jx
+jwarp(:,:,:,2)=jwarp(:,:,:,2)+jy
+jwarp(:,:,:,3)=jwarp(:,:,:,3)+jz
+
+END SUBROUTINE add_pxrjxjyjz_towarp_j
+

@@ -106,9 +106,6 @@ class EM3DPXR(EM3DFFT):
         pxr.bx = self.fields.Bx
         pxr.by = self.fields.By
         pxr.bz = self.fields.Bz
-        pxr.jx = self.fields.J[:,:,:,0]
-        pxr.jy = self.fields.J[:,:,:,1]
-        pxr.jz = self.fields.J[:,:,:,2]
         
         pxr.l_nodalgrid = self.l_nodalgrid
         
@@ -486,8 +483,7 @@ class EM3DPXR(EM3DFFT):
         self.pgroups = pgroups
 #        self.loadsource(pgroups=pgroups)
         self.loadrho(pgroups=pgroups)
-        self.loadj(pgroups=pgroups)         
-#        pxr.depose_currents_on_grid_jxjyjz()
+        self.loadj(pgroups=pgroups)
 #        self.solve2ndhalf()
         self.dosolve()
     
@@ -649,6 +645,134 @@ class EM3DPXR(EM3DFFT):
                        pg.gaminv[il:iu],top.dt)      
 
         if self.l_verbose:print me,'exit push_ions_positions'
+        
+    def loadsource(self,lzero=None,lfinalize_rho=None,pgroups=None,**kw):
+        '''Charge deposition, uses particles from top directly
+          - jslist: option list of species to load'''
+        # --- Note that the grid location is advanced even if no field solve
+        # --- is being done.
+        self.advancezgrid()
+        # --- If ldosolve is false, then skip the gather of rho, unless
+        # --- lzero is also false, in which case the solver is assumed to
+        # --- be gathering the source (for example during an EGUN iteration).
+        if not self.ldosolve and lzero: return
+        if lzero is None: lzero = w3d.lzerorhofsapi
+        if lfinalize_rho is None: lfinalize_rho = w3d.lfinalizerhofsapi
+
+        self.setparticledomains()
+        self.allocatedataarrays()
+        if lzero: self.zerosourcep()
+
+        if pgroups is None: pgroups = [top.pgroup]
+
+        if l_pxr:
+            # --- PICSAR current deposition
+            # --- js = 0
+             for pgroup in pgroups:
+
+                if w3d.js1fsapi >= 0: js1 = w3d.js1fsapi
+                else:                 js1 = 0
+                if w3d.js2fsapi >= 0: js2 = w3d.js2fsapi+1
+                else:                 js2 = pgroup.ns
+
+                jslist = kw.get('jslist',None)
+                if jslist is None: jslist = range(js1,js2)
+
+                for js in jslist:
+                    n = pgroup.nps[js]
+                    if n == 0: continue
+                    if pgroup.ldts[js]:
+                        indts = top.ndtstorho[pgroup.ndts[js]-1]
+                        iselfb = pgroup.iselfb[js]
+                        self.setsourcepforparticles(0,indts,iselfb)
+
+                        if self.debug:
+                            i1 = pgroup.ins[js]-1
+                            i2 = pgroup.ins[js]+pgroup.nps[js]-1
+                            if self.nxlocal > 0:
+                                x = pgroup.xp[i1:i2]
+                                if self.l4symtry: x = abs(x)
+                                if self.solvergeom == w3d.RZgeom:
+                                    y = pgroup.yp[i1:i2]
+                                    x = sqrt(x**2 + y**2)
+                                assert x.min() >= self.xmminp,\
+                                       "Particles in species %d have x below the grid when depositing the source, min x = %e"%(js,x.min())
+                                assert x.max() < self.xmmaxp,\
+                                       "Particles in species %d have x above the grid when depositing the source, max x = %e"%(js,x.max())
+                            if self.nylocal > 0:
+                                y = pgroup.yp[i1:i2]
+                                if self.l4symtry or self.l2symtry: y = abs(y)
+                                assert y.min() >= self.ymminp,\
+                                       "Particles in species %d have y below the grid when depositing the source, min y = %e"%(js,y.min())
+                                assert y.max() < self.ymmaxp,\
+                                       "Particles in species %d have y above the grid when depositing the source, max y = %e"%(js,y.max())
+                            if self.nzlocal > 0:
+                                z = pgroup.zp[i1:i2]
+                                assert z.min() >= self.zmminp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
+                                assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
+             pxr.depose_currents_on_grid_jxjyjz()
+             pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
+             pxr.nxguards,pxr.nyguards,pxr.nzguards)          
+             #f=self.fields
+             #f.J[:,:,:,0]=f.J[:,:,:,0]+pxr.jx
+             #f.J[:,:,:,1]=f.J[:,:,:,1]+pxr.jy
+             #f.J[:,:,:,2]=f.J[:,:,:,2]+pxr.jz  
+        else:
+
+            for pgroup in pgroups:
+
+                if w3d.js1fsapi >= 0: js1 = w3d.js1fsapi
+                else:                 js1 = 0
+                if w3d.js2fsapi >= 0: js2 = w3d.js2fsapi+1
+                else:                 js2 = pgroup.ns
+
+                jslist = kw.get('jslist',None)
+                if jslist is None: jslist = range(js1,js2)
+
+                for js in jslist:
+                    n = pgroup.nps[js]
+                    if n == 0: continue
+                    if pgroup.ldts[js]:
+                        indts = top.ndtstorho[pgroup.ndts[js]-1]
+                        iselfb = pgroup.iselfb[js]
+                        self.setsourcepforparticles(0,indts,iselfb)
+
+                        if self.debug:
+                            i1 = pgroup.ins[js]-1
+                            i2 = pgroup.ins[js]+pgroup.nps[js]-1
+                            if self.nxlocal > 0:
+                                x = pgroup.xp[i1:i2]
+                                if self.l4symtry: x = abs(x)
+                                if self.solvergeom == w3d.RZgeom:
+                                    y = pgroup.yp[i1:i2]
+                                    x = sqrt(x**2 + y**2)
+                                assert x.min() >= self.xmminp,\
+                                       "Particles in species %d have x below the grid when depositing the source, min x = %e"%(js,x.min())
+                                assert x.max() < self.xmmaxp,\
+                                       "Particles in species %d have x above the grid when depositing the source, max x = %e"%(js,x.max())
+                            if self.nylocal > 0:
+                                y = pgroup.yp[i1:i2]
+                                if self.l4symtry or self.l2symtry: y = abs(y)
+                                assert y.min() >= self.ymminp,\
+                                       "Particles in species %d have y below the grid when depositing the source, min y = %e"%(js,y.min())
+                                assert y.max() < self.ymmaxp,\
+                                       "Particles in species %d have y above the grid when depositing the source, max y = %e"%(js,y.max())
+                            if self.nzlocal > 0:
+                                z = pgroup.zp[i1:i2]
+                                assert z.min() >= self.zmminp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
+                                assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
+
+                        self.setsourcep(js,pgroup,self.getzgridndts()[indts])
+
+        # --- Only finalize the source if lzero is true, which means the this
+        # --- call to loadsource should be a complete operation.
+        self.sourcepfinalized = False
+        if lzero and lfinalize_rho: self.finalizesourcep()
+        
 
     def apply_bndconditions(self,js,pg=None):
         if self.l_verbose:print me,'enter apply_ions_bndconditions'

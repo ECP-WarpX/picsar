@@ -359,9 +359,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 1#max(1,w3d.nx/30)
-    ntiley = 1#max(1,w3d.ny/30)
-    ntilez = 1#max(1,w3d.nz/30)
+    ntilex = 8#max(1,w3d.nx/30)
+    ntiley = 8#max(1,w3d.ny/30)
+    ntilez = 8#max(1,w3d.nz/30)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
