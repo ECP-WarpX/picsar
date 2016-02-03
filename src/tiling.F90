@@ -323,7 +323,7 @@ CONTAINS
                         n1=curr_tile%nx_cells_tile
                         n2=curr_tile%ny_cells_tile
                         n3=curr_tile%nz_cells_tile
-                        curr_tile%npmax_tile=n1*n2*n3*curr%nppcell*nspecies
+                        curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
                         curr_tile%np_tile(1)=0
                         ! - Allocate arrays of current tile
                         CALL allocate_tile_arrays(curr_tile)

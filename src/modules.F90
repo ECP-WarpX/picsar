@@ -220,6 +220,12 @@ CHARACTER(LEN=string_length) :: filerho  ='rho'
 END MODULE output_data
 
 
+MODULE timing
+use constants 
+REAL(num) :: dep_curr_time=0._num
+
+END MODULE timing
+
 
 
 

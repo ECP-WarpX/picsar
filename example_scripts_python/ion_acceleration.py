@@ -35,12 +35,12 @@ carbon_layer_start     = 2
 carbon_layer_width     = 6
 carbon_layer_thickness = 0.075
 carbon_layer_e_density = 4.
-nppcell_carbon         = 250
+nppcell_carbon         = 2500
 #Hydrogen layer
 hydrogen_layer_width     = 6
 hydrogen_layer_thickness = 0.05
 hydrogen_layer_e_density = 2.
-nppcell_hydrogen         = 160
+nppcell_hydrogen         = 1600
 
 #Laser at the left border:
 a0             = 100
@@ -53,7 +53,8 @@ laser_width    = 4/2 #(=2w_0)
 
 #Mesh: 
 dt=0.0025
-dx=dy=dz=0.005
+dx=dy=0.005
+dz=0.005
 
 # --- scaling
 carbon_layer_e_density/=dfact
@@ -159,13 +160,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 2#5
-nppcelly_C = 2#5
-nppcellz_C = 2#5
+nppcellx_C = 4#5
+nppcelly_C = 4#5
+nppcellz_C = 4#5
 
-nppcellx_H = 2#4
-nppcelly_H = 2#4
-nppcellz_H = 2#4
+nppcellx_H = 4#4
+nppcelly_H = 4#4
+nppcellz_H = 4#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -202,14 +203,14 @@ w3d.dz = (w3d.zmmax-w3d.zmmin)/w3d.nz
 
 # --- sets field boundary conditions
 # --- longitudinal
-w3d.bound0  = w3d.boundnz = openbc
+w3d.bound0  = w3d.boundnz = periodic
 # --- transverse
 w3d.boundxy = periodic
 
 # --- sets particles boundary conditions
 # --- longitudinal
-top.pbound0  = absorb
-top.pboundnz = absorb
+top.pbound0  = periodic
+top.pboundnz = periodic
 # --- transverse
 top.pboundxy = periodic
 
@@ -359,9 +360,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 8#max(1,w3d.nx/30)
-    ntiley = 8#max(1,w3d.ny/30)
-    ntilez = 8#max(1,w3d.nz/30)
+    ntilex = 1#max(1,w3d.nx/30)
+    ntiley = 1#max(1,w3d.ny/30)
+    ntilez = 1#max(1,w3d.nz/30)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,

@@ -35,7 +35,7 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-INTEGER(idp) :: nblk=10000000
+INTEGER(idp) :: nblk=900000
 
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -61,12 +61,12 @@ DO iz=1, ntilez ! LOOP ON TILES
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
-                curr_tile%part_ex = 0.0_num
-                curr_tile%part_ey = 0.0_num
-                curr_tile%part_ez = 0.0_num
-                curr_tile%part_bx=0.0_num
-                curr_tile%part_by=0.0_num
-                curr_tile%part_bz=0.0_num
+                curr_tile%part_ex(1:count) = 0.0_num
+                curr_tile%part_ey(1:count) = 0.0_num
+                curr_tile%part_ez(1:count) = 0.0_num
+                curr_tile%part_bx(1:count)=0.0_num
+                curr_tile%part_by(1:count)=0.0_num
+                curr_tile%part_bz(1:count)=0.0_num
                 !!! ---- Loop by blocks over particles in a tile (blocking)
                 DO ip=1,count,nblk
                     np=MIN(count-ip+1,nblk)
@@ -130,7 +130,7 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-INTEGER(idp) :: nblk=10000000
+INTEGER(idp) :: nblk=900000
 
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -215,7 +215,7 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-INTEGER(idp) :: nblk=10000000
+INTEGER(idp) :: nblk=900000
 
 
 tdeb=MPI_WTIME()
@@ -242,12 +242,12 @@ DO iz=1, ntilez ! LOOP ON TILES
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
-                curr_tile%part_ex = 0.0_num
-                curr_tile%part_ey = 0.0_num
-                curr_tile%part_ez = 0.0_num
-                curr_tile%part_bx=0.0_num
-                curr_tile%part_by=0.0_num
-                curr_tile%part_bz=0.0_num
+                curr_tile%part_ex(1:count) = 0.0_num
+                curr_tile%part_ey(1:count) = 0.0_num
+                curr_tile%part_ez(1:count) = 0.0_num
+                curr_tile%part_bx(1:count)=0.0_num
+                curr_tile%part_by(1:count)=0.0_num
+                curr_tile%part_bz(1:count)=0.0_num
                 !!! ---- Loop by blocks over particles in a tile (blocking)
                 DO ip=1,count,nblk
                     np=MIN(count-ip+1,nblk)

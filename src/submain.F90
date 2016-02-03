@@ -27,7 +27,7 @@ DO i=1,nst
     !!! --- Apply BC on particles
     CALL particle_bcs
     !!! --- Deposit current of particle species on the grid
-    CALL depose_currents_on_grid_jxjyjz
+    CALL pxrdepose_currents_on_grid_jxjyjz
     !!! --- Boundary conditions for currents
     CALL current_bcs
     !!! --- Push B field half a time step
@@ -49,7 +49,7 @@ DO i=1,nst
     it = it+1
     timeit=MPI_WTIME()
 
-   IF ((rank .EQ. 0) .AND. (MOD(it,10) .EQ. 0)) THEN
+   IF (rank .EQ. 0)  THEN
         WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
         " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF
