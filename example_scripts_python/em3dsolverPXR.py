@@ -779,8 +779,9 @@ class EM3DPXR(EM3DFFT):
                     jx=f.J[:,:,:,0]
                     jy=f.J[:,:,:,1]
                     jz=f.J[:,:,:,2]
-                    pxr.warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,pgroup.nps[0],pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0],pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
-                    #depose_jxjyjz_esirkepov_n(f.J,ncurr, pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.gaminv[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0], pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
+                    #pxr.warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,pgroup.nps[0],pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0],pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
+                    depose_jxjyjz_esirkepov_n(f.J,ncurr, pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.gaminv[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0], pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
+                    #pxr.picsar_depose_jxjyjz_esirkepov_n(f.J,ncurr, pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.gaminv[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0], pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
              #pxr.pxrdepose_currents_on_grid_jxjyjz()
              #pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
              #pxr.nxguards,pxr.nyguards,pxr.nzguards)          
