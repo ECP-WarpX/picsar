@@ -1,5 +1,5 @@
 """Class for 2D & 3D FFT-based electromagnetic solver """
-from em3dsolverFFT import *
+from warp.field_solvers.em3dsolverFFT import *
 try:
     import picsarpy as pxrpy
     pxr = pxrpy.picsar
@@ -53,8 +53,8 @@ class EM3DPXR(EM3DFFT):
         pxr.nprocx=0
         pxr.nprocy=0
         pxr.nprocz=0
-		
-		# --- number of guard cells
+        
+        # --- number of guard cells
         pxr.nxguards = self.nxguard
         pxr.nyguards = self.nyguard
         pxr.nzguards = self.nzguard
@@ -76,8 +76,8 @@ class EM3DPXR(EM3DFFT):
         pxr.y_max_local = self.fields.ymax
         pxr.z_min_local = self.fields.zmin
         pxr.z_max_local = self.fields.zmax
-		
-		
+        
+        
         pxr.mpi_minimal_init()
         pxr.mpi_initialise()
 #        print 'nprocx',pxr.nprocx
@@ -114,7 +114,7 @@ class EM3DPXR(EM3DFFT):
         pxr.nzs = 0
 
 
-		# Current deposition
+        # Current deposition
         pxr.nox=1
         pxr.noy=1
         pxr.noz=1
@@ -198,14 +198,53 @@ class EM3DPXR(EM3DFFT):
                         pg.lebcancel_pusher=top.pgroup.lebcancel_pusher
                     xygroup.append(xgroup)
                 s.pgroups.append(xygroup)
-
+            pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
 #        for i,s in enumerate(self.listofallspecies):
 #            def ppzx(self,**kw):
 #                for pg in self.pgroups:
 #                   self._callppfunc(ppzx,pgroup=pg,**kw)
                     
 #            s.ppzx = ppzx
-            
+    def aliasparticlearrays(self):
+        # --- Detect if tile arrays have been reallocated in PXR
+        # --- and make proper aliasing in WARP 
+        
+        isrealloc=zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8'))
+        for i,s in enumerate(self.listofallspecies):
+            pxr.get_are_tiles_reallocated(i+1, self.ntilex, self.ntiley, self.ntilez,isrealloc)
+            ix,iy,iz=where(isrealloc==1)
+            for il in range(0,len(ix)):
+                pg = s.pgroups[iz[il]][iy[il]][ix[il]]
+                pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
+                pg.npmax = 0
+                pxr.partnmax
+                pg.ns=1
+                pg.npid=top.npid
+                pg.gchange()
+                pg.sq = s.charge
+                pg.sm = s.mass
+                pg.sw = 1.
+                pg.npmax = pxr.partnmax
+                pg.nps = pxr.partn
+                pg.ins[0] = 1
+                pg.sid[0]=0
+                pg.xp = pxr.partx
+                pg.yp = pxr.party
+                pg.zp = pxr.partz
+                pg.uxp = pxr.partux
+                pg.uyp = pxr.partuy
+                pg.uzp = pxr.partuz
+                pg.pid = fzeros([pg.npmax,top.npid])
+                pg.pid = pxr.pid
+                pg.gaminv = zeros(pg.npmax)
+                pg.ex = pxr.partex
+                pg.ey = pxr.partey
+                pg.ez = pxr.partez
+                pg.bx = pxr.partbx
+                pg.by = pxr.partby
+                pg.bz = pxr.partbz
+            pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
+
     def print_nptiles(self,ispecies):
         for iz in range(1,self.ntilez+1):
             for iy in range(1,self.ntiley+1):
@@ -213,7 +252,7 @@ class EM3DPXR(EM3DFFT):
                     pxr.point_to_tile(ispecies, ix, iy, iz)
                     print ix,iy,iz,pxr.partn[0], pxr.partnmax
     def print_nptiles_sp0(self):
-    	s=self.listofallspecies[0]
+        s=self.listofallspecies[0]
         for iz in range(1,self.ntilez+1):
             for iy in range(1,self.ntiley+1):
                 for ix in range(1,self.ntilex+1):
@@ -269,8 +308,8 @@ class EM3DPXR(EM3DFFT):
                                                   clight**2*dt/f.dz*f.zcoefs[0],
                                                   f.nx,f.ny,f.nz,
                                                   f.nxguard,f.nyguard,f.nzguard,
-                                                  0,0,0,f.l_nodalgrid)               	
-                	
+                                                  0,0,0,f.l_nodalgrid)                   
+                    
                     else:
                         pxr.pxrpush_em2d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                                   f.J[...,0],f.J[...,1],f.J[...,2],
@@ -509,6 +548,7 @@ class EM3DPXR(EM3DFFT):
                     for pg in s.flatten(s.pgroups):
                         particleboundaries3d(pg,-1,False)
                 pxr.particle_bcs_tiles()
+                self.aliasparticlearrays()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
                         self.set_gamma(0,pg)
@@ -526,6 +566,7 @@ class EM3DPXR(EM3DFFT):
                     for pg in s.flatten(s.pgroups):
                         particleboundaries3d(pg,-1,False)
                 pxr.particle_bcs_tiles()
+                self.aliasparticlearrays()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
                         self.set_gamma(0,pg)
@@ -550,7 +591,6 @@ class EM3DPXR(EM3DFFT):
     
         if l_pxr:
             if l_last:
-                print top.it,'part 1'
                 pxr.pxrpush_particles_part1()
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -731,7 +771,6 @@ class EM3DPXR(EM3DFFT):
             # --- js = 0
              f=self.fields
              for pgroup in pgroups:
-                print pgroup
                 if w3d.js1fsapi >= 0: js1 = w3d.js1fsapi
                 else:                 js1 = 0
                 if w3d.js2fsapi >= 0: js2 = w3d.js2fsapi+1
@@ -774,21 +813,9 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-                ncurr=pgroup.nps[0]
-                if (ncurr>0):
-                    jx=f.J[:,:,:,0]
-                    jy=f.J[:,:,:,1]
-                    jz=f.J[:,:,:,2]
-                    #pxr.warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,pgroup.nps[0],pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0],pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
-                    depose_jxjyjz_esirkepov_n(f.J,ncurr, pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.gaminv[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0], pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
-                    #pxr.picsar_depose_jxjyjz_esirkepov_n(f.J,ncurr, pgroup.xp[0:ncurr],pgroup.yp[0:ncurr],pgroup.zp[0:ncurr],pgroup.uxp[0:ncurr],pgroup.uyp[0:ncurr],pgroup.uzp[0:ncurr],pgroup.gaminv[0:ncurr],pgroup.pid[0:ncurr,0],pgroup.sq[0], pxr.xmin,pxr.ymin,pxr.zmin,pxr.dt,pxr.dx,pxr.dy,pxr.dz,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.nox,pxr.noy,pxr.noz,True,False)
-             #pxr.pxrdepose_currents_on_grid_jxjyjz()
-             #pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
-             #pxr.nxguards,pxr.nyguards,pxr.nzguards)          
-             #f=self.fields
-             #f.J[:,:,:,0]=f.J[:,:,:,0]+pxr.jx
-             #f.J[:,:,:,1]=f.J[:,:,:,1]+pxr.jy
-             #f.J[:,:,:,2]=f.J[:,:,:,2]+pxr.jz  
+             pxr.pxrdepose_currents_on_grid_jxjyjz()
+             pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
+             pxr.nxguards,pxr.nyguards,pxr.nzguards)          
         else:
 
             for pgroup in pgroups:

@@ -836,7 +836,7 @@ def rm_spechar(line):
     if (idecl>=0):
         linecopy=line.replace("_num","")
         linecopy=linecopy.replace("(num)","(kind=8)")
-        linecopy=linecopy.replace("allocatable","pointer")
+        #linecopy=linecopy.replace("allocatable","pointer")
     else:
         linecopy=line
     return linecopy

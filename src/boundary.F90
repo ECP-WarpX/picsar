@@ -566,8 +566,7 @@ END SUBROUTINE charge_bcs
                         indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
                         indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
                         CALL rm_particle_at_tile(curr_tile,i)
-                        curr_tile_add=>curr%array_of_tiles(indx,indy,indz)
-                        CALL add_particle_at_tile(curr_tile_add, &
+                        CALL add_particle_at_tile(curr, indx,indy,indz, &
                              partx, party, partz, partux, partuy, partuz, partw)
                     END DO !END LOOP ON PARTICLES
                 END DO

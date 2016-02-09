@@ -1,7 +1,7 @@
 from warp import *
 from em3dsolverPXR import *
 import os
-from openpmd_diag import FieldDiagnostic, ParticleDiagnostic
+from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 home=os.getenv('HOME')
 
 l_pxr=1
@@ -52,9 +52,9 @@ laser_width    = 4/2 #(=2w_0)
 #focused at x=6 from the left border
 
 #Mesh: 
-dt=0.0025
-dx=dy=0.005
-dz=0.005
+dt=0.0015
+dx=dy=0.0035
+dz=0.002
 
 # --- scaling
 carbon_layer_e_density/=dfact
@@ -99,7 +99,7 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 10   # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 400   # frequency (in time steps) of live plots (off is l_test is off)
 
 fielddiag_period   = 500/dtfact
 partdiag_period    = 500/dtfact
@@ -160,13 +160,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 4#5
-nppcelly_C = 4#5
-nppcellz_C = 4#5
+nppcellx_C = 5#5
+nppcelly_C = 5#5
+nppcellz_C = 5#5
 
-nppcellx_H = 4#4
-nppcelly_H = 4#4
-nppcellz_H = 4#4
+nppcellx_H = 5#4
+nppcelly_H = 5#4
+nppcellz_H = 5#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -443,16 +443,10 @@ def liveplots():
       ptitles('n','z [um]','X [um]')
       em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
       ptitles('Ez [GV/m]','z [um]','X [um]')
-      if 0:#l_pxr:
-      	em.ppzx_ptiles_v2(3,ppgeneric,view=6)
-        em.ppzx_ptiles_v2(1,ppgeneric,color=red,view=6)
-        em.ppzx_ptiles_v2(4,ppgeneric,color=blue,view=6)
-        em.ppzx_ptiles_v2(2,ppgeneric,color=cyan,view=6)
-      else:
-      	ions_C.ppzx(view=6)
-    	elec_C.ppzx(color=red,view=6)
-      	ions_H.ppzx(color=blue,view=6)
-      	elec_H.ppzx(color=cyan,view=6)
+      ions_C.ppzx(view=6)
+      elec_C.ppzx(color=red,view=6)
+      ions_H.ppzx(color=blue,view=6)
+      elec_H.ppzx(color=cyan,view=6)
 
 installafterstep(liveplots)
 

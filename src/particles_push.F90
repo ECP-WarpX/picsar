@@ -35,6 +35,7 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
+INTEGER(idp) :: nxjg,nyjg,nzjg
 INTEGER(idp) :: nblk=900000
 
 tdeb=MPI_WTIME()
@@ -42,7 +43,7 @@ tdeb=MPI_WTIME()
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,nblk,noxx,noyy,nozz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np)
+!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np,nxjg,nyjg,nzjg)
 DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley
         DO ix=1, ntilex
@@ -52,12 +53,16 @@ DO iz=1, ntilez ! LOOP ON TILES
                 curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                jmin=curr_tile%nx_tile_min-nxjguard
-                jmax=curr_tile%nx_tile_max+nxjguard
-                kmin=curr_tile%ny_tile_min-nyjguard
-                kmax=curr_tile%ny_tile_max+nyjguard
-                lmin=curr_tile%nz_tile_min-nzjguard
-                lmax=curr_tile%nz_tile_max+nzjguard
+                IF (count .EQ. 0) CYCLE
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jmin=curr_tile%nx_tile_min-nxjg
+                jmax=curr_tile%nx_tile_max+nxjg
+                kmin=curr_tile%ny_tile_min-nyjg
+                kmax=curr_tile%ny_tile_max+nyjg
+                lmin=curr_tile%nz_tile_min-nzjg
+                lmax=curr_tile%nz_tile_max+nzjg
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
@@ -78,8 +83,8 @@ DO iz=1, ntilez ! LOOP ON TILES
                                        curr_tile%part_ey(ipmin:ipmax),curr_tile%part_ez(ipmin:ipmax),                                  &
                                        curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                                            &
                                        curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                                 &
-				                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguard,nyjguard,              				   &
-				    				   nzjguard,noxx,noyy,nozz,exg(jmin:jmax,kmin:kmax,lmin:lmax),eyg(jmin:jmax,kmin:kmax,lmin:lmax),  &
+				                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,              				   &
+				    				   nzjg,noxx,noyy,nozz,exg(jmin:jmax,kmin:kmax,lmin:lmax),eyg(jmin:jmax,kmin:kmax,lmin:lmax),  &
                                       ezg(jmin:jmax,kmin:kmax,lmin:lmax),.TRUE.)
                     !!! --- Gather magnetic fields on particles
                     CALL pxrgetb3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),     			  &
@@ -87,8 +92,8 @@ DO iz=1, ntilez ! LOOP ON TILES
 				                      curr_tile%part_by(ipmin:ipmax),curr_tile%part_bz(ipmin:ipmax),                    			  &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                             				  &
                                       curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   			  &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguard,nyjguard,               				  &
-                                      nzjguard,noxx,noyy,nozz,bxg(jmin:jmax,kmin:kmax,lmin:lmax),byg(jmin:jmax,kmin:kmax,lmin:lmax),  &
+                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,               				  &
+                                      nzjg,noxx,noyy,nozz,bxg(jmin:jmax,kmin:kmax,lmin:lmax),byg(jmin:jmax,kmin:kmax,lmin:lmax),  &
                                       bzg(jmin:jmax,kmin:kmax,lmin:lmax), .TRUE.)
                     !! --- Push velocity with E half step
                     CALL pxr_epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
@@ -147,12 +152,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                jmin=curr_tile%nx_tile_min-nxjguards
-                jmax=curr_tile%nx_tile_max+nxjguards
-                kmin=curr_tile%ny_tile_min-nyjguards
-                kmax=curr_tile%ny_tile_max+nyjguards
-                lmin=curr_tile%nz_tile_min-nzjguards
-                lmax=curr_tile%nz_tile_max+nzjguards
+                IF (count .EQ. 0) CYCLE
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
@@ -216,14 +216,14 @@ TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 INTEGER(idp) :: nblk=900000
-
+INTEGER(idp) :: nxjg,nyjg,nzjg
 
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
 !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,nblk,noxx,noyy,nozz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np)
+!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np,nxjg,nyjg,nzjg)
 DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley
         DO ix=1, ntilex
@@ -233,12 +233,16 @@ DO iz=1, ntilez ! LOOP ON TILES
                 curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                jmin=curr_tile%nx_tile_min-nxjguard
-                jmax=curr_tile%nx_tile_max+nxjguard
-                kmin=curr_tile%ny_tile_min-nyjguard
-                kmax=curr_tile%ny_tile_max+nyjguard
-                lmin=curr_tile%nz_tile_min-nzjguard
-                lmax=curr_tile%nz_tile_max+nzjguard
+                IF (count .EQ. 0) CYCLE
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jmin=curr_tile%nx_tile_min-nxjg
+                jmax=curr_tile%nx_tile_max+nxjg
+                kmin=curr_tile%ny_tile_min-nyjg
+                kmax=curr_tile%ny_tile_max+nyjg
+                lmin=curr_tile%nz_tile_min-nzjg
+                lmax=curr_tile%nz_tile_max+nzjg
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
@@ -259,8 +263,8 @@ DO iz=1, ntilez ! LOOP ON TILES
                                       curr_tile%part_ey(ipmin:ipmax),curr_tile%part_ez(ipmin:ipmax),                   &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                             &
                                       curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguard,nyjguard,               &
-									  nzjguard,noxx,noyy,nozz,exg(jmin:jmax,kmin:kmax,lmin:lmax),eyg(jmin:jmax,kmin:kmax,lmin:lmax),  &
+                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,               &
+									  nzjg,noxx,noyy,nozz,exg(jmin:jmax,kmin:kmax,lmin:lmax),eyg(jmin:jmax,kmin:kmax,lmin:lmax),  &
 							          ezg(jmin:jmax,kmin:kmax,lmin:lmax),.TRUE.)
                     !!! --- Gather magnetic fields on particles
                     CALL pxrgetb3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),     &
@@ -268,8 +272,8 @@ DO iz=1, ntilez ! LOOP ON TILES
                                       curr_tile%part_by(ipmin:ipmax),curr_tile%part_bz(ipmin:ipmax),                    &
                                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              &
                                       curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjguard,nyjguard,                &
-									  nzjguard,noxx,noyy,nozz,bxg(jmin:jmax,kmin:kmax,lmin:lmax),byg(jmin:jmax,kmin:kmax,lmin:lmax),  &
+                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                &
+									  nzjg,noxx,noyy,nozz,bxg(jmin:jmax,kmin:kmax,lmin:lmax),byg(jmin:jmax,kmin:kmax,lmin:lmax),  &
 									  bzg(jmin:jmax,kmin:kmax,lmin:lmax),.TRUE.)
                     CALL pxr_epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
                     curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &

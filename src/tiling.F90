@@ -47,6 +47,8 @@ CONTAINS
             curr_sp => species_parray(ispecies)
             IF (.NOT. curr_sp%l_arrayoftiles_allocated) THEN
                 ALLOCATE(curr_sp%array_of_tiles(ntilex,ntiley,ntilez))
+                ALLOCATE(curr_sp%are_tiles_reallocated(ntilex,ntiley,ntilez))
+                curr_sp%are_tiles_reallocated= 0
                 curr_sp%l_arrayoftiles_allocated = .TRUE.
             END IF
             ! Sets tile spatial extents for current species
@@ -198,21 +200,24 @@ CONTAINS
 		iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
-        curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+        !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
         
-        CALL add_particle_at_tile(curr, partx, party, partz, &
+        CALL add_particle_at_tile(currsp,ixtile,iytile,iztile, partx, party, partz, &
                 partux, partuy, partuz, partw)
 
         ! Update total number of particle species
         currsp%species_npart=currsp%species_npart+1
     END SUBROUTINE add_particle_to_species
 
-    SUBROUTINE add_particle_at_tile(curr, partx, party, partz, &
+    SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
                 partux, partuy, partuz, partw)
         IMPLICIT NONE
-        INTEGER(idp) :: count, nmax
+        INTEGER(idp) :: count, nmax, ixt, iyt, izt
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
-        TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
+        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
+        TYPE(particle_tile), POINTER :: curr
+        
+        curr=>currsp%array_of_tiles(ixt,iyt,izt)
         ! If no particles in tile, allocate particle arrays
         IF (.NOT. curr%l_arrays_allocated) THEN
             CALL allocate_tile_arrays(curr)
@@ -223,6 +228,7 @@ CONTAINS
         nmax  = curr%npmax_tile
         IF (count .GT. nmax) THEN
         ! Resize particle tile arrays if tile is full
+        	currsp%are_tiles_reallocated(ixt,iyt,izt)=1
             CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1))
         ENDIF
         ! Finally, add particle to tile
@@ -282,7 +288,8 @@ CONTAINS
 
     SUBROUTINE allocate_tile_arrays(curr_tile)
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr_tile
-        INTEGER :: nmax, nxc, nyc, nzc
+        INTEGER(idp) :: nmax, nxc, nyc, nzc
+        INTEGER(idp) :: nxjg,nyjg,nzjg
         ! ALLOCATE PARTICLE ARRAYS
         nmax = curr_tile%npmax_tile
         ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),    	   &
@@ -296,18 +303,21 @@ CONTAINS
         nxc=curr_tile%nx_cells_tile
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
-        ALLOCATE(curr_tile%jxtile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%jytile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%jztile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards),  &
-                 curr_tile%rhotile(-nxjguards:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards))
+        nxjg=curr_tile%nxg_tile
+        nyjg=curr_tile%nyg_tile
+        nzjg=curr_tile%nzg_tile
+        ALLOCATE(curr_tile%jxtile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg),  &
+                 curr_tile%jytile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg),  &
+                 curr_tile%jztile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg),  &
+                 curr_tile%rhotile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg))
         curr_tile%l_arrays_allocated = .TRUE.
 
     END SUBROUTINE allocate_tile_arrays
 
     SUBROUTINE init_tile_arrays
         IMPLICIT NONE
-        INTEGER(KIND=4) :: ispecies, ix, iy, iz
-        INTEGER(KIND=4) :: n1, n2, n3
+        INTEGER(idp) :: ispecies, ix, iy, iz
+        INTEGER(idp) :: n1, n2, n3
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
@@ -325,6 +335,9 @@ CONTAINS
                         n3=curr_tile%nz_cells_tile
                         curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
                         curr_tile%np_tile(1)=0
+                        curr_tile%nxg_tile=MAX(nox,2)
+                        curr_tile%nyg_tile=MAX(noy,2)
+                        curr_tile%nzg_tile=MAX(noz,2)
                         ! - Allocate arrays of current tile
                         CALL allocate_tile_arrays(curr_tile)
                     END DO
@@ -526,6 +539,9 @@ CONTAINS
         currsp=> species_parray(ispecies)
         curr_tile=>currsp%array_of_tiles(ix,iy,iz)
 		! Tile extent and dimension
+		nxtg=curr_tile%nxg_tile
+		nytg=curr_tile%nyg_tile
+		nztg=curr_tile%nzg_tile
 		nxgt=curr_tile%nx_grid_tile
 		nygt=curr_tile%ny_grid_tile
 		nzgt=curr_tile%nz_grid_tile
@@ -618,7 +634,31 @@ CONTAINS
             CALL add_particle_to_species(currsp, partx(i), party(i), partz(i), &
                 partux(i), partuy(i), partuz(i), partw(i))
         END DO
-        END SUBROUTINE py_add_particles_to_species
+    END SUBROUTINE py_add_particles_to_species
+        
+    !!! --- Get logical array are_tiles_reallocated for a given species
+    SUBROUTINE get_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
+        IMPLICIT NONE
+        INTEGER(idp), INTENT(IN) :: nsp, ntx,nty,ntz
+        INTEGER(idp), DIMENSION(ntx,nty,ntz), INTENT(IN OUT) :: atrealloc
+        TYPE(particle_species), POINTER :: currsp
+        currsp=>species_parray(nsp)
+
+        atrealloc=currsp%are_tiles_reallocated
+        
+    END SUBROUTINE get_are_tiles_reallocated
+    
+     !!! --- Set logical array are_tiles_reallocated for a given species
+    SUBROUTINE set_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
+        IMPLICIT NONE
+        INTEGER(idp), INTENT(IN) :: nsp, ntx,nty,ntz
+        INTEGER(idp), DIMENSION(ntx,nty,ntz), INTENT(IN) :: atrealloc
+        TYPE(particle_species), POINTER :: currsp
+        currsp=>species_parray(nsp)
+
+        currsp%are_tiles_reallocated=atrealloc
+        
+    END SUBROUTINE set_are_tiles_reallocated
 
 
 END MODULE tiling
