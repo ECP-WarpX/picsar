@@ -95,22 +95,28 @@ DO iz=1, ntilez ! LOOP ON TILES
                                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,               				  &
                                       nzjg,noxx,noyy,nozz,bxg(jmin:jmax,kmin:kmax,lmin:lmax),byg(jmin:jmax,kmin:kmax,lmin:lmax),  &
                                       bzg(jmin:jmax,kmin:kmax,lmin:lmax), .TRUE.)
-                    !! --- Push velocity with E half step
-                    CALL pxr_epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
-                    curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &
-                    curr_tile%part_ez(ipmin:ipmax), curr%charge,curr%mass,dtt*0.5_num)
-                    !!! --- Push velocity with B half step
-                    CALL pxr_bpush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
-                    curr_tile%part_uz(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax), curr_tile%part_by(ipmin:ipmax), &
-                    curr_tile%part_bz(ipmin:ipmax), curr%charge,curr%mass,dtt)
+					!! --- Push velocity with E half step
+					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					 &
+					curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+					!! --- Set gamma of particles 
+					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					curr_tile%part_uz, curr_tile%part_gaminv)
+					!! --- Push velocity with B half step
+					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,				     &
+					curr_tile%part_bz, curr%charge,curr%mass,dtt)
                     !!! --- Push velocity with E half step
                     CALL pxr_epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
                     curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &
                     curr_tile%part_ez(ipmin:ipmax), curr%charge,curr%mass,dtt*0.5_num)
+                    !! --- Set gamma of particles 
+					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					curr_tile%part_uz, curr_tile%part_gaminv)
                     !!!! --- push particle species positions a time step
                     CALL pxr_pushxyz(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),                    &
                     curr_tile%part_z(ipmin:ipmax), curr_tile%part_ux(ipmin:ipmax),curr_tile%part_uy(ipmin:ipmax),   &
-                    curr_tile%part_uz(ipmin:ipmax),dtt)
+                    curr_tile%part_uz(ipmin:ipmax),curr_tile%part_gaminv(ipmin:ipmax),dtt)
                 END DO
             END DO! END LOOP ON SPECIES
         END DO
@@ -135,14 +141,13 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-INTEGER(idp) :: nblk=900000
 
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
 !$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,nblk) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np)
+!$OMP lmax,nxc,nyc,nzc)
 DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley
         DO ix=1, ntilex
@@ -153,26 +158,22 @@ DO iz=1, ntilez ! LOOP ON TILES
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .EQ. 0) CYCLE
-                nxc=curr_tile%nx_cells_tile
-                nyc=curr_tile%ny_cells_tile
-                nzc=curr_tile%nz_cells_tile
                 !!! ---- Loop by blocks over particles in a tile (blocking)
-                DO ip=1,count,nblk
-                    np=MIN(count-ip+1,nblk)
-                    ipmin=ip
-                    ipmax=ip+np-1
-                    !!! --- Push velocity with B half step
-                    CALL pxr_bpush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
-                    curr_tile%part_uz(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax), curr_tile%part_by(ipmin:ipmax), &
-                    curr_tile%part_bz(ipmin:ipmax), curr%charge,curr%mass,dt*0.5_num)
-                    !! --- Push velocity with E half step
-                    CALL pxr_epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
-                    curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &
-                    curr_tile%part_ez(ipmin:ipmax), curr%charge,curr%mass,dt*0.5_num)
-                    CALL pxr_pushxyz(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),                    &
-                    curr_tile%part_z(ipmin:ipmax), curr_tile%part_ux(ipmin:ipmax),curr_tile%part_uy(ipmin:ipmax),   &
-                    curr_tile%part_uz(ipmin:ipmax),dt)
-                END DO
+                !!! --- Push velocity with B half step
+				CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+				curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, 				     &
+				curr_tile%part_bz, curr%charge,curr%mass,dt*0.5_num)
+				!! --- Push velocity with E half step
+				CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				     &
+				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
+				!! --- Sets gamma of particles
+				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+				curr_tile%part_uz, curr_tile%part_gaminv)
+				!! --- Advance particle position of one time step 
+				CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,                    &
+				curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,   				     &
+				curr_tile%part_uz,curr_tile%part_gaminv,dt)
             END DO! END LOOP ON SPECIES
         END DO
     END DO
@@ -199,6 +200,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 USE particles
 USE constants
 USE tiling
+USE timing
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
@@ -215,102 +217,120 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-INTEGER(idp) :: nblk=900000
 INTEGER(idp) :: nxjg,nyjg,nzjg
+LOGICAL(idp) :: isgathered=.FALSE.
 
-tdeb=MPI_WTIME()
+
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
 !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,nblk,noxx,noyy,nozz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np,nxjg,nyjg,nzjg)
+!$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg)
 DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley
         DO ix=1, ntilex
-            DO ispecies=1, nspecies ! LOOP ON SPECIES
-                ! - Get current tile properties
-                ! - Init current tile variables
-                curr=>species_parray(ispecies)
+			curr=>species_parray(1)
+			curr_tile=>curr%array_of_tiles(ix,iy,iz)
+			nxjg=curr_tile%nxg_tile
+			nyjg=curr_tile%nyg_tile
+			nzjg=curr_tile%nzg_tile
+			jmin=curr_tile%nx_tile_min-nxjg
+			jmax=curr_tile%nx_tile_max+nxjg
+			kmin=curr_tile%ny_tile_min-nyjg
+			kmax=curr_tile%ny_tile_max+nyjg
+			lmin=curr_tile%nz_tile_min-nzjg
+			lmax=curr_tile%nz_tile_max+nzjg
+			nxc=curr_tile%nx_cells_tile
+			nyc=curr_tile%ny_cells_tile
+			nzc=curr_tile%nz_cells_tile
+			isgathered=.FALSE.
+			DO ispecies=1, nspecies ! LOOP ON SPECIES
+			    curr=>species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) CYCLE
-                nxjg=curr_tile%nxg_tile
-                nyjg=curr_tile%nyg_tile
-                nzjg=curr_tile%nzg_tile
-                jmin=curr_tile%nx_tile_min-nxjg
-                jmax=curr_tile%nx_tile_max+nxjg
-                kmin=curr_tile%ny_tile_min-nyjg
-                kmax=curr_tile%ny_tile_max+nyjg
-                lmin=curr_tile%nz_tile_min-nzjg
-                lmax=curr_tile%nz_tile_max+nzjg
-                nxc=curr_tile%nx_cells_tile
-                nyc=curr_tile%ny_cells_tile
-                nzc=curr_tile%nz_cells_tile
-                curr_tile%part_ex(1:count) = 0.0_num
-                curr_tile%part_ey(1:count) = 0.0_num
-                curr_tile%part_ez(1:count) = 0.0_num
-                curr_tile%part_bx(1:count)=0.0_num
-                curr_tile%part_by(1:count)=0.0_num
-                curr_tile%part_bz(1:count)=0.0_num
-                !!! ---- Loop by blocks over particles in a tile (blocking)
-                DO ip=1,count,nblk
-                    np=MIN(count-ip+1,nblk)
-                    ipmin=ip
-                    ipmax=ip+np-1
-                    !!! --- Gather electric field on particles
-                    CALL pxrgete3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),    &
-                                      curr_tile%part_z(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax),                   &
-                                      curr_tile%part_ey(ipmin:ipmax),curr_tile%part_ez(ipmin:ipmax),                   &
-                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                             &
-                                      curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,               &
-									  nzjg,noxx,noyy,nozz,exg(jmin:jmax,kmin:kmax,lmin:lmax),eyg(jmin:jmax,kmin:kmax,lmin:lmax),  &
-							          ezg(jmin:jmax,kmin:kmax,lmin:lmax),.TRUE.)
-                    !!! --- Gather magnetic fields on particles
-                    CALL pxrgetb3d_n_energy_conserving(np,curr_tile%part_x(ipmin:ipmax),curr_tile%part_y(ipmin:ipmax),     &
-                                      curr_tile%part_z(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax),                    &
-                                      curr_tile%part_by(ipmin:ipmax),curr_tile%part_bz(ipmin:ipmax),                    &
-                                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              &
-                                      curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   &
-                                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                &
-									  nzjg,noxx,noyy,nozz,bxg(jmin:jmax,kmin:kmax,lmin:lmax),byg(jmin:jmax,kmin:kmax,lmin:lmax),  &
-									  bzg(jmin:jmax,kmin:kmax,lmin:lmax),.TRUE.)
-                    CALL pxr_epush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
-                    curr_tile%part_uz(ipmin:ipmax), curr_tile%part_ex(ipmin:ipmax), curr_tile%part_ey(ipmin:ipmax), &
-                    curr_tile%part_ez(ipmin:ipmax), curr%charge,curr%mass,dtt*0.5_num)
-                    !!! --- Push velocity with B half step
-                    CALL pxr_bpush_v(np,curr_tile%part_ux(ipmin:ipmax), curr_tile%part_uy(ipmin:ipmax),                 &
-                    curr_tile%part_uz(ipmin:ipmax), curr_tile%part_bx(ipmin:ipmax), curr_tile%part_by(ipmin:ipmax), &
-                    curr_tile%part_bz(ipmin:ipmax), curr%charge,curr%mass,dtt*0.5_num)
-                END DO
-            END DO! END LOOP ON SPECIES
+                IF (count .GT. 0) isgathered=.TRUE.
+                	
+            END DO
+            IF (isgathered) THEN
+				extile(ix,iy,iz)%gtile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
+				eytile(ix,iy,iz)%gtile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
+				eztile(ix,iy,iz)%gtile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
+				bxtile(ix,iy,iz)%gtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
+				bytile(ix,iy,iz)%gtile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
+				bztile(ix,iy,iz)%gtile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
+				DO ispecies=1, nspecies ! LOOP ON SPECIES
+					! - Get current tile properties
+					! - Init current tile variables
+					curr=>species_parray(ispecies)
+					curr_tile=>curr%array_of_tiles(ix,iy,iz)
+					count=curr_tile%np_tile(1)
+					IF (count .EQ. 0) CYCLE
+ 
+					curr_tile%part_ex(1:count) = 0.0_num
+					curr_tile%part_ey(1:count) = 0.0_num
+					curr_tile%part_ez(1:count) = 0.0_num
+					curr_tile%part_bx(1:count)=0.0_num
+					curr_tile%part_by(1:count)=0.0_num
+					curr_tile%part_bz(1:count)=0.0_num
+					!!! ---- Loop by blocks over particles in a tile (blocking)
+					!!! --- Gather electric field on particles
+					tdeb=MPI_WTIME()
+					CALL pxr_gete3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
+										  curr_tile%part_z, curr_tile%part_ex,                                                       &
+										  curr_tile%part_ey,curr_tile%part_ez,                   									 &
+										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                            			 &
+										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  			 &
+										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             				     &
+										  nzjg,noxx,noyy,nozz,extile(ix,iy,iz)%gtile,eytile(ix,iy,iz)%gtile, &
+										  eztile(ix,iy,iz)%gtile,.FALSE.,.TRUE.)
+					!!! --- Gather magnetic fields on particles
+					CALL pxr_getb3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
+									  curr_tile%part_z, curr_tile%part_bx,                    									     &
+									  curr_tile%part_by,curr_tile%part_bz,                    										 &
+									  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              			 &
+									  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   			 &
+									  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                					 &
+									  nzjg,noxx,noyy,nozz,bxtile(ix,iy,iz)%gtile,bytile(ix,iy,iz)%gtile,  	 &
+									  bztile(ix,iy,iz)%gtile,.FALSE.,.TRUE.)
+					tend=MPI_WTIME()
+					timepush=timepush+(tend-tdeb)
+					!! --- Push velocity with E half step
+					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					 &
+					curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+					!! --- Set gamma of particles 
+					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					curr_tile%part_uz, curr_tile%part_gaminv)
+					!! --- Push velocity with B half step
+					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,				     &
+					curr_tile%part_bz, curr%charge,curr%mass,dtt*0.5_num)
+					!END DO
+				END DO! END LOOP ON SPECIES
+			ENDIF
         END DO
     END DO
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
-tend=MPI_WTIME()
-pushtime=pushtime+(tend-tdeb)
+
 END SUBROUTINE pxrpush_particles_part1_sub
 !===============================================================================
 !  Advance particle positions
-SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,dt)
+SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
 !===============================================================================
 USE constants
 USE omp_lib
 IMPLICIT NONE
 INTEGER(idp)   :: np
-REAL(num) :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np)
-REAL(num) :: dt,gaminv,clghtisq,usq
+REAL(num) :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
+REAL(num) :: dt
 INTEGER(idp)  :: ip
 
-clghtisq = 1.0_num/clight**2
-!!$OMP PARALLEL DO PRIVATE(ip, usq, gaminv)
+!!$OMP PARALLEL DO PRIVATE(ip)
 DO ip=1,np
-    usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gaminv = 1.0_num/sqrt(1.0_num + usq)
-    xp(ip) = xp(ip) + uxp(ip)*gaminv*dt
-    yp(ip) = yp(ip) + uyp(ip)*gaminv*dt
-    zp(ip) = zp(ip) + uzp(ip)*gaminv*dt
+    xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
+    yp(ip) = yp(ip) + uyp(ip)*gaminv(ip)*dt
+    zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
 ENDDO
 !!$OMP END PARALLEL DO
 
@@ -347,28 +367,25 @@ END SUBROUTINE pxr_epush_v
 !===============================================================================
 !  Push the particle velocity with B field (Boris algorithm)
 ! --- fast b-field rotation algorithm
-SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,bx,by,bz,q,m,dt)
+SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,gaminv,bx,by,bz,q,m,dt)
 !===============================================================================
 
 USE constants
 IMPLICIT NONE
 INTEGER(idp)   :: np
-REAL(num) :: uxp(np), uyp(np), uzp(np)
+REAL(num) :: uxp(np), uyp(np), uzp(np), gaminv(np)
 REAL(num) :: bx(np), by(np), bz(np)
-REAL(num) :: q,m,dt,gaminv
+REAL(num) :: q,m,dt
 INTEGER(idp)   :: ip
-REAL(num) :: const,clghtisq,sx,sy,sz,tx,ty,tz,tsqi,uxppr,uyppr,uzppr,usq
+REAL(num) :: const,sx,sy,sz,tx,ty,tz,tsqi,uxppr,uyppr,uzppr
 
 const = q*dt*0.5_num/m
-clghtisq = 1.0_num/clight**2
 
-!!$OMP PARALLEL DO PRIVATE(ip, tx, ty, tz, tsqi, sx, sy, sz, uxppr, uyppr, uzppr, usq, gaminv)
+!!$OMP PARALLEL DO PRIVATE(ip, tx, ty, tz, tsqi, sx, sy, sz, uxppr, uyppr, uzppr)
 DO ip=1,np
-    usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gaminv = 1.0_num/sqrt(1.0_num + usq)
-    tx = gaminv*bx(ip)*const
-    ty = gaminv*by(ip)*const
-    tz = gaminv*bz(ip)*const
+    tx = gaminv(ip)*bx(ip)*const
+    ty = gaminv(ip)*by(ip)*const
+    tz = gaminv(ip)*bz(ip)*const
     tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
     sx = tx*tsqi
     sy = ty*tsqi
@@ -385,6 +402,32 @@ ENDDO
 RETURN
 
 END SUBROUTINE pxr_bpush_v
+
+
+!===============================================================================
+!  Push the particle velocity with B field (Boris algorithm)
+! --- fast b-field rotation algorithm
+SUBROUTINE pxr_set_gamma(np,uxp,uyp,uzp,gaminv)
+!===============================================================================
+
+USE constants
+IMPLICIT NONE
+INTEGER(idp)   :: ip, np
+REAL(num) :: uxp(np), uyp(np), uzp(np), gaminv(np)
+REAL(num) :: clghtisq, usq
+
+clghtisq = 1.0_num/clight**2
+
+!!$OMP PARALLEL DO PRIVATE(ip)
+DO ip=1,np
+    usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
+    gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
+END DO
+!!$OMP END PARALLEL DO
+
+RETURN
+
+END SUBROUTINE pxr_set_gamma
 
 
 ! Push the particle velocity with E and B fields, assuming Vmid = 0.5*(Vold+Vnew),

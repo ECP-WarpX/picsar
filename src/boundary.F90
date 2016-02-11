@@ -299,14 +299,14 @@ CONTAINS
 
     temp = 0.0_num
     CALL MPI_SENDRECV(array(nn+1,-nyg,-nzg), 1_isp, subarray, &
-        neighbour( 1,0,0), tag, temp, sz, mpidbl, &
-        neighbour(-1,0,0), tag, comm, status, errcode)
+        INT(neighbour( 1,0,0),isp), tag, temp, sz, mpidbl, &
+        INT(neighbour(-1,0,0),isp), tag, comm, status, errcode)
     array(0:nxg-1,:,:) = array(0:nxg-1,:,:) + temp
 
     temp = 0.0_num
     CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1_isp, subarray, &
-        neighbour(-1,0,0), tag, temp, sz, mpidbl, &
-        neighbour( 1,0,0), tag, comm, status, errcode)
+        INT(neighbour(-1,0,0),isp), tag, temp, sz, mpidbl, &
+        INT(neighbour( 1,0,0),isp), tag, comm, status, errcode)
     array(nn+1-nxg:nn,:,:) = array(nn+1-nxg:nn,:,:) + temp
 
     DEALLOCATE(temp)
@@ -325,14 +325,14 @@ CONTAINS
 
     temp = 0.0_num
     CALL MPI_SENDRECV(array(-nxg,nn+1,-nzg), 1_isp, subarray, &
-        neighbour(0, 1,0), tag, temp, sz, mpidbl, &
-        neighbour(0,-1,0), tag, comm, status, errcode)
+        INT(neighbour(0, 1,0),isp), tag, temp, sz, mpidbl, &
+        INT(neighbour(0,-1,0),isp), tag, comm, status, errcode)
     array(:,0:nyg-1,:) = array(:,0:nyg-1,:) + temp
 
     temp = 0.0_num
     CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1_isp, subarray, &
-        neighbour(0,-1,0), tag, temp, sz, mpidbl, &
-        neighbour(0, 1,0), tag, comm, status, errcode)
+        INT(neighbour(0,-1,0),isp), tag, temp, sz, mpidbl, &
+        INT(neighbour(0, 1,0),isp), tag, comm, status, errcode)
     array(:,nn+1-nyg:nn,:) = array(:,nn+1-nyg:nn,:) + temp
 
     DEALLOCATE(temp)
@@ -351,14 +351,14 @@ CONTAINS
 
     temp = 0.0_num
     CALL MPI_SENDRECV(array(-nxg,-nyg,nn+1), 1_isp, subarray, &
-        neighbour(0,0, 1), tag, temp, sz, mpidbl, &
-        neighbour(0,0,-1), tag, comm, status, errcode)
+        INT(neighbour(0,0, 1),isp), tag, temp, sz, mpidbl, &
+        INT(neighbour(0,0,-1),isp), tag, comm, status, errcode)
     array(:,:,0:nzg-1) = array(:,:,0:nzg-1) + temp
 
     temp = 0.0_num
     CALL MPI_SENDRECV(array(-nxg,-nyg,-nzg), 1_isp, subarray, &
-        neighbour(0,0,-1), tag, temp, sz, mpidbl, &
-        neighbour(0,0, 1), tag, comm, status, errcode)
+        INT(neighbour(0,0,-1),isp), tag, temp, sz, mpidbl, &
+        INT(neighbour(0,0, 1),isp), tag, comm, status, errcode)
     array(:,:,nn+1-nzg:nn) = array(:,:,nn+1-nzg:nn) + temp
 
     DEALLOCATE(temp)
@@ -526,7 +526,7 @@ END SUBROUTINE charge_bcs
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
     INTEGER(idp) :: test =0
 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
@@ -547,6 +547,7 @@ END SUBROUTINE charge_bcs
                         partux=curr_tile%part_ux(i)
                         partuy=curr_tile%part_uy(i)
                         partuz=curr_tile%part_uz(i)
+                        gaminv=curr_tile%part_gaminv(i)
                         partw=curr_tile%pid(i,wpid)
 
                         ! Case 1: if particle did not leave tile nothing to do
@@ -567,7 +568,7 @@ END SUBROUTINE charge_bcs
                         indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
                         CALL rm_particle_at_tile(curr_tile,i)
                         CALL add_particle_at_tile(curr, indx,indy,indz, &
-                             partx, party, partz, partux, partuy, partuz, partw)
+                             partx, party, partz, partux, partuy, partuz, gaminv, partw)
                     END DO !END LOOP ON PARTICLES
                 END DO
             END DO
@@ -577,7 +578,7 @@ END SUBROUTINE charge_bcs
 
 !!! MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
-    INTEGER(isp), PARAMETER :: nvar=7 ! Simple implementation
+    INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
@@ -686,7 +687,8 @@ END SUBROUTINE charge_bcs
                             sendbuf(xbd,ybd,zbd,ibuff+3)  = curr%part_ux(i)
                             sendbuf(xbd,ybd,zbd,ibuff+4)  = curr%part_uy(i)
                             sendbuf(xbd,ybd,zbd,ibuff+5)  = curr%part_uz(i)
-                            sendbuf(xbd,ybd,zbd,ibuff+6)  = curr%pid(i,wpid)
+                            sendbuf(xbd,ybd,zbd,ibuff+6)  = curr%part_gaminv(i)
+                            sendbuf(xbd,ybd,zbd,ibuff+7)  = curr%pid(i,wpid)
                             nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
@@ -708,8 +710,8 @@ END SUBROUTINE charge_bcs
                             !- Get number of particles in recvbuff
                             nsend_buf=nptoexch(ix,iy,iz)*nvar
                             nrecv_buf=0
-                            dest = neighbour(ix,iy,iz)
-                            src  = neighbour(ixp,iyp,izp)
+                            dest = INT(neighbour(ix,iy,iz),isp)
+                            src  = INT(neighbour(ixp,iyp,izp),isp)
                             CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER, dest, tag, nrecv_buf, 1_isp, &
                             MPI_INTEGER, src, tag, comm, status, errcode)
                             ALLOCATE(recvbuf(1:nrecv_buf))
@@ -718,7 +720,7 @@ END SUBROUTINE charge_bcs
                             ! Add received particles to particle arrays
                             DO i =1, nrecv_buf, nvar
                                 CALL add_particle_to_species(currsp, recvbuf(i), recvbuf(i+1), recvbuf(i+2), &
-                                recvbuf(i+3), recvbuf(i+4), recvbuf(i+5), recvbuf(i+6))
+                                recvbuf(i+3), recvbuf(i+4), recvbuf(i+5), recvbuf(i+6),recvbuf(i+7))
                             END DO
                             DEALLOCATE(recvbuf)
                     ENDDO

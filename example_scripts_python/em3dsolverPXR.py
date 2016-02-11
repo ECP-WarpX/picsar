@@ -8,7 +8,6 @@ try:
 except:
     l_pxr=False
     print 'PICSAR package not found.'
-
 class EM3DPXR(EM3DFFT):
 
     __em3dpxrinputs__ = []
@@ -37,7 +36,51 @@ class EM3DPXR(EM3DFFT):
         if l_pxr:self.allocatefieldarraysPXR()
         loadrho()
 
+    def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
+      ixt = ix
+      iyt = iy
+      izt = iz
+
+      if (ixt < 0   ): ixt = nx - 1
+      if (ixt > nx-1): ixt = 0
+      if (iyt < 0   ): iyt = ny - 1
+      if (iyt > ny-1): iyt = 0
+      if (izt < 0   ): izt = nz - 1
+      if (izt > nz-1): izt = 0
+
+      convertindextoproc = ixt + iyt*nx + izt*nx*ny
+
+      return convertindextoproc
+    
+
     def allocatefieldarraysPXR(self):
+    
+        # Set up PXR MPI Data
+        pxr.nprocx=top.fsdecomp.nxprocs
+        pxr.nprocy=top.fsdecomp.nyprocs
+        pxr.nprocz=top.fsdecomp.nzprocs
+        ixcpu=top.fsdecomp.ixproc
+        iycpu=top.fsdecomp.iyproc
+        izcpu=top.fsdecomp.izproc
+        for iz in range(-1,2):
+            for iy in range(-1,2):
+                for ix in range(-1,2): 
+                    indtoproc=self.convertindtoproc(ixcpu+ix,iycpu+iy,izcpu+iz,pxr.nprocx,pxr.nprocy,pxr.nprocz)
+                    pxr.neighbour[ix+1,iy+1,iz+1]=indtoproc
+                    
+        if (ixcpu==0):
+        	pxr.x_min_boundary=1
+        if (ixcpu==pxr.nprocx-1):
+        	pxr.x_max_boundary=1
+        if (iycpu==0):
+        	pxr.y_min_boundary=1
+        if (iycpu==pxr.nprocy-1):
+        	pxr.y_max_boundary=1
+        if (izcpu==0):
+        	pxr.z_min_boundary=1
+        if (izcpu==pxr.nprocz-1):
+        	pxr.z_max_boundary=1
+        	
         # --- number of grid cells
         pxr.nx_global = w3d.nx
         pxr.ny_global = w3d.ny
@@ -46,13 +89,13 @@ class EM3DPXR(EM3DFFT):
         pxr.ny_global_grid = pxr.ny_global+1
         pxr.nz_global_grid = pxr.nz_global+1
         
-        pxr.nx = self.nx
-        pxr.ny = self.ny
-        pxr.nz = self.nz
-
-        pxr.nprocx=0
-        pxr.nprocy=0
-        pxr.nprocz=0
+        pxr.nx = self.nxlocal
+        pxr.ny = self.nylocal
+        pxr.nz = self.nzlocal
+        pxr.nx_grid=pxr.nx+1
+        pxr.ny_grid=pxr.ny+1
+        pxr.nz_grid=pxr.nz+1
+		
         
         # --- number of guard cells
         pxr.nxguards = self.nxguard
@@ -77,13 +120,15 @@ class EM3DPXR(EM3DFFT):
         pxr.z_min_local = self.fields.zmin
         pxr.z_max_local = self.fields.zmax
         
+        pxr.length_x=pxr.xmax-pxr.xmin
+        pxr.length_y=pxr.ymax-pxr.ymin
+        pxr.length_z=pxr.zmax-pxr.zmin
         
+# INIT MPI_DATA FOR PICSAR
         pxr.mpi_minimal_init()
-        pxr.mpi_initialise()
-#        print 'nprocx',pxr.nprocx
-        
-
-        
+#        pxr.mpi_initialise()
+#        print 'nprocx',pxr.nprocx      
+        pxr.allocate_grid_quantities()
         pxr.dt = top.dt
 
         # --- Resolution
@@ -147,7 +192,8 @@ class EM3DPXR(EM3DFFT):
                                             s.getz(bcast=0,gather=0), 
                                             s.getux(bcast=0,gather=0), 
                                             s.getuy(bcast=0,gather=0), 
-                                            s.getuz(bcast=0,gather=0), 
+                                            s.getuz(bcast=0,gather=0),
+                                            s.getgaminv(bcast=0,gather=0), 
                                             s.getweights(bcast=0,gather=0)  )      
 
         top.pgroup.npmax=0
@@ -187,8 +233,7 @@ class EM3DPXR(EM3DFFT):
                         pg.uzp = pxr.partuz
                         pg.pid = fzeros([pg.npmax,top.npid])
                         pg.pid = pxr.pid
-                        pg.gaminv = zeros(pg.npmax)
-                        self.set_gamma(js=0,pg=pg)
+                        pg.gaminv = pxr.partgaminv
                         pg.ex = pxr.partex
                         pg.ey = pxr.partey
                         pg.ez = pxr.partez
@@ -236,7 +281,7 @@ class EM3DPXR(EM3DFFT):
                 pg.uzp = pxr.partuz
                 pg.pid = fzeros([pg.npmax,top.npid])
                 pg.pid = pxr.pid
-                pg.gaminv = zeros(pg.npmax)
+                pg.gaminv = pxr.partgaminv
                 pg.ex = pxr.partex
                 pg.ey = pxr.partey
                 pg.ez = pxr.partez
@@ -533,7 +578,6 @@ class EM3DPXR(EM3DFFT):
     
         top.zgrid+=top.vbeamfrm*top.dt
         top.zbeam=top.zgrid
-
         # --- gather fields from grid to particles
 #        w3d.pgroupfsapi = top.pgroup
 #        for js in range(top.pgroup.ns):
@@ -543,15 +587,12 @@ class EM3DPXR(EM3DFFT):
         if l_first:
             if l_pxr:
                 pxr.pxrpush_particles_part2()
-                #pxr.particle_bcs()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        particleboundaries3d(pg,-1,False)
-                pxr.particle_bcs_tiles()
+                pxr.particle_bcs()
+                #for i,s in enumerate(self.listofallspecies):
+                #    for pg in s.flatten(s.pgroups):
+                #        particleboundaries3d(pg,-1,False)
+                #pxr.particle_bcs_tiles()
                 self.aliasparticlearrays()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -561,15 +602,12 @@ class EM3DPXR(EM3DFFT):
         else:        
             if l_pxr:
                 pxr.push_particles()
-                #pxr.particle_bcs()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        particleboundaries3d(pg,-1,False)
-                pxr.particle_bcs_tiles()
+                pxr.particle_bcs()
+                #for i,s in enumerate(self.listofallspecies):
+                #    for pg in s.flatten(s.pgroups):
+                #        particleboundaries3d(pg,-1,False)
+                #pxr.particle_bcs_tiles()
                 self.aliasparticlearrays()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -592,9 +630,6 @@ class EM3DPXR(EM3DFFT):
         if l_pxr:
             if l_last:
                 pxr.pxrpush_particles_part1()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
         else:
             for i,s in enumerate(self.listofallspecies):
                 for pg in s.flatten(s.pgroups):
@@ -766,7 +801,7 @@ class EM3DPXR(EM3DFFT):
 
         if pgroups is None: pgroups = [top.pgroup]
 
-        if l_pxr:
+        if  l_pxr:
             # --- PICSAR current deposition
             # --- js = 0
              f=self.fields

@@ -65,11 +65,11 @@ DO iz=1,ntilez
                 nyjg=curr_tile%nyg_tile
                 nzjg=curr_tile%nzg_tile
                 ! Depose current in jtile
-                CALL pxr_depose_jxjyjz_esirkepov_n(curr_tile%jxtile,curr_tile%jytile,curr_tile%jztile,count,        &
-                curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
-                curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
-                curr_tile%pid(1:count,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,          &
+                CALL pxr_depose_jxjyjz_esirkepov_n(curr_tile%jxtile,curr_tile%jytile,curr_tile%jztile,count,        				&
+                curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  					&
+                curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),curr_tile%part_gaminv(1:count),    &
+                curr_tile%pid(1:count,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      					&
+                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,         				    &
                 curr_tile%nz_cells_tile,nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
                 ! Reduce jtile in j 
                 jxg(jmin:jmax,kmin:kmax,lmin:lmax) = jxg(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jxtile(0:nxc,0:nyc,0:nzc)
@@ -242,6 +242,7 @@ REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
 REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
 REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
 REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
 INTEGER(idp) :: ispecies, ix, iy, iz, count
 INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
 INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
@@ -249,23 +250,51 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+LOGICAL(idp) :: isdeposited=.FALSE.
 
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
+        	curr => species_parray(1)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            nxjg=curr_tile%nxg_tile
+            nyjg=curr_tile%nyg_tile
+            nzjg=curr_tile%nzg_tile
+            jmin=curr_tile%nx_tile_min-nxjg
+        	jmax=curr_tile%nx_tile_max+nxjg
+            kmin=curr_tile%ny_tile_min-nyjg
+            kmax=curr_tile%ny_tile_max+nyjg
+            lmin=curr_tile%nz_tile_min-nzjg
+            lmax=curr_tile%nz_tile_max+nzjg
+            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+            nzc=curr_tile%nz_cells_tile            
+            jxtile(ix,iy,iz)%gtile=0.
+            jytile(ix,iy,iz)%gtile=0.
+            jztile(ix,iy,iz)%gtile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
+            isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
-                curr => species_parray(ispecies)
+           	    curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) CYCLE
+                IF (count .EQ. 0) THEN 
+                	CYCLE
+                ELSE 
+                	isdeposited=.TRUE.
+                ENDIF 
                 ! Depose current in jtile
-                CALL pxr_depose_jxjyjz_esirkepov_n(jxg,jyg,jzg,        &
-                curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
-                curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
-                curr_tile%pid(1:count,wpid),curr%charge,x_grid_min_local,y_grid_min_local,      &
-                z_grid_min_local,dtt,dxx,dyy,dzz,nxx,nyy,nzz,          &
-                nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,.TRUE.,.FALSE.)
+                CALL pxr_depose_jxjyjz_esirkepov_n(jxtile(ix,iy,iz)%gtile,jytile(ix,iy,iz)%gtile, &
+                jztile(ix,iy,iz)%gtile,count,                              									 &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						  &
+                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  						  &
+                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
+                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                                    &
+                nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
             END DO! END LOOP ON SPECIES
+            IF (isdeposited) THEN
+            	jxg(jmin:jmax,kmin:kmax,lmin:lmax)=jxg(jmin:jmax,kmin:kmax,lmin:lmax)+jxtile(ix,iy,iz)%gtile
+            	jyg(jmin:jmax,kmin:kmax,lmin:lmax)=jyg(jmin:jmax,kmin:kmax,lmin:lmax)+jytile(ix,iy,iz)%gtile
+            	jzg(jmin:jmax,kmin:kmax,lmin:lmax)=jzg(jmin:jmax,kmin:kmax,lmin:lmax)+jztile(ix,iy,iz)%gtile
+            ENDIF
         END DO
     END DO
 END DO!END LOOP ON TILES
@@ -2119,7 +2148,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 !===========================================================================================
 ! ! Esirkepov current deposition algorithm for linear, quadratic or cubic splines
 ! WARNING: Highly unoptimized routine ---> USE INLINED ROUTINE
-SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
+SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
 nox,noy,noz,l_particles_weight,l4symtry)
 !===========================================================================================
@@ -2128,11 +2157,11 @@ USE constants
 IMPLICIT NONE
 INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w
+REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
 REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
 REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
 REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
-REAL(num) :: clghtisq,usq,gaminv,xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
+REAL(num) :: xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
 s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz, &
 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
 dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
@@ -2170,14 +2199,16 @@ yl = -int(noy/2)-1-ndtody
 yu = int((noy+1)/2)+1+ndtody
 zl = -int(noz/2)-1-ndtodz
 zu = int((noz+1)/2)+1+ndtodz
+
+
 ALLOCATE(sdx(xl:xu,yl:yu,zl:zu),sdy(xl:xu,yl:yu,zl:zu),sdz(xl:xu,yl:yu,zl:zu))
 ALLOCATE(sx(xl:xu), sx0(xl:xu), dsx(xl:xu))
 ALLOCATE(sy(yl:yu), sy0(yl:yu), dsy(yl:yu))
 ALLOCATE(sz(zl:zu), sz0(zl:zu), dsz(zl:zu))
 
-clghtisq = 1.0_num/clight**2
 sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
 sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
+
 
 DO ip=1,np
     ! --- computes current position in grid units
@@ -2185,11 +2216,9 @@ DO ip=1,np
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
     ! --- computes velocity
-    usq = (uxp(ip)**2 + uyp(ip)**2+uzp(ip)**2)*clghtisq
-    gaminv = 1.0_num/sqrt(1.0_num + usq)
-    vx = uxp(ip)*gaminv
-    vy = uyp(ip)*gaminv
-    vz = uzp(ip)*gaminv
+    vx = uxp(ip)*gaminv(ip)
+    vy = uyp(ip)*gaminv(ip)
+    vz = uzp(ip)*gaminv(ip)
     ! --- computes old position in grid units
     xold=x-dtsdx0*vx
     yold=y-dtsdy0*vy

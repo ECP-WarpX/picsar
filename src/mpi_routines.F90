@@ -28,7 +28,7 @@ CONTAINS
 
     INTEGER(isp), PARAMETER :: ndims = 3
     INTEGER(idp) :: idim
-	INTEGER(isp) :: nproc_comm,dims(ndims), old_comm, ierr
+	INTEGER(isp) :: nproc_comm,dims(ndims), old_comm, ierr, neighb
     LOGICAL(isp) :: periods(ndims), reorder, op, reset
     INTEGER(isp) :: test_coords(ndims), rank_in_comm
     INTEGER(idp) :: ix, iy, iz
@@ -144,7 +144,8 @@ CONTAINS
                 .AND. .NOT. periods(idim)) op = .FALSE.
           ENDDO
           IF (op) THEN
-            CALL MPI_CART_RANK(comm, test_coords, neighbour(ix,iy,iz), errcode)
+            CALL MPI_CART_RANK(comm, test_coords, neighb, errcode)
+            neighbour(ix,iy,iz)=INT(neighb,idp)
           ENDIF
         ENDDO
       ENDDO
@@ -343,7 +344,14 @@ CONTAINS
     y_grid_max_local=y_max_local
     z_grid_max_local=z_max_local
 
-    ! --- Allocate grid quantities
+    CALL allocate_grid_quantities()
+
+    start_time = MPI_WTIME()
+
+  END SUBROUTINE mpi_initialise
+
+  SUBROUTINE allocate_grid_quantities()
+      ! --- Allocate grid quantities
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -355,13 +363,8 @@ CONTAINS
     ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-
-    start_time = MPI_WTIME()
-
-  END SUBROUTINE mpi_initialise
-
-
-
+  END SUBROUTINE 
+  
   SUBROUTINE mpi_close
 
     INTEGER :: seconds, minutes, hours, total

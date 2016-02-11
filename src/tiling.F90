@@ -42,7 +42,13 @@ CONTAINS
         ny0_last_tile= ny0_grid_tile+(ny_grid-ny0_grid_tile*ntiley)
         nz0_last_tile= nz0_grid_tile+(nz_grid-nz0_grid_tile*ntilez)
 
-        !- Allocate object array of tiles
+		! ALLOCATE grid tile arrays
+		ALLOCATE(extile(ntilex,ntiley,ntilez),eytile(ntilex,ntiley,ntilez),eztile(ntilex,ntiley,ntilez))
+        ALLOCATE(bxtile(ntilex,ntiley,ntilez),bytile(ntilex,ntiley,ntilez),bztile(ntilex,ntiley,ntilez))
+        ALLOCATE(jxtile(ntilex,ntiley,ntilez),jytile(ntilex,ntiley,ntilez),jztile(ntilex,ntiley,ntilez))
+
+
+        !- Allocate object array of tiles for particles
         DO ispecies =1, nspecies
             curr_sp => species_parray(ispecies)
             IF (.NOT. curr_sp%l_arrayoftiles_allocated) THEN
@@ -180,9 +186,9 @@ CONTAINS
 
     !!! --- Add particle to array of tiles
     SUBROUTINE add_particle_to_species(currsp, partx, party, partz, &
-               partux, partuy, partuz, partw)
+               partux, partuy, partuz, gaminv, partw)
         IMPLICIT NONE
-        REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
+        REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
         INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, nptile
@@ -203,17 +209,17 @@ CONTAINS
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
         
         CALL add_particle_at_tile(currsp,ixtile,iytile,iztile, partx, party, partz, &
-                partux, partuy, partuz, partw)
+                partux, partuy, partuz, gaminv, partw)
 
         ! Update total number of particle species
         currsp%species_npart=currsp%species_npart+1
     END SUBROUTINE add_particle_to_species
 
     SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
-                partux, partuy, partuz, partw)
+                partux, partuy, partuz, gaminv, partw)
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt
-        REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
+        REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
         
@@ -239,6 +245,7 @@ CONTAINS
         curr%part_ux(count) = partux
         curr%part_uy(count) = partuy
         curr%part_uz(count) = partuz
+        curr%part_gaminv(count) = gaminv
         curr%pid(count,wpid) = partw
         curr%part_ex(count)  = 0._num
         curr%part_ey(count)  = 0._num
@@ -281,6 +288,7 @@ CONTAINS
             curr%part_ux(index)=curr%part_ux(curr%np_tile(1))
             curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
             curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
+            curr%part_gaminv(index)=curr%part_gaminv(curr%np_tile(1))
             curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
             curr%np_tile=curr%np_tile(1)-1
         END IF
@@ -298,7 +306,7 @@ CONTAINS
                  curr_tile%pid(1:nmax,1:npid), curr_tile%part_ex(1:nmax),      &
                  curr_tile%part_ey(1:nmax), curr_tile%part_ez(1:nmax),         &
                  curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax),         &
-                 curr_tile%part_bz(1:nmax))
+                 curr_tile%part_bz(1:nmax),curr_tile%part_gaminv(1:nmax))
         ! ALLOCATE CURRENT ARRAYS jxtile, jytile, jztile
         nxc=curr_tile%nx_cells_tile
         nyc=curr_tile%ny_cells_tile
@@ -317,11 +325,11 @@ CONTAINS
     SUBROUTINE init_tile_arrays
         IMPLICIT NONE
         INTEGER(idp) :: ispecies, ix, iy, iz
-        INTEGER(idp) :: n1, n2, n3
+        INTEGER(idp) :: n1, n2, n3, ng1, ng2, ng3
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
-        ! Allocate array by master thread
+        ! Allocate particle tile arrays 
         DO ispecies=1,nspecies ! LOOP ON SPECIES
             curr=>species_parray(ispecies)
             curr%species_npart=0
@@ -335,16 +343,28 @@ CONTAINS
                         n3=curr_tile%nz_cells_tile
                         curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
                         curr_tile%np_tile(1)=0
-                        curr_tile%nxg_tile=MAX(nox,2)
-                        curr_tile%nyg_tile=MAX(noy,2)
-                        curr_tile%nzg_tile=MAX(noz,2)
+                        IF ((ix .GT. 1) .AND. (ix .LT. ntilex)) THEN
+                        	curr_tile%nxg_tile=MAX(nox,2)
+                        ELSE
+                        	curr_tile%nxg_tile=nxjguards
+                        END IF
+                        IF ((iy .GT. 1) .AND. (iy .LT. ntiley)) THEN
+                        	curr_tile%nyg_tile=MAX(noy,2)
+                        ELSE
+                        	curr_tile%nyg_tile=nyjguards
+                        END IF
+                        IF ((iz .GT. 1) .AND. (iz .LT. ntilez)) THEN
+                        	curr_tile%nzg_tile=MAX(noz,2)
+                        ELSE
+                        	curr_tile%nzg_tile=nzjguards
+                        END IF                        
                         ! - Allocate arrays of current tile
-                        CALL allocate_tile_arrays(curr_tile)
+                       CALL allocate_tile_arrays(curr_tile)
                     END DO
                 END DO
             END DO
         END DO
-        ! Init tile arrays in parallel - first touch policy
+        ! Init partile tile arrays in parallel - first touch policy
         ! - Init array of current tile
         ! - For some reason, don't set all values to zero?????
         ! - Have to set it manually for each element through
@@ -365,6 +385,7 @@ CONTAINS
                         curr_tile%part_ux=0.0_num
                         curr_tile%part_uy=0.0_num
                         curr_tile%part_uz=0.0_num
+                        curr_tile%part_gaminv=0.0_num
                         curr_tile%part_ex=0.0_num
                         curr_tile%part_ey=0.0_num
                         curr_tile%part_ez=0.0_num
@@ -377,19 +398,44 @@ CONTAINS
             END DO
         END DO! END LOOP ON TILES
         !$OMP END PARALLEL DO
-
+        
+        ! Allocate grid tile arrays
+        curr=>species_parray(1)
+		DO iz=1, ntilez ! LOOP ON TILES
+            DO iy=1, ntiley
+                DO ix=1, ntilex
+                   		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                        ! - Max size of particle arrays of current ile
+                        n1=curr_tile%nx_cells_tile
+                        n2=curr_tile%ny_cells_tile
+                        n3=curr_tile%nz_cells_tile
+                        ng1=curr_tile%nxg_tile
+                        ng2=curr_tile%nyg_tile
+                        ng3=curr_tile%nzg_tile
+                        ALLOCATE(extile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(eytile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(eztile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(bxtile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(bytile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(bztile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(jxtile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(jytile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(jztile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                END DO
+            END DO
+        END DO! END LOOP ON TILES
     END SUBROUTINE init_tile_arrays
 
     SUBROUTINE load_particles
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
-        INTEGER(KIND=4) :: ispecies, l, k, j, ipart
-        INTEGER(KIND=4) :: jmin, jmax, kmin, kmax, lmin, lmax
-        REAL(num) :: partx, party, partz, partux, partuy, partuz, partw
-        REAL(num) :: phi, th, v
+        INTEGER(idp) :: ispecies, l, k, j, ipart
+        INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+        REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+        REAL(num) :: phi, th, v, usq, clightsq
         INTEGER(KIND=4) :: err, npart
         REAL(num), DIMENSION(6) :: rng=0_num
-
+		clightsq=1/clight**2
         !!! --- Sets-up particle space distribution (homogeneous case - default)
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
@@ -417,9 +463,11 @@ CONTAINS
                                 partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
                                 partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                usq = (partux**2 + partuy**2+partuz**2)*clightsq
+       							gaminv = 1.0_num/sqrt(1.0_num + usq)
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
-                                partux, partuy, partuz, partw)
+                                partux, partuy, partuz, gaminv, partw)
                             END DO
                         END DO
                     END DO
@@ -447,9 +495,11 @@ CONTAINS
                                 partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
                                 partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                usq = (partux**2 + partuy**2+partuz**2)*clightsq
+       							gaminv = 1.0_num/sqrt(1.0_num + usq)
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
-                                partux, partuy, partuz, partw)
+                                partux, partuy, partuz, gaminv, partw)
                             END DO
                         END DO
                     END DO
@@ -485,6 +535,7 @@ CONTAINS
         CALL resize_1D_array_real(curr%part_ux, old_size, new_size)
         CALL resize_1D_array_real(curr%part_uy, old_size, new_size)
         CALL resize_1D_array_real(curr%part_uz, old_size, new_size)
+        CALL resize_1D_array_real(curr%part_gaminv, old_size, new_size)
         CALL resize_2D_array_real(curr%pid, old_size, new_size,npid,npid)
         CALL resize_1D_array_real(curr%part_ex, old_size, new_size)
         CALL resize_1D_array_real(curr%part_ey, old_size, new_size)
@@ -576,6 +627,7 @@ CONTAINS
         partux=>curr_tile%part_ux
         partuy=>curr_tile%part_uy
         partuz=>curr_tile%part_uz
+        partgaminv=>curr_tile%part_gaminv
         pid=>curr_tile%pid
         partex=>curr_tile%part_ex
         partey=>curr_tile%part_ey
@@ -622,17 +674,17 @@ CONTAINS
 
     !!! --- Add particle to array of tiles
     SUBROUTINE py_add_particles_to_species(nsp, npart, partx, party, partz, &
-               partux, partuy, partuz, partw)
+               partux, partuy, partuz, gaminv, partw)
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nsp, npart
-        REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, partw
+        REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
         TYPE(particle_species), POINTER :: currsp
         INTEGER(idp) :: i
         currsp=>species_parray(nsp)
 
         DO i=1,npart
             CALL add_particle_to_species(currsp, partx(i), party(i), partz(i), &
-                partux(i), partuy(i), partuz(i), partw(i))
+                partux(i), partuy(i), partuz(i), gaminv(i), partw(i))
         END DO
     END SUBROUTINE py_add_particles_to_species
         

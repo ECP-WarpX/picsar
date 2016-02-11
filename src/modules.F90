@@ -39,6 +39,14 @@ REAL(num), POINTER, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz
 REAL(num), POINTER, DIMENSION(:) :: xcoeffs, ycoeffs, zcoeffs
 END MODULE fields
 
+MODULE grid_tilemodule !#do not parse 
+USE constants 
+TYPE grid_tile
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: gtile
+END TYPE
+TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: extile, eytile, eztile, &
+ 								bxtile, bytile, bztile,  jxtile, jytile, jztile
+END MODULE grid_tilemodule
 
 ! Fortran object representing a particle tile
 MODULE particle_tilemodule !#do not parse 
@@ -67,6 +75,7 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
@@ -149,10 +158,14 @@ USE tile_params
 USE particle_tilemodule
 USE particle_speciesmodule
 USE particle_properties
+USE grid_tilemodule
 
-! Array of pointers to particle species objects
+! Array of  particle species objects
 TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:):: species_parray
+
 END MODULE particles
+
+
 
 !===============================================================================
 MODULE params
@@ -227,6 +240,7 @@ END MODULE output_data
 MODULE timing
 use constants 
 REAL(num) :: dep_curr_time=0._num
+REAL(num) :: timepush=0._num
 
 END MODULE timing
 
@@ -243,16 +257,17 @@ USE output_data
 !----------------------------------------------------------------------------
 INTEGER(isp) :: errcode, provided, comm, tag
 INTEGER(idp) :: rank
-INTEGER(isp) :: coordinates(3), neighbour(-1:1, -1:1, -1:1)
+INTEGER(isp) :: coordinates(3) 
+INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
 INTEGER(isp) :: x_coords, proc_x_min, proc_x_max
 INTEGER(isp):: y_coords, proc_y_min, proc_y_max
 INTEGER(isp) :: z_coords, proc_z_min, proc_z_max
 INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
 INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
-LOGICAL :: x_min_boundary, x_max_boundary
-LOGICAL :: y_min_boundary, y_max_boundary
-LOGICAL :: z_min_boundary, z_max_boundary
+LOGICAL(idp) :: x_min_boundary, x_max_boundary
+LOGICAL(idp) :: y_min_boundary, y_max_boundary
+LOGICAL(idp) :: z_min_boundary, z_max_boundary
 ! The location of the processors
 INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
@@ -320,6 +335,7 @@ REAL(num), DIMENSION(:), POINTER :: partz
 REAL(num), DIMENSION(:), POINTER :: partux
 REAL(num), DIMENSION(:), POINTER :: partuy
 REAL(num), DIMENSION(:), POINTER :: partuz
+REAL(num), DIMENSION(:), POINTER :: partgaminv
 REAL(num), DIMENSION(:,:), POINTER :: pid
 REAL(num), DIMENSION(:), POINTER :: partex
 REAL(num), DIMENSION(:), POINTER :: partey
