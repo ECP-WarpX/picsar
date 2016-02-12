@@ -42,10 +42,10 @@ END MODULE fields
 MODULE grid_tilemodule !#do not parse 
 USE constants 
 TYPE grid_tile
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: gtile
-END TYPE
-TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: extile, eytile, eztile, &
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile, &
  								bxtile, bytile, bztile,  jxtile, jytile, jztile
+END TYPE
+TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
 END MODULE grid_tilemodule
 
 ! Fortran object representing a particle tile

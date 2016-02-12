@@ -26,8 +26,8 @@ w3d.lgtlchg3d = false
 # ----------
 
 dfact = 1
-dxfact = 16/1.4
-dtfact = 8*4/1.4
+dxfact = 16
+dtfact = 8*4
 N_step = 20000/dtfact
 
 #Two-layer foil:

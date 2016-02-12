@@ -145,7 +145,7 @@ INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
-!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,nblk) &
+!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -215,6 +215,7 @@ INTEGER(idp) :: ispecies, ix, iy, iz, count
 INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
+TYPE(grid_tile), POINTER :: currg
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 INTEGER(idp) :: nxjg,nyjg,nzjg
@@ -222,10 +223,10 @@ LOGICAL(idp) :: isgathered=.FALSE.
 
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
-!$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,nblk,noxx,noyy,nozz) &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg)
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
+!$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz) &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
+!$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley
         DO ix=1, ntilex
@@ -252,12 +253,13 @@ DO iz=1, ntilez ! LOOP ON TILES
                 	
             END DO
             IF (isgathered) THEN
-				extile(ix,iy,iz)%gtile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
-				eytile(ix,iy,iz)%gtile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
-				eztile(ix,iy,iz)%gtile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
-				bxtile(ix,iy,iz)%gtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
-				bytile(ix,iy,iz)%gtile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
-				bztile(ix,iy,iz)%gtile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
+                currg=>aofgrid_tiles(ix,iy,iz)
+				currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
+				currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
+				currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
+				currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
+				currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
+				currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
 				DO ispecies=1, nspecies ! LOOP ON SPECIES
 					! - Get current tile properties
 					! - Init current tile variables
@@ -274,15 +276,14 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_bz(1:count)=0.0_num
 					!!! ---- Loop by blocks over particles in a tile (blocking)
 					!!! --- Gather electric field on particles
-					tdeb=MPI_WTIME()
 					CALL pxr_gete3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
 										  curr_tile%part_z, curr_tile%part_ex,                                                       &
 										  curr_tile%part_ey,curr_tile%part_ez,                   									 &
 										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                            			 &
 										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  			 &
 										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             				     &
-										  nzjg,noxx,noyy,nozz,extile(ix,iy,iz)%gtile,eytile(ix,iy,iz)%gtile, &
-										  eztile(ix,iy,iz)%gtile,.FALSE.,.TRUE.)
+										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, &
+										  currg%eztile,.FALSE.,.TRUE.)
 					!!! --- Gather magnetic fields on particles
 					CALL pxr_getb3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
 									  curr_tile%part_z, curr_tile%part_bx,                    									     &
@@ -290,10 +291,8 @@ DO iz=1, ntilez ! LOOP ON TILES
 									  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              			 &
 									  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   			 &
 									  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                					 &
-									  nzjg,noxx,noyy,nozz,bxtile(ix,iy,iz)%gtile,bytile(ix,iy,iz)%gtile,  	 &
-									  bztile(ix,iy,iz)%gtile,.FALSE.,.TRUE.)
-					tend=MPI_WTIME()
-					timepush=timepush+(tend-tdeb)
+									  nzjg,noxx,noyy,nozz,currg%bxtile,currg%bytile,  	 &
+									  currg%bztile,.FALSE.,.TRUE.)
 					!! --- Push velocity with E half step
 					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
 					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					 &

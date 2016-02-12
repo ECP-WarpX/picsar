@@ -43,9 +43,7 @@ CONTAINS
         nz0_last_tile= nz0_grid_tile+(nz_grid-nz0_grid_tile*ntilez)
 
 		! ALLOCATE grid tile arrays
-		ALLOCATE(extile(ntilex,ntiley,ntilez),eytile(ntilex,ntiley,ntilez),eztile(ntilex,ntiley,ntilez))
-        ALLOCATE(bxtile(ntilex,ntiley,ntilez),bytile(ntilex,ntiley,ntilez),bztile(ntilex,ntiley,ntilez))
-        ALLOCATE(jxtile(ntilex,ntiley,ntilez),jytile(ntilex,ntiley,ntilez),jztile(ntilex,ntiley,ntilez))
+		ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
 
 
         !- Allocate object array of tiles for particles
@@ -412,15 +410,15 @@ CONTAINS
                         ng1=curr_tile%nxg_tile
                         ng2=curr_tile%nyg_tile
                         ng3=curr_tile%nzg_tile
-                        ALLOCATE(extile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(eytile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(eztile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(bxtile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(bytile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(bztile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(jxtile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(jytile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(jztile(ix,iy,iz)%gtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%extile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%eytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%eztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%bxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%bytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%bztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%jxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%jytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%jztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
                 END DO
             END DO
         END DO! END LOOP ON TILES
