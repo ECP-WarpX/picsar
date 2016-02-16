@@ -499,10 +499,10 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-  tdeb=MPI.Wtime()
-  em.step(700,1,1)
-  tend=MPI.Wtime()
-  print("Final runtime (s): "+str(tend-tdeb))
+  #tdeb=MPI.Wtime()
+  #em.step(700,1,1)
+  #tend=MPI.Wtime()
+  #print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
 else:
   em.step(1000,1,1)

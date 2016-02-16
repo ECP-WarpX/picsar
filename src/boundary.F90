@@ -576,6 +576,7 @@ END SUBROUTINE charge_bcs
     END DO ! END LOOP ON SPECIES
   END SUBROUTINE particle_bcs_tiles
 
+
 !!! MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
     INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation

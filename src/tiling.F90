@@ -573,7 +573,18 @@ CONTAINS
         DEALLOCATE(temp)
     END SUBROUTINE resize_2D_array_real
 
+    SUBROUTINE get_local_number_of_part(npart)
+    	INTEGER(idp), INTENT(IN OUT) :: npart
+    	INTEGER(idp) :: ispecies
+    	TYPE(particle_species), POINTER :: curr
+    	
+    	npart=0
+		DO ispecies=1, nspecies ! LOOP ON SPECIES
+			curr=> species_parray(ispecies)
+			npart=npart+curr%species_npart
+		END DO ! END LOOP ON SPECIES
 
+    END SUBROUTINE get_local_number_of_part
     ! ----- SUBROUTINES DEDICATED FOR PYTHON INTERFACE
 
     !This subroutine returns pointer arrays on a given tile 
