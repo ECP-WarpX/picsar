@@ -7,229 +7,19 @@ IMPLICIT NONE
 jx = 0.0_num
 jy = 0.0_num
 jz = 0.0_num
-CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmpv2(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+
+! DEPOSIT Current
+CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	nox,noy,noz,dx,dy,dz,dt)
 
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
-
-
 !===============================================================================
 ! Deposit current in each tile
+! OpenMP version. Avoids conflict while reducing tile currents in the global 
+! current array. 
 !===============================================================================
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-USE particles
-USE constants
-USE tiling
-USE omp_lib
-USE timing
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-
-tdeb=MPI_WTIME()
-!$OMP PARALLEL DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz) &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg)
-!! Current deposition
-!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-DO iz=1,ntilez
-    DO iy=1,ntiley
-        DO ix=1,ntilex
-            DO ispecies=1, nspecies ! LOOP ON SPECIES
-                curr => species_parray(ispecies)
-                curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) CYCLE
-                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-                nzc=curr_tile%nz_cells_tile
-                curr_tile%jxtile = 0.0_num; curr_tile%jytile = 0.0_ num
-                curr_tile%jztile = 0.0_num
-                nxjg=curr_tile%nxg_tile
-                nyjg=curr_tile%nyg_tile
-                nzjg=curr_tile%nzg_tile
-                ! Depose current in jtile
-                CALL pxr_depose_jxjyjz_esirkepov_n(curr_tile%jxtile,curr_tile%jytile,curr_tile%jztile,count,        				&
-                curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  					&
-                curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),curr_tile%part_gaminv(1:count),    &
-                curr_tile%pid(1:count,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      					&
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,         				    &
-                curr_tile%nz_cells_tile,nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
-                ! Reduce jtile in j 
-                jxg(jmin:jmax,kmin:kmax,lmin:lmax) = jxg(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jxtile(0:nxc,0:nyc,0:nzc)
-                jyg(jmin:jmax,kmin:kmax,lmin:lmax) = jyg(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jytile(0:nxc,0:nyc,0:nzc)
-                jzg(jmin:jmax,kmin:kmax,lmin:lmax) = jzg(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jztile(0:nxc,0:nyc,0:nzc)
-            END DO! END LOOP ON SPECIES
-        END DO
-    END DO
-END DO!END LOOP ON TILES
-!$OMP END DO
-!! Adding currents from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
-!+/- X
-!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-DO iz=1,ntilez
-    DO iy=1,ntiley
-        DO ix=1,ntilex
-            DO ispecies=1, nspecies ! LOOP ON SPECIES
-                curr => species_parray(ispecies)
-                curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) CYCLE 
-                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                nxjg=curr_tile%nxg_tile
-                nyjg=curr_tile%nyg_tile
-                nzjg=curr_tile%nzg_tile
-                jminc=jmin-nxjg; jmaxc=jmax+nxjg
-                kminc=kmin-nyjg; kmaxc=kmax+nyjg
-                lminc=lmin-nzjg; lmaxc=lmax+nzjg
-                nxc=curr_tile%nx_cells_tile
-                nyc=curr_tile%ny_cells_tile
-                nzc=curr_tile%nz_cells_tile
-                ! ----- Add guardcells in adjacent tiles
-                ! --- JX
-                ! - FACES +/- X
-                jxg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jxg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jxtile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
-                jxg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jxg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jxtile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
-                ! --- JY
-                ! - FACES +/- X
-                jyg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jyg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jytile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
-                jyg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jyg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jytile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
-                ! --- JZ
-                ! - FACES +/- X
-                jzg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jzg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jztile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
-                jzg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jzg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jztile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
-            END DO! END LOOP ON SPECIES
-        END DO
-    END DO
-END DO!END LOOP ON TILES
-!$OMP END DO
-!+/- Y
-!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-DO iz=1,ntilez
-    DO iy=1,ntiley
-        DO ix=1,ntilex
-            DO ispecies=1, nspecies ! LOOP ON SPECIES
-                curr => species_parray(ispecies)
-                curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) CYCLE
-                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                nxjg=curr_tile%nxg_tile
-                nyjg=curr_tile%nyg_tile
-                nzjg=curr_tile%nzg_tile
-                jminc=jmin-nxjg; jmaxc=jmax+nxjg
-                kminc=kmin-nyjg; kmaxc=kmax+nyjg
-                lminc=lmin-nzjg; lmaxc=lmax+nzjg
-                nxc=curr_tile%nx_cells_tile
-                nyc=curr_tile%ny_cells_tile
-                nzc=curr_tile%nz_cells_tile
-                ! ----- Add guardcells in adjacent tiles
-                ! --- JX
-                ! - FACES +/- Y
-                jxg(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jxg(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
-                curr_tile%jxtile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
-                jxg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jxg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jxtile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
-                ! --- JY
-                ! - FACES +/- Y
-                jyg(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jyg(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
-                curr_tile%jytile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
-                jyg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jyg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jytile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
-                ! --- JZ
-                ! - FACES +/- Y
-                jzg(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jzg(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
-                curr_tile%jztile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
-                jzg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jzg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jztile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
-            END DO! END LOOP ON SPECIES
-        END DO
-    END DO
-END DO!END LOOP ON TILES
-!$OMP END DO
-! +/-Z
-!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-DO iz=1,ntilez
-    DO iy=1,ntiley
-        DO ix=1,ntilex
-            DO ispecies=1, nspecies ! LOOP ON SPECIES
-                curr => species_parray(ispecies)
-                curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) CYCLE
-                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                nxjg=curr_tile%nxg_tile
-                nyjg=curr_tile%nyg_tile
-                nzjg=curr_tile%nzg_tile
-                jminc=jmin-nxjg; jmaxc=jmax+nxjg
-                kminc=kmin-nyjg; kmaxc=kmax+nyjg
-                lminc=lmin-nzjg; lmaxc=lmax+nzjg
-                nxc=curr_tile%nx_cells_tile
-                nyc=curr_tile%ny_cells_tile
-                nzc=curr_tile%nz_cells_tile
-                ! ----- Add guardcells in adjacent tiles
-                ! --- JX
-                ! - FACES +/- Z
-                jxg(jmin:jmax,kmin:kmax,lminc:lmin-1) = jxg(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
-                curr_tile%jxtile(0:nxc, 0:nyc,-nzjg:-1)
-                jxg(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jxg(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
-                curr_tile%jxtile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
-                ! --- JY
-                ! - FACES +/- Z
-                jyg(jmin:jmax,kmin:kmax,lminc:lmin-1) = jyg(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
-                curr_tile%jytile(0:nxc, 0:nyc,-nzjg:-1)
-                jyg(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jyg(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
-                curr_tile%jytile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
-                ! --- JZ
-                ! - FACES +/- Z
-                jzg(jmin:jmax,kmin:kmax,lminc:lmin-1) = jzg(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
-                curr_tile%jztile(0:nxc, 0:nyc,-nzjg:-1)
-                jzg(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jzg(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
-                curr_tile%jztile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
-            END DO! END LOOP ON SPECIES
-        END DO
-    END DO
-END DO!END LOOP ON TILES
-!$OMP END DO
-!$OMP END PARALLEL
-tend=MPI_WTIME()
-dep_curr_time=dep_curr_time+(tend-tdeb)
-
-END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
-
-
-!===============================================================================
-! Deposit current in each tile
-!===============================================================================
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmpv2(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 USE particles
 USE constants
@@ -254,9 +44,10 @@ INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 LOGICAL(idp) :: isdeposited=.FALSE.
 
 tdeb=MPI_WTIME()
-!$OMP PARALLEL DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles) &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
+!$OMP PARALLEL DEFAULT(NONE)                                                              &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles)                  &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 !! Current deposition
 !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
@@ -291,12 +82,12 @@ DO iz=1,ntilez
                 	isdeposited=.TRUE.
                 ENDIF 
                 ! Depose current in jtile
-                CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile, &
-                currg%jztile,count,                              									 &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						  &
-                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  						  &
-                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                                    &
+                CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                              &
+                currg%jztile,count,                              									       &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
+                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
+                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                     &
                 nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
@@ -469,20 +260,11 @@ END DO!END LOOP ON TILES
 tend=MPI_WTIME()
 dep_curr_time=dep_curr_time+(tend-tdeb)
 
-END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmpv2
-
-
-
-
-
-
-
-
-
-
+END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 
 !===============================================================================
 ! Deposit current in each tile
+! Sequential version 
 !===============================================================================
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_seq(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
@@ -539,12 +321,12 @@ DO iz=1,ntilez
                 	isdeposited=.TRUE.
                 ENDIF 
                 ! Depose current in jtile
-                CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile, &
-                currg%jztile,count,                              									 &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						  &
-                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  						  &
-                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                                    &
+                CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                                 &
+                currg%jztile,count,                              									          &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						              &
+                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			      &
+                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,        &
+                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                        &
                 nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
@@ -560,110 +342,8 @@ END DO!END LOOP ON TILES
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_seq
 
 
-!===============================================================================
-! Deposit current in each tile
-!===============================================================================
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_seq2(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-USE particles
-USE constants
-USE tiling
-USE timing
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-TYPE(grid_tile), POINTER :: currg
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-LOGICAL(idp), DIMENSION(:,:,:), ALLOCATABLE :: isdeposited
 
-ALLOCATE(isdeposited(ntilex,ntiley,ntilez))
-
-isdeposited=.FALSE.
-
-! Set grit tile to 0
-DO iz=1,ntilez
-	DO iy=1,ntiley
-		DO ix=1,ntilex
-			DO ispecies=1,nspecies
-				curr => species_parray(ispecies)
-				curr_tile=>curr%array_of_tiles(ix,iy,iz)
-				count=curr_tile%np_tile(1)
-				IF (count .GT. 0) isdeposited(ix,iy,iz)=.TRUE. 
-			END DO
-			IF (isdeposited(ix,iy,iz)) THEN
-				currg=>aofgrid_tiles(ix,iy,iz)
-				currg%jxtile=0.
-				currg%jytile=0.
-				currg%jztile=0.
-			ENDIF
-		END DO 
-	END DO
-END DO
-
-DO ispecies=1,nspecies
-	curr => species_parray(ispecies)
-	DO iz=1,ntilez
-    	DO iy=1,ntiley
-        	DO ix=1,ntilex
-				curr_tile=>curr%array_of_tiles(ix,iy,iz)
-				nxjg=curr_tile%nxg_tile
-				nyjg=curr_tile%nyg_tile
-				nzjg=curr_tile%nzg_tile
-				jmin=curr_tile%nx_tile_min-nxjg
-				jmax=curr_tile%nx_tile_max+nxjg
-				kmin=curr_tile%ny_tile_min-nyjg
-				kmax=curr_tile%ny_tile_max+nyjg
-				lmin=curr_tile%nz_tile_min-nzjg
-				lmax=curr_tile%nz_tile_max+nzjg
-				nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-				nzc=curr_tile%nz_cells_tile         
-				isdeposited=.FALSE.
-				count=curr_tile%np_tile(1)
-				IF (count .EQ. 0) CYCLE
-				! Depose current in jtile
-				currg=>aofgrid_tiles(ix,iy,iz)
-				CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile, &
-					currg%jztile,count,                              									 &
-					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						  &
-					curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  						  &
-					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-					curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                                    &
-					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
-			END DO 
-        END DO
-    END DO
-END DO!END LOOP ON TILES
-
-! Reduce tiles 
-DO iz=1,ntilez
-	DO iy=1,ntiley
-		DO ix=1,ntilex
-			currg=>aofgrid_tiles(ix,iy,iz)
-			IF (isdeposited(ix,iy,iz)) THEN
-				jxg(jmin:jmax,kmin:kmax,lmin:lmax)=jxg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jxtile
-				jyg(jmin:jmax,kmin:kmax,lmin:lmax)=jyg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jytile
-				jzg(jmin:jmax,kmin:kmax,lmin:lmax)=jzg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jztile
-			ENDIF
-		END DO 
-	END DO
-END DO
-
-DEALLOCATE(isdeposited)
-
-
-END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_seq2
-
+!!! ---------  CURRENT DEPOSITION ROUTINES 
 
 !!! --- Order 1 3D scalar current deposition routine (rho*v)
 !!! This version does not vectorize on SIMD architectures

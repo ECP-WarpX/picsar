@@ -164,14 +164,7 @@ CONTAINS
     INTEGER(isp) :: iproc, ix, iy, iz
 
     ! Init number of guard cells of subdomains in each dimension
-	! Init in Python 
-    !nxguards = MAX(nox,norderx)+npass(1)
-    !nyguards = MAX(noy,nordery)+npass(2)
-    !nzguards = MAX(noz,norderz)+npass(3)
-    !nxjguards = MAX(nox,2)
-    !nyjguards = MAX(noy,2)
-    !nzjguards = MAX(noz,2)
-
+    
     IF (l_smooth_compensate) THEN
         nxguards = nxguards + 1
         nyguards = nyguards + 1
@@ -274,20 +267,11 @@ CONTAINS
     ny=ny_grid-1
     nz=nz_grid-1
 
-	!print *,"X split: RANK, nx_global_grid, nx_grid, nx_global_grid_min, nx_global_grid_maxx",rank,nx_global_grid,nx_grid,nx_global_grid_min,nx_global_grid_max
-	!print *, "Y split: RANK, ny_global_grid, ny_grid, ny_global_grid_min, ny_global_grid_maxx",rank,ny_global_grid,ny_grid,ny_global_grid_min,ny_global_grid_max
-	!print *, "Z split: RANK, nz_global_grid, nz_grid, nz_global_grid_min, nz_global_grid_maxx",rank,nz_global_grid,nz_grid,nz_global_grid_min,nz_global_grid_max
-
 	! Allocate arrays of axis
     ALLOCATE(x(-nxguards:nx+nxguards), y(-nyguards:ny+nyguards), z(-nzguards:nz+nzguards))
     ALLOCATE(x_global(-nxguards:nx_global+nxguards))
     ALLOCATE(y_global(-nyguards:ny_global+nyguards))
     ALLOCATE(z_global(-nzguards:nz_global+nzguards))
-
-    !!! -- sets xmax, ymax, zmax
-    !xmax = nx_global*dx
-    !ymax = ny_global*dy
-    !zmax = nz_global*dz
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin

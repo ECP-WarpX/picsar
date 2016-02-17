@@ -43,7 +43,7 @@ MODULE grid_tilemodule !#do not parse
 USE constants 
 TYPE grid_tile
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile, &
- 								bxtile, bytile, bztile,  jxtile, jytile, jztile
+ 								bxtile, bytile, bztile,  jxtile, jytile, jztile,rhotile
 END TYPE
 TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
 END MODULE grid_tilemodule

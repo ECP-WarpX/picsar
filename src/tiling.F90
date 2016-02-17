@@ -419,6 +419,7 @@ CONTAINS
                         ALLOCATE(aofgrid_tiles(ix,iy,iz)%jxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
                         ALLOCATE(aofgrid_tiles(ix,iy,iz)%jytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
                         ALLOCATE(aofgrid_tiles(ix,iy,iz)%jztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%rhotile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
                 END DO
             END DO
         END DO! END LOOP ON TILES
@@ -583,7 +584,7 @@ CONTAINS
 			curr=> species_parray(ispecies)
 			npart=npart+curr%species_npart
 		END DO ! END LOOP ON SPECIES
-
+        PRINT *, "HELLO", npart
     END SUBROUTINE get_local_number_of_part
     ! ----- SUBROUTINES DEDICATED FOR PYTHON INTERFACE
 
