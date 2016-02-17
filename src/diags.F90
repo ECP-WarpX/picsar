@@ -15,143 +15,232 @@ CONTAINS
         USE shared_data
         USE tiling
         IMPLICIT NONE
-        INTEGER(idp) :: ispecies, ix, iy, iz, count
-        INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-        INTEGER (idp):: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
-        TYPE(particle_species), POINTER :: curr
-        TYPE(particle_tile), POINTER :: curr_tile
-        INTEGER(idp) :: nxc, nyc, nzc
 
         ! - Computes electric field divergence on grid at n+1
         dive=0.0_num
         CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
 
         ! - Computes total charge density
-        rho=0.0_num
-        !$OMP PARALLEL DEFAULT(NONE) &
-        !$OMP SHARED(rho,ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards, &
-        !$OMP nyjguards,nzjguards,dx,dy,dz) &
-        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin,lmax,nxc,nyc,nzc, &
-        !$OMP jminc,jmaxc,kminc,kmaxc,lminc,lmaxc)
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=1, ntilez ! LOOP ON TILES
-            DO iy=1, ntiley
-                DO ix=1, ntilex
-                    DO ispecies=1, nspecies! LOOP ON SPECIES
-                        curr => species_parray(ispecies)
-                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                        count= curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        nxc=curr_tile%nx_cells_tile;  nyc=curr_tile%ny_cells_tile
-                        nzc=curr_tile%nz_cells_tile
-                        curr_tile%rhotile = 0.0_num
-                        ! Depose charge in rho_tile
-                        CALL depose_rho_scalar_1_1_1(curr_tile%rhotile, count,curr_tile%part_x(1:count), &
-                             curr_tile%part_y(1:count),curr_tile%part_z(1:count),              &
-                             curr_tile%weight(1:count), curr%charge,curr_tile%x_grid_tile_min, &
-                             curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min,dx,dy,dz,    &
-                             curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,                  &
-                             curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards)
-                        ! Reduce rho_tile in rho
-                        rho(jmin:jmax,kmin:kmax,lmin:lmax) = rho(jmin:jmax,kmin:kmax,lmin:lmax)+ &
-                        curr_tile%rhotile(0:nxc,0:nyc,0:nzc)
-                    END DO! END LOOP ON SPECIES
-                END DO
-            END DO
-        END DO !END LOOP ON TILES!
-        !$OMP END DO
-        !! Adding charge from guard cells of current tile to adjacent subdomains (AVOIDS REDUCTION OPERATION)
-        ! +/- X direction
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=1,ntilez
-            DO iy=1,ntiley
-                DO ix=1,ntilex
-                    DO ispecies=1, nspecies ! LOOP ON SPECIES
-                        curr => species_parray(ispecies)
-                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                        count=curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
-                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-                        nzc=curr_tile%nz_cells_tile
-                        ! ----- Add guardcells from adjacent tiles
-                        ! - FACES +/- X
-                        rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = rho(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
-                        curr_tile%rhotile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-                        rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = rho(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
-                        curr_tile%rhotile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-                    END DO! END LOOP ON SPECIES
-                END DO
-            END DO
-        END DO!END LOOP ON TILES
-        !$OMP END DO
-        ! +/- Y direction
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=1,ntilez
-            DO iy=1,ntiley
-                DO ix=1,ntilex
-                    DO ispecies=1, nspecies ! LOOP ON SPECIES
-                        curr => species_parray(ispecies)
-                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                        count=curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
-                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-                        nzc=curr_tile%nz_cells_tile
-                        ! ----- Add guardcells from adjacent tiles
-                        ! - FACES +/- Y
-                        rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = rho(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
-                        curr_tile%rhotile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
-                        rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = rho(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
-                        curr_tile%rhotile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-
-                    END DO! END LOOP ON SPECIES
-                END DO
-            END DO
-        END DO!END LOOP ON TILES
-        !$OMP END DO
-        ! +/- Z direction
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=1,ntilez
-            DO iy=1,ntiley
-                DO ix=1,ntilex
-                    DO ispecies=1, nspecies ! LOOP ON SPECIES
-                        curr => species_parray(ispecies)
-                        curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                        count=curr_tile%np_tile
-                        jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                        kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                        lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                        jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                        kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                        lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
-                        nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-                        nzc=curr_tile%nz_cells_tile
-                        ! ----- Add guardcells from adjacent tiles
-                        ! - FACES +/- Z
-                        rho(jmin:jmax,kmin:kmax,lminc:lmin-1) = rho(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
-                        curr_tile%rhotile(0:nxc, 0:nyc,-nzjguards:-1)
-                        rho(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = rho(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
-                        curr_tile%rhotile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
-                    END DO! END LOOP ON SPECIES
-                END DO
-            END DO
-        END DO!END LOOP ON TILES
-        !$OMP END DO
-        !$OMP END PARALLEL
-        CALL charge_bcs
+        CALL pxrdepose_rho_on_grid()
+        
+        CALL charge_bcs()
 
     END SUBROUTINE calc_diags
+
+!===============================================================================
+! Charge deposition algorithms
+!===============================================================================
+SUBROUTINE pxrdepose_rho_on_grid
+USE fields
+USE shared_data
+USE params
+IMPLICIT NONE 
+
+rho = 0.0_num
+! DEPOSIT Charge on the grid 
+CALL pxrdepose_rho_on_grid_sub_openmp(rho,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	nox,noy,noz,dx,dy,dz,dt)
+
+END SUBROUTINE pxrdepose_rho_on_grid
+
+!===============================================================================
+! Deposit rho in each tile
+! OpenMP version. Avoids conflict while reducing tile charge in the global 
+! charge array. 
+!===============================================================================
+SUBROUTINE pxrdepose_rho_on_grid_sub_openmp(rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+USE particles
+USE constants
+USE tiling
+USE omp_lib
+IMPLICIT NONE
+INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+REAL(num), INTENT(IN OUT) :: rhog(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+INTEGER(idp) :: ispecies, ix, iy, iz, count
+INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
+TYPE(grid_tile), POINTER :: currg
+REAL(num) :: tdeb, tend
+INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+LOGICAL(idp) :: isdeposited=.FALSE.
+
+!$OMP PARALLEL DEFAULT(NONE)                                                              &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles)                         &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
+!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
+!! Current deposition
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+        	curr => species_parray(1)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            nxjg=curr_tile%nxg_tile
+            nyjg=curr_tile%nyg_tile
+            nzjg=curr_tile%nzg_tile
+            jmin=curr_tile%nx_tile_min
+        	jmax=curr_tile%nx_tile_max
+            kmin=curr_tile%ny_tile_min
+            kmax=curr_tile%ny_tile_max
+            lmin=curr_tile%nz_tile_min
+            lmax=curr_tile%nz_tile_max
+            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+            nzc=curr_tile%nz_cells_tile         
+			currg=>aofgrid_tiles(ix,iy,iz)
+            currg%rhotile=0._num
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+           	    curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .EQ. 0) THEN 
+                	CYCLE
+                ELSE 
+                	isdeposited=.TRUE.
+                ENDIF 
+                ! Depose charge in rhotile
+                CALL pxr_depose_rho_n(currg%rhotile,count,                                                 &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
+                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+                curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,                                         &
+                nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
+            END DO! END LOOP ON SPECIES
+            IF (isdeposited) THEN
+            	rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
+            ENDIF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!! Adding charge from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
+!+/- X
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+        	isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- X
+                rhog(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = rhog(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                rhog(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = rhog(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+            ENDIF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!+/- Y
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- Y
+                rhog(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = rhog(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                currg%rhotile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
+                rhog(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = rhog(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
+            END IF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+! +/-Z
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- Z
+                rhog(jmin:jmax,kmin:kmax,lminc:lmin-1) = rhog(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                currg%rhotile(0:nxc, 0:nyc,-nzjg:-1)
+                rhog(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = rhog(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                currg%rhotile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
+            END IF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!$OMP END PARALLEL
+END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 
   !!! --- Order 1 3D scalar charge deposition routine
     !!! This version does not vectorize on SIMD architectures
@@ -1456,7 +1545,7 @@ CONTAINS
 
     !!! --- General charge deposition routine (Warning: Highly unoptimized routine)
     !!! Computes charge density on grid at arbitrary orders nox, noy and noz
-    SUBROUTINE depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz, &
+    SUBROUTINE pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz, &
                         l_particles_weight, l4symtry)
         IMPLICIT NONE
         INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
@@ -1603,7 +1692,7 @@ CONTAINS
             END DO
         END DO
         RETURN
-    END SUBROUTINE depose_rho_n
+    END SUBROUTINE pxr_depose_rho_n
 
     !!! --- Computes field divergence
     SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)

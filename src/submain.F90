@@ -22,47 +22,34 @@ END IF
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
     pushtime=0._num
-
     !!! --- Field gather & particle push
     CALL push_particles
-
     !!! --- Apply BC on particles
     CALL particle_bcs
-
     !!! --- Deposit current of particle species on the grid
-    CALL depose_currents_on_grid_jxjyjz
-
+    CALL pxrdepose_currents_on_grid_jxjyjz
     !!! --- Boundary conditions for currents
     CALL current_bcs
-
     !!! --- Push B field half a time step
     CALL push_bfield
-
     !!! --- Boundary conditions for B
     CALL bfield_bcs
-
     !!! --- Push E field  a full time step
     CALL push_efield
-
     !!! --- Boundary conditions for E
     CALL efield_bcs
-
     !!! --- push B field half a time step
     CALL push_bfield
-
     !!! --- Boundary conditions for B
     CALL bfield_bcs
-
     !!! --- Computes derived quantities
-    CALL calc_diags
-
+    !CALL calc_diags
     !!! --- Output simulation results
-    CALL output_routines
-
+    !CALL output_routines
     it = it+1
     timeit=MPI_WTIME()
 
-   IF (rank .EQ. 0) THEN
+   IF (rank .EQ. 0)  THEN
         WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
         " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF

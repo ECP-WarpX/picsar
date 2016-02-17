@@ -1,103 +1,153 @@
-!===============================================================================
-! Deposit current in each tile
-!===============================================================================
-SUBROUTINE depose_currents_on_grid_jxjyjz
-USE particles
-USE constants
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 USE fields
-USE params
 USE shared_data
-USE tiling
-USE omp_lib
-IMPLICIT NONE
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-REAL(num) :: tdeb, tend
-REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: jx_tile,jy_tile,jz_tile
-INTEGER(idp) :: nxc, nyc, nzc
+USE params
+IMPLICIT NONE 
 
 jx = 0.0_num
 jy = 0.0_num
 jz = 0.0_num
 
+! DEPOSIT Current
+CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	nox,noy,noz,dx,dy,dz,dt)
+
+END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
+
+!===============================================================================
+! Deposit current in each tile
+! OpenMP version. Avoids conflict while reducing tile currents in the global 
+! current array. 
+!===============================================================================
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+USE particles
+USE constants
+USE tiling
+USE omp_lib
+USE timing
+IMPLICIT NONE
+INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+INTEGER(idp) :: ispecies, ix, iy, iz, count
+INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
+TYPE(grid_tile), POINTER :: currg
+REAL(num) :: tdeb, tend
+INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+LOGICAL(idp) :: isdeposited=.FALSE.
+
 tdeb=MPI_WTIME()
-!$OMP PARALLEL DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguards,nyjguards,nzjguards,dx,dy,dz,dt,jx,jy,jz,nox,noy,noz) &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,jx_tile,jy_tile,jz_tile,nxc,nyc,nzc)
+!$OMP PARALLEL DEFAULT(NONE)                                                              &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles)                  &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
+!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 !! Current deposition
 !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
+        	curr => species_parray(1)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            nxjg=curr_tile%nxg_tile
+            nyjg=curr_tile%nyg_tile
+            nzjg=curr_tile%nzg_tile
+            jmin=curr_tile%nx_tile_min
+        	jmax=curr_tile%nx_tile_max
+            kmin=curr_tile%ny_tile_min
+            kmax=curr_tile%ny_tile_max
+            lmin=curr_tile%nz_tile_min
+            lmax=curr_tile%nz_tile_max
+            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+            nzc=curr_tile%nz_cells_tile         
+			currg=>aofgrid_tiles(ix,iy,iz)
+            currg%jxtile=0.
+            currg%jytile=0.
+            currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
+            isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
-                curr => species_parray(ispecies)
+           	    curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile
-                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
-                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
-                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-                nzc=curr_tile%nz_cells_tile
-                curr_tile%jxtile = 0.0_num; curr_tile%jytile = 0.0_num
-                curr_tile%jztile = 0.0_num
+                count=curr_tile%np_tile(1)
+                IF (count .EQ. 0) THEN 
+                	CYCLE
+                ELSE 
+                	isdeposited=.TRUE.
+                ENDIF 
                 ! Depose current in jtile
-                CALL depose_jxjyjz_esirkepov_n(curr_tile%jxtile,curr_tile%jytile,curr_tile%jztile,count,        &
-                curr_tile%part_x(1:count),curr_tile%part_y(1:count),curr_tile%part_z(1:count),                  &
-                curr_tile%part_ux(1:count),curr_tile%part_uy(1:count),curr_tile%part_uz(1:count),               &
-                curr_tile%weight(1:count),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,      &
-                curr_tile%z_grid_tile_min,dt,dx,dy,dz,curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,          &
-                curr_tile%nz_cells_tile,nxjguards,nyjguards,nzjguards,nox,noy,noz,.TRUE.,.FALSE.)
-                ! Reduce jtile in j
-                jx(jmin:jmax,kmin:kmax,lmin:lmax) = jx(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jxtile(0:nxc,0:nyc,0:nzc)
-                jy(jmin:jmax,kmin:kmax,lmin:lmax) = jy(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jytile(0:nxc,0:nyc,0:nzc)
-                jz(jmin:jmax,kmin:kmax,lmin:lmax) = jz(jmin:jmax,kmin:kmax,lmin:lmax) + curr_tile%jztile(0:nxc,0:nyc,0:nzc)
+                CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                              &
+                currg%jztile,count,                              									       &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
+                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
+                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                     &
+                nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
             END DO! END LOOP ON SPECIES
+            IF (isdeposited) THEN
+            	jxg(jmin:jmax,kmin:kmax,lmin:lmax)=jxg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jxtile(0:nxc,0:nyc,0:nzc)
+            	jyg(jmin:jmax,kmin:kmax,lmin:lmax)=jyg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jytile(0:nxc,0:nyc,0:nzc)
+            	jzg(jmin:jmax,kmin:kmax,lmin:lmax)=jzg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jztile(0:nxc,0:nyc,0:nzc)
+            ENDIF
         END DO
     END DO
 END DO!END LOOP ON TILES
 !$OMP END DO
 !! Adding currents from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
+!+/- X
 !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
+        	isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
                 ! ----- Add guardcells in adjacent tiles
                 ! --- JX
                 ! - FACES +/- X
-                jx(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jx(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jxtile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-                jx(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jx(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jxtile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                jxg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jxg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jxtile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                jxg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jxg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jxtile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
                 ! --- JY
                 ! - FACES +/- X
-                jy(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jy(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jytile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-                jy(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jy(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jytile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                jyg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jyg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jytile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                jyg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jyg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jytile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
                 ! --- JZ
                 ! - FACES +/- X
-                jz(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jz(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jztile(-nxjguards:-1,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-                jz(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jz(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jztile(nxc+1:nxc+nxjguards,-nyjguards:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-            END DO! END LOOP ON SPECIES
+                jzg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jzg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jztile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                jzg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jzg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jztile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+            ENDIF
         END DO
     END DO
 END DO!END LOOP ON TILES
@@ -107,39 +157,49 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
+            isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
                 ! ----- Add guardcells in adjacent tiles
                 ! --- JX
                 ! - FACES +/- Y
-                jx(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jx(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
-                curr_tile%jxtile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
-                jx(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jx(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jxtile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                jxg(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jxg(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                currg%jxtile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
+                jxg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jxg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                currg%jxtile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
                 ! --- JY
                 ! - FACES +/- Y
-                jy(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jy(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
-                curr_tile%jytile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
-                jy(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jy(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jytile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
+                jyg(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jyg(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                currg%jytile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
+                jyg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jyg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                currg%jytile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
                 ! --- JZ
                 ! - FACES +/- Y
-                jz(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jz(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
-                curr_tile%jztile(0:nxc,-nyjguards:-1,-nzjguards:nzc+nzjguards)
-                jz(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jz(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
-                curr_tile%jztile(0:nxc,nyc+1:nyc+nyjguards,-nzjguards:nzc+nzjguards)
-            END DO! END LOOP ON SPECIES
+                jzg(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = jzg(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                currg%jztile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
+                jzg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = jzg(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                currg%jztile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
+            END IF
         END DO
     END DO
 END DO!END LOOP ON TILES
@@ -149,49 +209,141 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
+            isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
-                jminc=jmin-nxjguards; jmaxc=jmax+nxjguards
-                kminc=kmin-nyjguards; kmaxc=kmax+nyjguards
-                lminc=lmin-nzjguards; lmaxc=lmax+nzjguards
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
                 nxc=curr_tile%nx_cells_tile
                 nyc=curr_tile%ny_cells_tile
                 nzc=curr_tile%nz_cells_tile
                 ! ----- Add guardcells in adjacent tiles
                 ! --- JX
                 ! - FACES +/- Z
-                jx(jmin:jmax,kmin:kmax,lminc:lmin-1) = jx(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
-                curr_tile%jxtile(0:nxc, 0:nyc,-nzjguards:-1)
-                jx(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jx(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
-                curr_tile%jxtile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
+                jxg(jmin:jmax,kmin:kmax,lminc:lmin-1) = jxg(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                currg%jxtile(0:nxc, 0:nyc,-nzjg:-1)
+                jxg(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jxg(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                currg%jxtile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
                 ! --- JY
                 ! - FACES +/- Z
-                jy(jmin:jmax,kmin:kmax,lminc:lmin-1) = jy(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
-                curr_tile%jytile(0:nxc, 0:nyc,-nzjguards:-1)
-                jy(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jy(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
-                curr_tile%jytile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
+                jyg(jmin:jmax,kmin:kmax,lminc:lmin-1) = jyg(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                currg%jytile(0:nxc, 0:nyc,-nzjg:-1)
+                jyg(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jyg(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                currg%jytile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
                 ! --- JZ
                 ! - FACES +/- Z
-                jz(jmin:jmax,kmin:kmax,lminc:lmin-1) = jz(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
-                curr_tile%jztile(0:nxc, 0:nyc,-nzjguards:-1)
-                jz(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jz(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
-                curr_tile%jztile(0:nxc, 0:nyc,nzc+1:nzc+nzjguards)
-            END DO! END LOOP ON SPECIES
+                jzg(jmin:jmax,kmin:kmax,lminc:lmin-1) = jzg(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                currg%jztile(0:nxc, 0:nyc,-nzjg:-1)
+                jzg(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = jzg(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                currg%jztile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
+            END IF
         END DO
     END DO
 END DO!END LOOP ON TILES
 !$OMP END DO
 !$OMP END PARALLEL
 tend=MPI_WTIME()
-pushtime=pushtime+(tend-tdeb)
+dep_curr_time=dep_curr_time+(tend-tdeb)
 
-END SUBROUTINE depose_currents_on_grid_jxjyjz
+END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 
+!===============================================================================
+! Deposit current in each tile
+! Sequential version 
+!===============================================================================
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_seq(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+USE particles
+USE constants
+USE tiling
+USE timing
+IMPLICIT NONE
+INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
+INTEGER(idp) :: ispecies, ix, iy, iz, count
+INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
+TYPE(grid_tile), POINTER :: currg
+REAL(num) :: tdeb, tend
+INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+LOGICAL(idp) :: isdeposited=.FALSE.
+
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+        	curr => species_parray(1)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            nxjg=curr_tile%nxg_tile
+            nyjg=curr_tile%nyg_tile
+            nzjg=curr_tile%nzg_tile
+            jmin=curr_tile%nx_tile_min-nxjg
+        	jmax=curr_tile%nx_tile_max+nxjg
+            kmin=curr_tile%ny_tile_min-nyjg
+            kmax=curr_tile%ny_tile_max+nyjg
+            lmin=curr_tile%nz_tile_min-nzjg
+            lmax=curr_tile%nz_tile_max+nzjg
+            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+            nzc=curr_tile%nz_cells_tile         
+			currg=>aofgrid_tiles(ix,iy,iz)
+            currg%jxtile=0.
+            currg%jytile=0.
+            currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+           	    curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .EQ. 0) THEN 
+                	CYCLE
+                ELSE 
+                	isdeposited=.TRUE.
+                ENDIF 
+                ! Depose current in jtile
+                CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                                 &
+                currg%jztile,count,                              									          &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						              &
+                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			      &
+                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,        &
+                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                        &
+                nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
+            END DO! END LOOP ON SPECIES
+            IF (isdeposited) THEN
+            	jxg(jmin:jmax,kmin:kmax,lmin:lmax)=jxg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jxtile
+            	jyg(jmin:jmax,kmin:kmax,lmin:lmax)=jyg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jytile
+            	jzg(jmin:jmax,kmin:kmax,lmin:lmax)=jzg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jztile
+            ENDIF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+
+
+END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_seq
+
+
+
+!!! ---------  CURRENT DEPOSITION ROUTINES 
 
 !!! --- Order 1 3D scalar current deposition routine (rho*v)
 !!! This version does not vectorize on SIMD architectures
@@ -2037,7 +2189,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 !===========================================================================================
 ! ! Esirkepov current deposition algorithm for linear, quadratic or cubic splines
 ! WARNING: Highly unoptimized routine ---> USE INLINED ROUTINE
-SUBROUTINE depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
+SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
 nox,noy,noz,l_particles_weight,l4symtry)
 !===========================================================================================
@@ -2046,12 +2198,11 @@ USE constants
 IMPLICIT NONE
 INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-REAL(num), DIMENSION(:,:,:), ALLOCATABLE:: jx1, jy1, jz1
-REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w
+REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
 REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
 REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
 REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
-REAL(num) :: clghtisq,usq,gaminv,xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
+REAL(num) :: xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
 s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz, &
 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
 dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
@@ -2062,7 +2213,8 @@ REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
 INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
 ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
 xl,xu,yl,yu,zl,zu
-LOGICAL :: l_particles_weight,l4symtry
+LOGICAL(idp) :: l_particles_weight,l4symtry
+REAL(num):: tdeb, tend
 
 ! PARAMETER INIT
 ndtodx = int(clight*dt/dx)
@@ -2088,34 +2240,26 @@ yl = -int(noy/2)-1-ndtody
 yu = int((noy+1)/2)+1+ndtody
 zl = -int(noz/2)-1-ndtodz
 zu = int((noz+1)/2)+1+ndtodz
+
+
 ALLOCATE(sdx(xl:xu,yl:yu,zl:zu),sdy(xl:xu,yl:yu,zl:zu),sdz(xl:xu,yl:yu,zl:zu))
 ALLOCATE(sx(xl:xu), sx0(xl:xu), dsx(xl:xu))
 ALLOCATE(sy(yl:yu), sy0(yl:yu), dsy(yl:yu))
 ALLOCATE(sz(zl:zu), sz0(zl:zu), dsz(zl:zu))
-ALLOCATE(jx1(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
-         jy1(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
-         jz1(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
-clghtisq = 1.0_num/clight**2
+
 sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
 sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
-jx1=0.0_num;jy1=0.0_num;jz1=0.0_num
 
-!!$OMP PARALLEL PRIVATE(ip,x,y,z,usq,vx,vy,vz,gaminv,xold,yold,zold,ncells,dtsdx,dtsdy,dtsdz,dts2dx,dts2dy,dts2dz, &
-!!$OMP icell, wq,wqx,wqy,wqz,iixp0,ijxp0,ikxp0, xint,yint,zint, oxint,xintsq, oxintsq,dix,diy,diz, &
-!!$OMP dsx, dsy, dsz, oyint,yintsq, oyintsq, ozint,zintsq, ozintsq,ixmin, ixmax, iymin, iymax, izmin, izmax,  &
-!!$OMP k,j,i,kc,jc,ic, iixp, ijxp, ikxp,sx,sy,sz) FIRSTPRIVATE(sx0,sy0,sz0,sdx,sdy,sdz,jx1,jy1,jz1)
-!!$OMP DO
+
 DO ip=1,np
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
     ! --- computes velocity
-    usq = (uxp(ip)**2 + uyp(ip)**2+uzp(ip)**2)*clghtisq
-    gaminv = 1.0_num/sqrt(1.0_num + usq)
-    vx = uxp(ip)*gaminv
-    vy = uyp(ip)*gaminv
-    vz = uzp(ip)*gaminv
+    vx = uxp(ip)*gaminv(ip)
+    vy = uyp(ip)*gaminv(ip)
+    vz = uzp(ip)*gaminv(ip)
     ! --- computes old position in grid units
     xold=x-dtsdx0*vx
     yold=y-dtsdy0*vy
@@ -2142,7 +2286,6 @@ DO ip=1,np
     x=xold
     y=yold
     z=zold
-
     DO icell = 1,ncells
         xold = x
         yold = y
@@ -2354,7 +2497,6 @@ DO ip=1,np
         iymax = max(0,diy)+int((noy+1)/2)
         izmin = min(0,diz)-int(noz/2)
         izmax = max(0,diz)+int((noz+1)/2)
-
 ! --- add current contributions
         DO k=izmin, izmax
             DO j=iymin, iymax
@@ -2366,34 +2508,741 @@ DO ip=1,np
                         sdx(i,j,k)  = wqx*dsx(i)*((sy0(j)+0.5_num*dsy(j))*sz0(k) + &
                         (0.5_num*sy0(j)+1.0_num/3.0_num*dsy(j))*dsz(k))
                         IF (i>ixmin) sdx(i,j,k)=sdx(i,j,k)+sdx(i-1,j,k)
-                        jx1(ic,jc,kc) = jx1(ic,jc,kc) + sdx(i,j,k)
+                        jx(ic,jc,kc) = jx(ic,jc,kc) + sdx(i,j,k)
                     END IF
                     IF(j<iymax) THEN
                         sdy(i,j,k)  = wqy*dsy(j)*((sz0(k)+0.5_num*dsz(k))*sx0(i) + &
                         (0.5_num*sz0(k)+1.0_num/3.0_num*dsz(k))*dsx(i))
                         IF (j>iymin) sdy(i,j,k)=sdy(i,j,k)+sdy(i,j-1,k)
-                        jy1(ic,jc,kc) = jy1(ic,jc,kc) + sdy(i,j,k)
+                        jy(ic,jc,kc) = jy(ic,jc,kc) + sdy(i,j,k)
                     END IF
                     IF(k<izmax) THEN
                         sdz(i,j,k)  = wqz*dsz(k)*((sx0(i)+0.5_num*dsx(i))*sy0(j) + &
                         (0.5_num*sx0(i)+1.0_num/3.0_num*dsx(i))*dsy(j))
                         IF (k>izmin) sdz(i,j,k)=sdz(i,j,k)+sdz(i,j,k-1)
-                        jz1(ic,jc,kc) = jz1(ic,jc,kc) + sdz(i,j,k)
+                        jz(ic,jc,kc) = jz(ic,jc,kc) + sdz(i,j,k)
                     END IF
                 END DO
             END DO
         END DO
     END DO
 END DO
-!!$OMP END DO
 
-!!$OMP CRITICAL
-jx=jx+jx1
-jy=jy+jy1
-jz=jz+jz1
-!!$OMP END CRITICAL
-!!$OMP END PARALLEL
-DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz,jx1,jy1,jz1)
+DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
 
 RETURN
-END SUBROUTINE depose_jxjyjz_esirkepov_n
+END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
+
+
+subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
+                                                 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                                 nox,noy,noz,l_particles_weight,l4symtry)
+   use constants
+   implicit none
+   integer(8) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+   real(kind=8), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx
+   real(kind=8), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jy
+   real(kind=8), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jz
+   real(kind=8), dimension(np) :: xp,yp,zp,uxp,uyp,uzp,v,w
+   real(kind=8) :: q,dt,dx,dy,dz,xmin,ymin,zmin, clghtisq,usq,gaminv
+   logical(8) :: l_particles_weight,l4symtry
+
+   real(kind=8) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+   real(kind=8),dimension(:,:,:),allocatable :: sdx,sdy,sdz
+   real(kind=8) :: xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
+                   s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
+                   dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
+   real(kind=8), parameter :: onesixth=1./6.,twothird=2./3.
+   real(kind=8), DIMENSION(:),allocatable :: sx, sx0, dsx
+   real(kind=8), DIMENSION(:),allocatable :: sy, sy0, dsy
+   real(kind=8), DIMENSION(:),allocatable :: sz, sz0, dsz
+   integer(8) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+                   ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
+                   xl,xu,yl,yu,zl,zu
+    PRINT *, "warp depose_jxjyjz_esirkepov_n in PXR: np,l_particles_wight,l4symtry", np,l_particles_weight,l4symtry
+    ndtodx = int(clight*dt/dx)
+    ndtody = int(clight*dt/dy)
+    ndtodz = int(clight*dt/dz)
+    xl = -int(nox/2)-1-ndtodx
+    xu = int((nox+1)/2)+1+ndtodx
+    yl = -int(noy/2)-1-ndtody
+    yu = int((noy+1)/2)+1+ndtody
+    zl = -int(noz/2)-1-ndtodz
+    zu = int((noz+1)/2)+1+ndtodz
+    allocate(sdx(xl:xu,yl:yu,zl:zu),sdy(xl:xu,yl:yu,zl:zu),sdz(xl:xu,yl:yu,zl:zu))
+    allocate(sx(xl:xu), sx0(xl:xu), dsx(xl:xu))
+    allocate(sy(yl:yu), sy0(yl:yu), dsy(yl:yu))
+    allocate(sz(zl:zu), sz0(zl:zu), dsz(zl:zu))
+	clghtisq = 1.0_num/clight**2
+    sx0=0.;sy0=0.;sz0=0.
+    sdx=0.;sdy=0.;sdz=0.
+      
+      dxi = 1./dx
+      dyi = 1./dy
+      dzi = 1./dz
+      dtsdx0 = dt*dxi
+      dtsdy0 = dt*dyi
+      dtsdz0 = dt*dzi
+      dts2dx0 = 0.5*dtsdx0
+      dts2dy0 = 0.5*dtsdy0
+      dts2dz0 = 0.5*dtsdz0
+      invvol = 1./(dx*dy*dz)
+      invdtdx = 1./(dt*dy*dz)
+      invdtdy = 1./(dt*dx*dz)
+      invdtdz = 1./(dt*dx*dy)
+
+      do ip=1,np
+      
+        ! --- computes current position in grid units
+        x = (xp(ip)-xmin)*dxi
+        y = (yp(ip)-ymin)*dyi
+        z = (zp(ip)-zmin)*dzi
+        usq = (uxp(ip)**2 + uyp(ip)**2+uzp(ip)**2)*clghtisq
+        gaminv = 1.0_num/sqrt(1.0_num + usq)
+        ! --- computes velocity
+        vx = uxp(ip)*gaminv
+        vy = uyp(ip)*gaminv
+        vz = uzp(ip)*gaminv
+        
+        ! --- computes old position in grid units
+        xold=x-dtsdx0*vx
+        yold=y-dtsdy0*vy
+        zold=z-dtsdz0*vz
+ 
+        ! --- applies 4-fold symmetry
+        if (l4symtry) then
+          x=abs(x)
+          y=abs(y)
+          xold=abs(xold)
+          yold=abs(yold)
+          vx = (x-xold)/dtsdx0
+          vy = (y-yold)/dtsdy0
+        end if
+        
+        ! computes maximum number of cells traversed by particle in a given dimension
+        ncells = 1!+max( int(abs(x-xold)), int(abs(y-yold)), int(abs(z-zold)))
+        
+        dtsdx = dtsdx0/ncells
+        dtsdy = dtsdy0/ncells
+        dtsdz = dtsdz0/ncells
+        dts2dx = dts2dx0/ncells
+        dts2dy = dts2dy0/ncells
+        dts2dz = dts2dz0/ncells
+        
+        x=xold
+        y=yold
+        z=zold
+        
+        do icell = 1,ncells
+
+        xold = x
+        yold = y
+        zold = z
+        
+        x = x+dtsdx*vx
+        y = y+dtsdy*vy
+        z = z+dtsdz*vz
+        
+        ! --- computes particles "weights"
+        if (l_particles_weight) then
+          wq=q*w(ip)
+        else
+          wq=q*w(1)
+        end if
+        wqx = wq*invdtdx
+        wqy = wq*invdtdy
+        wqz = wq*invdtdz
+
+        ! --- finds node of cell containing particles for current positions 
+        ! --- (different for odd/even spline orders)
+        if (nox==2*(nox/2)) then
+          iixp0=nint(x)
+        else
+          iixp0=floor(x)
+        end if
+        if (noy==2*(noy/2)) then
+          ijxp0=nint(y)
+        else
+          ijxp0=floor(y)
+        end if
+        if (noz==2*(noz/2)) then
+          ikxp0=nint(z)
+        else
+          ikxp0=floor(z)
+        end if
+
+        ! --- computes distance between particle and node for current positions
+        xint=x-iixp0
+        yint=y-ijxp0
+        zint=z-ikxp0
+
+        ! --- computes coefficients for node centered quantities
+        select case(nox)
+         case(0)
+          sx0( 0) = 1.
+         case(1)
+          sx0( 0) = 1.-xint
+          sx0( 1) = xint
+         case(2)
+          xintsq = xint*xint
+          sx0(-1) = 0.5*(0.5-xint)**2
+          sx0( 0) = 0.75-xintsq
+          sx0( 1) = 0.5*(0.5+xint)**2
+         case(3)
+          oxint = 1.-xint
+          xintsq = xint*xint
+          oxintsq = oxint*oxint
+          sx0(-1) = onesixth*oxintsq*oxint
+          sx0( 0) = twothird-xintsq*(1.-xint/2)
+          sx0( 1) = twothird-oxintsq*(1.-oxint/2)
+          sx0( 2) = onesixth*xintsq*xint
+        end select        
+
+        select case(noy)
+         case(0)
+          sy0( 0) = 1.
+         case(1)
+          sy0( 0) = 1.-yint
+          sy0( 1) = yint
+         case(2)
+          yintsq = yint*yint
+          sy0(-1) = 0.5*(0.5-yint)**2
+          sy0( 0) = 0.75-yintsq
+          sy0( 1) = 0.5*(0.5+yint)**2
+         case(3)
+          oyint = 1.-yint
+          yintsq = yint*yint
+          oyintsq = oyint*oyint
+          sy0(-1) = onesixth*oyintsq*oyint
+          sy0( 0) = twothird-yintsq*(1.-yint/2)
+          sy0( 1) = twothird-oyintsq*(1.-oyint/2)
+          sy0( 2) = onesixth*yintsq*yint
+        end select        
+
+        select case(noz)
+         case(0)
+          sz0( 0) = 1.
+         case(1)
+          sz0( 0) = 1.-zint
+          sz0( 1) = zint
+         case(2)
+          zintsq = zint*zint
+          sz0(-1) = 0.5*(0.5-zint)**2
+          sz0( 0) = 0.75-zintsq
+          sz0( 1) = 0.5*(0.5+zint)**2
+         case(3)
+          ozint = 1.-zint
+          zintsq = zint*zint
+          ozintsq = ozint*ozint
+          sz0(-1) = onesixth*ozintsq*ozint
+          sz0( 0) = twothird-zintsq*(1.-zint/2)
+          sz0( 1) = twothird-ozintsq*(1.-ozint/2)
+          sz0( 2) = onesixth*zintsq*zint
+        end select        
+
+        ! --- finds node of cell containing particles for old positions 
+        ! --- (different for odd/even spline orders)
+        if (nox==2*(nox/2)) then
+          iixp=nint(xold)
+        else
+          iixp=floor(xold)
+        end if
+        if (noy==2*(noy/2)) then
+          ijxp=nint(yold)
+        else
+          ijxp=floor(yold)
+        end if
+        if (noz==2*(noz/2)) then
+          ikxp=nint(zold)
+        else
+          ikxp=floor(zold)
+        end if
+
+        ! --- computes distance between particle and node for old positions
+        xint = xold-iixp
+        yint = yold-ijxp
+        zint = zold-ikxp
+
+        ! --- computes node separation between old and current positions
+        dix = iixp-iixp0
+        diy = ijxp-ijxp0
+        diz = ikxp-ikxp0
+
+        ! --- zero out coefficients (needed because of different dix and diz for each particle)
+        sx=0.;sy=0.;sz=0.
+
+        ! --- computes coefficients for quantities centered between nodes
+        select case(nox)
+         case(0)
+          sx( 0+dix) = 1.
+         case(1)
+          sx( 0+dix) = 1.-xint
+          sx( 1+dix) = xint
+         case(2)
+          xintsq = xint*xint
+          sx(-1+dix) = 0.5*(0.5-xint)**2
+          sx( 0+dix) = 0.75-xintsq
+          sx( 1+dix) = 0.5*(0.5+xint)**2
+         case(3)
+          oxint = 1.-xint
+          xintsq = xint*xint
+          oxintsq = oxint*oxint
+          sx(-1+dix) = onesixth*oxintsq*oxint
+          sx( 0+dix) = twothird-xintsq*(1.-xint/2)
+          sx( 1+dix) = twothird-oxintsq*(1.-oxint/2)
+          sx( 2+dix) = onesixth*xintsq*xint
+        end select        
+
+        select case(noy)
+         case(0)
+          sy( 0+diy) = 1.
+         case(1)
+          sy( 0+diy) = 1.-yint
+          sy( 1+diy) = yint
+         case(2)
+          yintsq = yint*yint
+          sy(-1+diy) = 0.5*(0.5-yint)**2
+          sy( 0+diy) = 0.75-yintsq
+          sy( 1+diy) = 0.5*(0.5+yint)**2
+         case(3)
+          oyint = 1.-yint
+          yintsq = yint*yint
+          oyintsq = oyint*oyint
+          sy(-1+diy) = onesixth*oyintsq*oyint
+          sy( 0+diy) = twothird-yintsq*(1.-yint/2)
+          sy( 1+diy) = twothird-oyintsq*(1.-oyint/2)
+          sy( 2+diy) = onesixth*yintsq*yint
+        end select        
+
+        select case(noz)
+         case(0)
+          sz( 0+diz) = 1.
+         case(1)
+          sz( 0+diz) = 1.-zint
+          sz( 1+diz) = zint
+         case(2)
+          zintsq = zint*zint
+          sz(-1+diz) = 0.5*(0.5-zint)**2
+          sz( 0+diz) = 0.75-zintsq
+          sz( 1+diz) = 0.5*(0.5+zint)**2
+         case(3)
+          ozint = 1.-zint
+          zintsq = zint*zint
+          ozintsq = ozint*ozint
+          sz(-1+diz) = onesixth*ozintsq*ozint
+          sz( 0+diz) = twothird-zintsq*(1.-zint/2)
+          sz( 1+diz) = twothird-ozintsq*(1.-ozint/2)
+          sz( 2+diz) = onesixth*zintsq*zint
+        end select        
+
+        ! --- computes coefficients difference
+        dsx = sx - sx0
+        dsy = sy - sy0
+        dsz = sz - sz0
+        
+        ! --- computes min/max positions of current contributions
+        ixmin = min(0,dix)-int(nox/2)
+        ixmax = max(0,dix)+int((nox+1)/2)
+        iymin = min(0,diy)-int(noy/2)
+        iymax = max(0,diy)+int((noy+1)/2)
+        izmin = min(0,diz)-int(noz/2)
+        izmax = max(0,diz)+int((noz+1)/2)
+
+        ! --- add current contributions
+        do k=izmin, izmax
+          do j=iymin, iymax
+            do i=ixmin, ixmax
+              ic = iixp0+i
+              jc = ijxp0+j
+              kc = ikxp0+k
+              if(i<ixmax) then
+                sdx(i,j,k)  = wqx*dsx(i)*( (sy0(j)+0.5*dsy(j))*sz0(k) + (0.5*sy0(j)+1./3.*dsy(j))*dsz(k))
+                if (i>ixmin) sdx(i,j,k)=sdx(i,j,k)+sdx(i-1,j,k)
+                jx(ic,jc,kc) = jx(ic,jc,kc) + sdx(i,j,k)
+              end if
+              if(j<iymax) then
+                sdy(i,j,k)  = wqy*dsy(j)*( (sz0(k)+0.5*dsz(k))*sx0(i) + (0.5*sz0(k)+1./3.*dsz(k))*dsx(i))
+                if (j>iymin) sdy(i,j,k)=sdy(i,j,k)+sdy(i,j-1,k)
+                jy(ic,jc,kc) = jy(ic,jc,kc) + sdy(i,j,k)
+              end if
+              if(k<izmax) then
+                sdz(i,j,k)  = wqz*dsz(k)*( (sx0(i)+0.5*dsx(i))*sy0(j) + (0.5*sx0(i)+1./3.*dsx(i))*dsy(j))
+                if (k>izmin) sdz(i,j,k)=sdz(i,j,k)+sdz(i,j,k-1)
+                jz(ic,jc,kc) = jz(ic,jc,kc) + sdz(i,j,k)
+              end if
+            end do        
+          end do        
+        end do        
+
+      end do
+ 
+    end do
+
+    deallocate(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
+
+  return
+end subroutine warp_depose_jxjyjz_esirkepov_n
+
+subroutine picsar_depose_jxjyjz_esirkepov_n(cj,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+                                                 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                                 nox,noy,noz,l_particles_weight,l4symtry)
+   use constants
+   implicit none
+   integer(8) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+   real(kind=8), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard,3), intent(in out) :: cj
+   real(kind=8), dimension(np) :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
+   real(kind=8) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+   logical(8) :: l_particles_weight,l4symtry
+
+   real(kind=8) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+   real(kind=8),dimension(:,:,:),allocatable :: sdx,sdy,sdz
+   real(kind=8) :: xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
+                   s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz, &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
+                   dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
+   real(kind=8), parameter :: onesixth=1./6.,twothird=2./3.
+   real(kind=8), DIMENSION(:),allocatable :: sx, sx0, dsx
+   real(kind=8), DIMENSION(:),allocatable :: sy, sy0, dsy
+   real(kind=8), DIMENSION(:),allocatable :: sz, sz0, dsz
+   integer(8) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+                   ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
+                   xl,xu,yl,yu,zl,zu
+    PRINT *, "pxr depose_jxjyjz_esirkepov_n: np,l_particles_wight,l4symtry", np,l_particles_weight,l4symtry
+    ndtodx = int(clight*dt/dx)
+    ndtody = int(clight*dt/dy)
+    ndtodz = int(clight*dt/dz)
+    xl = -int(nox/2)-1-ndtodx
+    xu = int((nox+1)/2)+1+ndtodx
+    yl = -int(noy/2)-1-ndtody
+    yu = int((noy+1)/2)+1+ndtody
+    zl = -int(noz/2)-1-ndtodz
+    zu = int((noz+1)/2)+1+ndtodz
+    allocate(sdx(xl:xu,yl:yu,zl:zu),sdy(xl:xu,yl:yu,zl:zu),sdz(xl:xu,yl:yu,zl:zu))
+    allocate(sx(xl:xu), sx0(xl:xu), dsx(xl:xu))
+    allocate(sy(yl:yu), sy0(yl:yu), dsy(yl:yu))
+    allocate(sz(zl:zu), sz0(zl:zu), dsz(zl:zu))
+
+    sx0=0.;sy0=0.;sz0=0.
+    sdx=0.;sdy=0.;sdz=0.
+      
+      dxi = 1./dx
+      dyi = 1./dy
+      dzi = 1./dz
+      dtsdx0 = dt*dxi
+      dtsdy0 = dt*dyi
+      dtsdz0 = dt*dzi
+      dts2dx0 = 0.5*dtsdx0
+      dts2dy0 = 0.5*dtsdy0
+      dts2dz0 = 0.5*dtsdz0
+      invvol = 1./(dx*dy*dz)
+      invdtdx = 1./(dt*dy*dz)
+      invdtdy = 1./(dt*dx*dz)
+      invdtdz = 1./(dt*dx*dy)
+
+      do ip=1,np
+      
+        ! --- computes current position in grid units
+        x = (xp(ip)-xmin)*dxi
+        y = (yp(ip)-ymin)*dyi
+        z = (zp(ip)-zmin)*dzi
+        
+        ! --- computes velocity
+        vx = uxp(ip)*gaminv(ip)
+        vy = uyp(ip)*gaminv(ip)
+        vz = uzp(ip)*gaminv(ip)
+        
+        ! --- computes old position in grid units
+        xold=x-dtsdx0*vx
+        yold=y-dtsdy0*vy
+        zold=z-dtsdz0*vz
+ 
+        ! --- applies 4-fold symmetry
+        if (l4symtry) then
+          x=abs(x)
+          y=abs(y)
+          xold=abs(xold)
+          yold=abs(yold)
+          vx = (x-xold)/dtsdx0
+          vy = (y-yold)/dtsdy0
+        end if
+        
+        ! computes maximum number of cells traversed by particle in a given dimension
+        ncells = 1!+max( int(abs(x-xold)), int(abs(y-yold)), int(abs(z-zold)))
+        
+        dtsdx = dtsdx0/ncells
+        dtsdy = dtsdy0/ncells
+        dtsdz = dtsdz0/ncells
+        dts2dx = dts2dx0/ncells
+        dts2dy = dts2dy0/ncells
+        dts2dz = dts2dz0/ncells
+        
+        x=xold
+        y=yold
+        z=zold
+        
+        do icell = 1,ncells
+
+        xold = x
+        yold = y
+        zold = z
+        
+        x = x+dtsdx*vx
+        y = y+dtsdy*vy
+        z = z+dtsdz*vz
+        
+        ! --- computes particles "weights"
+        if (l_particles_weight) then
+          wq=q*w(ip)
+        else
+          wq=q*w(1)
+        end if
+        wqx = wq*invdtdx
+        wqy = wq*invdtdy
+        wqz = wq*invdtdz
+
+        ! --- finds node of cell containing particles for current positions 
+        ! --- (different for odd/even spline orders)
+        if (nox==2*(nox/2)) then
+          iixp0=nint(x)
+        else
+          iixp0=floor(x)
+        end if
+        if (noy==2*(noy/2)) then
+          ijxp0=nint(y)
+        else
+          ijxp0=floor(y)
+        end if
+        if (noz==2*(noz/2)) then
+          ikxp0=nint(z)
+        else
+          ikxp0=floor(z)
+        end if
+
+        ! --- computes distance between particle and node for current positions
+        xint=x-iixp0
+        yint=y-ijxp0
+        zint=z-ikxp0
+
+        ! --- computes coefficients for node centered quantities
+        select case(nox)
+         case(0)
+          sx0( 0) = 1.
+         case(1)
+          sx0( 0) = 1.-xint
+          sx0( 1) = xint
+         case(2)
+          xintsq = xint*xint
+          sx0(-1) = 0.5*(0.5-xint)**2
+          sx0( 0) = 0.75-xintsq
+          sx0( 1) = 0.5*(0.5+xint)**2
+         case(3)
+          oxint = 1.-xint
+          xintsq = xint*xint
+          oxintsq = oxint*oxint
+          sx0(-1) = onesixth*oxintsq*oxint
+          sx0( 0) = twothird-xintsq*(1.-xint/2)
+          sx0( 1) = twothird-oxintsq*(1.-oxint/2)
+          sx0( 2) = onesixth*xintsq*xint
+        end select        
+
+        select case(noy)
+         case(0)
+          sy0( 0) = 1.
+         case(1)
+          sy0( 0) = 1.-yint
+          sy0( 1) = yint
+         case(2)
+          yintsq = yint*yint
+          sy0(-1) = 0.5*(0.5-yint)**2
+          sy0( 0) = 0.75-yintsq
+          sy0( 1) = 0.5*(0.5+yint)**2
+         case(3)
+          oyint = 1.-yint
+          yintsq = yint*yint
+          oyintsq = oyint*oyint
+          sy0(-1) = onesixth*oyintsq*oyint
+          sy0( 0) = twothird-yintsq*(1.-yint/2)
+          sy0( 1) = twothird-oyintsq*(1.-oyint/2)
+          sy0( 2) = onesixth*yintsq*yint
+        end select        
+
+        select case(noz)
+         case(0)
+          sz0( 0) = 1.
+         case(1)
+          sz0( 0) = 1.-zint
+          sz0( 1) = zint
+         case(2)
+          zintsq = zint*zint
+          sz0(-1) = 0.5*(0.5-zint)**2
+          sz0( 0) = 0.75-zintsq
+          sz0( 1) = 0.5*(0.5+zint)**2
+         case(3)
+          ozint = 1.-zint
+          zintsq = zint*zint
+          ozintsq = ozint*ozint
+          sz0(-1) = onesixth*ozintsq*ozint
+          sz0( 0) = twothird-zintsq*(1.-zint/2)
+          sz0( 1) = twothird-ozintsq*(1.-ozint/2)
+          sz0( 2) = onesixth*zintsq*zint
+        end select        
+
+        ! --- finds node of cell containing particles for old positions 
+        ! --- (different for odd/even spline orders)
+        if (nox==2*(nox/2)) then
+          iixp=nint(xold)
+        else
+          iixp=floor(xold)
+        end if
+        if (noy==2*(noy/2)) then
+          ijxp=nint(yold)
+        else
+          ijxp=floor(yold)
+        end if
+        if (noz==2*(noz/2)) then
+          ikxp=nint(zold)
+        else
+          ikxp=floor(zold)
+        end if
+
+        ! --- computes distance between particle and node for old positions
+        xint = xold-iixp
+        yint = yold-ijxp
+        zint = zold-ikxp
+
+        ! --- computes node separation between old and current positions
+        dix = iixp-iixp0
+        diy = ijxp-ijxp0
+        diz = ikxp-ikxp0
+
+        ! --- zero out coefficients (needed because of different dix and diz for each particle)
+        sx=0.;sy=0.;sz=0.
+
+        ! --- computes coefficients for quantities centered between nodes
+        select case(nox)
+         case(0)
+          sx( 0+dix) = 1.
+         case(1)
+          sx( 0+dix) = 1.-xint
+          sx( 1+dix) = xint
+         case(2)
+          xintsq = xint*xint
+          sx(-1+dix) = 0.5*(0.5-xint)**2
+          sx( 0+dix) = 0.75-xintsq
+          sx( 1+dix) = 0.5*(0.5+xint)**2
+         case(3)
+          oxint = 1.-xint
+          xintsq = xint*xint
+          oxintsq = oxint*oxint
+          sx(-1+dix) = onesixth*oxintsq*oxint
+          sx( 0+dix) = twothird-xintsq*(1.-xint/2)
+          sx( 1+dix) = twothird-oxintsq*(1.-oxint/2)
+          sx( 2+dix) = onesixth*xintsq*xint
+        end select        
+
+        select case(noy)
+         case(0)
+          sy( 0+diy) = 1.
+         case(1)
+          sy( 0+diy) = 1.-yint
+          sy( 1+diy) = yint
+         case(2)
+          yintsq = yint*yint
+          sy(-1+diy) = 0.5*(0.5-yint)**2
+          sy( 0+diy) = 0.75-yintsq
+          sy( 1+diy) = 0.5*(0.5+yint)**2
+         case(3)
+          oyint = 1.-yint
+          yintsq = yint*yint
+          oyintsq = oyint*oyint
+          sy(-1+diy) = onesixth*oyintsq*oyint
+          sy( 0+diy) = twothird-yintsq*(1.-yint/2)
+          sy( 1+diy) = twothird-oyintsq*(1.-oyint/2)
+          sy( 2+diy) = onesixth*yintsq*yint
+        end select        
+
+        select case(noz)
+         case(0)
+          sz( 0+diz) = 1.
+         case(1)
+          sz( 0+diz) = 1.-zint
+          sz( 1+diz) = zint
+         case(2)
+          zintsq = zint*zint
+          sz(-1+diz) = 0.5*(0.5-zint)**2
+          sz( 0+diz) = 0.75-zintsq
+          sz( 1+diz) = 0.5*(0.5+zint)**2
+         case(3)
+          ozint = 1.-zint
+          zintsq = zint*zint
+          ozintsq = ozint*ozint
+          sz(-1+diz) = onesixth*ozintsq*ozint
+          sz( 0+diz) = twothird-zintsq*(1.-zint/2)
+          sz( 1+diz) = twothird-ozintsq*(1.-ozint/2)
+          sz( 2+diz) = onesixth*zintsq*zint
+        end select        
+
+        ! --- computes coefficients difference
+        dsx = sx - sx0
+        dsy = sy - sy0
+        dsz = sz - sz0
+        
+        ! --- computes min/max positions of current contributions
+        ixmin = min(0,dix)-int(nox/2)
+        ixmax = max(0,dix)+int((nox+1)/2)
+        iymin = min(0,diy)-int(noy/2)
+        iymax = max(0,diy)+int((noy+1)/2)
+        izmin = min(0,diz)-int(noz/2)
+        izmax = max(0,diz)+int((noz+1)/2)
+
+        ! --- add current contributions
+        do k=izmin, izmax
+          do j=iymin, iymax
+            do i=ixmin, ixmax
+              ic = iixp0+i
+              jc = ijxp0+j
+              kc = ikxp0+k
+              if(i<ixmax) then
+                sdx(i,j,k)  = wqx*dsx(i)*( (sy0(j)+0.5*dsy(j))*sz0(k) + (0.5*sy0(j)+1./3.*dsy(j))*dsz(k))
+                if (i>ixmin) sdx(i,j,k)=sdx(i,j,k)+sdx(i-1,j,k)
+                cj(ic,jc,kc,1) = cj(ic,jc,kc,1) + sdx(i,j,k)
+              end if
+              if(j<iymax) then
+                sdy(i,j,k)  = wqy*dsy(j)*( (sz0(k)+0.5*dsz(k))*sx0(i) + (0.5*sz0(k)+1./3.*dsz(k))*dsx(i))
+                if (j>iymin) sdy(i,j,k)=sdy(i,j,k)+sdy(i,j-1,k)
+                cj(ic,jc,kc,2) = cj(ic,jc,kc,2) + sdy(i,j,k)
+              end if
+              if(k<izmax) then
+                sdz(i,j,k)  = wqz*dsz(k)*( (sx0(i)+0.5*dsx(i))*sy0(j) + (0.5*sx0(i)+1./3.*dsx(i))*dsy(j))
+                if (k>izmin) sdz(i,j,k)=sdz(i,j,k)+sdz(i,j,k-1)
+                cj(ic,jc,kc,3) = cj(ic,jc,kc,3) + sdz(i,j,k)
+              end if
+            end do        
+          end do        
+        end do        
+
+      end do
+ 
+    end do
+
+    deallocate(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
+
+  return
+end subroutine picsar_depose_jxjyjz_esirkepov_n
+
+
+SUBROUTINE add_pxrjxjyjz_towarp_j(jwarp,cdims,nxx,nyy,nzz,nxg,nyg,nzg)
+USE fields
+USE shared_data
+IMPLICIT NONE 
+INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxg, nyg, nzg, cdims
+REAL(num), INTENT (IN OUT), DIMENSION(-nxg:nxx+nxg,-nyg:nyy+nyg,-nzg:nzz+nzg,cdims) :: jwarp
+INTEGER(idp) :: idim
+
+jwarp(:,:,:,1)=jwarp(:,:,:,1)+jx
+jwarp(:,:,:,2)=jwarp(:,:,:,2)+jy
+jwarp(:,:,:,3)=jwarp(:,:,:,3)+jz
+
+END SUBROUTINE add_pxrjxjyjz_towarp_j
+

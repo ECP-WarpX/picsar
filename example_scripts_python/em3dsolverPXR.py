@@ -1,5 +1,5 @@
 """Class for 2D & 3D FFT-based electromagnetic solver """
-from em3dsolverFFT import *
+from warp.field_solvers.em3dsolverFFT import *
 try:
     import picsarpy as pxrpy
     pxr = pxrpy.picsar
@@ -8,7 +8,6 @@ try:
 except:
     l_pxr=False
     print 'PICSAR package not found.'
-
 class EM3DPXR(EM3DFFT):
 
     __em3dpxrinputs__ = []
@@ -37,7 +36,51 @@ class EM3DPXR(EM3DFFT):
         if l_pxr:self.allocatefieldarraysPXR()
         loadrho()
 
+    def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
+      ixt = ix
+      iyt = iy
+      izt = iz
+
+      if (ixt < 0   ): ixt = nx - 1
+      if (ixt > nx-1): ixt = 0
+      if (iyt < 0   ): iyt = ny - 1
+      if (iyt > ny-1): iyt = 0
+      if (izt < 0   ): izt = nz - 1
+      if (izt > nz-1): izt = 0
+
+      convertindextoproc = ixt + iyt*nx + izt*nx*ny
+
+      return convertindextoproc
+    
+
     def allocatefieldarraysPXR(self):
+    
+        # Set up PXR MPI Data
+        pxr.nprocx=top.fsdecomp.nxprocs
+        pxr.nprocy=top.fsdecomp.nyprocs
+        pxr.nprocz=top.fsdecomp.nzprocs
+        ixcpu=top.fsdecomp.ixproc
+        iycpu=top.fsdecomp.iyproc
+        izcpu=top.fsdecomp.izproc
+        for iz in range(-1,2):
+            for iy in range(-1,2):
+                for ix in range(-1,2): 
+                    indtoproc=self.convertindtoproc(ixcpu+ix,iycpu+iy,izcpu+iz,pxr.nprocx,pxr.nprocy,pxr.nprocz)
+                    pxr.neighbour[ix+1,iy+1,iz+1]=indtoproc
+                    
+        if (ixcpu==0):
+        	pxr.x_min_boundary=1
+        if (ixcpu==pxr.nprocx-1):
+        	pxr.x_max_boundary=1
+        if (iycpu==0):
+        	pxr.y_min_boundary=1
+        if (iycpu==pxr.nprocy-1):
+        	pxr.y_max_boundary=1
+        if (izcpu==0):
+        	pxr.z_min_boundary=1
+        if (izcpu==pxr.nprocz-1):
+        	pxr.z_max_boundary=1
+        	
         # --- number of grid cells
         pxr.nx_global = w3d.nx
         pxr.ny_global = w3d.ny
@@ -46,16 +89,13 @@ class EM3DPXR(EM3DFFT):
         pxr.ny_global_grid = pxr.ny_global+1
         pxr.nz_global_grid = pxr.nz_global+1
         
-        pxr.nx = self.nx
-        pxr.ny = self.ny
-        pxr.nz = self.nz
-
-        pxr.nprocx=0
-        pxr.nprocy=0
-        pxr.nprocz=0
-        pxr.mpi_minimal_init()
-        pxr.mpi_initialise()
-#        print 'nprocx',pxr.nprocx
+        pxr.nx = self.nxlocal
+        pxr.ny = self.nylocal
+        pxr.nz = self.nzlocal
+        pxr.nx_grid=pxr.nx+1
+        pxr.ny_grid=pxr.ny+1
+        pxr.nz_grid=pxr.nz+1
+		
         
         # --- number of guard cells
         pxr.nxguards = self.nxguard
@@ -80,6 +120,15 @@ class EM3DPXR(EM3DFFT):
         pxr.z_min_local = self.fields.zmin
         pxr.z_max_local = self.fields.zmax
         
+        pxr.length_x=pxr.xmax-pxr.xmin
+        pxr.length_y=pxr.ymax-pxr.ymin
+        pxr.length_z=pxr.zmax-pxr.zmin
+        
+# INIT MPI_DATA FOR PICSAR
+        pxr.mpi_minimal_init()
+#        pxr.mpi_initialise()
+#        print 'nprocx',pxr.nprocx      
+        pxr.allocate_grid_quantities()
         pxr.dt = top.dt
 
         # --- Resolution
@@ -109,6 +158,12 @@ class EM3DPXR(EM3DFFT):
         pxr.nys = 0
         pxr.nzs = 0
 
+
+        # Current deposition
+        pxr.nox=1
+        pxr.noy=1
+        pxr.noz=1
+
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
@@ -137,7 +192,8 @@ class EM3DPXR(EM3DFFT):
                                             s.getz(bcast=0,gather=0), 
                                             s.getux(bcast=0,gather=0), 
                                             s.getuy(bcast=0,gather=0), 
-                                            s.getuz(bcast=0,gather=0), 
+                                            s.getuz(bcast=0,gather=0),
+                                            s.getgaminv(bcast=0,gather=0), 
                                             s.getweights(bcast=0,gather=0)  )      
 
         top.pgroup.npmax=0
@@ -166,8 +222,9 @@ class EM3DPXR(EM3DFFT):
                         pg.sm = s.mass
                         pg.sw = 1.
                         pg.npmax = pxr.partnmax
-                        pg.nps[0] = pxr.partn
+                        pg.nps = pxr.partn
                         pg.ins[0] = 1
+                        pg.sid[0]=0
                         pg.xp = pxr.partx
                         pg.yp = pxr.party
                         pg.zp = pxr.partz
@@ -175,9 +232,8 @@ class EM3DPXR(EM3DFFT):
                         pg.uyp = pxr.partuy
                         pg.uzp = pxr.partuz
                         pg.pid = fzeros([pg.npmax,top.npid])
-                        pg.pid[:,top.wpid-1] = pxr.partw
-                        pg.gaminv = zeros(pg.npmax)
-                        self.set_gamma(js=0,pg=pg)
+                        pg.pid = pxr.pid
+                        pg.gaminv = pxr.partgaminv
                         pg.ex = pxr.partex
                         pg.ey = pxr.partey
                         pg.ez = pxr.partez
@@ -187,21 +243,67 @@ class EM3DPXR(EM3DFFT):
                         pg.lebcancel_pusher=top.pgroup.lebcancel_pusher
                     xygroup.append(xgroup)
                 s.pgroups.append(xygroup)
-
+            pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
 #        for i,s in enumerate(self.listofallspecies):
 #            def ppzx(self,**kw):
 #                for pg in self.pgroups:
 #                   self._callppfunc(ppzx,pgroup=pg,**kw)
                     
 #            s.ppzx = ppzx
-            
+    def aliasparticlearrays(self):
+        # --- Detect if tile arrays have been reallocated in PXR
+        # --- and make proper aliasing in WARP 
+        
+        isrealloc=zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8'))
+        for i,s in enumerate(self.listofallspecies):
+            pxr.get_are_tiles_reallocated(i+1, self.ntilex, self.ntiley, self.ntilez,isrealloc)
+            ix,iy,iz=where(isrealloc==1)
+            for il in range(0,len(ix)):
+                pg = s.pgroups[iz[il]][iy[il]][ix[il]]
+                pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
+                pg.npmax = 0
+                pxr.partnmax
+                pg.ns=1
+                pg.npid=top.npid
+                pg.gchange()
+                pg.sq = s.charge
+                pg.sm = s.mass
+                pg.sw = 1.
+                pg.npmax = pxr.partnmax
+                pg.nps = pxr.partn
+                pg.ins[0] = 1
+                pg.sid[0]=0
+                pg.xp = pxr.partx
+                pg.yp = pxr.party
+                pg.zp = pxr.partz
+                pg.uxp = pxr.partux
+                pg.uyp = pxr.partuy
+                pg.uzp = pxr.partuz
+                pg.pid = fzeros([pg.npmax,top.npid])
+                pg.pid = pxr.pid
+                pg.gaminv = pxr.partgaminv
+                pg.ex = pxr.partex
+                pg.ey = pxr.partey
+                pg.ez = pxr.partez
+                pg.bx = pxr.partbx
+                pg.by = pxr.partby
+                pg.bz = pxr.partbz
+            pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
+
     def print_nptiles(self,ispecies):
         for iz in range(1,self.ntilez+1):
             for iy in range(1,self.ntiley+1):
                 for ix in range(1,self.ntilex+1):
                     pxr.point_to_tile(ispecies, ix, iy, iz)
-                    print ix,iy,iz,pxr.partn
-    
+                    print ix,iy,iz,pxr.partn[0], pxr.partnmax
+    def print_nptiles_sp0(self):
+        s=self.listofallspecies[0]
+        for iz in range(1,self.ntilez+1):
+            for iy in range(1,self.ntiley+1):
+                for ix in range(1,self.ntilex+1):
+                    pxr.point_to_tile(1, ix, iy, iz)
+                    print ix,iy,iz,pxr.partn, pxr.partnmax
+                    print ix,iy,iz,s.pgroups[iz-1][iy-1][ix-1].nps, s.pgroups[iz-1][iy-1][ix-1].npmax
     def ppzx_ptiles(self,ispecies,ppg,colors=['black','blue','red','green'],msize=2):
         ncolor = len(colors)
         ic=0
@@ -209,9 +311,16 @@ class EM3DPXR(EM3DFFT):
             for iy in range(1,self.ntiley+1):
                 for ix in range(1,self.ntilex+1):
                     pxr.point_to_tile(ispecies, ix, iy, iz)
-                    ppg(pxr.partx[:pxr.partn],pxr.partz[:pxr.partn],color=colors[ic%ncolor],msize=msize)
+                    ppg(pxr.partx[:pxr.partn[0]],pxr.partz[:pxr.partn[0]],color=colors[ic%ncolor],msize=msize)
                     ic+=1
-    
+
+    def ppzx_ptiles_v2(self,ispecies,ppg,**kw):
+        for iz in range(1,self.ntilez+1):
+            for iy in range(1,self.ntiley+1):
+                for ix in range(1,self.ntilex+1):
+                    pxr.point_to_tile(ispecies, ix, iy, iz)
+                    ppg(pxr.partx[:pxr.partn[0]],pxr.partz[:pxr.partn[0]],kwdict=kw)
+
     def push_e(self,dir=1.):
         dt = dir*top.dt/self.ntsub
         if self.novercycle==1:
@@ -235,18 +344,41 @@ class EM3DPXR(EM3DFFT):
                 f=self.fields
                 l_pushe=False
                 if self.l_2dxz:
-                    pxr.pxrpush_em2d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2): 
+                        pxr.pxrpush_em2d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                                  f.J[...,0],f.J[...,1],f.J[...,2],
+                                                  clight**2*mu0*dt,        
+                                                  clight**2*dt/f.dx*f.xcoefs[0],
+                                                  clight**2*dt/f.dy*f.ycoefs[0],
+                                                  clight**2*dt/f.dz*f.zcoefs[0],
+                                                  f.nx,f.ny,f.nz,
+                                                  f.nxguard,f.nyguard,f.nzguard,
+                                                  0,0,0,f.l_nodalgrid)                   
+                    
+                    else:
+                        pxr.pxrpush_em2d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                                  f.J[...,0],f.J[...,1],f.J[...,2],
+                                                  clight**2*mu0*dt,        
+                                                  clight**2*dt/f.dx*f.xcoefs,
+                                                  clight**2*dt/f.dy*f.ycoefs,
+                                                  clight**2*dt/f.dz*f.zcoefs,
+                                                  f.nx,f.ny,f.nz,
+                                                  f.norderx,f.nordery,f.norderz,
+                                                  f.nxguard,f.nyguard,f.nzguard,
+                                                  0,0,0,f.l_nodalgrid)
+                else:
+                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+                        pxr.pxrpush_em3d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               f.J[...,0],f.J[...,1],f.J[...,2],
                                               clight**2*mu0*dt,        
-                                              clight**2*dt/f.dx*f.xcoefs,
-                                              clight**2*dt/f.dy*f.ycoefs,
-                                              clight**2*dt/f.dz*f.zcoefs,
+                                              clight**2*dt/f.dx*f.xcoefs[0],
+                                              clight**2*dt/f.dy*f.ycoefs[0],
+                                              clight**2*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
-                else:
-                    pxr.pxrpush_em3d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0,0,0,f.l_nodalgrid)                    
+                    else:
+                        pxr.pxrpush_em3d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               f.J[...,0],f.J[...,1],f.J[...,2],
                                               clight**2*mu0*dt,        
                                               clight**2*dt/f.dx*f.xcoefs,
@@ -283,16 +415,35 @@ class EM3DPXR(EM3DFFT):
                 f=self.fields
                 l_pushb=False
                 if self.l_2dxz:
-                    pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+                        pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
+                                              f.nx,f.ny,f.nz,
+                                              f.nxguard,f.nyguard,f.nzguard,
+                                              0,0,0,f.l_nodalgrid)
+                    else:
+                        pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               0.5*dt/f.dx*f.xcoefs,
                                               0.5*dt/f.dy*f.ycoefs,
                                               0.5*dt/f.dz*f.zcoefs,
                                               f.nx,f.ny,f.nz,
                                               f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
+                                              0,0,0,f.l_nodalgrid)                        
                 else:
-                    pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+                        pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
+                                              f.nx,f.ny,f.nz,
+                                              f.nxguard,f.nyguard,f.nzguard,
+                                              0,0,0,f.l_nodalgrid)
+                    
+                    else: 
+                        pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               0.5*dt/f.dx*f.xcoefs,
                                               0.5*dt/f.dy*f.ycoefs,
                                               0.5*dt/f.dz*f.zcoefs,
@@ -321,16 +472,35 @@ class EM3DPXR(EM3DFFT):
                 f=self.fields
                 l_pushb=False
                 if self.l_2dxz:
-                    pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+                        pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
+                                              f.nx,f.ny,f.nz,
+                                              f.nxguard,f.nyguard,f.nzguard,
+                                              0,0,0,f.l_nodalgrid)
+                    else:
+                        pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               0.5*dt/f.dx*f.xcoefs,
                                               0.5*dt/f.dy*f.ycoefs,
                                               0.5*dt/f.dz*f.zcoefs,
                                               f.nx,f.ny,f.nz,
                                               f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
+                                              0,0,0,f.l_nodalgrid)                        
                 else:
-                    pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+                        pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                                              0.5*dt/f.dx*f.xcoefs[0],
+                                              0.5*dt/f.dy*f.ycoefs[0],
+                                              0.5*dt/f.dz*f.zcoefs[0],
+                                              f.nx,f.ny,f.nz,
+                                              f.nxguard,f.nyguard,f.nzguard,
+                                              0,0,0,f.l_nodalgrid)
+                    
+                    else: 
+                        pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               0.5*dt/f.dx*f.xcoefs,
                                               0.5*dt/f.dy*f.ycoefs,
                                               0.5*dt/f.dz*f.zcoefs,
@@ -408,7 +578,6 @@ class EM3DPXR(EM3DFFT):
     
         top.zgrid+=top.vbeamfrm*top.dt
         top.zbeam=top.zgrid
-
         # --- gather fields from grid to particles
 #        w3d.pgroupfsapi = top.pgroup
 #        for js in range(top.pgroup.ns):
@@ -418,9 +587,12 @@ class EM3DPXR(EM3DFFT):
         if l_first:
             if l_pxr:
                 pxr.pxrpush_particles_part2()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
+                pxr.particle_bcs()
+                #for i,s in enumerate(self.listofallspecies):
+                #    for pg in s.flatten(s.pgroups):
+                #        particleboundaries3d(pg,-1,False)
+                #pxr.particle_bcs_tiles()
+                self.aliasparticlearrays()
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -430,9 +602,12 @@ class EM3DPXR(EM3DFFT):
         else:        
             if l_pxr:
                 pxr.push_particles()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
+                pxr.particle_bcs()
+                #for i,s in enumerate(self.listofallspecies):
+                #    for pg in s.flatten(s.pgroups):
+                #        particleboundaries3d(pg,-1,False)
+                #pxr.particle_bcs_tiles()
+                self.aliasparticlearrays()
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -449,17 +624,12 @@ class EM3DPXR(EM3DFFT):
 #        self.loadsource(pgroups=pgroups)
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
-                      
 #        self.solve2ndhalf()
         self.dosolve()
     
         if l_pxr:
             if l_last:
-                print top.it,'part 1'
                 pxr.pxrpush_particles_part1()
-                for i,s in enumerate(self.listofallspecies):
-                    for pg in s.flatten(s.pgroups):
-                        self.set_gamma(0,pg)
         else:
             for i,s in enumerate(self.listofallspecies):
                 for pg in s.flatten(s.pgroups):
@@ -611,6 +781,130 @@ class EM3DPXR(EM3DFFT):
                        pg.gaminv[il:iu],top.dt)      
 
         if self.l_verbose:print me,'exit push_ions_positions'
+        
+    def loadsource(self,lzero=None,lfinalize_rho=None,pgroups=None,**kw):
+        '''Charge deposition, uses particles from top directly
+          - jslist: option list of species to load'''
+        # --- Note that the grid location is advanced even if no field solve
+        # --- is being done.
+        self.advancezgrid()
+        # --- If ldosolve is false, then skip the gather of rho, unless
+        # --- lzero is also false, in which case the solver is assumed to
+        # --- be gathering the source (for example during an EGUN iteration).
+        if not self.ldosolve and lzero: return
+        if lzero is None: lzero = w3d.lzerorhofsapi
+        if lfinalize_rho is None: lfinalize_rho = w3d.lfinalizerhofsapi
+
+        self.setparticledomains()
+        self.allocatedataarrays()
+        if lzero: self.zerosourcep()
+
+        if pgroups is None: pgroups = [top.pgroup]
+
+        if  l_pxr:
+            # --- PICSAR current deposition
+            # --- js = 0
+             f=self.fields
+             for pgroup in pgroups:
+                if w3d.js1fsapi >= 0: js1 = w3d.js1fsapi
+                else:                 js1 = 0
+                if w3d.js2fsapi >= 0: js2 = w3d.js2fsapi+1
+                else:                 js2 = pgroup.ns
+
+                jslist = kw.get('jslist',None)
+                if jslist is None: jslist = range(js1,js2)
+
+                for js in jslist:
+                    n = pgroup.nps[js]
+                    if n == 0: continue
+                    if pgroup.ldts[js]:
+                        indts = top.ndtstorho[pgroup.ndts[js]-1]
+                        iselfb = pgroup.iselfb[js]
+                        self.setsourcepforparticles(0,indts,iselfb)
+
+                        if self.debug:
+                            i1 = pgroup.ins[js]-1
+                            i2 = pgroup.ins[js]+pgroup.nps[js]-1
+                            if self.nxlocal > 0:
+                                x = pgroup.xp[i1:i2]
+                                if self.l4symtry: x = abs(x)
+                                if self.solvergeom == w3d.RZgeom:
+                                    y = pgroup.yp[i1:i2]
+                                    x = sqrt(x**2 + y**2)
+                                assert x.min() >= self.xmminp,\
+                                       "Particles in species %d have x below the grid when depositing the source, min x = %e"%(js,x.min())
+                                assert x.max() < self.xmmaxp,\
+                                       "Particles in species %d have x above the grid when depositing the source, max x = %e"%(js,x.max())
+                            if self.nylocal > 0:
+                                y = pgroup.yp[i1:i2]
+                                if self.l4symtry or self.l2symtry: y = abs(y)
+                                assert y.min() >= self.ymminp,\
+                                       "Particles in species %d have y below the grid when depositing the source, min y = %e"%(js,y.min())
+                                assert y.max() < self.ymmaxp,\
+                                       "Particles in species %d have y above the grid when depositing the source, max y = %e"%(js,y.max())
+                            if self.nzlocal > 0:
+                                z = pgroup.zp[i1:i2]
+                                assert z.min() >= self.zmminp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
+                                assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
+             pxr.pxrdepose_currents_on_grid_jxjyjz()
+             pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
+             pxr.nxguards,pxr.nyguards,pxr.nzguards)          
+        else:
+
+            for pgroup in pgroups:
+
+                if w3d.js1fsapi >= 0: js1 = w3d.js1fsapi
+                else:                 js1 = 0
+                if w3d.js2fsapi >= 0: js2 = w3d.js2fsapi+1
+                else:                 js2 = pgroup.ns
+
+                jslist = kw.get('jslist',None)
+                if jslist is None: jslist = range(js1,js2)
+
+                for js in jslist:
+                    n = pgroup.nps[js]
+                    if n == 0: continue
+                    if pgroup.ldts[js]:
+                        indts = top.ndtstorho[pgroup.ndts[js]-1]
+                        iselfb = pgroup.iselfb[js]
+                        self.setsourcepforparticles(0,indts,iselfb)
+
+                        if self.debug:
+                            i1 = pgroup.ins[js]-1
+                            i2 = pgroup.ins[js]+pgroup.nps[js]-1
+                            if self.nxlocal > 0:
+                                x = pgroup.xp[i1:i2]
+                                if self.l4symtry: x = abs(x)
+                                if self.solvergeom == w3d.RZgeom:
+                                    y = pgroup.yp[i1:i2]
+                                    x = sqrt(x**2 + y**2)
+                                assert x.min() >= self.xmminp,\
+                                       "Particles in species %d have x below the grid when depositing the source, min x = %e"%(js,x.min())
+                                assert x.max() < self.xmmaxp,\
+                                       "Particles in species %d have x above the grid when depositing the source, max x = %e"%(js,x.max())
+                            if self.nylocal > 0:
+                                y = pgroup.yp[i1:i2]
+                                if self.l4symtry or self.l2symtry: y = abs(y)
+                                assert y.min() >= self.ymminp,\
+                                       "Particles in species %d have y below the grid when depositing the source, min y = %e"%(js,y.min())
+                                assert y.max() < self.ymmaxp,\
+                                       "Particles in species %d have y above the grid when depositing the source, max y = %e"%(js,y.max())
+                            if self.nzlocal > 0:
+                                z = pgroup.zp[i1:i2]
+                                assert z.min() >= self.zmminp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
+                                assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
+                                       "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
+
+                        self.setsourcep(js,pgroup,self.getzgridndts()[indts])
+
+        # --- Only finalize the source if lzero is true, which means the this
+        # --- call to loadsource should be a complete operation.
+        self.sourcepfinalized = False
+        if lzero and lfinalize_rho: self.finalizesourcep()
+        
 
     def apply_bndconditions(self,js,pg=None):
         if self.l_verbose:print me,'enter apply_ions_bndconditions'

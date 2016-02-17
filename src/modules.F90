@@ -6,13 +6,13 @@ MODULE constants
 INTEGER, PARAMETER :: num = 8
 INTEGER, PARAMETER :: isp = 4
 INTEGER, PARAMETER :: idp = 8
-REAL(num), PARAMETER :: emass   = 9.1093818800000006e-31_num,      &
+REAL(num), PARAMETER :: emass   = 9.10938291e-31_num,      &
                         pmass   = 1.6726231000000001e-27_num,      &
                         echarge = 1.6021764620000001e-19_num,      &
-                        clight  = 299792458.0_num,                 &
+                        clight  = 2.99792458e8_num,                 &
                         mu0     = 1.2566370614359173e-06_num,      &
-                        eps0    = 8.8541878176203892e-12_num,      &
-                        pi      = 3.141592653589793_num
+                        eps0    = 8.854187817620389e-12_num,      &
+                        pi      = 3.14159265358979323_num
 INTEGER(isp), PARAMETER :: c_ndims = 3
 ! direction parameters
 INTEGER, PARAMETER :: c_dir_x = 1
@@ -34,19 +34,29 @@ INTEGER(idp):: norderx, nordery, norderz
 INTEGER(idp):: nxguards,nyguards, nzguards, nox, noy, noz, npass(3)
 INTEGER(idp):: nxjguards,nyjguards, nzjguards
 REAL(num):: alpha(3)
-REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz
+REAL(num), POINTER, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz
 ! Fonberg coefficients
 REAL(num), POINTER, DIMENSION(:) :: xcoeffs, ycoeffs, zcoeffs
 END MODULE fields
 
+MODULE grid_tilemodule !#do not parse 
+USE constants 
+TYPE grid_tile
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile, &
+ 								bxtile, bytile, bztile,  jxtile, jytile, jztile,rhotile
+END TYPE
+TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
+END MODULE grid_tilemodule
 
 ! Fortran object representing a particle tile
-MODULE particle_tilemodule !#do not parse
+MODULE particle_tilemodule !#do not parse 
 USE constants
 TYPE particle_tile
     LOGICAL :: l_arrays_allocated= .FALSE.
     ! Current number of particles in tile
-    INTEGER(idp) :: np_tile, npmax_tile
+    INTEGER(idp), DIMENSION(1) :: np_tile
+    INTEGER(idp) :: npmax_tile
+    INTEGER(idp) :: nxg_tile, nyg_tile, nzg_tile
     INTEGER(idp) :: nx_grid_tile, ny_grid_tile, nz_grid_tile
     INTEGER(idp) :: nx_cells_tile, ny_cells_tile, nz_cells_tile
     INTEGER(idp) :: nx_tile_min, nx_tile_max, ny_tile_min, ny_tile_max, &
@@ -65,18 +75,14 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
+    REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
-    REAL(num), ALLOCATABLE, DIMENSION(:) :: weight
-    ! Current/charge arrays
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jxtile
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jytile
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jztile
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rhotile
+    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
 END TYPE
 END MODULE particle_tilemodule
 
@@ -108,6 +114,9 @@ TYPE particle_species
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
     TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE :: array_of_tiles
+    ! Array indicating if a tile has been reallocated
+    ! Used for interfacing WARP and PXR
+    INTEGER(idp), DIMENSION(:,:,:), ALLOCATABLE :: are_tiles_reallocated
 END TYPE
 END MODULE particle_speciesmodule
 
@@ -120,7 +129,8 @@ END MODULE tile_params
 
 MODULE particle_properties
 USE constants
-INTEGER(idp), PARAMETER  :: nthreads_tile=1
+INTEGER(idp), PARAMETER :: npid=1
+INTEGER(idp), PARAMETER :: wpid=1
 LOGICAL :: l_initongrid = .FALSE.
 LOGICAL :: l_particles_weight = .FALSE.
 LOGICAL :: l4symtry = .FALSE.
@@ -143,10 +153,14 @@ USE tile_params
 USE particle_tilemodule
 USE particle_speciesmodule
 USE particle_properties
+USE grid_tilemodule
 
-! Array of pointers to particle species objects
-TYPE(particle_species), POINTER, DIMENSION(:):: species_parray
+! Array of  particle species objects
+TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:):: species_parray
+
 END MODULE particles
+
+
 
 !===============================================================================
 MODULE params
@@ -218,6 +232,13 @@ CHARACTER(LEN=string_length) :: filerho  ='rho'
 END MODULE output_data
 
 
+MODULE timing
+use constants 
+REAL(num) :: dep_curr_time=0._num
+REAL(num) :: timepush=0._num
+
+END MODULE timing
+
 
 
 
@@ -229,34 +250,34 @@ USE output_data
 !----------------------------------------------------------------------------
 ! MPI subdomain data
 !----------------------------------------------------------------------------
-INTEGER(isp) :: errcode, provided, comm, tag, rank
-INTEGER(isp) :: coordinates(3), neighbour(-1:1, -1:1, -1:1)
+INTEGER(isp) :: errcode, provided, comm, tag
+INTEGER(idp) :: rank
+INTEGER(isp) :: coordinates(3) 
+INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
 INTEGER(isp) :: x_coords, proc_x_min, proc_x_max
 INTEGER(isp):: y_coords, proc_y_min, proc_y_max
 INTEGER(isp) :: z_coords, proc_z_min, proc_z_max
-INTEGER(isp) :: nproc, nprocx, nprocy, nprocz
+INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
-INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
-INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: npart_each_rank
-LOGICAL :: x_min_boundary, x_max_boundary
-LOGICAL :: y_min_boundary, y_max_boundary
-LOGICAL :: z_min_boundary, z_max_boundary
+INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
+LOGICAL(idp) :: x_min_boundary, x_max_boundary
+LOGICAL(idp) :: y_min_boundary, y_max_boundary
+LOGICAL(idp) :: z_min_boundary, z_max_boundary
 ! The location of the processors
-INTEGER(idp), DIMENSION(:), ALLOCATABLE :: cell_x_min, cell_x_max
-INTEGER(idp), DIMENSION(:), ALLOCATABLE :: cell_y_min, cell_y_max
-INTEGER(idp), DIMENSION(:), ALLOCATABLE :: cell_z_min, cell_z_max
-INTEGER(idp), DIMENSION(:), ALLOCATABLE :: old_x_max, old_y_max, old_z_max
+INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
+INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
+INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_max
+INTEGER(idp), DIMENSION(:), POINTER :: old_x_max, old_y_max, old_z_max
 INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
 INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
 INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max
-INTEGER(idp) :: n_global_grid_min(3), n_global_grid_max(3)
 ! domain and loadbalancing
 LOGICAL :: allow_cpu_reduce = .FALSE.
-REAL(num), DIMENSION(:), ALLOCATABLE :: x_global, y_global, z_global
-REAL(num), DIMENSION(:), ALLOCATABLE :: xb_global, yb_global, zb_global
-REAL(num), DIMENSION(:), ALLOCATABLE :: xb_offset_global
-REAL(num), DIMENSION(:), ALLOCATABLE :: yb_offset_global
-REAL(num), DIMENSION(:), ALLOCATABLE :: zb_offset_global
+REAL(num), DIMENSION(:), POINTER :: x_global, y_global, z_global
+REAL(num), DIMENSION(:), POINTER :: xb_global, yb_global, zb_global
+REAL(num), DIMENSION(:), POINTER :: xb_offset_global
+REAL(num), DIMENSION(:), POINTER :: yb_offset_global
+REAL(num), DIMENSION(:), POINTER :: zb_offset_global
 ! domain limits and size
 INTEGER(idp)  :: nx, ny, nz ! local number of cells
 INTEGER(idp)  :: nx_grid, ny_grid, nz_grid ! local number of grid points
@@ -270,10 +291,10 @@ REAL(num):: dz, zmin, zmax,length_z
 REAL(num):: z_min_local, z_max_local
 
 ! Axis
-REAL(num), pointer, dimension(:) :: x, y, z
-REAL(num), DIMENSION(:), ALLOCATABLE :: x_grid_mins, x_grid_maxs
-REAL(num), DIMENSION(:), ALLOCATABLE :: y_grid_mins, y_grid_maxs
-REAL(num), DIMENSION(:), ALLOCATABLE :: z_grid_mins, z_grid_maxs
+REAL(num), POINTER, DIMENSION(:) :: x, y, z
+REAL(num), DIMENSION(:), POINTER :: x_grid_mins, x_grid_maxs
+REAL(num), DIMENSION(:), POINTER :: y_grid_mins, y_grid_maxs
+REAL(num), DIMENSION(:), POINTER :: z_grid_mins, z_grid_maxs
 REAL(num) ::  x_grid_min, x_grid_max
 REAL(num) :: x_grid_min_local, x_grid_max_local
 REAL(num) ::  y_grid_min, y_grid_max
@@ -282,16 +303,18 @@ REAL(num) :: z_grid_min, z_grid_max
 REAL(num) :: z_grid_min_local, z_grid_max_local
 
 ! Total charge density
-REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: rho
+REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 ! Electric Field divergence
-REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: dive
+REAL(num), POINTER, DIMENSION(:,:,:) :: dive
 
 END MODULE shared_data
 
 
 MODULE python_pointers
 USE constants
-INTEGER(idp) :: partn, partnmax
+INTEGER(idp), POINTER :: partn(:)
+INTEGER(idp) :: partnmax
+INTEGER(idp) :: nxtg, nytg, nztg
 INTEGER(idp) :: nxgt, nygt, nzgt
 INTEGER(idp) :: nxct, nyct, nzct
 INTEGER(idp) :: nxmin, nxmax, nymin, nymax, &
@@ -307,7 +330,8 @@ REAL(num), DIMENSION(:), POINTER :: partz
 REAL(num), DIMENSION(:), POINTER :: partux
 REAL(num), DIMENSION(:), POINTER :: partuy
 REAL(num), DIMENSION(:), POINTER :: partuz
-REAL(num), DIMENSION(:), POINTER :: partw
+REAL(num), DIMENSION(:), POINTER :: partgaminv
+REAL(num), DIMENSION(:,:), POINTER :: pid
 REAL(num), DIMENSION(:), POINTER :: partex
 REAL(num), DIMENSION(:), POINTER :: partey
 REAL(num), DIMENSION(:), POINTER :: partez
