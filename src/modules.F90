@@ -83,11 +83,6 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
     REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
-    ! Current/charge arrays
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jxtile
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jytile
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jztile
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rhotile
 END TYPE
 END MODULE particle_tilemodule
 

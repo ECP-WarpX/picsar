@@ -305,17 +305,6 @@ CONTAINS
                  curr_tile%part_ey(1:nmax), curr_tile%part_ez(1:nmax),         &
                  curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax),         &
                  curr_tile%part_bz(1:nmax),curr_tile%part_gaminv(1:nmax))
-        ! ALLOCATE CURRENT ARRAYS jxtile, jytile, jztile
-        nxc=curr_tile%nx_cells_tile
-        nyc=curr_tile%ny_cells_tile
-        nzc=curr_tile%nz_cells_tile
-        nxjg=curr_tile%nxg_tile
-        nyjg=curr_tile%nyg_tile
-        nzjg=curr_tile%nzg_tile
-        ALLOCATE(curr_tile%jxtile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg),  &
-                 curr_tile%jytile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg),  &
-                 curr_tile%jztile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg),  &
-                 curr_tile%rhotile(-nxjg:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg))
         curr_tile%l_arrays_allocated = .TRUE.
 
     END SUBROUTINE allocate_tile_arrays
