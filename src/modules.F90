@@ -267,7 +267,6 @@ LOGICAL(idp) :: z_min_boundary, z_max_boundary
 INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_max
-INTEGER(idp), DIMENSION(:), POINTER :: old_x_max, old_y_max, old_z_max
 INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
 INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
 INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max

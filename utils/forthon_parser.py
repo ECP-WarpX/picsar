@@ -1026,7 +1026,7 @@ remove_file(appname+".F90")
 remove_file(appname+".v")
 
 #LIST ALL .F90 or .F files in current directory
-listfiles=["modules.F90", "maxwell.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", "field_gathering.F90", "mpi_derived_types.F90", "boundary.F90", "simple_io.F90", "diags.F90", "submain.F90", "mpi_routines.F90", "control_file.F90"]
+listfiles=["modules.F90", "maxwell.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", "field_gathering.F90", "mpi_derived_types.F90", "boundary.F90", "simple_io.F90", "diags.F90", "submain.F90", "mpi_routines.F90", "control_file.F90", "load_balancing.F90"]
 
 # Pre-parse all application files in two .F90 files
 # appname_subroutines.F90 and appnam_modules.F90
