@@ -29,6 +29,13 @@ CONTAINS
         nox = 1
         noy = 1
         noz = 1
+        nxguards=MAX(nox,2)
+        nyguards=MAX(noy,2)
+        nzguards=MAX(noz,2)
+        nxjguards=MAX(nox,2)
+        nyjguards=MAX(noy,2)
+        nzjguards=MAX(noz,2)
+        
         l_lower_order_in_v = .FALSE.
 
         ! --- sets coefficient multiplying Courant time step
@@ -173,15 +180,24 @@ CONTAINS
             ELSE IF (INDEX(buffer,'dz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) dz
-            ELSEIF (INDEX(buffer,'x_grid_min') .GT. 0) THEN
+            ELSEIF (INDEX(buffer,'xmin') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) xmin
-            ELSE IF (INDEX(buffer,'y_grid_min') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'ymin') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) ymin
-            ELSE IF (INDEX(buffer,'z_grid_min') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'zmin') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) zmin
+            ELSEIF (INDEX(buffer,'xmax') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) xmax
+            ELSE IF (INDEX(buffer,'ymax') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) ymax
+            ELSE IF (INDEX(buffer,'zmax') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) zmax
             ELSE IF (INDEX(buffer,'t_max') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) tmax

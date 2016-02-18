@@ -233,7 +233,7 @@ CONTAINS
         IF (count .GT. nmax) THEN
         ! Resize particle tile arrays if tile is full
         	currsp%are_tiles_reallocated(ixt,iyt,izt)=1
-            CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1))
+            CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
         ENDIF
         ! Finally, add particle to tile
         curr%np_tile(1)=count
@@ -258,8 +258,8 @@ CONTAINS
     SUBROUTINE rm_particles_from_species(currsp, curr, mask)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
-        LOGICAL, DIMENSION (:), INTENT(IN) :: mask
-        INTEGER :: ninit, i
+        LOGICAL(idp), DIMENSION (:), INTENT(IN) :: mask
+        INTEGER(idp) :: ninit, i
         ninit= curr%np_tile(1)
         DO i = ninit,1,-1
             IF (.NOT. mask(i)) THEN
@@ -271,7 +271,7 @@ CONTAINS
 
     SUBROUTINE rm_particle_at_tile(curr, index)
         IMPLICIT NONE
-        INTEGER :: index
+        INTEGER(idp) :: index
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
         IF (index .EQ. curr%np_tile(1)) THEN
             ! If particle i is last element
@@ -514,7 +514,7 @@ CONTAINS
         IMPLICIT NONE
 
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
-        INTEGER :: old_size, new_size
+        INTEGER(idp) :: old_size, new_size
 
         curr%npmax_tile=new_size
         CALL resize_1D_array_real(curr%part_x, old_size, new_size)
@@ -537,7 +537,7 @@ CONTAINS
         IMPLICIT NONE
         REAL(num), DIMENSION(:),ALLOCATABLE, INTENT(IN OUT) :: arr
         REAL(num), DIMENSION(:),ALLOCATABLE :: temp
-        INTEGER :: old_size, new_size
+        INTEGER(idp) :: old_size, new_size
 
         ALLOCATE(temp(1:new_size))
         ! reshape array

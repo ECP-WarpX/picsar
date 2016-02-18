@@ -43,7 +43,7 @@ DO i=1,nst
     !!! --- Boundary conditions for B
     CALL bfield_bcs
     !!! --- Computes derived quantities
-    !CALL calc_diags
+    CALL calc_diags
     !!! --- Output simulation results
     !CALL output_routines
     it = it+1

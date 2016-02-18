@@ -522,7 +522,7 @@ END SUBROUTINE charge_bcs
 !!! Boundary condition on tiles
   SUBROUTINE particle_bcs_tiles
     IMPLICIT NONE
-    INTEGER:: i, ispecies, ix, iy, iz, indx, indy, indz
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
@@ -584,13 +584,13 @@ END SUBROUTINE charge_bcs
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
-    LOGICAL, ALLOCATABLE, DIMENSION(:) :: mask
+    LOGICAL(idp), ALLOCATABLE, DIMENSION(:) :: mask
     INTEGER(isp) :: ibuff, isend, nout, nbuff, ninit
     INTEGER(isp) :: xbd, ybd, zbd
     INTEGER(isp) :: ixp, iyp, izp
     INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
     INTEGER(isp) :: dest, src
-    LOGICAL :: out_of_bounds
+    LOGICAL(idp) :: out_of_bounds
     INTEGER(isp) :: ispecies, i, ip, ix, iy, iz
     INTEGER(isp) :: ixtile, iytile, iztile
     REAL(num) :: part_xyz
