@@ -306,6 +306,9 @@ REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 ! Electric Field divergence
 REAL(num), POINTER, DIMENSION(:,:,:) :: dive
 
+! Timing values for load balancing 
+REAL(num) :: mpitime_per_it, max_time_per_it, min_time_per_it 
+
 END MODULE shared_data
 
 

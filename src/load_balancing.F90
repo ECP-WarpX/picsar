@@ -7,31 +7,43 @@ IMPLICIT NONE
 
 CONTAINS 
 
+SUBROUTINE get_max_time_per_it()
+    IMPLICIT NONE 
+    ! Get max time per it 
+    CALL MPI_ALLREDUCE(mpitime_per_it, max_time_per_it, 1_isp, MPI_REAL8, MPI_MAX, comm, errcode)
 
-SUBROUTINE balance_in_dir(load_in_dir, ndir, ncellmaxdir, nprocdir, idirmin, idirmax)
-IMPLICIT NONE 
-REAL(num), DIMENSION(ndir), INTENT(IN) :: load_in_dir
-REAL(num), DIMENSION(ndir), INTENT(IN OUT) :: idirmin, idirmax
-INTEGER(idp), INTENT(IN) :: ndir, nprocdir, ncellmaxdir 
-INTEGER(idp) :: iproc, icell 
-REAL(num) :: balanced_load=0_num, curr_proc_load=0_num  
-LOGICAL(idp) :: not_balanced 
+END SUBROUTINE get_max_time_per_it 
 
-balanced_load=SUM(load_in_dir)/ndir
-icell=1 
+SUBROUTINE get_min_time_per_it()
+    IMPLICIT NONE 
+    ! Get max time per it 
+    CALL MPI_ALLREDUCE(mpitime_per_it, min_time_per_it, 1_isp, MPI_REAL8, MPI_MIN, comm, errcode)
+END SUBROUTINE get_min_time_per_it 
 
-DO iproc=1, ndir
-    not_balanced=.TRUE. 
-    curr_proc_load=0_num
-    idirmin(iproc)=icell
-    WHILE(not_balanced)    
-        curr_proc_load=curr_proc_load+load_in_dir(icell)
-        icell=icell+1
-        IF(curr_proc_load .GE. balanced_load) not_balanced=.FALSE. 
-    END WHILE 
-    idirmax(iproc)=icell-1
-END DO 
 
+SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirmax)
+    IMPLICIT NONE 
+    REAL(num), DIMENSION(ncellmaxdir), INTENT(IN) :: load_in_dir
+    REAL(num), DIMENSION(nproc_in_dir), INTENT(IN OUT) :: idirmin, idirmax
+    INTEGER(idp), INTENT(IN) :: nproc_in_dir, ncellmaxdir 
+    INTEGER(idp) :: iproc, icell 
+    REAL(num) :: balanced_load=0_num, curr_proc_load=0_num  
+    LOGICAL(idp) :: not_balanced 
+
+    balanced_load=SUM(load_in_dir)/nproc_in_dir
+    icell=1 
+
+    DO iproc=1, nproc_in_dir
+        not_balanced=.TRUE. 
+        curr_proc_load=0_num
+        idirmin(iproc)=icell
+        DO WHILE(not_balanced)  
+            curr_proc_load=curr_proc_load+load_in_dir(icell)
+            icell=icell+1
+            IF(curr_proc_load .GE. balanced_load) not_balanced=.FALSE. 
+        END DO 
+        idirmax(iproc)=icell-1
+    END DO 
 END SUBROUTINE balance_in_dir
 
 

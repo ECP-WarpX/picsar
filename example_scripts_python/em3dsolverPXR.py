@@ -8,6 +8,11 @@ try:
 except:
     l_pxr=False
     print 'PICSAR package not found.'
+try: 
+    from mpi4py import MPI 
+except: 
+    print 'Errro cannot import mpi4py'  
+    
 class EM3DPXR(EM3DFFT):
 
     __em3dpxrinputs__ = []
@@ -69,18 +74,18 @@ class EM3DPXR(EM3DFFT):
                     pxr.neighbour[ix+1,iy+1,iz+1]=indtoproc
                     
         if (ixcpu==0):
-        	pxr.x_min_boundary=1
+            pxr.x_min_boundary=1
         if (ixcpu==pxr.nprocx-1):
-        	pxr.x_max_boundary=1
+            pxr.x_max_boundary=1
         if (iycpu==0):
-        	pxr.y_min_boundary=1
+            pxr.y_min_boundary=1
         if (iycpu==pxr.nprocy-1):
-        	pxr.y_max_boundary=1
+            pxr.y_max_boundary=1
         if (izcpu==0):
-        	pxr.z_min_boundary=1
+            pxr.z_min_boundary=1
         if (izcpu==pxr.nprocz-1):
-        	pxr.z_max_boundary=1
-        	
+            pxr.z_max_boundary=1
+            
         # --- number of grid cells
         pxr.nx_global = w3d.nx
         pxr.ny_global = w3d.ny
@@ -95,7 +100,7 @@ class EM3DPXR(EM3DFFT):
         pxr.nx_grid=pxr.nx+1
         pxr.ny_grid=pxr.ny+1
         pxr.nz_grid=pxr.nz+1
-		
+        
         
         # --- number of guard cells
         pxr.nxguards = self.nxguard
@@ -125,10 +130,13 @@ class EM3DPXR(EM3DFFT):
         pxr.length_z=pxr.zmax-pxr.zmin
         
 # INIT MPI_DATA FOR PICSAR
+        # Init communicator variable in picsar 
         pxr.mpi_minimal_init()
-#        pxr.mpi_initialise()
-#        print 'nprocx',pxr.nprocx      
+        
+        # allocate grid quantities 
         pxr.allocate_grid_quantities()
+        
+        # set time step 
         pxr.dt = top.dt
 
         # --- Resolution
@@ -573,6 +581,10 @@ class EM3DPXR(EM3DFFT):
             self.onestep(l_first,l_last)
        
     def onestep(self,l_first,l_last):
+        tdeb=0. 
+        tend=0.
+        if l_pxr:
+            tdeb=MPI.Wtime()
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
     
@@ -647,7 +659,16 @@ class EM3DPXR(EM3DFFT):
 
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
-
+        
+        # MPI time for it 
+        if l_pxr:
+            tend=MPI.Wtime()
+            pxr.mpitime_per_it=tend-tdeb 
+            pxr.get_max_time_per_it() 
+            pxr.get_min_time_per_it() 
+            if(pxr.rank==0): 
+                 print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it,
+                (pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100.)
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:
@@ -945,3 +966,11 @@ class EM3DPXR(EM3DFFT):
         if self.scraper is not None:self.scraper.scrape(js)
         processlostpart(pg,js+1,top.clearlostpart,top.time+top.dt*pg.ndts[js],top.zbeam)
         if self.l_verbose:print me,'enter apply_bnd_conditions'
+    def dynamic_load_balancing(self): 
+        if(self.l_pxr): 
+            # Get load imbalance 
+            maxtime=np.max(pxr.MPItime_per_it)
+            mintime=np.min(pxr.MPItime_per_it) 
+            if(pxr.rank==0): 
+                print("maxtime,mintime, imbalance (%)",(maxtime-mintime)/mintime*100.)
+                        

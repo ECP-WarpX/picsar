@@ -329,7 +329,6 @@ CONTAINS
     z_grid_max_local=z_max_local
 
     CALL allocate_grid_quantities()
-
     start_time = MPI_WTIME()
 
   END SUBROUTINE mpi_initialise
@@ -348,6 +347,7 @@ CONTAINS
     ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
   END SUBROUTINE 
+  
   
   SUBROUTINE mpi_close
 
