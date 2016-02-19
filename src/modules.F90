@@ -267,6 +267,9 @@ LOGICAL(idp) :: z_min_boundary, z_max_boundary
 INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min, new_cell_x_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_y_min, new_cell_y_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min, new_cell_z_max
 INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
 INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
 INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max
@@ -306,8 +309,11 @@ REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 ! Electric Field divergence
 REAL(num), POINTER, DIMENSION(:,:,:) :: dive
 
-! Timing values for load balancing 
+! Values used for load balancing 
 REAL(num) :: mpitime_per_it, max_time_per_it, min_time_per_it 
+REAL(num) :: global_time_per_cell, global_time_per_part 
+REAL(num) :: local_time_cell, local_time_part
+INTEGER(idp) :: npart_local, npart_global
 
 END MODULE shared_data
 

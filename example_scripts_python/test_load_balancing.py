@@ -26,8 +26,8 @@ w3d.lgtlchg3d = false
 # ----------
 
 dfact = 1
-dxfact = 16
-dtfact = 8*4
+dxfact = 16/1.4
+dtfact = 8*4/1.4
 N_step = 20000/dtfact
 
 #Two-layer foil:
@@ -161,13 +161,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 8#5
-nppcelly_C = 8#5
-nppcellz_C = 8#5
+nppcellx_C = 6#5
+nppcelly_C = 6#5
+nppcellz_C = 6#5
 
-nppcellx_H = 8#4
-nppcelly_H = 8#4
-nppcellz_H = 8#4
+nppcellx_H = 6#4
+nppcelly_H = 6#4
+nppcellz_H = 6#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1

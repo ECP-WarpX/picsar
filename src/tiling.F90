@@ -573,7 +573,7 @@ CONTAINS
 			curr=> species_parray(ispecies)
 			npart=npart+curr%species_npart
 		END DO ! END LOOP ON SPECIES
-        PRINT *, "HELLO", npart
+
     END SUBROUTINE get_local_number_of_part
     ! ----- SUBROUTINES DEDICATED FOR PYTHON INTERFACE
 

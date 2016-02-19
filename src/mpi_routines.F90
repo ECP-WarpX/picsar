@@ -179,6 +179,10 @@ CONTAINS
     ALLOCATE(cell_x_min(nprocx), cell_x_max(nprocx))
     ALLOCATE(cell_y_min(nprocy), cell_y_max(nprocy))
     ALLOCATE(cell_z_min(nprocz), cell_z_max(nprocz))
+    ! Used by the dynamic load balancer 
+    ALLOCATE(new_cell_x_min(nprocx), new_cell_x_max(nprocx))
+    ALLOCATE(new_cell_y_min(nprocy), new_cell_y_max(nprocy))
+    ALLOCATE(new_cell_z_min(nprocz), new_cell_z_max(nprocz))
 
 	! Split is done on the total number of grid nodes
 	! Initial WARP split is used with each processor boundary 

@@ -1,11 +1,34 @@
 MODULE load_balance 
 USE fields 
-USE particles 
-USE params
 USE shared_data
+USE tiling 
 IMPLICIT NONE 
 
 CONTAINS 
+
+SUBROUTINE compute_time_per_part()
+    IMPLICIT NONE 
+    REAL(num) :: global_time_part
+    CALL get_local_number_of_part(npart_local)
+    global_time_part=0.
+    ! Get max time per it 
+    CALL MPI_ALLREDUCE(local_time_part, global_time_part, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
+    CALL MPI_ALLREDUCE(npart_local, npart_global, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
+    global_time_per_part=global_time_part/npart_global 
+
+END SUBROUTINE compute_time_per_part
+
+SUBROUTINE compute_time_per_cell()
+    IMPLICIT NONE 
+    REAL(num) :: global_time_cell
+    global_time_cell=0.
+    ! Get max time per it 
+    CALL MPI_ALLREDUCE(local_time_cell, global_time_cell, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
+    global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
+
+END SUBROUTINE compute_time_per_cell
+
+
 
 SUBROUTINE get_max_time_per_it()
     IMPLICIT NONE 
@@ -20,11 +43,39 @@ SUBROUTINE get_min_time_per_it()
     CALL MPI_ALLREDUCE(mpitime_per_it, min_time_per_it, 1_isp, MPI_REAL8, MPI_MIN, comm, errcode)
 END SUBROUTINE get_min_time_per_it 
 
+SUBROUTINE compute_new_split()
+    IMPLICIT NONE
+    REAL(num), DIMENSION(:), ALLOCATABLE :: load_on_x, load_on_y, load_on_z
+    ALLOCATE(load_on_x(nx_global),load_on_y(ny_global),load_on_z(nz_global))
+    load_on_x=0.
+    load_on_y=0.
+    load_on_z=0.
+    
+    ! Compute load in X and compute new split in X 
+    CALL get_projected_load_on_x(nx_global,load_on_x,global_time_per_part,global_time_per_cell)
+    CALL balance_in_dir(load_on_x,nx_global,nprocx,new_cell_x_min,new_cell_x_max)
+    
+    DEALLOCATE(load_on_x)
+    
+    ! Compute load in X and compute new split in Y 
+    CALL get_projected_load_on_y(ny_global,load_on_y,global_time_per_part,global_time_per_cell)
+    CALL balance_in_dir(load_on_y,ny_global,nprocy,new_cell_y_min,new_cell_y_max)
+    
+    DEALLOCATE(load_on_x)
+    
+    ! Compute load in X and compute new split in Z 
+    CALL get_projected_load_on_z(nz_global,load_on_z,global_time_per_part,global_time_per_cell)
+    CALL balance_in_dir(load_on_z,nz_global,nprocz,new_cell_z_min,new_cell_z_max)
+    
+    DEALLOCATE(load_on_x)
+    
+    END SUBROUTINE compute_new_split
+
 
 SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirmax)
     IMPLICIT NONE 
     REAL(num), DIMENSION(ncellmaxdir), INTENT(IN) :: load_in_dir
-    REAL(num), DIMENSION(nproc_in_dir), INTENT(IN OUT) :: idirmin, idirmax
+    INTEGER(idp), DIMENSION(nproc_in_dir), INTENT(IN OUT) :: idirmin, idirmax
     INTEGER(idp), INTENT(IN) :: nproc_in_dir, ncellmaxdir 
     INTEGER(idp) :: iproc, icell 
     REAL(num) :: balanced_load=0_num, curr_proc_load=0_num  

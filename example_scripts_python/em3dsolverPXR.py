@@ -583,8 +583,16 @@ class EM3DPXR(EM3DFFT):
     def onestep(self,l_first,l_last):
         tdeb=0. 
         tend=0.
+        tdebpart=0.
+        tendpart=0.
+        tdebfield=0.
+        tendfield=0.
+        tdebcell=0.
+        tendcell=0.
         if l_pxr:
             tdeb=MPI.Wtime()
+            pxr.local_time_part=0.
+            pxr.local_time_cell=0.
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
     
@@ -598,7 +606,10 @@ class EM3DPXR(EM3DFFT):
         # --- push 
         if l_first:
             if l_pxr:
+            	tdebpart=MPI.Wtime()
                 pxr.pxrpush_particles_part2()
+                tendpart=MPI.Wtime()
+                pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
                 pxr.particle_bcs()
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
@@ -613,13 +624,17 @@ class EM3DPXR(EM3DFFT):
                         particleboundaries3d(pg,-1,False)
         else:        
             if l_pxr:
+            	tdebpart=MPI.Wtime()
                 pxr.push_particles()
+                tendpart=MPI.Wtime()
+                pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
                 pxr.particle_bcs()
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
                 #pxr.particle_bcs_tiles()
                 self.aliasparticlearrays()
+
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -634,14 +649,23 @@ class EM3DPXR(EM3DFFT):
             pgroups+=s.flatten(s.pgroups)
         self.pgroups = pgroups
 #        self.loadsource(pgroups=pgroups)
+        tdebpart=MPI.Wtime()
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
+        tendpart=MPI.Wtime()
+        pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
 #        self.solve2ndhalf()
+        tdebcell=MPI.Wtime()
         self.dosolve()
+        tendcell=MPI.Wtime()
+        pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
     
         if l_pxr:
             if l_last:
+                tdebpart=MPI.Wtime()
                 pxr.pxrpush_particles_part1()
+                tendpart=MPI.Wtime()
+                pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
         else:
             for i,s in enumerate(self.listofallspecies):
                 for pg in s.flatten(s.pgroups):
@@ -666,9 +690,15 @@ class EM3DPXR(EM3DFFT):
             pxr.mpitime_per_it=tend-tdeb 
             pxr.get_max_time_per_it() 
             pxr.get_min_time_per_it() 
+            pxr.compute_time_per_part()
+            pxr.compute_time_per_cell()
+            pxr.compute_new_split()
             if(pxr.rank==0): 
                  print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it,
                 (pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100.)
+                 print("npart_global, global_time_per_part", pxr.npart_global, pxr.global_time_per_part)
+                 print("nglobal_cell,global_time_per_cell", pxr.nx_global*pxr.ny_global*pxr.nz_global,pxr.global_time_per_cell)
+                 print("new split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:
