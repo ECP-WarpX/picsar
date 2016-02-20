@@ -292,7 +292,7 @@ if l_plasma:
         np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
     
     elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=clight/100.,vthy=clight/100.,vthz=clight/100.,
+                       vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
 
     ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
@@ -310,7 +310,7 @@ if l_plasma:
         np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_H*nppcelly_H*nppcellz_H
 
     elec_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=clight/100.,vthy=clight/100.,vthz=clight/100.,
+                       vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
 
     ions_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
@@ -361,9 +361,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = max(1,w3d.nxlocal/10)
-    ntiley = max(1,w3d.nylocal/10)
-    ntilez = max(1,w3d.nzlocal/10)
+    ntilex = 1#max(1,w3d.nxlocal/10)
+    ntiley = 1#max(1,w3d.nylocal/10)
+    ntilez = 1#max(1,w3d.nzlocal/10)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,

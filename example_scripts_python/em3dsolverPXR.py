@@ -85,7 +85,12 @@ class EM3DPXR(EM3DFFT):
             pxr.z_min_boundary=1
         if (izcpu==pxr.nprocz-1):
             pxr.z_max_boundary=1
-            
+        
+        # MPI boundaries index in global array 
+        pxr.cell_x_min=top.fsdecomp.ix
+        pxr.cell_y_min=top.fsdecomp.iy
+        pxr.cell_z_min=top.fsdecomp.iz
+        
         # --- number of grid cells
         pxr.nx_global = w3d.nx
         pxr.ny_global = w3d.ny
@@ -117,6 +122,12 @@ class EM3DPXR(EM3DFFT):
         pxr.xmax = w3d.xmmax
         pxr.ymax = w3d.ymmax
         pxr.zmax = w3d.zmmax
+        pxr.x_grid_min=pxr.xmin
+        pxr.x_grid_max=pxr.xmax
+        pxr.y_grid_min=pxr.ymin
+        pxr.y_grid_max=pxr.ymax
+        pxr.z_grid_min=pxr.zmin
+        pxr.z_grid_max=pxr.zmax
         
         pxr.x_min_local = self.fields.xmin
         pxr.x_max_local = self.fields.xmax
@@ -124,6 +135,12 @@ class EM3DPXR(EM3DFFT):
         pxr.y_max_local = self.fields.ymax
         pxr.z_min_local = self.fields.zmin
         pxr.z_max_local = self.fields.zmax
+        pxr.x_grid_min_local=pxr.x_min_local
+        pxr.x_grid_max_local=pxr.x_max_local
+        pxr.y_grid_min_local=pxr.y_min_local
+        pxr.y_grid_max_local=pxr.y_max_local
+        pxr.z_grid_min_local=pxr.z_min_local
+        pxr.z_grid_max_local=pxr.z_max_local
         
         pxr.length_x=pxr.xmax-pxr.xmin
         pxr.length_y=pxr.ymax-pxr.ymin
@@ -693,12 +710,20 @@ class EM3DPXR(EM3DFFT):
             pxr.compute_time_per_part()
             pxr.compute_time_per_cell()
             pxr.compute_new_split()
-            if(pxr.rank==0): 
-                 print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it,
-                (pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100.)
-                 print("npart_global, global_time_per_part", pxr.npart_global, pxr.global_time_per_part)
-                 print("nglobal_cell,global_time_per_cell", pxr.nx_global*pxr.ny_global*pxr.nz_global,pxr.global_time_per_cell)
-                 print("new split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
+            if (pxr.rank==0): 
+                 imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100.
+                 print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
+                 if (imbalance>15.): 
+                    print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
+                    print("Now recomputing new cell boundaries") 
+                    print("npart_global, global_time_per_part", pxr.npart_global, pxr.global_time_per_part)
+                    print("nglobal_cell,global_time_per_cell", pxr.nx_global*pxr.ny_global*pxr.nz_global,pxr.global_time_per_cell)
+                    print("Old split X", pxr.cell_x_min)  
+                    print("Old split Y", pxr.cell_y_min)
+                    print("Old split Z", pxr.cell_z_min)
+                    print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
+                    print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
+                    print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:
