@@ -6,33 +6,171 @@ IMPLICIT NONE
 
 CONTAINS 
 
-!SUBROUTINE mpi_load_balance_fields 
 
 
+! Main subroutine for load balancing 
+SUBROUTINE mpi_load_balance
+    IMPLICIT NONE 
+    REAL(num), PARAMETER :: imbalance_threshold = 0.15 ! 15% imbalance threshold  
+    REAL(num) :: imbalance
+    
+    ! Get max time per it of all processors
+    CALL get_max_time_per_it()
+    ! Get min time per it of all processors 
+    CALL ger_min_time_per_it()
+    ! Compute current imbalance 
+    imbalance = (max_time_per_it-min_time_per_it)/min_time_per_it
+    ! Imbalance starts to be too high --> Try load balance the simulation 
+    IF (imbalance .GT. 0.15_num)  THEN 
+        ! Compute time per part for particle routines 
+        CALL compute_time_per_part()
+        ! Compute time per cell for maxwell routines 
+        CALL compute_time_per_cell() 
+        ! Compute new split based on projected loads on each axis
+        CALL compute_new_split()
+        ! Remap fields 
+        CALL mpi_remap_fields_3D()
+        ! remap particles 
+        ! CALL mpi_remap_particles() 
+    ENDIF 
+    
+END SUBROUTINE mpi_load_balance 
 
+! Remap fields based on new split 
+SUBROUTINE mpi_remap_fields_3D()
+    IMPLICIT NONE 
+    INTEGER(idp), DIMENSION(:), ALLOCATABLE ::  ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
+    INTEGER(idp), DIMENSION(:), ALLOCATABLE ::  ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE, TARGET :: ex_new, ey_new, ez_new, bx_new, by_new, bz_new
+    INTEGER(idp) :: nx_new, ny_new, nz_new 
+    INTEGER(isp) :: curr_rank, ix, iy, iz     
 
+    ! ----    Sone init
+    ALLOCATE(ix1old(0:nproc-1),ix2old(0:nproc-1),iy1old(0:nproc-1),iy2old(0:nproc-1), &
+            iz1old(0:nproc-1),iz2old(0:nproc-1))
+    ALLOCATE(ix1new(0:nproc-1),ix2new(0:nproc-1),iy1new(0:nproc-1),iy2new(0:nproc-1), &
+            iz1new(0:nproc-1),iz2new(0:nproc-1))
+    DO iz=1,nprocz
+        DO iy=1,nprocy
+            DO ix=1,nprocx
+                CALL MPI_CART_RANK(comm, (/iz, iy, ix/), curr_rank,errcode) 
+                ix1old(curr_rank)=new_cell_x_min(ix)
+                ix2old(curr_rank)=new_cell_x_max(ix)
+                iy1old(curr_rank)=new_cell_y_min(iy)
+                iy2old(curr_rank)=new_cell_y_max(iy)
+                iz1old(curr_rank)=new_cell_z_min(iz)
+                iz2old(curr_rank)=new_cell_z_max(iz)
+                ix1new(curr_rank)=new_cell_x_min(ix)
+                ix2new(curr_rank)=new_cell_x_max(ix)
+                iy1new(curr_rank)=new_cell_y_min(iy)
+                iy2new(curr_rank)=new_cell_y_max(iy)
+                iz1new(curr_rank)=new_cell_z_min(iz)
+                iz2new(curr_rank)=new_cell_z_max(iz)
+            END DO 
+        END DO 
+    END DO 
+    
+    ! ---- Compute new number of cells based on the new split  
+    nx_new = new_cell_x_max(x_coords) - new_cell_x_min(x_coords)+1
+    ny_new = new_cell_y_max(y_coords) - new_cell_y_min(y_coords)+1
+    nz_new = new_cell_z_max(z_coords) - new_cell_z_min(z_coords)+1
+    
+    ! ---- REMAP EX 
+    ALLOCATE(ex_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(ex,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           ex_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
+    ! -- Deallocate memory associated to array pointer ex
+    DEALLOCATE(ex)
+    ! -- Make array pointer ex point to ex_new 
+    ex=>ex_new
+    
+    ! ---- REMAP EY 
+    ALLOCATE(ey_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(ey,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           ey_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
+    ! -- Deallocate memory associated to array pointer ex
+    DEALLOCATE(ey)
+    ! -- Make array pointer ey point to ey_new 
+    ey=>ey_new
+    
+    ! ---- REMAP EZ 
+    ALLOCATE(ez_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(ez,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           ez_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
+    ! -- Deallocate memory associated to array pointer ez
+    DEALLOCATE(ez)
+    ! -- Make array pointer ez point to ez_new 
+    ez=>ez_new
 
-
-!END SUBROUTINE mpi_load_balance_fields 
-
-
+    ! ---- REMAP BX 
+    ALLOCATE(bx_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(bx,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           bx_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
+    ! -- Deallocate memory associated to array pointer ex
+    DEALLOCATE(bx)
+    ! -- Make array pointer bx point to bx_new 
+    bx=>bx_new
+    
+    ! ---- REMAP BY 
+    ALLOCATE(by_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(by,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           by_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
+    ! -- Deallocate memory associated to array pointer ex
+    DEALLOCATE(by)
+    ! -- Make array pointer by point to by_new 
+    by=>by_new
+    
+    ! ---- REMAP BZ
+    ALLOCATE(bz_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(bz,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           bz_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
+    ! -- Deallocate memory associated to array pointer ex
+    DEALLOCATE(bz)
+    ! -- Make array pointer bz point to bz_new 
+    bz=>bz_new
+    
+    ! Finalizing 
+    nx = nx_new
+    ny = ny_new
+    nz = nz_new
+    x_grid_min_local =
+    y_grid_min_local =
+    z_grid_min_local = 
+    
+    DEALLOCATE(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old)
+    DEALLOCATE(ix1new,ix2new,iy1new,iy2new, iz1new,iz2new)
+    
+END SUBROUTINE mpi_remap_fields_3D
 
 
 ! This subroutine remaps emfield_old in emfield_new and 
 ! takes care of all MPI exchanges between different MPI_PROCESSES
-SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,                 &
+SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                            ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
-                           emfield_new,nxnew,nynew,nznew,                 &
+                           emfield_new,nxnew,nynew,nznew,nxg,nyg,nzg,     &
                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
                            iproc, nprocs, communicator, ierrcode)
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxold, nyold, nzold, nxnew, nynew,nznew, iproc, nprocs
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(isp), INTENT(IN) :: communicator
     INTEGER(isp), INTENT(IN OUT) ::  ierrcode
-    REAL(num), INTENT(IN), DIMENSION(nxold,nyold,nzold) :: emfield_old
-    REAL(num), INTENT(IN  OUT), DIMENSION(nxnew,nynew,nznew) :: emfield_new
-    INTEGER, INTENT(IN), DIMENSION(nprocs) :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
-    INTEGER, INTENT(IN), DIMENSION(nprocs) :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
+    REAL(num), INTENT(IN), DIMENSION(-nxg:nxold+nxg,-nyg:nyold+nyg,-nzg:nzold+nzg) :: emfield_old
+    REAL(num), INTENT(IN  OUT), DIMENSION(-nxg:nxnew+nxg,-nyg:nynew+nyg,-nzg:nznew+nzg) :: emfield_new
+    INTEGER(idp), INTENT(IN), DIMENSION(nprocs) :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
+    INTEGER(idp), INTENT(IN), DIMENSION(nprocs) :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
     INTEGER(idp) :: ix3min,ix3max,iy3min,iy3max,iz3min,iz3max
     INTEGER(idp) :: ix1newip, ix2newip, iy1newip, iy2newip, iz1newip, iz2newip
     INTEGER(idp) :: ix1oldip, ix2oldip, iy1oldip, iy2oldip, iz1oldip, iz2oldip
@@ -89,9 +227,9 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,                 &
             nsub(2)  = iy3max-iy3min+1
             nsub(3)  = iz3max-iz3min+1
             ! Arrays assumed to start at index 0 in MPI_TYPE_CREATE
-            start(1) = ix3min-ix1new(iproc)+1-1 
-            start(2) = iy3min-iy1new(iproc)+1-1
-            start(3) = iz3min-iz1new(iproc)+1-1
+            start(1) = ix3min-ix1new(iproc)+1-1+nxg 
+            start(2) = iy3min-iy1new(iproc)+1-1+nyg
+            start(3) = iz3min-iz1new(iproc)+1-1+nzg
             CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob, nsub, start, MPI_ORDER_FORTRAN, &
                                          MPI_REAL8, recvtype(nrreq), ierrcode)
             !--- Post IRECV for this area 
@@ -130,13 +268,13 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,                 &
             nsub(2)  = iy3max-iy3min+1
             nsub(3)  = iz3max-iz3min+1
             ! Arrays assumed to start at index 0 in MPI_TYPE_CREATE
-            start(1) = ix3min-ix1oldip+1-1 
-            start(2) = iy3min-iy1oldip+1-1
-            start(3) = iz3min-iz1oldip+1-1
+            start(1) = ix3min-ix1oldip+1-1+nxg 
+            start(2) = iy3min-iy1oldip+1-1+nyg
+            start(3) = iz3min-iz1oldip+1-1+nzg
             CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob, nsub, start, MPI_ORDER_FORTRAN, &
                                          MPI_REAL8, sendtype(nsreq), ierrcode)
             !--- Post IRECV for this area 
-            CALL MPI_IRECV(emfield_old, 1_isp,  sendtype(nsreq), i, mpitag,    &
+            CALL MPI_ISEND(emfield_old, 1_isp,  sendtype(nsreq), i, mpitag,    &
                             communicator, requests(nrreq+nsreq), ierrcode)
         ENDIF 
     END DO   
