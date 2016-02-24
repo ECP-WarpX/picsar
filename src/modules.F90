@@ -254,9 +254,9 @@ INTEGER(isp) :: errcode, provided, comm, tag
 INTEGER(idp) :: rank
 INTEGER(isp) :: coordinates(3) 
 INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
-INTEGER(isp) :: x_coords, proc_x_min, proc_x_max
-INTEGER(isp):: y_coords, proc_y_min, proc_y_max
-INTEGER(isp) :: z_coords, proc_z_min, proc_z_max
+INTEGER(idp) :: x_coords, proc_x_min, proc_x_max
+INTEGER(idp):: y_coords, proc_y_min, proc_y_max
+INTEGER(idp) :: z_coords, proc_z_min, proc_z_max
 INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
 INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank

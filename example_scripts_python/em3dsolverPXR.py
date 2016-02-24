@@ -85,11 +85,24 @@ class EM3DPXR(EM3DFFT):
             pxr.z_min_boundary=1
         if (izcpu==pxr.nprocz-1):
             pxr.z_max_boundary=1
+            
+        pxr.x_coords=ixcpu
+        pxr.y_coords=iycpu
+        pxr.z_coords=izcpu
         
         # MPI boundaries index in global array 
         pxr.cell_x_min=top.fsdecomp.ix
         pxr.cell_y_min=top.fsdecomp.iy
         pxr.cell_z_min=top.fsdecomp.iz
+        pxr.cell_x_max=pxr.cell_x_min+(top.fsdecomp.nx-1)
+        pxr.cell_y_max=pxr.cell_y_min+(top.fsdecomp.ny-1)
+        pxr.cell_z_max=pxr.cell_z_min+(top.fsdecomp.nz-1)
+        pxr.x_grid_mins=top.fsdecomp.xmin
+        pxr.x_grid_maxs=top.fsdecomp.xmax
+        pxr.y_grid_mins=top.fsdecomp.ymin
+        pxr.y_grid_maxs=top.fsdecomp.ymax
+        pxr.z_grid_mins=top.fsdecomp.zmin
+        pxr.z_grid_maxs=top.fsdecomp.zmax
         
         # --- number of grid cells
         pxr.nx_global = w3d.nx
@@ -148,7 +161,7 @@ class EM3DPXR(EM3DFFT):
         
 # INIT MPI_DATA FOR PICSAR
         # Init communicator variable in picsar 
-        pxr.mpi_minimal_init()
+        pxr.mpi_minimal_init(top.fsdecomp.mpi_comm)
         
         # allocate grid quantities 
         pxr.allocate_grid_quantities()
@@ -598,18 +611,8 @@ class EM3DPXR(EM3DFFT):
             self.onestep(l_first,l_last)
        
     def onestep(self,l_first,l_last):
-        tdeb=0. 
-        tend=0.
-        tdebpart=0.
-        tendpart=0.
-        tdebfield=0.
-        tendfield=0.
-        tdebcell=0.
-        tendcell=0.
-        if l_pxr:
-            tdeb=MPI.Wtime()
-            pxr.local_time_part=0.
-            pxr.local_time_cell=0.
+
+
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
     
@@ -619,7 +622,18 @@ class EM3DPXR(EM3DFFT):
 #        w3d.pgroupfsapi = top.pgroup
 #        for js in range(top.pgroup.ns):
 #          self.fetcheb(js)
-
+        if l_pxr:
+            tdeb=0. 
+            tend=0.
+            tdebpart=0.
+            tendpart=0.
+            tdebfield=0.
+            tendfield=0.
+            tdebcell=0.
+            tendcell=0.
+            tdeb=MPI.Wtime()
+            pxr.local_time_part=0.
+            pxr.local_time_cell=0.
         # --- push 
         if l_first:
             if l_pxr:
@@ -697,33 +711,41 @@ class EM3DPXR(EM3DFFT):
 #           zmmnt()
            minidiag(top.it,top.time,top.lspecial)
         top.it+=1
-
-        # --- call afterstep functions
-        callafterstepfuncs.callfuncsinlist()
         
-        # MPI time for it 
+        # MPI time for current it 
         if l_pxr:
             tend=MPI.Wtime()
             pxr.mpitime_per_it=tend-tdeb 
             pxr.get_max_time_per_it() 
-            pxr.get_min_time_per_it() 
-            pxr.compute_time_per_part()
-            pxr.compute_time_per_cell()
-            pxr.compute_new_split()
-            if (pxr.rank==0): 
-                 imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100.
-                 print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
-                 if (imbalance>15.): 
+            pxr.get_min_time_per_it()
+            imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100. 
+            if (imbalance>10.): 
+                pxr.compute_time_per_part()
+                pxr.compute_time_per_cell()
+                pxr.compute_new_split()
+                if (pxr.rank==0): 
+                    print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
                     print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
                     print("Now recomputing new cell boundaries") 
-                    print("npart_global, global_time_per_part", pxr.npart_global, pxr.global_time_per_part)
-                    print("nglobal_cell,global_time_per_cell", pxr.nx_global*pxr.ny_global*pxr.nz_global,pxr.global_time_per_cell)
-                    print("Old split X", pxr.cell_x_min)  
-                    print("Old split Y", pxr.cell_y_min)
-                    print("Old split Z", pxr.cell_z_min)
+                    print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
+                    print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
+                    print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
+                    print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
+                    print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
+                    print("NZ old", pxr.cell_z_max-pxr.cell_z_min)
                     print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
                     print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
                     print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
+                    print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min)
+                pxr.mpi_remap_fields_3d()
+            #        print("npart_global, global_time_per_part", pxr.npart_global, pxr.global_time_per_part)
+            #        print("nglobal_cell,global_time_per_cell", pxr.nx_global*pxr.ny_global*pxr.nz_global,pxr.global_time_per_cell)
+
+            
+        # --- call afterstep functions
+        callafterstepfuncs.callfuncsinlist()
+        
+
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:

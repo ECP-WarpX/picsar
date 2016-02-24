@@ -77,7 +77,7 @@ l_gist             = 1      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
 restart_dump       = ""     # dump file to restart from (works?)
 l_moving_window    = 1      # on/off (Galilean) moving window
-l_plasma           = 1      # on/off plasma
+l_plasma           = 0    # on/off plasma
 l_usesavedist      = 0      # if on, uses dump of beam particles distribution
 l_smooth           = 1      # on/off smoothing of current density
 l_laser            = 1      # on/off laser
@@ -500,7 +500,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   #tdeb=MPI.Wtime()
-  em.step(400,1,1)
+  em.step(100,1,1)
   #tend=MPI.Wtime()
   #print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
