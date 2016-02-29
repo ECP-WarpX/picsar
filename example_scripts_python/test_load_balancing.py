@@ -77,7 +77,7 @@ l_gist             = 1      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
 restart_dump       = ""     # dump file to restart from (works?)
 l_moving_window    = 1      # on/off (Galilean) moving window
-l_plasma           = 0    # on/off plasma
+l_plasma           = 1    # on/off plasma
 l_usesavedist      = 0      # if on, uses dump of beam particles distribution
 l_smooth           = 1      # on/off smoothing of current density
 l_laser            = 1      # on/off laser
@@ -100,7 +100,7 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 100  # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 10  # frequency (in time steps) of live plots (off is l_test is off)
 
 fielddiag_period   = 500/dtfact
 partdiag_period    = 500/dtfact
@@ -161,13 +161,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 6#5
-nppcelly_C = 6#5
-nppcellz_C = 6#5
+nppcellx_C = 2#5
+nppcelly_C = 2#5
+nppcellz_C = 2#5
 
-nppcellx_H = 6#4
-nppcelly_H = 6#4
-nppcellz_H = 6#4
+nppcellx_H = 2#4
+nppcelly_H = 2#4
+nppcellz_H = 2#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -361,9 +361,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 1#max(1,w3d.nxlocal/10)
-    ntiley = 1#max(1,w3d.nylocal/10)
-    ntilez = 1#max(1,w3d.nzlocal/10)
+    ntilex = max(1,w3d.nxlocal/10)
+    ntiley = max(1,w3d.nylocal/10)
+    ntilez = max(1,w3d.nzlocal/10)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -500,7 +500,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   #tdeb=MPI.Wtime()
-  em.step(100,1,1)
+  #em.step(100,1,1)
   #tend=MPI.Wtime()
   #print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')

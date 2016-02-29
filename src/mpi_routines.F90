@@ -188,12 +188,12 @@ CONTAINS
 
     CALL setup_communicator
 
-	ALLOCATE(x_grid_mins(0:nprocx-1), x_grid_maxs(0:nprocx-1))
-    ALLOCATE(y_grid_mins(0:nprocy-1), y_grid_maxs(0:nprocy-1))
-    ALLOCATE(z_grid_mins(0:nprocz-1), z_grid_maxs(0:nprocz-1))
-    ALLOCATE(cell_x_min(0:nprocx-1), cell_x_max(0:nprocx-1))
-    ALLOCATE(cell_y_min(0:nprocy-1), cell_y_max(0:nprocy-1))
-    ALLOCATE(cell_z_min(0:nprocz-1), cell_z_max(0:nprocz-1))
+	ALLOCATE(x_grid_mins(1:nprocx), x_grid_maxs(1:nprocx))
+    ALLOCATE(y_grid_mins(1:nprocy), y_grid_maxs(1:nprocy))
+    ALLOCATE(z_grid_mins(1:nprocz), z_grid_maxs(1:nprocz))
+    ALLOCATE(cell_x_min(1:nprocx), cell_x_max(1:nprocx))
+    ALLOCATE(cell_y_min(1:nprocy), cell_y_max(1:nprocy))
+    ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
 	! Split is done on the total number of cells as in WARP 
 	! Initial WARP split is used with each processor boundary 
@@ -223,49 +223,49 @@ CONTAINS
         nzp = nprocz
     ENDIF
 
-	cell_x_min(0)=0
-	cell_x_max(0)=nx0-1
-    DO idim = 1, nxp-1
+	cell_x_min(1)=0
+	cell_x_max(1)=nx0-1
+    DO idim = 2, nxp
         cell_x_min(idim) = cell_x_max(idim-1)+1
         cell_x_max(idim) = cell_x_min(idim)+nx0-1
     ENDDO
-    DO idim = nxp , nprocx-1
+    DO idim = nxp+1, nprocx
         cell_x_min(idim) = cell_x_max(idim-1)+1
         cell_x_max(idim) = cell_x_min(idim)+nx0
     ENDDO
 
-	cell_y_min(0)=0
-	cell_y_max(0)=ny0-1
-    DO idim = 1, nyp-1
+	cell_y_min(1)=0
+	cell_y_max(1)=ny0-1
+    DO idim = 2, nyp
         cell_y_min(idim) = cell_y_max(idim-1)+1
         cell_y_max(idim) = cell_y_min(idim)+ny0-1
     ENDDO
-    DO idim = nyp , nprocy-1
+    DO idim = nyp+1, nprocy
         cell_y_min(idim) = cell_y_max(idim-1)+1
         cell_y_max(idim) = cell_y_min(idim)+ny0
     ENDDO
 
-	cell_z_min(0)=0
-	cell_z_max(0)=nz0-1
-    DO idim = 1, nzp-1
+	cell_z_min(1)=0
+	cell_z_max(1)=nz0-1
+    DO idim = 2, nzp
         cell_z_min(idim) = cell_z_max(idim-1)+1
         cell_z_max(idim) = cell_z_min(idim)+nz0-1
     ENDDO
-    DO idim = nzp , nprocz-1
+    DO idim = nzp+1 , nprocz
         cell_z_min(idim) = cell_z_max(idim-1)+1
         cell_z_max(idim) = cell_z_min(idim)+nz0
     ENDDO
 
 
-    nx_global_grid_min = cell_x_min(x_coords)
-    nx_global_grid_max = cell_x_max(x_coords)+1
+    nx_global_grid_min = cell_x_min(x_coords+1)
+    nx_global_grid_max = cell_x_max(x_coords+1)+1
 
 
-    ny_global_grid_min = cell_y_min(y_coords)
-    ny_global_grid_max = cell_y_max(y_coords)+1
+    ny_global_grid_min = cell_y_min(y_coords+1)
+    ny_global_grid_max = cell_y_max(y_coords+1)+1
 
-    nz_global_grid_min = cell_z_min(z_coords)
-    nz_global_grid_max = cell_z_max(z_coords)+1
+    nz_global_grid_min = cell_z_min(z_coords+1)
+    nz_global_grid_max = cell_z_max(z_coords+1)+1
 
 
     !!! --- number of gridpoints of each subdomain
@@ -312,25 +312,25 @@ CONTAINS
     ENDDO
 
     !!! --- Set up local grid maxima and minima
-    DO iproc = 0, nprocx-1
+    DO iproc = 1, nprocx
         x_grid_mins(iproc) = x_global(cell_x_min(iproc))
         x_grid_maxs(iproc) = x_global(cell_x_max(iproc)+1)
     ENDDO
-    DO iproc = 0, nprocy-1
+    DO iproc = 1, nprocy
         y_grid_mins(iproc) = y_global(cell_y_min(iproc))
         y_grid_maxs(iproc) = y_global(cell_y_max(iproc)+1)
     ENDDO
-    DO iproc = 0, nprocz-1
+    DO iproc = 1, nprocz
         z_grid_mins(iproc) = z_global(cell_z_min(iproc))
         z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
     ENDDO
 
-    x_min_local = x_grid_mins(x_coords)
-    x_max_local = x_grid_maxs(x_coords)
-    y_min_local = y_grid_mins(y_coords)
-    y_max_local = y_grid_maxs(y_coords)
-    z_min_local = z_grid_mins(z_coords)
-    z_max_local = z_grid_maxs(z_coords)
+    x_min_local = x_grid_mins(x_coords+1)
+    x_max_local = x_grid_maxs(x_coords+1)
+    y_min_local = y_grid_mins(y_coords+1)
+    y_max_local = y_grid_maxs(y_coords+1)
+    z_min_local = z_grid_mins(z_coords+1)
+    z_max_local = z_grid_maxs(z_coords+1)
 
     x_grid_min_local=x_min_local
     y_grid_min_local=y_min_local
@@ -358,9 +358,9 @@ CONTAINS
     ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ! --- Quantities used by the dynamic load balancer 
-    ALLOCATE(new_cell_x_min(0:nprocx-1), new_cell_x_max(0:nprocx-1))
-    ALLOCATE(new_cell_y_min(0:nprocy-1), new_cell_y_max(0:nprocy-1))
-    ALLOCATE(new_cell_z_min(0:nprocz-1), new_cell_z_max(0:nprocz-1))
+    ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
+    ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
+    ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
   END SUBROUTINE 
   
   

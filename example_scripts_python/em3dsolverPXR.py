@@ -189,6 +189,9 @@ class EM3DPXR(EM3DFFT):
         pxr.bx = self.fields.Bx
         pxr.by = self.fields.By
         pxr.bz = self.fields.Bz
+        pxr.jx = self.fields.Jx
+        pxr.jy = self.fields.Jy
+        pxr.jz = self.fields.Jz
         
         pxr.l_nodalgrid = self.l_nodalgrid
         
@@ -384,7 +387,7 @@ class EM3DPXR(EM3DFFT):
                 if self.l_2dxz:
                     if (f.norderx==2) & (f.nordery==2) & (f.norderz==2): 
                         pxr.pxrpush_em2d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                                  f.J[...,0],f.J[...,1],f.J[...,2],
+                                                  f.Jx,f.Jy,f.Jz,
                                                   clight**2*mu0*dt,        
                                                   clight**2*dt/f.dx*f.xcoefs[0],
                                                   clight**2*dt/f.dy*f.ycoefs[0],
@@ -395,7 +398,7 @@ class EM3DPXR(EM3DFFT):
                     
                     else:
                         pxr.pxrpush_em2d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                                  f.J[...,0],f.J[...,1],f.J[...,2],
+                                                  f.Jx,f.Jy,f.Jz,
                                                   clight**2*mu0*dt,        
                                                   clight**2*dt/f.dx*f.xcoefs,
                                                   clight**2*dt/f.dy*f.ycoefs,
@@ -407,7 +410,7 @@ class EM3DPXR(EM3DFFT):
                 else:
                     if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
                         pxr.pxrpush_em3d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              f.J[...,0],f.J[...,1],f.J[...,2],
+                                              f.Jx,f.Jy,f.Jz,
                                               clight**2*mu0*dt,        
                                               clight**2*dt/f.dx*f.xcoefs[0],
                                               clight**2*dt/f.dy*f.ycoefs[0],
@@ -417,7 +420,7 @@ class EM3DPXR(EM3DFFT):
                                               0,0,0,f.l_nodalgrid)                    
                     else:
                         pxr.pxrpush_em3d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              f.J[...,0],f.J[...,1],f.J[...,2],
+                                              f.Jx,f.Jy,f.Jz,
                                               clight**2*mu0*dt,        
                                               clight**2*dt/f.dx*f.xcoefs,
                                               clight**2*dt/f.dy*f.ycoefs,
@@ -713,7 +716,7 @@ class EM3DPXR(EM3DFFT):
         top.it+=1
         
         # MPI time for current it 
-        if l_pxr:
+        if 0:#l_pxr:
             tend=MPI.Wtime()
             pxr.mpitime_per_it=tend-tdeb 
             pxr.get_max_time_per_it() 
@@ -738,10 +741,34 @@ class EM3DPXR(EM3DFFT):
                     print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
                     print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min)
                 pxr.mpi_remap_fields_3d()
-            #        print("npart_global, global_time_per_part", pxr.npart_global, pxr.global_time_per_part)
-            #        print("nglobal_cell,global_time_per_cell", pxr.nx_global*pxr.ny_global*pxr.nz_global,pxr.global_time_per_cell)
-
-            
+                # Alias WARP structure on new PXR domain split
+                self.nx=pxr.nx
+                self.ny=pxr.ny
+                self.nz=pxr.nz
+                self.fields.Ex=pxr.ex
+                self.fields.Ey=pxr.ey
+                self.fields.Ez=pxr.ez
+                self.fields.Bx=pxr.bx
+                self.fields.By=pxr.by
+                self.fields.Bz=pxr.bz
+                self.fields.Jx=pxr.jx
+                self.fields.Jy=pxr.jy
+                self.fields.Jz=pxr.jz
+                self.fields.xmin = pxr.x_min_local
+                self.fields.xmax = pxr.x_max_local
+                self.fields.ymin = pxr.y_min_local
+                self.fields.ymax = pxr.y_max_local
+                self.fields.zmin = pxr.z_min_local
+                self.fields.zmax = pxr.z_max_local
+                top.fsdecomp.xmin=pxr.x_grid_mins
+                top.fsdecomp.xmax=pxr.x_grid_maxs
+                top.fsdecomp.ymin=pxr.y_grid_mins
+                top.fsdecomp.ymax=pxr.y_grid_maxs
+                top.fsdecomp.zmin=pxr.z_grid_maxs
+                top.fsdecomp.zmax=pxr.z_grid_maxs
+                top.fsdecomp.ix = pxr.cell_x_min
+                top.fsdecomp.iy = pxr.cell_y_min
+                top.fsdecomp.iz = pxr.cell_z_min
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
         
@@ -946,9 +973,11 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-             pxr.pxrdepose_currents_on_grid_jxjyjz()
-             pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
-             pxr.nxguards,pxr.nyguards,pxr.nzguards)          
+             #pxr.pxrdepose_currents_on_grid_jxjyjz()
+             pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(pxr.jx,pxr.jy,pxr.jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
+             pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)
+             #pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
+             #pxr.nxguards,pxr.nyguards,pxr.nzguards)          
         else:
 
             for pgroup in pgroups:
@@ -1043,11 +1072,5 @@ class EM3DPXR(EM3DFFT):
         if self.scraper is not None:self.scraper.scrape(js)
         processlostpart(pg,js+1,top.clearlostpart,top.time+top.dt*pg.ndts[js],top.zbeam)
         if self.l_verbose:print me,'enter apply_bnd_conditions'
-    def dynamic_load_balancing(self): 
-        if(self.l_pxr): 
-            # Get load imbalance 
-            maxtime=np.max(pxr.MPItime_per_it)
-            mintime=np.min(pxr.MPItime_per_it) 
-            if(pxr.rank==0): 
-                print("maxtime,mintime, imbalance (%)",(maxtime-mintime)/mintime*100.)
+            
                         

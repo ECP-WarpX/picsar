@@ -29,7 +29,7 @@ SUBROUTINE mpi_load_balance()
         ! Compute new split based on projected loads on each axis
         CALL compute_new_split()
         ! Remap fields 
-        !CALL mpi_remap_fields_3D()
+        CALL mpi_remap_fields_3D()
         ! remap particles 
         ! CALL mpi_remap_particles() 
     ENDIF 
@@ -45,7 +45,7 @@ SUBROUTINE mpi_remap_fields_3D()
     INTEGER(idp) :: iproc, nx_new, ny_new, nz_new 
     INTEGER(isp) :: curr_rank, ix, iy, iz    
 
-    ! ----    Sone init
+    ! ----    Some init
     ALLOCATE(ix1old(0:nproc-1),ix2old(0:nproc-1),iy1old(0:nproc-1),iy2old(0:nproc-1), &
             iz1old(0:nproc-1),iz2old(0:nproc-1))
     ALLOCATE(ix1new(0:nproc-1),ix2new(0:nproc-1),iy1new(0:nproc-1),iy2new(0:nproc-1), &
@@ -60,21 +60,21 @@ SUBROUTINE mpi_remap_fields_3D()
                 iy2old(curr_rank)=cell_y_max(iy+1)+1
                 iz1old(curr_rank)=cell_z_min(iz+1)
                 iz2old(curr_rank)=cell_z_max(iz+1)+1
-                ix1new(curr_rank)=new_cell_x_min(ix)
-                ix2new(curr_rank)=new_cell_x_max(ix)+1
-                iy1new(curr_rank)=new_cell_y_min(iy)
-                iy2new(curr_rank)=new_cell_y_max(iy)+1
-                iz1new(curr_rank)=new_cell_z_min(iz)
-                iz2new(curr_rank)=new_cell_z_max(iz)+1
+                ix1new(curr_rank)=new_cell_x_min(ix+1)
+                ix2new(curr_rank)=new_cell_x_max(ix+1)+1
+                iy1new(curr_rank)=new_cell_y_min(iy+1)
+                iy2new(curr_rank)=new_cell_y_max(iy+1)+1
+                iz1new(curr_rank)=new_cell_z_min(iz+1)
+                iz2new(curr_rank)=new_cell_z_max(iz+1)+1
             END DO 
         END DO 
     END DO 
     
     PRINT *, "x_coords, y_coords, z_coords", x_coords, y_coords, z_coords
     ! ---- Compute new number of cells based on the new split  
-    nx_new = new_cell_x_max(x_coords) - new_cell_x_min(x_coords)+1
-    ny_new = new_cell_y_max(y_coords) - new_cell_y_min(y_coords)+1
-    nz_new = new_cell_z_max(z_coords) - new_cell_z_min(z_coords)+1
+    nx_new = new_cell_x_max(x_coords+1) - new_cell_x_min(x_coords+1)+1
+    ny_new = new_cell_y_max(y_coords+1) - new_cell_y_min(y_coords+1)+1
+    nz_new = new_cell_z_max(z_coords+1) - new_cell_z_min(z_coords+1)+1
     
     ! ---- REMAP EX 
     ALLOCATE(ex_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
@@ -89,59 +89,59 @@ SUBROUTINE mpi_remap_fields_3D()
     ex=>ex_new
   
     ! ---- REMAP EY 
-!     ALLOCATE(ey_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-!     CALL remap_em_3Dfields(ey,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
-!                            ey_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
-!                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
-!                            rank,nproc,comm,errcode)
+    ALLOCATE(ey_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(ey,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           ey_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
     ! -- Deallocate memory associated to array pointer ex
-!    DEALLOCATE(ey)
+    DEALLOCATE(ey)
     ! -- Make array pointer ey point to ey_new 
-!    ey=>ey_new
+    ey=>ey_new
     
     ! ---- REMAP EZ 
- !    ALLOCATE(ez_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-!     CALL remap_em_3Dfields(ez,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
-!                            ez_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
-!                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
-!                            rank,nproc,comm,errcode)
+    ALLOCATE(ez_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(ez,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           ez_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
     ! -- Deallocate memory associated to array pointer ez
-!    DEALLOCATE(ez)
+    DEALLOCATE(ez)
     ! -- Make array pointer ez point to ez_new 
-!    ez=>ez_new
+    ez=>ez_new
 
     ! ---- REMAP BX 
-!     ALLOCATE(bx_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-!     CALL remap_em_3Dfields(bx,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
-!                            bx_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
-!                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
-!                            rank,nproc,comm,errcode)
+    ALLOCATE(bx_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(bx,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           bx_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
     ! -- Deallocate memory associated to array pointer ex
-    !DEALLOCATE(bx)
+    DEALLOCATE(bx)
     ! -- Make array pointer bx point to bx_new 
-    !bx=>bx_new
+    bx=>bx_new
     
     ! ---- REMAP BY 
-!     ALLOCATE(by_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-!     CALL remap_em_3Dfields(by,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
-!                            by_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
-!                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
-!                            rank,nproc,comm,errcode)
+    ALLOCATE(by_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(by,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           by_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
     ! -- Deallocate memory associated to array pointer ex
-    !DEALLOCATE(by)
+    DEALLOCATE(by)
     ! -- Make array pointer by point to by_new 
-    !by=>by_new
+    by=>by_new
     
     ! ---- REMAP BZ
-!     ALLOCATE(bz_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-!     CALL remap_em_3Dfields(bz,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
-!                            bz_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
-!                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
-!                            rank,nproc,comm,errcode)
+    ALLOCATE(bz_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
+    CALL remap_em_3Dfields(bz,nx,ny,nz,ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,  &
+                           bz_new,nx_new,ny_new,nz_new,nxguards,nyguards,nzguards, &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,              &
+                           rank,nproc,comm,errcode)
     ! -- Deallocate memory associated to array pointer ex
-    !DEALLOCATE(bz)
+    DEALLOCATE(bz)
     ! -- Make array pointer bz point to bz_new 
-    !bz=>bz_new
+    bz=>bz_new
     
     !---- Finalizing 
     ! -- New dimensions 
@@ -157,32 +157,32 @@ SUBROUTINE mpi_remap_fields_3D()
     cell_z_max=new_cell_z_max
     
     !!! --- Set up new local grid maxima and minima
-    ! DO iproc = 0, nprocx-1
-!         x_grid_mins(iproc+1) = x_global(cell_x_min(iproc))
-!         x_grid_maxs(iproc+1) = x_global(cell_x_max(iproc)+1)
-!     ENDDO
-!     DO iproc = 0, nprocy-1
-!         y_grid_mins(iproc+1) = y_global(cell_y_min(iproc))
-!         y_grid_maxs(iproc+1) = y_global(cell_y_max(iproc)+1)
-!     ENDDO
-!     DO iproc = 0, nprocz-1
-!         z_grid_mins(iproc+1) = z_global(cell_z_min(iproc))
-!         z_grid_maxs(iproc+1) = z_global(cell_z_max(iproc)+1)
-!     ENDDO
-! 
-!     x_min_local = x_grid_mins(x_coords+1)
-!     x_max_local = x_grid_maxs(x_coords+1)
-!     y_min_local = y_grid_mins(y_coords+1)
-!     y_max_local = y_grid_maxs(y_coords+1)
-!     z_min_local = z_grid_mins(z_coords+1)
-!     z_max_local = z_grid_maxs(z_coords+1)
-! 
-!     x_grid_min_local=x_min_local
-!     y_grid_min_local=y_min_local
-!     z_grid_min_local=z_min_local
-!     x_grid_max_local=x_max_local
-!     y_grid_max_local=y_max_local
-!     z_grid_max_local=z_max_local
+   DO iproc = 1, nprocx
+        x_grid_mins(iproc) = x_global(cell_x_min(iproc))
+        x_grid_maxs(iproc) = x_global(cell_x_max(iproc)+1)
+    ENDDO
+    DO iproc = 1, nprocy
+        y_grid_mins(iproc) = y_global(cell_y_min(iproc))
+        y_grid_maxs(iproc) = y_global(cell_y_max(iproc)+1)
+    ENDDO
+    DO iproc = 1, nprocz
+        z_grid_mins(iproc) = z_global(cell_z_min(iproc))
+        z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
+    ENDDO
+
+    x_min_local = x_grid_mins(x_coords+1)
+    x_max_local = x_grid_maxs(x_coords+1)
+    y_min_local = y_grid_mins(y_coords+1)
+    y_max_local = y_grid_maxs(y_coords+1)
+    z_min_local = z_grid_mins(z_coords+1)
+    z_max_local = z_grid_maxs(z_coords+1)
+
+    x_grid_min_local=x_min_local
+    y_grid_min_local=y_min_local
+    z_grid_min_local=z_min_local
+    x_grid_max_local=x_max_local
+    y_grid_max_local=y_max_local
+    z_grid_max_local=z_max_local
        
     DEALLOCATE(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old)
     DEALLOCATE(ix1new,ix2new,iy1new,iy2new, iz1new,iz2new)
