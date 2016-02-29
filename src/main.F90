@@ -18,9 +18,11 @@ USE params
 USE shared_data
 USE mpi_routines
 USE control_file
+USE time_stat
 
 IMPLICIT NONE
 INTEGER :: i,ierror,j,l
+
 
 ! --- default init
   CALL default_init
@@ -33,6 +35,13 @@ INTEGER :: i,ierror,j,l
 
 ! --- mpi init communicator
   CALL mpi_minimal_init
+
+  IF (rank .EQ. 0) THEN
+    write(0,*),'_________________________________________________________________'
+    write(0,*),''
+    write(0,*),' PICSAR'
+    write(0,*),'_________________________________________________________________'
+  ENDIF
 
 ! --- Check domain decomposition / Create Cartesian communicator / Allocate grid arrays
   CALL mpi_initialise
@@ -47,6 +56,9 @@ IF (rank .EQ. 0) startsim=MPI_WTIME()
 CALL step(nsteps)
 IF (rank .EQ. 0) endsim=MPI_WTIME()
 IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim
+
+CALL time_statistics
+
 CALL mpi_close
 
 END PROGRAM main

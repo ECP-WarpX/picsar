@@ -168,9 +168,13 @@ MODULE params
 USE constants
 INTEGER(idp) :: it,nsteps
 REAL(num) :: g0,b0,dt,w0,dtcoef,tmax
-REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t
+REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t,lambdalab
 LOGICAL :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
 REAL(num), PARAMETER :: resize_factor=1.5_num
+INTEGER(idp) :: topology
+INTEGER(idp) :: mpicom_curr
+INTEGER(isp) :: seed
+INTEGER(idp) :: currdepo
 END MODULE params
 
 !===============================================================================
@@ -186,6 +190,24 @@ INTEGER(isp) :: derived_subarray_grid
 END MODULE mpi_type_constants
 
 !===============================================================================
+MODULE communications
+!===============================================================================
+use constants
+INTEGER(isp) :: reqperjxx(4),reqperjxy(4),reqperjxz(4)
+INTEGER(isp) :: reqperjyx(4),reqperjyy(4),reqperjyz(4)
+INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
+END MODULE communications
+
+!===============================================================================
+MODULE time_stat
+!===============================================================================
+use constants
+
+REAL(num), dimension(20) :: localtimes
+
+END MODULE
+
+!===============================================================================
 MODULE output_data !#do not parse
 !===============================================================================
 use constants
@@ -195,8 +217,6 @@ REAL(num) :: startsim =0.0_num
 REAL(num) :: endsim =0.0_num
 REAL(num) :: startit, timeit
 REAL(num) :: pushtime
-
-
 
 ! output frequency
 INTEGER(idp) :: output_frequency = -1 !(Default is no output)

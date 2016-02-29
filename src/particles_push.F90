@@ -7,6 +7,7 @@ SUBROUTINE push_particles
 USE fields
 USE shared_data
 USE params
+USE time_stat
 IMPLICIT NONE
 
 ! Particle advance (one time step)
@@ -21,6 +22,7 @@ SUBROUTINE push_particles_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 USE particles
 USE constants
 USE tiling
+USE time_stat
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
@@ -141,6 +143,7 @@ END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
 tend=MPI_WTIME()
 pushtime=pushtime+(tend-tdeb)
+localtimes(1) = localtimes(1) + (tend-tdeb)
 END SUBROUTINE push_particles_sub
 
 !===============================================================================

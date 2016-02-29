@@ -1,6 +1,13 @@
 !!!! --- MODULE COUNTAINING ROUTINE FOR BOUNDARY CONDITIONS ON FIELDS, CURRENTS AND PARTICLES
 !!!! --- For the moment this module handles:
 !!!! ---  periodic external boundary conditions for particles and fields
+!!!! Suboutines:
+!!!! field_bc
+!!!! exchange_mpi_3d_grid_array_with_guards
+!!!! exchange_mpi_3d_grid_array_with_guards_nonblocking
+!!!! summation_bcs
+!!!! summation_bcs_nonblocking
+
 MODULE boundary
 
   USE shared_data
@@ -9,6 +16,8 @@ MODULE boundary
   USE tiling
   USE mpi_derived_types
   USE constants
+  USE time_stat
+  USE params
 
   IMPLICIT NONE
 
@@ -368,7 +377,7 @@ CONTAINS
 
   END SUBROUTINE summation_bcs
 
-!!! --- Routine for adding current contributions fron adjacent subdomains
+!!! --- Routine for adding current contributions fron adjacent subdomains nonblocking version
   SUBROUTINE summation_bcs_nonblocking(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
@@ -475,29 +484,520 @@ CONTAINS
 
   END SUBROUTINE summation_bcs_nonblocking
 
+!!! --- Routine for adding current contributions fron adjacent subdomains persistent version
+  SUBROUTINE summation_bcs_persistent_jx(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
+    USE communications
+
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
+
+    sizes(1) = nx + 1 + 2 * nxg
+    sizes(2) = ny + 1 + 2 * nyg
+    sizes(3) = nz + 1 + 2 * nzg
+    starts = 1
+
+    ! Initialization of the persistent communication
+    IF (it .EQ. 0) THEN
+    
+      ! Init X
+      subsizes(1) = nxg+1
+      subsizes(2) = sizes(2)
+      subsizes(3) = sizes(3)
+      nn = nx
+      subarrayx = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max, tag, comm, reqperjxx(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min, tag, comm, reqperjxx(3), errcode)     
+
+      call MPI_RECV_INIT(temp1, sz, mpidbl, proc_x_min, tag, comm, reqperjxx(2), errcode)
+      call MPI_RECV_INIT(temp2, sz, mpidbl, proc_x_max, tag, comm, reqperjxx(4), errcode)  
+      
+      ! Init Y
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn = ny
+      subarrayy = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max, tag, comm, reqperjxy(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min, tag, comm, reqperjxy(3), errcode) 
+          
+      ! Init Z
+      subsizes(1) = sizes(1)
+      subsizes(2) = sizes(2)
+      subsizes(3) = nzg+1
+      nn = nz
+      subarrayz = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max, tag, comm, reqperjxz(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min, tag, comm, reqperjxz(3), errcode) 
+
+      CALL MPI_TYPE_FREE(subarrayx, errcode)
+      CALL MPI_TYPE_FREE(subarrayy, errcode)  
+      CALL MPI_TYPE_FREE(subarrayz, errcode)
+    
+    ENDIF
+     
+    !! -- Summation along X- direction    
+
+    subsizes(1) = nxg+1
+    subsizes(2) = sizes(2)
+    subsizes(3) = sizes(3)
+    nn = nx
+    
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1), subsizes(2), subsizes(3)))
+    
+    !if (rank.eq.0) print*, 'it',it
+    !if (rank.eq.0) print*, 'summation along X'
+    
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+    !call MPI_STARTALL(4_isp,reqperjxx,errcode) 
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    comm, reqperjxx(2), errcode)  
+    !call MPI_START(reqperjxx(2),errcode)  
+    call MPI_START(reqperjxx(1),errcode)
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    comm, reqperjxx(4), errcode)
+    !call MPI_START(reqperjxx(4),errcode)
+    call MPI_START(reqperjxx(3),errcode)
+    CALL MPI_WAITALL(4_isp, reqperjxx, MPI_STATUSES_IGNORE, errcode)
+
+    array(0:nxg,:,:) = array(0:nxg,:,:) + temp1
+    array(nn-nxg:nn,:,:) = array(nn-nxg:nn,:,:) + temp2
+
+    DEALLOCATE(temp1,temp2)   
+
+    !! -- Summation along Y- direction    
+
+    subsizes(1) = sizes(1)
+    subsizes(2) = nyg+1
+    subsizes(3) = sizes(3)
+    nn = ny
+
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1), subsizes(2), subsizes(3)))
+
+    !if (rank.eq.0) print*, 'summation along Y'
+
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+    call MPI_START(reqperjxy(1),errcode) 
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    comm, reqperjxy(2), errcode)   
+    call MPI_START(reqperjxy(3),errcode) 
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    comm, reqperjxy(4), errcode)   
+    CALL MPI_WAITALL(4_isp, reqperjxy, MPI_STATUSES_IGNORE, errcode)
+
+    array(:,0:nyg,:) = array(:,0:nyg,:) + temp1
+    array(:,nn-nyg:nn,:) = array(:,nn-nyg:nn,:) + temp2
+
+    DEALLOCATE(temp1,temp2)
+    
+    !! -- Summation along Z- direction
+    subsizes(1) = sizes(1)
+    subsizes(2) = sizes(2)
+    subsizes(3) = nzg+1
+    nn = nz
+
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)),temp2(subsizes(1), subsizes(2), subsizes(3)))    
+    
+    !if (rank.eq.0) print*, 'summation along Z'
+    
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    comm, reqperjxz(2), errcode)
+    call MPI_START(reqperjxz(1),errcode)
+    !if (rank.eq.0) print*, 'irecv 1'
+    
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    comm, reqperjxz(4), errcode)
+    call MPI_START(reqperjxz(3),errcode)
+    CALL MPI_WAITALL(4_isp, reqperjxz, MPI_STATUSES_IGNORE, errcode)
+    !if (rank.eq.0) print*, 'irecv 2'
+    
+    array(:,:,0:nzg) = array(:,:,0:nzg) + temp1
+    array(:,:,nn-nzg:nn) = array(:,:,nn-nzg:nn) + temp2
+    !if (rank.eq.0) print*, 'array sum'
+
+    DEALLOCATE(temp1,temp2)
+      
+    !if (rank.eq.0) print*, 'deallocate'
+      
+    CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)  
+    
+    !if (rank.eq.0) print*, 'field_bc'
+      
+    !call MPI_REQUEST_FREE(reqperx(1),errcode)
+    !call MPI_REQUEST_FREE(reqperx(3),errcode)
+    !call MPI_REQUEST_FREE(reqpery(1),errcode)
+    !call MPI_REQUEST_FREE(reqpery(3),errcode)
+    !call MPI_REQUEST_FREE(reqperz(1),errcode)
+    !call MPI_REQUEST_FREE(reqperz(3),errcode)  
+  END SUBROUTINE
+
+!!! --- Routine for adding current contributions fron adjacent subdomains persistent version
+  SUBROUTINE summation_bcs_persistent_jy(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
+    USE communications
+
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
+
+    sizes(1) = nx + 1 + 2 * nxg
+    sizes(2) = ny + 1 + 2 * nyg
+    sizes(3) = nz + 1 + 2 * nzg
+    starts = 1
+
+    ! Initialization of the persistent communication
+    IF (it .EQ. 0) THEN
+    
+      ! Init X
+      subsizes(1) = nxg+1
+      subsizes(2) = sizes(2)
+      subsizes(3) = sizes(3)
+      nn = nx
+      subarrayx = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max, tag, comm, reqperjyx(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min, tag, comm, reqperjyx(3), errcode)     
+      
+      ! Init Y
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn = ny
+      subarrayy = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max, tag, comm, reqperjyy(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min, tag, comm, reqperjyy(3), errcode) 
+          
+      ! Init Z
+      subsizes(1) = sizes(1)
+      subsizes(2) = sizes(2)
+      subsizes(3) = nzg+1
+      nn = nz
+      subarrayz = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max, tag, comm, reqperjyz(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min, tag, comm, reqperjyz(3), errcode) 
+
+      CALL MPI_TYPE_FREE(subarrayx, errcode)
+      CALL MPI_TYPE_FREE(subarrayy, errcode)  
+      CALL MPI_TYPE_FREE(subarrayz, errcode)
+    
+    ENDIF
+     
+    !! -- Summation along X- direction    
+
+    subsizes(1) = nxg+1
+    subsizes(2) = sizes(2)
+    subsizes(3) = sizes(3)
+    nn = nx
+    
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1), subsizes(2), subsizes(3)))
+    
+    !if (rank.eq.0) print*, 'it',it
+    !if (rank.eq.0) print*, 'summation along X'
+    
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    comm, reqperjyx(2), errcode)    
+    call MPI_START(reqperjyx(1),errcode)
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    comm, reqperjyx(4), errcode)
+    call MPI_START(reqperjyx(3),errcode)
+    CALL MPI_WAITALL(4_isp, reqperjyx, MPI_STATUSES_IGNORE, errcode)
+
+    array(0:nxg,:,:) = array(0:nxg,:,:) + temp1
+    array(nn-nxg:nn,:,:) = array(nn-nxg:nn,:,:) + temp2
+
+    DEALLOCATE(temp1,temp2)   
+
+    !! -- Summation along Y- direction    
+
+    subsizes(1) = sizes(1)
+    subsizes(2) = nyg+1
+    subsizes(3) = sizes(3)
+    nn = ny
+
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1), subsizes(2), subsizes(3)))
+
+    !if (rank.eq.0) print*, 'summation along Y'
+
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    comm, reqperjyy(2), errcode)   
+    CALL MPI_START(reqperjyy(1),errcode) 
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    comm, reqperjyy(4), errcode)
+    call MPI_START(reqperjyy(3),errcode)    
+    CALL MPI_WAITALL(4_isp, reqperjyy, MPI_STATUSES_IGNORE, errcode)
+
+    array(:,0:nyg,:) = array(:,0:nyg,:) + temp1
+    array(:,nn-nyg:nn,:) = array(:,nn-nyg:nn,:) + temp2
+
+    DEALLOCATE(temp1,temp2)
+    
+    !! -- Summation along Z- direction
+    subsizes(1) = sizes(1)
+    subsizes(2) = sizes(2)
+    subsizes(3) = nzg+1
+    nn = nz
+
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)),temp2(subsizes(1), subsizes(2), subsizes(3)))    
+    
+    !if (rank.eq.0) print*, 'summation along Z'
+    
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    comm, reqperjyz(2), errcode)
+    call MPI_START(reqperjyz(1),errcode)
+    !if (rank.eq.0) print*, 'irecv 1'
+    
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    comm, reqperjyz(4), errcode)
+    call MPI_START(reqperjyz(3),errcode)
+    CALL MPI_WAITALL(4_isp, reqperjyz, MPI_STATUSES_IGNORE, errcode)
+    !if (rank.eq.0) print*, 'irecv 2'
+    
+    array(:,:,0:nzg) = array(:,:,0:nzg) + temp1
+    array(:,:,nn-nzg:nn) = array(:,:,nn-nzg:nn) + temp2
+    !if (rank.eq.0) print*, 'array sum'
+
+    DEALLOCATE(temp1,temp2)
+      
+    !if (rank.eq.0) print*, 'deallocate'
+      
+    CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)  
+    
+    !if (rank.eq.0) print*, 'field_bc'
+      
+    !call MPI_REQUEST_FREE(reqperx(1),errcode)
+    !call MPI_REQUEST_FREE(reqperx(3),errcode)
+    !call MPI_REQUEST_FREE(reqpery(1),errcode)
+    !call MPI_REQUEST_FREE(reqpery(3),errcode)
+    !call MPI_REQUEST_FREE(reqperz(1),errcode)
+    !call MPI_REQUEST_FREE(reqperz(3),errcode)  
+    
+  END SUBROUTINE
+
+!!! --- Routine for adding current contributions fron adjacent subdomains persistent version
+  SUBROUTINE summation_bcs_persistent_jz(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
+    USE communications
+
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
+
+    sizes(1) = nx + 1 + 2 * nxg
+    sizes(2) = ny + 1 + 2 * nyg
+    sizes(3) = nz + 1 + 2 * nzg
+    starts = 1
+
+    ! Initialization of the persistent communication
+    IF (it .EQ. 0) THEN
+    
+      ! Init X
+      subsizes(1) = nxg+1
+      subsizes(2) = sizes(2)
+      subsizes(3) = sizes(3)
+      nn = nx
+      subarrayx = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max, tag, comm, reqperjzx(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min, tag, comm, reqperjzx(3), errcode)     
+      
+      ! Init Y
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn = ny
+      subarrayy = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max, tag, comm, reqperjzy(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min, tag, comm, reqperjzy(3), errcode) 
+          
+      ! Init Z
+      subsizes(1) = sizes(1)
+      subsizes(2) = sizes(2)
+      subsizes(3) = nzg+1
+      nn = nz
+      subarrayz = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max, tag, comm, reqperjzz(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min, tag, comm, reqperjzz(3), errcode) 
+
+      CALL MPI_TYPE_FREE(subarrayx, errcode)
+      CALL MPI_TYPE_FREE(subarrayy, errcode)  
+      CALL MPI_TYPE_FREE(subarrayz, errcode)
+    
+    ENDIF
+     
+    !! -- Summation along X- direction    
+
+    subsizes(1) = nxg+1
+    subsizes(2) = sizes(2)
+    subsizes(3) = sizes(3)
+    nn = nx
+    
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1), subsizes(2), subsizes(3)))
+    
+    !if (rank.eq.0) print*, 'it',it
+    !if (rank.eq.0) print*, 'summation along X'
+    
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    comm, reqperjzx(2), errcode)    
+    call MPI_START(reqperjzx(1),errcode)
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    comm, reqperjzx(4), errcode)
+    call MPI_START(reqperjzx(3),errcode)
+    CALL MPI_WAITALL(4_isp, reqperjzx, MPI_STATUSES_IGNORE, errcode)
+
+    array(0:nxg,:,:) = array(0:nxg,:,:) + temp1
+    array(nn-nxg:nn,:,:) = array(nn-nxg:nn,:,:) + temp2
+
+    DEALLOCATE(temp1,temp2)   
+
+    !! -- Summation along Y- direction    
+
+    subsizes(1) = sizes(1)
+    subsizes(2) = nyg+1
+    subsizes(3) = sizes(3)
+    nn = ny
+
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1), subsizes(2), subsizes(3)))
+
+    !if (rank.eq.0) print*, 'summation along Y'
+
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    comm, reqperjzy(2), errcode)   
+    CALL MPI_START(reqperjzy(1),errcode) 
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    comm, reqperjzy(4), errcode)
+    call MPI_START(reqperjzy(3),errcode)    
+    CALL MPI_WAITALL(4_isp, reqperjzy, MPI_STATUSES_IGNORE, errcode)
+
+    array(:,0:nyg,:) = array(:,0:nyg,:) + temp1
+    array(:,nn-nyg:nn,:) = array(:,nn-nyg:nn,:) + temp2
+
+    DEALLOCATE(temp1,temp2)
+    
+    !! -- Summation along Z- direction
+    subsizes(1) = sizes(1)
+    subsizes(2) = sizes(2)
+    subsizes(3) = nzg+1
+    nn = nz
+
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)),temp2(subsizes(1), subsizes(2), subsizes(3)))    
+    
+    !if (rank.eq.0) print*, 'summation along Z'
+    
+    temp1  = 0.0_num
+    temp2 = 0.0_num
+
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    comm, reqperjzz(2), errcode)
+    call MPI_START(reqperjzz(1),errcode)
+    !if (rank.eq.0) print*, 'irecv 1'
+    
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    comm, reqperjzz(4), errcode)
+    call MPI_START(reqperjzz(3),errcode)
+    CALL MPI_WAITALL(4_isp, reqperjzz, MPI_STATUSES_IGNORE, errcode)
+    !if (rank.eq.0) print*, 'irecv 2'
+    
+    array(:,:,0:nzg) = array(:,:,0:nzg) + temp1
+    array(:,:,nn-nzg:nn) = array(:,:,nn-nzg:nn) + temp2
+    !if (rank.eq.0) print*, 'array sum'
+
+    DEALLOCATE(temp1,temp2)
+      
+    !if (rank.eq.0) print*, 'deallocate'
+      
+    CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)  
+    
+    !if (rank.eq.0) print*, 'field_bc'
+      
+    !call MPI_REQUEST_FREE(reqperx(1),errcode)
+    !call MPI_REQUEST_FREE(reqperx(3),errcode)
+    !call MPI_REQUEST_FREE(reqpery(1),errcode)
+    !call MPI_REQUEST_FREE(reqpery(3),errcode)
+    !call MPI_REQUEST_FREE(reqperz(1),errcode)
+    !call MPI_REQUEST_FREE(reqperz(3),errcode)  
+    
+  END SUBROUTINE
+
+
 !!! --- Boundary condition routine for electric field
   SUBROUTINE efield_bcs
+    REAL(num) :: tmptime
+    tmptime = MPI_WTIME()
     ! Electric field MPI exchange between subdomains
     CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+    localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
   END SUBROUTINE efield_bcs
 
 !!! --- Boundary condition routine for magnetic field
   SUBROUTINE bfield_bcs
+    REAL(num) :: tmptime
+    tmptime = MPI_WTIME()
     ! Magnetic field MPI exchange between subdomains
     CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
-
+    localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
   END SUBROUTINE bfield_bcs
 
 !!! --- Boundary conditions routine for currents
   SUBROUTINE current_bcs
+    REAL(num) :: tmptime
+    tmptime = MPI_WTIME()
     ! Add current contribution from adjacent subdomains
-    CALL summation_bcs_nonblocking(jx, nxjguards, nyjguards, nzjguards, nx, ny, nz)
-    CALL summation_bcs_nonblocking(jy, nxjguards, nyjguards, nzjguards, nx, ny, nz)
-    CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+    
+    IF (mpicom_curr.EQ.2) THEN
+    
+      CALL summation_bcs_persistent_jx(jx, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+      CALL summation_bcs_persistent_jy(jy, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+      CALL summation_bcs_persistent_jz(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+      
+    ELSE IF (mpicom_curr.EQ.1) THEN
+
+      CALL summation_bcs(jx, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+      CALL summation_bcs(jy, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+      CALL summation_bcs(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+    
+    ELSE
+    
+      CALL summation_bcs_nonblocking(jx, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+      CALL summation_bcs_nonblocking(jy, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+      CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+    
+    ENDIF
+    
+    localtimes(4) = localtimes(4) + (MPI_WTIME() - tmptime)
   END SUBROUTINE current_bcs
 
 !!! --- Boundary conditions routine for charge density
@@ -509,13 +1009,20 @@ END SUBROUTINE charge_bcs
 
 !!! Boundary condition routine on particles
   SUBROUTINE particle_bcs
+    USE time_stat
     IMPLICIT NONE
+
+    REAL(num) :: tmptime
+    
+    tmptime = MPI_WTIME()
 
     ! First exchange particles between tiles (NO MPI at that point)
     CALL particle_bcs_tiles
 
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking
+
+    localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
 
   END SUBROUTINE particle_bcs
 

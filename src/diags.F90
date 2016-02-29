@@ -14,7 +14,11 @@ CONTAINS
         USE params
         USE shared_data
         USE tiling
+        USE time_stat
         IMPLICIT NONE
+
+        REAL(num) :: tmptime
+        tmptime = MPI_WTIME()        
 
         ! - Computes electric field divergence on grid at n+1
         dive=0.0_num
@@ -24,6 +28,8 @@ CONTAINS
         CALL pxrdepose_rho_on_grid()
         
         CALL charge_bcs()
+
+        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
 
     END SUBROUTINE calc_diags
 

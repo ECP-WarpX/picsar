@@ -10,11 +10,15 @@ CONTAINS
     SUBROUTINE output_routines()
         USE shared_data
         USE params
+        USE time_stat
         IMPLICIT NONE
         CHARACTER(LEN=string_length) :: strtemp
         INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
         INTEGER(KIND=4) :: err=0
+        REAL(num) :: tmptime
+        
         IF (output_frequency .LT. 1) RETURN
+        tmptime = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
             !!! --- Write output to disk
@@ -36,7 +40,7 @@ CONTAINS
                 TRIM(ADJUSTL(strtemp))//'.pxr', ez, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_bx .EQ. 1) THEN
-                ! - Write current density jx
+                ! - Write magnetic field bx
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebx))// &
                 TRIM(ADJUSTL(strtemp))//'.pxr', bx, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
@@ -76,6 +80,9 @@ CONTAINS
                 TRIM(ADJUSTL(strtemp))//'.pxr', rho, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
             ENDIF
         ENDIF
+        
+        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
+        
     END SUBROUTINE output_routines
 
 

@@ -1,16 +1,27 @@
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
-USE fields
-USE shared_data
-USE params
-IMPLICIT NONE 
+  USE fields
+  USE shared_data
+  USE params
+  USE time_stat
+  IMPLICIT NONE 
+  REAL(num) :: tdeb
 
-jx = 0.0_num
-jy = 0.0_num
-jz = 0.0_num
+  tdeb=MPI_WTIME()
 
-! DEPOSIT Current
-CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+  jx = 0.0_num
+  jy = 0.0_num
+  jz = 0.0_num
+
+  ! DEPOSIT Current
+  IF (currdepo.EQ.1) THEN
+    CALL pxrdepose_currents_on_grid_jxjyjz_sub_seq(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	nox,noy,noz,dx,dy,dz,dt)
+  ELSE ! Default
+    CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	  nox,noy,noz,dx,dy,dz,dt)
+  ENDIF
+
+  localtimes(3)=localtimes(3)+(MPI_WTIME()-tdeb)
 
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
@@ -26,6 +37,7 @@ USE constants
 USE tiling
 USE omp_lib
 USE timing
+USE time_stat
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
 INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
@@ -258,8 +270,7 @@ END DO!END LOOP ON TILES
 !$OMP END DO
 !$OMP END PARALLEL
 tend=MPI_WTIME()
-dep_curr_time=dep_curr_time+(tend-tdeb)
-
+dep_curr_time=dep_curr_time+(tend-tdeb)  
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 
 !===============================================================================
@@ -2537,6 +2548,11 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
 subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
                                                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                                  nox,noy,noz,l_particles_weight,l4symtry)
+! ===========================================
+! warp_depose_jxjyjz_esirkepov_n
+! 
+! Warp fonction for esirkepov
+! =========================================== 
    use constants
    implicit none
    integer(8) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
@@ -2884,6 +2900,7 @@ subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,x
   return
 end subroutine warp_depose_jxjyjz_esirkepov_n
 
+! ======================================================
 subroutine picsar_depose_jxjyjz_esirkepov_n(cj,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                                  nox,noy,noz,l_particles_weight,l4symtry)

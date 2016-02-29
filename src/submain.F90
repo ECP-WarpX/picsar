@@ -45,7 +45,7 @@ DO i=1,nst
     !!! --- Computes derived quantities
     CALL calc_diags
     !!! --- Output simulation results
-    !CALL output_routines
+    CALL output_routines
     it = it+1
     timeit=MPI_WTIME()
 
@@ -67,6 +67,7 @@ USE fields
 USE particles
 USE shared_data
 USE tiling
+USE time_stat
 
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
@@ -79,9 +80,41 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 !real(8) :: rand
 
-!!! --- Set time step/ it
+! Few calculations and updates      
+nc    = nlab*g0          ! density (in the simulation frame)
+wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
+lambdalab = 2*pi*clight/wlab
+w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
+w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
+w0    = w0_l 
+
+!!! --- Set time step/ itß
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
+
+!!! --- set number of time steps
+nsteps = nint(tmax/(w0_l*dt))
+
+! Summary
+IF (rank .EQ. 0) THEN
+  write(0,*), ''
+  write(0,*), 'SIMULATION PARAMETERS:'
+  write(0,*), 'dx, dy, dz:',dx,dy,dz
+  write(0,*), 'dt:',dt,'s',dt*1e15,'fs'
+  write(0,*), 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
+  write(0,*), 'Tiles:',ntilex,ntiley,ntilez
+  write(0,*), 'Guard cells:',nxguards,nyguards,nzguards
+  write(0,*), 'Topology:',topology
+  write(0,*), 'MPI com current:',mpicom_curr
+  write(0,*), ''
+  write(0,*), 'PLASMA PROPERTIES:'
+  write(0,*), 'Distribution:',pdistr
+  write(0,*), 'Density in the lab frame:',nlab,'m^-3'
+  write(0,*), 'Density in the simulation frame:',nc,'m^-3'
+  write(0,*), 'Cold plasma frequency in the lab frame:',wlab,'s^-1'
+  write(0,*), 'cold plasma wavelength:',lambdalab,'m',lambdalab*1e6,'um'
+  write(0,*), ''
+end if
 
 !- Init stencil coefficients
 CALL init_stencil_coefficients()
@@ -103,8 +136,8 @@ ex=0.0_num;ey=0.0_num;ez=0.0_num
 bx=0.0_num;by=0.0_num;bz=0.0_num
 jx=0.0_num;jy=0.0_num;jz=0.0_num
 
-!!! --- set number of time steps
-nsteps = nint(tmax/(w0_l*dt))
+! ---- INIT TIME STATISTICS
+localtimes(:)=0
 
 END SUBROUTINE initall
 

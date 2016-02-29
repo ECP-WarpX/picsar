@@ -4,6 +4,7 @@ MODULE control_file
   USE params
   USE fields
   USE particles
+  USE params
   IMPLICIT NONE
 
   INTEGER(idp) :: ios=0
@@ -36,6 +37,15 @@ CONTAINS
         nyjguards=MAX(noy,2)
         nzjguards=MAX(noz,2)
         
+        ! Topology
+        topology = 0
+        
+        ! MPI communication
+        mpicom_curr = 0
+        
+        ! Current deposition algorithme
+        currdepo = 0
+        
         l_lower_order_in_v = .FALSE.
 
         ! --- sets coefficient multiplying Courant time step
@@ -53,7 +63,7 @@ CONTAINS
         ! --- quantities in plasma (or lab) frame
         !-------------------------------------------------------------------------------
         nlab  = 1.e23_num            ! plasma density in lab frame
-        g0    = 130.0_num          ! initial gamma
+        g0    = 1.0_num          ! initial gamma
         b0    = sqrt(1.0_num-1.0_num/g0**2)
         nc    = nlab*g0          ! density (in the simulation frame)
         wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
@@ -115,6 +125,8 @@ CONTAINS
                     CALL read_output_section
                 CASE('section::cpusplit')
                     CALL read_cpusplit_section
+                CASE('section::plasma')
+                    CALL read_plasma_section
                 END SELECT
             END IF
         END DO
@@ -137,12 +149,40 @@ CONTAINS
             ELSE IF (INDEX(buffer,'nprocz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nprocz
+            ELSE IF (INDEX(buffer,'topology') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') topology
+            ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') mpicom_curr
             ELSE IF (INDEX(buffer,'end::cpusplit') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
         END DO
         RETURN
     END SUBROUTINE read_cpusplit_section
+
+    SUBROUTINE read_plasma_section
+        INTEGER :: ix = 0
+        LOGICAL :: end_section = .FALSE.
+        ! READS CPUSPLIT SECTION OF INPUT FILE
+        DO WHILE((.NOT. end_section) .AND. (ios==0))
+            READ(fh_input, '(A)', iostat=ios) buffer
+            IF (INDEX(buffer,'nlab') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) nlab
+            ELSE IF (INDEX(buffer,'gamma0') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) g0
+            ELSE IF (INDEX(buffer,'pdistr') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) pdistr                
+            ELSE IF (INDEX(buffer,'end::plasma') .GT. 0) THEN
+                end_section =.TRUE.
+            END IF
+        END DO
+        RETURN
+    END SUBROUTINE read_plasma_section
 
     SUBROUTINE read_main_section
         INTEGER :: ix = 0
@@ -201,6 +241,24 @@ CONTAINS
             ELSE IF (INDEX(buffer,'t_max') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) tmax
+            ELSE IF (INDEX(buffer,'nguardsx') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') nxguards
+             ELSE IF (INDEX(buffer,'nguardsy') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') nyguards   
+            ELSE IF (INDEX(buffer,'nguardsz') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') nzguards
+            ELSE IF (INDEX(buffer,'njguardsx') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') nxjguards
+             ELSE IF (INDEX(buffer,'njguardsy') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') nyjguards   
+            ELSE IF (INDEX(buffer,'njguardsz') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') nzjguards                                                          
             ELSE IF (INDEX(buffer,'end::main') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -366,4 +424,7 @@ CONTAINS
             l_species_allocated=.TRUE.
         ENDIF
     END SUBROUTINE init_species_section
+    
+    
+    
 END MODULE control_file

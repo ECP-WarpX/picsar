@@ -2,6 +2,7 @@ MODULE mpi_routines
   USE shared_data
   USE fields
   USE mpi
+  USE params
   IMPLICIT NONE
   !PRIVATE
   !PUBLIC :: mpi_initialise, mpi_close, mpi_minimal_init, setup_communicator
@@ -17,9 +18,9 @@ CONTAINS
     IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
-	nproc=INT(nproc_comm,idp)
+	  nproc=INT(nproc_comm,idp)
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-	rank=INT(rank_in_comm,idp)
+	  rank=INT(rank_in_comm,idp)	  	  
   END SUBROUTINE mpi_minimal_init
 
 
@@ -28,12 +29,17 @@ CONTAINS
 
     INTEGER(isp), PARAMETER :: ndims = 3
     INTEGER(idp) :: idim
-	INTEGER(isp) :: nproc_comm,dims(ndims), old_comm, ierr, neighb
+	  INTEGER(isp) :: nproc_comm,dims(ndims), old_comm, ierr, neighb
     LOGICAL(isp) :: periods(ndims), reorder, op, reset
     INTEGER(isp) :: test_coords(ndims), rank_in_comm
     INTEGER(idp) :: ix, iy, iz
+    INTEGER(idp) :: x_coords_neight, y_coords_neight, z_coords_neight
     INTEGER(idp) :: nxsplit, nysplit, nzsplit
     INTEGER(isp) :: ranges(3,1), nproc_orig, oldgroup, newgroup
+    INTEGER(idp) :: rankyz
+    INTEGER(idp) :: new_rank,old_rank
+    INTEGER(idp), dimension(:,:,:),allocatable :: topo_array
+    REAL(num) :: r
     CHARACTER(LEN=11) :: str
 
     nx_global=nx_global_grid-1
@@ -43,7 +49,7 @@ CONTAINS
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)
-	nproc=INT(nproc_comm,idp)
+	  nproc=INT(nproc_comm,idp)
 
     dims = (/nprocz, nprocy, nprocx/)
 
@@ -79,6 +85,8 @@ CONTAINS
       IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. nzguards) THEN
         IF (rank .EQ. 0) THEN
             WRITE(0,*) 'WRONG CPU SPLIT nlocal<nguards'
+            WRITE(0,*) nxsplit,nysplit,nzsplit
+            WRITE(0,*) nx_global_grid,ny_global_grid,nz_global_grid
             CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
         ENDIF
       ENDIF
@@ -93,63 +101,317 @@ CONTAINS
     periods(c_ndims-1) = .TRUE.
     periods(c_ndims-2) = .TRUE.
 
-    old_comm = comm
-    CALL MPI_CART_CREATE(old_comm, ndims, dims, periods, reorder, comm, errcode)
-    CALL MPI_COMM_FREE(old_comm, errcode)
-    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-    CALL MPI_CART_COORDS(comm, rank_in_comm, ndims, coordinates, errcode)
-	rank=INT(rank_in_comm,idp)
-    CALL MPI_CART_SHIFT(comm, 2_isp, 1_isp, proc_x_min, proc_x_max, errcode)
-    CALL MPI_CART_SHIFT(comm, 1_isp, 1_isp, proc_y_min, proc_y_max, errcode)
-    CALL MPI_CART_SHIFT(comm, 0_isp, 1_isp, proc_z_min, proc_z_max, errcode)
+    ! Random topology ----------------------------------------
+    IF (topology == 2) THEN
 
-    nprocdir = dims
+      IF (rank .EQ. 0) THEN
+        WRITE(0,*) 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
+      ENDIF
 
-    IF (rank .EQ. 0) THEN
-      WRITE(0,*) 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
-    ENDIF
-
-    x_coords = coordinates(c_ndims)
-    x_min_boundary = .FALSE.
-    x_max_boundary = .FALSE.
-    IF (x_coords .EQ. 0) x_min_boundary = .TRUE.
-    IF (x_coords .EQ. nprocx - 1) x_max_boundary = .TRUE.
-
-    y_coords = coordinates(c_ndims-1)
-    y_min_boundary = .FALSE.
-    y_max_boundary = .FALSE.
-    IF (y_coords .EQ. 0) y_min_boundary = .TRUE.
-    IF (y_coords .EQ. nprocy - 1) y_max_boundary = .TRUE.
-
-    z_coords = coordinates(c_ndims-2)
-    z_min_boundary = .FALSE.
-    z_max_boundary = .FALSE.
-    IF (z_coords .EQ. 0) z_min_boundary = .TRUE.
-    IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.
-
-    neighbour = MPI_PROC_NULL
-    DO iz = -1, 1
-      DO iy = -1, 1
-        DO ix = -1, 1
-          test_coords = coordinates
-          test_coords(1) = test_coords(1)+iz
-          test_coords(2) = test_coords(2)+iy
-          test_coords(3) = test_coords(3)+ix
-          op = .TRUE.
-          ! MPI_CART_RANK returns an error rather than
-          ! MPI_PROC_NULL if the coords are out of range.
-          DO idim = 1, ndims
-            IF ((test_coords(idim) .LT. 0 &
-                .OR. test_coords(idim) .GE. dims(idim)) &
-                .AND. .NOT. periods(idim)) op = .FALSE.
+      allocate(topo_array(0:nprocx-1,0:nprocy-1,0:nprocz-1))
+    
+      IF (rank.EQ.0) THEN
+      
+        ! Creation of a random array for the topology
+        DO iz=0,nprocz-1
+          DO iy=0,nprocy-1
+            DO ix=0,nprocx-1
+              topo_array(ix,iy,iz) = INT(ix + (iy)*nprocx + (iz)*nprocy*nprocx,idp) 
+              !print*, ix + (iy)*nprocx + (iz)*nprocy*nprocx
+            ENDDO
           ENDDO
-          IF (op) THEN
-            CALL MPI_CART_RANK(comm, test_coords, neighb, errcode)
-            neighbour(ix,iy,iz)=INT(neighb,idp)
-          ENDIF
+        ENDDO            
+        DO iz =0,nprocz-1
+          DO iy=0,nprocy-1
+            DO ix=0,nprocx-1
+              CALL RANDOM_NUMBER(r)
+              x_coords = INT(r*(nprocx-1))
+              ! x_coords = INT(RAN(seed)*(nprocx-1))
+              CALL RANDOM_NUMBER(r)
+              y_coords = INT(r*(nprocy-1))
+              CALL RANDOM_NUMBER(r)
+              z_coords = INT(r*(nprocz-1))
+              rankyz = topo_array(ix,iy,iz)
+              topo_array(ix,iy,iz) = topo_array(x_coords,y_coords,z_coords)
+              topo_array(x_coords,y_coords,z_coords) = rankyz
+            ENDDO
+          ENDDO
+        ENDDO
+      
+        !print*, 'rank',rank,'topo_array',topo_array
+      
+      ENDIF
+      
+      ! Sharing of the topology
+      CALL MPI_BCAST(topo_array,nprocx*nprocy*nprocz,MPI_INTEGER8,0,comm,errcode)
+      
+      !IF (rank==3) print*, 'rank',rank,'topo_array',topo_array
+      
+      ! Each processor determine their coordinates
+        DO iz =0,nprocz-1
+          DO iy=0,nprocy-1
+            DO ix=0,nprocx-1      
+
+              IF (rank .EQ. topo_array(ix,iy,iz)) THEN
+              
+                x_coords = ix
+                y_coords = iy
+                z_coords = iz
+              
+              ENDIF     
+
+            ENDDO
+          ENDDO
+        ENDDO
+
+      x_min_boundary = .FALSE.
+      x_max_boundary = .FALSE.
+      IF (x_coords .EQ. 0) x_min_boundary = .TRUE.
+      IF (x_coords .EQ. nprocx - 1) x_max_boundary = .TRUE.
+      
+      y_min_boundary = .FALSE.
+      y_max_boundary = .FALSE.
+      IF (y_coords .EQ. 0) y_min_boundary = .TRUE.
+      IF (y_coords .EQ. nprocy - 1) y_max_boundary = .TRUE.
+
+      z_min_boundary = .FALSE.
+      z_max_boundary = .FALSE.
+      IF (z_coords .EQ. 0) z_min_boundary = .TRUE.
+      IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.   
+
+      neighbour = MPI_PROC_NULL     
+      DO iz = -1, 1
+        DO iy = -1, 1
+          DO ix = -1, 1
+          
+            IF (x_coords + ix .LT. 0) THEN            
+              x_coords_neight = x_coords + nprocx-1           
+            ELSE IF (x_coords + ix .GT. nprocx-1) THEN              
+              x_coords_neight = x_coords - (nprocx-1)
+            ELSE
+              x_coords_neight = x_coords + ix          
+            END IF 
+
+            IF (y_coords + iy .LT. 0) THEN            
+              y_coords_neight = y_coords + nprocy-1           
+            ELSE IF (y_coords + iy .GT. nprocy-1) THEN              
+              y_coords_neight = y_coords - (nprocy-1) 
+            ELSE
+              y_coords_neight = y_coords + iy             
+            END IF
+            
+            IF (z_coords + iz .LT. 0) THEN            
+              z_coords_neight = z_coords + nprocz-1           
+            ELSE IF (z_coords + iz .GT. nprocz-1) THEN              
+              z_coords_neight = z_coords - (nprocz-1)  
+            ELSE
+              z_coords_neight = z_coords + iz                              
+            END IF            
+                 
+            neighbour(ix,iy,iz) = topo_array(x_coords_neight,y_coords_neight,z_coords_neight)
+                                
+           !print*,'rank',rank, ix,iy,iz, neighbour(ix,iy,iz) 
+            
+          ENDDO
+        ENDDO
+      ENDDO  
+
+      proc_x_max = neighbour(1,0,0)            
+      proc_x_min = neighbour(-1,0,0)
+      proc_y_max = neighbour(0,1,0)            
+      proc_y_min = neighbour(0,-1,0) 
+      proc_z_max = neighbour(0,0,1)            
+      proc_z_min = neighbour(0,0,-1)  
+    
+    ! Topology - processors are ordered according to their ranks ---------------
+    ELSE IF (topology == 1) THEN
+
+      IF (rank .EQ. 0) THEN
+        WRITE(0,*) 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
+      ENDIF
+    
+      ! We first fill the x direction, then y and finally z
+      IF (rank.EQ.0) THEN
+        x_coords = 0
+      ELSE IF (MOD(rank+1,nprocx).EQ.0) THEN
+        x_coords = nprocx-1
+      ELSE
+        x_coords = MOD(rank,nprocx)
+      ENDIF
+      rankyz = (rank+1 - x_coords)/nprocx
+      
+      IF (rankyz.EQ.0) THEN
+        y_coords = 0
+      ELSE IF (MOD(rankyz+1,nprocy).EQ.0) THEN
+        y_coords = nprocy-1
+      ELSE       
+        y_coords = MOD(rankyz,nprocy)
+      ENDIF      
+      z_coords = (rankyz - y_coords)/nprocz
+      
+      !print*,'rank:',rank,rankyz,x_coords,y_coords,z_coords
+         
+      x_min_boundary = .FALSE.
+      x_max_boundary = .FALSE.
+      IF (x_coords .EQ. 0) x_min_boundary = .TRUE.
+      IF (x_coords .EQ. nprocx - 1) x_max_boundary = .TRUE.
+      
+      y_min_boundary = .FALSE.
+      y_max_boundary = .FALSE.
+      IF (y_coords .EQ. 0) y_min_boundary = .TRUE.
+      IF (y_coords .EQ. nprocy - 1) y_max_boundary = .TRUE.
+
+      z_min_boundary = .FALSE.
+      z_max_boundary = .FALSE.
+      IF (z_coords .EQ. 0) z_min_boundary = .TRUE.
+      IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.      
+
+      neighbour = MPI_PROC_NULL     
+      DO iz = -1, 1
+        DO iy = -1, 1
+          DO ix = -1, 1
+          
+            IF (x_coords + ix .LT. 0) THEN            
+              x_coords_neight = x_coords + nprocx-1           
+            ELSE IF (x_coords + ix .GT. nprocx-1) THEN              
+              x_coords_neight = x_coords - (nprocx-1)
+            ELSE
+              x_coords_neight = x_coords + ix          
+            END IF 
+
+            IF (y_coords + iy .LT. 0) THEN            
+              y_coords_neight = y_coords + nprocy-1           
+            ELSE IF (y_coords + iy .GT. nprocy-1) THEN              
+              y_coords_neight = y_coords - (nprocy-1) 
+            ELSE
+              y_coords_neight = y_coords + iy             
+            END IF
+            
+            IF (z_coords + iz .LT. 0) THEN            
+              z_coords_neight = z_coords + nprocz-1           
+            ELSE IF (z_coords + iz .GT. nprocz-1) THEN              
+              z_coords_neight = z_coords - (nprocz-1)  
+            ELSE
+              z_coords_neight = z_coords + iz                              
+            END IF            
+                 
+            neighbour(ix,iy,iz) = x_coords_neight + (nprocx)*(y_coords_neight) &
+                                + (nprocx*nprocy)*(z_coords_neight)
+                                
+           print*,'rank',rank, ix,iy,iz, neighbour(ix,iy,iz) 
+            
+          ENDDO
+        ENDDO
+      ENDDO  
+
+      proc_x_max = neighbour(1,0,0)            
+      proc_x_min = neighbour(-1,0,0)
+      proc_y_max = neighbour(0,1,0)            
+      proc_y_min = neighbour(0,-1,0) 
+      proc_z_max = neighbour(0,0,1)            
+      proc_z_min = neighbour(0,0,-1)     
+          
+    ! Default topology - Cartesian topology
+    ELSE
+          
+      ! Create an array of rank corresponding to the current topology
+      !ALLOCATE(rank_array(nprocs))
+      old_rank = rank
+      !old_rank_array(old_rank) = rank
+        
+          
+      ! Creation of a Cartesian topology by using the original communicator
+      old_comm = comm
+      CALL MPI_CART_CREATE(old_comm, ndims, dims, periods, reorder, comm, errcode)
+      CALL MPI_COMM_FREE(old_comm, errcode)
+      CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+      ! Determines process coords in cartesian topology given rank in group 
+      CALL MPI_CART_COORDS(comm, rank_in_comm, ndims, coordinates, errcode)
+	    rank=INT(rank_in_comm,idp)
+	    ! Determine processor's ranks at the boundaries
+      CALL MPI_CART_SHIFT(comm, 2_isp, 1_isp, proc_x_min, proc_x_max, errcode)
+      CALL MPI_CART_SHIFT(comm, 1_isp, 1_isp, proc_y_min, proc_y_max, errcode)
+      CALL MPI_CART_SHIFT(comm, 0_isp, 1_isp, proc_z_min, proc_z_max, errcode)
+
+      IF (rank .EQ. 0) THEN
+        WRITE(0,*) 'Cartesian topology'
+        WRITE(0,*) 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
+        WRITE(0,*)
+      ENDIF 
+
+      ! ------------------------------------------------------------
+      ! Checking of the new topology
+      CALL MPI_BARRIER(comm,errcode)
+      new_rank = rank     
+      !new_rank_array(old_rank) = rank
+      IF (new_rank.NE.old_rank) WRITE(0,'(A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
+      WRITE(0,'(X,A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
+      ! We first fill the x direction, then y and finally z
+      IF (rank.EQ.0) THEN
+        x_coords = 0
+      ELSE IF (MOD(rank+1,nprocx).EQ.0) THEN
+        x_coords = nprocx-1
+      ELSE
+        x_coords = MOD(rank,nprocx)
+      ENDIF
+      rankyz = (rank+1 - x_coords)/nprocx
+      IF (rankyz.EQ.0) THEN
+        y_coords = 0
+      ELSE IF (MOD(rankyz+1,nprocy).EQ.0) THEN
+        y_coords = nprocy-1
+      ELSE       
+        y_coords = MOD(rankyz,nprocy)
+      ENDIF      
+      z_coords = (rankyz - y_coords)/nprocz
+      WRITE(0,'(X,A30,3(X,I5))') 'Coordinates from MPI_CART_COORDS:',coordinates(1:3)
+      WRITE(0,'(X,A30,3(X,I5))') 'Theoretical coordinates:',z_coords,y_coords,x_coords
+      CALL MPI_BARRIER(comm,errcode)
+      ! -------------------------------------------------------------
+
+      x_coords = coordinates(c_ndims)
+      x_min_boundary = .FALSE.
+      x_max_boundary = .FALSE.
+      IF (x_coords .EQ. 0) x_min_boundary = .TRUE.
+      IF (x_coords .EQ. nprocx - 1) x_max_boundary = .TRUE.
+
+      y_coords = coordinates(c_ndims-1)
+      y_min_boundary = .FALSE.
+      y_max_boundary = .FALSE.
+      IF (y_coords .EQ. 0) y_min_boundary = .TRUE.
+      IF (y_coords .EQ. nprocy - 1) y_max_boundary = .TRUE.
+
+      z_coords = coordinates(c_ndims-2)
+      z_min_boundary = .FALSE.
+      z_max_boundary = .FALSE.
+      IF (z_coords .EQ. 0) z_min_boundary = .TRUE.
+      IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.
+
+      neighbour = MPI_PROC_NULL
+      DO iz = -1, 1
+        DO iy = -1, 1
+          DO ix = -1, 1
+            test_coords = coordinates
+            test_coords(1) = test_coords(1)+iz
+            test_coords(2) = test_coords(2)+iy
+            test_coords(3) = test_coords(3)+ix
+            op = .TRUE.
+            ! MPI_CART_RANK returns an error rather than
+            ! MPI_PROC_NULL if the coords are out of range.
+            DO idim = 1, ndims
+              IF ((test_coords(idim) .LT. 0 &            ! If outside the grid
+                  .OR. test_coords(idim) .GE. dims(idim)) & ! If outside the grid
+                  .AND. .NOT. periods(idim)) op = .FALSE. ! And periodic or not in this direction
+            ENDDO
+            IF (op) THEN
+              ! Then determine the rank of the neighbor processor
+              CALL MPI_CART_RANK(comm, test_coords, neighb, errcode)
+              neighbour(ix,iy,iz)=INT(neighb,idp)
+            ENDIF
+          ENDDO
         ENDDO
       ENDDO
-    ENDDO
+      
+    ENDIF
 
   END SUBROUTINE setup_communicator
 
@@ -365,5 +627,65 @@ CONTAINS
 
   END SUBROUTINE mpi_close
 
+  SUBROUTINE time_statistics
+    ! ---- Subroutine dedicated to the time report at the end of the simulation
+    USE time_stat
+    USE params
+    IMPLICIT NONE
+        
+    REAL(num), DIMENSION(20) :: mintimes
+    REAL(num), DIMENSION(20) :: maxtimes
+    REAL(num), DIMENSION(20) :: avetimes
+    REAL(num), DIMENSION(20) :: percenttimes
+    
+    localtimes(20) = sum(localtimes(1:9))
+    localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8)
+    
+    ! Reductions
+    ! Maximun times
+    CALL MPI_REDUCE(localtimes,maxtimes,20,mpidbl,MPI_MAX,0,comm,errcode)
+    ! Minimum times
+    CALL MPI_REDUCE(localtimes,mintimes,20,mpidbl,MPI_MIN,0,comm,errcode)
+    ! Average
+   CALL MPI_REDUCE(localtimes,avetimes,20,mpidbl,MPI_SUM,0,comm,errcode)
+   avetimes = avetimes / nproc
+   
+   ! Percentage  
+   percenttimes = avetimes / avetimes(20) * 100
+     
+  IF (rank .EQ. 0) THEN
+    WRITE(0,*) ""
+    WRITE(0,*) '___________________________________________________________________________'
+    WRITE(0,'(X,A15,X)') "Time statistics:"
+    WRITE(0,*) ""
+    WRITE(0,'(X,A22,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (us)"
+    WRITE(0,*) "---------------------------------------------------------------------------"
+    WRITE(0,'(X,A22,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
+    percenttimes(1), avetimes(1)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Particle bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
+    percenttimes(2), avetimes(2)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Current deposition:", mintimes(3), avetimes(3), maxtimes(3),&
+    percenttimes(3), avetimes(3)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Current bound. cond.:", mintimes(4), avetimes(4), maxtimes(4),&
+    percenttimes(4), avetimes(4)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Push bfield:", mintimes(5), avetimes(5), maxtimes(5),&
+    percenttimes(5), avetimes(5)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "B field bound. cond.:",mintimes(6), avetimes(6), maxtimes(6),&
+    percenttimes(6), avetimes(6)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Push efield:", mintimes(7), avetimes(7), maxtimes(7),&
+    percenttimes(7), avetimes(7)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "E field bound. cond.:",mintimes(8), avetimes(8), maxtimes(8),&
+    percenttimes(8), avetimes(8)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Diags:",mintimes(9), avetimes(9), maxtimes(9),&
+    percenttimes(9), avetimes(9)/nsteps*1e3
+    
+    
+    WRITE(0,*) ""
+    WRITE(0,'(X,A22,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
+    percenttimes(19), avetimes(19)/nsteps*1e3
+    WRITE(0,'(X,A22,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
+  ENDIF    
+  
+  END SUBROUTINE
 
 END MODULE mpi_routines

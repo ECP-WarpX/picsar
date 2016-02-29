@@ -421,7 +421,7 @@ CONTAINS
         INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
         REAL(num) :: phi, th, v, usq, clightsq
-        INTEGER(KIND=4) :: err, npart
+        INTEGER(idp) :: err, npart
         REAL(num), DIMENSION(6) :: rng=0_num
 		clightsq=1/clight**2
         !!! --- Sets-up particle space distribution (homogeneous case - default)
