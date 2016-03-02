@@ -876,14 +876,6 @@ class EM3DPXR(EM3DFFT):
             
                 # Update new subdomain boundaries 
                 pxr.compute_simulation_axis()
-                
-                print("avant")
-                # Exchange guard cells 
-                #pxr.efield_bcs()
-                #pxr.bfield_bcs()
-                print("apres")
-
-
             
                 ##--- Alias WARP grid arrays on pxr new arrays 
                 self.nxlocal=pxr.nx
