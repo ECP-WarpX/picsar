@@ -9,56 +9,68 @@ MODULE tiling
 
 CONTAINS
 
+	SUBROUTINE set_tile_split()
+	IMPLICIT NONE 
+		CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
+    									  x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+    								
+		! ALLOCATE grid tile arrays
+		ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
+	END SUBROUTINE set_tile_split
+
+
     !!! --- Set particle tile split in space
-    SUBROUTINE set_tile_split
+    SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
+    									  xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
         IMPLICIT NONE
-        INTEGER(KIND=4) :: ix, iy, iz, ispecies
-        INTEGER(KIND=4) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-        INTEGER(KIND=4) :: nx0_last_tile, ny0_last_tile, nz0_last_tile
+        INTEGER(idp), INTENT(IN) :: nspec, nxgrid, nygrid, nzgrid
+        INTEGER(idp), INTENT(IN OUT) ::  ntx, nty, ntz
+        REAL(num), INTENT(IN) :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
+        TYPE(particle_species), INTENT(IN OUT), TARGET, DIMENSION(nspec) :: species_array
+        INTEGER(idp) :: ix, iy, iz, ispecies
+        INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+        INTEGER(idp) :: nx0_last_tile, ny0_last_tile, nz0_last_tile
         TYPE(particle_species), POINTER :: curr_sp
         TYPE(particle_tile), POINTER :: curr
 
         ! Tile-split
-        nx0_grid_tile = nx_grid / ntilex
-        ny0_grid_tile = ny_grid / ntiley
-        nz0_grid_tile = nz_grid / ntilez
+        nx0_grid_tile = nxgrid / ntx
+        ny0_grid_tile = nygrid / nty
+        nz0_grid_tile = nzgrid / ntz
 
         ! Some sanity check
         IF (nx0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in X to high, settting back to default value 1"
-            ntilex=1
+            IF (rank .EQ. 0) PRINT *, "number of tiles in X is to high, settting back to default value 1"
+            ntx=1
         END IF
         IF (ny0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in Y to high, setting back to default value 1"
-            ntiley=1
+            IF (rank .EQ. 0) PRINT *, "number of tiles in Y is to high, setting back to default value 1"
+            nty=1
         END IF
         IF (nz0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in Z to high, setting back to default value 1"
-            ntilez=1
+            IF (rank .EQ. 0) PRINT *, "number of tiles in Z is to high, setting back to default value 1"
+            ntz=1
         END IF
         !-- N.B: If the number of grid points cannot be equally divided between
         !-- tiles then give remaining points to last tile in each dimension
-        nx0_last_tile= nx0_grid_tile+(nx_grid-nx0_grid_tile*ntilex)
-        ny0_last_tile= ny0_grid_tile+(ny_grid-ny0_grid_tile*ntiley)
-        nz0_last_tile= nz0_grid_tile+(nz_grid-nz0_grid_tile*ntilez)
-
-		! ALLOCATE grid tile arrays
-		ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
+        nx0_last_tile= nx0_grid_tile+(nxgrid-nx0_grid_tile*ntx)
+        ny0_last_tile= ny0_grid_tile+(nygrid-ny0_grid_tile*nty)
+        nz0_last_tile= nz0_grid_tile+(nzgrid-nz0_grid_tile*ntz)
 
 
         !- Allocate object array of tiles for particles
         DO ispecies =1, nspecies
-            curr_sp => species_parray(ispecies)
+            curr_sp => species_array(ispecies)
             IF (.NOT. curr_sp%l_arrayoftiles_allocated) THEN
-                ALLOCATE(curr_sp%array_of_tiles(ntilex,ntiley,ntilez))
-                ALLOCATE(curr_sp%are_tiles_reallocated(ntilex,ntiley,ntilez))
+                ALLOCATE(curr_sp%array_of_tiles(ntx,nty,ntz))
+                ALLOCATE(curr_sp%are_tiles_reallocated(ntx,nty,ntz))
                 curr_sp%are_tiles_reallocated= 0
                 curr_sp%l_arrayoftiles_allocated = .TRUE.
             END IF
             ! Sets tile spatial extents for current species
-            DO iz=1, ntilez
-                DO iy=1,ntiley
-                    DO ix=1,ntilex
+            DO iz=1, ntz
+                DO iy=1,nty
+                    DO ix=1,ntx
                         curr=> curr_sp%array_of_tiles(ix,iy,iz)
                         !------------- X- DIRECTION
 						! FIRST TILE in X DIRECTION
@@ -66,7 +78,7 @@ CONTAINS
 							curr%subdomain_bound = .TRUE.
 							curr%nx_grid_tile=nx0_grid_tile
 							curr%nx_cells_tile=curr%nx_grid_tile-1
-							curr%x_grid_tile_min=x_min_local
+							curr%x_grid_tile_min=xminlocal
 							curr%x_grid_tile_max=curr%x_grid_tile_min+(nx0_grid_tile-1)*dx
 							curr%x_tile_min=curr%x_grid_tile_min
 							curr%x_tile_max=curr%x_grid_tile_max+dx/2.0_num
@@ -76,7 +88,7 @@ CONTAINS
                         IF ((ix .LT. ntilex) .AND. (ix .GT. 1)) THEN
                             curr%nx_grid_tile=nx0_grid_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
-                            curr%x_grid_tile_min=x_min_local+(ix-1)*nx0_grid_tile*dx
+                            curr%x_grid_tile_min=xminlocal+(ix-1)*nx0_grid_tile*dx
                             curr%x_grid_tile_max=curr%x_grid_tile_min+curr%nx_cells_tile*dx
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
@@ -88,12 +100,12 @@ CONTAINS
                             curr%subdomain_bound= .TRUE.
                             curr%nx_grid_tile=nx0_last_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
-                            curr%x_grid_tile_min=x_min_local+(ix-1)*nx0_grid_tile*dx
+                            curr%x_grid_tile_min=xminlocal+(ix-1)*nx0_grid_tile*dx
                             curr%x_grid_tile_max=curr%x_grid_tile_min+curr%nx_cells_tile*dx
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
 							curr%x_tile_min= curr%x_grid_tile_min-dx/2.0_num
-							curr%x_tile_max= x_max_local
+							curr%x_tile_max= xmaxlocal
                         ENDIF
                         !------------- Y- DIRECTION
 						! FIRST TILE in Y DIRECTION
@@ -101,7 +113,7 @@ CONTAINS
 							curr%subdomain_bound = .TRUE.
 							curr%ny_grid_tile=ny0_grid_tile
 							curr%ny_cells_tile=curr%ny_grid_tile-1
-							curr%y_grid_tile_min=y_min_local
+							curr%y_grid_tile_min=yminlocal
 							curr%y_grid_tile_max=curr%y_grid_tile_min+(ny0_grid_tile-1)*dy
 							curr%y_tile_min=curr%y_grid_tile_min
 							curr%y_tile_max=curr%y_grid_tile_max+dy/2.0_num
@@ -111,7 +123,7 @@ CONTAINS
                         IF ((iy .LT. ntiley) .AND. (iy .GT. 1)) THEN
                             curr%ny_grid_tile=ny0_grid_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
-                            curr%y_grid_tile_min=y_min_local+(iy-1)*ny0_grid_tile*dy
+                            curr%y_grid_tile_min=yminlocal+(iy-1)*ny0_grid_tile*dy
                             curr%y_grid_tile_max=curr%y_grid_tile_min+curr%ny_cells_tile*dy
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
@@ -123,12 +135,12 @@ CONTAINS
                             curr%subdomain_bound= .TRUE.
                             curr%ny_grid_tile=ny0_last_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
-                            curr%y_grid_tile_min=y_min_local+(iy-1)*ny0_grid_tile*dy
+                            curr%y_grid_tile_min=yminlocal+(iy-1)*ny0_grid_tile*dy
                             curr%y_grid_tile_max=curr%y_grid_tile_min+curr%ny_cells_tile*dy
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
 							curr%y_tile_min= curr%y_grid_tile_min-dy/2.0_num
-							curr%y_tile_max= y_max_local
+							curr%y_tile_max= ymaxlocal
                         ENDIF
                         !------------- Z- DIRECTION
 						! FIRST TILE in Z DIRECTION
@@ -136,7 +148,7 @@ CONTAINS
 							curr%subdomain_bound = .TRUE.
 							curr%nz_grid_tile=nz0_grid_tile
 							curr%nz_cells_tile=curr%nz_grid_tile-1
-							curr%z_grid_tile_min=z_min_local
+							curr%z_grid_tile_min=zminlocal
 							curr%z_grid_tile_max=curr%z_grid_tile_min+(nz0_grid_tile-1)*dz
 							curr%z_tile_min=curr%z_grid_tile_min
 							curr%z_tile_max=curr%z_grid_tile_max+dz/2.0_num
@@ -146,7 +158,7 @@ CONTAINS
                         IF ((iz .LT. ntilez) .AND. (iz .GT. 1)) THEN
                             curr%nz_grid_tile=nz0_grid_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
-                            curr%z_grid_tile_min=z_min_local+(iz-1)*nz0_grid_tile*dz
+                            curr%z_grid_tile_min=zminlocal+(iz-1)*nz0_grid_tile*dz
                             curr%z_grid_tile_max=curr%z_grid_tile_min+curr%nz_cells_tile*dz
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
@@ -158,29 +170,18 @@ CONTAINS
                             curr%subdomain_bound= .TRUE.
                             curr%nz_grid_tile=nz0_last_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
-                            curr%z_grid_tile_min=z_min_local+(iz-1)*nz0_grid_tile*dz
+                            curr%z_grid_tile_min=zminlocal+(iz-1)*nz0_grid_tile*dz
                             curr%z_grid_tile_max=curr%z_grid_tile_min+curr%nz_cells_tile*dz
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
 							curr%z_tile_min= curr%z_grid_tile_min-dz/2.0_num
-							curr%z_tile_max= z_max_local
+							curr%z_tile_max= zmaxlocal
                         ENDIF
-!						PRINT *, "Species name", ix,iy,iz
-!						PRINT *, "Tile number (ix,iy,iz)", ix,iy,iz
-!						PRINT *, "x_tile_min, x_tile_max", curr%x_tile_min, curr%x_tile_max
-!						PRINT *, "y_tile_min, y_tile_max", curr%y_tile_min, curr%y_tile_max
-!						PRINT *, "z_tile_min, z_tile_max", curr%z_tile_min, curr%z_tile_max
-!						PRINT *, "x_grid_tile_min, x_grid_tile_max", curr%x_grid_tile_min, curr%x_grid_tile_max
-!						PRINT *, "y_grid_tile_min, y_grid_tile_max", curr%y_grid_tile_min, curr%y_grid_tile_max
-!						PRINT *, "z_grid_tile_min, z_grid_tile_max", curr%z_grid_tile_min, curr%z_grid_tile_max
-!						PRINT *, "nx_tile_min, nx_tile_max", curr%nx_tile_min, curr%nx_tile_max
-!						PRINT *, "ny_tile_min, ny_tile_max", curr%ny_tile_min, curr%ny_tile_max
-!						PRINT *, "nz_tile_min, nz_tile_max", curr%nz_tile_min, curr%nz_tile_max
                     END DO
                 END DO
             END DO
         END DO ! END DO SPECIES
-    END SUBROUTINE
+    END SUBROUTINE set_tile_split_for_species
 
     !!! --- Add particle to array of tiles
     SUBROUTINE add_particle_to_species(currsp, partx, party, partz, &

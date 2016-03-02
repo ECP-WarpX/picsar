@@ -728,9 +728,9 @@ def parse_subroutine_blocks(fw,listlines,names,namesmod,istart,iend):
             semicol=""
             if (argsname!=[""]):
                 semicol=":"
-            fw.write(names[iblock].strip()+"("+argsname[0].strip()+semicol+argstype[0].strip())
+            fw.write(names[iblock].strip()+"("+argsname[0].strip()+semicol+argstype[0].strip().replace("_istarget_",""))
             for i in range(1,len(argsname)):
-                fw.write(","+argsname[i]+semicol+argstype[i])
+                fw.write(","+argsname[i]+semicol+argstype[i].replace("_istarget_",""))
             fw.write(") subroutine\n")
 
 ### - PARSE SUBROUTINE ARGS AND TYPES
@@ -891,6 +891,8 @@ def get_type(line):
             typechain=typechain+"complex"
         if (curr_arg.find("pointer")>=0):
             typechain= "_"+typechain
+        if (curr_arg.find("target")>=0):
+            typechain= "_istarget_"+typechain
         if (curr_arg.find("allocatable")>=0):
             typechain= "_"+typechain
         if (curr_arg.find("logical")>=0):

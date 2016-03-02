@@ -113,7 +113,7 @@ TYPE particle_species
     LOGICAL(idp)   :: l_arrayoftiles_allocated =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
-    TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE :: array_of_tiles
+    TYPE(particle_tile), DIMENSION(:,:,:), POINTER :: array_of_tiles
     ! Array indicating if a tile has been reallocated
     ! Used for interfacing WARP and PXR
     INTEGER(idp), DIMENSION(:,:,:), ALLOCATABLE :: are_tiles_reallocated

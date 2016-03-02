@@ -751,20 +751,20 @@ class EM3DPXR(EM3DFFT):
             else: 
                 print("trying to load balance the simulation")
                 ## --- Some output checking 
-                if (pxr.rank==0): 
-                	print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
-                	print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
-                	print("Now recomputing new cell boundaries")
-                	print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
-                	print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
-                	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
-                	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
-                	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
-                	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
-                	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
-                	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
-                	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
-                	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
+#                 if (pxr.rank==0): 
+#                 	print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
+#                 	print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
+#                 	print("Now recomputing new cell boundaries")
+#                 	print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
+#                 	print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
+#                 	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
+#                 	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
+#                 	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
+#                 	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
+#                 	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
+#                 	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
+#                 	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
+#                 	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
                 
                 ## --- Compute limits for all procs 
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
@@ -887,11 +887,8 @@ class EM3DPXR(EM3DFFT):
             	
                 # Reallocate warp arrays 
                 self.allocatefieldarrays()
-		
-                print(pxr.rank,pxr.nx,pxr.ny,pxr.nz)
-                print(shape(pxr.ex))
-                print(self.nxlocal+2*self.nxguard+1,self.nylocal+2*self.nyguard+1,self.nzlocal+2*self.nzguard+1)
-                print(shape(self.fields.Ex))
+                
+                # Alias newly allocated arrays on WARP structure 
                 self.fields.Ex=pxr.ex
                 self.fields.Ey=pxr.ey
                 self.fields.Ez=pxr.ez
@@ -919,8 +916,10 @@ class EM3DPXR(EM3DFFT):
 
                 em3d_exchange_e(self.block)
                 em3d_exchange_b(self.block)
+                
+                # Now exchanging particles 
 
-    
+    			
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:

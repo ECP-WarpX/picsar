@@ -282,16 +282,16 @@ else:
 if l_pxr: 
     top.fsdecomp.nxprocs=1
     top.fsdecomp.nyprocs=1
-    top.fsdecomp.nzprocs=2
+    top.fsdecomp.nzprocs=4
     top.ppdecomp.nxprocs=1
     top.ppdecomp.nyprocs=1
-    top.ppdecomp.nzprocs=2
+    top.ppdecomp.nzprocs=4
     top.fsdecomp.nx=[107]
     top.fsdecomp.ny=[107]
-    top.fsdecomp.nz=[10,61]
+    top.fsdecomp.nz=[10,10,10,41]
     top.ppdecomp.nx=[107]
     top.ppdecomp.ny=[107]
-    top.ppdecomp.nz=[10,61]
+    top.ppdecomp.nz=[10,10,10,41]
     top.userdecompx = top.fsdecomp.nx
     top.userdecompy = top.fsdecomp.ny
     top.userdecompz = top.fsdecomp.nz
