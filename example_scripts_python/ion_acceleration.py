@@ -5,7 +5,7 @@ from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 home=os.getenv('HOME')
 
-l_pxr=1
+l_pxr=0
 
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
@@ -100,7 +100,7 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 100  # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 10  # frequency (in time steps) of live plots (off is l_test is off)
 
 fielddiag_period   = 500/dtfact
 partdiag_period    = 500/dtfact

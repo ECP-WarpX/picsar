@@ -273,8 +273,8 @@ INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min, new_cell_z_max
 INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
 INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
 INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max
-! domain and loadbalancing
-LOGICAL :: allow_cpu_reduce = .FALSE.
+! Domain axis 
+LOGICAL(idp) :: l_axis_allocated=.FALSE.
 REAL(num), DIMENSION(:), POINTER :: x_global, y_global, z_global
 REAL(num), DIMENSION(:), POINTER :: xb_global, yb_global, zb_global
 REAL(num), DIMENSION(:), POINTER :: xb_offset_global

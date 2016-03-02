@@ -277,13 +277,8 @@ CONTAINS
     nx=nx_grid-1
     ny=ny_grid-1
     nz=nz_grid-1
-
-	! Allocate arrays of axis
-    ALLOCATE(x(-nxguards:nx+nxguards), y(-nyguards:ny+nyguards), z(-nzguards:nz+nzguards))
-    ALLOCATE(x_global(-nxguards:nx_global+nxguards))
-    ALLOCATE(y_global(-nyguards:ny_global+nyguards))
-    ALLOCATE(z_global(-nzguards:nz_global+nzguards))
-
+    
+    
     !!! --- Set up global grid limits
     length_x = xmax - xmin
     dx = length_x / REAL(nx_global, num)
@@ -299,6 +294,27 @@ CONTAINS
     dz = length_z / REAL(nz_global, num)
     z_grid_min = zmin
     z_grid_max = zmax
+
+
+	CALL compute_simulation_axis()
+
+    CALL allocate_grid_quantities()
+    start_time = MPI_WTIME()
+
+  END SUBROUTINE mpi_initialise
+
+
+  SUBROUTINE compute_simulation_axis()
+  	IMPLICIT NONE
+  	INTEGER(idp) :: ix, iy, iz, iproc 
+  	IF (.NOT. l_axis_allocated) THEN 
+  		! Allocate arrays of axis
+    	ALLOCATE(x(-nxguards:nx+nxguards), y(-nyguards:ny+nyguards), z(-nzguards:nz+nzguards))
+    	ALLOCATE(x_global(-nxguards:nx_global+nxguards))
+    	ALLOCATE(y_global(-nyguards:ny_global+nyguards))
+    	ALLOCATE(z_global(-nzguards:nz_global+nzguards))
+    	l_axis_allocated=.TRUE.
+    ENDIF
 
     !!! --- Set up global grid
     DO ix = -nxguards, nx_global+nxguards
@@ -324,7 +340,7 @@ CONTAINS
         z_grid_mins(iproc) = z_global(cell_z_min(iproc))
         z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
     ENDDO
-
+    
     x_min_local = x_grid_mins(x_coords+1)
     x_max_local = x_grid_maxs(x_coords+1)
     y_min_local = y_grid_mins(y_coords+1)
@@ -338,11 +354,8 @@ CONTAINS
     x_grid_max_local=x_max_local
     y_grid_max_local=y_max_local
     z_grid_max_local=z_max_local
+  END SUBROUTINE
 
-    CALL allocate_grid_quantities()
-    start_time = MPI_WTIME()
-
-  END SUBROUTINE mpi_initialise
 
   SUBROUTINE allocate_grid_quantities()
       ! --- Allocate grid quantities
