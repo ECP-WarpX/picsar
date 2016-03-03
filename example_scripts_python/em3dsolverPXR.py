@@ -855,9 +855,20 @@ class EM3DPXR(EM3DFFT):
                 pxr.jz=jz_new 
             
                 # Update pxr new array dimensions 
+                print("old sizes ", pxr.rank,pxr.nx,pxr.ny,pxr.nz)
+                print("new sizes ", pxr.rank,nx_new,ny_new,nz_new)
+
                 pxr.nx=nx_new
                 pxr.ny=ny_new
                 pxr.nz=nz_new
+                pxr.nx_grid=pxr.nx+1
+                pxr.ny_grid=pxr.ny+1
+                pxr.nz_grid=pxr.nz+1
+                
+                # Test if domain has been resized - used for particle remaping 
+                isnewdom=sum(pxr.cell_x_min[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords])+sum(pxr.cell_x_max[pxr.x_coords]-pxr.new_cell_x_max[pxr.x_coords])+ \
+                sum(pxr.cell_y_min[pxr.y_coords]-pxr.new_cell_y_min[pxr.y_coords])+sum(pxr.cell_y_max[pxr.y_coords]-pxr.new_cell_y_max[pxr.y_coords])+ \
+                sum(pxr.cell_z_min[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords])+sum(pxr.cell_z_max[pxr.z_coords]-pxr.new_cell_z_max[pxr.z_coords]) 
                 
                 # Update new subdomain index arrays
                 pxr.cell_x_min=pxr.new_cell_x_min
@@ -874,8 +885,25 @@ class EM3DPXR(EM3DFFT):
                 pxr.nz_global_grid_max = pxr.cell_z_max[pxr.z_coords]+1
             
             
-                # Update new subdomain boundaries 
+                # Update global simulation axis  
                 pxr.compute_simulation_axis()
+                
+                print(pxr.rank,"old domain limits ")
+                print(pxr.rank,pxr.x_min_local,pxr.x_max_local,pxr.y_min_local,pxr.y_max_local,pxr.z_min_local,pxr.z_max_local)
+                
+                # Set new min and max for local domain 
+                pxr.x_min_local = pxr.x_grid_mins[pxr.x_coords]
+                pxr.x_max_local = pxr.x_grid_maxs[pxr.x_coords]
+                pxr.y_min_local = pxr.y_grid_mins[pxr.y_coords]
+                pxr.y_max_local = pxr.y_grid_maxs[pxr.y_coords]
+                pxr.z_min_local = pxr.z_grid_mins[pxr.z_coords]
+                pxr.z_max_local = pxr.z_grid_maxs[pxr.z_coords]
+                pxr.x_grid_min_local=pxr.x_min_local
+                pxr.x_grid_max_local=pxr.x_max_local
+                pxr.y_grid_min_local=pxr.y_min_local
+                pxr.y_grid_max_local=pxr.y_max_local
+                pxr.z_grid_min_local=pxr.z_min_local
+                pxr.z_grid_max_local=pxr.z_max_local
             
                 ##--- Alias WARP grid arrays on pxr new arrays 
                 self.nxlocal=pxr.nx
@@ -887,6 +915,7 @@ class EM3DPXR(EM3DFFT):
             	
                 # Reallocate warp arrays 
                 self.allocatefieldarrays()
+                
                 
                 # Alias newly allocated arrays on WARP structure 
                 self.fields.Ex=pxr.ex
@@ -917,8 +946,64 @@ class EM3DPXR(EM3DFFT):
                 em3d_exchange_e(self.block)
                 em3d_exchange_b(self.block)
                 
-                # Now exchanging particles 
-
+                print(pxr.rank,"new domain limits ")
+                print(pxr.x_min_local,pxr.x_max_local,pxr.y_min_local,pxr.y_max_local,pxr.z_min_local,pxr.z_max_local)
+                
+                # If domain has been resized, do a new tile split and exchange particles 
+                if (isnewdom != 0): 
+                    print("hello")
+					# Now exchanging particles 
+                    pxr.create_new_tile_split()
+				
+					# Alias PXR particle arrays to WARP pgroups 
+                    top.pgroup.npmax=0
+                    top.pgroup.ns=1
+                    top.pgroup.nps=0
+                    top.pgroup.gchange()
+		
+                    # --- mirror PXR tile structure in Warp with list of pgroups
+                    for i,s in enumerate(self.listofallspecies):
+						s.pgroups = []
+						s.jslist = [0]
+						for iz in range(1,self.ntilez+1):
+							xygroup=[]
+							for iy in range(1,self.ntiley+1):
+								xgroup=[]
+								for ix in range(1,self.ntilex+1):
+									pg = ParticleGroup()
+									xgroup.append(pg)
+									pxr.point_to_tile(i+1, ix, iy, iz)
+									pg.npmax = 0
+									pxr.partnmax
+									pg.ns=1
+									pg.npid=top.npid
+									pg.gchange()
+									pg.sq = s.charge
+									pg.sm = s.mass
+									pg.sw = 1.
+									pg.npmax = pxr.partnmax
+									pg.nps = pxr.partn
+									pg.ins[0] = 1
+									pg.sid[0]=0
+									pg.xp = pxr.partx
+									pg.yp = pxr.party
+									pg.zp = pxr.partz
+									pg.uxp = pxr.partux
+									pg.uyp = pxr.partuy
+									pg.uzp = pxr.partuz
+									pg.pid = fzeros([pg.npmax,top.npid])
+									pg.pid = pxr.pid
+									pg.gaminv = pxr.partgaminv
+									pg.ex = pxr.partex
+									pg.ey = pxr.partey
+									pg.ez = pxr.partez
+									pg.bx = pxr.partbx
+									pg.by = pxr.partby
+									pg.bz = pxr.partbz
+									pg.lebcancel_pusher=top.pgroup.lebcancel_pusher
+								xygroup.append(xgroup)
+							s.pgroups.append(xygroup)
+						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
     			
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'

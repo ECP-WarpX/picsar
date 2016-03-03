@@ -11,6 +11,7 @@ CONTAINS
 
 	SUBROUTINE set_tile_split()
 	IMPLICIT NONE 
+		! Set tile split for species arrays
 		CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
     									  x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
     								
@@ -21,7 +22,7 @@ CONTAINS
 
     !!! --- Set particle tile split in space
     SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
-    									  xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
+    									  xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal) !#do not parse 
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nspec, nxgrid, nygrid, nzgrid
         INTEGER(idp), INTENT(IN OUT) ::  ntx, nty, ntz
@@ -310,20 +311,33 @@ CONTAINS
 
     END SUBROUTINE allocate_tile_arrays
 
-    SUBROUTINE init_tile_arrays
+	SUBROUTINE init_tile_arrays()
+	IMPLICIT NONE 
+	
+		CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
+	
+	END SUBROUTINE init_tile_arrays
+
+
+
+
+    SUBROUTINE init_tile_arrays_for_species(nspec, species_array, aofgtiles, ntx, nty, ntz)
         IMPLICIT NONE
+        TYPE(grid_tile), DIMENSION(ntx,nty,ntz), INTENT(IN OUT) :: aofgtiles
+        TYPE(particle_species), DIMENSION(nspec), TARGET, INTENT(IN OUT) :: species_array
+        INTEGER(idp), INTENT(IN) :: nspec, ntx, nty, ntz
         INTEGER(idp) :: ispecies, ix, iy, iz
         INTEGER(idp) :: n1, n2, n3, ng1, ng2, ng3
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
         ! Allocate particle tile arrays 
-        DO ispecies=1,nspecies ! LOOP ON SPECIES
-            curr=>species_parray(ispecies)
+        DO ispecies=1,nspec ! LOOP ON SPECIES
+            curr=>species_array(ispecies)
             curr%species_npart=0
-            DO iz=1, ntilez! LOOP ON TILES
-                DO iy=1, ntiley
-                    DO ix=1,ntilex
+            DO iz=1, ntz! LOOP ON TILES
+                DO iy=1, nty
+                    DO ix=1,ntx
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         ! - Max size of particle arrays of current ile
                         n1=curr_tile%nx_cells_tile
@@ -331,17 +345,17 @@ CONTAINS
                         n3=curr_tile%nz_cells_tile
                         curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
                         curr_tile%np_tile(1)=0
-                        IF ((ix .GT. 1) .AND. (ix .LT. ntilex)) THEN
+                        IF ((ix .GT. 1) .AND. (ix .LT. ntx)) THEN
                         	curr_tile%nxg_tile=MAX(nox,2)
                         ELSE
                         	curr_tile%nxg_tile=nxjguards
                         END IF
-                        IF ((iy .GT. 1) .AND. (iy .LT. ntiley)) THEN
+                        IF ((iy .GT. 1) .AND. (iy .LT. nty)) THEN
                         	curr_tile%nyg_tile=MAX(noy,2)
                         ELSE
                         	curr_tile%nyg_tile=nyjguards
                         END IF
-                        IF ((iz .GT. 1) .AND. (iz .LT. ntilez)) THEN
+                        IF ((iz .GT. 1) .AND. (iz .LT. ntz)) THEN
                         	curr_tile%nzg_tile=MAX(noz,2)
                         ELSE
                         	curr_tile%nzg_tile=nzjguards
@@ -352,19 +366,20 @@ CONTAINS
                 END DO
             END DO
         END DO
+
         ! Init partile tile arrays in parallel - first touch policy
         ! - Init array of current tile
         ! - For some reason, don't set all values to zero?????
         ! - Have to set it manually for each element through
         ! - a DO loop see add_particle_at_tile
         !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-        !$OMP SHARED(species_parray, ntilex, ntiley, ntilez, nspecies) &
+        !$OMP SHARED(species_array, ntx, nty, ntz, nspec) &
         !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile)
-        DO iz=1, ntilez ! LOOP ON TILES
-            DO iy=1, ntiley
-                DO ix=1, ntilex
-                    DO ispecies=1, nspecies ! LOOP ON SPECIES
-                        curr=>species_parray(ispecies)
+        DO iz=1, ntz ! LOOP ON TILES
+            DO iy=1, nty
+                DO ix=1, ntx
+                    DO ispecies=1, nspec ! LOOP ON SPECIES
+                        curr=>species_array(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         !!! --- Init tile arrays
                         curr_tile%part_x=0.0_num
@@ -386,12 +401,11 @@ CONTAINS
             END DO
         END DO! END LOOP ON TILES
         !$OMP END PARALLEL DO
-        
         ! Allocate grid tile arrays
-        curr=>species_parray(1)
-		DO iz=1, ntilez ! LOOP ON TILES
-            DO iy=1, ntiley
-                DO ix=1, ntilex
+        curr=>species_array(1)
+		DO iz=1, ntz ! LOOP ON TILES
+            DO iy=1, nty
+                DO ix=1, ntx
                    		curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         ! - Max size of particle arrays of current ile
                         n1=curr_tile%nx_cells_tile
@@ -400,20 +414,20 @@ CONTAINS
                         ng1=curr_tile%nxg_tile
                         ng2=curr_tile%nyg_tile
                         ng3=curr_tile%nzg_tile
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%extile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%eytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%eztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%bxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%bytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%bztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%jxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%jytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%jztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-                        ALLOCATE(aofgrid_tiles(ix,iy,iz)%rhotile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%extile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%eytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%eztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%bxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%bytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%bztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%jxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%jytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%jztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+                        ALLOCATE(aofgtiles(ix,iy,iz)%rhotile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
                 END DO
             END DO
         END DO! END LOOP ON TILES
-    END SUBROUTINE init_tile_arrays
+    END SUBROUTINE init_tile_arrays_for_species
 
     SUBROUTINE load_particles
         IMPLICIT NONE

@@ -298,8 +298,25 @@ CONTAINS
 
 	CALL compute_simulation_axis()
 
+    x_min_local = x_grid_mins(x_coords+1)
+    x_max_local = x_grid_maxs(x_coords+1)
+    y_min_local = y_grid_mins(y_coords+1)
+    y_max_local = y_grid_maxs(y_coords+1)
+    z_min_local = z_grid_mins(z_coords+1)
+    z_max_local = z_grid_maxs(z_coords+1)
+
+    x_grid_min_local=x_min_local
+    y_grid_min_local=y_min_local
+    z_grid_min_local=z_min_local
+    x_grid_max_local=x_max_local
+    y_grid_max_local=y_max_local
+    z_grid_max_local=z_max_local
+
     CALL allocate_grid_quantities()
     start_time = MPI_WTIME()
+    
+    
+    
 
   END SUBROUTINE mpi_initialise
 
@@ -341,19 +358,6 @@ CONTAINS
         z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
     ENDDO
     
-    x_min_local = x_grid_mins(x_coords+1)
-    x_max_local = x_grid_maxs(x_coords+1)
-    y_min_local = y_grid_mins(y_coords+1)
-    y_max_local = y_grid_maxs(y_coords+1)
-    z_min_local = z_grid_mins(z_coords+1)
-    z_max_local = z_grid_maxs(z_coords+1)
-
-    x_grid_min_local=x_min_local
-    y_grid_min_local=y_min_local
-    z_grid_min_local=z_min_local
-    x_grid_max_local=x_max_local
-    y_grid_max_local=y_max_local
-    z_grid_max_local=z_max_local
   END SUBROUTINE
 
 

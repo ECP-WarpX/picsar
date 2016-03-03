@@ -679,28 +679,132 @@ SUBROUTINE get_projected_load_on_z(nzg,load_on_z,time_per_part,time_per_cell)
 END SUBROUTINE get_projected_load_on_z
 
 !This subroutine create new array_of_tiles for each species 
-! SUBROUTINE create_new_tile_split()
-! IMPLICIT NONE 
-! TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE, TARGET :: new_array_of_tiles 
-! TYPE(particle_species), POINTER :: currsp
-! TYPE(particle_tile), POINTER :: currtile 
-! INTEGER(idp) :: ix, iy, iz 
-! 
-! DO ispecies=1,nspecies
-!     currsp=>species_parray(ispecies)
-!     ! ALLOCATE NEW ARRAY OF TILES 
-!     ALLOCATE(new_array_of_tiles
-!     DO iz=1,ntilez
-!         DO iy=1,ntiley
-!             DO ix=1,ntilex 
-!                 curr_tile=>currsp%array_of_tiles(ix,iy,iz)
-!                 count=curr_tile
-!             END DO
-!         END DO
-!     END DO 
-! END DO
-! 
-! END SUBROUTINE 
+SUBROUTINE create_new_tile_split()
+IMPLICIT NONE 
+TYPE(particle_species), DIMENSION(:), ALLOCATABLE, TARGET :: new_species_parray  
+TYPE(particle_species), POINTER :: currsp, currsp_new
+TYPE(particle_tile), POINTER :: curr_tile
+INTEGER(idp)  :: nxmin,nxmax,nymin,nymax,nzmin,nzmax,&
+                            oxmin,oxmax,oymin,oymax,ozmin,ozmax
+INTEGER(idp) :: ix, iy, iz, ip, indx, indy, indz, ispecies, count
+INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new
+
+ 
+! Udpate optimal number of tiles 
+ntilex_new = MAX(1,nx/10)
+ntiley_new = MAX(1,ny/10)
+ntilez_new = MAX(1,nz/10)
+
+! Allocate new species array 
+ALLOCATE(new_species_parray(nspecies))
+
+! Copy properties of each species
+DO ispecies=1,nspecies 
+    currsp=>species_parray(ispecies)
+    currsp_new=>new_species_parray(ispecies)
+    currsp_new%charge=currsp%charge
+    currsp_new%mass=currsp%mass
+    currsp_new%x_min=currsp%x_min
+    currsp_new%x_max=currsp%x_max
+    currsp_new%y_min=currsp%y_min
+    currsp_new%y_max=currsp%y_max
+    currsp_new%z_min=currsp%z_min
+    currsp_new%z_max=currsp%z_max
+    currsp_new%vth_x=currsp%vth_x
+    currsp_new%vth_y=currsp%vth_y
+    currsp_new%vth_z=currsp%vth_z
+    currsp_new%vdrift_x=currsp%vdrift_x
+    currsp_new%vdrift_y=currsp%vdrift_y
+    currsp_new%vdrift_z=currsp%vdrift_z
+    currsp_new%nppcell=currsp%nppcell
+    currsp_new%species_npart=currsp%species_npart
+END DO
+
+
+CALL set_tile_split_for_species(new_species_parray,nspecies,ntilex_new,ntiley_new,ntilez_new,nx_grid,ny_grid,nz_grid, &
+                                x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+
+                              
+                                
+! Deallocate former grid tile array/ ALLOCATE new one 
+DEALLOCATE(aofgrid_tiles)
+ALLOCATE(aofgrid_tiles(ntilex_new,ntiley_new,ntilez_new))
+
+! Init new tile arrays of new species array 
+CALL init_tile_arrays_for_species(nspecies, new_species_parray, aofgrid_tiles, ntilex_new, ntiley_new, ntilez_new)
+
+
+! Copy particles from former tiles in first tile of new species array
+DO ispecies=1,nspecies
+    currsp=>species_parray(ispecies)
+    currsp_new=>new_species_parray(ispecies)
+    ! Get first tiles dimensions (may be different from last tile)
+    nx0_grid_tile = currsp_new%array_of_tiles(1,1,1)%nx_grid_tile
+    ny0_grid_tile = currsp_new%array_of_tiles(1,1,1)%ny_grid_tile
+    nz0_grid_tile = currsp_new%array_of_tiles(1,1,1)%nz_grid_tile
+    DO iz=1,ntilez
+        DO iy=1,ntiley
+            DO ix=1,ntilex 
+                curr_tile=>currsp%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                DO ip=1,count
+                    partx=curr_tile%part_x(ip)
+                    party=curr_tile%part_y(ip)
+                    partz=curr_tile%part_z(ip)
+                    partux=curr_tile%part_ux(ip)
+                    partuy=curr_tile%part_uy(ip)
+                    partuz=curr_tile%part_uz(ip)
+                    gaminv=curr_tile%part_gaminv(ip)
+                    partw=curr_tile%pid(ip,wpid)
+                    
+                    ! CASE 1: particle outside MPI domain temporarily put it 
+                    ! in the first tile of new species array
+                    IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local) .OR. &
+                        (party .LT. y_min_local) .OR. (party .GE. y_max_local) .OR. &
+                        (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN 
+                        CALL add_particle_at_tile(currsp_new, 1_idp,1_idp,1_idp, &
+                             partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                    ! CASE 2: particle is in the new domain just add it to proper tile of new species array
+                    ELSE 
+                        indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex_new)
+                        indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley_new)
+                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez_new)
+                        CALL add_particle_at_tile(currsp_new, indx,indy,indz, &
+                             partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                    
+                    ENDIF 
+                    currsp_new%species_npart=currsp_new%species_npart+1
+                END DO
+            END DO
+        END DO
+    END DO 
+END DO
+
+
+! Make former species array point to new array 
+! Notice that there is no need of deallocating encapsulated allocatables
+! Fortran standard requires the compiler to automatically do it 
+! Notice that his Would be different for array pointers 
+
+DEALLOCATE(species_parray)
+species_parray=>new_species_parray
+
+
+! Update tile sizes 
+ntilex=ntilex_new
+ntiley=ntiley_new
+ntilez=ntilez_new
+
+! Apply MPI particle boundary conditions
+! WARNING: for the moment this only works if 
+! only one domain is crossed 
+PRINT *, rank, "#1"
+CALL particle_bcs_mpi_blocking()
+PRINT *, rank, "#2"
+
+END SUBROUTINE 
 
 
 

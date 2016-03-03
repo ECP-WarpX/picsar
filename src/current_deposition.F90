@@ -82,6 +82,9 @@ DO iz=1,ntilez
                 	isdeposited=.TRUE.
                 ENDIF 
                 ! Depose current in jtile
+                IF (MAXVAL(curr_tile%part_z(1:count)) .GT. (curr_tile%z_grid_tile_min+nzc*dzz)) THEN 
+                	PRINT *, "OUPS", ix,iy,iz,MAXVAL(curr_tile%part_z),curr_tile%z_grid_tile_min+nzc*dzz
+                ENDIF
                 CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                              &
                 currg%jztile,count,                              									       &
                 curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
