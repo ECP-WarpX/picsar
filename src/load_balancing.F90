@@ -700,7 +700,7 @@ ntilez_new = MAX(1,nz/10)
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
 
-! Copy properties of each species
+! Copy properties of each species from old array to new array 
 DO ispecies=1,nspecies 
     currsp=>species_parray(ispecies)
     currsp_new=>new_species_parray(ispecies)
@@ -719,7 +719,6 @@ DO ispecies=1,nspecies
     currsp_new%vdrift_y=currsp%vdrift_y
     currsp_new%vdrift_z=currsp%vdrift_z
     currsp_new%nppcell=currsp%nppcell
-    currsp_new%species_npart=currsp%species_npart
 END DO
 
 
@@ -783,26 +782,87 @@ DO ispecies=1,nspecies
 END DO
 
 
-! Make former species array point to new array 
-! Notice that there is no need of deallocating encapsulated allocatables
-! Fortran standard requires the compiler to automatically do it 
-! Notice that his Would be different for array pointers 
-
-DEALLOCATE(species_parray)
-species_parray=>new_species_parray
-
-
 ! Update tile sizes 
 ntilex=ntilex_new
 ntiley=ntiley_new
 ntilez=ntilez_new
 
+
+! Deallocate old array 
+DEALLOCATE(species_parray)
+
+! Reallocate with new dimensions 
+ALLOCATE(species_parray(nspecies))
+
+! Copy species properties 
+DO ispecies=1,nspecies 
+    currsp=>species_parray(ispecies)
+    currsp_new=>new_species_parray(ispecies)
+    currsp%charge=currsp_new%charge
+    currsp%mass=currsp_new%mass
+    currsp%x_min=currsp_new%x_min
+    currsp%x_max=currsp_new%x_max
+    currsp%y_min=currsp_new%y_min
+    currsp%y_max=currsp_new%y_max
+    currsp%z_min=currsp_new%z_min
+    currsp%z_max=currsp_new%z_max
+    currsp%vth_x=currsp_new%vth_x
+    currsp%vth_y=currsp_new%vth_y
+    currsp%vth_z=currsp_new%vth_z
+    currsp%vdrift_x=currsp_new%vdrift_x
+    currsp%vdrift_y=currsp_new%vdrift_y
+    currsp%vdrift_z=currsp_new%vdrift_z
+    currsp%nppcell=currsp_new%nppcell
+END DO
+
+! Set tile split for species_parray
+CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
+                                x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+                                
+DEALLOCATE(aofgrid_tiles)
+ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
+
+CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
+
+
+! Copy particles 
+! Copy particles from former tiles in first tile of new species array
+DO ispecies=1,nspecies
+    currsp=>species_parray(ispecies)
+    currsp_new=>new_species_parray(ispecies)
+    DO iz=1,ntilez
+        DO iy=1,ntiley
+            DO ix=1,ntilex 
+                curr_tile=>currsp_new%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                DO ip=1,count
+                    partx=curr_tile%part_x(ip)
+                    party=curr_tile%part_y(ip)
+                    partz=curr_tile%part_z(ip)
+                    partux=curr_tile%part_ux(ip)
+                    partuy=curr_tile%part_uy(ip)
+                    partuz=curr_tile%part_uz(ip)
+                    gaminv=curr_tile%part_gaminv(ip)
+                    partw=curr_tile%pid(ip,wpid)
+                    CALL add_particle_at_tile(currsp, indx,indy,indz, &
+                         partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                    
+                    currsp%species_npart=currsp%species_npart+1
+                END DO
+            END DO
+        END DO
+    END DO 
+END DO
+
+!Deallocate new_species_parray 
+DEALLOCATE(new_species_parray)
+
+
+
 ! Apply MPI particle boundary conditions
 ! WARNING: for the moment this only works if 
 ! only one domain is crossed 
-PRINT *, rank, "#1"
 CALL particle_bcs_mpi_blocking()
-PRINT *, rank, "#2"
 
 END SUBROUTINE 
 

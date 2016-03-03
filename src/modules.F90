@@ -156,7 +156,7 @@ USE particle_properties
 USE grid_tilemodule
 
 ! Array of  particle species objects
-TYPE(particle_species), POINTER, DIMENSION(:) :: species_parray
+TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:) :: species_parray
 
 END MODULE particles
 

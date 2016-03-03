@@ -954,7 +954,10 @@ class EM3DPXR(EM3DFFT):
                     print("hello")
 					# Now exchanging particles 
                     pxr.create_new_tile_split()
-				
+                    self.ntilex = pxr.ntilex 
+                    self.ntiley = pxr.ntiley 
+                    self.ntilez = pxr.ntilez 
+                    
 					# Alias PXR particle arrays to WARP pgroups 
                     top.pgroup.npmax=0
                     top.pgroup.ns=1
