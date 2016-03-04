@@ -250,7 +250,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     LOGICAL(idp) :: l_is_intersection
     INTEGER(isp), DIMENSION(0:nprocs-1) :: sendtype, recvtype 
     INTEGER(isp), DIMENSION(0:2_isp*nprocs-1) :: requests 
-    INTEGER(isp) :: mpitag, proc_rank,  i, nsreq, nrreq, error
+    INTEGER(isp) :: mpitag, proc_rank,  i, nsreq, nrreq, error, count
     INTEGER(isp), PARAMETER :: nd=3
     INTEGER(isp), DIMENSION(nd) :: nsub, nglob, nglob_old, start
     
@@ -265,12 +265,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     nglob_old(1) = nxold+2*nxg+1
     nglob_old(2) = nyold+2*nyg+1
     nglob_old(3) = nzold+2*nzg+1
-    
-    ALLOCATE(temp_send(nglob_old(1),nglob_old(2),nglob_old(3)))
-    ALLOCATE(temp_recv(nglob(1),nglob(2),nglob(3)))
-    
-    temp_send=10000000000000000.
-    temp_recv=0.
     
     ! ------ DATA TO BE RECEIVED BY OTHER PROCS 
     ! Computes intersection between new proc limit and old adjacent procs limits 
@@ -334,6 +328,8 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             PRINT *, "RECVTYPE TO",rank,"FROM",i,"nglob,nsub,start,", nglob,nsub,start
             CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob, nsub, start, MPI_ORDER_FORTRAN, &
                                          MPI_REAL8, recvtype(i), ierrcode)
+            ! COMMIT DATA TYPE (Really important otherwise -> MPI_ERR_TYPE or Wrong results)
+            CALL MPI_TYPE_COMMIT(recvtype(i), ierrcode)
         ENDIF 
     END DO   
     
@@ -367,11 +363,12 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             ! Arrays assumed to start at index 0 in MPI_TYPE_CREATE
             start(1) = ix3min-ix1oldip+1-1+(nxg) 
             start(2) = iy3min-iy1oldip+1-1+(nyg)
-            start(3) = iz3min-iz1oldip+1-1+(nzg )
+            start(3) = iz3min-iz1oldip+1-1+(nzg)
             PRINT *, "SENDTYPE FROM",rank,"TO",i,"nglob_old,nsub,start,", nglob_old,nsub,start
             CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob_old, nsub, start, MPI_ORDER_FORTRAN, &
                                          MPI_REAL8, sendtype(i), ierrcode)
-
+            ! COMMIT DATA TYPE (Really important otherwise -> MPI_ERR_TYPE or Wrong results)
+            CALL MPI_TYPE_COMMIT(sendtype(i), ierrcode)
         ENDIF 
     END DO   
     
@@ -384,7 +381,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             PRINT *, "PROC" ,rank," HELLO REICEIVING FROM", i
             !CALL MPI_IRECV(emfield_new(-nxg:,-nyg:,-nzg:), 1_isp,  recvtype(i), i, mpitag,    &
             !                communicator, requests(nrreq), ierrcode)
-            CALL MPI_IRECV(temp_recv, 1_isp,  recvtype(i), i, mpitag,    &
+            CALL MPI_IRECV(emfield_new, 1_isp,  recvtype(i), i, mpitag,    &
                             communicator, requests(nrreq), ierrcode)
             nrreq=nrreq+1
         ENDIF
@@ -399,16 +396,16 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             !--- Post ISEND for this area 
             !CALL MPI_ISEND(emfield_old(-nxg:,-nyg:,-nzg:), 1_isp,  sendtype(i), i, mpitag,    &
              !               communicator, requests(nrreq+nsreq), ierrcode)
-            CALL MPI_ISEND(temp_send, 1_isp,  sendtype(i), i, mpitag,    &
+            CALL MPI_ISEND(emfield_old, 1_isp,  sendtype(i), i, mpitag,    &
                            communicator, requests(nrreq+nsreq), ierrcode)
             nsreq=nsreq+1
         ENDIF
     END DO 
     
-    emfield_new=emfield_new+temp_recv
-    
    ! DO SOME SYNC BEFORE GOING ON  
-    CALL MPI_WAITALL(nsreq+nrreq, requests, MPI_STATUSES_IGNORE, errcode)
+    count=nsreq+nrreq-1_isp
+    PRINT *, rank, "count requests", count
+    CALL MPI_WAITALL(count,requests(0:count-1), MPI_STATUSES_IGNORE, errcode)
     
     PRINT *, rank,"MAXVAL AFTER SEND/RECV", MAXVAL(emfield_new)
                             
@@ -417,7 +414,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
         IF (sendtype(i) .NE. 0) CALL MPI_TYPE_FREE(sendtype(i), ierrcode)
         IF (recvtype(i) .NE. 0) CALL MPI_TYPE_FREE(recvtype(i), ierrcode)
     END DO 
-    DEALLOCATE(temp_send,temp_recv)
+
 END SUBROUTINE remap_em_3Dfields
 
 

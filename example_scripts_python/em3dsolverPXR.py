@@ -727,7 +727,7 @@ class EM3DPXR(EM3DFFT):
             pxr.get_min_time_per_it()
             imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100. 
             print("imbalance %=", imbalance)
-            if ((imbalance>4.) & (self.dload_balancing) & (top.it==100)): 
+            if ((imbalance>4.) & (self.dload_balancing) & (top.it==10)): 
                 self.loadbalance(imbalance)
 
         # --- call afterstep functions
@@ -910,43 +910,42 @@ class EM3DPXR(EM3DFFT):
                 self.nxlocal=pxr.nx
                 self.nylocal=pxr.ny
                 self.nzlocal=pxr.nz
-            	self.xmminlocal = pxr.x_min_local
-            	self.ymminlocal = pxr.y_min_local
-            	self.zmminlocal = pxr.z_min_local
-            	
+             	self.xmminlocal = pxr.x_min_local
+             	self.ymminlocal = pxr.y_min_local
+             	self.zmminlocal = pxr.z_min_local
+                self.fields.xmin = pxr.x_min_local
+                self.fields.xmax = pxr.x_max_local
+                self.fields.ymin = pxr.y_min_local
+                self.fields.ymax = pxr.y_max_local
+                self.fields.zmin = pxr.z_min_local
+                self.fields.zmax = pxr.z_max_local            	
 
                 # Reallocate warp arrays 
                 self.allocatefieldarrays()
                 
-                
                 # Alias newly allocated arrays on WARP structure 
-                self.fields.Ex=pxr.ex
-                self.fields.Ey=pxr.ey
-                self.fields.Ez=pxr.ez
-                self.fields.Bx=pxr.bx
-                self.fields.By=pxr.by
-                self.fields.Bz=pxr.bz
-                self.fields.Exp=pxr.ex
-                self.fields.Eyp=pxr.ey
-                self.fields.Ezp=pxr.ez
-                self.fields.Bxp=pxr.bx
-                self.fields.Byp=pxr.by
-                self.fields.Bzp=pxr.bz
+#                 self.fields.Ex=pxr.ex
+#                 self.fields.Ey=pxr.ey
+#                 self.fields.Ez=pxr.ez
+#                 self.fields.Bx=pxr.bx
+#                 self.fields.By=pxr.by
+#                 self.fields.Bz=pxr.bz
+#                 self.fields.Exp=pxr.ex
+#                 self.fields.Eyp=pxr.ey
+#                 self.fields.Ezp=pxr.ez
+#                 self.fields.Bxp=pxr.bx
+#                 self.fields.Byp=pxr.by
+#                 self.fields.Bzp=pxr.bz
 #                 self.fields.Exp[...]=1e22*pxr.rank
 #                 self.fields.Eyp[...]=1e22*pxr.rank
 #                 self.fields.Ezp[...]=1e22*pxr.rank
 #                 self.fields.Bxp[...]=1e22*pxr.rank
 #                 self.fields.Byp[...]=1e22*pxr.rank
 #                 self.fields.Bzp[...]=1e22*pxr.rank
-                self.fields.Jx=pxr.jx
-                self.fields.Jy=pxr.jy
-                self.fields.Jz=pxr.jz
-                self.fields.xmin = pxr.x_min_local
-                self.fields.xmax = pxr.x_max_local
-                self.fields.ymin = pxr.y_min_local
-                self.fields.ymax = pxr.y_max_local
-                self.fields.zmin = pxr.z_min_local
-                self.fields.zmax = pxr.z_max_local
+#                 self.fields.Jx=pxr.jx
+#                 self.fields.Jy=pxr.jy
+#                 self.fields.Jz=pxr.jz
+
                 
                 # Udpate domain decomposition in WARP 
 #             	top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
@@ -974,8 +973,8 @@ class EM3DPXR(EM3DFFT):
 #             	top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
 #             	top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
 #             	
-                em3d_exchange_e(self.block)
-                em3d_exchange_b(self.block)
+#                em3d_exchange_e(self.block)
+#                em3d_exchange_b(self.block)
                 
                 print(pxr.rank,"new domain limits ")
                 print(pxr.x_min_local,pxr.x_max_local,pxr.y_min_local,pxr.y_max_local,pxr.z_min_local,pxr.z_max_local)

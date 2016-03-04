@@ -537,7 +537,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   #tdeb=MPI.Wtime()
-  em.step(100,1,1)
+  em.step(10,1,1)
   #tend=MPI.Wtime()
   #print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
