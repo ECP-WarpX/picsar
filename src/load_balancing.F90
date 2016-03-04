@@ -210,7 +210,6 @@ SUBROUTINE mpi_remap_3D_field_component(field_new,nx_new,ny_new,nz_new,         
                            field_new,nx_new,ny_new,nz_new,nxg,nyg,nzg,                                &
                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,                                 &
                            iproc,np,comm,errcode)
-
 END SUBROUTINE mpi_remap_3D_field_component
 
 
@@ -239,8 +238,10 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     INTEGER(isp), INTENT(IN OUT) ::  ierrcode
     REAL(num), INTENT(IN), DIMENSION(-nxg:nxold+nxg,-nyg:nyold+nyg,-nzg:nzold+nzg) :: emfield_old
     REAL(num), INTENT(IN  OUT), DIMENSION(-nxg:nxnew+nxg,-nyg:nynew+nyg,-nzg:nznew+nzg) :: emfield_new
+    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp_send, temp_recv
     INTEGER(idp), INTENT(IN), DIMENSION(0:nprocs-1) :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
     INTEGER(idp), INTENT(IN), DIMENSION(0:nprocs-1) :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
+    INTEGER(idp) :: ix, iy, iz, nsubx, nsuby, nsubz
     INTEGER(idp) :: ix3min,ix3max,iy3min,iy3max,iz3min,iz3max
     INTEGER(idp) :: ix1newip, ix2newip, iy1newip, iy2newip, iz1newip, iz2newip
     INTEGER(idp) :: ix1oldip, ix2oldip, iy1oldip, iy2oldip, iz1oldip, iz2oldip
@@ -251,12 +252,25 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     INTEGER(isp), DIMENSION(0:2_isp*nprocs-1) :: requests 
     INTEGER(isp) :: mpitag, proc_rank,  i, nsreq, nrreq, error
     INTEGER(isp), PARAMETER :: nd=3
-    INTEGER(isp), DIMENSION(nd) :: nsub, nglob, start
+    INTEGER(isp), DIMENSION(nd) :: nsub, nglob, nglob_old, start
     
+        PRINT *, rank,"MAXVAL BEFORE SEND/RECV", MAXVAL(emfield_new)
     
-    nglob(1) = nxnew
-    nglob(2) = nynew
-    nglob(3) = nznew
+    sendtype=0_isp
+    recvtype=0_isp
+    
+    nglob(1) = nxnew+2*nxg+1
+    nglob(2) = nynew+2*nyg+1
+    nglob(3) = nznew+2*nzg+1
+    nglob_old(1) = nxold+2*nxg+1
+    nglob_old(2) = nyold+2*nyg+1
+    nglob_old(3) = nzold+2*nzg+1
+    
+    ALLOCATE(temp_send(nglob_old(1),nglob_old(2),nglob_old(3)))
+    ALLOCATE(temp_recv(nglob(1),nglob(2),nglob(3)))
+    
+    temp_send=10000000000000000.
+    temp_recv=0.
     
     ! ------ DATA TO BE RECEIVED BY OTHER PROCS 
     ! Computes intersection between new proc limit and old adjacent procs limits 
@@ -267,7 +281,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     iy2newip = iy2new(iproc)
     iz1newip = iz1new(iproc)
     iz2newip = iz2new(iproc)
-    nrreq=0
     DO i=0, nprocs-1 
         CALL get_3Dintersection(ix1newip, ix2newip, iy1newip, iy2newip,         &
                                 iz1newip, iz2newip,                             & 
@@ -275,42 +288,52 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                                 iz1old(i), iz2old(i),                           & 
                                 ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
                                 l_is_intersection)
-                                
         ! If i == iproc just do a copy of emfield_old in emfield_new
         IF ((i .EQ. iproc) .AND. l_is_intersection) THEN  
             ixmin_old = ix3min - ix1old(i)  ; ixmax_old = ix3max - ix1old(i) 
             iymin_old = iy3min - iy1old(i)  ; iymax_old = iy3max - iy1old(i)  
             izmin_old = iz3min - iz1old(i)  ; izmax_old = iz3max - iz1old(i)  
             ixmin_new = ix3min - ix1newip  ; ixmax_new = ix3max - ix1newip 
-            iymin_new = iy3min - ix1newip  ; iymax_new = iy3max - iy1newip 
+            iymin_new = iy3min - iy1newip  ; iymax_new = iy3max - iy1newip 
             izmin_new = iz3min - iz1newip ; izmax_new = iz3max - iz1newip 
-            !PRINT *, "ixmin_old,iymin_old,izmin_old,ixmin_new,iymin_new,izmin_new", &
-            !ixmin_old,iymin_old,izmin_old,ixmin_new,iymin_new,izmin_new
-            !PRINT *, "ixmax_old,iymax_old,izmax_old,ixmax_new,iymax_new,izmax_new", &
-            !ixmax_old,iymax_old,izmax_old,ixmax_new,iymax_new,izmax_new
-            emfield_new(ixmin_new:ixmax_new,iymin_new:iymax_new,izmin_new:izmax_new) = &
-            emfield_old(ixmin_old:ixmax_old,iymin_old:iymax_old,izmin_old:izmax_old)
+            !PRINT *, rank,"ixmin_old,iymin_old,izmin_old", &
+            !ixmin_old,iymin_old,izmin_old
+            !PRINT *, rank,"ixmin_new,iymin_new,izmin_new", &
+            !ixmin_new,iymin_new,izmin_new
+            !PRINT *, rank,"ixmax_old,iymax_old,izmax_old", &
+            !ixmax_old,iymax_old,izmax_old
+            !PRINT *, rank,"ixmax_new,iymax_new,izmax_new", &
+            !ixmax_new,iymax_new,izmax_new
+            !emfield_new(ixmin_new:ixmax_new,iymin_new:iymax_new,izmin_new:izmax_new) = &
+            !emfield_old(ixmin_old:ixmax_old,iymin_old:iymax_old,izmin_old:izmax_old)
+            nsubx=ixmax_new-ixmin_new+1
+            nsuby=iymax_new-iymin_new+1
+            nsubz=izmax_new-izmin_new+1
+            DO iz=1,nsubz
+                DO iy=1,nsuby
+                    DO ix=1,nsubx
+                        emfield_new(ixmin_new+ix,iymin_new+iy,izmin_new+iz)= &
+                        emfield_old(ixmin_old+ix,iymin_old+iy,izmin_old+iz)
+                    END DO
+                END DO 
+            END DO 
             CYCLE
         END IF
                                 
         ! Found intersection area between new proc and old adjacent proc 
-        ! Post IRECV  
+        ! Creates RECV TYPE FOR THIS Volume  
         IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
             !--- Create recv type 
             nsub(1)  = ix3max-ix3min+1
             nsub(2)  = iy3max-iy3min+1
             nsub(3)  = iz3max-iz3min+1
             ! Arrays assumed to start at index 0 in MPI_TYPE_CREATE
-            start(1) = ix3min-ix1new(iproc)+1-1+nxg 
-            start(2) = iy3min-iy1new(iproc)+1-1+nyg
-            start(3) = iz3min-iz1new(iproc)+1-1+nzg
+            start(1) = ix3min-ix1new(iproc)+1-1+(nxg) 
+            start(2) = iy3min-iy1new(iproc)+1-1+(nyg)
+            start(3) = iz3min-iz1new(iproc)+1-1+(nzg)
+            PRINT *, "RECVTYPE TO",rank,"FROM",i,"nglob,nsub,start,", nglob,nsub,start
             CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob, nsub, start, MPI_ORDER_FORTRAN, &
-                                         MPI_REAL8, recvtype(nrreq), ierrcode)
-            !--- Post IRECV for this area 
-            CALL MPI_IRECV(emfield_new, 1_isp,  recvtype(nrreq), i, mpitag,    &
-                            communicator, requests(nrreq), ierrcode)
-            nrreq=nrreq+1
-            !PRINT *, "PROC Number ", iproc, "POSTED AN IRECV COMING FROM PROC Number", i  
+                                         MPI_REAL8, recvtype(i), ierrcode)
         ENDIF 
     END DO   
     
@@ -323,7 +346,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     iy2oldip = iy2old(iproc)
     iz1oldip = iz1old(iproc)
     iz2oldip = iz2old(iproc)
-    nsreq=0
     DO i=0, nprocs-1 
         CALL get_3Dintersection(ix1oldip, ix2oldip, iy1oldip, iy2oldip,         &
                                 iz1oldip, iz2oldip,                             & 
@@ -336,34 +358,66 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
         IF (i .EQ. iproc) CYCLE 
                                 
         ! Found intersection area between old proc and new adjacent procs
-        ! Post ISEND  
+        ! Create sendtype for this volume 
         IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
             !--- Create send type 
             nsub(1)  = ix3max-ix3min+1
             nsub(2)  = iy3max-iy3min+1
             nsub(3)  = iz3max-iz3min+1
             ! Arrays assumed to start at index 0 in MPI_TYPE_CREATE
-            start(1) = ix3min-ix1oldip+1-1+nxg 
-            start(2) = iy3min-iy1oldip+1-1+nyg
-            start(3) = iz3min-iz1oldip+1-1+nzg
-            CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob, nsub, start, MPI_ORDER_FORTRAN, &
-                                         MPI_REAL8, sendtype(nsreq), ierrcode)
-            !--- Post IRECV for this area 
-            CALL MPI_ISEND(emfield_old, 1_isp,  sendtype(nsreq), i, mpitag,    &
-                            communicator, requests(nrreq+nsreq), ierrcode)
-            nsreq=nsreq+1
-            !PRINT *, "PROC Number ", iproc, "POSTED AN ISEND TO PROC Number", i  
+            start(1) = ix3min-ix1oldip+1-1+(nxg) 
+            start(2) = iy3min-iy1oldip+1-1+(nyg)
+            start(3) = iz3min-iz1oldip+1-1+(nzg )
+            PRINT *, "SENDTYPE FROM",rank,"TO",i,"nglob_old,nsub,start,", nglob_old,nsub,start
+            CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob_old, nsub, start, MPI_ORDER_FORTRAN, &
+                                         MPI_REAL8, sendtype(i), ierrcode)
+
         ENDIF 
     END DO   
     
-    ! DO SOME SYNC BEFORE GOING ON  
+    
+    ! POST THE IRECVs if any
+    nrreq=0; 
+    DO i=0, nprocs-1
+        IF (recvtype(i) .NE. 0) THEN 
+            !--- Post IRECV for this area 
+            PRINT *, "PROC" ,rank," HELLO REICEIVING FROM", i
+            !CALL MPI_IRECV(emfield_new(-nxg:,-nyg:,-nzg:), 1_isp,  recvtype(i), i, mpitag,    &
+            !                communicator, requests(nrreq), ierrcode)
+            CALL MPI_IRECV(temp_recv, 1_isp,  recvtype(i), i, mpitag,    &
+                            communicator, requests(nrreq), ierrcode)
+            nrreq=nrreq+1
+        ENDIF
+    END DO 
+    
+    !POST THE ISENDs if any
+    nsreq=0;
+    DO i=0, nprocs-1
+        IF (sendtype(i) .NE. 0) THEN 
+            PRINT *, "PROC" ,rank," SENDING TO ", i
+            nsreq=0
+            !--- Post ISEND for this area 
+            !CALL MPI_ISEND(emfield_old(-nxg:,-nyg:,-nzg:), 1_isp,  sendtype(i), i, mpitag,    &
+             !               communicator, requests(nrreq+nsreq), ierrcode)
+            CALL MPI_ISEND(temp_send, 1_isp,  sendtype(i), i, mpitag,    &
+                           communicator, requests(nrreq+nsreq), ierrcode)
+            nsreq=nsreq+1
+        ENDIF
+    END DO 
+    
+    emfield_new=emfield_new+temp_recv
+    
+   ! DO SOME SYNC BEFORE GOING ON  
     CALL MPI_WAITALL(nsreq+nrreq, requests, MPI_STATUSES_IGNORE, errcode)
     
+    PRINT *, rank,"MAXVAL AFTER SEND/RECV", MAXVAL(emfield_new)
+                            
     ! FREE ALL DATATYPES 
-    DO i=0,nsreq
-        CALL MPI_TYPE_FREE(sendtype(i), ierrcode)
-        CALL MPI_TYPE_FREE(recvtype(i), ierrcode)
+    DO i=0,nprocs-1
+        IF (sendtype(i) .NE. 0) CALL MPI_TYPE_FREE(sendtype(i), ierrcode)
+        IF (recvtype(i) .NE. 0) CALL MPI_TYPE_FREE(recvtype(i), ierrcode)
     END DO 
+    DEALLOCATE(temp_send,temp_recv)
 END SUBROUTINE remap_em_3Dfields
 
 

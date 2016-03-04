@@ -85,7 +85,7 @@ l_gist             = 1      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
 restart_dump       = ""     # dump file to restart from (works?)
 l_moving_window    = 1      # on/off (Galilean) moving window
-l_plasma           = 1    # on/off plasma
+l_plasma           = 0    # on/off plasma
 l_usesavedist      = 0      # if on, uses dump of beam particles distribution
 l_smooth           = 1      # on/off smoothing of current density
 l_laser            = 1      # on/off laser
@@ -280,18 +280,27 @@ else:
 #-------------------------------------------------------------------------------
 # User defined decomp goes here 
 if l_pxr: 
-    top.fsdecomp.nxprocs=1
-    top.fsdecomp.nyprocs=1
-    top.fsdecomp.nzprocs=2
-    top.ppdecomp.nxprocs=1
-    top.ppdecomp.nyprocs=1
-    top.ppdecomp.nzprocs=2
-    top.fsdecomp.nx=[107]
+    top.nxprocs=2
+    top.nyprocs=1
+    top.nzprocs=1
+    top.fsdecomp.nxprocs=top.nxprocs
+    top.fsdecomp.nyprocs=top.nyprocs
+    top.fsdecomp.nzprocs=top.nzprocs
+    top.ppdecomp.nxprocs=top.nxprocs
+    top.ppdecomp.nyprocs=top.nyprocs
+    top.ppdecomp.nzprocs=top.nzprocs
+    top.fsdecomp.nx=[20,87]
+    #top.fsdecomp.nx=[107]
+    #top.fsdecomp.ny=[10,97]
     top.fsdecomp.ny=[107]
-    top.fsdecomp.nz=[20,51]
-    top.ppdecomp.nx=[107]
+    #top.fsdecomp.nz=[10,61]
+    top.fsdecomp.nz=[71]
+    top.ppdecomp.nx=[20,87]
+    #top.ppdecomp.nx=[107]
+    #top.ppdecomp.ny=[10,97]
     top.ppdecomp.ny=[107]
-    top.ppdecomp.nz=[20,51]
+    #top.ppdecomp.nz=[10,61]
+    top.ppdecomp.nz=[71]
     top.userdecompx = top.fsdecomp.nx
     top.userdecompy = top.fsdecomp.ny
     top.userdecompz = top.fsdecomp.nz
@@ -388,9 +397,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = max(1,w3d.nxlocal/10)
-    ntiley = max(1,w3d.nylocal/10)
-    ntilez = max(1,w3d.nzlocal/10)
+    ntilex = 1#max(1,w3d.nxlocal/10)
+    ntiley = 1#max(1,w3d.nylocal/10)
+    ntilez = 1#max(1,w3d.nzlocal/10)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -528,7 +537,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   #tdeb=MPI.Wtime()
-  em.step(40,1,1)
+  em.step(100,1,1)
   #tend=MPI.Wtime()
   #print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
