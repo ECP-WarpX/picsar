@@ -24,11 +24,11 @@ w3d.lgtlchg3d = false
 
 # Flags turning off auto decomp and let user specify its decomp
 top.lautodecomp = 1 # Particles
-top.lfsautodecomp = 0 # fields 
+top.lfsautodecomp = 1 # fields 
 
 # Flags turning on/off load balancing
 load_balance=1
-
+dlb_freq=50
 # ----------
 # Parameters
 # ----------
@@ -85,7 +85,7 @@ l_gist             = 1      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
 restart_dump       = ""     # dump file to restart from (works?)
 l_moving_window    = 1      # on/off (Galilean) moving window
-l_plasma           = 0    # on/off plasma
+l_plasma           = 1    # on/off plasma
 l_usesavedist      = 0      # if on, uses dump of beam particles distribution
 l_smooth           = 1      # on/off smoothing of current density
 l_laser            = 1      # on/off laser
@@ -108,10 +108,10 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 10  # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 501  # frequency (in time steps) of live plots (off is l_test is off)
 
-fielddiag_period   = 500/dtfact
-partdiag_period    = 500/dtfact
+fielddiag_period   = 50000000/dtfact
+partdiag_period    = 50000000/dtfact
 
 #-------------------------------------------------------------------------------
 # laser parameters
@@ -169,13 +169,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 2#5
-nppcelly_C = 2#5
-nppcellz_C = 2#5
+nppcellx_C = 8#5
+nppcelly_C = 8#5
+nppcellz_C = 8#5
 
-nppcellx_H = 2#4
-nppcelly_H = 2#4
-nppcellz_H = 2#4
+nppcellx_H = 8#4
+nppcelly_H = 8#4
+nppcellz_H = 8#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -279,35 +279,37 @@ else:
 # initializes WARP
 #-------------------------------------------------------------------------------
 # User defined decomp goes here 
-if l_pxr: 
-    top.nxprocs=2
-    top.nyprocs=1
-    top.nzprocs=1
-    top.fsdecomp.nxprocs=top.nxprocs
-    top.fsdecomp.nyprocs=top.nyprocs
-    top.fsdecomp.nzprocs=top.nzprocs
-    top.ppdecomp.nxprocs=top.nxprocs
-    top.ppdecomp.nyprocs=top.nyprocs
-    top.ppdecomp.nzprocs=top.nzprocs
-    top.fsdecomp.nx=[20,87]
-    #top.fsdecomp.nx=[107]
-    #top.fsdecomp.ny=[10,97]
-    top.fsdecomp.ny=[107]
-    #top.fsdecomp.nz=[10,61]
-    top.fsdecomp.nz=[71]
-    top.ppdecomp.nx=[20,87]
-    #top.ppdecomp.nx=[107]
-    #top.ppdecomp.ny=[10,97]
-    top.ppdecomp.ny=[107]
-    #top.ppdecomp.nz=[10,61]
-    top.ppdecomp.nz=[71]
-    top.userdecompx = top.fsdecomp.nx
-    top.userdecompy = top.fsdecomp.ny
-    top.userdecompz = top.fsdecomp.nz
+#top.nxprocs=2
+#top.nyprocs=2
+#top.nzprocs=2
+#top.fsdecomp.nxprocs=top.nxprocs
+#top.fsdecomp.nyprocs=top.nyprocs
+#top.fsdecomp.nzprocs=top.nzprocs
+#top.ppdecomp.nxprocs=top.nxprocs
+#top.ppdecomp.nyprocs=top.nyprocs
+#top.ppdecomp.nzprocs=top.nzprocs
+#top.fsdecomp.nx=[20,87]
+#top.fsdecomp.nx=[107]
+#top.fsdecomp.ny=[107]
+#top.fsdecomp.ny=[20,87]
+#top.fsdecomp.nz=[10,61]
+#top.fsdecomp.nz=[71]
+#top.ppdecomp.nx=[20,87]
+#top.ppdecomp.nx=[107]
+#top.ppdecomp.ny=[20,87]
+#top.ppdecomp.ny=[107]
+#top.ppdecomp.nz=[10,61]
+#top.ppdecomp.nz=[71]
+#top.userdecompx = top.fsdecomp.nx
+#top.userdecompy = top.fsdecomp.ny
+#top.userdecompz = top.fsdecomp.nz
     
 top.fstype = -1 # sets field solver to None (desactivates electrostatic solver)
 package('w3d'); generate()
+print(top.fsdecomp.nx)
+print(top.fsdecomp.ny)
 print(top.fsdecomp.nz)
+
 #-------------------------------------------------------------------------------
 # set a few shortcuts
 #-------------------------------------------------------------------------------
@@ -397,9 +399,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 1#max(1,w3d.nxlocal/10)
-    ntiley = 1#max(1,w3d.nylocal/10)
-    ntilez = 1#max(1,w3d.nzlocal/10)
+    ntilex = max(1,w3d.nxlocal/10)
+    ntiley = max(1,w3d.nylocal/10)
+    ntilez = max(1,w3d.nzlocal/10)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -420,7 +422,8 @@ if l_pxr:
                  ntiley=ntiley,
                  ntilez=ntilez,
                  l_verbose=l_verbose,
-                 dload_balancing=load_balance)
+                 dload_balancing=load_balance, 
+                 dlb_freq=dlb_freq)
     step = em.step
 else:
     em = EM3D(       laser_func=laser_func,
@@ -436,6 +439,10 @@ else:
                  dtcoef=dtcoef,
                  l_getrho=0,
                  l_verbose=l_verbose)
+
+print(em.nxlocal)
+print(em.nylocal)
+print(em.nzlocal)
 
 #-------------------------------------------------------------------------------
 # restarts from dump file
@@ -536,10 +543,10 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-  #tdeb=MPI.Wtime()
-  em.step(10,1,1)
-  #tend=MPI.Wtime()
-  #print("Final runtime (s): "+str(tend-tdeb))
+  tdeb=MPI.Wtime()
+  em.step(500,1,1)
+  tend=MPI.Wtime()
+  print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
 else:
   em.step(1000,1,1)

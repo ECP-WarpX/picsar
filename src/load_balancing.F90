@@ -238,7 +238,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     INTEGER(isp), INTENT(IN OUT) ::  ierrcode
     REAL(num), INTENT(IN), DIMENSION(-nxg:nxold+nxg,-nyg:nyold+nyg,-nzg:nzold+nzg) :: emfield_old
     REAL(num), INTENT(IN  OUT), DIMENSION(-nxg:nxnew+nxg,-nyg:nynew+nyg,-nzg:nznew+nzg) :: emfield_new
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp_send, temp_recv
     INTEGER(idp), INTENT(IN), DIMENSION(0:nprocs-1) :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
     INTEGER(idp), INTENT(IN), DIMENSION(0:nprocs-1) :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
     INTEGER(idp) :: ix, iy, iz, nsubx, nsuby, nsubz
@@ -253,11 +252,10 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     INTEGER(isp) :: mpitag, proc_rank,  i, nsreq, nrreq, error, count
     INTEGER(isp), PARAMETER :: nd=3
     INTEGER(isp), DIMENSION(nd) :: nsub, nglob, nglob_old, start
-    
-        PRINT *, rank,"MAXVAL BEFORE SEND/RECV", MAXVAL(emfield_new)
-    
+
     sendtype=0_isp
     recvtype=0_isp
+    requests=0_isp
     
     nglob(1) = nxnew+2*nxg+1
     nglob(2) = nynew+2*nyg+1
@@ -298,19 +296,8 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             !ixmax_old,iymax_old,izmax_old
             !PRINT *, rank,"ixmax_new,iymax_new,izmax_new", &
             !ixmax_new,iymax_new,izmax_new
-            !emfield_new(ixmin_new:ixmax_new,iymin_new:iymax_new,izmin_new:izmax_new) = &
-            !emfield_old(ixmin_old:ixmax_old,iymin_old:iymax_old,izmin_old:izmax_old)
-            nsubx=ixmax_new-ixmin_new+1
-            nsuby=iymax_new-iymin_new+1
-            nsubz=izmax_new-izmin_new+1
-            DO iz=1,nsubz
-                DO iy=1,nsuby
-                    DO ix=1,nsubx
-                        emfield_new(ixmin_new+ix,iymin_new+iy,izmin_new+iz)= &
-                        emfield_old(ixmin_old+ix,iymin_old+iy,izmin_old+iz)
-                    END DO
-                END DO 
-            END DO 
+            emfield_new(ixmin_new:ixmax_new,iymin_new:iymax_new,izmin_new:izmax_new) = &
+            emfield_old(ixmin_old:ixmax_old,iymin_old:iymax_old,izmin_old:izmax_old)
             CYCLE
         END IF
                                 
@@ -325,9 +312,8 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             start(1) = ix3min-ix1new(iproc)+1-1+(nxg) 
             start(2) = iy3min-iy1new(iproc)+1-1+(nyg)
             start(3) = iz3min-iz1new(iproc)+1-1+(nzg)
-            PRINT *, "RECVTYPE TO",rank,"FROM",i,"nglob,nsub,start,", nglob,nsub,start
             CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob, nsub, start, MPI_ORDER_FORTRAN, &
-                                         MPI_REAL8, recvtype(i), ierrcode)
+                                         MPI_DOUBLE_PRECISION, recvtype(i), ierrcode)
             ! COMMIT DATA TYPE (Really important otherwise -> MPI_ERR_TYPE or Wrong results)
             CALL MPI_TYPE_COMMIT(recvtype(i), ierrcode)
         ENDIF 
@@ -364,9 +350,8 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             start(1) = ix3min-ix1oldip+1-1+(nxg) 
             start(2) = iy3min-iy1oldip+1-1+(nyg)
             start(3) = iz3min-iz1oldip+1-1+(nzg)
-            PRINT *, "SENDTYPE FROM",rank,"TO",i,"nglob_old,nsub,start,", nglob_old,nsub,start
             CALL MPI_TYPE_CREATE_SUBARRAY(nd, nglob_old, nsub, start, MPI_ORDER_FORTRAN, &
-                                         MPI_REAL8, sendtype(i), ierrcode)
+                                         MPI_DOUBLE_PRECISION, sendtype(i), ierrcode)
             ! COMMIT DATA TYPE (Really important otherwise -> MPI_ERR_TYPE or Wrong results)
             CALL MPI_TYPE_COMMIT(sendtype(i), ierrcode)
         ENDIF 
@@ -378,10 +363,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     DO i=0, nprocs-1
         IF (recvtype(i) .NE. 0) THEN 
             !--- Post IRECV for this area 
-            PRINT *, "PROC" ,rank," HELLO REICEIVING FROM", i
-            !CALL MPI_IRECV(emfield_new(-nxg:,-nyg:,-nzg:), 1_isp,  recvtype(i), i, mpitag,    &
-            !                communicator, requests(nrreq), ierrcode)
-            CALL MPI_IRECV(emfield_new, 1_isp,  recvtype(i), i, mpitag,    &
+            CALL MPI_IRECV(emfield_new(-nxg,-nyg,-nzg), 1_isp,  recvtype(i), i, mpitag,    &
                             communicator, requests(nrreq), ierrcode)
             nrreq=nrreq+1
         ENDIF
@@ -391,24 +373,17 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     nsreq=0;
     DO i=0, nprocs-1
         IF (sendtype(i) .NE. 0) THEN 
-            PRINT *, "PROC" ,rank," SENDING TO ", i
-            nsreq=0
             !--- Post ISEND for this area 
-            !CALL MPI_ISEND(emfield_old(-nxg:,-nyg:,-nzg:), 1_isp,  sendtype(i), i, mpitag,    &
-             !               communicator, requests(nrreq+nsreq), ierrcode)
-            CALL MPI_ISEND(emfield_old, 1_isp,  sendtype(i), i, mpitag,    &
+            CALL MPI_ISEND(emfield_old(-nxg,-nyg,-nzg), 1_isp,  sendtype(i), i, mpitag,    &
                            communicator, requests(nrreq+nsreq), ierrcode)
             nsreq=nsreq+1
         ENDIF
     END DO 
     
    ! DO SOME SYNC BEFORE GOING ON  
-    count=nsreq+nrreq-1_isp
-    PRINT *, rank, "count requests", count
-    CALL MPI_WAITALL(count,requests(0:count-1), MPI_STATUSES_IGNORE, errcode)
-    
-    PRINT *, rank,"MAXVAL AFTER SEND/RECV", MAXVAL(emfield_new)
-                            
+    count=nsreq+nrreq
+    CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+
     ! FREE ALL DATATYPES 
     DO i=0,nprocs-1
         IF (sendtype(i) .NE. 0) CALL MPI_TYPE_FREE(sendtype(i), ierrcode)
@@ -416,6 +391,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     END DO 
 
 END SUBROUTINE remap_em_3Dfields
+
 
 
 ! This subroutine get intersection area between two 3D domains  
@@ -748,6 +724,8 @@ ntilex_new = MAX(1,nx/10)
 ntiley_new = MAX(1,ny/10)
 ntilez_new = MAX(1,nz/10)
 
+PRINT *, rank, "#1"
+
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
 
@@ -772,9 +750,11 @@ DO ispecies=1,nspecies
     currsp_new%nppcell=currsp%nppcell
 END DO
 
-
+PRINT *, rank, "nx_grid, ny_grid, nz_grid", nx_grid, ny_grid, nz_grid
 CALL set_tile_split_for_species(new_species_parray,nspecies,ntilex_new,ntiley_new,ntilez_new,nx_grid,ny_grid,nz_grid, &
                                 x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+
+PRINT *, rank, "#2"
 
                               
                                 
@@ -785,6 +765,7 @@ ALLOCATE(aofgrid_tiles(ntilex_new,ntiley_new,ntilez_new))
 ! Init new tile arrays of new species array 
 CALL init_tile_arrays_for_species(nspecies, new_species_parray, aofgrid_tiles, ntilex_new, ntiley_new, ntilez_new)
 
+PRINT *, rank, "#3"
 
 ! Copy particles from former tiles in first tile of new species array
 DO ispecies=1,nspecies
@@ -832,7 +813,7 @@ DO ispecies=1,nspecies
     END DO 
 END DO
 
-
+PRINT *, rank, "#4"
 ! Update tile sizes 
 ntilex=ntilex_new
 ntiley=ntiley_new
@@ -875,6 +856,7 @@ ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
 
 CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
 
+PRINT *, rank, "#5"
 
 ! Copy particles 
 ! Copy particles from former tiles in first tile of new species array

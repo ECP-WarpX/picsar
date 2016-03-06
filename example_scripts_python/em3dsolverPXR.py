@@ -21,6 +21,7 @@ class EM3DPXR(EM3DFFT):
                       'ntilez':1,
                       'listofallspecies':[],
                       'dload_balancing':0,
+                      'dlb_freq':1,
                       }
 
     def __init__(self,**kw):
@@ -720,14 +721,14 @@ class EM3DPXR(EM3DFFT):
         top.it+=1
         
         # MPI time for current it 
-        if (l_pxr):
+        if (l_pxr & self.dload_balancing & (top.it%self.dlb_freq==0) ):
             tend=MPI.Wtime()
             pxr.mpitime_per_it=tend-tdeb 
             pxr.get_max_time_per_it() 
             pxr.get_min_time_per_it()
             imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100. 
             print("imbalance %=", imbalance)
-            if ((imbalance>4.) & (self.dload_balancing) & (top.it==10)): 
+            if (imbalance>10.): 
                 self.loadbalance(imbalance)
 
         # --- call afterstep functions
@@ -761,10 +762,14 @@ class EM3DPXR(EM3DFFT):
                 	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
                 	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
                 	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
+                	print("NX old", pxr.cell_x_max-pxr.cell_x_min+1)
+                	print("NY old", pxr.cell_y_max-pxr.cell_y_min+1)
                 	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
                 	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
                 	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
                 	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
+                	print("NX new", pxr.new_cell_x_max-pxr.new_cell_x_min+1)
+                	print("NY new", pxr.new_cell_y_max-pxr.new_cell_y_min+1)
                 	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
                 
                 ## --- Compute limits for all procs 
@@ -856,8 +861,8 @@ class EM3DPXR(EM3DFFT):
                 pxr.jz=jz_new 
             
                 # Update pxr new array dimensions 
-                print("old sizes ", pxr.rank,pxr.nx,pxr.ny,pxr.nz)
-                print("new sizes ", pxr.rank,nx_new,ny_new,nz_new)
+                #print("old sizes ", pxr.rank,pxr.nx,pxr.ny,pxr.nz)
+                #print("new sizes ", pxr.rank,nx_new,ny_new,nz_new)
 
                 pxr.nx=nx_new
                 pxr.ny=ny_new
@@ -889,9 +894,6 @@ class EM3DPXR(EM3DFFT):
                 # Update global simulation axis  
                 pxr.compute_simulation_axis()
                 
-                print(pxr.rank,"old domain limits ")
-                print(pxr.rank,pxr.x_min_local,pxr.x_max_local,pxr.y_min_local,pxr.y_max_local,pxr.z_min_local,pxr.z_max_local)
-                
                 # Set new min and max for local domain 
                 pxr.x_min_local = pxr.x_grid_mins[pxr.x_coords]
                 pxr.x_max_local = pxr.x_grid_maxs[pxr.x_coords]
@@ -905,7 +907,7 @@ class EM3DPXR(EM3DFFT):
                 pxr.y_grid_max_local=pxr.y_max_local
                 pxr.z_grid_min_local=pxr.z_min_local
                 pxr.z_grid_max_local=pxr.z_max_local
-            
+    
                 ##--- Alias WARP grid arrays on pxr new arrays 
                 self.nxlocal=pxr.nx
                 self.nylocal=pxr.ny
@@ -919,69 +921,58 @@ class EM3DPXR(EM3DFFT):
                 self.fields.ymax = pxr.y_max_local
                 self.fields.zmin = pxr.z_min_local
                 self.fields.zmax = pxr.z_max_local            	
+           		# Udpate domain decomposition in WARP 
+            	top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
+            	top.fsdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
+            	top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
+            	top.fsdecomp.ix=pxr.cell_x_min
+            	top.fsdecomp.iy=pxr.cell_y_min
+            	top.fsdecomp.iz=pxr.cell_z_min
+            	top.fsdecomp.xmin=pxr.cell_x_min*pxr.dx
+            	top.fsdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
+            	top.fsdecomp.ymin=pxr.cell_y_min*pxr.dy
+            	top.fsdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
+            	top.fsdecomp.zmin=pxr.cell_z_min*pxr.dz
+            	top.fsdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
+            	top.ppdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
+            	top.ppdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
+            	top.ppdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
+            	top.ppdecomp.ix=pxr.cell_x_min
+            	top.ppdecomp.iy=pxr.cell_y_min
+            	top.ppdecomp.iz=pxr.cell_z_min
+            	top.ppdecomp.xmin=pxr.cell_x_min*pxr.dx
+            	top.ppdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
+            	top.ppdecomp.ymin=pxr.cell_y_min*pxr.dy
+            	top.ppdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
+            	top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
+            	top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
 
                 # Reallocate warp arrays 
                 self.allocatefieldarrays()
                 
                 # Alias newly allocated arrays on WARP structure 
-#                 self.fields.Ex=pxr.ex
-#                 self.fields.Ey=pxr.ey
-#                 self.fields.Ez=pxr.ez
-#                 self.fields.Bx=pxr.bx
-#                 self.fields.By=pxr.by
-#                 self.fields.Bz=pxr.bz
-#                 self.fields.Exp=pxr.ex
-#                 self.fields.Eyp=pxr.ey
-#                 self.fields.Ezp=pxr.ez
-#                 self.fields.Bxp=pxr.bx
-#                 self.fields.Byp=pxr.by
-#                 self.fields.Bzp=pxr.bz
-#                 self.fields.Exp[...]=1e22*pxr.rank
-#                 self.fields.Eyp[...]=1e22*pxr.rank
-#                 self.fields.Ezp[...]=1e22*pxr.rank
-#                 self.fields.Bxp[...]=1e22*pxr.rank
-#                 self.fields.Byp[...]=1e22*pxr.rank
-#                 self.fields.Bzp[...]=1e22*pxr.rank
-#                 self.fields.Jx=pxr.jx
-#                 self.fields.Jy=pxr.jy
-#                 self.fields.Jz=pxr.jz
+                self.fields.Ex=pxr.ex
+                self.fields.Ey=pxr.ey
+                self.fields.Ez=pxr.ez
+                self.fields.Bx=pxr.bx
+                self.fields.By=pxr.by
+                self.fields.Bz=pxr.bz
+                self.fields.Exp=pxr.ex
+                self.fields.Eyp=pxr.ey
+                self.fields.Ezp=pxr.ez
+                self.fields.Bxp=pxr.bx
+                self.fields.Byp=pxr.by
+                self.fields.Bzp=pxr.bz
+                self.fields.Jx=pxr.jx
+                self.fields.Jy=pxr.jy
+                self.fields.Jz=pxr.jz
 
-                
-                # Udpate domain decomposition in WARP 
-#             	top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
-#             	top.fsdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
-#             	top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
-#             	top.fsdecomp.ix=pxr.cell_x_min
-#             	top.fsdecomp.iy=pxr.cell_y_min
-#             	top.fsdecomp.iz=pxr.cell_z_min
-#             	top.fsdecomp.xmin=pxr.cell_x_min*pxr.dx
-#             	top.fsdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
-#             	top.fsdecomp.ymin=pxr.cell_y_min*pxr.dy
-#             	top.fsdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
-#             	top.fsdecomp.zmin=pxr.cell_z_min*pxr.dz
-#             	top.fsdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
-#             	top.ppdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
-#             	top.ppdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
-#             	top.ppdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
-#             	top.ppdecomp.ix=pxr.cell_x_min
-#             	top.ppdecomp.iy=pxr.cell_y_min
-#             	top.ppdecomp.iz=pxr.cell_z_min
-#             	top.ppdecomp.xmin=pxr.cell_x_min*pxr.dx
-#             	top.ppdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
-#             	top.ppdecomp.ymin=pxr.cell_y_min*pxr.dy
-#             	top.ppdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
-#             	top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
-#             	top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
-#             	
-#                em3d_exchange_e(self.block)
-#                em3d_exchange_b(self.block)
-                
-                print(pxr.rank,"new domain limits ")
-                print(pxr.x_min_local,pxr.x_max_local,pxr.y_min_local,pxr.y_max_local,pxr.z_min_local,pxr.z_max_local)
+             	
+                em3d_exchange_e(self.block)
+                em3d_exchange_b(self.block)
                 
                 # If domain has been resized, do a new tile split and exchange particles 
-                if ((isnewdom != 0) & 0): 
-                    print("hello")
+                if ((isnewdom != 0)): 
 					# Now exchanging particles 
                     pxr.create_new_tile_split()
                     self.ntilex = pxr.ntilex 

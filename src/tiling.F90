@@ -86,7 +86,7 @@ CONTAINS
 							curr%nx_tile_min = (ix-1)*nx0_grid_tile
 							curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
 						ENDIF
-                        IF ((ix .LT. ntilex) .AND. (ix .GT. 1)) THEN
+                        IF ((ix .LT. ntx) .AND. (ix .GT. 1)) THEN
                             curr%nx_grid_tile=nx0_grid_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
                             curr%x_grid_tile_min=xminlocal+(ix-1)*nx0_grid_tile*dx
@@ -97,7 +97,7 @@ CONTAINS
 							curr%x_tile_max= curr%x_grid_tile_max+dx/2.0_num
                         END IF
 						! LAST TILE in X DIRECTION
-						IF (ix .EQ. ntilex) THEN
+						IF (ix .EQ. ntx) THEN
                             curr%subdomain_bound= .TRUE.
                             curr%nx_grid_tile=nx0_last_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
@@ -121,7 +121,7 @@ CONTAINS
 							curr%ny_tile_min = (iy-1)*ny0_grid_tile
 							curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
 						ENDIF
-                        IF ((iy .LT. ntiley) .AND. (iy .GT. 1)) THEN
+                        IF ((iy .LT. nty) .AND. (iy .GT. 1)) THEN
                             curr%ny_grid_tile=ny0_grid_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
                             curr%y_grid_tile_min=yminlocal+(iy-1)*ny0_grid_tile*dy
@@ -132,7 +132,7 @@ CONTAINS
 							curr%y_tile_max= curr%y_grid_tile_max+dy/2.0_num
                         END IF
 						! LAST TILE in Y DIRECTION
-						IF (iy .EQ. ntiley) THEN
+						IF (iy .EQ. nty) THEN
                             curr%subdomain_bound= .TRUE.
                             curr%ny_grid_tile=ny0_last_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
@@ -156,7 +156,7 @@ CONTAINS
 							curr%nz_tile_min = (iz-1)*nz0_grid_tile
 							curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
 						ENDIF
-                        IF ((iz .LT. ntilez) .AND. (iz .GT. 1)) THEN
+                        IF ((iz .LT. ntz) .AND. (iz .GT. 1)) THEN
                             curr%nz_grid_tile=nz0_grid_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
                             curr%z_grid_tile_min=zminlocal+(iz-1)*nz0_grid_tile*dz
@@ -167,7 +167,7 @@ CONTAINS
 							curr%z_tile_max= curr%z_grid_tile_max+dz/2.0_num
                         END IF
 						! LAST TILE in Z DIRECTION
-						IF (iz .EQ. ntilez) THEN
+						IF (iz .EQ. ntz) THEN
                             curr%subdomain_bound= .TRUE.
                             curr%nz_grid_tile=nz0_last_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
@@ -330,7 +330,7 @@ CONTAINS
         INTEGER(idp) :: n1, n2, n3, ng1, ng2, ng3
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
-
+        
         ! Allocate particle tile arrays 
         DO ispecies=1,nspec ! LOOP ON SPECIES
             curr=>species_array(ispecies)
@@ -366,6 +366,7 @@ CONTAINS
                 END DO
             END DO
         END DO
+        
 
         ! Init partile tile arrays in parallel - first touch policy
         ! - Init array of current tile
