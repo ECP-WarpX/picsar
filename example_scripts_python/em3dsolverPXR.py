@@ -151,6 +151,9 @@ class EM3DPXR(EM3DFFT):
         pxr.bx = self.fields.Bx
         pxr.by = self.fields.By
         pxr.bz = self.fields.Bz
+        pxr.jx = self.fields.Jx
+        pxr.jy = self.fields.Jy
+        pxr.jz = self.fields.Jz
         
         pxr.l_nodalgrid = self.l_nodalgrid
         
@@ -346,7 +349,7 @@ class EM3DPXR(EM3DFFT):
                 if self.l_2dxz:
                     if (f.norderx==2) & (f.nordery==2) & (f.norderz==2): 
                         pxr.pxrpush_em2d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                                  f.J[...,0],f.J[...,1],f.J[...,2],
+                                                  f.Jx,f.Jy,f.Jz,
                                                   clight**2*mu0*dt,        
                                                   clight**2*dt/f.dx*f.xcoefs[0],
                                                   clight**2*dt/f.dy*f.ycoefs[0],
@@ -357,7 +360,7 @@ class EM3DPXR(EM3DFFT):
                     
                     else:
                         pxr.pxrpush_em2d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                                  f.J[...,0],f.J[...,1],f.J[...,2],
+                                                  f.Jx,f.Jy,f.Jz,
                                                   clight**2*mu0*dt,        
                                                   clight**2*dt/f.dx*f.xcoefs,
                                                   clight**2*dt/f.dy*f.ycoefs,
@@ -369,7 +372,7 @@ class EM3DPXR(EM3DFFT):
                 else:
                     if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
                         pxr.pxrpush_em3d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              f.J[...,0],f.J[...,1],f.J[...,2],
+                                              f.Jx,f.Jy,f.Jz,
                                               clight**2*mu0*dt,        
                                               clight**2*dt/f.dx*f.xcoefs[0],
                                               clight**2*dt/f.dy*f.ycoefs[0],
@@ -379,7 +382,7 @@ class EM3DPXR(EM3DFFT):
                                               0,0,0,f.l_nodalgrid)                    
                     else:
                         pxr.pxrpush_em3d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              f.J[...,0],f.J[...,1],f.J[...,2],
+                                              f.Jx,f.Jy,f.Jz,
                                               clight**2*mu0*dt,        
                                               clight**2*dt/f.dx*f.xcoefs,
                                               clight**2*dt/f.dy*f.ycoefs,
@@ -848,9 +851,11 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-             pxr.pxrdepose_currents_on_grid_jxjyjz()
-             pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
-             pxr.nxguards,pxr.nyguards,pxr.nzguards)          
+             #pxr.pxrdepose_currents_on_grid_jxjyjz()
+             pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,
+			 												  pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)
+             #pxr.add_pxrjxjyjz_towarp_j(self.fields.J,3,pxr.nx,pxr.ny,pxr.nz, \
+             #pxr.nxguards,pxr.nyguards,pxr.nzguards)          
         else:
 
             for pgroup in pgroups:
