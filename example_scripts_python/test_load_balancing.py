@@ -28,7 +28,7 @@ top.lfsautodecomp = 1 # fields
 
 # Flags turning on/off load balancing
 load_balance=1
-dlb_freq=50
+dlb_freq=10
 # ----------
 # Parameters
 # ----------
@@ -169,13 +169,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 8#5
-nppcelly_C = 8#5
-nppcellz_C = 8#5
+nppcellx_C = 2#5
+nppcelly_C = 2#5
+nppcellz_C = 2#5
 
-nppcellx_H = 8#4
-nppcelly_H = 8#4
-nppcellz_H = 8#4
+nppcellx_H = 2#4
+nppcelly_H = 2#4
+nppcellz_H = 2#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -544,7 +544,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   tdeb=MPI.Wtime()
-  em.step(500,1,1)
+  em.step(10,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')

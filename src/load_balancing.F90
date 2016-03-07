@@ -476,7 +476,10 @@ SUBROUTINE compute_time_per_part()
     REAL(num) :: global_time_part
     CALL get_local_number_of_part(npart_local)
     global_time_part=0.
-    ! Get max time per it 
+    ! Get max time per it
+    IF (npart_local .EQ. 0) THEN 
+        local_time_part=0
+    ENDIF  
     CALL MPI_ALLREDUCE(local_time_part, global_time_part, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
     CALL MPI_ALLREDUCE(npart_local, npart_global, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
     IF (npart_global .EQ. 0_idp) THEN 
@@ -554,26 +557,42 @@ SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirm
     INTEGER(idp), DIMENSION(0:nproc_in_dir-1), INTENT(IN OUT) :: idirmin, idirmax
     INTEGER(idp), INTENT(IN) :: nproc_in_dir, ncellmaxdir 
     INTEGER(idp) :: iproc, icell 
-    REAL(num) :: balanced_load=0_num, curr_proc_load=0_num  
+    REAL(num) :: balanced_load=0_num, curr_balanced_load=0_num, curr_proc_load=0_num  
     LOGICAL(idp) :: not_balanced 
+    REAL(num) :: delta 
+    REAL(num), DIMENSION(0:nproc_in_dir-1) :: load_per_proc
 
+    load_per_proc=0_num
     balanced_load=SUM(load_in_dir)/(nproc_in_dir)
     icell=0 
+    curr_balanced_load=balanced_load
     DO iproc=0, nproc_in_dir-1
         not_balanced=.TRUE. 
         curr_proc_load=0_num
         idirmin(iproc)=icell
+        delta=0_num
         DO WHILE((not_balanced) .AND. (icell .LT. ncellmaxdir-1))  
             curr_proc_load=curr_proc_load+load_in_dir(icell)
-            IF(curr_proc_load .GE. balanced_load)  THEN 
+            IF(curr_proc_load .GE. curr_balanced_load)  THEN 
                 not_balanced=.FALSE. 
             ELSE 
                 icell=icell+1
             ENDIF
         END DO 
+    
         idirmax(iproc)=icell
+        load_per_proc(iproc)=curr_proc_load
+        delta=(iproc+1_num)*balanced_load-SUM(load_per_proc)
+        curr_balanced_load=balanced_load+delta
         icell=icell+1
+        ! Sanity check 
+        IF ((iproc .EQ. nproc_in_dir-1) .AND. (icell .LT. ncellmaxdir-1)) THEN 
+            idirmax(iproc)=ncellmaxdir-1
+        ENDIF 
     END DO 
+    
+    
+    !PRINT *, "balanced_load,load_per_proc", load_per_proc
 END SUBROUTINE balance_in_dir
 
 
@@ -724,7 +743,6 @@ ntilex_new = MAX(1,nx/10)
 ntiley_new = MAX(1,ny/10)
 ntilez_new = MAX(1,nz/10)
 
-PRINT *, rank, "#1"
 
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
@@ -750,11 +768,9 @@ DO ispecies=1,nspecies
     currsp_new%nppcell=currsp%nppcell
 END DO
 
-PRINT *, rank, "nx_grid, ny_grid, nz_grid", nx_grid, ny_grid, nz_grid
 CALL set_tile_split_for_species(new_species_parray,nspecies,ntilex_new,ntiley_new,ntilez_new,nx_grid,ny_grid,nz_grid, &
                                 x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
 
-PRINT *, rank, "#2"
 
                               
                                 
@@ -765,7 +781,6 @@ ALLOCATE(aofgrid_tiles(ntilex_new,ntiley_new,ntilez_new))
 ! Init new tile arrays of new species array 
 CALL init_tile_arrays_for_species(nspecies, new_species_parray, aofgrid_tiles, ntilex_new, ntiley_new, ntilez_new)
 
-PRINT *, rank, "#3"
 
 ! Copy particles from former tiles in first tile of new species array
 DO ispecies=1,nspecies
@@ -813,7 +828,6 @@ DO ispecies=1,nspecies
     END DO 
 END DO
 
-PRINT *, rank, "#4"
 ! Update tile sizes 
 ntilex=ntilex_new
 ntiley=ntiley_new
@@ -856,7 +870,6 @@ ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
 
 CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
 
-PRINT *, rank, "#5"
 
 ! Copy particles 
 ! Copy particles from former tiles in first tile of new species array
@@ -891,11 +904,12 @@ END DO
 DEALLOCATE(new_species_parray)
 
 
-
 ! Apply MPI particle boundary conditions
 ! WARNING: for the moment this only works if 
 ! only one domain is crossed 
 CALL particle_bcs_mpi_blocking()
+
+
 
 END SUBROUTINE 
 

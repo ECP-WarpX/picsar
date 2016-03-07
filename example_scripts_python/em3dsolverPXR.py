@@ -728,7 +728,7 @@ class EM3DPXR(EM3DFFT):
             pxr.get_min_time_per_it()
             imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100. 
             print("imbalance %=", imbalance)
-            if (imbalance>10.): 
+            if (imbalance>3.): 
                 self.loadbalance(imbalance)
 
         # --- call afterstep functions
