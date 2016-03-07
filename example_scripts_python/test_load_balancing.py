@@ -5,7 +5,7 @@ from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 home=os.getenv('HOME')
 
-l_pxr=1
+l_pxr=0
 
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
@@ -17,7 +17,7 @@ top.zzplps = 0
 top.zzplfreq = 0   
 top.nhist = top.nt
 top.iflabwn = 0
-top.lcomm_cartesian=1
+top.lcomm_cartesian=0
 w3d.lrhodia3d = false
 w3d.lgetese3d = false
 w3d.lgtlchg3d = false
@@ -27,8 +27,9 @@ top.lautodecomp = 1 # Particles
 top.lfsautodecomp = 1 # fields 
 
 # Flags turning on/off load balancing
-load_balance=1
+load_balance=0
 dlb_freq=10
+dlb_threshold=10 # dynamic load balancing threshold in % 
 # ----------
 # Parameters
 # ----------
@@ -108,7 +109,7 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 501  # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 100  # frequency (in time steps) of live plots (off is l_test is off)
 
 fielddiag_period   = 50000000/dtfact
 partdiag_period    = 50000000/dtfact
@@ -306,9 +307,6 @@ else:
     
 top.fstype = -1 # sets field solver to None (desactivates electrostatic solver)
 package('w3d'); generate()
-print(top.fsdecomp.nx)
-print(top.fsdecomp.ny)
-print(top.fsdecomp.nz)
 
 #-------------------------------------------------------------------------------
 # set a few shortcuts
@@ -399,9 +397,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = max(1,w3d.nxlocal/10)
-    ntiley = max(1,w3d.nylocal/10)
-    ntilez = max(1,w3d.nzlocal/10)
+    ntilex = 1#max(1,w3d.nxlocal/10)
+    ntiley = 1#max(1,w3d.nylocal/10)
+    ntilez = 1#max(1,w3d.nzlocal/10)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -423,7 +421,8 @@ if l_pxr:
                  ntilez=ntilez,
                  l_verbose=l_verbose,
                  dload_balancing=load_balance, 
-                 dlb_freq=dlb_freq)
+                 dlb_freq=dlb_freq, 
+                 dlb_threshold=dlb_threshold)
     step = em.step
 else:
     em = EM3D(       laser_func=laser_func,
@@ -544,7 +543,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   tdeb=MPI.Wtime()
-  em.step(10,1,1)
+  em.step(100,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')

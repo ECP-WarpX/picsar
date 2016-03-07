@@ -22,6 +22,7 @@ class EM3DPXR(EM3DFFT):
                       'listofallspecies':[],
                       'dload_balancing':0,
                       'dlb_freq':1,
+                      'dlb_threshold':20,
                       }
 
     def __init__(self,**kw):
@@ -723,12 +724,17 @@ class EM3DPXR(EM3DFFT):
         # MPI time for current it 
         if (l_pxr & self.dload_balancing & (top.it%self.dlb_freq==0) ):
             tend=MPI.Wtime()
-            pxr.mpitime_per_it=tend-tdeb 
+            pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
             pxr.get_max_time_per_it() 
             pxr.get_min_time_per_it()
+            ## --- Compute time per part and per cell 
+            pxr.compute_time_per_part()
+            pxr.compute_time_per_cell()
+            print(pxr.global_time_per_part,pxr.global_time_per_cell)
+            
             imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100. 
-            print("imbalance %=", imbalance)
-            if (imbalance>3.): 
+            print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
+            if (imbalance>self.dlb_threshold): 
                 self.loadbalance(imbalance)
 
         # --- call afterstep functions
@@ -1229,8 +1235,9 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-             pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(pxr.jx,pxr.jy,pxr.jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
+             pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
              pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
+             #pxr.pxrdepose_currents_on_grid_jxjyjz()
         else:
 
             for pgroup in pgroups:

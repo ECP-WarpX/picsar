@@ -463,11 +463,6 @@ SUBROUTINE get_3Dintersection(ix1min,ix1max,iy1min,iy1max,iz1min,iz1max, &
         
 END SUBROUTINE get_3Dintersection
 
-SUBROUTINE remap_particles()
-    IMPLICIT NONE 
-    ! Remap particles between procs 
-END SUBROUTINE remap_particles 
-
 
 ! This subroutine computes the total time per part for particle subroutines 
 ! (i.e  mainly particle push, field gathering and current deposition)
@@ -476,6 +471,7 @@ SUBROUTINE compute_time_per_part()
     REAL(num) :: global_time_part
     CALL get_local_number_of_part(npart_local)
     global_time_part=0.
+    PRINT *, rank, "npart_local", npart_local
     ! Get max time per it
     IF (npart_local .EQ. 0) THEN 
         local_time_part=0
@@ -496,6 +492,7 @@ SUBROUTINE compute_time_per_cell()
     IMPLICIT NONE 
     REAL(num) :: global_time_cell
     global_time_cell=0.
+    PRINT *, rank, "ncell_local", nx*ny*nz
     ! Get max time per it 
     CALL MPI_ALLREDUCE(local_time_cell, global_time_cell, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
     global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
