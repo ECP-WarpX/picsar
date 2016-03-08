@@ -5,7 +5,7 @@ from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 home=os.getenv('HOME')
 
-l_pxr=0
+l_pxr=1
 
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
@@ -170,13 +170,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 2#5
-nppcelly_C = 2#5
-nppcellz_C = 2#5
+nppcellx_C = 4#5
+nppcelly_C = 4#5
+nppcellz_C = 4#5
 
-nppcellx_H = 2#4
-nppcelly_H = 2#4
-nppcellz_H = 2#4
+nppcellx_H = 4#4
+nppcelly_H = 4#4
+nppcellz_H = 4#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -397,9 +397,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = 1#max(1,w3d.nxlocal/10)
-    ntiley = 1#max(1,w3d.nylocal/10)
-    ntilez = 1#max(1,w3d.nzlocal/10)
+    ntilex = max(1,w3d.nxlocal/10)
+    ntiley = max(1,w3d.nylocal/10)
+    ntilez = max(1,w3d.nzlocal/10)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -542,10 +542,10 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-  tdeb=MPI.Wtime()
-  em.step(100,1,1)
-  tend=MPI.Wtime()
-  print("Final runtime (s): "+str(tend-tdeb))
+  #tdeb=MPI.Wtime()
+  #em.step(100,1,1)
+  #tend=MPI.Wtime()
+  #print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
 else:
   em.step(1000,1,1)
