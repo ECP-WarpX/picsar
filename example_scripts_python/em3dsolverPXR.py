@@ -981,17 +981,13 @@ class EM3DPXR(EM3DFFT):
                 if ((isnewdom != 0)): 
 					# Now exchanging particles 
                     pxr.create_new_tile_split()
+					
                     self.ntilex = pxr.ntilex 
                     self.ntiley = pxr.ntiley 
                     self.ntilez = pxr.ntilez 
                     
-					# Alias PXR particle arrays to WARP pgroups 
-                    top.pgroup.npmax=0
-                    top.pgroup.ns=1
-                    top.pgroup.nps=0
-                    top.pgroup.gchange()
-		
-                    # --- mirror PXR tile structure in Warp with list of pgroups
+					# Alias PXR tiles to WARP pgroups 
+                    print(self.ntilex, self.ntiley, self.ntilez)
                     for i,s in enumerate(self.listofallspecies):
 						s.pgroups = []
 						s.jslist = [0]

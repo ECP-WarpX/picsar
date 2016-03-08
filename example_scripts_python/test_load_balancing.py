@@ -27,7 +27,7 @@ top.lautodecomp = 1 # Particles
 top.lfsautodecomp = 1 # fields 
 
 # Flags turning on/off load balancing
-load_balance=0
+load_balance=1
 dlb_freq=10
 dlb_threshold=10 # dynamic load balancing threshold in % 
 # ----------
@@ -35,8 +35,8 @@ dlb_threshold=10 # dynamic load balancing threshold in %
 # ----------
 
 dfact = 1
-dxfact = 16
-dtfact = 8*4
+dxfact = 8
+dtfact = 8*2
 N_step = 20000/dtfact
 
 #Two-layer foil:
@@ -70,7 +70,8 @@ dz=0.002
 carbon_layer_e_density/=dfact
 hydrogen_layer_e_density/=dfact
 dx*=dxfact
-dy=dz=dx
+dy=dx
+dz*=dxfact
 dt*=dtfact
 
 #-------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 100  # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 200  # frequency (in time steps) of live plots (off is l_test is off)
 
 fielddiag_period   = 50000000/dtfact
 partdiag_period    = 50000000/dtfact
@@ -478,6 +479,7 @@ def liveplots():
       em.pfey(view=3,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-12,l_transpose=1,direction=1)
       ptitles('Ey [TV/m]','z [um]','X [um]')
       density=elec_C.get_density()+elec_H.get_density()
+      #density=0
       if dim=='3d':density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=4,titles=0, \
           xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid, \
@@ -487,10 +489,10 @@ def liveplots():
       ptitles('n','z [um]','X [um]')
       em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
       ptitles('Ez [GV/m]','z [um]','X [um]')
-      ions_C.ppzx(view=6)
-      elec_C.ppzx(color=red,view=6)
-      ions_H.ppzx(color=blue,view=6)
-      elec_H.ppzx(color=cyan,view=6)
+      #ions_C.ppzx(view=6)
+      #elec_C.ppzx(color=red,view=6)
+      #ions_H.ppzx(color=blue,view=6)
+      #elec_H.ppzx(color=cyan,view=6)
 
 installafterstep(liveplots)
 
@@ -542,10 +544,10 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-  #tdeb=MPI.Wtime()
-  #em.step(100,1,1)
-  #tend=MPI.Wtime()
-  #print("Final runtime (s): "+str(tend-tdeb))
+  tdeb=MPI.Wtime()
+  em.step(250,1,1)
+  tend=MPI.Wtime()
+  print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
 else:
   em.step(1000,1,1)
