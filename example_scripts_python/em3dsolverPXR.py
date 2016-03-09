@@ -23,6 +23,7 @@ class EM3DPXR(EM3DFFT):
                       'dload_balancing':0,
                       'dlb_freq':1,
                       'dlb_threshold':20,
+                      'dlb_at_init':1
                       }
 
     def __init__(self,**kw):
@@ -229,7 +230,7 @@ class EM3DPXR(EM3DFFT):
         pxr.init_tile_arrays()
         
         for i,s in enumerate(self.listofallspecies):
-            print 'add particles %g to pxr'%i
+            #print 'add particles %g to pxr'%i
             pxr.py_add_particles_to_species(i+1, s.nps, 
                                             s.getx(bcast=0,gather=0), 
                                             s.gety(bcast=0,gather=0), 
@@ -387,6 +388,7 @@ class EM3DPXR(EM3DFFT):
             if self.l_pxr:
                 f=self.fields
                 l_pushe=False
+                tdebcell=MPI.Wtime()
                 if self.l_2dxz:
                     if (f.norderx==2) & (f.nordery==2) & (f.norderz==2): 
                         pxr.pxrpush_em2d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
@@ -432,6 +434,8 @@ class EM3DPXR(EM3DFFT):
                                               f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
+                tendcell=MPI.Wtime()
+                pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
             else:
                 l_pushe=True
             push_em3d_eef(self.block,dt,0,self.l_pushf,self.l_pushpot,l_pushe)
@@ -456,6 +460,7 @@ class EM3DPXR(EM3DFFT):
         if doit:
             if self.l_verbose:print 'push_b part 1',self,dt,top.it,self.icycle,dir
             if self.l_pxr:
+                tdebcell=MPI.Wtime()
                 f=self.fields
                 l_pushb=False
                 if self.l_2dxz:
@@ -495,6 +500,8 @@ class EM3DPXR(EM3DFFT):
                                               f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
+                tendcell=MPI.Wtime()
+                pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
             else:
                 l_pushb=True
             push_em3d_bf(self.block,dt,1,self.l_pushf,self.l_pushpot,l_pushb)
@@ -515,6 +522,7 @@ class EM3DPXR(EM3DFFT):
             if self.l_pxr:
                 f=self.fields
                 l_pushb=False
+                tdebcell=MPI.Wtime()
                 if self.l_2dxz:
                     if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
                         pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
@@ -552,6 +560,8 @@ class EM3DPXR(EM3DFFT):
                                               f.norderx,f.nordery,f.norderz,
                                               f.nxguard,f.nyguard,f.nzguard,
                                               0,0,0,f.l_nodalgrid)
+                tendcell=MPI.Wtime()
+                pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
             else:
                 l_pushb=True
             push_em3d_bf(self.block,dt,2,self.l_pushf,self.l_pushpot,l_pushb)
@@ -602,6 +612,8 @@ class EM3DPXR(EM3DFFT):
          
 
     def step(self,n=1,freq_print=10,lallspecl=0):
+    	stdout_stat=10
+    	tdeb=MPI.Wtime()
         for i in range(n):
             if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
             if lallspecl:
@@ -616,7 +628,12 @@ class EM3DPXR(EM3DFFT):
                 else:
                     l_last=0
             self.onestep(l_first,l_last)
-                   
+            if(l_pxr & (top.it%stdout_stat==0) & (pxr.rank==0)):
+            	tend=MPI.Wtime()
+            	mpi_time_per_stat=(tend-tdeb)
+            	tdeb=MPI.Wtime()
+                print("time/stdout_stat (s)",mpi_time_per_stat) 
+            	       
 
 
     def onestep(self,l_first,l_last):
@@ -632,8 +649,6 @@ class EM3DPXR(EM3DFFT):
 #        for js in range(top.pgroup.ns):
 #          self.fetcheb(js)
         if l_pxr:
-            tdeb=0. 
-            tend=0.
             tdebpart=0.
             tendpart=0.
             tdebfield=0.
@@ -695,10 +710,10 @@ class EM3DPXR(EM3DFFT):
         tendpart=MPI.Wtime()
         pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
 #        self.solve2ndhalf()
-        tdebcell=MPI.Wtime()
+        #tdebcell=MPI.Wtime()
         self.dosolve()
-        tendcell=MPI.Wtime()
-        pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+        #tendcell=MPI.Wtime()
+        #pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
     
         if l_pxr:
             if l_last:
@@ -721,21 +736,21 @@ class EM3DPXR(EM3DFFT):
            minidiag(top.it,top.time,top.lspecial)
         top.it+=1
         
-        # MPI time for current it 
-        if (l_pxr & self.dload_balancing & (top.it%self.dlb_freq==0) ):
-            tend=MPI.Wtime()
+        # Load balance every dlb_freq time step
+        if (l_pxr & (self.dload_balancing & (top.it%self.dlb_freq==0))):
             pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
             pxr.get_max_time_per_it() 
             pxr.get_min_time_per_it()
             ## --- Compute time per part and per cell 
             pxr.compute_time_per_part()
             pxr.compute_time_per_cell()
-            print(pxr.global_time_per_part,pxr.global_time_per_cell)
-            
             imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100. 
-            print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
             if (imbalance>self.dlb_threshold): 
-                self.loadbalance(imbalance)
+                self.loadbalance(str(imbalance)+"%")
+                
+        # Try to Load balance at init 
+        if ((top.it==1) & self.dlb_at_init): 
+        	self.loadbalance("Init")
 
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
@@ -754,29 +769,31 @@ class EM3DPXR(EM3DFFT):
                 	   sum(pxr.cell_y_min-pxr.new_cell_y_min)+sum(pxr.cell_y_max-pxr.new_cell_y_max)+ \
                 	   sum(pxr.cell_z_min-pxr.new_cell_z_min)+sum(pxr.cell_z_max-pxr.new_cell_z_max)
             if (isnewsplit==0): 
-                print("Optimal load balancing already achieved by current implementation")
+            	if(pxr.rank==0): 
+                	print("Optimal load balancing already achieved by current implementation")
             else: 
-                print("trying to load balance the simulation")
+            	if(pxr.rank==0):
+                	print("trying to load balance the simulation, imbalance=", imbalance)
                 ## --- Some output checking 
-                if (pxr.rank==0): 
-                	print("nproc", pxr.nproc)
-                	print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
-                	print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
-                	print("Now recomputing new cell boundaries")
-                	print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
-                	print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
-                	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
-                	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
-                	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
-                	print("NX old", pxr.cell_x_max-pxr.cell_x_min+1)
-                	print("NY old", pxr.cell_y_max-pxr.cell_y_min+1)
-                	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
-                	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
-                	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
-                	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
-                	print("NX new", pxr.new_cell_x_max-pxr.new_cell_x_min+1)
-                	print("NY new", pxr.new_cell_y_max-pxr.new_cell_y_min+1)
-                	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
+#                 if (pxr.rank==0): 
+#                 	print("nproc", pxr.nproc)
+#                 	print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
+#                 	print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
+#                 	print("Now recomputing new cell boundaries")
+#                 	print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
+#                 	print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
+#                 	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
+#                 	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
+#                 	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
+#                 	print("NX old", pxr.cell_x_max-pxr.cell_x_min+1)
+#                 	print("NY old", pxr.cell_y_max-pxr.cell_y_min+1)
+#                 	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
+#                 	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
+#                 	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
+#                 	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
+#                 	print("NX new", pxr.new_cell_x_max-pxr.new_cell_x_min+1)
+#                 	print("NY new", pxr.new_cell_y_max-pxr.new_cell_y_min+1)
+#                 	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
                 
                 ## --- Compute limits for all procs 
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
@@ -878,9 +895,9 @@ class EM3DPXR(EM3DFFT):
                 pxr.nz_grid=pxr.nz+1
                 
                 # Test if domain has been resized - used for particle remaping 
-                isnewdom=sum(pxr.cell_x_min[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords])+sum(pxr.cell_x_max[pxr.x_coords]-pxr.new_cell_x_max[pxr.x_coords])+ \
-                sum(pxr.cell_y_min[pxr.y_coords]-pxr.new_cell_y_min[pxr.y_coords])+sum(pxr.cell_y_max[pxr.y_coords]-pxr.new_cell_y_max[pxr.y_coords])+ \
-                sum(pxr.cell_z_min[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords])+sum(pxr.cell_z_max[pxr.z_coords]-pxr.new_cell_z_max[pxr.z_coords]) 
+                isnewdom=pxr.cell_x_min[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords]+pxr.cell_x_max[pxr.x_coords]-pxr.new_cell_x_max[pxr.x_coords]+ \
+                pxr.cell_y_min[pxr.y_coords]-pxr.new_cell_y_min[pxr.y_coords]+pxr.cell_y_max[pxr.y_coords]-pxr.new_cell_y_max[pxr.y_coords]+ \
+                pxr.cell_z_min[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords]+pxr.cell_z_max[pxr.z_coords]-pxr.new_cell_z_max[pxr.z_coords] 
                 
                 # Update new subdomain index arrays
                 pxr.cell_x_min=pxr.new_cell_x_min
@@ -978,7 +995,7 @@ class EM3DPXR(EM3DFFT):
                 em3d_exchange_b(self.block)
                 
                 # If domain has been resized, do a new tile split and exchange particles 
-                if ((isnewdom != 0)): 
+                if 1:#((isnewdom != 0)): 
 					# Now exchanging particles 
                     pxr.create_new_tile_split()
 					
@@ -987,7 +1004,6 @@ class EM3DPXR(EM3DFFT):
                     self.ntilez = pxr.ntilez 
                     
 					# Alias PXR tiles to WARP pgroups 
-                    print(self.ntilex, self.ntiley, self.ntilez)
                     for i,s in enumerate(self.listofallspecies):
 						s.pgroups = []
 						s.jslist = [0]
@@ -1030,7 +1046,7 @@ class EM3DPXR(EM3DFFT):
 								xygroup.append(xgroup)
 							s.pgroups.append(xygroup)
 						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
-    			
+                pxr.particle_bcs_mpi_blocking()
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:

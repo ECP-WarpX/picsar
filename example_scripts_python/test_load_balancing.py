@@ -17,7 +17,7 @@ top.zzplps = 0
 top.zzplfreq = 0   
 top.nhist = top.nt
 top.iflabwn = 0
-top.lcomm_cartesian=0
+top.lcomm_cartesian=1
 w3d.lrhodia3d = false
 w3d.lgetese3d = false
 w3d.lgtlchg3d = false
@@ -28,15 +28,17 @@ top.lfsautodecomp = 1 # fields
 
 # Flags turning on/off load balancing
 load_balance=1
-dlb_freq=10
+dlb_freq=100
 dlb_threshold=10 # dynamic load balancing threshold in % 
+dlb_at_init=1 # Do a load balancing of the simulation at init 
+
 # ----------
 # Parameters
 # ----------
 
 dfact = 1
 dxfact = 8
-dtfact = 8*2
+dtfact = 8
 N_step = 20000/dtfact
 
 #Two-layer foil:
@@ -70,8 +72,7 @@ dz=0.002
 carbon_layer_e_density/=dfact
 hydrogen_layer_e_density/=dfact
 dx*=dxfact
-dy=dx
-dz*=dxfact
+dz=dy=dx
 dt*=dtfact
 
 #-------------------------------------------------------------------------------
@@ -101,7 +102,7 @@ top.efetch         = 4      # field gather type (1=from nodes "momentum conservi
 
 top.runid          = "ion acceleration"                         # run name
 top.pline1         = "basic lpa"                         # comment line on plots
-top.runmaker       = "J.-L. Vay,"                        # run makers
+top.runmaker       = "H. Vincenti,"                        # run makers
 top.lrelativ       = true                                # on/off relativity (for particles push)
 top.pgroup.lebcancel_pusher=0                         # flag for particle pusher (0=Boris pusher; 1=Vay PoP 08 pusher)
 #top.ibpush=2
@@ -110,7 +111,7 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 200  # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 800  # frequency (in time steps) of live plots (off is l_test is off)
 
 fielddiag_period   = 50000000/dtfact
 partdiag_period    = 50000000/dtfact
@@ -171,13 +172,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 4#5
-nppcelly_C = 4#5
-nppcellz_C = 4#5
+nppcellx_C = 1#5
+nppcelly_C = 1#5
+nppcellz_C = 1#5
 
-nppcellx_H = 4#4
-nppcelly_H = 4#4
-nppcellz_H = 4#4
+nppcellx_H = 1#4
+nppcelly_H = 1#4
+nppcellz_H = 1#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -423,7 +424,8 @@ if l_pxr:
                  l_verbose=l_verbose,
                  dload_balancing=load_balance, 
                  dlb_freq=dlb_freq, 
-                 dlb_threshold=dlb_threshold)
+                 dlb_threshold=dlb_threshold, 
+                 dlb_at_init=dlb_at_init)
     step = em.step
 else:
     em = EM3D(       laser_func=laser_func,
@@ -545,7 +547,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   tdeb=MPI.Wtime()
-  em.step(250,1,1)
+  em.step(800,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')

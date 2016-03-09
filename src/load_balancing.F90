@@ -253,6 +253,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     INTEGER(isp), PARAMETER :: nd=3
     INTEGER(isp), DIMENSION(nd) :: nsub, nglob, nglob_old, start
 
+
     sendtype=0_isp
     recvtype=0_isp
     requests=0_isp
@@ -288,14 +289,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             ixmin_new = ix3min - ix1newip  ; ixmax_new = ix3max - ix1newip 
             iymin_new = iy3min - iy1newip  ; iymax_new = iy3max - iy1newip 
             izmin_new = iz3min - iz1newip ; izmax_new = iz3max - iz1newip 
-            !PRINT *, rank,"ixmin_old,iymin_old,izmin_old", &
-            !ixmin_old,iymin_old,izmin_old
-            !PRINT *, rank,"ixmin_new,iymin_new,izmin_new", &
-            !ixmin_new,iymin_new,izmin_new
-            !PRINT *, rank,"ixmax_old,iymax_old,izmax_old", &
-            !ixmax_old,iymax_old,izmax_old
-            !PRINT *, rank,"ixmax_new,iymax_new,izmax_new", &
-            !ixmax_new,iymax_new,izmax_new
             emfield_new(ixmin_new:ixmax_new,iymin_new:iymax_new,izmin_new:izmax_new) = &
             emfield_old(ixmin_old:ixmax_old,iymin_old:iymax_old,izmin_old:izmax_old)
             CYCLE
@@ -383,7 +376,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
    ! DO SOME SYNC BEFORE GOING ON  
     count=nsreq+nrreq
     CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
-
+       
     ! FREE ALL DATATYPES 
     DO i=0,nprocs-1
         IF (sendtype(i) .NE. 0) CALL MPI_TYPE_FREE(sendtype(i), ierrcode)
@@ -471,7 +464,6 @@ SUBROUTINE compute_time_per_part()
     REAL(num) :: global_time_part
     CALL get_local_number_of_part(npart_local)
     global_time_part=0.
-    PRINT *, rank, "npart_local", npart_local
     ! Get max time per it
     IF (npart_local .EQ. 0) THEN 
         local_time_part=0
@@ -492,7 +484,6 @@ SUBROUTINE compute_time_per_cell()
     IMPLICIT NONE 
     REAL(num) :: global_time_cell
     global_time_cell=0.
-    PRINT *, rank, "ncell_local", nx*ny*nz
     ! Get max time per it 
     CALL MPI_ALLREDUCE(local_time_cell, global_time_cell, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
     global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
@@ -589,7 +580,6 @@ SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirm
     END DO 
     
     
-    !PRINT *, "balanced_load,load_per_proc", load_per_proc
 END SUBROUTINE balance_in_dir
 
 
@@ -716,6 +706,7 @@ SUBROUTINE get_projected_load_on_z(nzg,load_on_z,time_per_part,time_per_cell)
 
     ! Computes load_in_z
     load_on_z = load_part_sum*time_per_part + nx_global * ny_global*time_per_cell
+    
     
     DEALLOCATE(load_part,load_part_sum)
     
@@ -900,11 +891,10 @@ END DO
 !Deallocate new_species_parray 
 DEALLOCATE(new_species_parray)
 
-
 ! Apply MPI particle boundary conditions
 ! WARNING: for the moment this only works if 
 ! only one domain is crossed 
-CALL particle_bcs_mpi_blocking()
+!CALL particle_bcs_mpi_blocking()
 
 
 

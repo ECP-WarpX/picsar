@@ -681,9 +681,9 @@ CONTAINS
 		currsp%vth_z=vthzs
 		currsp%nppcell=nppc
 		currsp%name=sname
-		PRINT *, "species name", sname
-		PRINT *, "species mass", mss
-		PRINT *, "species charge", chrg
+		!PRINT *, "species name", sname
+		!PRINT *, "species mass", mss
+		!PRINT *, "species charge", chrg
 
     END SUBROUTINE set_particle_species_properties
 
