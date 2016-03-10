@@ -130,9 +130,9 @@ SUBROUTINE compute_currproc_array_dimensions(nnew,ncmin,ncmax,np,mpi_rank)
 END SUBROUTINE compute_currproc_array_dimensions
 
 SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, & 
-                                    cxmax,cymax,czmax,npx,npy,npz,np,mpi_comm,l_cart_comm)
+                                    cxmax,cymax,czmax,npx,npy,npz,np,mpi_commin,l_cart_comm)
     IMPLICIT NONE 
-    INTEGER(idp), INTENT(IN) :: npx, npy, npz, np, mpi_comm
+    INTEGER(idp), INTENT(IN) :: npx, npy, npz, np, mpi_commin
     LOGICAL(idp) :: l_cart_comm
     INTEGER(idp), INTENT(IN OUT), DIMENSION(0:np-1) :: ix1, ix2, iy1, iy2, iz1, iz2
     INTEGER(idp), INTENT(IN),  DIMENSION(0:npx-1) :: cxmin, cxmax
@@ -145,7 +145,7 @@ SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, &
     DO iz=0,npz-1
         DO iy=0,npy-1
             DO ix=0,npx-1
-                CALL pxr_convertindtoproc(mpi_comm,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
+                CALL pxr_convertindtoproc(mpi_commin,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
                 ix1(curr_rank) = cxmin(ix)
                 ix2(curr_rank) = cxmax(ix)+1
                 iy1(curr_rank) = cymin(iy)
