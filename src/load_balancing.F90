@@ -160,14 +160,14 @@ END SUBROUTINE get_1Darray_proclimits
 
 
 
-SUBROUTINE pxr_convertindtoproc(mpi_comm,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
+SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
     IMPLICIT NONE 
-    INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix,iy,iz,mpi_comm
+    INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix,iy,iz,mpi_comm_in
     LOGICAL(idp), INTENT(IN) :: l_cart_comm
     INTEGER(idp), INTENT(IN OUT) :: curr_rank
     INTEGER(isp) :: mpi_rank, mpi_comm_isp
     INTEGER(idp) :: ixt, iyt, izt 
-    mpi_comm_isp=INT(mpi_comm,isp)
+    mpi_comm_isp=INT(mpi_comm_in,isp)
 
     IF (l_cart_comm) THEN
          CALL MPI_CART_RANK(mpi_comm_isp, (/INT(iz,isp), INT(iy,isp), INT(ix,isp)/), mpi_rank, errcode) 
