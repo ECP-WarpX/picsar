@@ -145,7 +145,7 @@ SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, &
     DO iz=0,npz-1
         DO iy=0,npy-1
             DO ix=0,npx-1
-                CALL pxr_convertindtoproc(comm,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
+                CALL pxr_convertindtoproc(mpi_comm,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
                 ix1(curr_rank) = cxmin(ix)
                 ix2(curr_rank) = cxmax(ix)+1
                 iy1(curr_rank) = cymin(iy)
