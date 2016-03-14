@@ -46,6 +46,9 @@ DO i=1,nst
     CALL calc_diags
     !!! --- Output simulation results
     CALL output_routines
+    !!! --- Output temproral diagnostics
+    Call output_temporal_diagnostics
+    
     it = it+1
     timeit=MPI_WTIME()
 
@@ -114,6 +117,15 @@ IF (rank .EQ. 0) THEN
   write(0,*), 'Cold plasma frequency in the lab frame:',wlab,'s^-1'
   write(0,*), 'cold plasma wavelength:',lambdalab,'m',lambdalab*1e6,'um'
   write(0,*), ''
+  
+  ! Species properties
+  DO ispecies=1,nspecies
+    curr => species_parray(ispecies)
+    write(0,*) trim(adjustl(curr%name))
+    write(0,*) 'Drift velocity:',curr%vdrift_x,curr%vdrift_y,curr%vdrift_z
+    write(0,*) ''
+  end do
+  
 end if
 
 !- Init stencil coefficients
@@ -166,14 +178,6 @@ CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
 
 END SUBROUTINE init_stencil_coefficients
-
-
-
-
-
-
-
-
 
 
 !===============================================================================

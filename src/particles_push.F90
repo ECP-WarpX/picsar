@@ -39,7 +39,7 @@ TYPE(particle_species), POINTER :: curr
 TYPE(grid_tile), POINTER :: currg
 TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
+INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, ip
 INTEGER(idp) :: nxjg,nyjg,nzjg
 LOGICAL(idp) :: isgathered=.FALSE.
 
@@ -48,7 +48,7 @@ tdeb=MPI_WTIME()
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,np,nxjg,nyjg,nzjg, isgathered)
+!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley
         DO ix=1, ntilex
@@ -125,16 +125,17 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, &
 					curr_tile%part_bz, curr%charge,curr%mass,dtt)
                     !!! --- Push velocity with E half step
-                    CALL pxr_epush_v(np,curr_tile%part_ux, curr_tile%part_uy,                       &
+                    CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                       &
                     curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,                        &
                     curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
                     !! --- Set gamma of particles 
-					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
+					          CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
 					curr_tile%part_uz, curr_tile%part_gaminv)
-                    !!!! --- push particle species positions a time step
-                    CALL pxr_pushxyz(np,curr_tile%part_x,curr_tile%part_y,                          &
-                    curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,   				        &
+                  !!!! --- push particle species positions a time step
+                    CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y, &
+                    curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy, &
                     curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+                    
                 END DO! END LOOP ON SPECIES
             ENDIF
         END DO
@@ -346,23 +347,25 @@ END SUBROUTINE pxrpush_particles_part2
 !  Advance particle positions
 SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
 !===============================================================================
-USE constants
-USE omp_lib
-IMPLICIT NONE
-INTEGER(idp)   :: np
-REAL(num) :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
-REAL(num) :: dt
-INTEGER(idp)  :: ip
+  USE constants
+  USE omp_lib
+  IMPLICIT NONE
+  INTEGER(idp)   :: np
+  REAL(num) :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
+  REAL(num) :: dt
+  INTEGER(idp)  :: ip
 
-!!$OMP PARALLEL DO PRIVATE(ip)
-DO ip=1,np
-    xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-    yp(ip) = yp(ip) + uyp(ip)*gaminv(ip)*dt
-    zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-ENDDO
-!!$OMP END PARALLEL DO
 
-RETURN
+  !!$OMP PARALLEL DO PRIVATE(ip)
+  DO ip=1,np
+      xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
+      yp(ip) = yp(ip) + uyp(ip)*gaminv(ip)*dt
+      zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
+      
+  ENDDO
+  !!$OMP END PARALLEL DO
+
+  RETURN
 END SUBROUTINE pxr_pushxyz
 
 !===============================================================================

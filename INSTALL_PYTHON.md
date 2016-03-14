@@ -37,10 +37,23 @@ First edit the file Makefile_Forthon and indicate the following environment vari
 - LIBS: required libraries for the install. With Open-MPI, the compilation of picsar requires the following libraries: -lmpi, -lmpi_usempi, -lmpi_mpifh, -lgomp. For open-mpi>1.8.x, you should use -lmpi_usempif08 instead of -lmpi_usempi. For a Macports install of mpich, you should use -lmpifort -lmpi -lpmpi.   
 
 
-**4. Compiling and Testing**
+**4. Compiling**
 ----------------------------
 
 To compile and test, invoke the rule "all": 
 
 - Make -f Makefile_Forthon all
 
+**5. Compiling**
+----------------------------
+
+Testing the code after compilation is highly recommended.
+
+To test the compilation/execution, you can use the makefile (py.test is required):
+
+  For all test:
+  - Make -f Makefile_Forthon test
+
+  For each test one by one
+  - Simple running test:     make -f Makefile test1
+  - Langmuir wave:           make -f Makefile test2

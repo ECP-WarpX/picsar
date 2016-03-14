@@ -15,6 +15,8 @@ class EM3DPXR(EM3DFFT):
                       'ntiley':1,
                       'ntilez':1,
                       'listofallspecies':[],
+                      'currdepo':0,
+                      'mpicom_curr':0
                       }
 
     def __init__(self,**kw):
@@ -124,7 +126,7 @@ class EM3DPXR(EM3DFFT):
         pxr.length_y=pxr.ymax-pxr.ymin
         pxr.length_z=pxr.zmax-pxr.zmin
         
-# INIT MPI_DATA FOR PICSAR
+        # INIT MPI_DATA FOR PICSAR
         pxr.mpi_minimal_init()
 #        pxr.mpi_initialise()
 #        print 'nprocx',pxr.nprocx      
@@ -158,11 +160,14 @@ class EM3DPXR(EM3DFFT):
         pxr.nys = 0
         pxr.nzs = 0
 
-
         # Current deposition
         pxr.nox=1
         pxr.noy=1
         pxr.noz=1
+        # Current deposition algorithm
+        pxr.currdepo=self.currdepo
+        # Tye of MPI communication for the current
+        pxr.mpicom_curr=self.mpicom_curr
 
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
@@ -945,3 +950,57 @@ class EM3DPXR(EM3DFFT):
         if self.scraper is not None:self.scraper.scrape(js)
         processlostpart(pg,js+1,top.clearlostpart,top.time+top.dt*pg.ndts[js],top.zbeam)
         if self.l_verbose:print me,'enter apply_bnd_conditions'
+        
+        
+    def get_kinetic_energy(self,sp,**kw):
+        """
+        Get the total kinetic energy of the species sp
+        
+        input:
+        - sp: species number
+        """
+        total_kinetic_energy = zeros(1)
+        if self.l_verbose:print me,'compute kinetic energy on species',sp
+        pxr.get_kinetic_energy(sp,total_kinetic_energy)
+        #print total_kinetic_energy,sp
+        return total_kinetic_energy[0]
+        
+    def get_field_energy(self,field,**kw):
+        """
+        Get the total field energy for the given component. 
+        The field energy is calculated in parallel with a picsar fortran subroutine.
+        
+        input:
+        - field: field component
+        """
+        field_energy = zeros(1)
+        
+        if field=='ex':
+          pxr.get_field_energy(self.fields.Ex,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+        elif field=='ey':
+          pxr.get_field_energy(self.fields.Ey,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+        elif field=='ez':
+          pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy) 
+        elif field=='bx':
+          pxr.get_field_energy(self.fields.Bx,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+        elif field=='by':
+          pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)   
+        elif field=='bz':
+          pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)                        
+        return field_energy[0]
+        
+    def get_normL2_divEeps0_rho(self):
+        """
+        Compute the L2 norm of divE*eps0 - rho
+        
+        """
+        div = zeros(1)
+        
+        pxr.calc_field_div(pxr.dive,pxr.ex, pxr.ey, pxr.ez, pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.dx,pxr.dy,pxr.dz)
+        
+        pxr.pxrdepose_rho_on_grid()
+        
+        pxr.get_norm_diverho(pxr.dive,pxr.rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,div)
+        
+        return div
+    

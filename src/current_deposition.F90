@@ -13,10 +13,13 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   jz = 0.0_num
 
   ! DEPOSIT Current
+  
   IF (currdepo.EQ.1) THEN
+  ! Sequential version
     CALL pxrdepose_currents_on_grid_jxjyjz_sub_seq(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	nox,noy,noz,dx,dy,dz,dt)
-  ELSE ! Default
+  ELSE
+  ! Default - Parallel version
     CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	  nox,noy,noz,dx,dy,dz,dt)
   ENDIF

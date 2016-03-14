@@ -1,0 +1,164 @@
+######################### INPUT FILE FOR THE CODE PICSAR
+section::cpusplit
+ nprocx = 1
+ nprocy = 2
+ nprocz = 2
+ topology = 0
+ # MPI com type
+ mpicom_curr = 0
+end::cpusplit
+
+section::main
+ # Number of grid points in x,y,z
+ nx = 100
+ ny = 100
+ nz = 100
+
+ # Origin of simulation axes
+ xmin = -20e-6
+ ymin = -20e-6
+ zmin = -20e-6
+ xmax = 20e-6
+ ymax = 20e-6
+ zmax = 20e-6
+ # Simulation duration (in 1/w0)
+ t_max = 20
+ 
+ ntilex = 2
+ ntiley = 2
+ ntilez = 2
+ 
+ # Guard cells
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
+ 
+end::main
+
+section::solver
+ # Maxwell solver
+ norderx = 3
+ nordery = 3
+ norderz = 3
+end::solver
+
+section::plasma
+ # Maxwell solver
+ nlab=1e25
+ gamma0=1.
+ pdistr=1
+end::plasma
+
+section::species
+ name = electron
+ mass = 1
+ charge = -1
+ nppcell = 3
+ x_min = -1e-6
+ y_min = -1e-6
+ z_min = -1e-6
+ x_max = 1e-6
+ y_max = 1e-6
+ z_max = 1e-6
+ ! Drift velocity (in clight)
+ vdrift_x = 0.
+ vdrift_y = 0.
+ vdrift_z = 0.9
+ ! Thermal velocity (in clight)
+ vth_x = 0.0
+ vth_y = 0.0
+ vth_z = 0.0
+end::species
+
+section::species
+ name = positron
+ mass = 1
+ charge = 1
+ nppcell = 3
+ x_min = -1e-6
+ y_min = -1e-6
+ z_min = -1e-6
+ x_max = 1e-6
+ y_max = 1e-6
+ z_max = 1e-6
+ ! Drift velocity (in clight)
+ vdrift_x = 0.
+ vdrift_y = 0.
+ vdrift_z = 0.9
+ ! Thermal velocity (in clight)
+ vth_x = 0.
+ vth_y = 0.
+ vth_z = 0.
+end::species
+
+section::species
+ name = electron
+ mass = 1
+ charge = -1
+ nppcell = 3
+ x_min = -1e-6
+ y_min = -1e-6
+ z_min = -1e-6
+ x_max = 1e-6
+ y_max = 1e-6
+ z_max = 1e-6
+ ! Drift velocity (in clight)
+ vdrift_x = 0.
+ vdrift_y = 0.9
+ vdrift_z = 0.
+ ! Thermal velocity (in clight)
+ vth_x = 0.0
+ vth_y = 0.0
+ vth_z = 0.0
+end::species
+
+section::species
+ name = positron
+ mass = 1
+ charge = 1
+ nppcell = 3
+ x_min = -1e-6
+ y_min = -1e-6
+ z_min = -1e-6
+ x_max = 1e-6
+ y_max = 1e-6
+ z_max = 1e-6
+ ! Drift velocity (in clight)
+ vdrift_x = 0.
+ vdrift_y = 0.9
+ vdrift_z = 0.
+ ! Thermal velocity (in clight)
+ vth_x = 0.
+ vth_y = 0.
+ vth_z = 0.
+end::species
+
+section::output
+ output_frequency = 10
+ output_step_min  = 0
+ output_step_max  = 1000
+ ex = 1
+ ey = 1
+ ez = 1
+ rho = 1
+ dive = 1
+ jy = 1
+ jz = 1
+end::output
+
+section::temporal
+  frequency=1
+  # output 0 - binary, 1 - ascii
+  format=0
+  kinE=1
+  exE=1
+  eyE=1
+  ezE=1
+  bxE=1
+  byE=1
+  bzE=1
+  divE-rho=1
+end::temporal

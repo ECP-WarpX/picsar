@@ -19,6 +19,7 @@ USE shared_data
 USE mpi_routines
 USE control_file
 USE time_stat
+USE diagnostics
 
 IMPLICIT NONE
 INTEGER :: i,ierror,j,l
@@ -48,6 +49,9 @@ INTEGER :: i,ierror,j,l
 
 ! --- allocates and inits particle distributions (on each subdomain)
   CALL initall
+
+! --- Diagnostics  
+  CALL init_diags
 
 !----------------------------------------------
 ! THIS IS THE PIC ALGORITHM TIME LOOP

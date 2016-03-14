@@ -420,7 +420,7 @@ CONTAINS
         INTEGER(idp) :: ispecies, l, k, j, ipart
         INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-        REAL(num) :: phi, th, v, usq, clightsq
+        REAL(num) :: phi, th, v, usq, clightsq,partvx,partvy,partvz
         INTEGER(idp) :: err, npart
         REAL(num), DIMENSION(6) :: rng=0_num
 		clightsq=1/clight**2
@@ -448,11 +448,17 @@ CONTAINS
                                 v=MAX(1e-10_num,rng(1))
                                 th=2*pi*rng(2)
                                 phi=2*pi*rng(3)
-                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                                usq = (partux**2 + partuy**2+partuz**2)*clightsq
-       							gaminv = 1.0_num/sqrt(1.0_num + usq)
+                                  
+                                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                
+                                usq = (partux**2+partuy**2+partuz**2)
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)/(clight**2))                                
+                                partux = partvx /gaminv
+                                partuy = partvy /gaminv
+                                partuz = partvz /gaminv
+                                                                
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
                                 partux, partuy, partuz, gaminv, partw)
@@ -480,11 +486,17 @@ CONTAINS
                                 v=MAX(1e-10_num,rng(4))
                                 th=2*pi*rng(5)
                                 phi=2*pi*rng(6)
-                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                                usq = (partux**2 + partuy**2+partuz**2)*clightsq
-       							gaminv = 1.0_num/sqrt(1.0_num + usq)
+                                
+                                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                
+                                usq = (partux**2+partuy**2+partuz**2)
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)/(clight**2))                                
+                                partux = partvx /gaminv
+                                partuy = partvy /gaminv
+                                partuz = partvz /gaminv
+                                
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
                                 partux, partuy, partuz, gaminv, partw)

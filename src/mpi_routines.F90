@@ -148,21 +148,21 @@ CONTAINS
       !IF (rank==3) print*, 'rank',rank,'topo_array',topo_array
       
       ! Each processor determine their coordinates
-        DO iz =0,nprocz-1
-          DO iy=0,nprocy-1
-            DO ix=0,nprocx-1      
+      DO iz =0,nprocz-1
+        DO iy=0,nprocy-1
+          DO ix=0,nprocx-1      
 
-              IF (rank .EQ. topo_array(ix,iy,iz)) THEN
-              
-                x_coords = ix
-                y_coords = iy
-                z_coords = iz
-              
-              ENDIF     
+            IF (rank .EQ. topo_array(ix,iy,iz)) THEN
+            
+              x_coords = ix
+              y_coords = iy
+              z_coords = iz
+            
+            ENDIF     
 
-            ENDDO
           ENDDO
         ENDDO
+      ENDDO
 
       x_min_boundary = .FALSE.
       x_max_boundary = .FALSE.
@@ -231,23 +231,9 @@ CONTAINS
       ENDIF
     
       ! We first fill the x direction, then y and finally z
-      IF (rank.EQ.0) THEN
-        x_coords = 0
-      ELSE IF (MOD(rank+1,nprocx).EQ.0) THEN
-        x_coords = nprocx-1
-      ELSE
-        x_coords = MOD(rank,nprocx)
-      ENDIF
-      rankyz = (rank+1 - x_coords)/nprocx
-      
-      IF (rankyz.EQ.0) THEN
-        y_coords = 0
-      ELSE IF (MOD(rankyz+1,nprocy).EQ.0) THEN
-        y_coords = nprocy-1
-      ELSE       
-        y_coords = MOD(rankyz,nprocy)
-      ENDIF      
-      z_coords = (rankyz - y_coords)/nprocz
+      x_coords = MOD(rank,nprocx)
+      y_coords = MOD((rank-x_coords)/nprocx,nprocy)
+      z_coords = (rank-x_coords - y_coords*nprocx)/(nprocx*nprocy)
       
       !print*,'rank:',rank,rankyz,x_coords,y_coords,z_coords
          
@@ -347,22 +333,9 @@ CONTAINS
       IF (new_rank.NE.old_rank) WRITE(0,'(A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
       WRITE(0,'(X,A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
       ! We first fill the x direction, then y and finally z
-      IF (rank.EQ.0) THEN
-        x_coords = 0
-      ELSE IF (MOD(rank+1,nprocx).EQ.0) THEN
-        x_coords = nprocx-1
-      ELSE
-        x_coords = MOD(rank,nprocx)
-      ENDIF
-      rankyz = (rank+1 - x_coords)/nprocx
-      IF (rankyz.EQ.0) THEN
-        y_coords = 0
-      ELSE IF (MOD(rankyz+1,nprocy).EQ.0) THEN
-        y_coords = nprocy-1
-      ELSE       
-        y_coords = MOD(rankyz,nprocy)
-      ENDIF      
-      z_coords = (rankyz - y_coords)/nprocz
+      x_coords = MOD(rank,nprocx)
+      y_coords = MOD((rank-x_coords)/nprocx,nprocy)
+      z_coords = (rank-x_coords - y_coords*nprocx)/(nprocx*nprocy)
       WRITE(0,'(X,A30,3(X,I5))') 'Coordinates from MPI_CART_COORDS:',coordinates(1:3)
       WRITE(0,'(X,A30,3(X,I5))') 'Theoretical coordinates:',z_coords,y_coords,x_coords
       CALL MPI_BARRIER(comm,errcode)

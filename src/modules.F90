@@ -49,7 +49,9 @@ TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
 END MODULE grid_tilemodule
 
 ! Fortran object representing a particle tile
+!===============================================================================
 MODULE particle_tilemodule !#do not parse 
+!===============================================================================
 USE constants
 TYPE particle_tile
     LOGICAL :: l_arrays_allocated= .FALSE.
@@ -86,7 +88,9 @@ TYPE particle_tile
 END TYPE
 END MODULE particle_tilemodule
 
+!===============================================================================
 MODULE particle_speciesmodule !#do not parse 
+!===============================================================================
 use particle_tilemodule
 use constants
 ! Fortran object representing a particle species
@@ -120,14 +124,17 @@ TYPE particle_species
 END TYPE
 END MODULE particle_speciesmodule
 
+!===============================================================================
 MODULE tile_params
+!===============================================================================
 ! # of particle tiles in each dimension
 INTEGER :: ntilex, ntiley, ntilez
-
 END MODULE tile_params
 
 
+!===============================================================================
 MODULE particle_properties
+!===============================================================================
 USE constants
 INTEGER(idp), PARAMETER :: npid=1
 INTEGER(idp), PARAMETER :: wpid=1
@@ -249,17 +256,30 @@ CHARACTER(LEN=string_length) :: filejz   ='jz'
 CHARACTER(LEN=string_length) :: filedive ='dive'
 CHARACTER(LEN=string_length) :: filerho  ='rho'
 
+! temporal diagnostics
+INTEGER(isp), dimension(10) :: temdiag_act_list                  ! Array of activation flags
+CHARACTER(len=string_length), dimension(10) :: temdiag_name_list ! Filename for the different temporal diags
+INTEGER(isp), dimension(10) :: temdiag_i_list                    ! Array of index to locate the value in the big array
+INTEGER(isp), dimension(10) :: temdiag_nb_values                 ! Array containing the number of values in the big array
+
+INTEGER :: temdiag_nb
+INTEGER :: temdiag_nb_part
+INTEGER :: temdiag_nb_field
+INTEGER :: temdiag_totvalues
+INTEGER :: temdiag_frequency
+INTEGER :: temdiag_format
+REAL(num), dimension(:),allocatable :: temdiag_array             ! Big array containing all the temporal diag at a given iteration
+
 END MODULE output_data
 
-
+!===============================================================================
 MODULE timing
+!===============================================================================
 use constants 
 REAL(num) :: dep_curr_time=0._num
 REAL(num) :: timepush=0._num
 
 END MODULE timing
-
-
 
 
 !===============================================================================

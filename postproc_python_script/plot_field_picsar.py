@@ -26,7 +26,9 @@ def main(argv):
     
   for opt, arg in opts:
     if opt == '-h':
-      print 'Specify file name'
+      print 'Help page'
+      print '-f file name'
+      print '-n dimension nx=ny=nz=n of the case'
       sys.exit()
     elif opt in ("-f", "--file"):
       filey = arg
@@ -40,9 +42,9 @@ def main(argv):
 
   Ey=LoadBinNumPyArray3D(filey,nx,ny,nz);
 
-  x = linspace(0,100,nx)
-  y = linspace(0,100,ny)
-  z = linspace(0,100,nz)
+  x = linspace(0,100.,nx)
+  y = linspace(0,100.,ny)
+  z = linspace(0,100.,nz)
 
   Eyplaneyz=abs(Ey[nx/2,:,:]);
   Eyplanexz=abs(Ey[:,ny/2,:]);
@@ -54,6 +56,8 @@ def main(argv):
   
   im = plt.pcolormesh(y,z,Eyplaneyz)
   plt.title("y-z plane")
+  plt.xlabel('y')
+  plt.ylabel('z')
   cb = plt.colorbar()
   
   #imgplot=plt.imshow(Eyplaneyz,extent=extent,origin='lower',interpolation='nearest')
@@ -79,10 +83,11 @@ def main(argv):
   #plt.gca().set_aspect('auto', adjustable='box')
   #plt.gca().set_title("x-y plane")
 
-  Eyline1=Ey[45,45,:];
+  Eyline1=Ey[nx/2,ny/2,:];
   plt.subplot(224)
   plt.plot(Eyline1)
   #plt.ylim([0., 1000000000000])
+  plt.xlabel("z")
   plt.show()
   
 if __name__ == "__main__":

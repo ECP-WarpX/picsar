@@ -5,6 +5,7 @@ MODULE control_file
   USE fields
   USE particles
   USE params
+  USE output_data
   IMPLICIT NONE
 
   INTEGER(idp) :: ios=0
@@ -81,6 +82,12 @@ CONTAINS
 			ALLOCATE(species_parray(1:nspecies_max))
 			l_species_allocated=.TRUE.
 		ENDIF
+		
+		
+		  ! Temporal output
+		  temdiag_frequency = 0
+		  temdiag_format = 0
+		
     END SUBROUTINE default_init
 
     ! Routine that reads command line arguments
@@ -127,6 +134,8 @@ CONTAINS
                     CALL read_cpusplit_section
                 CASE('section::plasma')
                     CALL read_plasma_section
+                CASE('section::temporal')
+                    CALL read_temporal_output_section
                 END SELECT
             END IF
         END DO
@@ -415,6 +424,50 @@ CONTAINS
         END DO
         RETURN
     END SUBROUTINE read_output_section
+
+    SUBROUTINE read_temporal_output_section
+        INTEGER :: ix = 0
+        LOGICAL :: end_section = .FALSE.    
+
+        DO WHILE((.NOT. end_section) .AND. (ios==0))
+            READ(fh_input, '(A)', iostat=ios) buffer
+            IF (INDEX(buffer,'#') .GT. 0) THEN
+               CYCLE
+            ENDIF
+            IF (INDEX(buffer,'frequency') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_frequency
+            ELSE IF (INDEX(buffer,'format') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_format     
+            ELSE IF (INDEX(buffer,'kinE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(1) 
+            ELSE IF (INDEX(buffer,'exE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(2)  
+            ELSE IF (INDEX(buffer,'eyE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(3)  
+            ELSE IF (INDEX(buffer,'ezE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(4)
+            ELSE IF (INDEX(buffer,'bxE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(5)  
+            ELSE IF (INDEX(buffer,'byE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(6)  
+            ELSE IF (INDEX(buffer,'bzE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(7)     
+            ELSE IF (INDEX(buffer,'divE-rho') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(8)                            
+            ENDIF            
+        ENDDO    
+        RETURN
+    END SUBROUTINE
 
     SUBROUTINE init_species_section
         ! INIT SPECIES SECTION 

@@ -1,17 +1,19 @@
 FC=mpif90
-FARGS= -O3 -fopenmp
+FARGS= -O3 -fopenmp -ftree-vectorize -ftree-vectorizer-verbose=2 
+#-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
+#FARGS=-g
 SRCDIR= src
 BINDIR = fortran_bin
 APPNAME=picsar
 
-
 $(SRCDIR)/%.o:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 
-all: clean build test 
+all: clean build
+test: test1 test2 test3
 
 
-build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o $(SRCDIR)/tiling.o $(SRCDIR)/particles_push.o $(SRCDIR)/current_deposition.o $(SRCDIR)/field_gathering.o $(SRCDIR)/mpi_derived_types.o $(SRCDIR)/boundary.o $(SRCDIR)/simple_io.o $(SRCDIR)/diags.o $(SRCDIR)/submain.o $(SRCDIR)/mpi_routines.o $(SRCDIR)/control_file.o  $(SRCDIR)/main.o
+build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o $(SRCDIR)/tiling.o $(SRCDIR)/particles_push.o $(SRCDIR)/current_deposition.o $(SRCDIR)/field_gathering.o $(SRCDIR)/mpi_derived_types.o $(SRCDIR)/boundary.o $(SRCDIR)/diags.o $(SRCDIR)/simple_io.o $(SRCDIR)/submain.o $(SRCDIR)/mpi_routines.o $(SRCDIR)/control_file.o  $(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
@@ -19,10 +21,20 @@ build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o $(SRCDIR)/tiling.o $(SRCDIR)/parti
 clean:
 	rm -rf $(SRCDIR)/*.o *.mod $(BINDIR) RESULTS
 
-test:
-	mkdir -p RESULTS
-	cp $(BINDIR)/$(APPNAME) RESULTS
-	cp example_decks_fortran/test.pixr RESULTS/input_file.pixr
-	cd RESULTS && \
-	mpirun -np 8 ./picsar -ntilex 10 -ntiley 10 -ntilez 10 -distr 1
+test1:
+	cd Acceptance_testing/Fortran_tests/test_plasma_drift && \
+	py.test -s --ttest=1 --trun=1
+test2:
+	cd Acceptance_testing/Fortran_tests/test_homogeneous_plasma && \
+	py.test -s --ttest=1 --trun=1	
+test3:
+	cd Acceptance_testing/Fortran_tests/test_Langmuir_wave && \
+	py.test -s --ttest=1 --trun=1
+# Previous version
+#mkdir -p RESULTS
+#cp $(BINDIR)/$(APPNAME) RESULTS
+#cp example_decks_fortran/test.pixr RESULTS/input_file.pixr
+#cd RESULTS && \
+#mpirun -np 8 ./picsar -ntilex 10 -ntiley 10 -ntilez 10 -distr 1
+
 
