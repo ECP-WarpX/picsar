@@ -749,7 +749,7 @@ class EM3DPXR(EM3DFFT):
                 self.loadbalance(str(imbalance)+"%")
                 
         # Try to Load balance at init 
-        if ((top.it==1) & self.dlb_at_init): 
+        if ((top.it==1) & self.dlb_at_init & self.dload_balancing): 
         	self.loadbalance("Init")
 
         # --- call afterstep functions
@@ -775,25 +775,25 @@ class EM3DPXR(EM3DFFT):
             	if(pxr.rank==0):
                 	print("trying to load balance the simulation, imbalance=", imbalance)
                 ## --- Some output checking 
-#                 if (pxr.rank==0): 
-#                 	print("nproc", pxr.nproc)
-#                 	print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
-#                 	print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
-#                 	print("Now recomputing new cell boundaries")
-#                 	print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
-#                 	print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
-#                 	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
-#                 	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
-#                 	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
-#                 	print("NX old", pxr.cell_x_max-pxr.cell_x_min+1)
-#                 	print("NY old", pxr.cell_y_max-pxr.cell_y_min+1)
-#                 	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
-#                 	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
-#                 	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
-#                 	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
-#                 	print("NX new", pxr.new_cell_x_max-pxr.new_cell_x_min+1)
-#                 	print("NY new", pxr.new_cell_y_max-pxr.new_cell_y_min+1)
-#                 	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
+                if (pxr.rank==0): 
+                	print("nproc", pxr.nproc)
+                	print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
+                	print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
+                	print("Now recomputing new cell boundaries")
+                	print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
+                	print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
+                	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
+                	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
+                	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
+                	print("NX old", pxr.cell_x_max-pxr.cell_x_min+1)
+                	print("NY old", pxr.cell_y_max-pxr.cell_y_min+1)
+                	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
+                	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
+                	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
+                	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
+                	print("NX new", pxr.new_cell_x_max-pxr.new_cell_x_min+1)
+                	print("NY new", pxr.new_cell_y_max-pxr.new_cell_y_min+1)
+                	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
                 
                 ## --- Compute limits for all procs 
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
@@ -806,12 +806,12 @@ class EM3DPXR(EM3DFFT):
                 pxr.get_1darray_proclimits(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old, 
                                         pxr.cell_x_min,pxr.cell_y_min,pxr.cell_z_min,             
                                         pxr.cell_x_max,pxr.cell_y_max,pxr.cell_z_max,           
-                                        pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,pxr.comm,
+                                        pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,
                                         top.lcomm_cartesian)
                 pxr.get_1darray_proclimits(ix1new,ix2new,iy1new,iy2new,iz1new,iz2new, 
                                         pxr.new_cell_x_min,pxr.new_cell_y_min,pxr.new_cell_z_min,             
                                         pxr.new_cell_x_max,pxr.new_cell_y_max,pxr.new_cell_z_max,           
-                                        pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,pxr.comm,top.lcomm_cartesian)
+                                        pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,top.lcomm_cartesian)
                                     
                 ## --- Compute new sizes for grid arrays 
                 nx_new=pxr.new_cell_x_max[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords]+1
@@ -838,14 +838,14 @@ class EM3DPXR(EM3DFFT):
                                         	pxr.rank, pxr.nproc)
                 pxr.ey=ey_new            
                 # -- Ez
-                ez_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
+                ez_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')-1.0e8
                 pxr.mpi_remap_3d_field_component(ez_new,nx_new,ny_new,nz_new,               
                                         	pxr.ez,pxr.nx,pxr.ny,pxr.nz,                    
                                         	pxr.nxguards,pxr.nyguards,pxr.nzguards,         
                                         	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, 
                                         	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
                                         	pxr.rank, pxr.nproc)
-                pxr.ez=ez_new   
+                pxr.ez=ez_new
                 # -- Bx
                 bx_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
                 pxr.mpi_remap_3d_field_component(bx_new,nx_new,ny_new,nz_new,               
@@ -1046,7 +1046,11 @@ class EM3DPXR(EM3DFFT):
 								xygroup.append(xgroup)
 							s.pgroups.append(xygroup)
 						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
-                pxr.particle_bcs_mpi_blocking()
+                pxr.remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,    
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     
+                           pxr.cell_x_min,pxr.cell_x_max,pxr.cell_y_min,pxr.cell_y_max,
+                           pxr.cell_z_min,pxr.cell_z_max,    
+                           pxr.rank, pxr.nproc, pxr.nprocx, pxr.nprocy,pxr.nprocz,top.lcomm_cartesian)
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:

@@ -28,17 +28,17 @@ top.lfsautodecomp = 1 # fields
 
 # Flags turning on/off load balancing
 load_balance=1
-dlb_freq=100
-dlb_threshold=10 # dynamic load balancing threshold in % 
-dlb_at_init=1 # Do a load balancing of the simulation at init 
+dlb_freq=10
+dlb_threshold=5 # dynamic load balancing threshold in % 
+dlb_at_init=0 # Do a load balancing of the simulation at init 
 
 # ----------
 # Parameters
 # ----------
 
 dfact = 1
-dxfact = 8
-dtfact = 8
+dxfact = 8*2
+dtfact = 8*2
 N_step = 20000/dtfact
 
 #Two-layer foil:
@@ -111,10 +111,11 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 800  # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 1000  # frequency (in time steps) of live plots (off is l_test is off)
 
-fielddiag_period   = 50000000/dtfact
-partdiag_period    = 50000000/dtfact
+fielddiag_period   = 150#200000/dtfact
+partdiag_period    = 150#200000/dtfact
+l_parallelo=False
 
 #-------------------------------------------------------------------------------
 # laser parameters
@@ -172,13 +173,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 1#5
-nppcelly_C = 1#5
-nppcellz_C = 1#5
+nppcellx_C = 2#5
+nppcelly_C = 2#5
+nppcellz_C = 2#5
 
-nppcellx_H = 1#4
-nppcelly_H = 1#4
-nppcellz_H = 1#4
+nppcellx_H = 2#4
+nppcelly_H = 2#4
+nppcellz_H = 2#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -501,25 +502,25 @@ installafterstep(liveplots)
 
 # Load additional OpenPMD diagnostic
 diag_f = FieldDiagnostic( period=fielddiag_period, top=top, w3d=w3d, em=em,
-                          comm_world=comm_world, lparallel_output=lparallel )
+                          comm_world=comm_world, lparallel_output=l_parallelo )
 diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_C" : elec_C},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 diag_elec_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_H" : elec_H},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_C" : ions_C},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 diag_ions_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_H" : ions_H},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 
-#installafterstep( diag_f.write )
-#installafterstep( diag_elec_C.write )
-#installafterstep( diag_elec_H.write )
-#installafterstep( diag_ions_C.write )
-#installafterstep( diag_ions_H.write )
+installafterstep( diag_f.write )
+installafterstep( diag_elec_C.write )
+installafterstep( diag_elec_H.write )
+installafterstep( diag_ions_C.write )
+installafterstep( diag_ions_H.write )
 
 tottime = AppendableArray()
 def accuttime():
@@ -547,7 +548,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   tdeb=MPI.Wtime()
-  em.step(800,1,1)
+  em.step(10,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')

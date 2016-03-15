@@ -43,11 +43,11 @@ SUBROUTINE mpi_load_balance()
         CALL get_1Darray_proclimits(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,    &
                                     cell_x_min,cell_y_min,cell_z_min,             & 
                                     cell_x_max,cell_y_max,cell_z_max,             &
-                                    nprocx, nprocy, nprocz, nproc,comm,.TRUE.)
+                                    nprocx, nprocy, nprocz, nproc,.TRUE.)
         CALL get_1Darray_proclimits(ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
                                     new_cell_x_min,new_cell_y_min,new_cell_z_min,  & 
                                     new_cell_x_max,new_cell_y_max,new_cell_z_max,  &
-                                    nprocx, nprocy, nprocz, nproc,comm,.TRUE.)
+                                    nprocx, nprocy, nprocz, nproc,.TRUE.)
         ! Compute new dimensions 
         CALL compute_currproc_array_dimensions(nx_new,new_cell_x_min,new_cell_x_max,nproc,x_coords)
         CALL compute_currproc_array_dimensions(ny_new,new_cell_y_min,new_cell_y_max,nproc,y_coords)
@@ -130,9 +130,9 @@ SUBROUTINE compute_currproc_array_dimensions(nnew,ncmin,ncmax,np,mpi_rank)
 END SUBROUTINE compute_currproc_array_dimensions
 
 SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, & 
-                                    cxmax,cymax,czmax,npx,npy,npz,np,mpi_commin,l_cart_comm)
+                                    cxmax,cymax,czmax,npx,npy,npz,np,l_cart_comm)
     IMPLICIT NONE 
-    INTEGER(idp), INTENT(IN) :: npx, npy, npz, np, mpi_commin
+    INTEGER(idp), INTENT(IN) :: npx, npy, npz, np
     LOGICAL(idp) :: l_cart_comm
     INTEGER(idp), INTENT(IN OUT), DIMENSION(0:np-1) :: ix1, ix2, iy1, iy2, iz1, iz2
     INTEGER(idp), INTENT(IN),  DIMENSION(0:npx-1) :: cxmin, cxmax
@@ -145,7 +145,7 @@ SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, &
     DO iz=0,npz-1
         DO iy=0,npy-1
             DO ix=0,npx-1
-                CALL pxr_convertindtoproc(mpi_commin,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
+                CALL pxr_convertindtoproc(comm,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
                 ix1(curr_rank) = cxmin(ix)
                 ix2(curr_rank) = cxmax(ix)+1
                 iy1(curr_rank) = cymin(iy)
@@ -162,7 +162,8 @@ END SUBROUTINE get_1Darray_proclimits
 
 SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
     IMPLICIT NONE 
-    INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix,iy,iz,mpi_comm_in
+    INTEGER(isp), INTENT(IN) :: mpi_comm_in
+    INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix,iy,iz
     LOGICAL(idp), INTENT(IN) :: l_cart_comm
     INTEGER(idp), INTENT(IN OUT) :: curr_rank
     INTEGER(isp) :: mpi_rank, mpi_comm_isp
@@ -281,6 +282,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                                 iz1old(i), iz2old(i),                           & 
                                 ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
                                 l_is_intersection)
+        !PRINT *, "rank,i",rank,i, "l_is_intersection,newvsold",l_is_intersection,iz3min,iz3max
         ! If i == iproc just do a copy of emfield_old in emfield_new
         IF ((i .EQ. iproc) .AND. l_is_intersection) THEN  
             ixmin_old = ix3min - ix1old(i)  ; ixmax_old = ix3max - ix1old(i) 
@@ -291,6 +293,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             izmin_new = iz3min - iz1newip ; izmax_new = iz3max - iz1newip 
             emfield_new(ixmin_new:ixmax_new,iymin_new:iymax_new,izmin_new:izmax_new) = &
             emfield_old(ixmin_old:ixmax_old,iymin_old:iymax_old,izmin_old:izmax_old)
+            !PRINT *, rank, i,"Simple copy", "iz3min, iz3max, iz1newip,iz2newip,izmin_new,izmax_new",iz3min, iz3max, iz1newip,iz2newip,izmin_new,izmax_new
             CYCLE
         END IF
                                 
@@ -328,7 +331,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                                 iz1new(i), iz2new(i),                           & 
                                 ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
                                 l_is_intersection)
-                                
+       ! PRINT *, "rank,i",rank,i, "l_is_intersection, oldvsnew",l_is_intersection,iz3min,iz3max
         ! Case i == iproc already treated in first loop of this subroutine  
         IF (i .EQ. iproc) CYCLE 
                                 
@@ -730,7 +733,7 @@ INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new
 ntilex_new = MAX(1,nx/10)
 ntiley_new = MAX(1,ny/10)
 ntilez_new = MAX(1,nz/10)
-
+PRINT *, "rank, ntilexn, ntileyn, ntilezn", rank, ntilex_new , ntiley_new, ntilez_new 
 
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
@@ -755,6 +758,7 @@ DO ispecies=1,nspecies
     currsp_new%vdrift_z=currsp%vdrift_z
     currsp_new%nppcell=currsp%nppcell
 END DO
+
 
 CALL set_tile_split_for_species(new_species_parray,nspecies,ntilex_new,ntiley_new,ntilez_new,nx_grid,ny_grid,nz_grid, &
                                 x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
@@ -815,6 +819,8 @@ DO ispecies=1,nspecies
         END DO
     END DO 
 END DO
+
+
 
 ! Update tile sizes 
 ntilex=ntilex_new
@@ -878,7 +884,7 @@ DO ispecies=1,nspecies
                     partuz=curr_tile%part_uz(ip)
                     gaminv=curr_tile%part_gaminv(ip)
                     partw=curr_tile%pid(ip,wpid)
-                    CALL add_particle_at_tile(currsp, indx,indy,indz, &
+                    CALL add_particle_at_tile(currsp, ix,iy,iz, &
                          partx, party, partz, partux, partuy, partuz, gaminv, partw)
                     
                     currsp%species_npart=currsp%species_npart+1
@@ -888,18 +894,289 @@ DO ispecies=1,nspecies
     END DO 
 END DO
 
+
+
 !Deallocate new_species_parray 
 DEALLOCATE(new_species_parray)
 
-! Apply MPI particle boundary conditions
-! WARNING: for the moment this only works if 
-! only one domain is crossed 
-!CALL particle_bcs_mpi_blocking()
+END SUBROUTINE 
+
+SUBROUTINE remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
+                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
+                           ncxmin,ncxmax,ncymin,ncymax,nczmin,nczmax,     &
+                           iproc, ncpus,npx, npy,npz, l_cart_comm)
+                           
+IMPLICIT NONE
+INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npy, npz
+INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
+INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
+INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
+INTEGER(idp), INTENT(IN), DIMENSION(0:npy-1) :: ncymin, ncymax
+INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
+LOGICAL(idp), INTENT(IN) :: l_cart_comm
+INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies 
+INTEGER(idp) :: ix3min,ix3max,iy3min,iy3max,iz3min,iz3max
+INTEGER(idp) :: ix1newip, ix2newip, iy1newip, iy2newip, iz1newip, iz2newip
+INTEGER(idp) :: ix1oldip, ix2oldip, iy1oldip, iy2oldip, iz1oldip, iz2oldip
+INTEGER(isp) :: mpitag, count
+INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
+INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
+INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
+INTEGER(idp) :: nsend, nrecv, ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
+LOGICAL(idp) :: l_is_intersection
+INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
+REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
+REAL(num), ALLOCATABLE, DIMENSION (:,:) :: recvbuff
+REAL(num) :: part_xyz
+TYPE(particle_species), POINTER :: currsp
+TYPE(particle_tile), POINTER :: curr
+
+ALLOCATE(recv_rank(nmax_neighbours), send_rank(nmax_neighbours))
+recv_rank=-1
+send_rank=-1
+nsend=0
+nrecv=0
+
+! ---- INTERSECTION OF NEW DOMAIN PROC WITH OLD DOMAINS =/ PROC
+ix1newip = ix1new(iproc)
+ix2newip = ix2new(iproc)
+iy1newip = iy1new(iproc)
+iy2newip = iy2new(iproc)
+iz1newip = iz1new(iproc)
+iz2newip = iz2new(iproc)
+DO i=0, ncpus-1 
+    CALL get_3Dintersection(ix1newip, ix2newip, iy1newip, iy2newip,         &
+                            iz1newip, iz2newip,                             & 
+                            ix1old(i), ix2old(i), iy1old(i), iy2old(i),     &
+                            iz1old(i), iz2old(i),                           & 
+                            ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
+                            l_is_intersection)
+    ! Case i == iproc cycle
+    IF (i .EQ. iproc) CYCLE 
+    ! Found intersection area between new proc and old adjacent proc 
+    ! Creates RECV TYPE FOR THIS Volume  
+    IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
+        !--- Put rank in "receive from" list
+        nrecv=nrecv+1
+        recv_rank(nrecv)=i
+    ENDIF 
+END DO   
+
+! ---- INTERSECTION OF OLD DOMAIN PROC WITH NEW DOMAINS =/ PROC
+ix1oldip = ix1old(iproc)
+ix2oldip = ix2old(iproc)
+iy1oldip = iy1old(iproc)
+iy2oldip = iy2old(iproc)
+iz1oldip = iz1old(iproc)
+iz2oldip = iz2old(iproc)
+DO i=0, ncpus-1 
+    CALL get_3Dintersection(ix1oldip, ix2oldip, iy1oldip, iy2oldip,         &
+                            iz1oldip, iz2oldip,                             & 
+                            ix1new(i), ix2new(i), iy1new(i), iy2new(i),     &
+                            iz1new(i), iz2new(i),                           & 
+                            ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
+                            l_is_intersection)
+    ! Case i == iproc cycle
+    IF (i .EQ. iproc) CYCLE 
+                            
+    ! Found intersection area between old proc and new adjacent procs
+    ! Create sendtype for this volume 
+    IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
+        !--- Put rank in "receive from" list
+        nsend=nsend+1
+        send_rank(nsend)=i
+    ENDIF 
+END DO   
 
 
+ALLOCATE(npart_send(nspecies,nsend), npart_recv(nspecies,nrecv), requests(nsend+nrecv))
+npart_send=0_idp
+npart_recv=0_idp
+requests=0_isp
+
+! ----- POST IRECV TO GET NUMBER OF PARTICLES 
+DO i=1, nrecv
+    count=nspecies
+    CALL MPI_IRECV(npart_recv(1,i), count,  MPI_INTEGER8, recv_rank(i), mpitag,    &
+                            comm, requests(i), errcode)    
+END DO 
+
+! ----- IDENTIFY PARTICLES TO BE SENT/ PLACE PARTICLES IN SEND BUFFER 
+ALLOCATE(sendbuff(nvar*npart_local,nsend), nptoexch(nsend))
+sendbuff=0_num
+nptoexch=0
+DO ispecies=1, nspecies !LOOP ON SPECIES
+    ! Init send recv buffers
+    currsp => species_parray(ispecies)
+    DO iztile=1, ntilez !LOOP ON TILES
+        DO iytile=1, ntiley
+            DO ixtile=1, ntilex
+                curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+                ! If not subdomain border, nothing to do
+                IF (.NOT. curr%subdomain_bound) CYCLE
+                ! search for outbound particles
+                part_xyz=0.
+                ! Identify outbounds particles and compute destination 
+                DO i = 1, curr%np_tile(1) !LOOP ON PARTICLES
+                    iprocx = x_coords
+                    iprocy = y_coords
+                    iprocz = z_coords
+                    part_xyz = curr%part_x(i)
+                    ! Particle has left this processor
+                    IF ((part_xyz .LT. x_min_local) .OR. (part_xyz .GE. x_max_local)) THEN
+                        icx=part_xyz/dx
+                        CALL get_proc_interval(iprocx,icx,ncxmin,ncxmax,ncpus)
+                    ENDIF
+                    part_xyz = curr%part_y(i)
+                    ! Particle has left this processor
+                    IF ((part_xyz .LT. y_min_local) .OR. (part_xyz .GE. y_max_local)) THEN
+                        icy=part_xyz/dy
+                        CALL get_proc_interval(iprocy,icy,ncymin,ncymax,ncpus)
+                    ENDIF       
+                    part_xyz = curr%part_z(i)
+                    ! Particle has left this processor
+                    IF ((part_xyz .LT. z_min_local) .OR. (part_xyz .GE. z_max_local)) THEN 
+                        icz=part_xyz/dz
+                        ! Find new proc using bissection algorithm (log(nproc))
+                        CALL get_proc_interval(iprocz,icz,nczmin,nczmax,ncpus)
+                    ENDIF 
+                    ! Particles has to be sent to another proc 
+                    IF((iprocx .NE. x_coords) .OR. (iprocy .NE. y_coords) .OR. (iprocz .NE. z_coords))  THEN 
+                        ! Finds indices in buffer for curr_rank using a binary search algorithm
+                        CALL pxr_convertindtoproc(comm,iprocx,iprocy,iprocz,npx,npy,npz,curr_rank,l_cart_comm)
+                        CALL binary_search(isend,curr_rank,send_rank(1:nsend),nsend)
+                        PRINT *, "curr_rank", rank, curr_rank, isend, nsend, send_rank(1:nsend)
+                        nptoexch(isend)=nptoexch(isend)+1
+                        ibuff=nvar*nptoexch(isend)+1
+                        sendbuff(ibuff,   isend)    = curr%part_x(i)
+                        sendbuff(ibuff+1, isend)  = curr%part_y(i)
+                        sendbuff(ibuff+2, isend)  = curr%part_z(i)
+                        sendbuff(ibuff+3, isend)  = curr%part_ux(i)
+                        sendbuff(ibuff+4, isend)  = curr%part_uy(i)
+                        sendbuff(ibuff+5, isend)  = curr%part_uz(i)
+                        sendbuff(ibuff+6, isend)  = curr%part_gaminv(i)
+                        sendbuff(ibuff+7, isend)  = curr%pid(i,wpid)
+                        npart_send(i, isend)=npart_send(isend,i)+1
+                        ! Remove particle from current tile 
+                        CALL rm_particle_at_tile(curr,i)
+                    ENDIF           
+                ENDDO !END LOOP ON PARTICLES
+              ENDDO
+           ENDDO
+        ENDDO ! END LOOP ON TILES
+END DO ! End loop on species
+
+! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
+DO i=1, nsend
+    count=nspecies
+    CALL MPI_ISEND(npart_send(1,i), count,  MPI_INTEGER8, send_rank(i), mpitag,    &
+                            comm, requests(nrecv+i), errcode)    
+END DO 
+
+
+! ----- SYNC THE NUMBER OF PARTICLES BEFORE RECEIVING DATA
+count=nsend+nrecv
+CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+requests=0_isp
+
+! ----- POST IRECV FOR PARTICLE DATA 
+nmax=MAXVAL(SUM(npart_recv,1))
+ALLOCATE(recvbuff(nsend,nmax))
+DO i=1, nrecv
+    count=SUM(npart_recv(:,i))
+    IF (count .GT. 0) THEN 
+        CALL MPI_IRECV(recvbuff(1,i),count, MPI_REAL8,recv_rank(i),mpitag, &
+                                comm, requests(i),errcode)
+    ENDIF
+END DO
+
+! ----- POST ISEND FOR PARTICLES DATA 
+DO i=1, nsend
+    count=SUM(npart_send(:,i))
+    IF (count .GT. 0) THEN 
+        CALL MPI_ISEND(sendbuff(1,i), count,  MPI_REAL8, send_rank(i), mpitag,    &
+                            comm, requests(nrecv+i), errcode)    
+    ENDIF
+END DO 
+
+! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
+count=nsend+nrecv
+CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+
+! ----- ADD PARTICLES IN RECV BUFF IN SPECIES ARRAY 
+DO i =1, nrecv
+    ispec=1
+    DO ispecies=1,nspecies
+        currsp=> species_parray(ispecies) 
+        DO ipart=1,npart_recv(ispecies,i)
+            ibuff=ispec+ipart
+            CALL add_particle_to_species(currsp, recvbuff(ibuff,i), recvbuff(ibuff+1,i), recvbuff(ibuff+2,i), &
+            recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
+        END DO 
+        ispec=ispec+npart_recv(ispecies,i)
+    END DO 
+END DO
+
+DEALLOCATE(sendbuff,recvbuff,nptoexch,npart_send,npart_recv,requests)
+
+END SUBROUTINE remap_particles
+
+! Finds proc index using binary search algorithm 
+SUBROUTINE get_proc_interval(iproc,ic,ncmin,ncmax,ncpus)
+IMPLICIT NONE 
+INTEGER(idp), INTENT(IN OUT) :: iproc 
+INTEGER(idp), INTENT(IN) :: ic, ncpus
+INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ncmin, ncmax 
+INTEGER(idp) :: imin, imax, imid
+LOGICAL(idp) :: is_not_found=.TRUE. 
+imin=0
+imax=ncpus-1
+iproc=-1
+
+DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
+    imid=(imax+imin)/2
+    IF((ic .GE. ncmin(imid)) .AND. (ic .LE. ncmax(imid))) THEN 
+        is_not_found=.FALSE. 
+        iproc=imid
+    ELSE
+        IF(ic .LT. ncmin(imid)) THEN 
+            imax=imid-1
+        ELSE 
+            imin=imid+1
+        ENDIF
+    ENDIF
+END DO 
 
 END SUBROUTINE 
 
+SUBROUTINE binary_search(isend,crank,arr,narr)
+IMPLICIT NONE 
+INTEGER(idp), INTENT(IN OUT) :: isend
+INTEGER(idp), INTENT(IN) :: crank 
+INTEGER(idp), INTENT(IN) :: narr
+INTEGER(isp), INTENT(IN), DIMENSION(narr) :: arr
+INTEGER(idp) :: imin, imax, imid
+LOGICAL(idp) :: is_not_found=.TRUE. 
+
+imin=1
+imax=narr
+isend=-1
+PRINT *, "isend, imin, imax, arr, narr",isend, imin, imax, arr, narr
+DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
+    imid=(imax+imin)/2
+    IF(arr(imid) .EQ. crank) THEN 
+        is_not_found=.FALSE. 
+        isend=imid
+    ELSE
+        IF(arr(imid) .LT. crank) THEN 
+            imax=imid-1
+        ELSE 
+            imin=imid+1
+        ENDIF
+    ENDIF
+END DO 
+
+END SUBROUTINE 
 
 
 END MODULE load_balance 
