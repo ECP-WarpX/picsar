@@ -105,18 +105,6 @@ SUBROUTINE mpi_remap_3D_field_component(field_new,nx_new,ny_new,nz_new,         
                            iproc,np,comm,errcode)
 END SUBROUTINE mpi_remap_3D_field_component
 
-
-SUBROUTINE test_dealloc_from_fortran()
-IMPLICIT NONE 
-REAL(num), TARGET, ALLOCATABLE, DIMENSION(:,:,:) :: ex_new
-
-ALLOCATE(ex_new(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
-DEALLOCATE(ex)
-ex=>ex_new
-
-END SUBROUTINE test_dealloc_from_fortran
-
-
 ! This subroutine remaps emfield_old in emfield_new and 
 ! takes care of all MPI exchanges between different MPI_PROCESSES
 SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
@@ -785,7 +773,7 @@ END DO
 !Deallocate new_species_parray 
 DEALLOCATE(new_species_parray)
 
-END SUBROUTINE 
+END SUBROUTINE create_new_tile_split
 
 SUBROUTINE remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
@@ -911,20 +899,20 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                     icx=(part_xyz-xmin)/dx
                     ! Particle has left this processor
                     IF ((part_xyz .LT. x_min_local) .OR. (part_xyz .GE. x_max_local)) THEN
-                        CALL get_proc_interval(iprocx,icx,ncxmin,ncxmax,ncpus)
+                        CALL get_proc_interval(iprocx,icx,ncxmin,ncxmax,npx)
                     ENDIF
                     part_xyz = curr%part_y(i)
                     icy=(part_xyz-ymin)/dy
                     ! Particle has left this processor
                     IF ((part_xyz .LT. y_min_local) .OR. (part_xyz .GE. y_max_local)) THEN
-                        CALL get_proc_interval(iprocy,icy,ncymin,ncymax,ncpus)
+                        CALL get_proc_interval(iprocy,icy,ncymin,ncymax,npy)
                     ENDIF       
                     part_xyz = curr%part_z(i)
                     icz=(part_xyz-zmin)/dz
                     ! Particle has left this processor
                     IF ((part_xyz .LT. z_min_local) .OR. (part_xyz .GE. z_max_local)) THEN 
                         ! Find new proc using bissection algorithm (log(nproc))
-                        CALL get_proc_interval(iprocz,icz,nczmin,nczmax,ncpus)
+                        CALL get_proc_interval(iprocz,icz,nczmin,nczmax,npz)
                     ENDIF 
                     ! Particles has to be sent to another proc 
                     IF((iprocx .NE. x_coords) .OR. (iprocy .NE. y_coords) .OR. (iprocz .NE. z_coords))  THEN 
@@ -997,7 +985,7 @@ DO i =1, nrecv
     DO ispecies=1,nspecies
         currsp=> species_parray(ispecies) 
         DO ipart=1,nvar*npart_recv(ispecies,i),nvar
-            ibuff=ispec+ipart
+            ibuff=ispec+ipart 
             CALL add_particle_to_species(currsp, recvbuff(ibuff,i), recvbuff(ibuff+1,i), recvbuff(ibuff+2,i), &
             recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
         END DO 
@@ -1036,7 +1024,7 @@ DO WHILE((is_not_found) .AND. (imax .GE. imin) )
     ENDIF
 END DO 
 
-END SUBROUTINE 
+END SUBROUTINE get_proc_interval
 
 SUBROUTINE binary_search(isend,crank,arr,narr)
 IMPLICIT NONE 
@@ -1065,7 +1053,7 @@ DO WHILE((is_not_found) .AND. (imax .GE. imin) )
     ENDIF
 END DO 
 
-END SUBROUTINE 
+END SUBROUTINE binary_search
 
 
 END MODULE load_balance 
