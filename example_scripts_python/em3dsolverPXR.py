@@ -108,6 +108,28 @@ class EM3DPXR(EM3DFFT):
         pxr.z_grid_mins=top.fsdecomp.zmin
         pxr.z_grid_maxs=top.fsdecomp.zmax
         
+        # Particle boundaries for PXR 
+        if (top.pbound0 == absorb): 
+        	pxr.pbound_z_min=1
+        else: # Default is periodic 
+        	pxr.pbound_z_min=0
+        	
+        if (top.pboundnz == absorb): 
+        	pxr.pbound_z_min=1
+        else: # Default is periodic 
+        	pxr.pbound_z_min=0
+        	
+        if (top.pboundxy == absorb): 
+        	pxr.pbound_x_min=1
+        	pxr.pbound_x_max=1
+        	pxr.pbound_y_min=1
+        	pxr.pbound_y_max=1
+        else: # Default is periodic 
+        	pxr.pbound_x_min=0
+        	pxr.pbound_x_max=0
+        	pxr.pbound_y_min=0
+        	pxr.pbound_y_max=0
+        
         # --- number of grid cells
         pxr.nx_global = w3d.nx
         pxr.ny_global = w3d.ny
