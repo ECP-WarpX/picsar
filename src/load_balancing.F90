@@ -174,7 +174,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                                 iz1old(i), iz2old(i),                           & 
                                 ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
                                 l_is_intersection)
-        !PRINT *, "rank,i",rank,i, "l_is_intersection,newvsold",l_is_intersection,iz3min,iz3max
         ! If i == iproc just do a copy of emfield_old in emfield_new
         IF ((i .EQ. iproc) .AND. l_is_intersection) THEN  
             ixmin_old = ix3min - ix1old(i)  ; ixmax_old = ix3max - ix1old(i) 
@@ -185,7 +184,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
             izmin_new = iz3min - iz1newip ; izmax_new = iz3max - iz1newip 
             emfield_new(ixmin_new:ixmax_new,iymin_new:iymax_new,izmin_new:izmax_new) = &
             emfield_old(ixmin_old:ixmax_old,iymin_old:iymax_old,izmin_old:izmax_old)
-            !PRINT *, rank, i,"Simple copy", "iz3min, iz3max, iz1newip,iz2newip,izmin_new,izmax_new",iz3min, iz3max, iz1newip,iz2newip,izmin_new,izmax_new
             CYCLE
         END IF
                                 
@@ -223,7 +221,6 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                                 iz1new(i), iz2new(i),                           & 
                                 ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
                                 l_is_intersection)
-       ! PRINT *, "rank,i",rank,i, "l_is_intersection, oldvsnew",l_is_intersection,iz3min,iz3max
         ! Case i == iproc already treated in first loop of this subroutine  
         IF (i .EQ. iproc) CYCLE 
                                 
@@ -623,7 +620,6 @@ INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new
 ntilex_new = MAX(1,nx/10)
 ntiley_new = MAX(1,ny/10)
 ntilez_new = MAX(1,nz/10)
-PRINT *, "rank, ntilexn, ntileyn, ntilezn", rank, ntilex_new , ntiley_new, ntilez_new 
 
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
@@ -892,7 +888,6 @@ DO i=1, nrecv
 END DO 
 
 ! ----- IDENTIFY PARTICLES TO BE SENT/ PLACE PARTICLES IN SEND BUFFER 
-PRINT *, rank, "npart_local", npart_local
 ALLOCATE(sendbuff(nvar*npart_local,nsend), nptoexch(nsend))
 sendbuff=0_num
 nptoexch=0
@@ -936,9 +931,6 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                         ! Finds indices in buffer for curr_rank using a binary search algorithm
                         CALL pxr_convertindtoproc(comm,iprocx,iprocy,iprocz,npx,npy,npz,curr_rank,l_cart_comm)
                         CALL binary_search(isend,curr_rank,send_rank(1:nsend),nsend)
-                        !PRINT *, " rank, curr_rank, isend, nsend, send_rank(1:nsend)", rank, curr_rank, isend, nsend, send_rank(1:nsend)
-                        !PRINT *, "rank, iprocx,iprocy,iprocz", rank, iprocx,iprocy,iprocz
-                        !PRINT *, "rank,icx,icy,icz", rank, icx,icy,icz
                         ibuff=nvar*nptoexch(isend)+1
                         sendbuff(ibuff,   isend)    = curr%part_x(i)
                         sendbuff(ibuff+1, isend)  = curr%part_y(i)
@@ -962,7 +954,6 @@ END DO ! End loop on species
 ! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
 DO i=1, nsend
     count=nspecies
-    !PRINT *, "PROC ",rank, "sent", npart_send(1:nspecies,i), "particles to proc", send_rank(i)
     CALL MPI_ISEND(npart_send(1,i), count,  MPI_INTEGER8, send_rank(i), mpitag,    &
                             comm, requests(nrecv+i), errcode)    
 END DO 
@@ -976,14 +967,11 @@ requests=0_isp
 
 ! ----- POST IRECV FOR PARTICLE DATA 
 nmax=nvar*MAXVAL(SUM(npart_recv,1))
-!PRINT *, "rank, nmax, nrecv", rank, nmax, nrecv, nsend
-!PRINT *, "rank, npart_send, npart_recv", npart_send, npart_recv
 ALLOCATE(recvbuff(nmax,nrecv))
 recvbuff=0_num
 DO i=1, nrecv
     count=nvar*SUM(npart_recv(:,i))
     IF (count .GT. 0) THEN 
-        !PRINT *, "PROC ", rank, " received ", count, "data particles from PROC", recv_rank(i)
         CALL MPI_IRECV(recvbuff(1,i),count, MPI_REAL8,recv_rank(i),mpitag, &
                                 comm, requests(i),errcode)
     ENDIF
@@ -993,7 +981,6 @@ END DO
 DO i=1, nsend
     count=nvar*SUM(npart_send(:,i))
     IF (count .GT. 0) THEN 
-        !PRINT *, "PROC ", rank, " sent ", count, "data particles to PROC", send_rank(i), "sendbuff(10,i)",sendbuff(10,i)
         CALL MPI_ISEND(sendbuff(1,i), count,  MPI_REAL8, send_rank(i), mpitag,    &
                             comm, requests(nrecv+i), errcode)    
     ENDIF
@@ -1015,7 +1002,6 @@ DO i =1, nrecv
             recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
         END DO 
         ispec=ispec+nvar*npart_recv(ispecies,i)
-        !PRINT *, "rank, i, ispec",rank, i, ispec
     END DO 
 END DO
 
