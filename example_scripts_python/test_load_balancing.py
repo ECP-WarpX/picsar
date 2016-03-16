@@ -28,7 +28,7 @@ top.lfsautodecomp = 1 # fields
 
 # Flags turning on/off load balancing
 load_balance=1
-dlb_freq=10
+dlb_freq=11
 dlb_threshold=5 # dynamic load balancing threshold in % 
 dlb_at_init=0 # Do a load balancing of the simulation at init 
 
@@ -37,8 +37,8 @@ dlb_at_init=0 # Do a load balancing of the simulation at init
 # ----------
 
 dfact = 1
-dxfact = 8*2
-dtfact = 8*2
+dxfact = 8
+dtfact = 8
 N_step = 20000/dtfact
 
 #Two-layer foil:
@@ -548,7 +548,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   tdeb=MPI.Wtime()
-  em.step(10,1,1)
+  em.step(50,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
