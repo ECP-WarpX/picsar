@@ -136,10 +136,9 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Ex
-
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
@@ -148,9 +147,10 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+
 ! advance Ey
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
@@ -162,9 +162,9 @@ do l = -nzs, nz+nzs
             end do
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance Ez
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
@@ -173,8 +173,8 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 end subroutine pxrpush_em2d_evec_norder
 
@@ -201,19 +201,19 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Ex
-
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
 			Ex(j,k,l) = Ex(j,k,l) - dtsdz * (By(j,k,l+1-ist)   - By(j,k  ,l-1))
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+
 ! advance Ey
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
@@ -221,17 +221,18 @@ do l = -nzs, nz+nzs
 			Ey(j,k,l) = Ey(j,k,l) + dtsdz * (Bx(j,k,l+1-ist)   - Bx(j,k,l-1))
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+
 ! advance Ez
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
 			Ez(j,k,l) = Ez(j,k,l) + dtsdx * (By(j+1-ist,k,l) - By(j-1,k  ,l))
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 end subroutine pxrpush_em2d_evec
 
@@ -252,6 +253,8 @@ integer(idp):: j,k,l
 logical :: l_nodalgrid
 
 ! advance Ex
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -261,8 +264,9 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-
+!$OMP END DO
   ! advance Ey
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -272,8 +276,9 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-
+!$OMP END DO
   ! advance Ez 
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -283,7 +288,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-
+!$OMP END DO
+!$OMP END PARALLEL
 return
 end subroutine pxrpush_em3d_evec
 
@@ -310,9 +316,9 @@ else
 ist = 1
 end if
 
+! advance Bx
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
 !$OMP DO COLLAPSE(3)
-! advance Bx
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -326,8 +332,8 @@ do l = -nzs, nz+nzs
     end do
 end do
 !$OMP END DO
-!$OMP DO COLLAPSE(3)
 ! advance By
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -341,8 +347,8 @@ do l = -nzs, nz+nzs
     end do
 end do
 !$OMP END DO
-!$OMP DO COLLAPSE(3)
 ! advance Bz
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -382,9 +388,9 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Bx
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             do i = 1, norderz/2
@@ -392,9 +398,9 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance By
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             do i = 1, norderx/2
@@ -405,9 +411,9 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance Bz
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             do i = 1, norderx/2
@@ -415,8 +421,8 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 
 end subroutine pxrpush_em2d_bvec_norder
@@ -442,33 +448,33 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Bx
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
                 Bx(j,k,l) = Bx(j,k,l) + dtsdz * (Ey(j,k,  l+1) - Ey(j,k,l-1+ist))
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance By
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
                 By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k,l  ) - Ez(j-1+ist,k,l))
                 By(j,k,l) = By(j,k,l) - dtsdz * (Ex(j  ,k,l+1) - Ex(j,k,l-1+ist))
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance Bz
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
                 Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k,l) - Ey(j-1+ist,k,l))
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 
 end subroutine pxrpush_em2d_bvec
@@ -488,6 +494,8 @@ integer(idp) :: j,k,l
 logical :: l_nodalgrid
 
 ! advance Bx
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs-1
     do k = -nys, ny+nys-1
         do j = -nxs, nx+nxs
@@ -496,8 +504,9 @@ do l = -nzs, nz+nzs-1
         end do
     end do
 end do
-
+!$OMP END DO
 ! advance By
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs-1
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs-1
@@ -506,8 +515,9 @@ do l = -nzs, nz+nzs-1
         end do
     end do
 end do
-
+!$OMP END DO
 ! advance Bz
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys-1
         do j = -nxs, nx+nxs-1
@@ -516,6 +526,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
+!$OMP END DO
+!$OMP END PARALLEL
 end subroutine pxrpush_em3d_bvec
 
 

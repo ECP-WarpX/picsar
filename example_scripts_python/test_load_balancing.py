@@ -5,7 +5,7 @@ from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 home=os.getenv('HOME')
 
-l_pxr=0
+l_pxr=1
 
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
@@ -14,20 +14,31 @@ top.itplps = 0
 top.itplfreq = 0
 top.zzmomnts = 0
 top.zzplps = 0
-top.zzplfreq = 0
+top.zzplfreq = 0   
 top.nhist = top.nt
 top.iflabwn = 0
+top.lcomm_cartesian=1
 w3d.lrhodia3d = false
 w3d.lgetese3d = false
 w3d.lgtlchg3d = false
+
+# Flags turning off auto decomp and let user specify its decomp
+top.lautodecomp = 1 # Particles
+top.lfsautodecomp = 1 # fields 
+
+# Flags turning on/off load balancing
+load_balance=1
+dlb_freq=11
+dlb_threshold=5 # dynamic load balancing threshold in % 
+dlb_at_init=0 # Do a load balancing of the simulation at init 
 
 # ----------
 # Parameters
 # ----------
 
 dfact = 1
-dxfact = 16
-dtfact = 8*4
+dxfact = 8
+dtfact = 8
 N_step = 20000/dtfact
 
 #Two-layer foil:
@@ -61,7 +72,7 @@ dz=0.002
 carbon_layer_e_density/=dfact
 hydrogen_layer_e_density/=dfact
 dx*=dxfact
-dy=dz=dx
+dz=dy=dx
 dt*=dtfact
 
 #-------------------------------------------------------------------------------
@@ -77,7 +88,7 @@ l_gist             = 1      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
 restart_dump       = ""     # dump file to restart from (works?)
 l_moving_window    = 1      # on/off (Galilean) moving window
-l_plasma           = 1      # on/off plasma
+l_plasma           = 1    # on/off plasma
 l_usesavedist      = 0      # if on, uses dump of beam particles distribution
 l_smooth           = 1      # on/off smoothing of current density
 l_laser            = 1      # on/off laser
@@ -91,7 +102,7 @@ top.efetch         = 4      # field gather type (1=from nodes "momentum conservi
 
 top.runid          = "ion acceleration"                         # run name
 top.pline1         = "basic lpa"                         # comment line on plots
-top.runmaker       = "J.-L. Vay,"                        # run makers
+top.runmaker       = "H. Vincenti,"                        # run makers
 top.lrelativ       = true                                # on/off relativity (for particles push)
 top.pgroup.lebcancel_pusher=0                         # flag for particle pusher (0=Boris pusher; 1=Vay PoP 08 pusher)
 #top.ibpush=2
@@ -100,10 +111,11 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 10 # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 1000  # frequency (in time steps) of live plots (off is l_test is off)
 
-fielddiag_period   = 500/dtfact
-partdiag_period    = 500/dtfact
+fielddiag_period   = 150#200000/dtfact
+partdiag_period    = 150#200000/dtfact
+l_parallelo=False
 
 #-------------------------------------------------------------------------------
 # laser parameters
@@ -270,8 +282,35 @@ else:
 #-------------------------------------------------------------------------------
 # initializes WARP
 #-------------------------------------------------------------------------------
+# User defined decomp goes here 
+#top.nxprocs=2
+#top.nyprocs=2
+#top.nzprocs=2
+#top.fsdecomp.nxprocs=top.nxprocs
+#top.fsdecomp.nyprocs=top.nyprocs
+#top.fsdecomp.nzprocs=top.nzprocs
+#top.ppdecomp.nxprocs=top.nxprocs
+#top.ppdecomp.nyprocs=top.nyprocs
+#top.ppdecomp.nzprocs=top.nzprocs
+#top.fsdecomp.nx=[20,87]
+#top.fsdecomp.nx=[107]
+#top.fsdecomp.ny=[107]
+#top.fsdecomp.ny=[20,87]
+#top.fsdecomp.nz=[10,61]
+#top.fsdecomp.nz=[71]
+#top.ppdecomp.nx=[20,87]
+#top.ppdecomp.nx=[107]
+#top.ppdecomp.ny=[20,87]
+#top.ppdecomp.ny=[107]
+#top.ppdecomp.nz=[10,61]
+#top.ppdecomp.nz=[71]
+#top.userdecompx = top.fsdecomp.nx
+#top.userdecompy = top.fsdecomp.ny
+#top.userdecompz = top.fsdecomp.nz
+    
 top.fstype = -1 # sets field solver to None (desactivates electrostatic solver)
-package('w3d');generate()
+package('w3d'); generate()
+
 #-------------------------------------------------------------------------------
 # set a few shortcuts
 #-------------------------------------------------------------------------------
@@ -292,7 +331,7 @@ if l_plasma:
         np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
     
     elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=clight/100.,vthy=clight/100.,vthz=clight/100.,
+                       vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
 
     ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
@@ -310,7 +349,7 @@ if l_plasma:
         np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_H*nppcelly_H*nppcellz_H
 
     elec_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=clight/100.,vthy=clight/100.,vthz=clight/100.,
+                       vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
 
     ions_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
@@ -361,9 +400,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex =  max(1,w3d.nxlocal/10)
-    ntiley =  max(1,w3d.nylocal/10)
-    ntilez =  max(1,w3d.nzlocal/10)
+    ntilex = max(1,w3d.nxlocal/10)
+    ntiley = max(1,w3d.nylocal/10)
+    ntilez = max(1,w3d.nzlocal/10)
 #    pg.sw=0.
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
@@ -383,7 +422,11 @@ if l_pxr:
                  ntilex=ntilex,
                  ntiley=ntiley,
                  ntilez=ntilez,
-                 l_verbose=l_verbose)
+                 l_verbose=l_verbose,
+                 dload_balancing=load_balance, 
+                 dlb_freq=dlb_freq, 
+                 dlb_threshold=dlb_threshold, 
+                 dlb_at_init=dlb_at_init)
     step = em.step
 else:
     em = EM3D(       laser_func=laser_func,
@@ -399,6 +442,10 @@ else:
                  dtcoef=dtcoef,
                  l_getrho=0,
                  l_verbose=l_verbose)
+
+print(em.nxlocal)
+print(em.nylocal)
+print(em.nzlocal)
 
 #-------------------------------------------------------------------------------
 # restarts from dump file
@@ -435,6 +482,7 @@ def liveplots():
       em.pfey(view=3,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-12,l_transpose=1,direction=1)
       ptitles('Ey [TV/m]','z [um]','X [um]')
       density=elec_C.get_density()+elec_H.get_density()
+      #density=0
       if dim=='3d':density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=4,titles=0, \
           xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid, \
@@ -444,35 +492,35 @@ def liveplots():
       ptitles('n','z [um]','X [um]')
       em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
       ptitles('Ez [GV/m]','z [um]','X [um]')
-      ions_C.ppzx(view=6)
-      elec_C.ppzx(color=red,view=6)
-      ions_H.ppzx(color=blue,view=6)
-      elec_H.ppzx(color=cyan,view=6)
+      #ions_C.ppzx(view=6)
+      #elec_C.ppzx(color=red,view=6)
+      #ions_H.ppzx(color=blue,view=6)
+      #elec_H.ppzx(color=cyan,view=6)
 
 installafterstep(liveplots)
 
 
 # Load additional OpenPMD diagnostic
 diag_f = FieldDiagnostic( period=fielddiag_period, top=top, w3d=w3d, em=em,
-                          comm_world=comm_world, lparallel_output=lparallel )
+                          comm_world=comm_world, lparallel_output=l_parallelo )
 diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_C" : elec_C},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 diag_elec_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_H" : elec_H},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_C" : ions_C},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 diag_ions_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_H" : ions_H},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=l_parallelo )
 
-#installafterstep( diag_f.write )
-#installafterstep( diag_elec_C.write )
-#installafterstep( diag_elec_H.write )
-#installafterstep( diag_ions_C.write )
-#installafterstep( diag_ions_H.write )
+installafterstep( diag_f.write )
+installafterstep( diag_elec_C.write )
+installafterstep( diag_elec_H.write )
+installafterstep( diag_ions_C.write )
+installafterstep( diag_ions_H.write )
 
 tottime = AppendableArray()
 def accuttime():
@@ -500,7 +548,7 @@ print '\nInitialization complete\n'
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
   tdeb=MPI.Wtime()
-  em.step(100,1,1)
+  em.step(50,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')

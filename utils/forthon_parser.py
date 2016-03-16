@@ -728,9 +728,9 @@ def parse_subroutine_blocks(fw,listlines,names,namesmod,istart,iend):
             semicol=""
             if (argsname!=[""]):
                 semicol=":"
-            fw.write(names[iblock].strip()+"("+argsname[0].strip()+semicol+argstype[0].strip())
+            fw.write(names[iblock].strip()+"("+argsname[0].strip()+semicol+argstype[0].strip().replace("_istarget_",""))
             for i in range(1,len(argsname)):
-                fw.write(","+argsname[i]+semicol+argstype[i])
+                fw.write(","+argsname[i]+semicol+argstype[i].replace("_istarget_",""))
             fw.write(") subroutine\n")
 
 ### - PARSE SUBROUTINE ARGS AND TYPES
@@ -891,6 +891,8 @@ def get_type(line):
             typechain=typechain+"complex"
         if (curr_arg.find("pointer")>=0):
             typechain= "_"+typechain
+        if (curr_arg.find("target")>=0):
+            typechain= "_istarget_"+typechain
         if (curr_arg.find("allocatable")>=0):
             typechain= "_"+typechain
         if (curr_arg.find("logical")>=0):
@@ -1026,7 +1028,7 @@ remove_file(appname+".F90")
 remove_file(appname+".v")
 
 #LIST ALL .F90 or .F files in current directory
-listfiles=["modules.F90", "maxwell.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", "field_gathering.F90", "mpi_derived_types.F90", "boundary.F90", "simple_io.F90", "diags.F90", "submain.F90", "mpi_routines.F90", "control_file.F90"]
+listfiles=["modules.F90", "maxwell.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", "field_gathering.F90", "mpi_derived_types.F90", "boundary.F90", "simple_io.F90", "diags.F90", "submain.F90", "mpi_routines.F90", "control_file.F90", "load_balancing.F90"]
 
 # Pre-parse all application files in two .F90 files
 # appname_subroutines.F90 and appnam_modules.F90

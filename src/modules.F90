@@ -156,7 +156,7 @@ USE particle_properties
 USE grid_tilemodule
 
 ! Array of  particle species objects
-TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:):: species_parray
+TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:) :: species_parray
 
 END MODULE particles
 
@@ -254,9 +254,9 @@ INTEGER(isp) :: errcode, provided, comm, tag
 INTEGER(idp) :: rank
 INTEGER(isp) :: coordinates(3) 
 INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
-INTEGER(isp) :: x_coords, proc_x_min, proc_x_max
-INTEGER(isp):: y_coords, proc_y_min, proc_y_max
-INTEGER(isp) :: z_coords, proc_z_min, proc_z_max
+INTEGER(idp) :: x_coords, proc_x_min, proc_x_max
+INTEGER(idp):: y_coords, proc_y_min, proc_y_max
+INTEGER(idp) :: z_coords, proc_z_min, proc_z_max
 INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
 INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
@@ -267,12 +267,14 @@ LOGICAL(idp) :: z_min_boundary, z_max_boundary
 INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_max
-INTEGER(idp), DIMENSION(:), POINTER :: old_x_max, old_y_max, old_z_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min, new_cell_x_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_y_min, new_cell_y_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min, new_cell_z_max
 INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
 INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
 INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max
-! domain and loadbalancing
-LOGICAL :: allow_cpu_reduce = .FALSE.
+! Domain axis 
+LOGICAL(idp) :: l_axis_allocated=.FALSE.
 REAL(num), DIMENSION(:), POINTER :: x_global, y_global, z_global
 REAL(num), DIMENSION(:), POINTER :: xb_global, yb_global, zb_global
 REAL(num), DIMENSION(:), POINTER :: xb_offset_global
@@ -290,6 +292,7 @@ REAL(num):: y_min_local, y_max_local
 REAL(num):: dz, zmin, zmax,length_z
 REAL(num):: z_min_local, z_max_local
 
+
 ! Axis
 REAL(num), POINTER, DIMENSION(:) :: x, y, z
 REAL(num), DIMENSION(:), POINTER :: x_grid_mins, x_grid_maxs
@@ -306,6 +309,12 @@ REAL(num) :: z_grid_min_local, z_grid_max_local
 REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 ! Electric Field divergence
 REAL(num), POINTER, DIMENSION(:,:,:) :: dive
+
+! Values used for load balancing 
+REAL(num) :: mpitime_per_it, max_time_per_it, min_time_per_it 
+REAL(num) :: global_time_per_cell, global_time_per_part 
+REAL(num) :: local_time_cell, local_time_part
+INTEGER(idp) :: npart_local, npart_global
 
 END MODULE shared_data
 

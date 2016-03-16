@@ -61,8 +61,8 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG X
-    CALL MPI_SENDRECV(field(0,-nyg,-nzg), 1_isp, subarray, proc_x_min, &
-        tag, temp, sz, basetype, proc_x_max, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(0,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), &
+        tag, temp, sz, basetype, INT(proc_x_max,isp), tag, comm, status, errcode)
 
     IF (proc_x_max .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -76,8 +76,8 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_max, &
-        tag, temp, sz, basetype, proc_x_min, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), &
+        tag, temp, sz, basetype, INT(proc_x_min,isp), tag, comm, status, errcode)
 
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -102,8 +102,8 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG Y
-    CALL MPI_SENDRECV(field(-nxg,0,-nzg), 1_isp, subarray, proc_y_min, &
-        tag, temp, sz, basetype, proc_y_max, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,0,-nzg), 1_isp, subarray, INT(proc_y_min,isp), &
+        tag, temp, sz, basetype, INT(proc_y_max,isp), tag, comm, status, errcode)
 
     IF (proc_y_max .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -117,8 +117,8 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, proc_y_max, &
-        tag, temp, sz, basetype, proc_y_min, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, INT(proc_y_max,isp), &
+        tag, temp, sz, basetype, INT(proc_y_min,isp), tag, comm, status, errcode)
 
     IF (proc_y_min .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -143,8 +143,8 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG Z
-    CALL MPI_SENDRECV(field(-nxg,-nyg,0), 1_isp, subarray, proc_z_min, &
-        tag, temp, sz, basetype, proc_z_max, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,-nyg,0), 1_isp, subarray, INT(proc_z_min,isp), &
+        tag, temp, sz, basetype, INT(proc_z_max,isp), tag, comm, status, errcode)
 
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -158,8 +158,8 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, proc_z_max, &
-        tag, temp, sz, basetype, proc_z_min, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, INT(proc_z_max,isp), &
+        tag, temp, sz, basetype, INT(proc_z_min,isp), tag, comm, status, errcode)
 
     IF (proc_z_min .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -206,14 +206,14 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(0,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
+    CALL MPI_ISEND(field(0,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(nx_local+1,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
+    CALL MPI_IRECV(field(nx_local+1,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
+    CALL MPI_ISEND(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), tag, &
         comm, requests(4), errcode)
 
     CALL MPI_TYPE_FREE(subarray, errcode)
@@ -228,14 +228,14 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(-nxg,0,-nzg), 1_isp, subarray, proc_y_min, tag, &
+    CALL MPI_ISEND(field(-nxg,0,-nzg), 1_isp, subarray, INT(proc_y_min,isp), tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg,ny_local+1,-nzg), 1_isp, subarray, proc_y_max, tag, &
+    CALL MPI_IRECV(field(-nxg,ny_local+1,-nzg), 1_isp, subarray, INT(proc_y_max,isp), tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, proc_y_max, tag, &
+    CALL MPI_ISEND(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, INT(proc_y_max,isp), tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_y_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_y_min,isp), tag, &
         comm, requests(4), errcode)
 
     ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
@@ -253,14 +253,14 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(-nxg,-nyg,0), 1_isp, subarray, proc_z_min, tag, &
+    CALL MPI_ISEND(field(-nxg,-nyg,0), 1_isp, subarray, INT(proc_z_min,isp), tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,nz_local+1), 1_isp, subarray, proc_z_max, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,nz_local+1), 1_isp, subarray, INT(proc_z_max,isp), tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, proc_z_max, tag, &
+    CALL MPI_ISEND(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, INT(proc_z_max,isp), tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_z_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_z_min,isp), tag, &
         comm, requests(4), errcode)
 
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
@@ -397,13 +397,13 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(nn,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
+    CALL MPI_ISEND(array(nn,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), tag, &
     comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_x_min,isp), tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), tag, &
     comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_x_max,isp), tag, &
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
@@ -426,13 +426,13 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,nn,-nzg), 1_isp, subarray, proc_y_max, tag, &
+    CALL MPI_ISEND(array(-nxg,nn,-nzg), 1_isp, subarray, INT(proc_y_max,isp), tag, &
     comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_y_min,isp), tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_y_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_y_min,isp), tag, &
     comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_y_max,isp), tag, &
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
@@ -455,13 +455,13 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,-nyg,nn), 1_isp, subarray, proc_z_max, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,nn), 1_isp, subarray, INT(proc_z_max,isp), tag, &
     comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_z_min,isp), tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_z_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_z_min,isp), tag, &
     comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_z_max,isp), tag, &
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
