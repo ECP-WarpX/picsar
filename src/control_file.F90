@@ -71,6 +71,14 @@ CONTAINS
 			ALLOCATE(species_parray(1:nspecies_max))
 			l_species_allocated=.TRUE.
 		ENDIF
+		
+		! Particle boundaries (0 - periodic by default)
+        pbound_x_min=0
+        pbound_y_min=0
+        pbound_z_min=0
+        pbound_x_max=0
+        pbound_y_max=0
+        pbound_z_max=0
     END SUBROUTINE default_init
 
     ! Routine that reads command line arguments

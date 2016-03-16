@@ -260,9 +260,14 @@ INTEGER(idp) :: z_coords, proc_z_min, proc_z_max
 INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
 INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
+! Boundary data
 LOGICAL(idp) :: x_min_boundary, x_max_boundary
 LOGICAL(idp) :: y_min_boundary, y_max_boundary
 LOGICAL(idp) :: z_min_boundary, z_max_boundary
+INTEGER(idp) :: pbound_x_min, pbound_x_max
+INTEGER(idp) :: pbound_y_min, pbound_y_max
+INTEGER(idp) :: pbound_z_min, pbound_z_max
+
 ! The location of the processors
 INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
