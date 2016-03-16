@@ -1002,6 +1002,7 @@ DO i=1, nrecv
 END DO 
 
 ! ----- IDENTIFY PARTICLES TO BE SENT/ PLACE PARTICLES IN SEND BUFFER 
+PRINT *, rank, "npart_local", npart_local
 ALLOCATE(sendbuff(nvar*npart_local,nsend), nptoexch(nsend))
 sendbuff=0_num
 nptoexch=0
@@ -1022,21 +1023,21 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                     iprocy = y_coords
                     iprocz = z_coords
                     part_xyz = curr%part_x(i)
+                    icx=(part_xyz-xmin)/dx
                     ! Particle has left this processor
                     IF ((part_xyz .LT. x_min_local) .OR. (part_xyz .GE. x_max_local)) THEN
-                        icx=part_xyz/dx
                         CALL get_proc_interval(iprocx,icx,ncxmin,ncxmax,ncpus)
                     ENDIF
                     part_xyz = curr%part_y(i)
+                    icy=(part_xyz-ymin)/dy
                     ! Particle has left this processor
                     IF ((part_xyz .LT. y_min_local) .OR. (part_xyz .GE. y_max_local)) THEN
-                        icy=part_xyz/dy
                         CALL get_proc_interval(iprocy,icy,ncymin,ncymax,ncpus)
                     ENDIF       
                     part_xyz = curr%part_z(i)
+                    icz=(part_xyz-zmin)/dz
                     ! Particle has left this processor
                     IF ((part_xyz .LT. z_min_local) .OR. (part_xyz .GE. z_max_local)) THEN 
-                        icz=part_xyz/dz
                         ! Find new proc using bissection algorithm (log(nproc))
                         CALL get_proc_interval(iprocz,icz,nczmin,nczmax,ncpus)
                     ENDIF 
@@ -1045,8 +1046,9 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                         ! Finds indices in buffer for curr_rank using a binary search algorithm
                         CALL pxr_convertindtoproc(comm,iprocx,iprocy,iprocz,npx,npy,npz,curr_rank,l_cart_comm)
                         CALL binary_search(isend,curr_rank,send_rank(1:nsend),nsend)
-                        PRINT *, "curr_rank", rank, curr_rank, isend, nsend, send_rank(1:nsend)
-                        nptoexch(isend)=nptoexch(isend)+1
+                        !PRINT *, " rank, curr_rank, isend, nsend, send_rank(1:nsend)", rank, curr_rank, isend, nsend, send_rank(1:nsend)
+                        !PRINT *, "rank, iprocx,iprocy,iprocz", rank, iprocx,iprocy,iprocz
+                        !PRINT *, "rank,icx,icy,icz", rank, icx,icy,icz
                         ibuff=nvar*nptoexch(isend)+1
                         sendbuff(ibuff,   isend)    = curr%part_x(i)
                         sendbuff(ibuff+1, isend)  = curr%part_y(i)
@@ -1056,7 +1058,8 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                         sendbuff(ibuff+5, isend)  = curr%part_uz(i)
                         sendbuff(ibuff+6, isend)  = curr%part_gaminv(i)
                         sendbuff(ibuff+7, isend)  = curr%pid(i,wpid)
-                        npart_send(i, isend)=npart_send(isend,i)+1
+                        npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
+                        nptoexch(isend)=nptoexch(isend)+1
                         ! Remove particle from current tile 
                         CALL rm_particle_at_tile(curr,i)
                     ENDIF           
@@ -1069,6 +1072,7 @@ END DO ! End loop on species
 ! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
 DO i=1, nsend
     count=nspecies
+    !PRINT *, "PROC ",rank, "sent", npart_send(1:nspecies,i), "particles to proc", send_rank(i)
     CALL MPI_ISEND(npart_send(1,i), count,  MPI_INTEGER8, send_rank(i), mpitag,    &
                             comm, requests(nrecv+i), errcode)    
 END DO 
@@ -1079,12 +1083,17 @@ count=nsend+nrecv
 CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
 requests=0_isp
 
+
 ! ----- POST IRECV FOR PARTICLE DATA 
-nmax=MAXVAL(SUM(npart_recv,1))
-ALLOCATE(recvbuff(nsend,nmax))
+nmax=nvar*MAXVAL(SUM(npart_recv,1))
+!PRINT *, "rank, nmax, nrecv", rank, nmax, nrecv, nsend
+!PRINT *, "rank, npart_send, npart_recv", npart_send, npart_recv
+ALLOCATE(recvbuff(nmax,nrecv))
+recvbuff=0_num
 DO i=1, nrecv
-    count=SUM(npart_recv(:,i))
+    count=nvar*SUM(npart_recv(:,i))
     IF (count .GT. 0) THEN 
+        !PRINT *, "PROC ", rank, " received ", count, "data particles from PROC", recv_rank(i)
         CALL MPI_IRECV(recvbuff(1,i),count, MPI_REAL8,recv_rank(i),mpitag, &
                                 comm, requests(i),errcode)
     ENDIF
@@ -1092,8 +1101,9 @@ END DO
 
 ! ----- POST ISEND FOR PARTICLES DATA 
 DO i=1, nsend
-    count=SUM(npart_send(:,i))
+    count=nvar*SUM(npart_send(:,i))
     IF (count .GT. 0) THEN 
+        !PRINT *, "PROC ", rank, " sent ", count, "data particles to PROC", send_rank(i), "sendbuff(10,i)",sendbuff(10,i)
         CALL MPI_ISEND(sendbuff(1,i), count,  MPI_REAL8, send_rank(i), mpitag,    &
                             comm, requests(nrecv+i), errcode)    
     ENDIF
@@ -1103,17 +1113,19 @@ END DO
 count=nsend+nrecv
 CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
 
-! ----- ADD PARTICLES IN RECV BUFF IN SPECIES ARRAY 
+
+! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
 DO i =1, nrecv
-    ispec=1
+    ispec=0
     DO ispecies=1,nspecies
         currsp=> species_parray(ispecies) 
-        DO ipart=1,npart_recv(ispecies,i)
+        DO ipart=1,nvar*npart_recv(ispecies,i),nvar
             ibuff=ispec+ipart
             CALL add_particle_to_species(currsp, recvbuff(ibuff,i), recvbuff(ibuff+1,i), recvbuff(ibuff+2,i), &
             recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
         END DO 
-        ispec=ispec+npart_recv(ispecies,i)
+        ispec=ispec+nvar*npart_recv(ispecies,i)
+        !PRINT *, "rank, i, ispec",rank, i, ispec
     END DO 
 END DO
 
@@ -1128,11 +1140,12 @@ INTEGER(idp), INTENT(IN OUT) :: iproc
 INTEGER(idp), INTENT(IN) :: ic, ncpus
 INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ncmin, ncmax 
 INTEGER(idp) :: imin, imax, imid
-LOGICAL(idp) :: is_not_found=.TRUE. 
+LOGICAL(idp) :: is_not_found
+
 imin=0
 imax=ncpus-1
 iproc=-1
-
+is_not_found=.TRUE.
 DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
     imid=(imax+imin)/2
     IF((ic .GE. ncmin(imid)) .AND. (ic .LE. ncmax(imid))) THEN 
@@ -1152,23 +1165,23 @@ END SUBROUTINE
 SUBROUTINE binary_search(isend,crank,arr,narr)
 IMPLICIT NONE 
 INTEGER(idp), INTENT(IN OUT) :: isend
-INTEGER(idp), INTENT(IN) :: crank 
+INTEGER(isp), INTENT(IN) :: crank 
 INTEGER(idp), INTENT(IN) :: narr
 INTEGER(isp), INTENT(IN), DIMENSION(narr) :: arr
 INTEGER(idp) :: imin, imax, imid
-LOGICAL(idp) :: is_not_found=.TRUE. 
+LOGICAL(idp) :: is_not_found
 
 imin=1
 imax=narr
 isend=-1
-PRINT *, "isend, imin, imax, arr, narr",isend, imin, imax, arr, narr
+is_not_found=.TRUE.
 DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
     imid=(imax+imin)/2
     IF(arr(imid) .EQ. crank) THEN 
         is_not_found=.FALSE. 
         isend=imid
     ELSE
-        IF(arr(imid) .LT. crank) THEN 
+        IF(arr(imid) .GE. crank) THEN 
             imax=imid-1
         ELSE 
             imin=imid+1
