@@ -616,9 +616,6 @@ END SUBROUTINE charge_bcs
                     ! Else, search for outbound particles
                     ALLOCATE(mask(1:curr%np_tile(1)))
                     mask=.TRUE.
-                    xbd = 0
-                    ybd = 0
-                    zbd = 0
                     part_xyz=0.
                     ! Identify outbounds particles
                     DO i = 1, curr%np_tile(1) !LOOP ON PARTICLES
@@ -631,14 +628,26 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. x_min_local) THEN
                             xbd = -1
                             IF (x_min_boundary) THEN
-                                curr%part_x(i) = part_xyz + length_x
+                            	SELECT CASE (pbound_x_min)
+                            	CASE (1_idp) ! absorbing 
+                            		xbd=0
+                            		mask(i)=.TRUE.
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_x(i) = part_xyz + length_x
+                                END SELECT 
                             ENDIF
                         ENDIF
                         ! Particle has left this processor
                         IF (part_xyz .GE. x_max_local) THEN
                             xbd = 1
                             IF (x_max_boundary) THEN
-                                curr%part_x(i) = part_xyz - length_x
+                            	SELECT CASE (pbound_x_max)
+                            	CASE (1_idp) ! absorbing
+                            		xbd=0
+                            		mask(i)=.TRUE.
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_x(i) = part_xyz - length_x
+                                END SELECT
                             ENDIF
                         ENDIF
 
@@ -647,7 +656,13 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. y_min_local) THEN
                             ybd = -1
                             IF (y_min_boundary) THEN
-                                curr%part_y(i) = part_xyz + length_y
+                            	SELECT CASE (pbound_y_min)! absorbing 
+                            	CASE (1_idp)
+                            		ybd=0
+                            		mask(i)=.TRUE.
+                            	CASE DEFAULT ! periodic 
+                               		curr%part_y(i) = part_xyz + length_y
+                                END SELECT
                             ENDIF
                         ENDIF
 
@@ -655,7 +670,13 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .GE. y_max_local) THEN
                             ybd = 1
                             IF (y_max_boundary) THEN
-                                curr%part_y(i) = part_xyz - length_y
+                            	SELECT CASE (pbound_y_max) 
+                            	CASE (1_idp) ! absorbing 
+                            		ybd=0
+                            		mask(i)=.TRUE. 
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_y(i) = part_xyz - length_y
+                                END SELECT
                             ENDIF
                         ENDIF
 
@@ -664,7 +685,13 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. z_min_local) THEN
                             zbd = -1
                             IF (z_min_boundary) THEN
-                                curr%part_z(i) = part_xyz + length_z
+								SELECT CASE (pbound_z_min)
+								CASE (1_idp) ! absorbing 
+									zbd=0
+									mask(i)=.TRUE.
+								CASE DEFAULT ! periodic 
+									curr%part_z(i) = part_xyz + length_z
+								END SELECT
                             ENDIF
                         ENDIF
 
@@ -673,7 +700,13 @@ END SUBROUTINE charge_bcs
                             zbd = 1
                             ! Particle has left the system
                             IF (z_max_boundary) THEN
-                                curr%part_z(i) = part_xyz - length_z
+                            	SELECT CASE (pbound_z_max)
+                            	CASE (1_idp) ! absorbing 
+                            		zbd=0
+                            		mask(i)=.TRUE.
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_z(i) = part_xyz - length_z
+                                END SELECT
                             ENDIF
                         ENDIF
 
