@@ -5,7 +5,7 @@ from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 home=os.getenv('HOME')
 
-l_pxr=0
+l_pxr=1
 
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
@@ -20,6 +20,17 @@ top.iflabwn = 0
 w3d.lrhodia3d = false
 w3d.lgetese3d = false
 w3d.lgtlchg3d = false
+top.lcomm_cartesian=1
+
+# Flags turning off auto decomp and let user specify its decomp
+top.lautodecomp = 1 # Particles
+top.lfsautodecomp = 1 # fields 
+
+# Flags turning on/off load balancing
+load_balance=1
+dlb_freq=100
+dlb_threshold=10 # dynamic load balancing threshold in % 
+dlb_at_init=1 # Do a load balancing of the simulation at init 
 
 # ----------
 # Parameters
@@ -292,7 +303,7 @@ if l_plasma:
         np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
     
     elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=clight/100.,vthy=clight/100.,vthz=clight/100.,
+                       vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
 
     ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
@@ -310,7 +321,7 @@ if l_plasma:
         np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_H*nppcelly_H*nppcellz_H
 
     elec_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=clight/100.,vthy=clight/100.,vthz=clight/100.,
+                       vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
 
     ions_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
@@ -361,10 +372,9 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex =  max(1,w3d.nxlocal/10)
-    ntiley =  max(1,w3d.nylocal/10)
-    ntilez =  max(1,w3d.nzlocal/10)
-#    pg.sw=0.
+    ntilex = max(1,w3d.nxlocal/10)
+    ntiley = max(1,w3d.nylocal/10)
+    ntilez = max(1,w3d.nzlocal/10)
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
                  laser_polangle=laser_polangle,
@@ -383,7 +393,11 @@ if l_pxr:
                  ntilex=ntilex,
                  ntiley=ntiley,
                  ntilez=ntilez,
-                 l_verbose=l_verbose)
+                 l_verbose=l_verbose,
+                 dload_balancing=load_balance, 
+                 dlb_freq=dlb_freq, 
+                 dlb_threshold=dlb_threshold, 
+                 dlb_at_init=dlb_at_init)
     step = em.step
 else:
     em = EM3D(       laser_func=laser_func,
@@ -499,10 +513,10 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-  tdeb=MPI.Wtime()
-  em.step(100,1,1)
-  tend=MPI.Wtime()
-  print("Final runtime (s): "+str(tend-tdeb))
+  #tdeb=MPI.Wtime()
+  #em.step(100,1,1)
+  #tend=MPI.Wtime()
+  #print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
 else:
   em.step(1000,1,1)
