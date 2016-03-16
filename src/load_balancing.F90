@@ -1,3 +1,9 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! MODULE FOR LOAD BALANCING 3D EM PIC SIMULATIONS
+! WRITTEN BY H. VINCENTI 
+! v 1.0 March 16 2016 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 MODULE load_balance 
 USE fields 
 USE shared_data
@@ -5,119 +11,6 @@ USE tiling
 IMPLICIT NONE 
 
 CONTAINS 
-
-
-
-! Main subroutine for load balancing 
-SUBROUTINE mpi_load_balance()
-    IMPLICIT NONE 
-    REAL(num), PARAMETER :: imbalance_threshold = 0.15 ! 15% imbalance threshold  
-    REAL(num) :: imbalance
-    INTEGER(idp), DIMENSION(:), ALLOCATABLE :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
-    INTEGER(idp), DIMENSION(:), ALLOCATABLE :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
-    INTEGER(idp) :: nx_new, ny_new, nz_new
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE, TARGET :: ex_new, ey_new, ez_new, bx_new, by_new, bz_new
-    
-    ALLOCATE(ix1old(0:nproc-1),ix2old(0:nproc-1),iy1old(0:nproc-1),iy2old(0:nproc-1), &
-            iz1old(0:nproc-1),iz2old(0:nproc-1))
-    ALLOCATE(ix1new(0:nproc-1),ix2new(0:nproc-1),iy1new(0:nproc-1),iy2new(0:nproc-1), &
-            iz1new(0:nproc-1),iz2new(0:nproc-1))
-    
-    ! Get max time per it of all processors
-    CALL get_max_time_per_it()
-    ! Get min time per it of all processors 
-    CALL get_min_time_per_it()
-    ! Compute current imbalance 
-    imbalance = (max_time_per_it-min_time_per_it)/min_time_per_it
-    ! Imbalance starts to be too high --> Try load balance the simulation 
-    IF (imbalance .GT. 0.15_num)  THEN 
-        ! Compute time per part for particle routines 
-        CALL compute_time_per_part()
-        ! Compute time per cell for maxwell routines 
-        CALL compute_time_per_cell() 
-        ! Compute new split based on projected loads on each axis
-        CALL compute_new_split(global_time_per_part,global_time_per_cell,nx_global,ny_global,nz_global, &
-           new_cell_x_min,new_cell_x_max,new_cell_y_min,new_cell_y_max,new_cell_z_min,new_cell_z_max,&
-           nprocx,nprocy,nprocz)
-        ! Get 1D array for proc limits 
-        CALL get_1Darray_proclimits(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,    &
-                                    cell_x_min,cell_y_min,cell_z_min,             & 
-                                    cell_x_max,cell_y_max,cell_z_max,             &
-                                    nprocx, nprocy, nprocz, nproc,.TRUE.)
-        CALL get_1Darray_proclimits(ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
-                                    new_cell_x_min,new_cell_y_min,new_cell_z_min,  & 
-                                    new_cell_x_max,new_cell_y_max,new_cell_z_max,  &
-                                    nprocx, nprocy, nprocz, nproc,.TRUE.)
-        ! Compute new dimensions 
-        CALL compute_currproc_array_dimensions(nx_new,new_cell_x_min,new_cell_x_max,nproc,x_coords)
-        CALL compute_currproc_array_dimensions(ny_new,new_cell_y_min,new_cell_y_max,nproc,y_coords)
-        CALL compute_currproc_array_dimensions(nz_new,new_cell_z_min,new_cell_z_max,nproc,z_coords)
-        
-        ! Remap field Ex
-        ALLOCATE(ex_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-        CALL mpi_remap_3D_field_component(ex_new,nx_new,ny_new,nz_new,                  &
-                                        ex,nx,ny,nz,                                    &
-                                        nxguards,nyguards,nzguards,                     &
-                                        ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
-                                        ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
-                                        rank, nproc)
-        DEALLOCATE(ex)
-        ex=>ex_new
-        ! Remap field Ey
-        ALLOCATE(ey_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-        CALL mpi_remap_3D_field_component(ey_new,nx_new,ny_new,nz_new,                  &
-                                        ey,nx,ny,nz,                                    &
-                                        nxguards,nyguards,nzguards,                     &
-                                        ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
-                                        ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
-                                        rank, nproc)
-        DEALLOCATE(ey)
-        ey=>ey_new
-        ! Remap field Ez
-        ALLOCATE(ez_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-        CALL mpi_remap_3D_field_component(ez_new,nx_new,ny_new,nz_new,                  &
-                                        ez,nx,ny,nz,                                    &
-                                        nxguards,nyguards,nzguards,                     &
-                                        ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
-                                        ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
-                                        rank, nproc)
-        DEALLOCATE(ez)
-        ez=>ez_new
-        ! Remap field Bx
-        ALLOCATE(bx_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-        CALL mpi_remap_3D_field_component(bx_new,nx_new,ny_new,nz_new,                  &
-                                        bx,nx,ny,nz,                                    &
-                                        nxguards,nyguards,nzguards,                     &
-                                        ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
-                                        ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
-                                        rank, nproc)
-        DEALLOCATE(bx)
-        bx=>bx_new
-        ! Remap field By
-        ALLOCATE(by_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-        CALL mpi_remap_3D_field_component(by_new,nx_new,ny_new,nz_new,                  &
-                                        by,nx,ny,nz,                                    &
-                                        nxguards,nyguards,nzguards,                     &
-                                        ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
-                                        ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
-                                        rank, nproc)
-        DEALLOCATE(by)
-        by=>by_new
-        ! Remap field Bz
-        ALLOCATE(bz_new(-nxguards:nx_new+nxguards,-nyguards:ny_new+nyguards,-nzguards:nz_new+nzguards))
-        CALL mpi_remap_3D_field_component(bz_new,nx_new,ny_new,nz_new,                  &
-                                        bz,nx,ny,nz,                                    &
-                                        nxguards,nyguards,nzguards,                     &
-                                        ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
-                                        ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
-                                        rank, nproc)
-        DEALLOCATE(ez)
-        bz=>bz_new
-
-    ENDIF 
-    
-END SUBROUTINE mpi_load_balance 
-
 
 SUBROUTINE compute_currproc_array_dimensions(nnew,ncmin,ncmax,np,mpi_rank)
     IMPLICIT NONE 
@@ -157,7 +50,6 @@ SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, &
     END DO                  
                                     
 END SUBROUTINE get_1Darray_proclimits
-
 
 
 SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
@@ -538,8 +430,6 @@ SUBROUTINE compute_new_split(tppart,tpcell,nx_glob,ny_glob,nz_glob, &
 END SUBROUTINE compute_new_split 
  
  
-
-
 ! This subroutine computes new load in direction dir based on the projected 
 ! load_in_dir 
 SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirmax)
