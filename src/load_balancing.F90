@@ -788,7 +788,7 @@ INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
 INTEGER(idp), INTENT(IN), DIMENSION(0:npy-1) :: ncymin, ncymax
 INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
 LOGICAL(idp), INTENT(IN) :: l_cart_comm
-INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies 
+INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies, npcurr
 INTEGER(idp) :: ix3min,ix3max,iy3min,iy3max,iz3min,iz3max
 INTEGER(idp) :: ix1newip, ix2newip, iy1newip, iy2newip, iz1newip, iz2newip
 INTEGER(idp) :: ix1oldip, ix2oldip, iy1oldip, iy2oldip, iz1oldip, iz2oldip
@@ -877,7 +877,6 @@ END DO
 
 ! ----- IDENTIFY PARTICLES TO BE SENT/ PLACE PARTICLES IN SEND BUFFER 
 ALLOCATE(sendbuff(nvar*npart_local,nsend), nptoexch(nsend))
-sendbuff=0_num
 nptoexch=0
 DO ispecies=1, nspecies !LOOP ON SPECIES
     ! Init send recv buffers
@@ -891,7 +890,8 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                 ! search for outbound particles
                 part_xyz=0.
                 ! Identify outbounds particles and compute destination 
-                DO i = 1, curr%np_tile(1) !LOOP ON PARTICLES
+                npcurr=curr%np_tile(1)
+                DO i = npcurr,1,-1 !LOOP ON PARTICLES
                     iprocx = x_coords
                     iprocy = y_coords
                     iprocz = z_coords
@@ -930,8 +930,8 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                         sendbuff(ibuff+7, isend)  = curr%pid(i,wpid)
                         npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
                         nptoexch(isend)=nptoexch(isend)+1
-                        ! Remove particle from current tile 
-                        CALL rm_particle_at_tile(curr,i)
+                        ! Remove particle of current species from current tile 
+                        CALL rm_particles_from_species(currsp, curr, i)
                     ENDIF           
                 ENDDO !END LOOP ON PARTICLES
               ENDDO
@@ -992,7 +992,6 @@ DO i =1, nrecv
         ispec=ispec+nvar*npart_recv(ispecies,i)
     END DO 
 END DO
-
 DEALLOCATE(sendbuff,recvbuff,nptoexch,npart_send,npart_recv,requests)
 
 END SUBROUTINE remap_particles
