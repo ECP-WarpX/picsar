@@ -272,6 +272,7 @@ class EM3DPXR(EM3DFFT):
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]
+            s.sw=1.
             for iz in range(1,self.ntilez+1):
                 xygroup=[]
                 for iy in range(1,self.ntiley+1):
@@ -287,7 +288,7 @@ class EM3DPXR(EM3DFFT):
                         pg.gchange()
                         pg.sq = s.charge
                         pg.sm = s.mass
-                        pg.sw = 1.
+                        pg.sw = s.sw
                         pg.npmax = pxr.partnmax
                         pg.nps = pxr.partn
                         pg.ins[0] = 1
@@ -335,7 +336,7 @@ class EM3DPXR(EM3DFFT):
                 pg.gchange()
                 pg.sq = s.charge
                 pg.sm = s.mass
-                pg.sw = 1.
+                pg.sw = s.sw
                 pg.npmax = pxr.partnmax
                 pg.nps = pxr.partn
                 pg.ins[0] = 1
@@ -796,27 +797,6 @@ class EM3DPXR(EM3DFFT):
             else: 
             	if(pxr.rank==0):
                 	print("trying to load balance the simulation, imbalance=", imbalance)
-                ## --- Some output checking 
-                if (pxr.rank==0): 
-                	print("nproc", pxr.nproc)
-                	print("mintime,maxtime,imbalance",pxr.min_time_per_it,pxr.max_time_per_it, imbalance)
-                	print("Code starts to be highly imbalanced, imbalance(%)=", imbalance)
-                	print("Now recomputing new cell boundaries")
-                	print("local time_per_part, local time_per_cell", pxr.local_time_part,pxr.local_time_cell) 
-                	print("global time_per_part, global time_per_cell", pxr.global_time_per_part,pxr.global_time_per_cell) 
-                	print("Old split X", pxr.cell_x_min,pxr.cell_x_max)  
-                	print("Old split Y", pxr.cell_y_min,pxr.cell_y_max)
-                	print("Old split Z", pxr.cell_z_min,pxr.cell_z_max)
-                	print("NX old", pxr.cell_x_max-pxr.cell_x_min+1)
-                	print("NY old", pxr.cell_y_max-pxr.cell_y_min+1)
-                	print("NZ old", pxr.cell_z_max-pxr.cell_z_min+1)
-                	print("New split X", pxr.new_cell_x_min,pxr.new_cell_x_max)
-                	print("New split Y", pxr.new_cell_y_min,pxr.new_cell_y_max)
-                	print("New split Z", pxr.new_cell_z_min,pxr.new_cell_z_max)
-                	print("NX new", pxr.new_cell_x_max-pxr.new_cell_x_min+1)
-                	print("NY new", pxr.new_cell_y_max-pxr.new_cell_y_min+1)
-                	print("NZ new", pxr.new_cell_z_max-pxr.new_cell_z_min+1)
-                
                 ## --- Compute limits for all procs 
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
                 iy1old=np.zeros(pxr.nproc,dtype="i8"); iy2old=np.zeros(pxr.nproc,dtype="i8")
@@ -1044,7 +1024,7 @@ class EM3DPXR(EM3DFFT):
 									pg.gchange()
 									pg.sq = s.charge
 									pg.sm = s.mass
-									pg.sw = 1.
+									pg.sw = s.sw
 									pg.npmax = pxr.partnmax
 									pg.nps = pxr.partn
 									pg.ins[0] = 1
@@ -1068,11 +1048,12 @@ class EM3DPXR(EM3DFFT):
 								xygroup.append(xgroup)
 							s.pgroups.append(xygroup)
 						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
+#                pxr.particle_bcs_mpi_blocking()
                 pxr.remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,    
-                           ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     
-                           pxr.cell_x_min,pxr.cell_x_max,pxr.cell_y_min,pxr.cell_y_max,
-                           pxr.cell_z_min,pxr.cell_z_max,    
-                           pxr.rank, pxr.nproc, pxr.nprocx, pxr.nprocy,pxr.nprocz,top.lcomm_cartesian)
+                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     
+                            pxr.cell_x_min,pxr.cell_x_max,pxr.cell_y_min,pxr.cell_y_max,
+                            pxr.cell_z_min,pxr.cell_z_max,    
+                            pxr.rank, pxr.nproc, pxr.nprocx, pxr.nprocy,pxr.nprocz,top.lcomm_cartesian)
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:
