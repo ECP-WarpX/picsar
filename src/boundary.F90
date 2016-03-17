@@ -727,7 +727,7 @@ END SUBROUTINE charge_bcs
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
                     ! Remove outbound particles from current tile
-                    CALL rm_particles_from_species(currsp, curr, mask)
+                    CALL rm_particles_from_species_with_mask(currsp, curr, mask)
                     DEALLOCATE(mask)
                   ENDDO
                ENDDO

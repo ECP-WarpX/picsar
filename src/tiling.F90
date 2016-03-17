@@ -257,7 +257,7 @@ CONTAINS
 
     !!! --- Remove particles from tile using a mask variable
     !!! --- This technique avoids packing or reallocating arrays
-    SUBROUTINE rm_particles_from_species(currsp, curr, mask)
+    SUBROUTINE rm_particles_from_species_with_mask(currsp, curr, mask)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
         LOGICAL(idp), DIMENSION (:), INTENT(IN) :: mask
@@ -269,8 +269,19 @@ CONTAINS
                 currsp%species_npart=currsp%species_npart-1
             ENDIF
         ENDDO
+    END SUBROUTINE rm_particles_from_species_with_mask
+    
+    
+    !!! --- Remove a particle in a given tile from species currsp
+    SUBROUTINE rm_particles_from_species(currsp, curr, ipart)
+        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
+        TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
+        INTEGER(idp), INTENT(IN) :: ipart
+        CALL rm_particle_at_tile(curr,ipart)
+        currsp%species_npart=currsp%species_npart-1
     END SUBROUTINE rm_particles_from_species
-
+    
+    
     SUBROUTINE rm_particle_at_tile(curr, index)
         IMPLICIT NONE
         INTEGER(idp) :: index
