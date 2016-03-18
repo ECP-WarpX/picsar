@@ -23,7 +23,9 @@ class EM3DPXR(EM3DFFT):
                       'dload_balancing':0,
                       'dlb_freq':1,
                       'dlb_threshold':20,
-                      'dlb_at_init':1
+                      'dlb_at_init':1,
+                      'l_output_grid':0,
+                      'l_output_freq':0
                       }
 
     def __init__(self,**kw):
@@ -638,7 +640,8 @@ class EM3DPXR(EM3DFFT):
     	stdout_stat=10
     	tdeb=MPI.Wtime()
         for i in range(n):
-            if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
+            if(me==0): 
+                if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
             if lallspecl:
                 l_first=l_last=1
             else:
@@ -774,6 +777,10 @@ class EM3DPXR(EM3DFFT):
         # Try to Load balance at init 
         if ((top.it==1) & self.dlb_at_init & self.dload_balancing): 
         	self.loadbalance("Init")
+        
+        # PXr custom outputs mpi-io
+        if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)): 
+        	self.output_pxr(top.it)
 
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
@@ -1054,6 +1061,11 @@ class EM3DPXR(EM3DFFT):
                             pxr.cell_x_min,pxr.cell_x_max,pxr.cell_y_min,pxr.cell_y_max,
                             pxr.cell_z_min,pxr.cell_z_max,    
                             pxr.rank, pxr.nproc, pxr.nprocx, pxr.nprocy,pxr.nprocz,top.lcomm_cartesian)
+    
+    def output_pxr(self,iter): 
+    	pxr.py_mpi_output_grid_quantity('ez',pxr.ez,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,iter)
+    
+    
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:

@@ -80,7 +80,22 @@ CONTAINS
 
 
 
+  SUBROUTINE py_mpi_output_grid_quantity(fieldname,field_output,nxx,nyy,nzz,nxg,nyg,nzg,iter)
+    IMPLICIT NONE 
+    CHARACTER(LEN=*), INTENT(IN) :: fieldname
+    REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nxx+nxg,-nyg:nyy+nyg,-nzg:nzz+nzg) :: field_output
+    INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxg, nyg, nzg, iter
+    INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
+    INTEGER(isp) :: err=0
+    CHARACTER(LEN=string_length) :: strtemp
 
+    PRINT *,"rank, fieldname", rank, fieldname
+    
+    WRITE(strtemp,'(I5)') iter
+    CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fieldname))// &
+    TRIM(ADJUSTL(strtemp))//'.pxr', field_output, nxg, nyg, nzg, nxx,nyy,nzz, offset, err)
+  
+  END SUBROUTINE py_mpi_output_grid_quantity
 
 
   !----------------------------------------------------------------------------
@@ -93,7 +108,7 @@ CONTAINS
     CHARACTER(LEN=*), INTENT(IN) :: filename
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
-    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(IN OUT) :: array
     INTEGER(KIND=MPI_OFFSET_KIND), INTENT(IN) :: offset
     INTEGER(isp), INTENT(INOUT) :: err
     INTEGER(isp) :: subt, suba, fh, i
@@ -108,15 +123,17 @@ CONTAINS
     ENDIF
 
     subt = create_current_grid_derived_type()
-    suba = create_current_grid_subarray(nxguards, nyguards, nzguards)
+    suba = create_current_grid_subarray(nxg, nyg, nzg)
+   
     CALL MPI_FILE_SET_VIEW(fh, offset, MPI_BYTE, subt, 'native', &
         MPI_INFO_NULL, errcode)
 
     CALL MPI_FILE_WRITE_ALL(fh, array, 1_isp, suba, MPI_STATUS_IGNORE, errcode)
 
-    CALL MPI_FILE_CLOSE(fh, errcode)
-    CALL MPI_TYPE_FREE(subt, errcode)
+     CALL MPI_FILE_CLOSE(fh, errcode)
+     CALL MPI_TYPE_FREE(subt, errcode)
 
   END SUBROUTINE write_single_array_to_file
+
 
 END MODULE simple_io
