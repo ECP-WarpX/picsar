@@ -397,7 +397,8 @@ if l_pxr:
                  dload_balancing=load_balance, 
                  dlb_freq=dlb_freq, 
                  dlb_threshold=dlb_threshold, 
-                 dlb_at_init=dlb_at_init)
+                 dlb_at_init=dlb_at_init,
+                 l_output_grid=5)
     step = em.step
 else:
     em = EM3D(       laser_func=laser_func,
@@ -513,10 +514,10 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-  #tdeb=MPI.Wtime()
-  #em.step(100,1,1)
-  #tend=MPI.Wtime()
-  #print("Final runtime (s): "+str(tend-tdeb))
+  tdeb=MPI.Wtime()
+  em.step(100,1,1)
+  tend=MPI.Wtime()
+  print("Final runtime (s): "+str(tend-tdeb))
 #  raise('')
 else:
   em.step(1000,1,1)

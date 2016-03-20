@@ -25,7 +25,7 @@ class EM3DPXR(EM3DFFT):
                       'dlb_threshold':20,
                       'dlb_at_init':1,
                       'l_output_grid':0,
-                      'l_output_freq':0
+                      'l_output_freq':1
                       }
 
     def __init__(self,**kw):

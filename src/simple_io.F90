@@ -88,11 +88,9 @@ CONTAINS
     INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
     INTEGER(isp) :: err=0
     CHARACTER(LEN=string_length) :: strtemp
-
-    PRINT *,"rank, fieldname", rank, fieldname
     
     WRITE(strtemp,'(I5)') iter
-    CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fieldname))// &
+    CALL write_single_array_to_file('./'//TRIM(ADJUSTL(fieldname))// &
     TRIM(ADJUSTL(strtemp))//'.pxr', field_output, nxg, nyg, nzg, nxx,nyy,nzz, offset, err)
   
   END SUBROUTINE py_mpi_output_grid_quantity
