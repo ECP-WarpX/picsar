@@ -949,7 +949,9 @@ END DO
 
 ! ----- SYNC THE NUMBER OF PARTICLES BEFORE RECEIVING DATA
 count=nsend+nrecv
-
+IF (count .GT. 0) THEN 
+	CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+ENDIF
 requests=0_isp
 nsdat=0
 nrdat=0
@@ -963,7 +965,6 @@ DO i=1, nrecv
 	nrdat=nrdat+1
         CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),mpitag, &
                                 comm, requests(nrdat),errcode)
-	!PRINT *, "PROC", rank, "POSTED IRECV ", count, "particles from PROC", recv_rank(i), "MAXVVAL(recvbuff(1:count,i))",MAXVAL(recvbuff(1:count,i))
     ENDIF
 END DO
 
@@ -971,7 +972,6 @@ END DO
 DO i=1, nsend
     count=nvar*SUM(npart_send(:,i))
     IF (count .GT. 0) THEN 
-	!PRINT *, "PROC", rank, "POSTED ISEND ", count, "particles to PROC", send_rank(i), "MAXVVAL(sendbuff(1:count,i))",MAXVAL(sendbuff(1:count,i))
 	nsdat=nsdat+1
         CALL MPI_ISEND(sendbuff(1:count,i), count,  MPI_DOUBLE_PRECISION, send_rank(i), mpitag,    &
                             comm, requests(nrdat+nsdat), errcode)    
@@ -997,6 +997,7 @@ DO i =1, nrecv
         ispec=ispec+nvar*npart_recv(ispecies,i)
     END DO 
 END DO
+
 
 DEALLOCATE(sendbuff,recvbuff,nptoexch,npart_send,npart_recv,requests)
 
