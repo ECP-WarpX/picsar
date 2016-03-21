@@ -796,7 +796,7 @@ INTEGER(isp) :: mpitag, count
 INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
 INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
 INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
-INTEGER(idp) :: nsend, nrecv, ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
+INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
 LOGICAL(idp) :: l_is_intersection
 INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
 REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
@@ -871,7 +871,7 @@ requests=0_isp
 ! ----- POST IRECV TO GET NUMBER OF PARTICLES 
 DO i=1, nrecv
     count=nspecies
-    CALL MPI_IRECV(npart_recv(1,i), count,  MPI_INTEGER8, recv_rank(i), mpitag,    &
+    CALL MPI_IRECV(npart_recv(1:count,i), count,  MPI_INTEGER8, recv_rank(i), mpitag,    &
                             comm, requests(i), errcode)    
 END DO 
 
@@ -942,26 +942,28 @@ END DO ! End loop on species
 ! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
 DO i=1, nsend
     count=nspecies
-    CALL MPI_ISEND(npart_send(1,i), count,  MPI_INTEGER8, send_rank(i), mpitag,    &
+    CALL MPI_ISEND(npart_send(1:count,i), count,  MPI_INTEGER8, send_rank(i), mpitag,    &
                             comm, requests(nrecv+i), errcode)    
 END DO 
 
 
 ! ----- SYNC THE NUMBER OF PARTICLES BEFORE RECEIVING DATA
 count=nsend+nrecv
-CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
-requests=0_isp
 
+requests=0_isp
+nsdat=0
+nrdat=0
 
 ! ----- POST IRECV FOR PARTICLE DATA 
 nmax=nvar*MAXVAL(SUM(npart_recv,1))
 ALLOCATE(recvbuff(nmax,nrecv))
-recvbuff=0_num
 DO i=1, nrecv
     count=nvar*SUM(npart_recv(:,i))
     IF (count .GT. 0) THEN 
-        CALL MPI_IRECV(recvbuff(1,i),count, MPI_REAL8,recv_rank(i),mpitag, &
-                                comm, requests(i),errcode)
+	nrdat=nrdat+1
+        CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),mpitag, &
+                                comm, requests(nrdat),errcode)
+	!PRINT *, "PROC", rank, "POSTED IRECV ", count, "particles from PROC", recv_rank(i), "MAXVVAL(recvbuff(1:count,i))",MAXVAL(recvbuff(1:count,i))
     ENDIF
 END DO
 
@@ -969,15 +971,18 @@ END DO
 DO i=1, nsend
     count=nvar*SUM(npart_send(:,i))
     IF (count .GT. 0) THEN 
-        CALL MPI_ISEND(sendbuff(1,i), count,  MPI_REAL8, send_rank(i), mpitag,    &
-                            comm, requests(nrecv+i), errcode)    
+	!PRINT *, "PROC", rank, "POSTED ISEND ", count, "particles to PROC", send_rank(i), "MAXVVAL(sendbuff(1:count,i))",MAXVAL(sendbuff(1:count,i))
+	nsdat=nsdat+1
+        CALL MPI_ISEND(sendbuff(1:count,i), count,  MPI_DOUBLE_PRECISION, send_rank(i), mpitag,    &
+                            comm, requests(nrdat+nsdat), errcode)    
     ENDIF
 END DO 
 
 ! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
-count=nsend+nrecv
-CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
-
+count=nrdat+nsdat
+IF (count .GT. 0_isp) THEN 
+	CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+ENDIF
 
 ! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
 DO i =1, nrecv
@@ -992,6 +997,7 @@ DO i =1, nrecv
         ispec=ispec+nvar*npart_recv(ispecies,i)
     END DO 
 END DO
+
 DEALLOCATE(sendbuff,recvbuff,nptoexch,npart_send,npart_recv,requests)
 
 END SUBROUTINE remap_particles
