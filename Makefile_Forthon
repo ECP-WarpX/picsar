@@ -13,7 +13,6 @@ LIBS=-lmpi -lmpi_usempif08 -lmpi_mpifh -lgomp
 TESTDIR=example_scripts_python
 
 
-
 all: clean parse build 
 
 
