@@ -397,8 +397,7 @@ if l_pxr:
                  dload_balancing=load_balance, 
                  dlb_freq=dlb_freq, 
                  dlb_threshold=dlb_threshold, 
-                 dlb_at_init=dlb_at_init,
-                 l_output_grid=5)
+                 dlb_at_init=dlb_at_init)
     step = em.step
 else:
     em = EM3D(       laser_func=laser_func,
