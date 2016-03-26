@@ -82,9 +82,9 @@ dim = "3d"                 # 3D calculation
 #dim = "2d"                 # 2D calculation 
 #dim = "1d"                 # 1D calculation 
 dpi=100                     # graphics resolution
-l_test             = 1     # Will open output window on screen
+l_test             = 0     # Will open output window on screen
                             # and stop before entering main loop.
-l_gist             = 1      # Turns gist plotting on/off
+l_gist             = 0      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
 restart_dump       = ""     # dump file to restart from (works?)
 l_moving_window    = 1      # on/off (Galilean) moving window
@@ -115,7 +115,7 @@ live_plot_freq     = 10 # frequency (in time steps) of live plots (off is l_test
 
 fielddiag_period   = 500/dtfact
 partdiag_period    = 500/dtfact
-
+lparallelo= False
 #-------------------------------------------------------------------------------
 # laser parameters
 #-------------------------------------------------------------------------------
@@ -469,25 +469,25 @@ installafterstep(liveplots)
 
 # Load additional OpenPMD diagnostic
 diag_f = FieldDiagnostic( period=fielddiag_period, top=top, w3d=w3d, em=em,
-                          comm_world=comm_world, lparallel_output=lparallel )
+                          comm_world=comm_world, lparallel_output=lparallelo )
 diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_C" : elec_C},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=lparallelo )
 diag_elec_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_H" : elec_H},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=lparallelo )
 diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_C" : ions_C},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=lparallelo )
 diag_ions_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_H" : ions_H},
-            comm_world=comm_world, lparallel_output=lparallel )
+            comm_world=comm_world, lparallel_output=lparallelo )
 
-#installafterstep( diag_f.write )
-#installafterstep( diag_elec_C.write )
-#installafterstep( diag_elec_H.write )
-#installafterstep( diag_ions_C.write )
-#installafterstep( diag_ions_H.write )
+installafterstep( diag_f.write )
+installafterstep( diag_elec_C.write )
+installafterstep( diag_elec_H.write )
+installafterstep( diag_ions_C.write )
+installafterstep( diag_ions_H.write )
 
 tottime = AppendableArray()
 def accuttime():
@@ -514,12 +514,11 @@ print '\nInitialization complete\n'
 # if this is a test, then stop, else execute main loop
 if l_test:
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
+#  raise('')
+else:
   tdeb=MPI.Wtime()
   em.step(100,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
-#  raise('')
-else:
-  em.step(1000,1,1)
   
 #pxr.point_to_tile(1,1,1,1)
