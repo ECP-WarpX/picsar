@@ -512,8 +512,12 @@ END SUBROUTINE charge_bcs
     IMPLICIT NONE
 
     ! First exchange particles between tiles (NO MPI at that point)
-    CALL particle_bcs_tiles
-
+	SELECT CASE (c_dim)
+	CASE(2)
+    	CALL particle_bcs_tiles_2d()
+    CASE DEFAULT 
+    	CALL particle_bcs_tiles()
+    END SELECT
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking
 
@@ -551,8 +555,8 @@ END SUBROUTINE charge_bcs
                         partw=curr_tile%pid(i,wpid)
 
                         ! Case 1: if particle did not leave tile nothing to do
-                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max)) &
-                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max)) &
+                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
                         .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
                         CYCLE
 
@@ -576,6 +580,57 @@ END SUBROUTINE charge_bcs
     END DO ! END LOOP ON SPECIES
   END SUBROUTINE particle_bcs_tiles
 
+!!! Boundary condition on tiles
+  SUBROUTINE particle_bcs_tiles_2d
+    IMPLICIT NONE
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
+    INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+    TYPE(particle_species), POINTER :: curr
+    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    INTEGER(idp) :: test =0
+
+    iy=1
+    DO ispecies=1, nspecies ! LOOP ON SPECIES
+        curr=> species_parray(ispecies)
+        ! Get first tiles dimensions (may be different from last tile)
+        nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
+        nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
+        DO iz=1, ntilez! LOOP ON TILES
+			DO ix=1, ntilex
+				curr_tile=>curr%array_of_tiles(ix,iy,iz)
+				nptile=curr_tile%np_tile(1)
+				DO i=nptile, 1, -1! LOOP ON PARTICLES
+					partx=curr_tile%part_x(i)
+					party=curr_tile%part_y(i)
+					partz=curr_tile%part_z(i)
+					partux=curr_tile%part_ux(i)
+					partuy=curr_tile%part_uy(i)
+					partuz=curr_tile%part_uz(i)
+					gaminv=curr_tile%part_gaminv(i)
+					partw=curr_tile%pid(i,wpid)
+
+					! Case 1: if particle did not leave tile nothing to do
+					IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+					.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+					CYCLE
+
+					! Case 2: if particle left MPI domain nothing to do now
+					IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
+					IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+
+					! Case 3: particles changed tile. Tranfer particle to new tile
+					! Get new indexes of particle in array of tiles
+					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+					CALL rm_particle_at_tile(curr_tile,i)
+					CALL add_particle_at_tile(curr, indx,iy,indz, &
+						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+				END DO !END LOOP ON PARTICLES
+			END DO
+        END DO ! END LOOP ON TILES
+    END DO ! END LOOP ON SPECIES
+  END SUBROUTINE particle_bcs_tiles_2d
 
 !!! MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
@@ -653,7 +708,7 @@ END SUBROUTINE charge_bcs
 
                         part_xyz = curr%part_y(i)
                         ! Particle has left this processor
-                        IF (part_xyz .LT. y_min_local) THEN
+                        IF ((part_xyz .LT. y_min_local) .AND. (c_dim .EQ. 3)) THEN
                             ybd = -1
                             IF (y_min_boundary) THEN
                             	SELECT CASE (pbound_y_min)! absorbing 
@@ -667,7 +722,7 @@ END SUBROUTINE charge_bcs
                         ENDIF
 
                         ! Particle has left this processor
-                        IF (part_xyz .GE. y_max_local) THEN
+                        IF ((part_xyz .GE. y_max_local) .AND. (c_dim .EQ. 3)) THEN
                             ybd = 1
                             IF (y_max_boundary) THEN
                             	SELECT CASE (pbound_y_max) 
