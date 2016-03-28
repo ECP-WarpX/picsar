@@ -384,7 +384,7 @@ SUBROUTINE remap_em_2Dfields(emfield_old,nxold,nzold,               &
     iz1oldip = iz1old(iproc)
     iz2oldip = iz2old(iproc)
     DO i=0, nprocs-1 
-        CALL get_3Dintersection(ix1oldip, ix2oldip,               &
+        CALL get_2Dintersection(ix1oldip, ix2oldip,               &
                                 iz1oldip, iz2oldip,               & 
                                 ix1new(i), ix2new(i),             &
                                 iz1new(i), iz2new(i),             & 
@@ -598,7 +598,12 @@ SUBROUTINE compute_time_per_cell()
     global_time_cell=0.
     ! Get max time per it 
     CALL MPI_ALLREDUCE(local_time_cell, global_time_cell, 1_isp, MPI_REAL8, MPI_SUM, comm, errcode)
-    global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
+    SELECT CASE(c_dim)
+    CASE(2)
+        global_time_per_cell=global_time_cell/(nx_global*nz_global)    
+    CASE DEFAULT ! #3D Case 
+        global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
+    END SELECT 
 
 END SUBROUTINE compute_time_per_cell
 
@@ -754,7 +759,12 @@ SUBROUTINE get_projected_load_on_x(nxg,load_on_x,time_per_part,time_per_cell)
     CALL MPI_ALLREDUCE(load_part, load_part_sum, INT(nxg,isp), MPI_INTEGER8, MPI_SUM, comm, errcode)
 
     ! Computes load_in_x
-    load_on_x = load_part_sum*time_per_part + ny_global * nz_global*time_per_cell
+    SELECT CASE (c_dim)
+    CASE (2) ! 2D CASE 
+        load_on_x = load_part_sum*time_per_part + nz_global*time_per_cell
+    CASE DEFAULT ! 3D CASE  
+        load_on_x = load_part_sum*time_per_part + ny_global * nz_global*time_per_cell
+    END SELECT 
     
     DEALLOCATE(load_part,load_part_sum)
     
@@ -839,7 +849,13 @@ SUBROUTINE get_projected_load_on_z(nzg,load_on_z,time_per_part,time_per_cell)
     CALL MPI_ALLREDUCE(load_part, load_part_sum, INT(nzg,isp), MPI_INTEGER8, MPI_SUM, comm, errcode)
 
     ! Computes load_in_z
-    load_on_z = load_part_sum*time_per_part + nx_global * ny_global*time_per_cell
+    SELECT CASE (c_dim)
+    CASE (2) ! 2D CASE 
+        load_on_z = load_part_sum*time_per_part + nx_global *time_per_cell
+    CASE DEFAULT ! 3D CASE
+        load_on_z = load_part_sum*time_per_part + nx_global * ny_global*time_per_cell
+    END SELECT 
+
     
     
     DEALLOCATE(load_part,load_part_sum)
@@ -867,7 +883,6 @@ ntilez_new = MAX(1,nz/10)
 
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
-
 ! Copy properties of each species from old array to new array 
 DO ispecies=1,nspecies 
     currsp=>species_parray(ispecies)
@@ -892,8 +907,6 @@ END DO
 
 CALL set_tile_split_for_species(new_species_parray,nspecies,ntilex_new,ntiley_new,ntilez_new,nx_grid,ny_grid,nz_grid, &
                                 x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
-
-
                               
                                 
 ! Deallocate former grid tile array/ ALLOCATE new one 
@@ -902,7 +915,6 @@ ALLOCATE(aofgrid_tiles(ntilex_new,ntiley_new,ntilez_new))
 
 ! Init new tile arrays of new species array 
 CALL init_tile_arrays_for_species(nspecies, new_species_parray, aofgrid_tiles, ntilex_new, ntiley_new, ntilez_new)
-
 
 ! Copy particles from former species array to new species array
 DO ispecies=1,nspecies
@@ -978,6 +990,7 @@ DO ispecies=1,nspecies
     END DO 
 END DO
 
+
 ! Update tile sizes 
 ntilex=ntilex_new
 ntiley=ntiley_new
@@ -1010,6 +1023,7 @@ DO ispecies=1,nspecies
     currsp%vdrift_z=currsp_new%vdrift_z
     currsp%nppcell=currsp_new%nppcell
 END DO
+
 
 ! Set tile split for species_parray
 CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
@@ -1353,7 +1367,7 @@ ix2oldip = ix2old(iproc)
 iz1oldip = iz1old(iproc)
 iz2oldip = iz2old(iproc)
 DO i=0, ncpus-1 
-    CALL get_3Dintersection(ix1oldip, ix2oldip,                             &
+    CALL get_2Dintersection(ix1oldip, ix2oldip,                             &
                             iz1oldip, iz2oldip,                             & 
                             ix1new(i), ix2new(i),                           &
                             iz1new(i), iz2new(i),                           & 
@@ -1370,7 +1384,6 @@ DO i=0, ncpus-1
         send_rank(nsend)=i
     ENDIF 
 END DO   
-
 
 ALLOCATE(npart_send(nspecies,nsend), npart_recv(nspecies,nrecv), requests(nsend+nrecv))
 npart_send=0_idp

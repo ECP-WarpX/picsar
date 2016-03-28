@@ -45,7 +45,9 @@ CONTAINS
             ntx=1
         END IF
         IF (ny0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in Y is to high, setting back to default value 1"
+        	IF(c_dim .EQ. 3) THEN 
+            	IF (rank .EQ. 0) PRINT *, "number of tiles in Y is to high, setting back to default value 1"
+            ENDIF
             nty=1
         END IF
         IF (nz0_grid_tile .LT. 4) THEN

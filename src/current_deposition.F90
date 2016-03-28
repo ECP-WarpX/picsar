@@ -90,7 +90,7 @@ DO iz=1,ntilez
 					curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
 					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     						   &
 					curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,	                                           &
-					nxjg,nzjg,noxx,nozz,.TRUE.,.FALSE.,.FALSE.,0.) 
+					nxjg,nzjg,noxx,nozz,.TRUE.,.FALSE.,.FALSE.,0) 
 				CASE DEFAULT 
 					CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                              &
 					currg%jztile,count,                              									       &
