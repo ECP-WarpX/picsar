@@ -6,7 +6,6 @@ from mpi4py import MPI
 home=os.getenv('HOME')
 
 l_pxr=1
-
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
 top.itmomnts = 0
@@ -37,8 +36,8 @@ dlb_at_init=1 # Do a load balancing of the simulation at init
 # ----------
 
 dfact = 1
-dxfact = 16
-dtfact = 8*4
+dxfact = 1
+dtfact = 2
 N_step = 20000/dtfact
 
 #Two-layer foil:
@@ -78,8 +77,8 @@ dt*=dtfact
 #-------------------------------------------------------------------------------
 # main parameters
 #-------------------------------------------------------------------------------
-dim = "3d"                 # 3D calculation
-#dim = "2d"                 # 2D calculation 
+#dim = "3d"                 # 3D calculation
+dim = "2d"                 # 2D calculation 
 #dim = "1d"                 # 1D calculation 
 dpi=100                     # graphics resolution
 l_test             = 0     # Will open output window on screen
@@ -111,7 +110,7 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
-live_plot_freq     = 10 # frequency (in time steps) of live plots (off is l_test is off)
+live_plot_freq     = 100000000 # frequency (in time steps) of live plots (off is l_test is off)
 
 fielddiag_period   = 500/dtfact
 partdiag_period    = 500/dtfact
@@ -172,13 +171,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 2#5
+nppcellx_C = 10#5
 nppcelly_C = 2#5
-nppcellz_C = 2#5
+nppcellz_C = 10#5
 
-nppcellx_H = 2#4
+nppcellx_H = 10#4
 nppcelly_H = 2#4
-nppcellz_H = 2#4
+nppcellz_H = 10#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -372,9 +371,14 @@ def laser_func(x,y,t):
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    ntilex = max(1,w3d.nxlocal/10)
-    ntiley = max(1,w3d.nylocal/10)
-    ntilez = max(1,w3d.nzlocal/10)
+    if (dim=='3d'):
+        ntilex = max(1,w3d.nxlocal/10)
+        ntiley = max(1,w3d.nylocal/10)
+        ntilez = max(1,w3d.nzlocal/10)
+    else: 
+        ntilex = max(1,w3d.nxlocal/30)
+        ntiley = 1
+        ntilez = max(1,w3d.nzlocal/30)
     em = EM3DPXR(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
                  laser_polangle=laser_polangle,
@@ -427,7 +431,6 @@ print 'register solver'
 registersolver(em)
 em.finalize()
 loadrho()
-
 print 'done'
   
 def liveplots():
@@ -516,7 +519,7 @@ if l_test:
 #  raise('')
 else:
   tdeb=MPI.Wtime()
-  em.step(100,1,1)
+  em.step(10,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
   

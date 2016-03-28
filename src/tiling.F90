@@ -356,12 +356,13 @@ CONTAINS
                         n3=curr_tile%nz_cells_tile
                         curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
                         curr_tile%np_tile(1)=0
+                        ! Set number of guard cells for each tile 
                         IF ((ix .GT. 1) .AND. (ix .LT. ntx)) THEN
                         	curr_tile%nxg_tile=MAX(nox,2)
                         ELSE
                         	curr_tile%nxg_tile=nxjguards
                         END IF
-                        IF ((iy .GT. 1) .AND. (iy .LT. nty)) THEN
+                        IF ((iy .GT. 1) .AND. (iy .LT. nty) .AND. (c_dim .EQ. 3)) THEN
                         	curr_tile%nyg_tile=MAX(noy,2)
                         ELSE
                         	curr_tile%nyg_tile=nyjguards

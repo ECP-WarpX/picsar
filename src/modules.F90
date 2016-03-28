@@ -299,6 +299,7 @@ REAL(num):: z_min_local, z_max_local
 
 
 ! Axis
+INTEGER(idp) :: c_dim = 3
 REAL(num), POINTER, DIMENSION(:) :: x, y, z
 REAL(num), DIMENSION(:), POINTER :: x_grid_mins, x_grid_maxs
 REAL(num), DIMENSION(:), POINTER :: y_grid_mins, y_grid_maxs
