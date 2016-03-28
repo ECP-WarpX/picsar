@@ -11,7 +11,7 @@ except:
 try: 
     from mpi4py import MPI 
 except: 
-    print 'Errro cannot import mpi4py'  
+    print 'Error cannot import mpi4py'  
     
 class EM3DPXR(EM3DFFT):
 
@@ -258,7 +258,6 @@ class EM3DPXR(EM3DFFT):
         pxr.init_tile_arrays()
         
         for i,s in enumerate(self.listofallspecies):
-            #print 'add particles %g to pxr'%i
             pxr.py_add_particles_to_species(i+1, s.nps, 
                                             s.getx(bcast=0,gather=0), 
                                             s.gety(bcast=0,gather=0), 
@@ -782,7 +781,7 @@ class EM3DPXR(EM3DFFT):
         # Try to Load balance at init 
         if ((top.it==1) & self.dlb_at_init & self.dload_balancing): 
 			if (self.l_2dxz): 
-				self.load_balance_2d('Init')
+			    self.load_balance_2d('Init')
 			else: 
 				self.load_balance_3d('Init')
         
@@ -836,7 +835,6 @@ class EM3DPXR(EM3DFFT):
             
                 ## --- Remap field arrays 
                 # -- Ex
-                print("pxr.cell_y_min",pxr.cell_y_min,pxr.cell_y_max)
                 ex_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
                 pxr.mpi_remap_3d_field_component(ex_new,nx_new,ny_new,nz_new,               
                                         	pxr.ex,pxr.nx,pxr.ny,pxr.nz,                    
@@ -890,7 +888,6 @@ class EM3DPXR(EM3DFFT):
                                         	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
                                         	pxr.rank, pxr.nproc)
                 pxr.bz=bz_new
-                print ("end field exchange")
                 ## -- Reallocate current arrays 
                 # Currents are recomputed each iteration so no need to exchange them
                 jx_new=zeros((nx_new+2*pxr.nxjguards+1,ny_new+2*pxr.nyjguards+1,nz_new+2*pxr.nzjguards+1),order='F')
@@ -901,9 +898,6 @@ class EM3DPXR(EM3DFFT):
                 pxr.jz=jz_new 
             
                 # Update pxr new array dimensions 
-                #print("old sizes ", pxr.rank,pxr.nx,pxr.ny,pxr.nz)
-                #print("new sizes ", pxr.rank,nx_new,ny_new,nz_new)
-
                 pxr.nx=nx_new
                 pxr.ny=ny_new
                 pxr.nz=nz_new
@@ -989,7 +983,6 @@ class EM3DPXR(EM3DFFT):
 
                 # Reallocate warp arrays 
                 self.allocatefieldarrays()
-                print ("end reallocate fields")
                 # Alias newly allocated arrays on WARP structure 
                 self.fields.Ex=pxr.ex
                 self.fields.Ey=pxr.ey
@@ -1010,7 +1003,7 @@ class EM3DPXR(EM3DFFT):
              	
                 em3d_exchange_e(self.block)
                 em3d_exchange_b(self.block)
-                print ("end for fields")
+
                 # If domain has been resized, do a new tile split and exchange particles 
                 if 1:#((isnewdom != 0)): 
 					# Now exchanging particles 
@@ -1088,6 +1081,7 @@ class EM3DPXR(EM3DFFT):
             else: 
             	if(pxr.rank==0):
                 	print("trying to load balance the simulation, imbalance=", imbalance)
+
                 ## --- Compute limits for all procs 
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
                 iy1old=np.zeros(pxr.nproc,dtype="i8"); iy2old=np.zeros(pxr.nproc,dtype="i8")
@@ -1164,7 +1158,6 @@ class EM3DPXR(EM3DFFT):
                                         	ix1new, ix2new, iz1new, iz2new, 
                                         	pxr.rank, pxr.nproc)
                 pxr.bz=bz_new
-                print ("end field exchange")
                 ## -- Reallocate current arrays 
                 # Currents are recomputed each iteration so no need to exchange them
                 jx_new=zeros((nx_new+2*pxr.nxjguards+1,1,nz_new+2*pxr.nzjguards+1),order='F')
@@ -1175,9 +1168,6 @@ class EM3DPXR(EM3DFFT):
                 pxr.jz=jz_new 
             
                 # Update pxr new array dimensions 
-                #print("old sizes ", pxr.rank,pxr.nx,pxr.ny,pxr.nz)
-                #print("new sizes ", pxr.rank,nx_new,ny_new,nz_new)
-
                 pxr.nx=nx_new
                 pxr.nz=nz_new
                 pxr.nx_grid=pxr.nx+1
@@ -1240,7 +1230,6 @@ class EM3DPXR(EM3DFFT):
 
                 # Reallocate warp arrays 
                 self.allocatefieldarrays()
-                print ("end reallocate fields")
                 # Alias newly allocated arrays on WARP structure 
                 self.fields.Ex=pxr.ex
                 self.fields.Ey=pxr.ey
@@ -1261,12 +1250,11 @@ class EM3DPXR(EM3DFFT):
              	
                 em3d_exchange_e(self.block)
                 em3d_exchange_b(self.block)
-                print ("end for fields")
                 # If domain has been resized, do a new tile split and exchange particles 
                 if 1:#((isnewdom != 0)): 
-					# Now exchanging particles 
+					# Now exchanging particles
                     pxr.create_new_tile_split()
-					
+                    
                     self.ntilex = pxr.ntilex 
                     self.ntilez = pxr.ntilez 
                     
@@ -1319,6 +1307,7 @@ class EM3DPXR(EM3DFFT):
                             pxr.cell_x_min,pxr.cell_x_max,
                             pxr.cell_z_min,pxr.cell_z_max,    
                             pxr.rank, pxr.nproc, pxr.nprocx,pxr.nprocz,top.lcomm_cartesian)
+
     def output_pxr(self,iter): 
     	pxr.py_mpi_output_grid_quantity('ez',pxr.ez,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,iter)
     
