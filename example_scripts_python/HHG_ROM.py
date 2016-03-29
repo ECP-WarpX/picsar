@@ -106,9 +106,10 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 live_plot_freq     = 1000000000 # frequency (in time steps) of live plots (off is l_test is off)
 
-fielddiag_period   = 500/dtfact
-partdiag_period    = 500/dtfact
-partdiag_period_probe = 20/dtfact
+fielddiag_period   = 4000/dtfact
+partdiag_period    = 4000/dtfact
+partdiag_period_probe = 10/dtfact
+lparallelo = False 
 
 #-------------------------------------------------------------------------------
 # laser parameters
@@ -494,16 +495,16 @@ installafterstep(liveplots)
 
 # Load additional OpenPMD diagnostic
 diag_f = FieldDiagnostic( period=fielddiag_period, top=top, w3d=w3d, em=em,
-                          comm_world=comm_world, lparallel_output=False )
+                          comm_world=comm_world, fieldtypes=["E", "B"], lparallel_output=lparallelo )
 diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
-            species = {"elec_C" : elec_C},
-            comm_world=comm_world, lparallel_output=False )
+            species = {"elec_C" : elec_C}, select={'ux' : [0.1, None]},
+            comm_world=comm_world, lparallel_output=lparallelo )
 diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
-            species = {"ions_C" : ions_C},
-            comm_world=comm_world, lparallel_output=False )
+            species = {"ions_C" : ions_C},select={'ux' : [None,-0.1]},
+            comm_world=comm_world, lparallel_output=lparallelo )
 diag_elec_streak = ParticleDiagnostic( period=partdiag_period_probe, top=top, w3d=w3d,
-            species = {"elec_streak" : elec_streak}, particle_data={'position','E','B'},
-            comm_world=comm_world, lparallel_output=False, write_dir='diags_streak'  )
+            species = {"elec_streak" : elec_streak}, particle_data={'position','B'},
+            comm_world=comm_world, lparallel_output=lparallelo, write_dir='diags_streak'  )
 
 installafterstep( diag_f.write )
 installafterstep( diag_elec_C.write )
