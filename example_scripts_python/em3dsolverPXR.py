@@ -121,9 +121,9 @@ class EM3DPXR(EM3DFFT):
         	pxr.pbound_z_min=0
         	
         if (top.pboundnz == absorb): 
-        	pxr.pbound_z_min=1
+        	pxr.pbound_z_max=1
         else: # Default is periodic 
-        	pxr.pbound_z_min=0
+        	pxr.pbound_z_max=0
         	
         if (top.pboundxy == absorb): 
         	pxr.pbound_x_min=1

@@ -686,7 +686,7 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_x_min)
                             	CASE (1_idp) ! absorbing 
                             		xbd=0
-                            		mask(i)=.TRUE.
+                            		mask(i)=.FALSE.
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT 
@@ -699,7 +699,7 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_x_max)
                             	CASE (1_idp) ! absorbing
                             		xbd=0
-                            		mask(i)=.TRUE.
+                            		mask(i)=.FALSE.
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -714,7 +714,7 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_y_min)! absorbing 
                             	CASE (1_idp)
                             		ybd=0
-                            		mask(i)=.TRUE.
+                            		mask(i)=.FALSE.
                             	CASE DEFAULT ! periodic 
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -728,7 +728,7 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_y_max) 
                             	CASE (1_idp) ! absorbing 
                             		ybd=0
-                            		mask(i)=.TRUE. 
+                            		mask(i)=.FALSE. 
                             	CASE DEFAULT ! periodic 
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -743,7 +743,7 @@ END SUBROUTINE charge_bcs
 								SELECT CASE (pbound_z_min)
 								CASE (1_idp) ! absorbing 
 									zbd=0
-									mask(i)=.TRUE.
+									mask(i)=.FALSE.
 								CASE DEFAULT ! periodic 
 									curr%part_z(i) = part_xyz + length_z
 								END SELECT
@@ -758,7 +758,7 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_z_max)
                             	CASE (1_idp) ! absorbing 
                             		zbd=0
-                            		mask(i)=.TRUE.
+                            		mask(i)=.FALSE.
                             	CASE DEFAULT ! periodic 
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
