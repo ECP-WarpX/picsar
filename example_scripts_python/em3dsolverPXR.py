@@ -24,6 +24,7 @@ class EM3DPXR(EM3DFFT):
                       'dlb_freq':1,
                       'dlb_threshold':20,
                       'dlb_at_init':1,
+                      'it_dlb_init':11,
                       'l_output_grid':0,
                       'l_output_freq':1
                       }
@@ -779,7 +780,7 @@ class EM3DPXR(EM3DFFT):
                 else: 
                     self.load_balance_3d(str(imbalance)+"%")
         # Try to Load balance at init 
-        if ((top.it==1) & self.dlb_at_init & self.dload_balancing): 
+        if ((top.it==self.it_dlb_init) & self.dlb_at_init & self.dload_balancing): 
 			if (self.l_2dxz): 
 			    self.load_balance_2d('Init')
 			else: 
