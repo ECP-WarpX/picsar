@@ -360,17 +360,17 @@ CONTAINS
                         curr_tile%np_tile(1)=0
                         ! Set number of guard cells for each tile 
                         IF ((ix .GT. 1) .AND. (ix .LT. ntx)) THEN
-                        	curr_tile%nxg_tile=MAX(nox,2)
+                        	curr_tile%nxg_tile=MAX(nox+1,2)
                         ELSE
                         	curr_tile%nxg_tile=nxjguards
                         END IF
                         IF ((iy .GT. 1) .AND. (iy .LT. nty) .AND. (c_dim .EQ. 3)) THEN
-                        	curr_tile%nyg_tile=MAX(noy,2)
+                        	curr_tile%nyg_tile=MAX(noy+1,2)
                         ELSE
                         	curr_tile%nyg_tile=nyjguards
                         END IF
                         IF ((iz .GT. 1) .AND. (iz .LT. ntz)) THEN
-                        	curr_tile%nzg_tile=MAX(noz,2)
+                        	curr_tile%nzg_tile=MAX(noz+1,2)
                         ELSE
                         	curr_tile%nzg_tile=nzjguards
                         END IF                        

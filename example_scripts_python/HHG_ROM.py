@@ -51,8 +51,8 @@ nppcell_carbon         = 2500
 
 #Laser at the left border:
 a0             = 6.
-laser_duration = 15
-laser_width    = 4/2 #(=2w_0)
+laser_duration = 10.
+laser_width    = 1. #(=w_0)
 #S-pol
 #Transverse profile - Gaussian
 #Longitudinal profile Super-Gaussian 12
@@ -108,7 +108,7 @@ live_plot_freq     = 1000000000 # frequency (in time steps) of live plots (off i
 
 fielddiag_period   = 500/dtfact
 partdiag_period    = 500/dtfact
-partdiag_period_probe = 200
+partdiag_period_probe = 20/dtfact
 
 #-------------------------------------------------------------------------------
 # laser parameters
@@ -156,9 +156,9 @@ print lambda_plasma_C
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 4
+nppcellx_C = 1
 nppcelly_C = 1
-nppcellz_C = 2
+nppcellz_C = 1
 
 nppcellx_G = 10
 nppcelly_G = 10
@@ -175,9 +175,9 @@ if dim=="1d":
 #-------------------------------------------------------------------------------
 
 w3d.zmmin = 0.
-w3d.zmmax = w3d.zmmin+6*laser_waist
+w3d.zmmax = w3d.zmmin+12*laser_waist
 w3d.xmmin = 0.
-w3d.xmmax = -w3d.xmmin+15*laser_waist
+w3d.xmmax = -w3d.xmmin+30*laser_waist
 w3d.ymmin = -0.5*carbon_layer_width*lambda_laser
 w3d.ymmax = -w3d.ymmin
 
@@ -308,8 +308,8 @@ if l_plasma:
 
     zmin = w3d.zmmin
     xmin = w3d.xmmin
-    xmax=xmin+6*laser_waist
-    zmax=zmin+6*laser_waist
+    xmax=xmin+12.*laser_waist
+    zmax=zmin+12.*laser_waist
 
     if dim=='3d':
         ymin=xmin
@@ -332,14 +332,14 @@ if l_plasma:
         npGy = 1.
 	npGz = w3d.nzlocal*nppcellz_G
 
-    L=lambda_laser/500.    #gradient length
+    L=lambda_laser/20.    #gradient length
     theta=numpy.pi/4.      #inclinaison angle
     nmin=0.25*densc        #min density
     nmax=200.*densc        #max density
-    x0=xmin+3*laser_waist  #x-coordinate where n=nmin 
-    z0=zmin+3*laser_waist  #z-coordinate where n=nmin
+    x0=xmin+6.*laser_waist  #x-coordinate where n=nmin 
+    z0=zmin+6.*laser_waist  #z-coordinate where n=nmin
 
-    xG=(4*w3d.xmmax+1*xmax)/5
+    xG=(1*w3d.xmmax+1*xmax)/2
     zG=(w3d.zmmax+zmax)/2
 
     add_particules_oblique(elec_C,npCx,npCy,npCz,x0,z0,top.xpminlocal,top.xpmaxlocal,
@@ -538,11 +538,11 @@ if l_test:
     print '<<< To execute n steps, type "step(n)" at the prompt >>>'
 else:
   npart=elec_C.getn()+ions_C.getn()
-#   if (me==0): 
-#     print("Total number of steps: ",N_step)
-#     print("Total number of particles ",npart)
-#   tdeb=MPI.Wtime()
-#   em.step(30,1,1)
-#   tend=MPI.Wtime()
-#   if(me==0): 
-#    	print("Final runtime (s): "+str(tend-tdeb))
+  if (me==0): 
+      print("Total number of steps: ",N_step)
+      print("Total number of particles ",npart)
+      tdeb=MPI.Wtime()
+  em.step(N_step,1,1)
+  tend=MPI.Wtime()
+  if(me==0): 
+      print("Final runtime (s): "+str(tend-tdeb))
