@@ -1046,7 +1046,7 @@ DO ispecies=1,nspecies
             DO ix=1,ntilex 
                 curr_tile=>currsp_new%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                DO ip=1,count
+                DO ip=count,1,-1
                     partx=curr_tile%part_x(ip)
                     party=curr_tile%part_y(ip)
                     partz=curr_tile%part_z(ip)
@@ -1057,7 +1057,7 @@ DO ispecies=1,nspecies
                     partw=curr_tile%pid(ip,wpid)
                     CALL add_particle_at_tile(currsp, ix,iy,iz, &
                          partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                    
+                    CALL rm_particles_from_species(currsp_new, curr_tile, ip)
                     currsp%species_npart=currsp%species_npart+1
                 END DO
             END DO
