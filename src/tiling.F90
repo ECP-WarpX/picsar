@@ -305,6 +305,13 @@ CONTAINS
             curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
             curr%np_tile=curr%np_tile(1)-1
         END IF
+        
+        ! Avoid memory leaks 
+        ! Reduce array size if # of particles in array lower than 
+        ! 30% of array size 
+        IF(curr%np_tile(1) .LT. INT(0.3*curr%npmax_tile)) THEN 
+        	CALL resize_particle_arrays(curr,  curr%npmax_tile, INT(0.5*curr%npmax_tile))
+        ENDIF 
     END SUBROUTINE rm_particle_at_tile
 
     SUBROUTINE allocate_tile_arrays(curr_tile)
@@ -574,7 +581,11 @@ CONTAINS
         temp(1:old_size)=arr(1:old_size)
         DEALLOCATE(arr)
         ALLOCATE(arr(1:new_size))
-        arr(1:old_size) = temp(1:old_size)
+        IF (new_size .GT. old_size) THEN 
+        	arr(1:old_size) = temp(1:old_size)
+        ELSE
+        	arr(1:new_size) = temp(1:new_size)        	 
+        ENDIF
         DEALLOCATE(temp)
     END SUBROUTINE resize_1D_array_real
     
@@ -589,7 +600,19 @@ CONTAINS
         temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
         DEALLOCATE(arr)
         ALLOCATE(arr(1:nx_new,1:ny_new))
-        arr(1:nx_old,1:ny_old) = temp(1:nx_old,1:ny_old)
+        IF (nx_new .GT. nx_old) THEN 
+        	IF (ny_new .GT. ny_old) THEN 
+        		arr(1:nx_old,1:ny_old) = temp(1:nx_old,1:ny_old)
+        	ELSE 
+        		arr(1:nx_old,1:ny_new) = temp(1:nx_old,1:ny_new)
+        	ENDIF
+        ELSE
+        	IF (ny_new .GT. ny_old) THEN 
+        		arr(1:nx_new,1:ny_old) = temp(1:nx_new,1:ny_old)
+        	ELSE 
+        		arr(1:nx_new,1:ny_new) = temp(1:nx_new,1:ny_new)
+        	ENDIF        
+        ENDIF 
         DEALLOCATE(temp)
     END SUBROUTINE resize_2D_array_real
 
