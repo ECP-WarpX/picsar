@@ -170,7 +170,9 @@ INTEGER(idp) :: it,nsteps
 REAL(num) :: g0,b0,dt,w0,dtcoef,tmax
 REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t
 LOGICAL :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
-REAL(num), PARAMETER :: resize_factor=1.5_num
+REAL(num), PARAMETER :: resize_factor=2._num
+REAL(num), PARAMETER :: downsize_factor=0.5_num
+REAL(num), PARAMETER :: downsize_threshold=0.4_num
 END MODULE params
 
 !===============================================================================

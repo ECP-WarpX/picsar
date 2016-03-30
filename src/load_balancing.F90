@@ -931,7 +931,7 @@ DO ispecies=1,nspecies
                 count=curr_tile%np_tile(1)
                 SELECT CASE (c_dim)
                 CASE (2)
-                    DO ip=1,count
+                    DO ip=count,1,-1
                         partx=curr_tile%part_x(ip)
                         party=curr_tile%part_y(ip)
                         partz=curr_tile%part_z(ip)
@@ -955,9 +955,10 @@ DO ispecies=1,nspecies
                     
                         ENDIF 
                         currsp_new%species_npart=currsp_new%species_npart+1
+                        CALL rm_particles_from_species(currsp, curr_tile, ip)
                     END DO
                 CASE DEFAULT
-                    DO ip=1,count
+                    DO ip=count,1,-1
                         partx=curr_tile%part_x(ip)
                         party=curr_tile%part_y(ip)
                         partz=curr_tile%part_z(ip)
@@ -980,9 +981,9 @@ DO ispecies=1,nspecies
                             indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez_new)
                             CALL add_particle_at_tile(currsp_new, indx,indy,indz, &
                                  partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                    
                         ENDIF 
                         currsp_new%species_npart=currsp_new%species_npart+1
+                        CALL rm_particles_from_species(currsp, curr_tile, ip)
                     END DO
                 END SELECT 
             END DO

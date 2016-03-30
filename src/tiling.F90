@@ -309,8 +309,10 @@ CONTAINS
         ! Avoid memory leaks 
         ! Reduce array size if # of particles in array lower than 
         ! 30% of array size 
-        IF(curr%np_tile(1) .LT. INT(0.3*curr%npmax_tile)) THEN 
-        	CALL resize_particle_arrays(curr,  curr%npmax_tile, INT(0.5*curr%npmax_tile))
+        IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN 
+        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN 
+        		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile))
+        	ENDIF 
         ENDIF 
     END SUBROUTINE rm_particle_at_tile
 
@@ -363,7 +365,7 @@ CONTAINS
                         n1=curr_tile%nx_cells_tile
                         n2=curr_tile%ny_cells_tile
                         n3=curr_tile%nz_cells_tile
-                        curr_tile%npmax_tile=n1*n2*n3*curr%nppcell
+                        curr_tile%npmax_tile=MAX(n1*n2*n3*curr%nppcell,1_idp)
                         curr_tile%np_tile(1)=0
                         ! Set number of guard cells for each tile 
                         IF ((ix .GT. 1) .AND. (ix .LT. ntx)) THEN
@@ -578,14 +580,14 @@ CONTAINS
 
         ALLOCATE(temp(1:new_size))
         ! reshape array
-        temp(1:old_size)=arr(1:old_size)
+        IF (new_size .GT. old_size) THEN 
+        	temp(1:old_size)=arr(1:old_size)
+        ELSE
+        	temp(1:new_size)=arr(1:new_size)      	 
+        ENDIF
         DEALLOCATE(arr)
         ALLOCATE(arr(1:new_size))
-        IF (new_size .GT. old_size) THEN 
-        	arr(1:old_size) = temp(1:old_size)
-        ELSE
-        	arr(1:new_size) = temp(1:new_size)        	 
-        ENDIF
+		arr=temp
         DEALLOCATE(temp)
     END SUBROUTINE resize_1D_array_real
     
@@ -597,22 +599,22 @@ CONTAINS
 
         ALLOCATE(temp(1:nx_new,1:ny_new))
         ! reshape array
-        temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
-        DEALLOCATE(arr)
-        ALLOCATE(arr(1:nx_new,1:ny_new))
         IF (nx_new .GT. nx_old) THEN 
         	IF (ny_new .GT. ny_old) THEN 
-        		arr(1:nx_old,1:ny_old) = temp(1:nx_old,1:ny_old)
+       		   temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
         	ELSE 
-        		arr(1:nx_old,1:ny_new) = temp(1:nx_old,1:ny_new)
+        		temp(1:nx_old,1:ny_new) = arr(1:nx_old,1:ny_new)
         	ENDIF
         ELSE
         	IF (ny_new .GT. ny_old) THEN 
-        		arr(1:nx_new,1:ny_old) = temp(1:nx_new,1:ny_old)
+        		temp(1:nx_new,1:ny_old) = arr(1:nx_new,1:ny_old)
         	ELSE 
-        		arr(1:nx_new,1:ny_new) = temp(1:nx_new,1:ny_new)
+        		temp(1:nx_new,1:ny_new) = arr(1:nx_new,1:ny_new)
         	ENDIF        
         ENDIF 
+        DEALLOCATE(arr)
+        ALLOCATE(arr(1:nx_new,1:ny_new))
+		arr=temp
         DEALLOCATE(temp)
     END SUBROUTINE resize_2D_array_real
 
