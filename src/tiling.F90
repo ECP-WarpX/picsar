@@ -41,17 +41,17 @@ CONTAINS
 
         ! Some sanity check
         IF (nx0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in X is to high, settting back to default value 1"
+            IF (rank .EQ. 0) PRINT *, "number of tiles in X is too high, settting back to default value 1"
             ntx=1
         END IF
         IF (ny0_grid_tile .LT. 4) THEN
         	IF(c_dim .EQ. 3) THEN 
-            	IF (rank .EQ. 0) PRINT *, "number of tiles in Y is to high, setting back to default value 1"
+            	IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
             ENDIF
             nty=1
         END IF
         IF (nz0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in Z is to high, setting back to default value 1"
+            IF (rank .EQ. 0) PRINT *, "number of tiles in Z is too high, setting back to default value 1"
             ntz=1
         END IF
         !-- N.B: If the number of grid points cannot be equally divided between
@@ -59,7 +59,6 @@ CONTAINS
         nx0_last_tile= nx0_grid_tile+(nxgrid-nx0_grid_tile*ntx)
         ny0_last_tile= ny0_grid_tile+(nygrid-ny0_grid_tile*nty)
         nz0_last_tile= nz0_grid_tile+(nzgrid-nz0_grid_tile*ntz)
-
 
         !- Allocate object array of tiles for particles
         DO ispecies =1, nspecies
@@ -112,7 +111,7 @@ CONTAINS
                         ENDIF
                         !------------- Y- DIRECTION
 						! FIRST TILE in Y DIRECTION
-                        IF (iy .EQ. 1) THEN
+                        IF ((iy .EQ. 1) .AND. (c_dim .EQ. 3)) THEN
 							curr%subdomain_bound = .TRUE.
 							curr%ny_grid_tile=ny0_grid_tile
 							curr%ny_cells_tile=curr%ny_grid_tile-1
@@ -134,7 +133,7 @@ CONTAINS
 							curr%y_tile_max= curr%y_grid_tile_max+dy/2.0_num
                         END IF
 						! LAST TILE in Y DIRECTION
-						IF (iy .EQ. nty) THEN
+						IF (iy .EQ. nty .AND. (c_dim .EQ. 3)) THEN
                             curr%subdomain_bound= .TRUE.
                             curr%ny_grid_tile=ny0_last_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1

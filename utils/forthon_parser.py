@@ -780,7 +780,10 @@ def preprocess_file(listline):
     # Make everything lower case (Fortran is case insensitive)
     for i in range(0,lenlist):
         curr_line=listline[i]
-        curr_line=curr_line.lower()
+        # Compiler directive are case sensitive do not lower
+        if not ((curr_line.find("#ifdef")>=0) or (curr_line.find("#else")>=0) or \
+        (curr_line.find("#endif")>=0) ): 
+            curr_line=curr_line.lower()
         curr_line=rm_comments(curr_line)
         curr_line=rm_newline(curr_line)
         curr_line=rm_spechar(curr_line)
