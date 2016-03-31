@@ -864,6 +864,7 @@ END SUBROUTINE get_projected_load_on_z
 
 !This subroutine create new array_of_tiles for each species 
 SUBROUTINE create_new_tile_split()
+USE omp_lib
 IMPLICIT NONE 
 TYPE(particle_species), DIMENSION(:), ALLOCATABLE, TARGET :: new_species_parray  
 TYPE(particle_species), POINTER :: currsp, currsp_new
@@ -873,13 +874,24 @@ INTEGER(idp)  :: nxmin,nxmax,nymin,nymax,nzmin,nzmax,&
 INTEGER(idp) :: ix, iy, iz, ip, indx, indy, indz, ispecies, count
 INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
 REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new
+INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new, nthreads_tot
 
- 
-! Udpate optimal number of tiles 
-ntilex_new = MAX(1,nx/10)
-ntiley_new = MAX(1,ny/10)
-ntilez_new = MAX(1,nz/10)
+#ifdef_OPENMP
+nthreads_tot=OMP_GET_MAX_THREADS()
+#else
+nthreads_tot=1
+#endif 
+
+IF (nthreads_tot .GT. 1) THEN 
+    ! Udpate optimal number of tiles 
+    ntilex_new = MAX(1,nx/10)
+    ntiley_new = MAX(1,ny/10)
+    ntilez_new = MAX(1,nz/10)
+ELSE
+    ntilex_new = 1
+    ntiley_new = 1
+    ntilez_new = 1
+ENDIF 
 
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
