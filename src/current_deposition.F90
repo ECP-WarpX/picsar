@@ -3536,12 +3536,6 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
               end if
               
               ! -- Jy (2D Esirkepov scheme)
-              IF ((ic .LT. -nxguard) .OR. (ic .GT. nx+nxguard)) THEN 
-              	PRINT *, "ic, nx,nxguard,xmin,xmax,xp(ip), nox,dx", ic, nx, nxguard, xmin, xmin+nx*dx, nox, dx
-              ENDIF
-              IF ((kc .LT. -nzguard) .OR. (kc .GT. nz+nzguard)) THEN 
-              	PRINT *, "kc, nz,nzguard,zmin,zmax,zp(ip), noz,dz", kc, nz, nzguard, zmin, zmin+nz*dz, noz, dz
-              ENDIF
               jy(ic,kc) = jy(ic,kc) + wq*vy*invvol/ncells* &
                    ( (sz0(k)+0.5*dsz(k))*sx0(i) + (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) )
 
