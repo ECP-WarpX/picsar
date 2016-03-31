@@ -250,7 +250,7 @@ class EM3DPXR(EM3DFFT):
         pxr.init_species_section() 
         
         for i,s in enumerate(self.listofallspecies):
-            pxr.set_particle_species_properties(i+1,s.name,s.mass,s.charge,1, \
+            pxr.set_particle_species_properties(i+1,s.name,s.mass,s.charge,0, \
                                                 0.,0.,0.,0.,0.,0., \
                                                 0.,0.,0.,0.,0.,0.)
             pxr.nspecies+=1
@@ -1251,11 +1251,15 @@ class EM3DPXR(EM3DFFT):
              	
                 em3d_exchange_e(self.block)
                 em3d_exchange_b(self.block)
-                # If domain has been resized, do a new tile split and exchange particles 
+                #If domain has been resized, do a new tile split and exchange particles 
                 if 1:#((isnewdom != 0)): 
 					# Now exchanging particles
                     pxr.create_new_tile_split()
-                    
+                    pxr.remap_particles_2d(ix1old,ix2old,iz1old,iz2old,    
+								ix1new,ix2new,iz1new,iz2new,     
+								pxr.cell_x_min,pxr.cell_x_max,
+								pxr.cell_z_min,pxr.cell_z_max,    
+								pxr.rank, pxr.nproc, pxr.nprocx,pxr.nprocz,top.lcomm_cartesian)                    
                     self.ntilex = pxr.ntilex 
                     self.ntilez = pxr.ntilez 
                     
@@ -1302,12 +1306,7 @@ class EM3DPXR(EM3DFFT):
 								xygroup.append(xgroup)
 							s.pgroups.append(xygroup)
 						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
-#                pxr.particle_bcs_mpi_blocking()
-                pxr.remap_particles_2d(ix1old,ix2old,iz1old,iz2old,    
-                            ix1new,ix2new,iz1new,iz2new,     
-                            pxr.cell_x_min,pxr.cell_x_max,
-                            pxr.cell_z_min,pxr.cell_z_max,    
-                            pxr.rank, pxr.nproc, pxr.nprocx,pxr.nprocz,top.lcomm_cartesian)
+
 
     def output_pxr(self,iter): 
     	pxr.py_mpi_output_grid_quantity('ez',pxr.ez,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,iter)
