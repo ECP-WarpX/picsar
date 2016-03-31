@@ -876,7 +876,7 @@ INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
 REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
 INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new, nthreads_tot
 
-#ifdef_OPENMP
+#ifdef _OPENMP
 nthreads_tot=OMP_GET_MAX_THREADS()
 #else
 nthreads_tot=1
