@@ -156,9 +156,9 @@ print lambda_plasma_C
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 10
+nppcellx_C = 1
 nppcelly_C = 1
-nppcellz_C = 3
+nppcellz_C = 1
 
 nppcellx_G = 10
 nppcelly_G = 10
@@ -499,15 +499,15 @@ installafterstep(liveplots)
 # Load additional OpenPMD diagnostic
 diag_f = FieldDiagnostic( period=fielddiag_period, top=top, w3d=w3d, em=em,
                           comm_world=comm_world, fieldtypes=["E", "B"], lparallel_output=lparallelo )
-diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d, subset=4,
+diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_C" : elec_C}, select={'ux' : [0.1, None]},
             comm_world=comm_world, lparallel_output=lparallelo )
 diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
-            species = {"ions_C" : ions_C},select={'ux' : [None,-0.1]}, subset=4,
+            species = {"ions_C" : ions_C},select={'ux' : [None,-0.1]}, 
             comm_world=comm_world, lparallel_output=lparallelo )
 diag_elec_streak = ParticleDiagnostic( period=partdiag_period_probe, top=top, w3d=w3d,
             species = {"elec_streak" : elec_streak}, particle_data={'position','B'},
-            comm_world=comm_world, subset=4, lparallel_output=lparallelo, write_dir='diags_streak'  )
+            comm_world=comm_world, lparallel_output=lparallelo, write_dir='diags_streak'  )
 
 installafterstep( diag_f.write )
 installafterstep( diag_elec_C.write )

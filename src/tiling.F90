@@ -111,8 +111,8 @@ CONTAINS
                         ENDIF
                         !------------- Y- DIRECTION
 						! FIRST TILE in Y DIRECTION
-                        IF ((iy .EQ. 1) .AND. (c_dim .EQ. 3)) THEN
-							curr%subdomain_bound = .TRUE.
+                        IF (iy .EQ. 1) THEN
+                            IF (c_dim .EQ. 3) curr%subdomain_bound = .TRUE.
 							curr%ny_grid_tile=ny0_grid_tile
 							curr%ny_cells_tile=curr%ny_grid_tile-1
 							curr%y_grid_tile_min=yminlocal
@@ -133,8 +133,8 @@ CONTAINS
 							curr%y_tile_max= curr%y_grid_tile_max+dy/2.0_num
                         END IF
 						! LAST TILE in Y DIRECTION
-						IF (iy .EQ. nty .AND. (c_dim .EQ. 3)) THEN
-                            curr%subdomain_bound= .TRUE.
+						IF (iy .EQ. nty) THEN
+                            IF (c_dim .EQ. 3) curr%subdomain_bound = .TRUE.
                             curr%ny_grid_tile=ny0_last_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
                             curr%y_grid_tile_min=yminlocal+(iy-1)*ny0_grid_tile*dy
@@ -389,7 +389,6 @@ CONTAINS
             END DO
         END DO
         
-
         ! Init partile tile arrays in parallel - first touch policy
         ! - Init array of current tile
         ! - For some reason, don't set all values to zero?????
