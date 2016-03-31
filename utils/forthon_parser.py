@@ -625,7 +625,8 @@ def get_subroutine_blocks(listlines):
             proc_mod=False
             modulename=""
         # This is a subroutine block
-        if ((curr_line.find("subroutine")>=0) & (curr_line.find("end subroutine")==-1)):
+        if ((curr_line.find("subroutine")>=0) & (curr_line.find("end subroutine")==-1) \
+        & (curr_line.find("#do not parse")==-1) ):
             ip=curr_line.find("(")
             # This is a subroutine in a procedure module
             if (proc_mod):
