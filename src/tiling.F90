@@ -22,7 +22,7 @@ CONTAINS
 
     !!! --- Set particle tile split in space
     SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
-    									  xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal) !#do not parse 
+    									  xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nspec, nxgrid, nygrid, nzgrid
         INTEGER(idp), INTENT(IN OUT) ::  ntx, nty, ntz
