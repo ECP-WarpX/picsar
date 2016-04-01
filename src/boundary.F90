@@ -1015,9 +1015,13 @@ END SUBROUTINE charge_bcs
     REAL(num) :: tmptime
     
     tmptime = MPI_WTIME()
-
+    
     ! First exchange particles between tiles (NO MPI at that point)
     CALL particle_bcs_tiles
+
+    localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
+
+    tmptime = MPI_WTIME()
 
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking

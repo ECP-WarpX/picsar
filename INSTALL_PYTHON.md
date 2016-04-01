@@ -55,5 +55,5 @@ To test the compilation/execution, you can use the makefile (py.test is required
   - Make -f Makefile_Forthon test
 
   For each test one by one
-  - Simple running test:     make -f Makefile test1
-  - Langmuir wave:           make -f Makefile test2
+  - Simple running test:     make -f Makefile_Forthon test1
+  - Langmuir wave:           make -f Makefile_Forthon test2

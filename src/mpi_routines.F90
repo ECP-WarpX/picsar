@@ -1,3 +1,9 @@
+! ______________________________________________________________________________
+! 
+! MPI_ROUTINES.F90
+! Contains subroutines for MPI
+! 
+
 MODULE mpi_routines
   USE shared_data
   USE fields
@@ -13,14 +19,24 @@ CONTAINS
 
   SUBROUTINE mpi_minimal_init()
     LOGICAL(isp) :: isinitialized
-	INTEGER(isp) :: nproc_comm, rank_in_comm
+	  INTEGER(isp) :: nproc_comm, rank_in_comm
+	
+	  !print*,'start mpi_minimal_init()'
+	  !print*,'MPI_INITIALIZED'
     CALL MPI_INITIALIZED(isinitialized,errcode)
-    IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
+    IF (.NOT. isinitialized) THEN
+      !print*, 'MPI_INIT_THREAD'
+      CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
+    ENDIF
+    !print*,'MPI_COMM_DUP'
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+    !print*,'MPI_COMM_SIZE'
     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
-	  nproc=INT(nproc_comm,idp)
+    nproc=INT(nproc_comm,idp)
+    !print*,'MPI_COMM_RANK'
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
 	  rank=INT(rank_in_comm,idp)	  	  
+	  !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
 
 
@@ -74,6 +90,9 @@ CONTAINS
       IF (rank .EQ. 0) THEN
         WRITE(0,*) '*** ERROR ***'
         WRITE(0,*) 'Simulation domain is too small.'
+        WRITE(0,*) nx_global_grid,nxguards
+        WRITE(0,*) ny_global_grid,nyguards
+        WRITE(0,*) nz_global_grid,nzguards
       ENDIF
       CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
     ENDIF
@@ -313,7 +332,7 @@ CONTAINS
       CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
       ! Determines process coords in cartesian topology given rank in group 
       CALL MPI_CART_COORDS(comm, rank_in_comm, ndims, coordinates, errcode)
-	    rank=INT(rank_in_comm,idp)
+      rank=INT(rank_in_comm,idp)
 	    ! Determine processor's ranks at the boundaries
       CALL MPI_CART_SHIFT(comm, 2_isp, 1_isp, proc_x_min, proc_x_max, errcode)
       CALL MPI_CART_SHIFT(comm, 1_isp, 1_isp, proc_y_min, proc_y_max, errcode)
@@ -611,8 +630,9 @@ CONTAINS
     REAL(num), DIMENSION(20) :: avetimes
     REAL(num), DIMENSION(20) :: percenttimes
     
-    localtimes(20) = sum(localtimes(1:9))
-    localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8)
+    localtimes(20) = sum(localtimes(1:11))
+    localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
+                     localtimes(8) + localtimes(11)
     
     ! Reductions
     ! Maximun times
@@ -635,8 +655,10 @@ CONTAINS
     WRITE(0,*) "---------------------------------------------------------------------------"
     WRITE(0,'(X,A22,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
     percenttimes(1), avetimes(1)/nsteps*1e3
-    WRITE(0,'(X,A22,5(X,F8.2))') "Particle bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
+    WRITE(0,'(X,A22,5(X,F8.2))') "Particle MPI bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
     percenttimes(2), avetimes(2)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), avetimes(11), maxtimes(11),&
+    percenttimes(11), avetimes(11)/nsteps*1e3    
     WRITE(0,'(X,A22,5(X,F8.2))') "Current deposition:", mintimes(3), avetimes(3), maxtimes(3),&
     percenttimes(3), avetimes(3)/nsteps*1e3
     WRITE(0,'(X,A22,5(X,F8.2))') "Current bound. cond.:", mintimes(4), avetimes(4), maxtimes(4),&
@@ -649,6 +671,8 @@ CONTAINS
     percenttimes(7), avetimes(7)/nsteps*1e3
     WRITE(0,'(X,A22,5(X,F8.2))') "E field bound. cond.:",mintimes(8), avetimes(8), maxtimes(8),&
     percenttimes(8), avetimes(8)/nsteps*1e3
+    WRITE(0,'(X,A22,5(X,F8.2))') "Sorting:",mintimes(10), avetimes(10), maxtimes(10),&
+    percenttimes(10), avetimes(10)/nsteps*1e3    
     WRITE(0,'(X,A22,5(X,F8.2))') "Diags:",mintimes(9), avetimes(9), maxtimes(9),&
     percenttimes(9), avetimes(9)/nsteps*1e3
     
@@ -660,5 +684,6 @@ CONTAINS
   ENDIF    
   
   END SUBROUTINE
+
 
 END MODULE mpi_routines

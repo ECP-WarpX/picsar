@@ -141,19 +141,19 @@ CONTAINS
           ! Bx energy
           if (temdiag_act_list(5).gt.0) then        
             CALL get_loc_field_energy(bx,nx,ny,nz,dx,dy,dz,nxguards,nyguards,nzguards,local_values(temdiag_i_list(5)))
-            local_values(temdiag_i_list(5)) = local_values(temdiag_i_list(5))*eps0
+            local_values(temdiag_i_list(5)) = local_values(temdiag_i_list(5))*imu0
           end if
           
           ! By energy
           if (temdiag_act_list(6).gt.0) then        
             CALL get_loc_field_energy(by,nx,ny,nz,dx,dy,dz,nxguards,nyguards,nzguards,local_values(temdiag_i_list(6)))
-            local_values(temdiag_i_list(6)) = local_values(temdiag_i_list(6))*eps0
+            local_values(temdiag_i_list(6)) = local_values(temdiag_i_list(6))*imu0
           end if
 
           ! Bz energy
           if (temdiag_act_list(7).gt.0) then        
             CALL get_loc_field_energy(bz,nx,ny,nz,dx,dy,dz,nxguards,nyguards,nzguards,local_values(temdiag_i_list(7)))
-            local_values(temdiag_i_list(7)) = local_values(temdiag_i_list(7))*eps0
+            local_values(temdiag_i_list(7)) = local_values(temdiag_i_list(7))*imu0
           end if
 
           ! DivE*eps0 - rho
@@ -165,9 +165,9 @@ CONTAINS
           ! MPI all reduction
           call MPI_ALLREDUCE(local_values(1),global_values(1),temdiag_totvalues,mpidbl,MPI_SUM,comm,errcode)
           
-          ! DivE*eps0 - rho
+          ! sqrt for DivE*eps0 - rho
           if (temdiag_act_list(8).gt.0) then 
-            global_values(8) = sqrt(global_values(8))
+            global_values(temdiag_i_list(8)) = sqrt(global_values(temdiag_i_list(8)))
           end if
           
           ! _____________
@@ -254,5 +254,37 @@ CONTAINS
     CALL MPI_TYPE_FREE(subt, errcode)
 
   END SUBROUTINE write_single_array_to_file
+
+  SUBROUTINE output_time_statistics
+  ! ______________________________________________________
+  ! Output of the time statistics
+  ! 
+  ! ______________________________________________________
+    USE time_stat
+    USE params
+    USE shared_data
+    IMPLICIT NONE
+    
+    REAL(num), DIMENSION(20) :: avetimes
+    
+    IF ((timestat_period.gt.0).and.(MOD(it,timestat_period).eq.0)) then
+    
+    
+      localtimes(20) = sum(localtimes(1:11))
+      localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
+                       localtimes(8) + localtimes(11)
+    
+      ! Average
+      CALL MPI_REDUCE(localtimes,avetimes,20,mpidbl,MPI_SUM,0,comm,errcode)
+      avetimes = avetimes / nproc
+    
+      IF (rank.eq.0) THEN
+        write(41) avetimes(1:11)
+      end if
+      
+      
+    endif
+  
+  END SUBROUTINE
 
 END MODULE simple_io

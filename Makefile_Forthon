@@ -33,6 +33,7 @@ clean:
 
 test1:
 	cp -p example_scripts_python/test.py Acceptance_testing/Python_tests/test
+	export OMP_NUM_THREADS=1
 	cd Acceptance_testing/Python_tests/test && \
 	mpirun -np 1 python test.py
 	

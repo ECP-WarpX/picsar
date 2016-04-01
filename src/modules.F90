@@ -12,6 +12,7 @@ REAL(num), PARAMETER :: emass   = 9.10938291e-31_num,      &
                         clight  = 2.99792458e8_num,                 &
                         mu0     = 1.2566370614359173e-06_num,      &
                         eps0    = 8.854187817620389e-12_num,      &
+                        imu0    = 795774.715459,               &
                         pi      = 3.14159265358979323_num
 INTEGER(isp), PARAMETER :: c_ndims = 3
 ! direction parameters
@@ -114,6 +115,7 @@ TYPE particle_species
     INTEGER(idp)   :: species_npart
     INTEGER(idp)   :: nppspecies_max
     INTEGER(idp)   :: nppcell
+    INTEGER(idp)   :: sorting_period
     LOGICAL(idp)   :: l_arrayoftiles_allocated =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
@@ -167,8 +169,6 @@ TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:):: species_parray
 
 END MODULE particles
 
-
-
 !===============================================================================
 MODULE params
 !===============================================================================
@@ -181,7 +181,8 @@ REAL(num), PARAMETER :: resize_factor=1.5_num
 INTEGER(idp) :: topology
 INTEGER(idp) :: mpicom_curr
 INTEGER(isp) :: seed
-INTEGER(idp) :: currdepo
+INTEGER(idp) :: currdepo                            ! Current deposition method
+INTEGER(idp) :: fieldgave                           ! Field gathering method
 END MODULE params
 
 !===============================================================================
@@ -210,6 +211,8 @@ MODULE time_stat
 !===============================================================================
 use constants
 
+INTEGER(idp) :: timestat_activated
+INTEGER(idp) :: timestat_period
 REAL(num), dimension(20) :: localtimes
 
 END MODULE
@@ -277,7 +280,6 @@ MODULE timing
 !===============================================================================
 use constants 
 REAL(num) :: dep_curr_time=0._num
-REAL(num) :: timepush=0._num
 
 END MODULE timing
 
@@ -329,6 +331,11 @@ REAL(num):: dy, ymin, ymax,length_y
 REAL(num):: y_min_local, y_max_local
 REAL(num):: dz, zmin, zmax,length_z
 REAL(num):: z_min_local, z_max_local
+
+! Sorting
+INTEGER(idp) :: sorting_activated                   ! Activation of soting
+REAL(NUM)    :: sorting_dx, sorting_dy, sorting_dz  ! Bin space steps
+REAL(NUM)    :: sorting_shiftx, sorting_shifty, sorting_shiftz
 
 ! Axis
 REAL(num), POINTER, DIMENSION(:) :: x, y, z

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -r RESULTS
+rm -r __pycache__

@@ -1,8 +1,9 @@
+! ______________________________________________________________________________
+! PARTICLES_PUSH.F90
 
 !===============================================================================
 !  Advance particles a full time step
 !===============================================================================
-
 SUBROUTINE push_particles
 USE fields
 USE shared_data
@@ -95,24 +96,18 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_by(1:count)=0.0_num
 					curr_tile%part_bz(1:count)=0.0_num
 					!!! ---- Loop by blocks over particles in a tile (blocking)
-					!!! --- Gather electric field on particles
-					CALL pxr_gete3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
-										  curr_tile%part_z, curr_tile%part_ex,                                                       &
-										  curr_tile%part_ey,curr_tile%part_ez,                   									 &
-										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                            			 &
-										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  			 &
-										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             				     &
+					CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     &
+										  curr_tile%part_z, curr_tile%part_ex,                                 &
+										  curr_tile%part_ey,curr_tile%part_ez,                   							 &
+										  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, &
+										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
+										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,      &
+										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,           &
 										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 											 &
-										  currg%eztile,.FALSE.,.TRUE.)
-					!!! --- Gather magnetic fields on particles
-					CALL pxr_getb3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
-									  curr_tile%part_z, curr_tile%part_bx,                    									     &
-									  curr_tile%part_by,curr_tile%part_bz,                    										 &
-									  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              			 &
-									  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   			 &
-									  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                					 &
-									  nzjg,noxx,noyy,nozz,currg%bxtile,currg%bytile,  	 											 &
-									  currg%bztile,.FALSE.,.TRUE.)
+										  currg%eztile,                                          &
+										  currg%bxtile,currg%bytile,currg%bztile                 &
+										  ,.FALSE.,.TRUE.)
+										  
 					!! --- Push velocity with E half step
 					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                   &
 					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					   &
@@ -241,24 +236,35 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_by(1:count)=0.0_num
 					curr_tile%part_bz(1:count)=0.0_num
 					!!! ---- Loop by blocks over particles in a tile (blocking)
-					!!! --- Gather electric field on particles
-					CALL pxr_gete3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
-										  curr_tile%part_z, curr_tile%part_ex,                                                       &
-										  curr_tile%part_ey,curr_tile%part_ez,                   									 &
-										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                            			 &
-										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  			 &
-										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             				     &
-										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, &
-										  currg%eztile,.FALSE.,.TRUE.)
+					!!! --- Gather electric and magnetic fields on particles
+					CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     &
+										  curr_tile%part_z, curr_tile%part_ex,                                 &
+										  curr_tile%part_ey,curr_tile%part_ez,                   							 &
+										  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, &
+										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
+										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,      &
+										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,           &
+										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 											 &
+										  currg%eztile,                                          &
+										  currg%bxtile,currg%bytile,currg%bztile                 &
+										  ,.FALSE.,.TRUE.)					
+!					CALL pxr_gete3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
+!										  curr_tile%part_z, curr_tile%part_ex,                                                       &
+!										  curr_tile%part_ey,curr_tile%part_ez,                   									 &
+!										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                            			 &
+!										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  			 &
+!										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             				     &
+!										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, &
+!										  currg%eztile,.FALSE.,.TRUE.)
 					!!! --- Gather magnetic fields on particles
-					CALL pxr_getb3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
-									  curr_tile%part_z, curr_tile%part_bx,                    									     &
-									  curr_tile%part_by,curr_tile%part_bz,                    										 &
-									  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              			 &
-									  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   			 &
-									  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                					 &
-									  nzjg,noxx,noyy,nozz,currg%bxtile,currg%bytile,  	 &
-									  currg%bztile,.FALSE.,.TRUE.)
+!					CALL pxr_getb3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
+!									  curr_tile%part_z, curr_tile%part_bx,                    									     &
+!									  curr_tile%part_by,curr_tile%part_bz,                    										 &
+!									  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              			 &
+!									  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   			 &
+!									  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                					 &
+!									  nzjg,noxx,noyy,nozz,currg%bxtile,currg%bytile,  	 &
+!									  currg%bztile,.FALSE.,.TRUE.)
 					!! --- Push velocity with E half step
 					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
 					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					 &

@@ -315,7 +315,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,wq,invvol, sx0, sy0, sz0, sx1, sy1, sz1
-        REAL(num), ALLOCATABLE :: ww(:,:),ll(:,:)
+        REAL(num), ALLOCATABLE :: ww(:,:)
+        INTEGER(idp), ALLOCATABLE :: ll(:,:)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: j,k,l,nn,ip,n,m,ixmin, ixmax, iymin, iymax, izmin, izmax
         INTEGER(idp) :: nblk
@@ -1728,13 +1729,24 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
     END SUBROUTINE calc_field_div
     
     SUBROUTINE init_diags
+        USE shared_data
         IMPLICIT NONE    
     
+        IF (rank.eq.0) THEN 
+          WRITE(0,*) 
+          WRITE(0,*) ' Initilization of the diags' 
+        ENDIF
+    
         ! Creation of the result folder
-        CALL system('mkdir RESULTS')
-        
+        IF (rank.eq.0) CALL system('mkdir RESULTS')
+        IF (rank.eq.0) CALL system('rm RESULTS/*')        
         ! Initialization of the temporal diags 
         CALL init_temp_diags
+        
+        ! Init time statistics
+        CALL init_time_stat_output
+        
+        IF (rank.eq.0) WRITE(0,*)
         
     END SUBROUTINE
     
@@ -1748,6 +1760,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         IMPLICIT NONE
         
         INTEGER :: i
+        
+        IF (temdiag_frequency.gt.0) THEN
         
         i = 1
         temdiag_nb_part = 0
@@ -1833,7 +1847,6 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         
         if (temdiag_nb.gt.0) then
           if (rank.eq.0) then 
-            write(0,*)
             write(0,'(" Initialization of the temporal diagnostics")')
           end if
         end if
@@ -1871,9 +1884,32 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
           end if
         end if
             
-        CALL MPI_BARRIER(comm,errcode)     
+        CALL MPI_BARRIER(comm,errcode) 
+        
+        ENDIF    
     END SUBROUTINE
 
+    SUBROUTINE init_time_stat_output
+      USE time_stat
+      USE shared_data
+      USE params
+      IMPLICIT NONE 
+      
+      INTEGER :: nb_timestat
+         
+      IF (timestat_activated.gt.0) THEN
+      
+        nb_timestat = 11
+      
+        OPEN(unit=41,file="./RESULTS/time_stat",FORM="unformatted",ACCESS='stream')
+        WRITE(41) nb_timestat
+        WRITE(41) timestat_period*dt
+        
+        IF (rank.eq.0) WRITE(0,*) ' Initialization of the time statistics output: ',nb_timestat
+        
+      ENDIF
+    
+    END SUBROUTINE
 
     !!! --- Determine the local kinetic energy for the species ispecies
     SUBROUTINE get_loc_kinetic_energy(ispecies,kinetic_energy_loc)
@@ -1892,7 +1928,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
         INTEGER(idp),parameter :: LVEC=16
-        REAL(num)                         :: partgam
+        REAL(num)                          :: partgam
         REAL(num),dimension(:),allocatable :: gaminv
 
         kinetic_energy_loc = 0
@@ -1901,10 +1937,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         curr=>species_parray(ispecies)
             
         ! Loop over the tiles
-        !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-        !$OMP SHARED(curr, ntilex, ntiley, ntilez,partgam) &
-        !$OMP PRIVATE(ix,iy,iz,ispecies,curr_tile,ip,np,n,gaminv) &
+        !$OMP PARALLEL &
+        !$OMP DEFAULT(NONE) &
+        !$OMP SHARED(curr, ntilex, ntiley, ntilez) &
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr_tile,ip,np,n,gaminv,partgam) &
         !$OMP reduction(+:kinetic_energy_loc)
+                        
+        !$OMP DO COLLAPSE(3) SCHEDULE(runtime) 
         DO iz=1, ntilez
             DO iy=1, ntiley
                 DO ix=1, ntilex
@@ -1912,7 +1951,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                     curr_tile=>curr%array_of_tiles(ix,iy,iz)
                     np = curr_tile%np_tile(1)
                     
-                    allocate(gaminv(np))                    
+                    allocate(gaminv(np))                  
                     gaminv(1:np) = curr_tile%part_gaminv(1:np)
                     
                     !write(0,*) " Tile total kinetic energy for tile:",ix,iy,iz
@@ -1923,7 +1962,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                     ! Loop over the particles
                     DO ip=1,np,LVEC
                         !DIR$ ASSUME_ALIGNED gaminv:64
-                        !$OMP SIMD SAFELEN(LVEC) PRIVATE(partgam)
+                        !$OMP SIMD SAFELEN(LVEC) 
                         DO n=1,MIN(LVEC,np-ip+1)
             
                             partgam = 1./gaminv(ip+(n-1)) 
@@ -1933,14 +1972,15 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                         end do                       
                     
                     End do
-                                            
-                    deallocate(gaminv)  
+                       
+                    deallocate(gaminv)                      
                     !write(0,*) " Total Local kinetic energy",total_kinetic_energy_loc                  
                     
                 End do
             End do 
         End do
-        !$OMP END PARALLEL DO
+        !$OMP END DO
+        !$OMP END PARALLEL
     
     end subroutine
 
@@ -2013,14 +2053,14 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 
     !!! --- Determine the local field energy for the given field
     SUBROUTINE get_loc_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
-        use constants
+        USE constants
         IMPLICIT NONE
-        REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard) :: field
+        INTEGER(idp)     :: nx2,ny2,nz2
+        INTEGER(idp)     :: nxguard,nyguard,nzguard        
         REAL(num)                   :: field_energy
         INTEGER(idp)                :: j,k,l
-        INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
         REAL(num)                   :: dx2,dy2,dz2
-        
+        REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard), intent(in) :: field        
         field_energy = 0
  
         !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
@@ -2044,14 +2084,16 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
     
     !!! --- Determine the total field energy for the given field
     SUBROUTINE get_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
+        USE constants
         USE mpi_derived_types
         USE mpi_type_constants
         USE shared_data
         IMPLICIT NONE
-        REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard) :: field
+        INTEGER(idp)                :: nx2,ny2,nz2
+        INTEGER(idp)                :: nxguard,nyguard,nzguard
+        REAL(num),dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard) :: field
         REAL(num)                   :: field_energy,field_energy_loc
         INTEGER(idp)                :: j,k,l
-        INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
         REAL(num)                   :: dx2,dy2,dz2
 
         field_energy = 0
@@ -2087,7 +2129,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         IMPLICIT NONE  
 
         INTEGER(idp)                :: j,k,l
-        INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard        
+        INTEGER(idp),intent(in)     :: nx2,ny2,nz2,nxguard,nyguard,nzguard        
         REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: divee2,rho2  
         REAL(num), intent(out)      :: norm_loc
         

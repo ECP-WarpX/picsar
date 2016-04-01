@@ -15,8 +15,10 @@ class EM3DPXR(EM3DFFT):
                       'ntiley':1,
                       'ntilez':1,
                       'listofallspecies':[],
-                      'currdepo':0,
-                      'mpicom_curr':0
+                      'currdepo':0,     # Current deposition method
+                      'mpicom_curr':0,   # Com type Current deposition
+                      'fieldgave':0,     # Field gathering method
+                      'sorting':{'activated':0,'periods':[],'dx':1,'dy':1,'dz':1,'xshift':0,'yshift':0,'zshift':0}
                       }
 
     def __init__(self,**kw):
@@ -168,12 +170,23 @@ class EM3DPXR(EM3DFFT):
         pxr.currdepo=self.currdepo
         # Tye of MPI communication for the current
         pxr.mpicom_curr=self.mpicom_curr
+        # Field gathering method
+        pxr.fieldgave=self.fieldgave
 
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
         pxr.ntilez = self.ntilez
 
+        # --- Sorting parameters
+        pxr.sorting_activated = self.sorting.activated
+        pxr.sorting_dx = self.sorting.dx*pxr.dx
+        pxr.sorting_dy = self.sorting.dy*pxr.dy
+        pxr.sorting_dz = self.sorting.dz*pxr.dz
+        pxr.sorting_shiftx = self.sorting.xshift      
+        pxr.sorting_shifty = self.sorting.yshift  
+        pxr.sorting_shiftz = self.sorting.zshift  
+                        
         # --- species section
         pxr.nspecies_max=top.pgroup.ns
         
@@ -181,9 +194,14 @@ class EM3DPXR(EM3DFFT):
         pxr.init_species_section() 
         
         for i,s in enumerate(self.listofallspecies):
+            # Check for sorting
+            if (i >= len(self.sorting.periods)):
+              self.sorting.periods.append(0)
+            # initialize species in pxr  
             pxr.set_particle_species_properties(i+1,s.name,s.mass,s.charge,1, \
                                                 0.,0.,0.,0.,0.,0., \
-                                                0.,0.,0.,0.,0.,0.)
+                                                0.,0.,0.,0.,0.,0., \
+                                                self.sorting.periods[i])
             pxr.nspecies+=1
 
         pxr.set_tile_split()
@@ -620,6 +638,11 @@ class EM3DPXR(EM3DFFT):
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
 
+        # --- Particle sorting
+        if l_pxr: 
+          if ((self.sorting.activated)and(top.it>0)):        
+            pxr.particle_sorting_sub() 
+
         # --- call beforeloadrho functions
         beforeloadrho.callfuncsinlist()
         pgroups = []
@@ -630,6 +653,9 @@ class EM3DPXR(EM3DFFT):
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
 #        self.solve2ndhalf()
+
+        # --- dosolve
+        # Current deposition + Maxwell
         self.dosolve()
     
         if l_pxr:
@@ -788,8 +814,8 @@ class EM3DPXR(EM3DFFT):
         if self.l_verbose:print me,'exit push_ions_positions'
         
     def loadsource(self,lzero=None,lfinalize_rho=None,pgroups=None,**kw):
-        '''Charge deposition, uses particles from top directly
-          - jslist: option list of species to load'''
+        '''Current deposition, uses particles from top directly
+           - jslist: option list of species to load'''
         # --- Note that the grid location is advanced even if no field solve
         # --- is being done.
         self.advancezgrid()
@@ -954,7 +980,7 @@ class EM3DPXR(EM3DFFT):
         
     def get_kinetic_energy(self,sp,**kw):
         """
-        Get the total kinetic energy of the species sp
+        Get the total kinetic energy of the species sp using PICSAR fortran subroutines
         
         input:
         - sp: species number
@@ -1002,5 +1028,27 @@ class EM3DPXR(EM3DFFT):
         
         pxr.get_norm_diverho(pxr.dive,pxr.rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,div)
         
-        return div
+        return div[0]
+
+
+class sorting:
+  """ 
+    Class sorting
     
+    Used to setup the sorting with picsars
+    
+    activated: >0 sorting is activated
+    periods: list containing the sorting periods for each species
+    dx, dy, dz: the bin size normalized to the cell size
+    xshift,yshift,zshift: shift of the sorting grid
+  
+  """
+  def __init__(self,periods,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0):
+    self.activated = 1
+    self.periods = periods
+    self.dx = dx
+    self.dy = dy
+    self.dz = dz 
+    self.xshift = xshift
+    self.yshift = yshift
+    self.zshift = zshift

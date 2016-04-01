@@ -29,21 +29,47 @@ section::main
  ntilez = 2
  
  # Guard cells
- nguardsx = 3
- nguardsy = 3
- nguardsz = 3
- njguardsx = 3
- njguardsy = 3
- njguardsz = 3
+ nguardsx = 4
+ nguardsy = 4
+ nguardsz = 4
+ njguardsx = 4
+ njguardsy = 4
+ njguardsz = 4
  
 end::main
 
 section::solver
  # Maxwell solver
- norderx = 3
- nordery = 3
- norderz = 3
+ norderx = 2
+ nordery = 2
+ norderz = 2
+ 
+ nox = 3
+ noy = 3
+ noz = 3
+ 
+ # Current deposition method
+ # 0 - Esirkepov vectorized
+ # 1 - Esirkepov sequential
+ # 2 - Classical vectorized
+ currdepo = 0
+ 
+ # Field gathering method
+ # 0 - Optimized functions (default)
+ # 1 - non-optimized functions
+ fieldgave = 0 
+ 
 end::solver
+
+section::sorting
+ activation = 1
+ dx=1.
+ dy=1.
+ dz=1.
+ shiftx=-0.
+ shifty=-0.
+ shiftz=-0.
+end::sorting 
 
 section::plasma
  # Maxwell solver
@@ -71,6 +97,7 @@ section::species
  vth_x = 0.0
  vth_y = 0.0
  vth_z = 0.0
+ sorting_period=10 
 end::species
 
 section::species
@@ -92,10 +119,11 @@ section::species
  vth_x = 0.
  vth_y = 0.
  vth_z = 0.
+ sorting_period=10
 end::species
 
 section::species
- name = electron
+ name = electron_y
  mass = 1
  charge = -1
  nppcell = 3
@@ -113,10 +141,11 @@ section::species
  vth_x = 0.0
  vth_y = 0.0
  vth_z = 0.0
+ sorting_period=10
 end::species
 
 section::species
- name = positron
+ name = positron_y
  mass = 1
  charge = 1
  nppcell = 3
@@ -134,7 +163,9 @@ section::species
  vth_x = 0.
  vth_y = 0.
  vth_z = 0.
+ sorting_period=10
 end::species
+
 
 section::output
  output_frequency = 10

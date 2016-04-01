@@ -12,6 +12,7 @@ from mpi4py import MPI
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib as mpl
+from numpy import linalg as LA
 home=os.getenv('HOME')
 
 def test_langmuir_wave():
@@ -38,7 +39,7 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
 
   # 
-  Nsteps = 70
+  Nsteps = 30
 
   #Mesh: normalized at the plasma frequency
   dx=0.04
@@ -204,6 +205,9 @@ def test_langmuir_wave():
   elec_C = Species(type=Electron,weight=weight_C,name='elec')
   ions_C = Species(type=Proton,weight=weight_C,name='ions')
 
+  # --- Init the sorting
+  sort = sorting(periods=[10,10],dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
+
   top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
   top.efetch[...] = top.efetch[0] # same for field gathering
 
@@ -317,6 +321,7 @@ def test_langmuir_wave():
                    # 1 - blocking communication
                    # 2 - persistent (under development)
                    mpicom_curr=0,
+                   sorting=sort,
                    l_verbose=l_verbose)
       step = em.step
   else:
@@ -332,7 +337,8 @@ def test_langmuir_wave():
                    l_2dxz=dim=="2d",
                    l_1dz=dim=="1d",
                    dtcoef=dtcoef,
-                   l_getrho=0,
+                   l_getrho=1,
+                   l_pushf=1,
                    l_verbose=l_verbose)
 
   #-------------------------------------------------------------------------------
@@ -356,6 +362,7 @@ def test_langmuir_wave():
   # ______________________________________________________________________________
 
   t = 0
+  imu0 = 12.566370614E-7
   t_array = []
   ekinE_array = []
   ezE_array = []
@@ -382,73 +389,91 @@ def test_langmuir_wave():
       density=ions_C.get_density()
       density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=5,titles=0,xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid,ymin=w3d.xmmin,ymax=w3d.xmmax,xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
-      
-    #With warp
-    #elec_C.getn()      # selectron macro-particle number
-    #x = elec_C.getx()      # selectron macro-particle x-coordinates 
-    #y = elec_C.gety()      # selectron macro-particle y-coordinates      
-    #z = elec_C.getz()      # selectron macro-particle x-coordinates
-    #pid = elec_C.getpid()
+   
     
     # With Picsar
-    # Kinetic energy  
-    # Using python
-    if False:
-      ekinE = 0
-      ikinE = 0
-      for i in range(em.ntilez):
-        for j in range(em.ntiley):
-          for k in range(em.ntilex):
-              ekinE += sum((1./elec_C.pgroups[i][j][k].gaminv[0:elec_C.pgroups[i][j][k].nps]-1.)*elec_C.pgroups[i][j][k].pid[0:elec_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
-              ikinE += sum((1./ions_C.pgroups[i][j][k].gaminv[0:ions_C.pgroups[i][j][k].nps]-1.)*ions_C.pgroups[i][j][k].pid[0:ions_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
-      print ' Kinetic energy (J):', ekinE,ikinE
-    else:
-      # Using the fortran subroutine
-      species=1
-      ekinE = em.get_kinetic_energy(species)*9.10938215E-31*299792458.**2 
-      ikinE = em.get_kinetic_energy(2)*9.10938215E-31*299792458.**2 
-      print ' Kinetic energy (J)',ekinE
-    
-    
-    # Electric energy
-    # Using python
-    if False:  
-      ezE = 0.5*sum(em.fields.Ez[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-      exE = 0.5*sum(em.fields.Ex[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-      eyE = 0.5*sum(em.fields.Ey[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-      bzE = 0.5*sum(em.fields.Bz[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-      bxE = 0.5*sum(em.fields.Bx[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-      byE = 0.5*sum(em.fields.By[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-      print ' Electric energy (J):',ezE,eyE,exE
-      print ' Magnetic energy (J):',bzE,byE,bxE
-    # using picsar fortran subroutine
-    else:
-      exE = em.get_field_energy('ex')*8.85418782E-12 
-      eyE = em.get_field_energy('ey')*8.85418782E-12 
-      ezE = em.get_field_energy('ez')*8.85418782E-12 
-      bxE = em.get_field_energy('bx')*8.85418782E-12 
-      byE = em.get_field_energy('by')*8.85418782E-12 
-      bzE = em.get_field_energy('bz')*8.85418782E-12   
-      div = em.get_normL2_divEeps0_rho()  
-      print ' Electric energy (J):',ezE,eyE,exE
-      print ' Magnetic energy (J):',bzE,byE,bxE
-      print ' NormL2 of DivE*eps0 - rho:',div
-    
-    etot = ezE + exE + eyE + ekinE + ikinE + bzE + bxE + byE
-    print ' Total energy (J)',etot
-    
-    # Put in arrays
-    ekinE_array.append(ekinE)
-    ezE_array.append(ezE)
-    eyE_array.append(eyE)
-    exE_array.append(exE)
-    bzE_array.append(bzE)
-    byE_array.append(byE)
-    bxE_array.append(bxE)  
-    div_array.append(div)
-    etot_array.append(etot)
-    t_array.append(top.time)
+    if l_pxr:
+      # Kinetic energy  
+      # Using python
+      if False:
+        ekinE = 0
+        ikinE = 0
+        for i in range(em.ntilez):
+          for j in range(em.ntiley):
+            for k in range(em.ntilex):
+                ekinE += sum((1./elec_C.pgroups[i][j][k].gaminv[0:elec_C.pgroups[i][j][k].nps]-1.)*elec_C.pgroups[i][j][k].pid[0:elec_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                ikinE += sum((1./ions_C.pgroups[i][j][k].gaminv[0:ions_C.pgroups[i][j][k].nps]-1.)*ions_C.pgroups[i][j][k].pid[0:ions_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+        print ' Kinetic energy (J):', ekinE,ikinE
+      else:
+        # Using the fortran subroutine
+        species=1
+        ekinE = em.get_kinetic_energy(species)*9.10938215E-31*299792458.**2 
+        ikinE = em.get_kinetic_energy(2)*9.10938215E-31*299792458.**2 
+        print ' Kinetic energy (J)',ekinE
+      
+      
+      # Electric energy
+      # Using python
+      if False:  
+        ezE = 0.5*sum(em.fields.Ez[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
+        exE = 0.5*sum(em.fields.Ex[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
+        eyE = 0.5*sum(em.fields.Ey[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
+        bzE = 0.5*sum(em.fields.Bz[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
+        bxE = 0.5*sum(em.fields.Bx[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
+        byE = 0.5*sum(em.fields.By[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
+        print ' Electric energy (J):',ezE,eyE,exE
+        print ' Magnetic energy (J):',bzE,byE,bxE
+      # using picsar fortran subroutine
+      else:
+        exE = em.get_field_energy('ex')*8.85418782E-12 
+        eyE = em.get_field_energy('ey')*8.85418782E-12 
+        ezE = em.get_field_energy('ez')*8.85418782E-12 
+        bxE = em.get_field_energy('bx')*8.85418782E-12 
+        byE = em.get_field_energy('by')*8.85418782E-12 
+        bzE = em.get_field_energy('bz')*8.85418782E-12   
+        div = em.get_normL2_divEeps0_rho()  
+        print ' Electric energy (J):',ezE,eyE,exE
+        print ' Magnetic energy (J):',bzE,byE,bxE
+        print ' NormL2 of DivE*eps0 - rho:',div
+      
+      etot = ezE + exE + eyE + ekinE + ikinE + bzE + bxE + byE
+      print ' Total energy (J)',etot
+      
+      # Put in arrays
+      ekinE_array.append(ekinE)
+      ezE_array.append(ezE)
+      eyE_array.append(eyE)
+      exE_array.append(exE)
+      bzE_array.append(bzE)
+      byE_array.append(byE)
+      bxE_array.append(bxE)  
+      div_array.append(div)
+      etot_array.append(etot)
+      t_array.append(top.time)
 
+    #With warp      
+    else:
+    
+      # Get divergence
+      divE = em.getdive()
+      rho = em.getrho()
+      F = em.getf()
+      divarray = divE*eps0 - rho
+      div = LA.norm((divarray))
+      maxdiv = abs(divarray).max()
+      mindiv = abs(divarray).min()
+        
+      print ' NormL2 of DivE*eps0 - rho:',div,LA.norm(F),'Max',maxdiv,'Min',mindiv
+    
+      #elec_C.getn()      # selectron macro-particle number
+      #x = elec_C.getx()      # selectron macro-particle x-coordinates 
+      #y = elec_C.gety()      # selectron macro-particle y-coordinates      
+      #z = elec_C.getz()      # selectron macro-particle x-coordinates
+      #pid = elec_C.getpid()    
+      
+      div_array.append(div)
+      t_array.append(top.time)
+      
   installafterstep(liveplots)
 
   tottime = AppendableArray()

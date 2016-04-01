@@ -1,16 +1,24 @@
 from mpi4py import MPI
 import sys
 import os
-currentdir=os.getcwd()
-sys.path.append(currentdir+'/python_bin/')
-print(currentdir+'/python_bin/')
 import picsarpy as pxrpy
 import numpy as np
+home=os.getenv('HOME')
+#currentdir=os.getcwd()
+#sys.path.append(currentdir+'/python_bin/')
+#print(currentdir+'/python_bin/')
 
 pxr=pxrpy.picsar
 
 #### Input parameters (replace input file)
 pxr.default_init()
+
+pxr.topology = 0
+
+pxr.nprocx = 1
+pxr.nprocy = 1
+pxr.nprocz = 1
+
 ##Simulation box size and duration
 pxr.nx_global_grid=100
 pxr.ny_global_grid=100
@@ -28,7 +36,6 @@ pxr.norderx=2
 pxr.nordery=2
 pxr.norderz=2
 
-
 ## Current deposition order
 pxr.nox=1
 pxr.noy=1
@@ -42,12 +49,20 @@ pxr.nxjguards=2
 pxr.nyjguards=2
 pxr.nzjguards=2
 
-
 ## Tiling parameters
 pxr.ntilex=5
 pxr.ntiley=5
 pxr.ntilez=5
 
+## Sorting
+pxr.sorting_activated=1
+pxr.sorting_dx = 1.
+pxr.sorting_dy = 1.
+pxr.sorting_dz = 1.
+pxr.sorting_shiftx = 0.
+pxr.sorting_shifty = 0.
+pxr.sorting_shiftz = 0.
+        
 #### Init particle distribution
 
 ## Properties of particle species
@@ -59,15 +74,20 @@ xmin=[-1.3,-1.3];ymin=[-1.3,-1.3];zmin=[-1.3,-1.3]
 xmax=[1.3,1.3];ymax=[1.3,1.3];zmax=[1.3,1.3]
 vdriftx=[0.,0.]; vdrifty=[0.,0.]; vdriftz=[0.,0.]
 vthx=[0.,0.]; vthy=[0.,0.]; vthz=[0.,0.]
+sorting_period = [5.,5.]
 
 ## Set number of particle species
 pxr.nspecies=len(name)
 
 ## Set particle species  properties in PICSAR
+print " pxr.set_particle_species_properties"
 for i in range(0,pxr.nspecies):
-    pxr.set_particle_species_properties(i+1,name[i],mass[i],charge[i],nppcell[i],xmin[i],ymin[i],zmin[i],xmax[i],ymax[i],zmax[i],vdriftx[i],vdrifty[i],vdriftz[i],vthx[i],vthy[i],vthz[i])
+    pxr.set_particle_species_properties(i+1,name[i],mass[i],charge[i],nppcell[i],\
+    xmin[i],ymin[i],zmin[i],xmax[i],ymax[i],zmax[i],vdriftx[i],vdrifty[i],vdriftz[i],\
+    vthx[i],vthy[i],vthz[i],sorting_period[i])
 
 #### MPI INIT
+print " MPI init"
 pxr.mpi_minimal_init()
 pxr.mpi_initialise()
 mpirank= pxr.rank
@@ -107,7 +127,12 @@ def initallpy():
     pxr.dt = pxr.dtcoef/(pxr.clight* \
     np.sqrt(1.0/pxr.dx**2+1.0/pxr.dy**2+1.0/pxr.dz**2))
 
+    pxr.sorting_dx *= pxr.dx
+    pxr.sorting_dy *= pxr.dy
+    pxr.sorting_dz *= pxr.dz
+
     # Set tile split
+    print " pxr.set_tile_split()"
     pxr.set_tile_split()
     # Allocate and init array of tiles
     pxr.init_tile_arrays()
@@ -121,9 +146,15 @@ ntsteps=10
 #    print("Total simulation time with step in Fortran 90 (s) ="+str(endt-start))
 def steppy(nt):
     for i in range(0,nt):
+        
+        print(" Starting iteration "+str(i))
+    
         # Push particles
         pxr.push_particles()
         pxr.particle_bcs()
+        
+        # Sorting
+        pxr.particle_sorting_sub()
         
         # Deposit currents on the grid
         pxr.pxrdepose_currents_on_grid_jxjyjz()
@@ -146,6 +177,7 @@ def steppy(nt):
 
 
 #### INIT+ PIC LOOP written in python
+print " initallpy()"
 initallpy()
 start=MPI.Wtime()
 steppy(ntsteps)

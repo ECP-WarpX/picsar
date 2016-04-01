@@ -453,7 +453,6 @@ CONTAINS
                                 partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
                                 
-                                usq = (partux**2+partuy**2+partuz**2)
                                 gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)/(clight**2))                                
                                 partux = partvx /gaminv
                                 partuy = partvy /gaminv
@@ -491,7 +490,6 @@ CONTAINS
                                 partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
                                 
-                                usq = (partux**2+partuy**2+partuz**2)
                                 gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)/(clight**2))                                
                                 partux = partvx /gaminv
                                 partuy = partvy /gaminv
@@ -653,12 +651,13 @@ CONTAINS
     !This subroutine returns pointer arrays on a given tile
     ! of a given species (USED mainly by python interface)
     SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
-		vdxs,vdys,vdzs,vthxs,vthys,vthzs)
+		vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period)
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nsp, nppc
 		REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
 		CHARACTER(LEN=*), INTENT(IN) :: sname
         TYPE(particle_species), POINTER  :: currsp
+        INTEGER(idp) :: sorting_period
 
         currsp=> species_parray(nsp)
 		currsp%charge=chrg
@@ -677,10 +676,13 @@ CONTAINS
 		currsp%vth_z=vthzs
 		currsp%nppcell=nppc
 		currsp%name=sname
-		PRINT *, "species name", sname
-		PRINT *, "species mass", mss
-		PRINT *, "species charge", chrg
-
+		currsp%sorting_period=sorting_period
+		PRINT *, "species name: ", trim(adjustl(sname))
+		PRINT *, "species mass: ", mss
+		PRINT *, "species charge: ", chrg
+		PRINT *, "sorting period: ", currsp%sorting_period
+		PRINT *, ""
+		
     END SUBROUTINE set_particle_species_properties
 
     !!! --- Add particle to array of tiles
@@ -723,5 +725,54 @@ CONTAINS
         
     END SUBROUTINE set_are_tiles_reallocated
 
+    SUBROUTINE estimate_tile_size
+      USE shared_data
+      USE constants
+      USE particles
+      USE time_stat
+      USE params    
+      IMPLICIT NONE    
+
+      INTEGER(idp) :: ispecies, ix, iy, iz, nbp
+      REAL(num) :: tilesizep
+
+      TYPE(particle_species), POINTER :: curr
+      TYPE(particle_tile), POINTER :: curr_tile
+           
+      !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+      !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
+      !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp) &
+      !$OMP REDUCTION(+:tilesizep)
+      DO iz=1, ntilez ! LOOP ON TILES
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+
+	          ! Loop over the species
+	          DO ispecies=1, nspecies
+
+					     curr=>species_parray(ispecies)
+	          				    
+			         curr_tile=>curr%array_of_tiles(ix,iy,iz)
+			         nbp=curr_tile%np_tile(1)
+			         
+			         tilesizep = tilesizep + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
+
+		        END DO! END LOOP ON SPECIES
+          END DO
+        END DO
+      END DO! END LOOP ON TILES
+      !$OMP END PARALLEL DO
+
+      tilesizep = tilesizep/1024.
+
+      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the particles',tilesizep,'Ko'
+
+      tilesizep = tilesizep/(ntilex*ntiley*ntilez)
+
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for particles',tilesizep,'Ko'
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',nx*ny*nz*8.*6.*(ntilex*ntiley*ntilez)/1024.,'Ko'
+      IF (rank.eq.0) WRITE(0,*)
+
+    END SUBROUTINE
 
 END MODULE tiling

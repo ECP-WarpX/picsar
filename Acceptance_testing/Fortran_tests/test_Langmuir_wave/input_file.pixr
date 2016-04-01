@@ -25,29 +25,42 @@ section::main
  # Simulation duration (in 1/w0)
  t_max = 7
  
- ntilex = 2
- ntiley = 2
- ntilez = 2
+ ntilex = 5
+ ntiley = 5
+ ntilez = 5
  
  # Guard cells
- nguardsx = 3
- nguardsy = 3
- nguardsz = 3
- njguardsx = 3
- njguardsy = 3
- njguardsz = 3
+ nguardsx = 4
+ nguardsy = 4
+ nguardsz = 4
+ njguardsx = 4
+ njguardsy = 4
+ njguardsz = 4
  
 end::main
 
 section::solver
  # Maxwell solver
- norderx = 3
- nordery = 3
- norderz = 3
+ norderx = 2
+ nordery = 2
+ norderz = 2
  
- # Current deposition algorithme
- # 0 - default
+ # Shape factor order
+ nox = 1
+ noy = 1
+ noz = 1
+ 
+ # Current deposition method
+ # 0 - Esirkepov vectorized
+ # 1 - Esirkepov sequential
+ # 2 - Classical vectorized
  currdepo = 0
+ 
+ # Field gathering method
+ # 0 - Optimized functions (default)
+ # 1 - non-optimized functions
+ fieldgave = 0
+ 
 end::solver
 
 section::plasma
@@ -56,6 +69,17 @@ section::plasma
  gamma0=1.
  pdistr=1
 end::plasma
+
+section::sorting
+ activation = 1
+ dx=0.5
+ dy=0.5
+ dz=0.5
+ shiftx=-0.
+ shifty=-0.
+ shiftz=-0.
+end::sorting 
+
 
 section::species
  name = electron
@@ -76,6 +100,7 @@ section::species
  vth_x = 0.0
  vth_y = 0.0
  vth_z = 0.0
+ sorting_period=10
 end::species
 
 section::species
@@ -97,6 +122,7 @@ section::species
  vth_x = 0.
  vth_y = 0.
  vth_z = 0.
+ sorting_period=10
 end::species
 
 section::output
@@ -110,6 +136,11 @@ section::output
  dive = 1
  jy = 1
 end::output
+
+section::timestat
+  activation=0
+  period=1
+end::timestat
 
 section::temporal
   frequency=1
