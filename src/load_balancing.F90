@@ -160,7 +160,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     INTEGER(isp), PARAMETER :: nd=3
     INTEGER(isp), DIMENSION(nd) :: nsub, nglob, nglob_old, start
 
-
+    mpitag=0_isp
     sendtype=0_isp
     recvtype=0_isp
     requests=0_isp
@@ -262,7 +262,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     DO i=0, nprocs-1
         IF (recvtype(i) .NE. 0) THEN 
             !--- Post IRECV for this area 
-            CALL MPI_IRECV(emfield_new(-nxg,-nyg,-nzg), 1_isp,  recvtype(i), i, mpitag,    &
+            CALL MPI_IRECV(emfield_new(-nxg,-nyg,-nzg), 1_isp,  recvtype(i), i, MPI_ANY_TAG,    &
                             communicator, requests(nrreq), ierrcode)
             nrreq=nrreq+1
         ENDIF
@@ -321,6 +321,7 @@ SUBROUTINE remap_em_2Dfields(emfield_old,nxold,nzold,               &
     INTEGER(isp), PARAMETER :: nd=3
     INTEGER(isp), DIMENSION(nd) :: nsub, nglob, nglob_old, start
 
+    mpitag=0_isp
 
     sendtype=0_isp
     recvtype=0_isp
@@ -417,7 +418,7 @@ SUBROUTINE remap_em_2Dfields(emfield_old,nxold,nzold,               &
     DO i=0, nprocs-1
         IF (recvtype(i) .NE. 0) THEN 
             !--- Post IRECV for this area 
-            CALL MPI_IRECV(emfield_new(-nxg,1,-nzg), 1_isp,  recvtype(i), i, mpitag,    &
+            CALL MPI_IRECV(emfield_new(-nxg,1,-nzg), 1_isp,  recvtype(i), i, MPI_ANY_TAG,    &
                             communicator, requests(nrreq), ierrcode)
             nrreq=nrreq+1
         ENDIF
@@ -1114,6 +1115,8 @@ REAL(num) :: part_xyz
 TYPE(particle_species), POINTER :: currsp
 TYPE(particle_tile), POINTER :: curr
 
+mpitag=0_isp
+
 ALLOCATE(recv_rank(nmax_neighbours), send_rank(nmax_neighbours))
 recv_rank=-1
 send_rank=-1
@@ -1180,7 +1183,7 @@ requests=0_isp
 ! ----- POST IRECV TO GET NUMBER OF PARTICLES 
 DO i=1, nrecv
     count=nspecies
-    CALL MPI_IRECV(npart_recv(1:count,i), count,  MPI_INTEGER8, recv_rank(i), mpitag,    &
+    CALL MPI_IRECV(npart_recv(1:count,i), count,  MPI_INTEGER8, recv_rank(i), MPI_ANY_TAG,    &
                             comm, requests(i), errcode)    
 END DO 
 
@@ -1272,7 +1275,7 @@ DO i=1, nrecv
     count=nvar*SUM(npart_recv(:,i))
     IF (count .GT. 0) THEN 
 	nrdat=nrdat+1
-        CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),mpitag, &
+        CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),MPI_ANY_TAG, &
                                 comm, requests(nrdat),errcode)
     ENDIF
 END DO
@@ -1343,7 +1346,7 @@ TYPE(particle_species), POINTER :: currsp
 TYPE(particle_tile), POINTER :: curr
 
 npy=1! 2D CASE 
-
+mpitag=0_isp
 
 ALLOCATE(recv_rank(nmax_neighbours), send_rank(nmax_neighbours))
 recv_rank=-1
@@ -1406,7 +1409,7 @@ requests=0_isp
 ! ----- POST IRECV TO GET NUMBER OF PARTICLES 
 DO i=1, nrecv
     count=nspecies
-    CALL MPI_IRECV(npart_recv(1:count,i), count,  MPI_INTEGER8, recv_rank(i), mpitag,    &
+    CALL MPI_IRECV(npart_recv(1:count,i), count,  MPI_INTEGER8, recv_rank(i), MPI_ANY_TAG,    &
                             comm, requests(i), errcode)    
 END DO 
 
@@ -1492,7 +1495,7 @@ DO i=1, nrecv
     count=nvar*SUM(npart_recv(:,i))
     IF (count .GT. 0) THEN 
 	nrdat=nrdat+1
-        CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),mpitag, &
+        CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),MPI_ANY_TAG, &
                                 comm, requests(nrdat),errcode)
     ENDIF
 END DO

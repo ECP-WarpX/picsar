@@ -515,17 +515,17 @@ END SUBROUTINE charge_bcs
     ! First exchange particles between tiles (NO MPI at that point)
 	SELECT CASE (c_dim)
 	CASE(2)
-		#ifdef _OPENMP
+#ifdef _OPENMP
     	CALL particle_bcs_tiles_2d_openmp()
-    	#else
+#else
     	CALL particle_bcs_tiles_2d()
-    	#endif
+#endif
     CASE DEFAULT 
-		#ifdef _OPENMP
+#ifdef _OPENMP
     	CALL particle_bcs_tiles_openmp()
-		#else
+#else
     	CALL particle_bcs_tiles()
-    	#endif
+#endif
     END SELECT
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking
@@ -595,26 +595,26 @@ END SUBROUTINE charge_bcs
   SUBROUTINE particle_bcs_tiles_openmp()
     USE omp_lib 
     IMPLICIT NONE
-    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
     REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
     INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
 	
-	#ifdef _OPENMP
+#ifdef _OPENMP
 	nthreads_tot=OMP_GET_MAX_THREADS()
 	CALL OMP_SET_NESTED(.TRUE.)
-	#else
+#else
 	nthreads_tot=1
-	#endif
+#endif
 	
 	IF (nthreads_tot>1) THEN 
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
 		nthreads_loop2=MAX(1,nthreads_tot/nspecies)
 	ENDIF 
 	
-	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile) &
+	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz) &
 	!$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
@@ -623,131 +623,55 @@ END SUBROUTINE charge_bcs
         nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
         ny0_grid_tile = curr%array_of_tiles(1,1,1)%ny_grid_tile
         nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
-        !$OMP PARALLEL DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
-        !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
-        !$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
-        !$OMP indx,indy,indz) NUM_THREADS(nthreads_loop2) 
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=1, ntilez,3! LOOP ON TILES
-            DO iy=1, ntiley,3
-                DO ix=1, ntilex,3
-                    curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                    nptile=curr_tile%np_tile(1)
-                    DO i=nptile, 1, -1! LOOP ON PARTICLES
-                        partx=curr_tile%part_x(i)
-                        party=curr_tile%part_y(i)
-                        partz=curr_tile%part_z(i)
-                        partux=curr_tile%part_ux(i)
-                        partuy=curr_tile%part_uy(i)
-                        partuz=curr_tile%part_uz(i)
-                        gaminv=curr_tile%part_gaminv(i)
-                        partw=curr_tile%pid(i,wpid)
+        DO ipz=1,3
+        	DO ipy=1,3
+        		DO ipx=1,3
+					!$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+					!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+					!$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+					!$OMP indx,indy,indz,ipx,ipy,ipz) COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2) 
+					DO iz=1, ntilez,3! LOOP ON TILES
+						DO iy=1, ntiley,3
+							DO ix=1, ntilex,3
+								curr_tile=>curr%array_of_tiles(ix,iy,iz)
+								nptile=curr_tile%np_tile(1)
+								DO i=nptile, 1, -1! LOOP ON PARTICLES
+									partx=curr_tile%part_x(i)
+									party=curr_tile%part_y(i)
+									partz=curr_tile%part_z(i)
+									partux=curr_tile%part_ux(i)
+									partuy=curr_tile%part_uy(i)
+									partuz=curr_tile%part_uz(i)
+									gaminv=curr_tile%part_gaminv(i)
+									partw=curr_tile%pid(i,wpid)
 
-                        ! Case 1: if particle did not leave tile nothing to do
-                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
-                        .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
-                        CYCLE
+									! Case 1: if particle did not leave tile nothing to do
+									IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+									.AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
+									.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+									CYCLE
 
-                        ! Case 2: if particle left MPI domain nothing to do now
-                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-                        IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
-                        IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+									! Case 2: if particle left MPI domain nothing to do now
+									IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
+									IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
+									IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
 
-                        ! Case 3: particles changed tile. Tranfer particle to new tile
-                        ! Get new indexes of particle in array of tiles
-                        indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-                        indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-                        CALL rm_particle_at_tile(curr_tile,i)
-                        CALL add_particle_at_tile(curr, indx,indy,indz, &
-                             partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                    END DO !END LOOP ON PARTICLES
-                END DO
-            END DO
-        END DO ! END LOOP ON TILES
-        !$OMP END DO 
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=2, ntilez,3! LOOP ON TILES
-            DO iy=2, ntiley,3
-                DO ix=2, ntilex,3
-                    curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                    nptile=curr_tile%np_tile(1)
-                    DO i=nptile, 1, -1! LOOP ON PARTICLES
-                        partx=curr_tile%part_x(i)
-                        party=curr_tile%part_y(i)
-                        partz=curr_tile%part_z(i)
-                        partux=curr_tile%part_ux(i)
-                        partuy=curr_tile%part_uy(i)
-                        partuz=curr_tile%part_uz(i)
-                        gaminv=curr_tile%part_gaminv(i)
-                        partw=curr_tile%pid(i,wpid)
-
-                        ! Case 1: if particle did not leave tile nothing to do
-                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
-                        .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
-                        CYCLE
-
-                        ! Case 2: if particle left MPI domain nothing to do now
-                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-                        IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
-                        IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
-
-                        ! Case 3: particles changed tile. Tranfer particle to new tile
-                        ! Get new indexes of particle in array of tiles
-                        indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-                        indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-                        CALL rm_particle_at_tile(curr_tile,i)
-                        CALL add_particle_at_tile(curr, indx,indy,indz, &
-                             partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                    END DO !END LOOP ON PARTICLES
-                END DO
-            END DO
-        END DO ! END LOOP ON TILES
-        !$OMP END DO 
-        !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-        DO iz=3, ntilez,3! LOOP ON TILES
-            DO iy=3, ntiley,3
-                DO ix=3, ntilex,3
-                    curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                    nptile=curr_tile%np_tile(1)
-                    DO i=nptile, 1, -1! LOOP ON PARTICLES
-                        partx=curr_tile%part_x(i)
-                        party=curr_tile%part_y(i)
-                        partz=curr_tile%part_z(i)
-                        partux=curr_tile%part_ux(i)
-                        partuy=curr_tile%part_uy(i)
-                        partuz=curr_tile%part_uz(i)
-                        gaminv=curr_tile%part_gaminv(i)
-                        partw=curr_tile%pid(i,wpid)
-
-                        ! Case 1: if particle did not leave tile nothing to do
-                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
-                        .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
-                        CYCLE
-
-                        ! Case 2: if particle left MPI domain nothing to do now
-                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-                        IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
-                        IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
-
-                        ! Case 3: particles changed tile. Tranfer particle to new tile
-                        ! Get new indexes of particle in array of tiles
-                        indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-                        indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-                        CALL rm_particle_at_tile(curr_tile,i)
-                        CALL add_particle_at_tile(curr, indx,indy,indz, &
-                             partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                    END DO !END LOOP ON PARTICLES
-                END DO
-            END DO
-        END DO ! END LOOP ON TILES
-        !$OMP END DO 
-        !$OMP END PARALLEL
+									! Case 3: particles changed tile. Tranfer particle to new tile
+									! Get new indexes of particle in array of tiles
+									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
+									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+									CALL rm_particle_at_tile(curr_tile,i)
+									CALL add_particle_at_tile(curr, indx,indy,indz, &
+										 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+								END DO !END LOOP ON PARTICLES
+							END DO
+						END DO
+					END DO ! END LOOP ON TILES
+					!$OMP END PARALLEL DO 
+        		END DO
+        	END DO
+        END DO 
     END DO ! END LOOP ON SPECIES
     !$OMP END PARALLEL DO 
   END SUBROUTINE particle_bcs_tiles_openmp
@@ -811,19 +735,19 @@ END SUBROUTINE charge_bcs
   SUBROUTINE particle_bcs_tiles_2d_openmp()
     USE omp_lib 
     IMPLICIT NONE
-    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
     REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
     INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
 	
-	#ifdef _OPENMP
+#ifdef _OPENMP
 	nthreads_tot=OMP_GET_MAX_THREADS()
 	CALL OMP_SET_NESTED(.TRUE.)
-	#else
+#else
 	nthreads_tot=1
-	#endif
+#endif
 	
 	IF (nthreads_tot .GT. 1) THEN 
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
@@ -833,7 +757,7 @@ END SUBROUTINE charge_bcs
 		nthreads_loop2=1
 	ENDIF 
 	iy=1
-	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile) &
+	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipz) &
 	!$OMP SHARED(iy,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
@@ -842,116 +766,48 @@ END SUBROUTINE charge_bcs
         nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
         ny0_grid_tile = curr%array_of_tiles(1,1,1)%ny_grid_tile
         nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
-        !$OMP PARALLEL DEFAULT(NONE) SHARED(iy,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
-        !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
-        !$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
-        !$OMP indx,indy,indz) NUM_THREADS(nthreads_loop2) 
-        !$OMP DO COLLAPSE(2) SCHEDULE(runtime)
-        DO iz=1, ntilez,3! LOOP ON TILES
-			DO ix=1, ntilex,3
-				curr_tile=>curr%array_of_tiles(ix,iy,iz)
-				nptile=curr_tile%np_tile(1)
-				DO i=nptile, 1, -1! LOOP ON PARTICLES
-					partx=curr_tile%part_x(i)
-					party=curr_tile%part_y(i)
-					partz=curr_tile%part_z(i)
-					partux=curr_tile%part_ux(i)
-					partuy=curr_tile%part_uy(i)
-					partuz=curr_tile%part_uz(i)
-					gaminv=curr_tile%part_gaminv(i)
-					partw=curr_tile%pid(i,wpid)
+        DO ipz=1,3
+        	DO ipx=1,3
+				!$OMP PARALLEL DO DEFAULT(NONE) SHARED(ipx,ipz,iy,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+				!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+				!$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+				!$OMP indx,indy,indz) COLLAPSE(2) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)  
+				DO iz=ipz, ntilez,3! LOOP ON TILES
+					DO ix=ipx, ntilex,3
+						curr_tile=>curr%array_of_tiles(ix,iy,iz)
+						nptile=curr_tile%np_tile(1)
+						DO i=nptile, 1, -1! LOOP ON PARTICLES
+							partx=curr_tile%part_x(i)
+							party=curr_tile%part_y(i)
+							partz=curr_tile%part_z(i)
+							partux=curr_tile%part_ux(i)
+							partuy=curr_tile%part_uy(i)
+							partuz=curr_tile%part_uz(i)
+							gaminv=curr_tile%part_gaminv(i)
+							partw=curr_tile%pid(i,wpid)
 
-					! Case 1: if particle did not leave tile nothing to do
-					IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-					.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
-					CYCLE
+							! Case 1: if particle did not leave tile nothing to do
+							IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+							.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+							CYCLE
 
-					! Case 2: if particle left MPI domain nothing to do now
-					IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-					IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+							! Case 2: if particle left MPI domain nothing to do now
+							IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
+							IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
 
-					! Case 3: particles changed tile. Tranfer particle to new tile
-					! Get new indexes of particle in array of tiles
-					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-					CALL rm_particle_at_tile(curr_tile,i)
-					CALL add_particle_at_tile(curr, indx,iy,indz, &
-						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
-				END DO !END LOOP ON PARTICLES
-			END DO
-        END DO ! END LOOP ON TILES
-        !$OMP END DO 
-        !$OMP DO COLLAPSE(2) SCHEDULE(runtime)
-        DO iz=2, ntilez,3! LOOP ON TILES
-			DO ix=2, ntilex,3
-				curr_tile=>curr%array_of_tiles(ix,iy,iz)
-				nptile=curr_tile%np_tile(1)
-				DO i=nptile, 1, -1! LOOP ON PARTICLES
-					partx=curr_tile%part_x(i)
-					party=curr_tile%part_y(i)
-					partz=curr_tile%part_z(i)
-					partux=curr_tile%part_ux(i)
-					partuy=curr_tile%part_uy(i)
-					partuz=curr_tile%part_uz(i)
-					gaminv=curr_tile%part_gaminv(i)
-					partw=curr_tile%pid(i,wpid)
-
-					! Case 1: if particle did not leave tile nothing to do
-					IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-					.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
-					CYCLE
-
-					! Case 2: if particle left MPI domain nothing to do now
-					IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-					IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
-
-					! Case 3: particles changed tile. Tranfer particle to new tile
-					! Get new indexes of particle in array of tiles
-					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-					CALL rm_particle_at_tile(curr_tile,i)
-					CALL add_particle_at_tile(curr, indx,iy,indz, &
-						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
-				END DO !END LOOP ON PARTICLES
-			END DO
-        END DO ! END LOOP ON TILES
-        !$OMP END DO 
-        !$OMP DO COLLAPSE(2) SCHEDULE(runtime)
-        DO iz=3, ntilez,3! LOOP ON TILES
-			DO ix=3, ntilex,3
-				curr_tile=>curr%array_of_tiles(ix,iy,iz)
-				nptile=curr_tile%np_tile(1)
-				DO i=nptile, 1, -1! LOOP ON PARTICLES
-					partx=curr_tile%part_x(i)
-					party=curr_tile%part_y(i)
-					partz=curr_tile%part_z(i)
-					partux=curr_tile%part_ux(i)
-					partuy=curr_tile%part_uy(i)
-					partuz=curr_tile%part_uz(i)
-					gaminv=curr_tile%part_gaminv(i)
-					partw=curr_tile%pid(i,wpid)
-
-					! Case 1: if particle did not leave tile nothing to do
-					IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-					.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
-					CYCLE
-
-					! Case 2: if particle left MPI domain nothing to do now
-					IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-					IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
-
-					! Case 3: particles changed tile. Tranfer particle to new tile
-					! Get new indexes of particle in array of tiles
-					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-					CALL rm_particle_at_tile(curr_tile,i)
-					CALL add_particle_at_tile(curr, indx,iy,indz, &
-						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
-				END DO !END LOOP ON PARTICLES
-			END DO
-        END DO ! END LOOP ON TILES
-        !$OMP END DO 
-        !$OMP END PARALLEL
+							! Case 3: particles changed tile. Tranfer particle to new tile
+							! Get new indexes of particle in array of tiles
+							indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+							indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+							CALL rm_particle_at_tile(curr_tile,i)
+							CALL add_particle_at_tile(curr, indx,iy,indz, &
+								 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+						END DO !END LOOP ON PARTICLES
+					END DO
+				END DO ! END LOOP ON TILES
+				!$OMP END PARALLEL DO 
+        	END DO 
+        END DO
     END DO ! END LOOP ON SPECIES
     !$OMP END PARALLEL DO 
   END SUBROUTINE particle_bcs_tiles_2d_openmp
