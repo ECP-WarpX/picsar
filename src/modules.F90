@@ -326,6 +326,24 @@ INTEGER(idp) :: npart_local, npart_global
 
 END MODULE shared_data
 
+! MODULE FOR MAXWELL SOLVER COEFFICIENTS 
+MODULE kyee_em3d
+USE constants 
+REAL(num) :: alphax = 0.58333333333333337  ! 7./12.
+REAL(num) :: betaxy = 0.083333333333333329 ! 1./12.
+REAL(num) :: betaxz = 0.083333333333333329 ! 1./12.
+REAL(num) :: gammax = 0.020833333333333332 ! 1./48.
+REAL(num) :: alphay = 0.58333333333333337  ! 7./12.
+REAL(num) :: betayx = 0.083333333333333329 ! 1./12.
+REAL(num) :: betayz = 0.083333333333333329 ! 1./12.
+REAL(num) :: gammay = 0.020833333333333332 ! 1./48.
+REAL(num) :: alphaz = 0.58333333333333337  ! 7./12.
+REAL(num) :: betazx = 0.083333333333333329 ! 1./12.
+REAL(num) :: betazy = 0.083333333333333329 ! 1./12.
+REAL(num) :: gammaz = 0.020833333333333332 ! 1./48.
+REAL(num) :: deltaz = 0.000000000000000000 ! for the lehe solver
+END MODULE kye_em3d
+
 
 MODULE python_pointers
 USE constants
