@@ -511,8 +511,9 @@ END SUBROUTINE charge_bcs
   SUBROUTINE particle_bcs
   	USE omp_lib
     IMPLICIT NONE
-
+	REAL(num) :: tdeb, tend
     ! First exchange particles between tiles (NO MPI at that point)
+    tdeb=MPI_WTIME()
 	SELECT CASE (c_dim)
 	CASE(2)
 #ifdef _OPENMP
@@ -527,6 +528,8 @@ END SUBROUTINE charge_bcs
     	CALL particle_bcs_tiles()
 #endif
     END SELECT
+    tend=MPI_WTIME()
+    local_time_part=local_time_part+(tend-tdeb)
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking
 
@@ -828,11 +831,12 @@ END SUBROUTINE charge_bcs
     LOGICAL(idp) :: out_of_bounds
     INTEGER(isp) :: ispecies, i, ip, ix, iy, iz
     INTEGER(isp) :: ixtile, iytile, iztile
-    REAL(num) :: part_xyz
+    REAL(num) :: part_xyz, tdeb, tend
     TYPE(particle_species), POINTER :: currsp
     TYPE(particle_tile), POINTER :: curr
 
     DO ispecies=1, nspecies !LOOP ON SPECIES
+        tdeb=MPI_WTIME()
         ! Init send recv buffers
         currsp => species_parray(ispecies)
         nptoexch=0
@@ -967,6 +971,8 @@ END SUBROUTINE charge_bcs
                   ENDDO
                ENDDO
             ENDDO ! END LOOP ON TILES
+            tend=MPI_WTIME()
+    		local_time_part=local_time_part+(tend-tdeb)
             ! SEND/RECEIVE PARTICLES TO/FROM ADJACENT SUBDOMAINS
             DO iz = -1, 1
                 DO iy = -1, 1
