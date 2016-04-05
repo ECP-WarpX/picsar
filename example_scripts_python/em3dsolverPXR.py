@@ -733,11 +733,11 @@ class EM3DPXR(EM3DFFT):
             pgroups+=s.flatten(s.pgroups)
         self.pgroups = pgroups
 #        self.loadsource(pgroups=pgroups)
-        tdebpart=MPI.Wtime()
+        #tdebpart=MPI.Wtime()
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
-        tendpart=MPI.Wtime()
-        pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
+        #tendpart=MPI.Wtime()
+        #pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
 #        self.solve2ndhalf()
         #tdebcell=MPI.Wtime()
         self.dosolve()
@@ -781,6 +781,12 @@ class EM3DPXR(EM3DFFT):
                     self.load_balance_3d(str(imbalance)+"%")
         # Try to Load balance at init 
         if ((top.it==self.it_dlb_init) & self.dlb_at_init & self.dload_balancing): 
+			pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
+			pxr.get_max_time_per_it() 
+			pxr.get_min_time_per_it()
+			## --- Compute time per part and per cell 
+			pxr.compute_time_per_part()
+			pxr.compute_time_per_cell()
 			if (self.l_2dxz): 
 			    self.load_balance_2d('Init')
 			else: 
@@ -1469,6 +1475,7 @@ class EM3DPXR(EM3DFFT):
             # --- PICSAR current deposition
             # --- js = 0
              f=self.fields
+             tdeb = MPI.Wtime()
              for pgroup in pgroups:
                 if w3d.js1fsapi >= 0: js1 = w3d.js1fsapi
                 else:                 js1 = 0
@@ -1514,6 +1521,8 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
              pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
              pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
+             tend=MPI.Wtime()
+             pxr.local_time_part+=(tend-tdeb)
         else:
 
             for pgroup in pgroups:
