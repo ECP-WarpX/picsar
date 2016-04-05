@@ -475,127 +475,161 @@ class EM3DPXR(EM3DFFT):
             self.__class__.__bases__[1].push_e(self.field_coarse,dir)
 
     def push_b_part_1(self,dir=1.):
-        dt = dir*top.dt/self.ntsub
-        if self.novercycle==1:
-            if dir>0.:
-                doit=True
-            else:
-                doit=False
-        else:
-            if self.icycle==0 or (self.icycle==self.novercycle-1 and dir>0.):
-                doit=True
-            else:
-                doit=False
-        if doit:
-            if self.l_verbose:print 'push_b part 1',self,dt,top.it,self.icycle,dir
-            if self.l_pxr:
-                tdebcell=MPI.Wtime()
-                f=self.fields
-                l_pushb=False
-                if self.l_2dxz:
-                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-                        pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs[0],
-                                              0.5*dt/f.dy*f.ycoefs[0],
-                                              0.5*dt/f.dz*f.zcoefs[0],
-                                              f.nx,f.ny,f.nz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
-                    else:
-                        pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
-                                              f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)                        
-                else:
-                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-                        pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs[0],
-                                              0.5*dt/f.dy*f.ycoefs[0],
-                                              0.5*dt/f.dz*f.zcoefs[0],
-                                              f.nx,f.ny,f.nz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
-                    
-                    else: 
-                        pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
-                                              f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
-                tendcell=MPI.Wtime()
-                pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
-            else:
-                l_pushb=True
-            push_em3d_bf(self.block,dt,1,self.l_pushf,self.l_pushpot,l_pushb)
-        if self.refinement is not None:
-            self.__class__.__bases__[1].push_b_part_1(self.field_coarse,dir)
+		dt = dir*top.dt/self.ntsub
+		if self.novercycle==1:
+			if dir>0.:
+				doit=True
+			else:
+				doit=False
+		else:
+			if self.icycle==0 or (self.icycle==self.novercycle-1 and dir>0.):
+				doit=True
+			else:
+				doit=False
+		if doit:
+			if self.l_verbose:print 'push_b part 1',self,dt,top.it,self.icycle,dir
+			if self.l_pxr:
+				tdebcell=MPI.Wtime()
+				f=self.fields
+				l_pushb=False
+				if self.l_2dxz:
+					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+						if (f.stencil==0): # Yee solver 
+							pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  0,0,0,f.l_nodalgrid)
+						elif (f.stencil==1): # Karkainnen solver  
+							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  f.l_2dxz)						
+					else: #nth order solver >  2
+						pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+											  0.5*dt/f.dx*f.xcoefs,
+											  0.5*dt/f.dy*f.ycoefs,
+											  0.5*dt/f.dz*f.zcoefs,
+											  f.nx,f.ny,f.nz,
+											  f.norderx,f.nordery,f.norderz,
+											  f.nxguard,f.nyguard,f.nzguard,
+											  0,0,0,f.l_nodalgrid)                        
+				else:
+					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2): 
+						if (f.stencil==0): # Yee solver 
+							pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  0,0,0,f.l_nodalgrid)
+						elif (f.stencil==1): # Karkainnen solver  
+							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  f.l_2dxz)
+					else: #nth order solver >  2
+						pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+											  0.5*dt/f.dx*f.xcoefs,
+											  0.5*dt/f.dy*f.ycoefs,
+											  0.5*dt/f.dz*f.zcoefs,
+											  f.nx,f.ny,f.nz,
+											  f.norderx,f.nordery,f.norderz,
+											  f.nxguard,f.nyguard,f.nzguard,
+											  0,0,0,f.l_nodalgrid)
+				tendcell=MPI.Wtime()
+				pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+			else:
+				l_pushb=True
+			push_em3d_bf(self.block,dt,1,self.l_pushf,self.l_pushpot,l_pushb)
+		if self.refinement is not None:
+			self.__class__.__bases__[1].push_b_part_1(self.field_coarse,dir)
 
     def push_b_part_2(self):
-        if top.efetch[0] != 4 and (self.refinement is None):self.node2yee3d() 
-        dt = top.dt/self.ntsub
-        if self.ntsub<1.:
-            self.novercycle = nint(1./self.ntsub)
-            self.icycle = (top.it-1)%self.novercycle
-        else:
-            self.novercycle = 1
-            self.icycle = 0
-        if self.icycle==0:
-            if self.l_verbose:print 'push_b part 2',self,dt,top.it,self.icycle
-            if self.l_pxr:
-                f=self.fields
-                l_pushb=False
-                tdebcell=MPI.Wtime()
-                if self.l_2dxz:
-                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-                        pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs[0],
-                                              0.5*dt/f.dy*f.ycoefs[0],
-                                              0.5*dt/f.dz*f.zcoefs[0],
-                                              f.nx,f.ny,f.nz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
-                    else:
-                        pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
-                                              f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)                        
-                else:
-                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-                        pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs[0],
-                                              0.5*dt/f.dy*f.ycoefs[0],
-                                              0.5*dt/f.dz*f.zcoefs[0],
-                                              f.nx,f.ny,f.nz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
-                    
-                    else: 
-                        pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-                                              0.5*dt/f.dx*f.xcoefs,
-                                              0.5*dt/f.dy*f.ycoefs,
-                                              0.5*dt/f.dz*f.zcoefs,
-                                              f.nx,f.ny,f.nz,
-                                              f.norderx,f.nordery,f.norderz,
-                                              f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)
-                tendcell=MPI.Wtime()
-                pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
-            else:
-                l_pushb=True
-            push_em3d_bf(self.block,dt,2,self.l_pushf,self.l_pushpot,l_pushb)
-        if self.refinement is not None:
-            self.__class__.__bases__[1].push_b_part_2(self.field_coarse)
+		if top.efetch[0] != 4 and (self.refinement is None):self.node2yee3d() 
+		dt = top.dt/self.ntsub
+		if self.ntsub<1.:
+			self.novercycle = nint(1./self.ntsub)
+			self.icycle = (top.it-1)%self.novercycle
+		else:
+			self.novercycle = 1
+			self.icycle = 0
+		if self.icycle==0:
+			if self.l_verbose:print 'push_b part 2',self,dt,top.it,self.icycle
+			if self.l_pxr:
+				f=self.fields
+				l_pushb=False
+				tdebcell=MPI.Wtime()
+				if self.l_2dxz:
+					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+						if (f.stencil==0): # Yee solver 
+							pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  0,0,0,f.l_nodalgrid)
+						elif (f.stencil==1): # Karkainnen solver  
+							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  f.l_2dxz)	
+					else: #nth order solver >  2
+						pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+											  0.5*dt/f.dx*f.xcoefs,
+											  0.5*dt/f.dy*f.ycoefs,
+											  0.5*dt/f.dz*f.zcoefs,
+											  f.nx,f.ny,f.nz,
+											  f.norderx,f.nordery,f.norderz,
+											  f.nxguard,f.nyguard,f.nzguard,
+											  0,0,0,f.l_nodalgrid)                        
+				else:
+					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+						if (f.stencil==0): # Yee solver 
+							pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  0,0,0,f.l_nodalgrid)
+						elif (f.stencil==1): # Karkainnen solver  
+							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+												  0.5*dt/f.dx*f.xcoefs[0],
+												  0.5*dt/f.dy*f.ycoefs[0],
+												  0.5*dt/f.dz*f.zcoefs[0],
+												  f.nx,f.ny,f.nz,
+												  f.nxguard,f.nyguard,f.nzguard,
+												  f.l_2dxz)
+					else:  #nth order solver >  2
+						pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+											  0.5*dt/f.dx*f.xcoefs,
+											  0.5*dt/f.dy*f.ycoefs,
+											  0.5*dt/f.dz*f.zcoefs,
+											  f.nx,f.ny,f.nz,
+											  f.norderx,f.nordery,f.norderz,
+											  f.nxguard,f.nyguard,f.nzguard,
+											  0,0,0,f.l_nodalgrid)
+				tendcell=MPI.Wtime()
+				pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+			else:
+				l_pushb=True
+			push_em3d_bf(self.block,dt,2,self.l_pushf,self.l_pushpot,l_pushb)
+		if self.refinement is not None:
+			self.__class__.__bases__[1].push_b_part_2(self.field_coarse)
 
 
     def exchange_e(self,dir=1.):
