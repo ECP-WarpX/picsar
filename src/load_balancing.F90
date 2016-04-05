@@ -588,7 +588,6 @@ SUBROUTINE compute_time_per_part()
     ELSE 
         global_time_per_part=global_time_part/npart_global 
     ENDIF 
-
 END SUBROUTINE compute_time_per_part
 
 ! This subroutine computes the total time per cell for em field subroutines 
@@ -605,7 +604,7 @@ SUBROUTINE compute_time_per_cell()
     CASE DEFAULT ! #3D Case 
         global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
     END SELECT 
-
+    PRINT *, "rank, local_time_cell, ncell_loc,local_time_part, npart_local", rank, local_time_cell, nx*nz, rank, local_time_part, npart_local
 END SUBROUTINE compute_time_per_cell
 
 
@@ -613,6 +612,7 @@ END SUBROUTINE compute_time_per_cell
 SUBROUTINE get_max_time_per_it()
     IMPLICIT NONE 
     ! Get max time per it 
+    PRINT *, "rank,  mpitime_per_it", rank, mpitime_per_it
     CALL MPI_ALLREDUCE(mpitime_per_it, max_time_per_it, 1_isp, MPI_REAL8, MPI_MAX, comm, errcode)
 
 END SUBROUTINE get_max_time_per_it 
@@ -635,7 +635,6 @@ SUBROUTINE compute_new_split_2D(tppart,tpcell,nx_glob,nz_glob, &
     ALLOCATE(load_on_x(0:nx_glob-1),load_on_z(0:nz_glob-1))
     load_on_x=0.
     load_on_z=0.
-    
     ! Compute load in X and compute new split in X 
     CALL get_projected_load_on_x(nx_glob,load_on_x,tppart,tpcell)
     CALL balance_in_dir(load_on_x,nx_glob,npx,ncxmin,ncxmax)
@@ -885,14 +884,22 @@ nthreads_tot=1
 
 IF (nthreads_tot .GT. 1) THEN 
     ! Udpate optimal number of tiles 
-    ntilex_new = MAX(1,nx/10)
-    ntiley_new = MAX(1,ny/10)
-    ntilez_new = MAX(1,nz/10)
+    SELECT CASE(c_dim)
+    CASE (2)
+        ntilex_new = MAX(1,nx/35)
+        ntiley_new = 1
+        ntilez_new = MAX(1,nz/35)
+    CASE DEFAULT
+        ntilex_new = MAX(1,nx/10)
+        ntiley_new = MAX(1,ny/10)
+        ntilez_new = MAX(1,nz/10)
+    END SELECT 
 ELSE
     ntilex_new = 1
     ntiley_new = 1
     ntilez_new = 1
 ENDIF 
+
 
 ! Allocate new species array 
 ALLOCATE(new_species_parray(nspecies))
