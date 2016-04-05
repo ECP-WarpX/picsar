@@ -604,7 +604,7 @@ SUBROUTINE compute_time_per_cell()
     CASE DEFAULT ! #3D Case 
         global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
     END SELECT 
-    PRINT *, "rank, local_time_cell, ncell_loc,local_time_part, npart_local", rank, local_time_cell, nx*nz, rank, local_time_part, npart_local
+    !PRINT *, "rank, local_time_cell, ncell_loc,local_time_part, npart_local", rank, local_time_cell, nx*nz, rank, local_time_part, npart_local
 END SUBROUTINE compute_time_per_cell
 
 
@@ -612,7 +612,7 @@ END SUBROUTINE compute_time_per_cell
 SUBROUTINE get_max_time_per_it()
     IMPLICIT NONE 
     ! Get max time per it 
-    PRINT *, "rank,  mpitime_per_it", rank, mpitime_per_it
+    !PRINT *, "rank,  mpitime_per_it", rank, mpitime_per_it
     CALL MPI_ALLREDUCE(mpitime_per_it, max_time_per_it, 1_isp, MPI_REAL8, MPI_MAX, comm, errcode)
 
 END SUBROUTINE get_max_time_per_it 
