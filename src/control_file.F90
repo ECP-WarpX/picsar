@@ -154,7 +154,16 @@ CONTAINS
                 READ(buffer, *) ny_global_grid   
             ELSE IF (INDEX(buffer,'nz') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) nz_global_grid                                                                                   
+                READ(buffer, *) nz_global_grid   
+            ELSE IF (INDEX(buffer,'fieldgave') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) fieldgave   
+            ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) currdepo 
+            ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) sorting_activated                                                                                                                               
             END IF
         END DO
         RETURN
@@ -472,6 +481,7 @@ CONTAINS
         curr%vth_y =0._num
         curr%vth_z =0._num
         curr%sorting_period = 0
+        curr%sorting_start = 0
         curr%species_npart=0
         end_section=.FALSE.
         DO WHILE((.NOT. end_section) .AND. (ios==0))
@@ -538,7 +548,10 @@ CONTAINS
                 curr%vth_z=curr%vth_z*clight
             ELSE IF (INDEX(buffer,'sorting_period') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), *) curr%sorting_period             
+                READ(buffer(ix+1:string_length), *) curr%sorting_period 
+            ELSE IF (INDEX(buffer,'sorting_start') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) curr%sorting_start                           
             ELSE IF (INDEX(buffer,'end::species') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

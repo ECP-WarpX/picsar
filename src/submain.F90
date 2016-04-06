@@ -12,7 +12,9 @@ USE omp_lib
 USE diagnostics
 USE simple_io
 USE sorting
-!USE ITT_SDE_FORTRAN
+#if defined(PROFILING) && PROFILING>0
+USE ITT_SDE_FORTRAN
+#endif
 
 IMPLICIT NONE
 INTEGER :: nst,i
@@ -23,7 +25,9 @@ WRITE (0,*) "nsteps = ", nst
 END IF
 
 !!! --- Start Vtune analysis
-!CALL start_collection()
+#if PROFILING==1
+CALL start_collection()
+#endif
 
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
@@ -39,7 +43,7 @@ DO i=1,nst
     CALL pxr_particle_sorting
     !!! --- Deposit current of particle species on the grid
     !write(0,*),'Depose currents'
-    CALL pxrdepose_currents_on_grid_jxjyjz
+    CALL pxrdepose_currents_on_grid_jxjyjz  
     !!! --- Boundary conditions for currents
     !write(0,*),'Current_bcs'
     CALL current_bcs
@@ -75,7 +79,9 @@ DO i=1,nst
 END DO
 
 !!! --- Stop Vtune analysis
-!CALL stop_collection() 
+#if PROFILING==1
+CALL stop_collection() 
+#endif
 
 END SUBROUTINE step
 
@@ -167,6 +173,7 @@ IF (rank .EQ. 0) THEN
     write(0,*) trim(adjustl(curr%name))
     write(0,*) 'Drift velocity:',curr%vdrift_x,curr%vdrift_y,curr%vdrift_z
     write(0,*) 'Sorting period:',curr%sorting_period 
+    write(0,*) 'Sorting start:',curr%sorting_start     
     write(0,*) ''
   end do
   

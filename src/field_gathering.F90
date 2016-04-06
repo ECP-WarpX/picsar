@@ -42,11 +42,11 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
     !!! --- Gather electric field on particles
     CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
                                  dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                 nox,noy,noz,exg,eyg,ezg,.FALSE.,.TRUE.)
+                                 nox,noy,noz,exg,eyg,ezg,.FALSE._idp,.TRUE._idp)
     !!! --- Gather magnetic fields on particles
     CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
                                  dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                 nox,noy,noz,bxg,byg,bzg,.FALSE.,.TRUE.)		
+                                 nox,noy,noz,bxg,byg,bzg,.FALSE._idp,.TRUE._idp)		
   
   ! ________________________________________
   ! Optimized subroutines, default  
@@ -91,11 +91,11 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
       !!! --- Gather electric field on particles
       CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
                                    dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                   nox,noy,noz,exg,eyg,ezg,.FALSE.,.TRUE.)
+                                   nox,noy,noz,exg,eyg,ezg,.FALSE._idp,.TRUE._idp)
       !!! --- Gather magnetic fields on particles
       CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
                                    dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                   nox,noy,noz,bxg,byg,bzg,.FALSE.,.TRUE.)			  
+                                   nox,noy,noz,bxg,byg,bzg,.FALSE._idp,.TRUE._idp)			  
     
     ENDIF				  
 					    

@@ -29,7 +29,7 @@ MODULE sorting
     !LOGICAL(idp) :: verbose=.TRUE.
     REAL(num) :: tdeb, tend
     
-    IF ((sorting_activated.gt.0).AND.(it.gt.0)) THEN
+    IF ((sorting_activated.gt.0)) THEN
     
       !IF ((rank.eq.0).and.(verbose)) WRITE(0,*) 'Particle sorting'
     
@@ -109,7 +109,7 @@ MODULE sorting
 
 				      
 				      ! If the sorting period > 0 and the current iteration corresponds to a multiple of the period
-				      IF ((curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
+				      IF ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
 
 					      ! - Get current tile properties
 					      ! - Init current tile variables				    

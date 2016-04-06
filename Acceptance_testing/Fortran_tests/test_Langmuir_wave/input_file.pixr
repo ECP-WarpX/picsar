@@ -51,9 +51,11 @@ section::solver
  noz = 1
  
  # Current deposition method
- # 0 - Esirkepov vectorized
- # 1 - Esirkepov sequential
- # 2 - Classical vectorized
+ # 0 - Esirkepov tiling/optimized
+ # 1 - Esirkepov tiling/non-optimized
+ # 2 - Esirkepov sequential
+ # 3 - Classical vectorized
+ # 4 - Classical non-optimized
  currdepo = 0
  
  # Field gathering method

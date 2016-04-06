@@ -15,7 +15,7 @@ import glob
 import os
 import sys,getopt
 import struct
-from PyLoadArrayPicssar import *
+from PyLoadArrayPicsar import *
 from numpy import linalg as LA
 from subprocess import call
 
@@ -73,9 +73,10 @@ def test_homogeneous_plasma(trun,ttest,tpath):
     # Run picsar
     #omp_num_threads = 2
     #call(["export", "OMP_NUM_THREADS=2"]) 
-    #call(["rm","RESULTS/*"])
-    #call(["mpirun","-n","4","./picsar"])
-    call(["sh","launcher"])
+    os.putenv('OMP_NUM_THREADS','2')
+    call(["rm","RESULTS/*"])
+    call(["mpirun","-n","4","./picsar"])
+    #call(["sh","launcher"])
   
   # Parameters
   echarge = 1.60217662E-19

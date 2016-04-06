@@ -51,9 +51,11 @@ section::solver
  noz = 1
  
  # Current deposition method
- # 0 - Esirkepov vectorized
- # 1 - Esirkepov sequential
- # 2 - Classical vectorized
+ # 0 - Esirkepov tiling/optimized
+ # 1 - Esirkepov tiling/non-optimized
+ # 2 - Esirkepov sequential
+ # 3 - Classical vectorized
+ # 4 - Classical non-optimized
  currdepo = 0
  
  # Field gathering method
@@ -101,6 +103,7 @@ section::species
  vth_y = 0.0
  vth_z = 0.0
  sorting_period=10
+ sorting_start=10
 end::species
 
 section::species
@@ -123,6 +126,7 @@ section::species
  vth_y = 0.
  vth_z = 0.
  sorting_period=10
+ sorting_start=10
 end::species
 
 section::output

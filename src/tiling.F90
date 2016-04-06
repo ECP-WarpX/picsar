@@ -213,8 +213,12 @@ CONTAINS
         currsp%species_npart=currsp%species_npart+1
     END SUBROUTINE add_particle_to_species
 
+    ! __________________________________________________________________________
     SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
                 partux, partuy, partuz, gaminv, partw)
+    ! 
+    ! Add a particle with its properties to the list of particles inside the tile            
+    ! __________________________________________________________________________            
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt
         REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
@@ -414,7 +418,12 @@ CONTAINS
         END DO! END LOOP ON TILES
     END SUBROUTINE init_tile_arrays
 
+    ! _____________________________________________________________________
     SUBROUTINE load_particles
+    !
+    ! Initialize the particle properties (space and velocities) according to 
+    ! the specified distribution
+    ! _____________________________________________________________________    
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER(idp) :: ispecies, l, k, j, ipart
@@ -423,8 +432,8 @@ CONTAINS
         REAL(num) :: phi, th, v, usq, clightsq,partvx,partvy,partvz
         INTEGER(idp) :: err, npart
         REAL(num), DIMENSION(6) :: rng=0_num
-		clightsq=1/clight**2
-        !!! --- Sets-up particle space distribution (homogeneous case - default)
+		    clightsq=1/clight**2
+        !!! --- Sets-up particle space distribution (homogeneous case, uniform space distribution - default)
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
@@ -453,7 +462,7 @@ CONTAINS
                                 partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
                                 
-                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)/(clight**2))                                
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)                                
                                 partux = partvx /gaminv
                                 partuy = partvy /gaminv
                                 partuz = partvz /gaminv
@@ -467,7 +476,7 @@ CONTAINS
                 END DO
             END DO ! END LOOP ON SPECIES
         ENDIF
-
+        !!! --- Sets-up particle space distribution (random space distribution)
         IF (pdistr .EQ. 2) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
@@ -490,7 +499,7 @@ CONTAINS
                                 partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
                                 
-                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)/(clight**2))                                
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)                                
                                 partux = partvx /gaminv
                                 partuy = partvy /gaminv
                                 partuz = partvz /gaminv

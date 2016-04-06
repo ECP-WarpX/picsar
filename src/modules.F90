@@ -116,6 +116,7 @@ TYPE particle_species
     INTEGER(idp)   :: nppspecies_max
     INTEGER(idp)   :: nppcell
     INTEGER(idp)   :: sorting_period
+    INTEGER(idp)   :: sorting_start     ! Sorting start iteration
     LOGICAL(idp)   :: l_arrayoftiles_allocated =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead

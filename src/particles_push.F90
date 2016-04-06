@@ -24,6 +24,10 @@ USE particles
 USE constants
 USE tiling
 USE time_stat
+! Vtune/SDE profiling
+#if defined(PROFILING) && PROFILING==3
+  USE ITT_SDE_FORTRAN
+#endif  
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
@@ -45,6 +49,11 @@ INTEGER(idp) :: nxjg,nyjg,nzjg
 LOGICAL(idp) :: isgathered=.FALSE.
 
 tdeb=MPI_WTIME()
+
+#if PROFILING==3
+  CALL start_collection()
+#endif 
+
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz) &
@@ -137,6 +146,11 @@ DO iz=1, ntilez ! LOOP ON TILES
     END DO
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
+
+#if PROFILING==3
+  CALL stop_collection()
+#endif 
+
 tend=MPI_WTIME()
 pushtime=pushtime+(tend-tdeb)
 localtimes(1) = localtimes(1) + (tend-tdeb)
