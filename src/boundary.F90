@@ -532,7 +532,6 @@ END SUBROUTINE charge_bcs
     local_time_part=local_time_part+(tend-tdeb)
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking
-
   END SUBROUTINE particle_bcs
 
 !!! Boundary condition on tiles
@@ -869,8 +868,8 @@ END SUBROUTINE charge_bcs
                             IF (x_min_boundary) THEN
                             	SELECT CASE (pbound_x_min)
                             	CASE (1_idp) ! absorbing 
-                            		xbd=0
                             		mask(i)=.FALSE.
+                            		CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT 
@@ -882,8 +881,8 @@ END SUBROUTINE charge_bcs
                             IF (x_max_boundary) THEN
                             	SELECT CASE (pbound_x_max)
                             	CASE (1_idp) ! absorbing
-                            		xbd=0
                             		mask(i)=.FALSE.
+                            		CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -897,8 +896,8 @@ END SUBROUTINE charge_bcs
                             IF (y_min_boundary) THEN
                             	SELECT CASE (pbound_y_min)! absorbing 
                             	CASE (1_idp)
-                            		ybd=0
                             		mask(i)=.FALSE.
+                            		CYCLE
                             	CASE DEFAULT ! periodic 
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -911,8 +910,8 @@ END SUBROUTINE charge_bcs
                             IF (y_max_boundary) THEN
                             	SELECT CASE (pbound_y_max) 
                             	CASE (1_idp) ! absorbing 
-                            		ybd=0
                             		mask(i)=.FALSE. 
+                            		CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -926,8 +925,8 @@ END SUBROUTINE charge_bcs
                             IF (z_min_boundary) THEN
 								SELECT CASE (pbound_z_min)
 								CASE (1_idp) ! absorbing 
-									zbd=0
 									mask(i)=.FALSE.
+									CYCLE
 								CASE DEFAULT ! periodic 
 									curr%part_z(i) = part_xyz + length_z
 								END SELECT
@@ -941,8 +940,8 @@ END SUBROUTINE charge_bcs
                             IF (z_max_boundary) THEN
                             	SELECT CASE (pbound_z_max)
                             	CASE (1_idp) ! absorbing 
-                            		zbd=0
                             		mask(i)=.FALSE.
+                            		CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
