@@ -192,7 +192,7 @@ class EM3DPXR(EM3DFFT):
         pxr.length_y=pxr.ymax-pxr.ymin
         pxr.length_z=pxr.zmax-pxr.zmin
         
-# INIT MPI_DATA FOR PICSAR
+		# INIT MPI_DATA FOR PICSAR
         # Init communicator variable in picsar 
         pxr.mpi_minimal_init(top.fsdecomp.mpi_comm)
         
@@ -217,6 +217,21 @@ class EM3DPXR(EM3DFFT):
         pxr.ycoeffs = self.fields.ycoefs
         pxr.zcoeffs = self.fields.zcoefs
         
+        # Set coefficient for Maxwell solver
+        pxr.alphax = em3d.alphax
+        pxr.alphay = em3d.alphay
+        pxr.alphaz = em3d.alphaz        
+        pxr.betaxy = em3d.betaxy
+        pxr.betayx = em3d.betayx
+        pxr.betaxz = em3d.betaxz
+        pxr.betazx = em3d.betazx
+        pxr.betayz = em3d.betayz
+        pxr.betazy = em3d.betazy
+        pxr.gammax = em3d.gammax
+        pxr.gammay = em3d.gammay
+        pxr.gammaz = em3d.gammaz
+        pxr.deltaz = em3d.deltaz
+  
         pxr.ex = self.fields.Ex
         pxr.ey = self.fields.Ey
         pxr.ez = self.fields.Ez
