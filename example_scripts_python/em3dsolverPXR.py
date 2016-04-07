@@ -12,7 +12,20 @@ try:
     from mpi4py import MPI 
 except: 
     print 'Error cannot import mpi4py'  
-    
+try: 
+    import os as os
+except: 
+    print 'Error cannot import os'  
+try:
+    # use fftw if there, numpy otherwise
+    import pyfftw
+    fft = pyfftw.interfaces.numpy_fft
+    l_fftw=True
+except:
+    fft = np.fft
+    l_fftw=False
+
+
 class EM3DPXR(EM3DFFT):
 
     __em3dpxrinputs__ = []
@@ -41,6 +54,7 @@ class EM3DPXR(EM3DFFT):
         EM3DFFT.__init__(self,kwdict=kw)
         
         self.l_pxr = l_pxr
+        self.l_fftw = l_fftw
 
     def finalize(self,lforce=False):
         if self.finalized and not lforce: return
@@ -247,6 +261,8 @@ class EM3DPXR(EM3DFFT):
         pxr.nxs = 0
         pxr.nys = 0
         pxr.nzs = 0
+
+	    	
 
         # Current deposition
         pxr.nox = top.depos_order[0][0]
@@ -519,9 +535,9 @@ class EM3DPXR(EM3DFFT):
 												  0,0,0,f.l_nodalgrid)
 						elif (f.stencil==1): # Karkainnen solver  
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
+												  0.5*dt/f.dx,
+												  0.5*dt/f.dy,
+												  0.5*dt/f.dz,
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  f.l_2dxz)						
@@ -546,9 +562,9 @@ class EM3DPXR(EM3DFFT):
 												  0,0,0,f.l_nodalgrid)
 						elif (f.stencil==1): # Karkainnen solver  
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
+												  0.5*dt/f.dx,
+												  0.5*dt/f.dy,
+												  0.5*dt/f.dz,
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  f.l_2dxz)
@@ -596,9 +612,9 @@ class EM3DPXR(EM3DFFT):
 												  0,0,0,f.l_nodalgrid)
 						elif (f.stencil==1): # Karkainnen solver  
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
+												  0.5*dt/f.dx,
+												  0.5*dt/f.dy,
+												  0.5*dt/f.dz,
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  f.l_2dxz)	
@@ -623,9 +639,9 @@ class EM3DPXR(EM3DFFT):
 												  0,0,0,f.l_nodalgrid)
 						elif (f.stencil==1): # Karkainnen solver  
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
+												  0.5*dt/f.dx,
+												  0.5*dt/f.dy,
+												  0.5*dt/f.dz,
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  f.l_2dxz)
@@ -646,7 +662,144 @@ class EM3DPXR(EM3DFFT):
 		if self.refinement is not None:
 			self.__class__.__bases__[1].push_b_part_2(self.field_coarse)
 
+    def push_spectral_psaotd(self):
+    ###################################
+    #              PSAOTD             #
+    ###################################
+		if self.l_pxr:
+			tdebcell=MPI.Wtime()
+		if top.it%100==0:print 'push PSAOTD',top.it
 
+		if top.efetch[0] != 4 and (self.refinement is None) and not self.l_nodalgrid:self.node2yee3d()
+
+		if self.ntsub==inf:
+			self.GPSTDMaxwell.fields['rhoold']=self.fields.Rhoold
+			self.GPSTDMaxwell.fields['rho']=self.fields.Rho
+		else:
+		#            self.GPSTDMaxwell.fields['rhoold']=self.fields.Rhoold
+		#            self.GPSTDMaxwell.fields['rho']=self.fields.Rho
+			self.GPSTDMaxwell.fields['drho']=self.fields.Rho-self.fields.Rhoold
+			if self.l_getrho:self.GPSTDMaxwell.fields['rho']=self.fields.Rhoold
+		self.GPSTDMaxwell.fields['jx']=self.fields.Jx
+		self.GPSTDMaxwell.fields['jy']=self.fields.Jy
+		self.GPSTDMaxwell.fields['jz']=self.fields.Jz
+        
+#        J = self.fields.J.copy()
+
+		self.GPSTDMaxwell.push_fields()
+
+		#        self.fields.J=J
+
+		b=self.block
+
+		# --- sides
+		if b.xlbnd==openbc:self.xlPML.push()
+		if b.xrbnd==openbc:self.xrPML.push()
+		if b.ylbnd==openbc:self.ylPML.push()
+		if b.yrbnd==openbc:self.yrPML.push()
+		if b.zlbnd==openbc:self.zlPML.push()
+		if b.zrbnd==openbc:self.zrPML.push()
+
+		# --- edges
+		if(b.xlbnd==openbc and b.ylbnd==openbc):self.xlylPML.push()
+		if(b.xrbnd==openbc and b.ylbnd==openbc):self.xrylPML.push()
+		if(b.xlbnd==openbc and b.yrbnd==openbc):self.xlyrPML.push()
+		if(b.xrbnd==openbc and b.yrbnd==openbc):self.xryrPML.push()
+		if(b.xlbnd==openbc and b.zlbnd==openbc):self.xlzlPML.push()
+		if(b.xrbnd==openbc and b.zlbnd==openbc):self.xrzlPML.push()
+		if(b.xlbnd==openbc and b.zrbnd==openbc):self.xlzrPML.push()
+		if(b.xrbnd==openbc and b.zrbnd==openbc):self.xrzrPML.push()
+		if(b.ylbnd==openbc and b.zlbnd==openbc):self.ylzlPML.push()
+		if(b.yrbnd==openbc and b.zlbnd==openbc):self.yrzlPML.push()
+		if(b.ylbnd==openbc and b.zrbnd==openbc):self.ylzrPML.push()
+		if(b.yrbnd==openbc and b.zrbnd==openbc):self.yrzrPML.push()
+
+		# --- corners
+		if(b.xlbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc):self.xlylzlPML.push()
+		if(b.xrbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc):self.xrylzlPML.push()
+		if(b.xlbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc):self.xlyrzlPML.push()
+		if(b.xrbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc):self.xryrzlPML.push()
+		if(b.xlbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc):self.xlylzrPML.push()
+		if(b.xrbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc):self.xrylzrPML.push()
+		if(b.xlbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc):self.xlyrzrPML.push()
+		if(b.xrbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc):self.xryrzrPML.push()
+
+		if self.boris_cor:
+			self.boris_correction()
+		if self.l_pxr:
+			tendcell=MPI.Wtime()
+			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+
+    def current_cor_spectral(self):
+		if self.l_pxr:
+			tdebcell=MPI.Wtime()
+		j=1j      # imaginary number
+		emK = self.FSpace
+		em = self
+		f = self.fields
+		ixl,ixu,iyl,iyu,izl,izu = emK.get_ius()
+
+		fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
+
+		self.wrap_periodic_BC([f.DRhoodt,f.Jx,f.Jy,f.Jz])
+
+		if emK.nx>1:JxF = fft.fftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.ny>1:JyF = fft.fftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.nz>1:JzF = fft.fftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
+
+		em.dRhoodtF = fft.fftn(squeeze(f.DRhoodt[ixl:ixu,iyl:iyu,izl:izu]))
+
+		# --- get longitudinal J
+		divJ = 0.
+		if emK.nx>1:divJ += emK.kxmn*JxF
+		if emK.ny>1:divJ += emK.kymn*JyF
+		if emK.nz>1:divJ += emK.kzmn*JzF
+
+		if emK.nx>1:
+			Jxl = emK.kxpn*divJ
+		if emK.ny>1:
+			Jyl = emK.kypn*divJ
+		if emK.nz>1:
+			Jzl = emK.kzpn*divJ
+
+		# --- get transverse J
+		if emK.nx>1:
+			Jxt = JxF-Jxl
+		if emK.ny>1:
+			Jyt = JyF-Jyl
+		if emK.nz>1:
+			Jzt = JzF-Jzl
+
+		if emK.nx>1:
+			Jxl = j*em.dRhoodtF*emK.kxpn/emK.kmag
+		if emK.ny>1:
+			Jyl = j*em.dRhoodtF*emK.kypn/emK.kmag
+		if emK.nz>1:
+			Jzl = j*em.dRhoodtF*emK.kzpn/emK.kmag
+
+		if emK.nx>1:
+			JxF = Jxt+Jxl
+		if emK.ny>1:
+			JyF = Jyt+Jyl
+		if emK.nz>1:
+			JzF = Jzt+Jzl
+
+		if emK.nx>1:
+			Jx = fft.ifftn(JxF)
+			Jx.resize(fields_shape)
+			f.Jx[ixl:ixu,iyl:iyu,izl:izu] = Jx.real
+		if emK.ny>1:
+			Jy = fft.ifftn(JyF)
+			Jy.resize(fields_shape)
+			f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
+		if emK.nz>1:
+			Jz = fft.ifftn(JzF)
+			Jz.resize(fields_shape)
+			f.Jz[ixl:ixu,iyl:iyu,izl:izu] = Jz.real
+		if self.l_pxr:
+			tendcell=MPI.Wtime()
+			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+        
     def exchange_e(self,dir=1.):
         if self.novercycle==1:
             if dir>0.:
@@ -1286,6 +1439,8 @@ class EM3DPXR(EM3DFFT):
 
                 # Reallocate warp arrays 
                 self.allocatefieldarrays()
+                if (self.spectral==1): 
+					self.allocatefieldarraysFFT()
                 # Alias newly allocated arrays on WARP structure 
                 self.fields.Ex=pxr.ex
                 self.fields.Ey=pxr.ey
