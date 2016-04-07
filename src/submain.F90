@@ -12,9 +12,9 @@ USE omp_lib
 USE diagnostics
 USE simple_io
 USE sorting
-#if defined(PROFILING) && PROFILING>0
-USE ITT_SDE_FORTRAN
-#endif
+#if defined(PROFILING) && PROFILING>0  
+USE ITT_SDE_FORTRAN                     
+#endif                                  
 
 IMPLICIT NONE
 INTEGER :: nst,i
@@ -25,9 +25,9 @@ WRITE (0,*) "nsteps = ", nst
 END IF
 
 !!! --- Start Vtune analysis
-#if PROFILING==1
-CALL start_collection()
-#endif
+#if PROFILING==1                      
+CALL start_collection()                
+#endif                                
 
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
@@ -79,9 +79,9 @@ DO i=1,nst
 END DO
 
 !!! --- Stop Vtune analysis
-#if PROFILING==1
-CALL stop_collection() 
-#endif
+#if PROFILING==1            
+CALL stop_collection()      
+#endif                     
 
 END SUBROUTINE step
 

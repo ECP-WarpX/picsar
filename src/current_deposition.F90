@@ -37,9 +37,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   USE shared_data
   USE params
   USE time_stat
-#if defined(PROFILING) && PROFILING==2
-  USE ITT_SDE_FORTRAN
-#endif  
+#if defined(PROFILING) && PROFILING==2      
+  USE ITT_SDE_FORTRAN                       
+#endif                                   
   
   
   IMPLICIT NONE 
@@ -51,7 +51,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! ____________________________________________________________________________________
     ! Classical current deposition - non optimized - order 1
     SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -64,7 +64,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     
     ! Classical current deposition - non optimized - order 2
     SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -77,7 +77,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
     ! Classical current deposition - non optimized - order 3
     SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -136,7 +136,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Esirkepov at any order   
     SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-           nox,noy,noz,l_particles_weight,l4symtry)
+           nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
 
       USE constants
       IMPLICIT NONE
@@ -150,7 +150,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Esirkepov order 1    
     SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-           nox,noy,noz,l_particles_weight,l4symtry)
+           nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
 
       USE constants
       IMPLICIT NONE
@@ -164,7 +164,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Esirkepov order 2
     SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-           nox,noy,noz,l_particles_weight,l4symtry)
+           nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
 
       USE constants
       IMPLICIT NONE
@@ -178,7 +178,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Esirkepov order 3
     SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-           nox,noy,noz,l_particles_weight,l4symtry)
+           nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
 
       USE constants
       IMPLICIT NONE
@@ -192,7 +192,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Esirkepov optimized order 1
     SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-           nox,noy,noz,l_particles_weight,l4symtry)
+           nox,noy,noz,l_particles_weight,l4symtry)  !#do not parse
 
       USE constants
       IMPLICIT NONE
@@ -207,9 +207,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
   tdeb=MPI_WTIME()
 
-#if PROFILING==2
-  CALL start_collection()
-#endif 
+#if PROFILING==2              
+  CALL start_collection()     
+#endif                        
 
   jx = 0.0_num
   jy = 0.0_num
@@ -340,9 +340,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   ENDIF
 
 !!! --- Stop Vtune analysis
-#if PROFILING==2
-  CALL stop_collection() 
-#endif
+#if PROFILING==2                     
+  CALL stop_collection()            
+#endif                               
 
   localtimes(3)=localtimes(3)+(MPI_WTIME()-tdeb)
 
@@ -643,9 +643,9 @@ LOGICAL(idp) :: isdeposited=.FALSE.
 
 ! For the func_order input function
 INTERFACE
-  SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-           nox,noy,noz,l_particles_weight,l4symtry)
+  SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, & !#do not parse
+           nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
 
     USE constants
     IMPLICIT NONE
@@ -911,8 +911,8 @@ INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 LOGICAL(idp) :: isdeposited=.FALSE.
 
 INTERFACE
-  SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+  SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard

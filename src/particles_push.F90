@@ -25,9 +25,9 @@ USE constants
 USE tiling
 USE time_stat
 ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
-#endif  
+#if defined(PROFILING) && PROFILING==3  
+  USE ITT_SDE_FORTRAN                   
+#endif                                  
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
@@ -50,9 +50,9 @@ LOGICAL(idp) :: isgathered=.FALSE.
 
 tdeb=MPI_WTIME()
 
-#if PROFILING==3
-  CALL start_collection()
-#endif 
+#if PROFILING==3               
+  CALL start_collection()      
+#endif                         
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
@@ -147,9 +147,9 @@ DO iz=1, ntilez ! LOOP ON TILES
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
 
-#if PROFILING==3
-  CALL stop_collection()
-#endif 
+#if PROFILING==3            
+  CALL stop_collection()    
+#endif                      
 
 tend=MPI_WTIME()
 pushtime=pushtime+(tend-tdeb)

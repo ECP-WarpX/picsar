@@ -18,7 +18,7 @@ class EM3DPXR(EM3DFFT):
                       'currdepo':0,     # Current deposition method
                       'mpicom_curr':0,   # Com type Current deposition
                       'fieldgave':0,     # Field gathering method
-                      'sorting':{'activated':0,'periods':[],'dx':1,'dy':1,'dz':1,'xshift':0,'yshift':0,'zshift':0}
+                      'sorting':None
                       }
 
     def __init__(self,**kw):
@@ -33,6 +33,11 @@ class EM3DPXR(EM3DFFT):
         EM3DFFT.__init__(self,kwdict=kw)
         
         self.l_pxr = l_pxr
+        
+        # If sorting undefined
+        if sorting==None:
+          self.sorting = sorting([],[],dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0)
+          
 
     def finalize(self,lforce=False):
         if self.finalized and not lforce: return
@@ -197,11 +202,12 @@ class EM3DPXR(EM3DFFT):
             # Check for sorting
             if (i >= len(self.sorting.periods)):
               self.sorting.periods.append(0)
+              self.sorting.starts.append(0)
             # initialize species in pxr  
             pxr.set_particle_species_properties(i+1,s.name,s.mass,s.charge,1, \
                                                 0.,0.,0.,0.,0.,0., \
                                                 0.,0.,0.,0.,0.,0., \
-                                                self.sorting.periods[i])
+                                                self.sorting.periods[i],self.sorting.starts[i])
             pxr.nspecies+=1
 
         pxr.set_tile_split()
@@ -1039,13 +1045,15 @@ class sorting:
     
     activated: >0 sorting is activated
     periods: list containing the sorting periods for each species
+    starts: first iteration before the start of the sorting
     dx, dy, dz: the bin size normalized to the cell size
     xshift,yshift,zshift: shift of the sorting grid
   
   """
-  def __init__(self,periods,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0):
+  def __init__(self,periods,starts,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0):
     self.activated = 1
     self.periods = periods
+    self.starts = starts
     self.dx = dx
     self.dy = dy
     self.dz = dz 

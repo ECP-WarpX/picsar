@@ -789,13 +789,17 @@ def preprocess_file(listline):
     # Make everything lower case (Fortran is case insensitive)
     for i in range(0,lenlist):
         curr_line=listline[i]
-        # Compiler directive are case sensitive do not lower
-        if not ((curr_line.find("#ifdef")>=0) or (curr_line.find("#else")>=0) or \
-        (curr_line.find("#endif")>=0) ): 
-            curr_line=curr_line.lower()
-        curr_line=rm_comments(curr_line)
-        curr_line=rm_newline(curr_line)
-        curr_line=rm_spechar(curr_line)
+        # Line is not considered 
+        if (curr_line.find("!#do not consider")>=0):
+          curr_line = ""
+        else:
+          # Compiler directive are case sensitive do not lower
+          if not ((curr_line.find("#ifdef")>=0) or (curr_line.find("#if")>=0) or (curr_line.find("#else")>=0) or \
+          (curr_line.find("#endif")>=0)): 
+              curr_line=curr_line.lower()
+          curr_line=rm_comments(curr_line)
+          curr_line=rm_newline(curr_line)
+          curr_line=rm_spechar(curr_line)
         listline[i]=curr_line
 
     # Concatenate continuing lines in single lines
@@ -864,18 +868,23 @@ def concatenate(listline,istart):
     curr_line=listline[i].strip()
     curr_line=rm_comments(curr_line)
     endofcont=False
-    while (not endofcont):
-        iesper=curr_line.find("&")
-        iomp=curr_line.find("!$omp")
-        if ((iesper>= 0) & (iomp==-1)):
+    # If not a precompiler directve, since they can contain &&
+    if not(curr_line.find("#if")>=0):
+      while (not endofcont):
+          iesper=curr_line.find("&")
+          iomp=curr_line.find("!$omp")
+          if ((iesper>= 0) & (iomp==-1)):
             concline=concline+curr_line[0:iesper].strip()
             i=i+1
             nlines=nlines+1
             curr_line=listline[i]
             curr_line=rm_comments(curr_line)
-        else:
+          else:
             concline=concline+curr_line.strip()
             endofcont=True
+    else:
+      nlines=0
+      concline = curr_line
     return [nlines, concline]
 
 # Get type of variables

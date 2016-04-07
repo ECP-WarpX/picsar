@@ -421,7 +421,7 @@ CONTAINS
     ! _____________________________________________________________________
     SUBROUTINE load_particles
     !
-    ! Initialize the particle properties (space and velocities) according to 
+    ! Initialize the particle properties (positions and velocities) according to 
     ! the specified distribution
     ! _____________________________________________________________________    
         IMPLICIT NONE
@@ -480,9 +480,15 @@ CONTAINS
         IF (pdistr .EQ. 2) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
-                DO j=0,nx-1
-                    DO k=0,ny-1
-                        DO l=0,nz-1
+                jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
+                jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
+                kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
+                kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
+                lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
+                lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+                DO l=lmin,lmax-1
+                    DO k=kmin,kmax-1
+                        DO j=jmin,jmax-1
                             DO ipart=1,curr%nppcell
                                 CALL RANDOM_NUMBER(rng(1:6))
                                 ! Sets positions and weight
@@ -657,16 +663,19 @@ CONTAINS
 
     END SUBROUTINE point_to_tile
 
-    !This subroutine returns pointer arrays on a given tile
-    ! of a given species (USED mainly by python interface)
+    ! _____________________________________________________________________________
     SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
-		vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period)
+		vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start)
+		!
+    ! This subroutine returns pointer arrays on a given tile
+    ! of a given species (USED mainly by python interface)
+		! ______________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nsp, nppc
 		REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
 		CHARACTER(LEN=*), INTENT(IN) :: sname
         TYPE(particle_species), POINTER  :: currsp
-        INTEGER(idp) :: sorting_period
+        INTEGER(idp) :: sorting_period, sorting_start
 
         currsp=> species_parray(nsp)
 		currsp%charge=chrg
@@ -686,10 +695,12 @@ CONTAINS
 		currsp%nppcell=nppc
 		currsp%name=sname
 		currsp%sorting_period=sorting_period
+		currsp%sorting_start=sorting_start
 		PRINT *, "species name: ", trim(adjustl(sname))
 		PRINT *, "species mass: ", mss
 		PRINT *, "species charge: ", chrg
 		PRINT *, "sorting period: ", currsp%sorting_period
+		PRINT *, "sorting start: ", currsp%sorting_start
 		PRINT *, ""
 		
     END SUBROUTINE set_particle_species_properties
