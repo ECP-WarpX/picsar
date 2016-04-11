@@ -17,13 +17,19 @@ try:
 except: 
     print 'Error cannot import os'  
 try:
-    # use fftw if there, numpy otherwise
-    import pyfftw
-    fft = pyfftw.interfaces.numpy_fft
+    # Try to import fortran wrapper of FFTW
+    # import pyfftw
+    # fft = pyfftw.interfaces.numpy_fft
+    import fastfftforpy as fftpy
+    import fastfftpy as fstpy
+    fst=fstpy.fastfft
+    fft=fftpy
     l_fftw=True
 except:
     fft = np.fft
     l_fftw=False
+
+
 
 
 class EM3DPXR(EM3DFFT):
@@ -743,10 +749,9 @@ class EM3DPXR(EM3DFFT):
 
 		self.wrap_periodic_BC([f.DRhoodt,f.Jx,f.Jy,f.Jz])
 
-		if emK.nx>1:JxF = fft.fftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
-		if emK.ny>1:JyF = fft.fftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
-		if emK.nz>1:JzF = fft.fftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
-
+		if emK.nx>1:JxF = emK.fftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.ny>1:JyF = emK.fftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.nz>1:JzF = emK.fftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
 		em.dRhoodtF = fft.fftn(squeeze(f.DRhoodt[ixl:ixu,iyl:iyu,izl:izu]))
 
 		# --- get longitudinal J
@@ -785,17 +790,15 @@ class EM3DPXR(EM3DFFT):
 			JzF = Jzt+Jzl
 
 		if emK.nx>1:
-			Jx = fft.ifftn(JxF)
+			Jx = emK.ifftn(JxF)
 			Jx.resize(fields_shape)
 			f.Jx[ixl:ixu,iyl:iyu,izl:izu] = Jx.real
 		if emK.ny>1:
-			Jy = fft.ifftn(JyF)
+			Jy = emK.ifftn(JyF)
 			Jy.resize(fields_shape)
 			f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
-		if emK.nz>1:
-			Jz = fft.ifftn(JzF)
-			Jz.resize(fields_shape)
-			f.Jz[ixl:ixu,iyl:iyu,izl:izu] = Jz.real
+		if emK.nz>1: 
+			Jz = emK.ifftn(JzF)
 		if self.l_pxr:
 			tendcell=MPI.Wtime()
 			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
