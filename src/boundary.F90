@@ -581,7 +581,7 @@ END SUBROUTINE charge_bcs
                         indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
                         indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
                         indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-                        CALL rm_particle_at_tile(curr_tile,i)
+                        CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                         CALL add_particle_at_tile(curr, indx,indy,indz, &
                              partx, party, partz, partux, partuy, partuz, gaminv, partw)
                     END DO !END LOOP ON PARTICLES
@@ -663,7 +663,7 @@ END SUBROUTINE charge_bcs
 									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
 									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
 									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-									CALL rm_particle_at_tile(curr_tile,i)
+									CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 									CALL add_particle_at_tile(curr, indx,indy,indz, &
 										 partx, party, partz, partux, partuy, partuz, gaminv, partw)
 								END DO !END LOOP ON PARTICLES
@@ -722,7 +722,7 @@ END SUBROUTINE charge_bcs
 					! Get new indexes of particle in array of tiles
 					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
 					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-					CALL rm_particle_at_tile(curr_tile,i)
+					CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 					CALL add_particle_at_tile(curr, indx,iy,indz, &
 						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
 				END DO !END LOOP ON PARTICLES
@@ -801,7 +801,7 @@ END SUBROUTINE charge_bcs
 							! Get new indexes of particle in array of tiles
 							indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
 							indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-							CALL rm_particle_at_tile(curr_tile,i)
+							CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 							CALL add_particle_at_tile(curr, indx,iy,indz, &
 								 partx, party, partz, partux, partuy, partuz, gaminv, partw)
 						END DO !END LOOP ON PARTICLES
@@ -828,8 +828,8 @@ END SUBROUTINE charge_bcs
     INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
     INTEGER(isp) :: dest, src
     LOGICAL(idp) :: out_of_bounds
-    INTEGER(isp) :: ispecies, i, ip, ix, iy, iz
-    INTEGER(isp) :: ixtile, iytile, iztile
+    INTEGER(idp) :: ispecies, i, ip, ix, iy, iz
+    INTEGER(idp) :: ixtile, iytile, iztile
     REAL(num) :: part_xyz, tdeb, tend
     TYPE(particle_species), POINTER :: currsp
     TYPE(particle_tile), POINTER :: curr
@@ -965,7 +965,7 @@ END SUBROUTINE charge_bcs
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
                     ! Remove outbound particles from current tile
-                    CALL rm_particles_from_species_with_mask(currsp, curr, mask)
+                    CALL rm_particles_from_species_with_mask(currsp, ixtile,iytile,iztile, mask)
                     DEALLOCATE(mask)
                   ENDDO
                ENDDO
@@ -986,7 +986,7 @@ END SUBROUTINE charge_bcs
                             nrecv_buf=0
                             dest = INT(neighbour(ix,iy,iz),isp)
                             src  = INT(neighbour(ixp,iyp,izp),isp)
-                            CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER, dest, tag, nrecv_buf, 1_isp, &
+                            CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER8, dest, tag, nrecv_buf, 1_isp, &
                             MPI_INTEGER, src, tag, comm, status, errcode)
                             ALLOCATE(recvbuf(1:nrecv_buf))
                             CALL MPI_SENDRECV(sendbuf(ix,iy,iz,1:nsend_buf), nsend_buf, mpidbl, dest, tag, &

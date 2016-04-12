@@ -975,7 +975,7 @@ DO ispecies=1,nspecies
                     
                         ENDIF 
                         currsp_new%species_npart=currsp_new%species_npart+1
-                        CALL rm_particles_from_species(currsp, curr_tile, ip)
+                        CALL rm_particles_from_species(currsp, ix,iy,iz, ip)
                     END DO
                 CASE DEFAULT
                     DO ip=count,1,-1
@@ -1003,7 +1003,7 @@ DO ispecies=1,nspecies
                                  partx, party, partz, partux, partuy, partuz, gaminv, partw)
                         ENDIF 
                         currsp_new%species_npart=currsp_new%species_npart+1
-                        CALL rm_particles_from_species(currsp, curr_tile, ip)
+                        CALL rm_particles_from_species(currsp, ix, iy,iz, ip)
                     END DO
                 END SELECT 
             END DO
@@ -1077,7 +1077,7 @@ DO ispecies=1,nspecies
                     partw=curr_tile%pid(ip,wpid)
                     CALL add_particle_at_tile(currsp, ix,iy,iz, &
                          partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                    CALL rm_particles_from_species(currsp_new, curr_tile, ip)
+                    CALL rm_particles_from_species(currsp_new, ix, iy, iz, ip)
                     currsp%species_npart=currsp%species_npart+1
                 END DO
             END DO
@@ -1250,7 +1250,7 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                         npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
                         nptoexch(isend)=nptoexch(isend)+1
                         ! Remove particle of current species from current tile 
-                        CALL rm_particles_from_species(currsp, curr, i)
+                        CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
                     ENDIF           
                 ENDDO !END LOOP ON PARTICLES
               ENDDO
@@ -1470,7 +1470,7 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                         npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
                         nptoexch(isend)=nptoexch(isend)+1
                         ! Remove particle of current species from current tile 
-                        CALL rm_particles_from_species(currsp, curr, i)
+                        CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
                     ENDIF           
                 ENDDO !END LOOP ON PARTICLES
               ENDDO

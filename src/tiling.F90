@@ -258,35 +258,41 @@ CONTAINS
 
     !!! --- Remove particles from tile using a mask variable
     !!! --- This technique avoids packing or reallocating arrays
-    SUBROUTINE rm_particles_from_species_with_mask(currsp, curr, mask)
+    SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt,mask)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
         LOGICAL(idp), DIMENSION (:), INTENT(IN) :: mask
+        INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
         INTEGER(idp) :: ninit, i
+        TYPE(particle_tile), POINTER :: curr
+
+        curr=>currsp%array_of_tiles(ixt,iyt,izt)
         ninit= curr%np_tile(1)
         DO i = ninit,1,-1
             IF (.NOT. mask(i)) THEN
-                CALL rm_particle_at_tile(curr,i)
+                CALL rm_particle_at_tile(currsp,ixt,iyt,izt,i)
                 currsp%species_npart=currsp%species_npart-1
-            ENDIF
+            ENDIF  
         ENDDO
     END SUBROUTINE rm_particles_from_species_with_mask
     
     
     !!! --- Remove a particle in a given tile from species currsp
-    SUBROUTINE rm_particles_from_species(currsp, curr, ipart)
+    SUBROUTINE rm_particles_from_species(currsp, ixt, iyt, izt, ipart)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
-        INTEGER(idp), INTENT(IN) :: ipart
-        CALL rm_particle_at_tile(curr,ipart)
+        INTEGER(idp), INTENT(IN) :: ipart, ixt, iyt, izt
+        
+        CALL rm_particle_at_tile(currsp,ixt, iyt, izt, ipart)
         currsp%species_npart=currsp%species_npart-1
     END SUBROUTINE rm_particles_from_species
     
     
-    SUBROUTINE rm_particle_at_tile(curr, index)
+    SUBROUTINE rm_particle_at_tile(currsp,ixt,iyt,izt, index)
         IMPLICIT NONE
-        INTEGER(idp) :: index
-        TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
+        INTEGER(idp) :: index, ixt, iyt, izt
+        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
+        TYPE(particle_tile), POINTER :: curr
+        curr=>currsp%array_of_tiles(ixt,iyt,izt)
+        
         IF (index .EQ. curr%np_tile(1)) THEN
             ! If particle i is last element
             ! Simply decreases particle number
@@ -311,6 +317,7 @@ CONTAINS
         IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN 
         	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN 
         		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile))
+        		currsp%are_tiles_reallocated(ixt,iyt,izt)=1
         	ENDIF 
         ENDIF 
     END SUBROUTINE rm_particle_at_tile
