@@ -26,7 +26,7 @@ top.lautodecomp = 1 # Particles
 top.lfsautodecomp = 1 # fields 
 
 # Flags turning on/off load balancing
-load_balance=1
+load_balance=0
 dlb_freq=100
 dlb_threshold=10 # dynamic load balancing threshold in % 
 dlb_at_init=1 # Do a load balancing of the simulation at init 
@@ -35,10 +35,10 @@ dlb_at_init=1 # Do a load balancing of the simulation at init
 # Parameters
 # ----------
 
-dfact = 10
-dxfact = 10
-dtfact = 10
-N_step = 70000/dtfact
+dfact = 8
+dxfact = 16
+dtfact = 16
+N_step = 110000/dtfact
 
 #Two-layer foil:
 #Carbon layer
@@ -82,11 +82,20 @@ restart_dump       = ""     # dump file to restart from (works?)
 l_moving_window    = 1      # on/off (Galilean) moving window
 l_plasma           = 1      # on/off plasma
 l_usesavedist      = 0      # if on, uses dump of beam particles distribution
-l_smooth           = 1      # on/off smoothing of current density
+l_smooth           = 0      # on/off smoothing of current density
 l_laser            = 1      # on/off laser
 l_pdump            = 0      # on/off regular dump of beam data
 stencil            = 0      # 0 = Yee; 1 = Yee-enlarged (Karkkainen) on EF,B; 2 = Yee-enlarged (Karkkainen) on E,F 
                             # use 0 or 1; 2 does not verify Gauss Law
+spectral = 1
+norderx=32
+nordery=32
+norderz=32
+ntsub=inf
+current_cor=0
+nxguard=17
+nyguard=0
+nzguard=17
 if dim=="1d":stencil=0
 dtcoef             = dt/dx  # coefficient to multiply default time step that is set at the EM solver CFL
 top.depos_order    = 3      # particles deposition order (1=linear, 2=quadratic, 3=cubic)
@@ -105,8 +114,8 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 live_plot_freq     = 1000000000 # frequency (in time steps) of live plots (off is l_test is off)
 
-fielddiag_period   = 4000/dtfact
-partdiag_period    = 4000/dtfact
+fielddiag_period   = 400/dtfact
+partdiag_period    = 400/dtfact
 partdiag_period_probe = 20/dtfact
 lparallelo = False 
 
@@ -156,9 +165,9 @@ print lambda_plasma_C
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 1
+nppcellx_C = 4
 nppcelly_C = 1
-nppcellz_C = 1
+nppcellz_C = 4
 
 nppcellx_G = 10
 nppcelly_G = 10
@@ -389,7 +398,7 @@ def laser_func(x,y,t):
   z0 = (carbon_layer_start*lambda_laser-laser_source_z)
   Rz = z0*(1.+(ZR/z0)**2)
   E = laser_amplitude(t)*laser_profile(x,y,z0,x0)
-  r = sqrt(x*x+y*y)
+  r = sqrt((x-x0)*(x-x0)+y*y)
   angle = w0*t+k0*z0-arctan(z0/ZR)+k0*r**2/(2.*Rz)   
   #return [E*cos(angle),E*sin(angle)]   # for circularly polarized laser
   return [E*sin(angle),0]               # for linearly polarized laser
@@ -419,8 +428,15 @@ if l_pxr:
                  l_1dz=dim=="1d",
                  dtcoef=dtcoef,
                  l_getrho=0,
-                 spectral=0,
-                 current_cor=0,
+                 spectral=spectral,
+                 norderx=norderx,
+                 nordery=nordery,
+                 norderz=norderz,
+                 nxguard=nxguard,
+                 nyguard=nyguard,
+                 nzguard=nzguard,
+                 ntsub=ntsub,
+                 current_cor=current_cor,
                  listofallspecies=listofallspecies,
                  ntilex=ntilex,
                  ntiley=ntiley,
@@ -432,7 +448,7 @@ if l_pxr:
                  dlb_at_init=dlb_at_init)
     step = em.step
 else:
-    em = EM3D(       laser_func=laser_func,
+    em = EM3DFFT(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
                  laser_polangle=laser_polangle,
                  laser_emax=Eamp,
@@ -444,6 +460,12 @@ else:
                  l_1dz=dim=="1d",
                  dtcoef=dtcoef,
                  l_getrho=0,
+                 spectral=spectral,
+                 norderx=norderx,
+                 nordery=nordery,
+                 norderz=norderz,
+                 ntsub=ntsub,
+                 current_cor=current_cor,
                  l_verbose=l_verbose)
 
 #-------------------------------------------------------------------------------
@@ -457,9 +479,11 @@ if l_restart:
 #-------------------------------------------------------------------------------
 print 'register solver'
 registersolver(em)
+print("hello #1")
 em.finalize()
+print("hello #2")
 loadrho()
-
+print("hello #3")
 print 'done'
   
 def liveplots():
@@ -545,6 +569,7 @@ else:
   if (me==0): 
       print("Total number of steps: ",N_step)
       print("Total number of particles ",npart)
+      print("Number of guard cells",pxr.nxguards, pxr.nyguards, pxr.nzguards)
       tdeb=MPI.Wtime()
   em.step(N_step,1,1)
   tend=MPI.Wtime()
