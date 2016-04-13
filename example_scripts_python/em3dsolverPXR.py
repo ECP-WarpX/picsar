@@ -753,12 +753,13 @@ class EM3DPXR(EM3DFFT):
 
 		fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
 
-		self.wrap_periodic_BC([f.DRhoodt,f.Jx,f.Jy,f.Jz])
+		self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
 
 		if emK.nx>1:JxF = emK.fftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
 		if emK.ny>1:JyF = emK.fftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
 		if emK.nz>1:JzF = emK.fftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
-		em.dRhoodtF = fft.fftn(squeeze(f.DRhoodt[ixl:ixu,iyl:iyu,izl:izu]))
+
+		em.dRhoodtF = emK.fftn(squeeze((f.Rho-f.Rhoold_local)[ixl:ixu,iyl:iyu,izl:izu]/top.dt))
 
 		# --- get longitudinal J
 		divJ = 0.
@@ -803,8 +804,11 @@ class EM3DPXR(EM3DFFT):
 			Jy = emK.ifftn(JyF)
 			Jy.resize(fields_shape)
 			f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
-		if emK.nz>1: 
+		if emK.nz>1:
 			Jz = emK.ifftn(JzF)
+			Jz.resize(fields_shape)
+			f.Jz[ixl:ixu,iyl:iyu,izl:izu] = Jz.real
+
 		if self.l_pxr:
 			tendcell=MPI.Wtime()
 			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
