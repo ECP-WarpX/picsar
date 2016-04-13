@@ -669,14 +669,14 @@ class EM3DPXR(EM3DFFT):
 			self.__class__.__bases__[1].push_b_part_2(self.field_coarse)
 
     def push_spectral_psaotd(self):
-    ###################################
-    #              PSAOTD             #
-    ###################################
+		###################################
+		#              PSAOTD             #
+		###################################
 		if self.l_pxr:
 			tdebcell=MPI.Wtime()
-    ###################################
-    #              PSAOTD             #
-    ###################################
+		###################################
+		#              PSAOTD             #
+		###################################
 		if top.it%100==0:print 'push PSAOTD',top.it
 		if top.efetch[0] != 4 and (self.refinement is None) and not self.l_nodalgrid:self.node2yee3d()
 
@@ -745,69 +745,66 @@ class EM3DPXR(EM3DFFT):
     def current_cor_spectral(self):
 		if self.l_pxr:
 			tdebcell=MPI.Wtime()
-        j=1j      # imaginary number
-        emK = self.FSpace
-        em = self
-        f = self.fields
-        ixl,ixu,iyl,iyu,izl,izu = emK.get_ius()
+		j=1j      # imaginary number
+		emK = self.FSpace
+		em = self
+		f = self.fields
+		ixl,ixu,iyl,iyu,izl,izu = emK.get_ius()
 
-        fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
+		fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
 
-        self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
+		self.wrap_periodic_BC([f.DRhoodt,f.Jx,f.Jy,f.Jz])
 
-        if emK.nx>1:JxF = emK.fftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
-        if emK.ny>1:JyF = emK.fftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
-        if emK.nz>1:JzF = emK.fftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.nx>1:JxF = emK.fftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.ny>1:JyF = emK.fftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.nz>1:JzF = emK.fftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
+		em.dRhoodtF = fft.fftn(squeeze(f.DRhoodt[ixl:ixu,iyl:iyu,izl:izu]))
 
-        em.dRhoodtF = emK.fftn(squeeze((f.Rho-f.Rhoold_local)[ixl:ixu,iyl:iyu,izl:izu]/top.dt))
+		# --- get longitudinal J
+		divJ = 0.
+		if emK.nx>1:divJ += emK.kxmn*JxF
+		if emK.ny>1:divJ += emK.kymn*JyF
+		if emK.nz>1:divJ += emK.kzmn*JzF
 
-        # --- get longitudinal J
-        divJ = 0.
-        if emK.nx>1:divJ += emK.kxmn*JxF
-        if emK.ny>1:divJ += emK.kymn*JyF
-        if emK.nz>1:divJ += emK.kzmn*JzF
+		if emK.nx>1:
+			Jxl = emK.kxpn*divJ
+		if emK.ny>1:
+			Jyl = emK.kypn*divJ
+		if emK.nz>1:
+			Jzl = emK.kzpn*divJ
 
-        if emK.nx>1:
-            Jxl = emK.kxpn*divJ
-        if emK.ny>1:
-            Jyl = emK.kypn*divJ
-        if emK.nz>1:
-            Jzl = emK.kzpn*divJ
+		# --- get transverse J
+		if emK.nx>1:
+			Jxt = JxF-Jxl
+		if emK.ny>1:
+			Jyt = JyF-Jyl
+		if emK.nz>1:
+			Jzt = JzF-Jzl
 
-        # --- get transverse J
-        if emK.nx>1:
-            Jxt = JxF-Jxl
-        if emK.ny>1:
-            Jyt = JyF-Jyl
-        if emK.nz>1:
-            Jzt = JzF-Jzl
+		if emK.nx>1:
+			Jxl = j*em.dRhoodtF*emK.kxpn/emK.kmag
+		if emK.ny>1:
+			Jyl = j*em.dRhoodtF*emK.kypn/emK.kmag
+		if emK.nz>1:
+			Jzl = j*em.dRhoodtF*emK.kzpn/emK.kmag
 
-        if emK.nx>1:
-            Jxl = j*em.dRhoodtF*emK.kxpn/emK.kmag
-        if emK.ny>1:
-            Jyl = j*em.dRhoodtF*emK.kypn/emK.kmag
-        if emK.nz>1:
-            Jzl = j*em.dRhoodtF*emK.kzpn/emK.kmag
+		if emK.nx>1:
+			JxF = Jxt+Jxl
+		if emK.ny>1:
+			JyF = Jyt+Jyl
+		if emK.nz>1:
+			JzF = Jzt+Jzl
 
-        if emK.nx>1:
-            JxF = Jxt+Jxl
-        if emK.ny>1:
-            JyF = Jyt+Jyl
-        if emK.nz>1:
-            JzF = Jzt+Jzl
-
-        if emK.nx>1:
-            Jx = emK.ifftn(JxF)
-            Jx.resize(fields_shape)
-            f.Jx[ixl:ixu,iyl:iyu,izl:izu] = Jx.real
-        if emK.ny>1:
-            Jy = emK.ifftn(JyF)
-            Jy.resize(fields_shape)
-            f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
-        if emK.nz>1:
-            Jz = emK.ifftn(JzF)
-            Jz.resize(fields_shape)
-            f.Jz[ixl:ixu,iyl:iyu,izl:izu] = Jz.real
+		if emK.nx>1:
+			Jx = emK.ifftn(JxF)
+			Jx.resize(fields_shape)
+			f.Jx[ixl:ixu,iyl:iyu,izl:izu] = Jx.real
+		if emK.ny>1:
+			Jy = emK.ifftn(JyF)
+			Jy.resize(fields_shape)
+			f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
+		if emK.nz>1: 
+			Jz = emK.ifftn(JzF)
 		if self.l_pxr:
 			tendcell=MPI.Wtime()
 			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
