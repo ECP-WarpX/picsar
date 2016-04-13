@@ -55,7 +55,8 @@ section::solver
  # 1 - Esirkepov tiling/non-optimized
  # 2 - Esirkepov sequential
  # 3 - Classical vectorized
- # 4 - Classical non-optimized
+ # 4 - Classical tiling/non-optimized
+ # 5 - Classical sequential/non-optimized
  currdepo = 0
  
  # Field gathering method

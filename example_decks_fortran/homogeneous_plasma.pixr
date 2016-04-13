@@ -102,6 +102,7 @@ section::species
  vth_y = 0.1
  vth_z = 0.1
  sorting_period=5  
+ sorting_start=5
 end::species
 
 section::species
@@ -124,6 +125,7 @@ section::species
  vth_y = 0.001
  vth_z = 0.001
  sorting_period=5  
+ sorting_start=5
 end::species
 
 section::output

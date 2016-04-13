@@ -55,8 +55,9 @@ section::solver
  # 1 - Esirkepov tiling/non-optimized
  # 2 - Esirkepov sequential
  # 3 - Classical vectorized
- # 4 - Classical non-optimized
- currdepo = 0
+ # 4 - Classical tiling/non-optimized
+ # 5 - Classical sequential/non-optimized
+ currdepo = 3
  
  # Field gathering method
  # 0 - Optimized functions (default)
@@ -103,6 +104,7 @@ section::species
  vth_y = 0.0
  vth_z = 0.0
  sorting_period=10
+ sorting_start=10
 end::species
 
 section::species
@@ -125,6 +127,7 @@ section::species
  vth_y = 0.
  vth_z = 0.
  sorting_period=10
+ sorting_start=10
 end::species
 
 section::output

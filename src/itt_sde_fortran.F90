@@ -30,6 +30,7 @@ END INTERFACE
 contains
 
    subroutine start_collection()
+     write(0,*) "Profiling: start collecting data"
      call fortran_sde_start()
      call fortran_itt_resume()
    end subroutine start_collection
@@ -37,6 +38,7 @@ contains
    subroutine stop_collection() 
     call fortran_itt_pause()
     call fortran_sde_stop()
+    write(0,*) "Profiling: stop collecting data"
    end subroutine stop_collection
 
 END MODULE

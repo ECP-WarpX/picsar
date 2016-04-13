@@ -144,7 +144,15 @@ class EM3DPXR(EM3DFFT):
         pxr.dx = self.dx
         pxr.dy = self.dy
         pxr.dz = self.dz
-
+        pxr.dxi = 1./self.dx
+        pxr.dyi = 1./self.dy
+        pxr.dzi = 1./self.dz
+        pxr.invvol = pxr.dxi*pxr.dyi*pxr.dzi
+        pxr.dts2dx = 0.5*pxr.dt*pxr.dxi
+        pxr.dts2dy = 0.5*pxr.dt*pxr.dyi
+        pxr.dts2dz = 0.5*pxr.dt*pxr.dzi
+        pxr.clightsq = 1.0/pxr.clight**2
+        
         # --- Maxwell solver
         pxr.norderx = self.norderx
         pxr.nordery = self.nordery

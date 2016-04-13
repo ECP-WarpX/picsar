@@ -11,9 +11,17 @@ USE params
 USE time_stat
 IMPLICIT NONE
 
+#if defined(DEBUG)
+  WRITE(0,*) "Push_particles: start"
+#endif
+
 ! Particle advance (one time step)
 CALL push_particles_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+
+#if defined(DEBUG)
+  WRITE(0,*) "Push_particles: stop"
+#endif
 	 
 END SUBROUTINE push_particles
 

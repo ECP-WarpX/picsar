@@ -152,6 +152,26 @@ def test_langmuir_wave():
   nppcelly_C = 5#5
   nppcellz_C = 5#5
 
+  #-------------------------------------------------------------------------------
+  # Algorithm choices
+  #-------------------------------------------------------------------------------
+	# Optional: current deposition algorithm, 
+  # 0 - Esirkepov tiling/optimized
+  # 1 - Esirkepov tiling/non-optimized
+  # 2 - Esirkepov sequential
+  # 3 - Classical vectorized
+  # 4 - Classical tiling/non-optimized
+  # 5 - Classical sequential/non-optimized
+  currdepo=3
+  # Optional: mpi com for the current desposition
+  # 0 - nonblocking communication
+  # 1 - blocking communication
+  # 2 - persistent (under development)
+  mpicom_curr=0
+  # Field gathering method
+  # 0 - Optimized functions (default)
+  # 1 - non-optimized functions  
+  fieldgave=0
 
   #-------------------------------------------------------------------------------
   # grid dimensions, nb cells and BC
@@ -312,15 +332,9 @@ def test_langmuir_wave():
                    #nxguard=6,
                    #nyguard=6,
                    #nzguard=6,
-                   # Optional: cirrent deposition algorithm, 
-                   # 0 - parallel classical current deposition (defaults)
-                   # 1 - sequential classical current deposition
-                   currdepo=0,   
-                   # Optional: mpi com for the current desposition
-                   # 0 - nonblocking communication
-                   # 1 - blocking communication
-                   # 2 - persistent (under development)
-                   mpicom_curr=0,
+                   currdepo=currdepo,   
+                   mpicom_curr=mpicom_curr,
+                   fieldgave=fieldgave,
                    sorting=sort,
                    l_verbose=l_verbose)
       step = em.step

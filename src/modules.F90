@@ -23,7 +23,19 @@ LOGICAL:: l_smooth_compensate
 INTEGER, PARAMETER :: string_length = 264
 ! Error handling
 INTEGER, PARAMETER :: c_err_bad_value = 2**4
+INTEGER(idp), PARAMETER :: LVEC = 8
 END MODULE constants
+
+!===============================================================================
+MODULE precomputed
+! Contains useful pre-computed parameters for subroutines
+!===============================================================================
+USE constants
+REAL(num) :: dxi,dyi,dzi
+REAL(num) :: invvol
+REAL(num) :: dts2dx,dts2dy,dts2dz
+REAL(num) :: clightsq
+END MODULE precomputed
 
 !===============================================================================
 MODULE fields
@@ -386,6 +398,20 @@ REAL(num), DIMENSION(:), POINTER :: partez
 REAL(num), DIMENSION(:), POINTER :: partbx
 REAL(num), DIMENSION(:), POINTER :: partby
 REAL(num), DIMENSION(:), POINTER :: partbz
+!dir$ attributes align:64 :: partx
+!dir$ attributes align:64 :: party
+!dir$ attributes align:64 :: partz
+!dir$ attributes align:64 :: partux
+!dir$ attributes align:64 :: partuy
+!dir$ attributes align:64 :: partuz
+!dir$ attributes align:64 :: partgaminv
+!dir$ attributes align:64 :: pid
+!dir$ attributes align:64 :: partex
+!dir$ attributes align:64 :: partey
+!dir$ attributes align:64 :: partez
+!dir$ attributes align:64 :: partbx
+!dir$ attributes align:64 :: partby
+!dir$ attributes align:64 :: partbz
 END MODULE python_pointers
 
 

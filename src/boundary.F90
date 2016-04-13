@@ -952,23 +952,35 @@ CONTAINS
 !!! --- Boundary condition routine for electric field
   SUBROUTINE efield_bcs
     REAL(num) :: tmptime
+#if defined(DEBUG)
+  WRITE(0,*) "efield_bcs: start"
+#endif
     tmptime = MPI_WTIME()
     ! Electric field MPI exchange between subdomains
     CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
     localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
+#if defined(DEBUG)
+  WRITE(0,*) "efield_bcs: stop"
+#endif    
   END SUBROUTINE efield_bcs
 
 !!! --- Boundary condition routine for magnetic field
   SUBROUTINE bfield_bcs
     REAL(num) :: tmptime
+#if defined(DEBUG)
+  WRITE(0,*) "bfield_bcs: start"
+#endif    
     tmptime = MPI_WTIME()
     ! Magnetic field MPI exchange between subdomains
     CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
     localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
+#if defined(DEBUG)
+  WRITE(0,*) "bfield_bcs: stop"
+#endif    
   END SUBROUTINE bfield_bcs
 
 !!! --- Boundary conditions routine for currents
@@ -1015,16 +1027,32 @@ END SUBROUTINE charge_bcs
     REAL(num) :: tmptime
     
     tmptime = MPI_WTIME()
+
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_tiles: start"
+#endif
     
     ! First exchange particles between tiles (NO MPI at that point)
     CALL particle_bcs_tiles
+
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_tiles: stop"
+#endif
 
     localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
 
     tmptime = MPI_WTIME()
 
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_mpi: start"
+#endif
+
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking
+
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_mpi: stop"
+#endif
 
     localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
 

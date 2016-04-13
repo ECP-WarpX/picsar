@@ -33,10 +33,8 @@ DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
     pushtime=0._num
     !!! --- Field gather & particle push
-    !write(0,*),'push_particles'
     CALL push_particles
     !!! --- Apply BC on particles
-    !write(0,*),'Particle bcs'
     CALL particle_bcs
     !!! --- Particle Sorting
     !write(0,*),'Sorting'
@@ -96,6 +94,7 @@ USE particles
 USE shared_data
 USE tiling
 USE time_stat
+USE precomputed
 
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
@@ -132,6 +131,16 @@ sorting_dz = sorting_dz*dz
 sorting_shiftx = sorting_shiftx*dx
 sorting_shifty = sorting_shifty*dy
 sorting_shiftz = sorting_shiftz*dz
+
+!!! --- Precomputed data
+dxi = 1.0_num/dx
+dyi = 1.0_num/dy
+dzi = 1.0_num/dz
+invvol = dxi*dyi*dzi
+dts2dx = 0.5_num*dt*dxi
+dts2dy = 0.5_num*dt*dyi
+dts2dz = 0.5_num*dt*dzi
+clightsq = 1.0_num/clight**2
 
 ! Summary
 IF (rank .EQ. 0) THEN

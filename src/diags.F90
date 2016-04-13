@@ -421,23 +421,23 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: j,k,l,vv,n,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
-        INTEGER(idp), PARAMETER :: LVEC=4
-        REAL(num), DIMENSION(LVEC,8) :: ww
+        INTEGER(idp), PARAMETER :: LVEC2=4
+        REAL(num), DIMENSION(LVEC2,8) :: ww
         dxi = 1.0_num/dx
         dyi = 1.0_num/dy
         dzi = 1.0_num/dz
         invvol = dxi*dyi*dzi
-        ALLOCATE(rho1(1:LVEC,-nxguard:nx+nxguard,-nyguard:ny+nyguard, &
+        ALLOCATE(rho1(1:LVEC2,-nxguard:nx+nxguard,-nyguard:ny+nyguard, &
                 -nzguard:nz+nzguard))
         rho1=0.0_num
-        DO ip=1,np, LVEC
+        DO ip=1,np, LVEC2
             !DIR$ ASSUME_ALIGNED xp:32
             !DIR$ ASSUME_ALIGNED yp:32
             !DIR$ ASSUME_ALIGNED zp:32
             !DIR$ ASSUME_ALIGNED w:32
             !DIR$ ASSUME_ALIGNED ww:32
             !DIR$ IVDEP
-            DO vv=1, MIN(LVEC,np-ip+1) !!! Vector
+            DO vv=1, MIN(LVEC2,np-ip+1) !!! Vector
                 n=vv+ip-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -474,7 +474,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 !            !DIR$ ASSUME_ALIGNED rho1:32
 !            !DIR$ ASSUME_ALIGNED ww:32
 !            !DIR$ IVDEP
-!            DO vv=1, MIN(LVEC,np-ip+1) !!! Vector
+!            DO vv=1, MIN(LVEC2,np-ip+1) !!! Vector
 !                ! --- add charge density contributions
 !                rho1(vv,j,k,l)      = rho1(vv,j,k,l)+ww(vv,1)
 !                rho1(vv,j+1,k,l)    = rho1(vv,j+1,k,l)+ww(vv,2)
@@ -488,7 +488,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         END DO
 
         DO jj=-nxguard,nxguard+nx !!! Vector
-            DO vv=1,LVEC
+            DO vv=1,LVEC2
                 rho(jj,:,:)=rho(jj,:,:)+rho1(vv,jj,:,:)
             END DO
         END DO
@@ -504,8 +504,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=8
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=8
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: wq
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -514,7 +514,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: xint,yint,zint
         REAL(num) :: x,y,z,invvol
         REAL(num) :: sx(0:1), sy(0:1), sz(0:1)
-        REAL(num) :: ww(1:LVEC,8)
+        REAL(num) :: ww(1:LVEC2,8)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy
@@ -540,7 +540,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         moff(8) = nnxy+nnx+1_idp
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64
             !DIR$ ASSUME_ALIGNED yp:64
             !DIR$ ASSUME_ALIGNED zp:64
@@ -548,7 +548,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             !DIR$ ASSUME_ALIGNED ww:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !DIR$ IVDEP
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -583,7 +583,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 ww(n,8) = sx(1)*sy(1)*sz(1)
             END DO
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
@@ -615,8 +615,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=64
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=64
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -624,7 +624,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi
         REAL(num) :: xint,yint,zint
         REAL(num) :: x,y,z,invvol
-        REAL(num) :: sx(LVEC), sy(LVEC), sz(LVEC), wq(LVEC)
+        REAL(num) :: sx(LVEC2), sy(LVEC2), sz(LVEC2), wq(LVEC2)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy
@@ -656,14 +656,14 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ngxy=(ngridx*ngridy-ncx*ncy)
         ncxy=ncx*ncy
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64
             !DIR$ ASSUME_ALIGNED yp:64
             !DIR$ ASSUME_ALIGNED zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -684,7 +684,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
@@ -820,8 +820,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=64
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL, IG
+        INTEGER(idp), PARAMETER :: LVEC2=64
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL, IG
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -829,12 +829,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi
         REAL(num) :: xint,yint,zint,xintsq,yintsq,zintsq
         REAL(num) :: x,y,z,invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
-        REAL(num) :: sx0(LVEC), sx1(LVEC), sx2(LVEC)
+        REAL(num) :: sx0(LVEC2), sx1(LVEC2), sx2(LVEC2)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:8)
-        REAL(num):: ww0(1:LVEC,1:8),www(1:LVEC,1:8)
+        REAL(num):: ww0(1:LVEC2,1:8),www(1:LVEC2,1:8)
         INTEGER(idp) :: orig, jorig, korig, lorig
         INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
@@ -859,12 +859,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ngxy=(ngridx*ngridy-ncx*ncy)
         ncxy=ncx*ncy
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
             !DIR$ ASSUME_ALIGNED ICELL:64, IG:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -910,7 +910,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !$OMP SIMD
@@ -1091,8 +1091,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=8
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=8
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -1100,13 +1100,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC)
+        REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2),sx4(LVEC2)
         REAL(num) :: sy(-1:2), sz(-1:2)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:16)
-        REAL(num):: www(1:LVEC,1:16)
+        REAL(num):: www(1:LVEC2,1:16)
 
         ! Init parameters
         dxi = 1.0_num/dx
@@ -1124,12 +1124,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         off0=1+nnx+nnxy
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -1187,7 +1187,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
@@ -1232,22 +1232,22 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=16
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=16
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC), &
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC2), &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC), sy1(LVEC), sy2(LVEC), sy3(LVEC),sy4(LVEC), &
+        REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2),sx4(LVEC2), sy1(LVEC2), sy2(LVEC2), sy3(LVEC2),sy4(LVEC2), &
                      sz1, sz2, sz3,sz4
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:8)
-        REAL(num):: www(1:16,1:LVEC), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
+        REAL(num):: www(1:16,1:LVEC2), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
         INTEGER(idp) :: orig, jorig, korig, lorig
         INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
@@ -1275,13 +1275,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         h11(1:4)=(/0_num,1_num,1_num,0_num/); h12(1:4)=(/1_num,0_num,0_num,1_num/)
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED w:64,sy1:64,sy2:64,sy3:64,sy4:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -1322,7 +1322,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 !                sz4 = onesixth*zintsq*zint(n)*wq
             END DO
             !$OMP END SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 !$DIR ASSUME_ALIGNED www:64, h1:64, h11:64, h12:64, zdec:64, sgn:64, szz:64
                 !$DIR NOUNROLL
                 DO nv=1,4 !!! Vector
@@ -1336,7 +1336,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 ENDDO
             END DO
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64, www:64
@@ -1395,22 +1395,22 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=16
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=16
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC), &
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC2), &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC), sy1, sy2, sy3,sy4, &
+        REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2),sx4(LVEC2), sy1, sy2, sy3,sy4, &
                      sz1, sz2, sz3,sz4, w1,w2
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp):: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:8)
-        REAL(num):: www1(LVEC,8),www2(LVEC,8), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
+        REAL(num):: www1(LVEC2,8),www2(LVEC2,8), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
         INTEGER(idp) :: orig, jorig, korig, lorig
         INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
@@ -1435,12 +1435,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ncxy=ncx*ncy
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED ICELL:64, www1:64, www2:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -1498,7 +1498,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
@@ -1927,7 +1927,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: ix,iy,iz,np,ip,n
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
-        INTEGER(idp),parameter :: LVEC=16
+        INTEGER(idp),parameter :: LVEC2=16
         REAL(num)                          :: partgam
         REAL(num),dimension(:),allocatable :: gaminv
 
@@ -1960,10 +1960,10 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                     !write(0,*) " gaminv:",1./curr_tile%part_gaminv(1:10)
                 
                     ! Loop over the particles
-                    DO ip=1,np,LVEC
+                    DO ip=1,np,LVEC2
                         !DIR$ ASSUME_ALIGNED gaminv:64
-                        !$OMP SIMD SAFELEN(LVEC) 
-                        DO n=1,MIN(LVEC,np-ip+1)
+                        !$OMP SIMD SAFELEN(LVEC2) 
+                        DO n=1,MIN(LVEC2,np-ip+1)
             
                             partgam = 1./gaminv(ip+(n-1)) 
                             
@@ -2001,7 +2001,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: ix,iy,iz,np,ip,n
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
-        INTEGER(idp),parameter :: LVEC=16
+        INTEGER(idp),parameter :: LVEC2=16
         REAL(num) :: partgam
         
         ! current species    
@@ -2025,10 +2025,10 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                     !write(0,*) " gaminv:",1./curr_tile%part_gaminv(1:10)
                 
                     ! Loop over the particles (cache)
-                    DO ip=1,np,LVEC
+                    DO ip=1,np,LVEC2
                         !!DIR$ ASSUME_ALIGNED partgaminv:64
-                        !$OMP SIMD SAFELEN(LVEC)
-                        DO n=1,MIN(LVEC,np-ip+1)
+                        !$OMP SIMD SAFELEN(LVEC2)
+                        DO n=1,MIN(LVEC2,np-ip+1)
             
                             partgam = 1./curr_tile%part_gaminv(ip+(n-1)) 
                             total_kinetic_energy_loc = total_kinetic_energy_loc + (partgam-1.)*curr_tile%pid(ip+(n-1),wpid)
