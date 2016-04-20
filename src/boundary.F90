@@ -986,7 +986,7 @@ END SUBROUTINE charge_bcs
                             nrecv_buf=0
                             dest = INT(neighbour(ix,iy,iz),isp)
                             src  = INT(neighbour(ixp,iyp,izp),isp)
-                            CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER8, dest, tag, nrecv_buf, 1_isp, &
+                            CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER, dest, tag, nrecv_buf, 1_isp, &
                             MPI_INTEGER, src, tag, comm, status, errcode)
                             ALLOCATE(recvbuf(1:nrecv_buf))
                             CALL MPI_SENDRECV(sendbuf(ix,iy,iz,1:nsend_buf), nsend_buf, mpidbl, dest, tag, &
