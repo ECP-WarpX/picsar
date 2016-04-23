@@ -752,14 +752,20 @@ class EM3DPXR(EM3DFFT):
 		ixl,ixu,iyl,iyu,izl,izu = emK.get_ius()
 
 		fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
-
+		
+		if emK.planj_rfftn is None: 
+			emK.planj_rfftn= emK.create_plan_rfftn(np.asarray(fields_shape))
+		if emK.planj_irfftn is None: 
+			emK.planj_irfftn= emK.create_plan_irfftn(np.asarray(fields_shape))
+			
 		self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
+		
 
-		if emK.nx>1:JxF = emK.fftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
-		if emK.ny>1:JyF = emK.fftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
-		if emK.nz>1:JzF = emK.fftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
+		if emK.nx>1:JxF = emK.rfftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
+		if emK.ny>1:JyF = emK.rfftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
+		if emK.nz>1:JzF = emK.rfftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
 
-		em.dRhoodtF = emK.fftn(squeeze((f.Rho-f.Rhoold_local)[ixl:ixu,iyl:iyu,izl:izu]/top.dt))
+		em.dRhoodtF = emK.rfftn(squeeze((f.Rho-f.Rhoold_local)[ixl:ixu,iyl:iyu,izl:izu]/top.dt),plan=emK.planj_rfftn)
 
 		# --- get longitudinal J
 		divJ = 0.
@@ -796,16 +802,17 @@ class EM3DPXR(EM3DFFT):
 		if emK.nz>1:
 			JzF = Jzt+Jzl
 
+
 		if emK.nx>1:
-			Jx = emK.ifftn(JxF)
+			Jx = emK.irfftn(JxF, np.asarray(np.shape(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
 			Jx.resize(fields_shape)
 			f.Jx[ixl:ixu,iyl:iyu,izl:izu] = Jx.real
 		if emK.ny>1:
-			Jy = emK.ifftn(JyF)
+			Jy = emK.irfftn(JyF, np.asarray(np.shape(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
 			Jy.resize(fields_shape)
 			f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
 		if emK.nz>1:
-			Jz = emK.ifftn(JzF)
+			Jz = emK.irfftn(JzF, np.asarray(np.shape(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
 			Jz.resize(fields_shape)
 			f.Jz[ixl:ixu,iyl:iyu,izl:izu] = Jz.real
 
@@ -1736,8 +1743,16 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
+			# Depose currents in PXR 
              pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
              pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
+			# Depose charge density in PXR if required 
+             if self.l_getrho : # Depose Rho in PXR 
+				 pxr.pxrdepose_rho_on_grid_sub_openmp(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards, 
+				 pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
+             if self.current_cor: # Depose Rhoold_local in PXR 
+                 pxr.pxrdepose_rho_on_grid_sub_openmp(f.Rhoold_local,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards, 
+                 pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,1)
              tend=MPI.Wtime()
              pxr.local_time_part+=(tend-tdeb)
         else:
