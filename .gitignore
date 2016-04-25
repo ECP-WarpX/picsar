@@ -28,3 +28,10 @@ example_scripts_python/ion_accelerationHV.py
 example_scripts_python/sim_params.pck
 example_scripts_python/ion_acc_stepan.py
 example_scripts_python/tottime.pdb
+example_scripts_python/CWE_SPECTRAL.py
+example_scripts_python/HHG_ROM_SPECTRAL.py
+example_scripts_python/harmo.py
+example_scripts_python/harmo_Kark2.py
+example_scripts_python/spectral8_64.py
+
+
