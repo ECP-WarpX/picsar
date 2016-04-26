@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm -r *.cgm
+rm -r *.cgmlog
+rm -r __pycache__

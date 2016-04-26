@@ -7,14 +7,15 @@ FC=Forthon
 FCARGS=-v --no2underscores  --nowritemodules
 FCOMP=gfortran
 FCOMPEXEC=mpif90
-FARGS="-O3 -fopenmp  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"
+FARGS="-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"
 LIBDIR=-L/usr/local/Cellar/open-mpi/1.10.1_1/lib/
+#LIBDIR=-L/opt/local/lib/mpich-mp/
 LIBS=-lmpi -lmpi_usempif08 -lmpi_mpifh -lgomp
+#LIBS=-lmpifort -lmpi -lpmpi -lgomp
 TESTDIR=example_scripts_python
 
-
-
-all: clean parse build 
+all: clean parse build
+test: test1 test2
 
 
 build: $(SRCDIR)/$(APPNAME).F90 $(SRCDIR)/$(APPNAME).v
@@ -30,5 +31,14 @@ clean:
 	rm -rf $(SRCDIR)/build
 	rm -rf $(BINDIR)
 
-test:
-	mpirun -np 1 python $(TESTDIR)/test.py
+test1:
+	cp -p example_scripts_python/test.py Acceptance_testing/Python_tests/test
+	export OMP_NUM_THREADS=1
+	cd Acceptance_testing/Python_tests/test && \
+	mpirun -np 1 python test.py
+	
+test2:
+	cp -p example_scripts_python/test_Langmuir_wave_3d.py Acceptance_testing/Python_tests/test_Langmuir_wave/
+	export OMP_NUM_THREADS=2
+	cd Acceptance_testing/Python_tests/test_Langmuir_wave && \
+	mpirun -np 4 python test_Langmuir_wave_3d.py

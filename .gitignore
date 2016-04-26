@@ -33,5 +33,10 @@ example_scripts_python/HHG_ROM_SPECTRAL.py
 example_scripts_python/harmo.py
 example_scripts_python/harmo_Kark2.py
 example_scripts_python/spectral8_64.py
-
-
+Acceptance_testing/Fortran_tests/test_Langmuir_wave/conftest.pyc
+Acceptance_testing/Fortran_tests/test_homogeneous_plasma/conftest.pyc
+Acceptance_testing/Fortran_tests/test_plasma_drift/conftest.pyc
+Acceptance_testing/Python_tests/test_Langmuir_wave/*.cgm
+Acceptance_testing/Python_tests/test_Langmuir_wave/*.cgmlog
+example_scripts_python/*.cgm
+example_scripts_python/diags/

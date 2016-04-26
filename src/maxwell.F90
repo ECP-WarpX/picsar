@@ -6,13 +6,19 @@ USE constants
 USE params
 USE fields
 USE shared_data
+USE time_stat
 IMPLICIT NONE
+
+REAL(num) :: tmptime
+tmptime = MPI_WTIME()
 
 CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
     0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
     nx,ny,nz, norderx,nordery,norderz,                                  &
     nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
     l_nodalgrid)
+
+localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
 
 END SUBROUTINE push_bfield
 
@@ -25,7 +31,11 @@ USE constants
 USE params
 USE fields
 USE shared_data
+USE time_stat
 IMPLICIT NONE
+
+REAL(num) :: tmptime
+tmptime = MPI_WTIME()
 
 CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
     clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
@@ -33,6 +43,8 @@ CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,      
     norderx,nordery,norderz,                                                   &
     nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
     l_nodalgrid)
+
+localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
 
 END SUBROUTINE push_efield
 

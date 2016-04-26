@@ -11,14 +11,24 @@ USE boundary
 USE omp_lib
 USE diagnostics
 USE simple_io
+USE sorting
+#if defined(PROFILING) && PROFILING>0  
+USE ITT_SDE_FORTRAN                     
+#endif                                  
 
 IMPLICIT NONE
 INTEGER :: nst,i
 
 !!! --- This is the main PIC LOOP
 IF (rank .EQ. 0) THEN
-WRITE (0,*), "nsteps = ", nst
+WRITE (0,*) "nsteps = ", nst
 END IF
+
+!!! --- Start Vtune analysis
+#if PROFILING==1                      
+CALL start_collection()                
+#endif                                
+
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
     pushtime=0._num
@@ -26,11 +36,17 @@ DO i=1,nst
     CALL push_particles
     !!! --- Apply BC on particles
     CALL particle_bcs
+    !!! --- Particle Sorting
+    !write(0,*),'Sorting'
+    CALL pxr_particle_sorting
     !!! --- Deposit current of particle species on the grid
-    CALL pxrdepose_currents_on_grid_jxjyjz
+    !write(0,*),'Depose currents'
+    CALL pxrdepose_currents_on_grid_jxjyjz  
     !!! --- Boundary conditions for currents
+    !write(0,*),'Current_bcs'
     CALL current_bcs
     !!! --- Push B field half a time step
+    !write(0,*),'push_bfield'
     CALL push_bfield
     !!! --- Boundary conditions for B
     CALL bfield_bcs
@@ -45,7 +61,12 @@ DO i=1,nst
     !!! --- Computes derived quantities
     CALL calc_diags
     !!! --- Output simulation results
-    !CALL output_routines
+    CALL output_routines
+    !!! --- Output temproral diagnostics
+    CALL output_temporal_diagnostics
+    !!! --- Output time statistics
+    CALL output_time_statistics
+    
     it = it+1
     timeit=MPI_WTIME()
 
@@ -54,6 +75,11 @@ DO i=1,nst
         " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF
 END DO
+
+!!! --- Stop Vtune analysis
+#if PROFILING==1            
+CALL stop_collection()      
+#endif                     
 
 END SUBROUTINE step
 
@@ -67,6 +93,8 @@ USE fields
 USE particles
 USE shared_data
 USE tiling
+USE time_stat
+USE precomputed
 
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
@@ -79,9 +107,94 @@ TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
 !real(8) :: rand
 
-!!! --- Set time step/ it
+! Few calculations and updates      
+nc    = nlab*g0          ! density (in the simulation frame)
+wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
+lambdalab = 2*pi*clight/wlab
+w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
+w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
+w0    = w0_l 
+
+!!! --- Set time step/ itß
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
+
+!!! --- set number of time steps
+nsteps = nint(tmax/(w0_l*dt))
+
+!!! --- Sorting
+
+sorting_dx = sorting_dx*dx
+sorting_dy = sorting_dy*dy
+sorting_dz = sorting_dz*dz
+
+sorting_shiftx = sorting_shiftx*dx
+sorting_shifty = sorting_shifty*dy
+sorting_shiftz = sorting_shiftz*dz
+
+!!! --- Precomputed data
+dxi = 1.0_num/dx
+dyi = 1.0_num/dy
+dzi = 1.0_num/dz
+invvol = dxi*dyi*dzi
+dts2dx = 0.5_num*dt*dxi
+dts2dy = 0.5_num*dt*dyi
+dts2dz = 0.5_num*dt*dzi
+clightsq = 1.0_num/clight**2
+
+! Summary
+IF (rank .EQ. 0) THEN
+  write(0,*) ''
+  write(0,*) 'SIMULATION PARAMETERS:'
+  write(0,*) 'dx, dy, dz:',dx,dy,dz
+  write(0,*) 'dt:',dt,'s',dt*1e15,'fs'
+  write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
+  write(0,*) 'Tiles:',ntilex,ntiley,ntilez
+  write(0,*) 'Guard cells:',nxguards,nyguards,nzguards
+  write(0,*) 'Topology:',topology
+  write(0,*) 'MPI com current:',mpicom_curr
+  write(0,*) 'Current deposition method:',currdepo
+  write(0,*) 'Current/field gathering order:',nox,noy,noz
+  write(0,*) ''
+  write(0,*) 'PLASMA PROPERTIES:'
+  write(0,*) 'Distribution:',pdistr
+  write(0,*) 'Density in the lab frame:',nlab,'m^-3'
+  write(0,*) 'Density in the simulation frame:',nc,'m^-3'
+  write(0,*) 'Cold plasma frequency in the lab frame:',wlab,'s^-1'
+  write(0,*) 'cold plasma wavelength:',lambdalab,'m',lambdalab*1e6,'um'
+  write(0,*) ''
+  
+  IF (sorting_activated.gt.0) THEN 
+    write(0,*) 'Particle sorting activated'
+    write(0,*) 'dx:',sorting_dx
+    write(0,*) 'dy:',sorting_dy
+    write(0,*) 'dz:',sorting_dz 
+    write(0,*) 'shiftx:',sorting_shiftx
+    write(0,*) 'shifty:',sorting_shifty
+    write(0,*) 'shiftz:',sorting_shiftz    
+    write(0,*) ''     
+  ENDIF
+  
+  ! Species properties
+  write(0,*)  'Number of species:',nspecies
+  DO ispecies=1,nspecies
+    curr => species_parray(ispecies)
+    write(0,*) trim(adjustl(curr%name))
+    write(0,*) 'Drift velocity:',curr%vdrift_x,curr%vdrift_y,curr%vdrift_z
+    write(0,*) 'Sorting period:',curr%sorting_period 
+    write(0,*) 'Sorting start:',curr%sorting_start     
+    write(0,*) ''
+  end do
+  
+  ! Diags
+  IF (timestat_activated.gt.0) THEN  
+    write(0,*) 'Output of time statistics activated'
+  ELSE
+    write(0,*) 'Output of time statistics non-activated'
+  ENDIF
+  write(0,*) 
+  
+end if
 
 !- Init stencil coefficients
 CALL init_stencil_coefficients()
@@ -96,6 +209,8 @@ CALL init_tile_arrays
 ! - Load particle distribution on each tile
 CALL load_particles
 
+CALL estimate_tile_size
+
 ! ----- INIT FIELD ARRAYS
 !!! --- Initialize field/currents arrays
 ! - Init grid arrays
@@ -103,8 +218,8 @@ ex=0.0_num;ey=0.0_num;ez=0.0_num
 bx=0.0_num;by=0.0_num;bz=0.0_num
 jx=0.0_num;jy=0.0_num;jz=0.0_num
 
-!!! --- set number of time steps
-nsteps = nint(tmax/(w0_l*dt))
+! ---- INIT TIME STATISTICS
+localtimes(:)=0
 
 END SUBROUTINE initall
 
@@ -133,14 +248,6 @@ CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
 CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
 
 END SUBROUTINE init_stencil_coefficients
-
-
-
-
-
-
-
-
 
 
 !===============================================================================
@@ -209,3 +316,52 @@ DO i=1, norder/2
 END DO
 RETURN
 END SUBROUTINE FD_weights
+
+! ____________________________
+! For debugging
+
+
+!!! --- Test current
+SUBROUTINE current_debug
+  USE fields
+  USE shared_data
+  IMPLICIT NONE
+  
+  INTEGER :: i
+  
+  !jx(1:nx,1:ny,1:nz) = 1.
+  !jx(1,1:ny,1:nz) = 0.5
+  !jx(nx,ny,nz) = 0.5
+  i = 0
+  jy(i:nx,i:ny,i:nz) = 1.
+
+  jy(i,i:ny,i:nz) = 0.5
+  jy(nx,i:ny,i:nz) = 0.5
+  jy(i:nx,i,i:nz) = 0.5
+  jy(i:nx,ny,i:nz) = 0.5
+  jy(i:nx,i:ny,i) = 0.5
+  jy(i:nx,i:ny,nz) = 0.5
+
+  jy(i:nx,i,i) = 0.25
+  jy(i,i:ny,i) = 0.25
+  jy(i,i,i:nz) = 0.25
+  jy(i:nx,ny,nz) = 0.25
+  jy(nx,i:ny,nz) = 0.25
+  jy(nx,ny,i:nz) = 0.25
+
+  jy(i,i,i) = 0.125
+  jy(nx,i,i) = 0.125
+  jy(i,ny,i) = 0.125
+  jy(i,i,nz) = 0.125
+  jy(nx,ny,i) = 0.125
+  jy(nx,i,nz) = 0.125
+  jy(i,ny,nz) = 0.125
+  jy(nx,ny,nz) = 0.125
+  !jz(1:nx,1:ny,1:nz) = 1.
+  !jz(1,1,1) = 0.5
+  !jz(nx,ny,nz) = 0.5
+  !!! --- End debug
+END SUBROUTINE
+
+
+! ________________________________

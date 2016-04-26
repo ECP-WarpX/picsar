@@ -1,0 +1,8 @@
+#cp ~/Documents/Codes/Picsar/picsar_cases/drifted_plasma.pixr input_file.pixr
+#cp ~/Documents/Codes/Picsar/picsar/fortran_bin/picsar .
+#cp ~/Documents/Codes/Picsar/picsar_mpi_com_opt/fortran_bin/picsar .
+cp ../../../example_decks_fortran/langmuir_wave.pixr input_file.pixr
+
+export OMP_NUM_THREADS=2
+rm RESULTS/*
+mpirun -n 4 ./picsar nprocx 1 nprocy 2 nprocz 2

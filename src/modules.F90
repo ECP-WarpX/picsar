@@ -12,6 +12,7 @@ REAL(num), PARAMETER :: emass   = 9.10938291e-31_num,      &
                         clight  = 2.99792458e8_num,                 &
                         mu0     = 1.2566370614359173e-06_num,      &
                         eps0    = 8.854187817620389e-12_num,      &
+                        imu0    = 795774.715459,               &
                         pi      = 3.14159265358979323_num
 INTEGER(isp), PARAMETER :: c_ndims = 3
 ! direction parameters
@@ -22,7 +23,19 @@ LOGICAL:: l_smooth_compensate
 INTEGER, PARAMETER :: string_length = 264
 ! Error handling
 INTEGER, PARAMETER :: c_err_bad_value = 2**4
+INTEGER(idp), PARAMETER :: LVEC = 8
 END MODULE constants
+
+!===============================================================================
+MODULE precomputed
+! Contains useful pre-computed parameters for subroutines
+!===============================================================================
+USE constants
+REAL(num) :: dxi,dyi,dzi
+REAL(num) :: invvol
+REAL(num) :: dts2dx,dts2dy,dts2dz
+REAL(num) :: clightsq
+END MODULE precomputed
 
 !===============================================================================
 MODULE fields
@@ -49,7 +62,9 @@ TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
 END MODULE grid_tilemodule
 
 ! Fortran object representing a particle tile
+!===============================================================================
 MODULE particle_tilemodule !#do not parse 
+!===============================================================================
 USE constants
 TYPE particle_tile
     LOGICAL :: l_arrays_allocated= .FALSE.
@@ -86,7 +101,9 @@ TYPE particle_tile
 END TYPE
 END MODULE particle_tilemodule
 
+!===============================================================================
 MODULE particle_speciesmodule !#do not parse 
+!===============================================================================
 use particle_tilemodule
 use constants
 ! Fortran object representing a particle species
@@ -110,6 +127,8 @@ TYPE particle_species
     INTEGER(idp)   :: species_npart
     INTEGER(idp)   :: nppspecies_max
     INTEGER(idp)   :: nppcell
+    INTEGER(idp)   :: sorting_period
+    INTEGER(idp)   :: sorting_start     ! Sorting start iteration
     LOGICAL(idp)   :: l_arrayoftiles_allocated =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
@@ -120,14 +139,18 @@ TYPE particle_species
 END TYPE
 END MODULE particle_speciesmodule
 
+!===============================================================================
 MODULE tile_params
+!===============================================================================
 ! # of particle tiles in each dimension
-INTEGER :: ntilex, ntiley, ntilez
-
+USE constants 
+INTEGER(idp) :: ntilex, ntiley, ntilez
 END MODULE tile_params
 
 
+!===============================================================================
 MODULE particle_properties
+!===============================================================================
 USE constants
 INTEGER(idp), PARAMETER :: npid=1
 INTEGER(idp), PARAMETER :: wpid=1
@@ -160,19 +183,22 @@ TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:) :: species_parray
 
 END MODULE particles
 
-
-
 !===============================================================================
 MODULE params
 !===============================================================================
 USE constants
 INTEGER(idp) :: it,nsteps
 REAL(num) :: g0,b0,dt,w0,dtcoef,tmax
-REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t
+REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t,lambdalab
 LOGICAL :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
 REAL(num), PARAMETER :: resize_factor=2._num
 REAL(num), PARAMETER :: downsize_factor=0.5_num
 REAL(num), PARAMETER :: downsize_threshold=0.4_num
+INTEGER(idp) :: topology
+INTEGER(idp) :: mpicom_curr
+INTEGER(isp) :: seed
+INTEGER(idp) :: currdepo                            ! Current deposition method
+INTEGER(idp) :: fieldgave                           ! Field gathering method
 END MODULE params
 
 !===============================================================================
@@ -188,6 +214,26 @@ INTEGER(isp) :: derived_subarray_grid
 END MODULE mpi_type_constants
 
 !===============================================================================
+MODULE communications
+!===============================================================================
+use constants
+INTEGER(isp) :: reqperjxx(4),reqperjxy(4),reqperjxz(4)
+INTEGER(isp) :: reqperjyx(4),reqperjyy(4),reqperjyz(4)
+INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
+END MODULE communications
+
+!===============================================================================
+MODULE time_stat
+!===============================================================================
+use constants
+
+INTEGER(idp) :: timestat_activated
+INTEGER(idp) :: timestat_period
+REAL(num), dimension(20) :: localtimes
+
+END MODULE
+
+!===============================================================================
 MODULE output_data !#do not parse
 !===============================================================================
 use constants
@@ -197,8 +243,6 @@ REAL(num) :: startsim =0.0_num
 REAL(num) :: endsim =0.0_num
 REAL(num) :: startit, timeit
 REAL(num) :: pushtime
-
-
 
 ! output frequency
 INTEGER(idp) :: output_frequency = -1 !(Default is no output)
@@ -231,17 +275,29 @@ CHARACTER(LEN=string_length) :: filejz   ='jz'
 CHARACTER(LEN=string_length) :: filedive ='dive'
 CHARACTER(LEN=string_length) :: filerho  ='rho'
 
+! temporal diagnostics
+INTEGER(isp), dimension(10) :: temdiag_act_list                  ! Array of activation flags
+CHARACTER(len=string_length), dimension(10) :: temdiag_name_list ! Filename for the different temporal diags
+INTEGER(isp), dimension(10) :: temdiag_i_list                    ! Array of index to locate the value in the big array
+INTEGER(isp), dimension(10) :: temdiag_nb_values                 ! Array containing the number of values in the big array
+
+INTEGER :: temdiag_nb
+INTEGER :: temdiag_nb_part
+INTEGER :: temdiag_nb_field
+INTEGER :: temdiag_totvalues
+INTEGER :: temdiag_frequency
+INTEGER :: temdiag_format
+REAL(num), dimension(:),allocatable :: temdiag_array             ! Big array containing all the temporal diag at a given iteration
+
 END MODULE output_data
 
-
+!===============================================================================
 MODULE timing
+!===============================================================================
 use constants 
 REAL(num) :: dep_curr_time=0._num
-REAL(num) :: timepush=0._num
 
 END MODULE timing
-
-
 
 
 !===============================================================================
@@ -299,6 +355,10 @@ REAL(num):: y_min_local, y_max_local
 REAL(num):: dz, zmin, zmax,length_z
 REAL(num):: z_min_local, z_max_local
 
+! Sorting
+INTEGER(idp) :: sorting_activated                   ! Activation of soting
+REAL(NUM)    :: sorting_dx, sorting_dy, sorting_dz  ! Bin space steps
+REAL(NUM)    :: sorting_shiftx, sorting_shifty, sorting_shiftz
 
 ! Axis
 INTEGER(idp) :: c_dim = 3
@@ -342,7 +402,7 @@ REAL(num) :: betazx = 0.083333333333333329 ! 1./12.
 REAL(num) :: betazy = 0.083333333333333329 ! 1./12.
 REAL(num) :: gammaz = 0.020833333333333332 ! 1./48.
 REAL(num) :: deltaz = 0.000000000000000000 ! for the lehe solver
-END MODULE kye_em3d
+END MODULE kyee_em3d
 
 
 MODULE python_pointers
@@ -373,6 +433,20 @@ REAL(num), DIMENSION(:), POINTER :: partez
 REAL(num), DIMENSION(:), POINTER :: partbx
 REAL(num), DIMENSION(:), POINTER :: partby
 REAL(num), DIMENSION(:), POINTER :: partbz
+!dir$ attributes align:64 :: partx
+!dir$ attributes align:64 :: party
+!dir$ attributes align:64 :: partz
+!dir$ attributes align:64 :: partux
+!dir$ attributes align:64 :: partuy
+!dir$ attributes align:64 :: partuz
+!dir$ attributes align:64 :: partgaminv
+!dir$ attributes align:64 :: pid
+!dir$ attributes align:64 :: partex
+!dir$ attributes align:64 :: partey
+!dir$ attributes align:64 :: partez
+!dir$ attributes align:64 :: partbx
+!dir$ attributes align:64 :: partby
+!dir$ attributes align:64 :: partbz
 END MODULE python_pointers
 
 

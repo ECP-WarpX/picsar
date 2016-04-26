@@ -14,7 +14,11 @@ CONTAINS
         USE params
         USE shared_data
         USE tiling
+        USE time_stat
         IMPLICIT NONE
+
+        REAL(num) :: tmptime
+        tmptime = MPI_WTIME()        
 
         ! - Computes electric field divergence on grid at n+1
         dive=0.0_num
@@ -24,6 +28,8 @@ CONTAINS
         CALL pxrdepose_rho_on_grid()
         
         CALL charge_bcs()
+
+        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
 
     END SUBROUTINE calc_diags
 
@@ -116,14 +122,13 @@ DO iz=1,ntilez
 						curr_tile%part_gaminv,curr_tile%pid(1,wpid),curr%charge,  		&
 						curr_tile%x_grid_tile_min,  curr_tile%z_grid_tile_min,  		&
 						dtt,dxx,dzz,nxc,nzc,                          					&
-						nxjg,nzjg,noxx,nozz,.TRUE.,.FALSE.)
-
+						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp)
 					CASE DEFAULT  ! Rho at current time 
 						CALL pxr_depose_rho_n_2dxz(currg%rhotile(:,0,:),count,              &
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     			&
 						curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     	&
 						curr_tile%z_grid_tile_min,dxx,dzz,nxc,nzc,                          &
-						nxjg,nzjg,noxx,nozz,.TRUE.,.FALSE.,.FALSE.,0_idp)
+						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
 					END SELECT 
 				CASE DEFAULT 
 					CALL pxr_depose_rho_n(currg%rhotile,count,                                                 &
@@ -331,7 +336,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,wq,invvol, sx0, sy0, sz0, sx1, sy1, sz1
-        REAL(num), ALLOCATABLE :: ww(:,:),ll(:,:)
+        REAL(num), ALLOCATABLE :: ww(:,:)
+        INTEGER(idp), ALLOCATABLE :: ll(:,:)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: j,k,l,nn,ip,n,m,ixmin, ixmax, iymin, iymax, izmin, izmax
         INTEGER(idp) :: nblk
@@ -436,23 +442,23 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: j,k,l,vv,n,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
-        INTEGER(idp), PARAMETER :: LVEC=4
-        REAL(num), DIMENSION(LVEC,8) :: ww
+        INTEGER(idp), PARAMETER :: LVEC2=4
+        REAL(num), DIMENSION(LVEC2,8) :: ww
         dxi = 1.0_num/dx
         dyi = 1.0_num/dy
         dzi = 1.0_num/dz
         invvol = dxi*dyi*dzi
-        ALLOCATE(rho1(1:LVEC,-nxguard:nx+nxguard,-nyguard:ny+nyguard, &
+        ALLOCATE(rho1(1:LVEC2,-nxguard:nx+nxguard,-nyguard:ny+nyguard, &
                 -nzguard:nz+nzguard))
         rho1=0.0_num
-        DO ip=1,np, LVEC
+        DO ip=1,np, LVEC2
             !DIR$ ASSUME_ALIGNED xp:32
             !DIR$ ASSUME_ALIGNED yp:32
             !DIR$ ASSUME_ALIGNED zp:32
             !DIR$ ASSUME_ALIGNED w:32
             !DIR$ ASSUME_ALIGNED ww:32
             !DIR$ IVDEP
-            DO vv=1, MIN(LVEC,np-ip+1) !!! Vector
+            DO vv=1, MIN(LVEC2,np-ip+1) !!! Vector
                 n=vv+ip-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -489,7 +495,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 !            !DIR$ ASSUME_ALIGNED rho1:32
 !            !DIR$ ASSUME_ALIGNED ww:32
 !            !DIR$ IVDEP
-!            DO vv=1, MIN(LVEC,np-ip+1) !!! Vector
+!            DO vv=1, MIN(LVEC2,np-ip+1) !!! Vector
 !                ! --- add charge density contributions
 !                rho1(vv,j,k,l)      = rho1(vv,j,k,l)+ww(vv,1)
 !                rho1(vv,j+1,k,l)    = rho1(vv,j+1,k,l)+ww(vv,2)
@@ -503,7 +509,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         END DO
 
         DO jj=-nxguard,nxguard+nx !!! Vector
-            DO vv=1,LVEC
+            DO vv=1,LVEC2
                 rho(jj,:,:)=rho(jj,:,:)+rho1(vv,jj,:,:)
             END DO
         END DO
@@ -519,8 +525,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=8
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=8
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: wq
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -529,7 +535,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: xint,yint,zint
         REAL(num) :: x,y,z,invvol
         REAL(num) :: sx(0:1), sy(0:1), sz(0:1)
-        REAL(num) :: ww(1:LVEC,8)
+        REAL(num) :: ww(1:LVEC2,8)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy
@@ -555,7 +561,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         moff(8) = nnxy+nnx+1_idp
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64
             !DIR$ ASSUME_ALIGNED yp:64
             !DIR$ ASSUME_ALIGNED zp:64
@@ -563,7 +569,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             !DIR$ ASSUME_ALIGNED ww:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !DIR$ IVDEP
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -598,7 +604,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 ww(n,8) = sx(1)*sy(1)*sz(1)
             END DO
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
@@ -630,8 +636,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=64
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=64
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -639,7 +645,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi
         REAL(num) :: xint,yint,zint
         REAL(num) :: x,y,z,invvol
-        REAL(num) :: sx(LVEC), sy(LVEC), sz(LVEC), wq(LVEC)
+        REAL(num) :: sx(LVEC2), sy(LVEC2), sz(LVEC2), wq(LVEC2)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy
@@ -671,14 +677,14 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ngxy=(ngridx*ngridy-ncx*ncy)
         ncxy=ncx*ncy
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64
             !DIR$ ASSUME_ALIGNED yp:64
             !DIR$ ASSUME_ALIGNED zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -699,7 +705,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
@@ -835,8 +841,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=64
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL, IG
+        INTEGER(idp), PARAMETER :: LVEC2=64
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL, IG
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -844,12 +850,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi
         REAL(num) :: xint,yint,zint,xintsq,yintsq,zintsq
         REAL(num) :: x,y,z,invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
-        REAL(num) :: sx0(LVEC), sx1(LVEC), sx2(LVEC)
+        REAL(num) :: sx0(LVEC2), sx1(LVEC2), sx2(LVEC2)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:8)
-        REAL(num):: ww0(1:LVEC,1:8),www(1:LVEC,1:8)
+        REAL(num):: ww0(1:LVEC2,1:8),www(1:LVEC2,1:8)
         INTEGER(idp) :: orig, jorig, korig, lorig
         INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
@@ -874,12 +880,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ngxy=(ngridx*ngridy-ncx*ncy)
         ncxy=ncx*ncy
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
             !DIR$ ASSUME_ALIGNED ICELL:64, IG:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -925,7 +931,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !$OMP SIMD
@@ -1106,8 +1112,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=8
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=8
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
@@ -1115,13 +1121,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC)
+        REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2),sx4(LVEC2)
         REAL(num) :: sy(-1:2), sz(-1:2)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:16)
-        REAL(num):: www(1:LVEC,1:16)
+        REAL(num):: www(1:LVEC2,1:16)
 
         ! Init parameters
         dxi = 1.0_num/dx
@@ -1139,12 +1145,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         off0=1+nnx+nnxy
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -1202,7 +1208,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
@@ -1247,22 +1253,22 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=16
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=16
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC), &
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC2), &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC), sy1(LVEC), sy2(LVEC), sy3(LVEC),sy4(LVEC), &
+        REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2),sx4(LVEC2), sy1(LVEC2), sy2(LVEC2), sy3(LVEC2),sy4(LVEC2), &
                      sz1, sz2, sz3,sz4
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:8)
-        REAL(num):: www(1:16,1:LVEC), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
+        REAL(num):: www(1:16,1:LVEC2), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
         INTEGER(idp) :: orig, jorig, korig, lorig
         INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
@@ -1290,13 +1296,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         h11(1:4)=(/0_num,1_num,1_num,0_num/); h12(1:4)=(/1_num,0_num,0_num,1_num/)
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED w:64,sy1:64,sy2:64,sy3:64,sy4:64
             !DIR$ ASSUME_ALIGNED ICELL:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -1337,7 +1343,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 !                sz4 = onesixth*zintsq*zint(n)*wq
             END DO
             !$OMP END SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 !$DIR ASSUME_ALIGNED www:64, h1:64, h11:64, h12:64, zdec:64, sgn:64, szz:64
                 !$DIR NOUNROLL
                 DO nv=1,4 !!! Vector
@@ -1351,7 +1357,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 ENDDO
             END DO
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64, www:64
@@ -1410,22 +1416,22 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
         REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC=16
-        INTEGER(idp), DIMENSION(LVEC) :: ICELL
+        INTEGER(idp), PARAMETER :: LVEC2=16
+        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
         REAL(num) :: ww, wwx,wwy,wwz
         INTEGER(idp) :: NCELLS
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC), &
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC2), &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
         REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC), sx2(LVEC), sx3(LVEC),sx4(LVEC), sy1, sy2, sy3,sy4, &
+        REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2),sx4(LVEC2), sy1, sy2, sy3,sy4, &
                      sz1, sz2, sz3,sz4, w1,w2
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp):: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
         INTEGER(idp) :: nnx, nnxy, off0, ind0
         INTEGER(idp) :: moff(1:8)
-        REAL(num):: www1(LVEC,8),www2(LVEC,8), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
+        REAL(num):: www1(LVEC2,8),www2(LVEC2,8), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
         INTEGER(idp) :: orig, jorig, korig, lorig
         INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
@@ -1450,12 +1456,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ncxy=ncx*ncy
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC
+        DO ip=1,np,LVEC2
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED ICELL:64, www1:64, www2:64
             !$OMP SIMD
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -1513,7 +1519,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             END DO
             !$OMP END SIMD
             ! Current deposition on vertices
-            DO n=1,MIN(LVEC,np-ip+1)
+            DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
@@ -2059,7 +2065,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         invdx=1.0_num/dx
         invdy=1.0_num/dy
         invdz=1.0_num/dz
-
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,j,k)
+        !$OMP DO COLLAPSE(3)
         DO l = 0, nz
             DO k = 0, ny
                 DO j = 0, nx
@@ -2068,7 +2075,470 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 END DO
             END DO
         END DO
+        !$OMP END DO
+        !$OMP END PARALLEL
 
     END SUBROUTINE calc_field_div
+    
+    SUBROUTINE init_diags
+        USE shared_data
+        IMPLICIT NONE    
+    
+        IF (rank.eq.0) THEN 
+          WRITE(0,*) 
+          WRITE(0,*) ' Initilization of the diags' 
+        ENDIF
+    
+        ! Creation of the result folder
+        IF (rank.eq.0) CALL system('mkdir RESULTS')
+        IF (rank.eq.0) CALL system('rm RESULTS/*')        
+        ! Initialization of the temporal diags 
+        CALL init_temp_diags
+        
+        ! Init time statistics
+        CALL init_time_stat_output
+        
+        IF (rank.eq.0) WRITE(0,*)
+        
+    END SUBROUTINE
+    
+    !!! --- Init temporal diags
+    SUBROUTINE init_temp_diags
+        USE output_data
+        USE particle_properties
+        USE shared_data
+        USE params
+        
+        IMPLICIT NONE
+        
+        INTEGER :: i
+        
+        IF (temdiag_frequency.gt.0) THEN
+        
+        i = 1
+        temdiag_nb_part = 0
+        temdiag_nb_field = 0
+        temdiag_nb = 0
+        
+        ! Determine the number of diags for the particles
+        ! Kinetic energy
+        if (temdiag_act_list(1).gt.0) then
+          temdiag_i_list(1) = i
+          temdiag_nb_values(1) = nspecies
+          temdiag_name_list(1) = 'kinE'
+          i = i + nspecies
+          temdiag_nb_part = temdiag_nb_part + nspecies
+          temdiag_nb = temdiag_nb + 1
+        end if
+        ! Determine the number of diags for the fields
+        ! Ex energy
+        if (temdiag_act_list(2).gt.0) then        
+          temdiag_i_list(2) = i
+          temdiag_name_list(2) = 'exE'
+          temdiag_nb_values(2) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1       
+          i = i+1   
+        end if
+        ! Ey energy
+        if (temdiag_act_list(3).gt.0) then        
+          temdiag_i_list(3) = i
+          temdiag_name_list(3) = 'eyE'
+          temdiag_nb_values(3) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1    
+          i = i+1      
+        end if   
+        ! Ez energy
+        if (temdiag_act_list(4).gt.0) then        
+          temdiag_i_list(4) = i
+          temdiag_name_list(4) = 'ezE'   
+          temdiag_nb_values(4) = 1       
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1 
+          i = i+1         
+        end if 
+        ! Bx energy
+        if (temdiag_act_list(5).gt.0) then        
+          temdiag_i_list(5) = i
+          temdiag_name_list(5) = 'bxE'
+          temdiag_nb_values(5) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1       
+          i = i+1   
+        end if
+        ! By energy
+        if (temdiag_act_list(6).gt.0) then        
+          temdiag_i_list(6) = i
+          temdiag_name_list(6) = 'byE'
+          temdiag_nb_values(6) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1       
+          i = i+1   
+        end if
+        ! Bz energy
+        if (temdiag_act_list(7).gt.0) then        
+          temdiag_i_list(7) = i
+          temdiag_name_list(7) = 'bzE'
+          temdiag_nb_values(7) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1       
+          i = i+1   
+        end if
+        ! Norn divE*eps0 - rho
+        if (temdiag_act_list(8).gt.0) then        
+          temdiag_i_list(8) = i
+          temdiag_name_list(8) = 'divE-rho'
+          temdiag_nb_values(8) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1       
+          i = i+1   
+        end if        
+                                
+        temdiag_totvalues = i - 1
+        
+        if (temdiag_nb.gt.0) then
+          if (rank.eq.0) then 
+            write(0,'(" Initialization of the temporal diagnostics")')
+          end if
+        end if
 
+        ! Each mpi task will write in a given file according to their rank
+        IF (nproc.ge.temdiag_nb) then
+          IF ((rank.ge.0).and.(rank.le.temdiag_nb)) then
+            if (temdiag_act_list(rank+1).gt.0) then
+              write(0,'(" Rank ",I3,", creation of the file ",A30)') rank,"./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1)))      
+              if (temdiag_format.eq.1) then
+                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),ACTION='write')
+                write(42,*) temdiag_nb_values(rank+1), temdiag_frequency*dt
+              else
+                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),FORM="unformatted",ACCESS='stream')
+                write(42) temdiag_nb_values(rank+1), temdiag_frequency*dt
+              end if
+              
+            end if
+          ENDIF
+        ! If there is not enough proc, only the first one deals with it
+        else
+          IF (rank.eq.0) then
+            do i= 1,temdiag_nb
+              if (temdiag_act_list(i) .gt.0) then
+                write(0,'(" Creation of the file ",A30)') "./RESULTS/"//trim(adjustl(temdiag_name_list(i)))     
+                IF (temdiag_format.eq.1) THEN 
+                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),ACTION='write')    
+                  write(42+i,*) temdiag_nb_values(i),temdiag_frequency*dt
+                else
+                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),FORM="unformatted",ACCESS='stream')
+                  write(42+i) temdiag_nb_values(i),temdiag_frequency*dt
+                end if          
+              end if
+            end do
+          end if
+        end if
+            
+        CALL MPI_BARRIER(comm,errcode) 
+        
+        ENDIF    
+    END SUBROUTINE
+
+    SUBROUTINE init_time_stat_output
+      USE time_stat
+      USE shared_data
+      USE params
+      IMPLICIT NONE 
+      
+      INTEGER :: nb_timestat
+         
+      IF (timestat_activated.gt.0) THEN
+      
+        nb_timestat = 11
+      
+        OPEN(unit=41,file="./RESULTS/time_stat",FORM="unformatted",ACCESS='stream')
+        WRITE(41) nb_timestat
+        WRITE(41) timestat_period*dt
+        
+        IF (rank.eq.0) WRITE(0,*) ' Initialization of the time statistics output: ',nb_timestat
+        
+      ENDIF
+    
+    END SUBROUTINE
+
+    !!! --- Determine the local kinetic energy for the species ispecies
+    SUBROUTINE get_loc_kinetic_energy(ispecies,kinetic_energy_loc)
+        USE particle_tilemodule
+        USE particle_speciesmodule
+        USE tile_params
+        USE particles
+        USE mpi_derived_types
+        USE shared_data
+        USE tiling
+        IMPLICIT NONE
+        INTEGER(idp) :: ispecies 
+        
+        REAL(num) :: kinetic_energy_loc
+        INTEGER(idp) :: ix,iy,iz,np,ip,n
+        TYPE(particle_tile), POINTER :: curr_tile
+        TYPE(particle_species), POINTER :: curr
+        INTEGER(idp),parameter :: LVEC2=16
+        REAL(num)                          :: partgam
+        REAL(num),dimension(:),allocatable :: gaminv
+
+        kinetic_energy_loc = 0
+        
+        ! current species    
+        curr=>species_parray(ispecies)
+            
+        ! Loop over the tiles
+        !$OMP PARALLEL &
+        !$OMP DEFAULT(NONE) &
+        !$OMP SHARED(curr, ntilex, ntiley, ntilez) &
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr_tile,ip,np,n,gaminv,partgam) &
+        !$OMP reduction(+:kinetic_energy_loc)
+                        
+        !$OMP DO COLLAPSE(3) SCHEDULE(runtime) 
+        DO iz=1, ntilez
+            DO iy=1, ntiley
+                DO ix=1, ntilex
+                
+                    curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                    np = curr_tile%np_tile(1)
+                    
+                    allocate(gaminv(np))                  
+                    gaminv(1:np) = curr_tile%part_gaminv(1:np)
+                    
+                    !write(0,*) " Tile total kinetic energy for tile:",ix,iy,iz
+                    !write(0,*) " Number of particles:",np
+                    !write(0,*) " partx:",curr_tile%part_x(1:10) 
+                    !write(0,*) " gaminv:",1./curr_tile%part_gaminv(1:10)
+                
+                    ! Loop over the particles
+                    DO ip=1,np,LVEC2
+                        !DIR$ ASSUME_ALIGNED gaminv:64
+                        !$OMP SIMD SAFELEN(LVEC2) 
+                        DO n=1,MIN(LVEC2,np-ip+1)
+            
+                            partgam = 1./gaminv(ip+(n-1)) 
+                            
+                            kinetic_energy_loc = kinetic_energy_loc + (partgam-1.)*curr_tile%pid(ip+(n-1),wpid)
+                            
+                        end do                       
+                    
+                    End do
+                       
+                    deallocate(gaminv)                      
+                    !write(0,*) " Total Local kinetic energy",total_kinetic_energy_loc                  
+                    
+                End do
+            End do 
+        End do
+        !$OMP END DO
+        !$OMP END PARALLEL
+    
+    end subroutine
+
+    !!! --- Determine the total kinetic energy for the species ispecies
+    SUBROUTINE get_kinetic_energy(ispecies,total_kinetic_energy)
+        USE particle_tilemodule
+        USE particle_speciesmodule
+        USE tile_params
+        USE particles
+        USE mpi_derived_types
+        USE shared_data
+        USE tiling
+        IMPLICIT NONE
+        INTEGER(idp) :: ispecies 
+        REAL(num) :: total_kinetic_energy
+        
+        REAL(num) :: total_kinetic_energy_loc 
+        INTEGER(idp) :: ix,iy,iz,np,ip,n
+        TYPE(particle_tile), POINTER :: curr_tile
+        TYPE(particle_species), POINTER :: curr
+        INTEGER(idp),parameter :: LVEC2=16
+        REAL(num) :: partgam
+        
+        ! current species    
+        curr=>species_parray(ispecies)
+            
+        ! Loop over the tiles
+        !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+        !$OMP SHARED(curr, ntilex, ntiley, ntilez) &
+        !$OMP PRIVATE(ix,iy,iz,n,ispecies,curr_tile,ip,np,partgam) &
+        !$OMP reduction(+:total_kinetic_energy_loc)
+        DO iz=1, ntilez
+            DO iy=1, ntiley
+                DO ix=1, ntilex
+                
+                    curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                    np = curr_tile%np_tile(1)
+                    
+                    !write(0,*) " Tile total kinetic energy for tile:",ix,iy,iz
+                    !write(0,*) " Number of particles:",np
+                    !write(0,*) " partx:",curr_tile%part_x(1:10) 
+                    !write(0,*) " gaminv:",1./curr_tile%part_gaminv(1:10)
+                
+                    ! Loop over the particles (cache)
+                    DO ip=1,np,LVEC2
+                        !!DIR$ ASSUME_ALIGNED partgaminv:64
+                        !$OMP SIMD SAFELEN(LVEC2)
+                        DO n=1,MIN(LVEC2,np-ip+1)
+            
+                            partgam = 1./curr_tile%part_gaminv(ip+(n-1)) 
+                            total_kinetic_energy_loc = total_kinetic_energy_loc + (partgam-1.)*curr_tile%pid(ip+(n-1),wpid)
+                            
+                        end do                       
+                    
+                    End do
+                      
+                    !write(0,*) " Total Local kinetic energy",total_kinetic_energy_loc                  
+                    
+                End do
+            End do 
+        End do
+        !$OMP END PARALLEL DO
+        
+        ! All MPI reduction
+        call MPI_ALLREDUCE(total_kinetic_energy_loc,total_kinetic_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
+        
+        !print*,total_kinetic_energy
+    
+    END SUBROUTINE get_kinetic_energy
+
+    !!! --- Determine the local field energy for the given field
+    SUBROUTINE get_loc_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
+        USE constants
+        IMPLICIT NONE
+        INTEGER(idp)     :: nx2,ny2,nz2
+        INTEGER(idp)     :: nxguard,nyguard,nzguard        
+        REAL(num)                   :: field_energy
+        INTEGER(idp)                :: j,k,l
+        REAL(num)                   :: dx2,dy2,dz2
+        REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard), intent(in) :: field        
+        field_energy = 0
+ 
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:field_energy)
+
+        do l = 1, nz2
+            do k = 1, ny2
+                do j = 1, nx2
+                
+                  field_energy = field_energy + field(j,k,l)*field(j,k,l)*0.5
+                
+                end do
+            end do
+        end do
+      !$OMP END DO
+      !$OMP END PARALLEL   
+      
+      field_energy = field_energy*dx2*dy2*dz2
+    
+    END SUBROUTINE
+    
+    !!! --- Determine the total field energy for the given field
+    SUBROUTINE get_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
+        USE constants
+        USE mpi_derived_types
+        USE mpi_type_constants
+        USE shared_data
+        IMPLICIT NONE
+        INTEGER(idp)                :: nx2,ny2,nz2
+        INTEGER(idp)                :: nxguard,nyguard,nzguard
+        REAL(num),dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard) :: field
+        REAL(num)                   :: field_energy,field_energy_loc
+        INTEGER(idp)                :: j,k,l
+        REAL(num)                   :: dx2,dy2,dz2
+
+        field_energy = 0
+        field_energy_loc = 0
+ 
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:field_energy_loc)
+        do l = 1, nz2
+            do k = 1, ny2
+                do j = 1, nx2
+                
+                  field_energy_loc = field_energy_loc + field(j,k,l)*field(j,k,l)*0.5
+                
+                end do
+            end do
+        end do
+        !$OMP END DO
+        !$OMP END PARALLEL   
+      
+        ! All MPI reduction
+        call MPI_ALLREDUCE(field_energy_loc,field_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
+        
+        field_energy = field_energy*dx2*dy2*dz2
+                   
+    END SUBROUTINE
+
+    !!! --- Compute norm of dF/dt = divE -rho/eps0 (parallel function)
+    SUBROUTINE get_loc_norm_divErho(divee2,rho2,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm_loc)
+        USE mpi_derived_types
+        USE mpi_type_constants
+        USE shared_data
+        USE constants
+        IMPLICIT NONE  
+
+        INTEGER(idp)                :: j,k,l
+        INTEGER(idp),intent(in)     :: nx2,ny2,nz2,nxguard,nyguard,nzguard        
+        REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: divee2,rho2  
+        REAL(num), intent(out)      :: norm_loc
+        
+        norm_loc = 0
+
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:norm_loc)
+        do l = 1, nz2
+            do k = 1, ny2
+                do j = 1, nx2
+
+                    norm_loc = norm_loc + (divee2(j,k,l)*eps0 - rho2(j,k,l))**2
+
+                end do
+            end do
+        end do
+        !$OMP END DO
+        !$OMP END PARALLEL
+        
+    END SUBROUTINE
+
+
+    !!! --- Compute norm of dF/dt = divE -rho/eps0 (parallel function)
+    SUBROUTINE get_norm_divErho(divee2,rho2,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm)
+        USE mpi_derived_types
+        USE mpi_type_constants
+        USE shared_data
+        USE constants
+        IMPLICIT NONE  
+
+        INTEGER(idp)                :: j,k,l
+        INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard        
+        REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: divee2,rho2  
+        REAL(num)                   :: norm_loc
+        REAL(num), intent(out)      :: norm
+        
+        norm_loc = 0
+        norm = 0
+
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:norm_loc)
+        do l = 1, nz2
+            do k = 1, ny2
+                do j = 1, nx2
+
+                    norm_loc = norm_loc + (divee2(j,k,l)*eps0 - rho2(j,k,l))**2
+
+                end do
+            end do
+        end do
+        !$OMP END DO
+        !$OMP END PARALLEL  
+
+        ! All MPI reduction
+        call MPI_ALLREDUCE(norm_loc,norm,1_isp,mpidbl,MPI_SUM,comm,errcode)
+        
+        norm = sqrt(norm)
+        
+    END SUBROUTINE
 END MODULE diagnostics

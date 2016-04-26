@@ -216,8 +216,12 @@ CONTAINS
         currsp%species_npart=currsp%species_npart+1
     END SUBROUTINE add_particle_to_species
 
+    ! __________________________________________________________________________
     SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
                 partux, partuy, partuz, gaminv, partw)
+    ! 
+    ! Add a particle with its properties to the list of particles inside the tile            
+    ! __________________________________________________________________________            
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt
         REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
@@ -316,7 +320,7 @@ CONTAINS
         ! 30% of array size 
         IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN 
         	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN 
-        		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile))
+        		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
         		currsp%are_tiles_reallocated(ixt,iyt,izt)=1
         	ENDIF 
         ENDIF 
@@ -458,17 +462,23 @@ CONTAINS
         END DO! END LOOP ON TILES
     END SUBROUTINE init_tile_arrays_for_species
 
+    ! _____________________________________________________________________
     SUBROUTINE load_particles
+    !
+    ! Initialize the particle properties (positions and velocities) according to 
+    ! the specified distribution
+    ! _____________________________________________________________________    
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER(idp) :: ispecies, l, k, j, ipart
         INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-        REAL(num) :: phi, th, v, usq, clightsq
-        INTEGER(KIND=4) :: err, npart
+        REAL(num) :: phi, th, v, usq, clightsq,partvx,partvy,partvz
+        INTEGER(idp) :: npart
+        INTEGER(isp) :: err 
         REAL(num), DIMENSION(6) :: rng=0_num
-		clightsq=1/clight**2
-        !!! --- Sets-up particle space distribution (homogeneous case - default)
+		    clightsq=1/clight**2
+        !!! --- Sets-up particle space distribution (homogeneous case, uniform space distribution - default)
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
@@ -492,11 +502,16 @@ CONTAINS
                                 v=MAX(1e-10_num,rng(1))
                                 th=2*pi*rng(2)
                                 phi=2*pi*rng(3)
-                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                                usq = (partux**2 + partuy**2+partuz**2)*clightsq
-       							gaminv = 1.0_num/sqrt(1.0_num + usq)
+                                  
+                                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)                                
+                                partux = partvx /gaminv
+                                partuy = partvy /gaminv
+                                partuz = partvz /gaminv
+                                                                
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
                                 partux, partuy, partuz, gaminv, partw)
@@ -506,13 +521,19 @@ CONTAINS
                 END DO
             END DO ! END LOOP ON SPECIES
         ENDIF
-
+        !!! --- Sets-up particle space distribution (random space distribution)
         IF (pdistr .EQ. 2) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
-                DO j=0,nx-1
-                    DO k=0,ny-1
-                        DO l=0,nz-1
+                jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
+                jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
+                kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
+                kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
+                lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
+                lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+                DO l=lmin,lmax-1
+                    DO k=kmin,kmax-1
+                        DO j=jmin,jmax-1
                             DO ipart=1,curr%nppcell
                                 CALL RANDOM_NUMBER(rng(1:6))
                                 ! Sets positions and weight
@@ -524,11 +545,16 @@ CONTAINS
                                 v=MAX(1e-10_num,rng(4))
                                 th=2*pi*rng(5)
                                 phi=2*pi*rng(6)
-                                partux= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                                partuy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                                partuz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                                usq = (partux**2 + partuy**2+partuz**2)*clightsq
-       							gaminv = 1.0_num/sqrt(1.0_num + usq)
+                                
+                                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                                
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)                                
+                                partux = partvx /gaminv
+                                partuy = partvy /gaminv
+                                partuz = partvz /gaminv
+                                
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
                                 partux, partuy, partuz, gaminv, partw)
@@ -698,15 +724,19 @@ CONTAINS
 
     END SUBROUTINE point_to_tile
 
-    !This subroutine returns pointer arrays on a given tile
-    ! of a given species (USED mainly by python interface)
+    ! _____________________________________________________________________________
     SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
-		vdxs,vdys,vdzs,vthxs,vthys,vthzs)
+		vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start)
+		!
+    ! This subroutine returns pointer arrays on a given tile
+    ! of a given species (USED mainly by python interface)
+		! ______________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nsp, nppc
 		REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
 		CHARACTER(LEN=*), INTENT(IN) :: sname
         TYPE(particle_species), POINTER  :: currsp
+        INTEGER(idp) :: sorting_period, sorting_start
 
         currsp=> species_parray(nsp)
 		currsp%charge=chrg
@@ -725,10 +755,16 @@ CONTAINS
 		currsp%vth_z=vthzs
 		currsp%nppcell=nppc
 		currsp%name=sname
-		!PRINT *, "species name", sname
-		!PRINT *, "species mass", mss
-		!PRINT *, "species charge", chrg
-
+		currsp%sorting_period=sorting_period
+		currsp%sorting_start=sorting_start
+		IF (rank .EQ. 0) THEN 
+			PRINT *, "species name: ", trim(adjustl(sname))
+			PRINT *, "species mass: ", mss
+			PRINT *, "species charge: ", chrg
+			PRINT *, "sorting period: ", currsp%sorting_period
+			PRINT *, "sorting start: ", currsp%sorting_start
+			PRINT *, ""
+		ENDIF 
     END SUBROUTINE set_particle_species_properties
 
     !!! --- Add particle to array of tiles
@@ -771,5 +807,54 @@ CONTAINS
         
     END SUBROUTINE set_are_tiles_reallocated
 
+    SUBROUTINE estimate_tile_size
+      USE shared_data
+      USE constants
+      USE particles
+      USE time_stat
+      USE params    
+      IMPLICIT NONE    
+
+      INTEGER(idp) :: ispecies, ix, iy, iz, nbp
+      REAL(num) :: tilesizep
+
+      TYPE(particle_species), POINTER :: curr
+      TYPE(particle_tile), POINTER :: curr_tile
+           
+      !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+      !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
+      !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp) &
+      !$OMP REDUCTION(+:tilesizep)
+      DO iz=1, ntilez ! LOOP ON TILES
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+
+	          ! Loop over the species
+	          DO ispecies=1, nspecies
+
+					     curr=>species_parray(ispecies)
+	          				    
+			         curr_tile=>curr%array_of_tiles(ix,iy,iz)
+			         nbp=curr_tile%np_tile(1)
+			         
+			         tilesizep = tilesizep + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
+
+		        END DO! END LOOP ON SPECIES
+          END DO
+        END DO
+      END DO! END LOOP ON TILES
+      !$OMP END PARALLEL DO
+
+      tilesizep = tilesizep/1024.
+
+      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the particles',tilesizep,'Ko'
+
+      tilesizep = tilesizep/(ntilex*ntiley*ntilez)
+
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for particles',tilesizep,'Ko'
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',nx*ny*nz*8.*6.*(ntilex*ntiley*ntilez)/1024.,'Ko'
+      IF (rank.eq.0) WRITE(0,*)
+
+    END SUBROUTINE
 
 END MODULE tiling

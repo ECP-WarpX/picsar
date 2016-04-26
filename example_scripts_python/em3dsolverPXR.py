@@ -45,7 +45,11 @@ class EM3DPXR(EM3DFFT):
                       'dlb_at_init':1,
                       'it_dlb_init':11,
                       'l_output_grid':0,
-                      'l_output_freq':1
+                      'l_output_freq':1,
+                      'currdepo':0,     # Current deposition method
+                      'mpicom_curr':0,   # Com type Current deposition
+                      'fieldgave':0,     # Field gathering method
+                      'sorting':None
                       }
 
     def __init__(self,**kw):
@@ -61,6 +65,10 @@ class EM3DPXR(EM3DFFT):
         
         self.l_pxr = l_pxr
         self.l_fftw = l_fftw
+        
+        # If sorting undefined
+        if self.sorting==None:
+          self.sorting = Sorting([],[],dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0)
 
     def finalize(self,lforce=False):
         if self.finalized and not lforce: return
@@ -227,7 +235,15 @@ class EM3DPXR(EM3DFFT):
         pxr.dx = self.dx
         pxr.dy = self.dy
         pxr.dz = self.dz
-
+        pxr.dxi = 1./self.dx
+        pxr.dyi = 1./self.dy
+        pxr.dzi = 1./self.dz
+        pxr.invvol = pxr.dxi*pxr.dyi*pxr.dzi
+        pxr.dts2dx = 0.5*pxr.dt*pxr.dxi
+        pxr.dts2dy = 0.5*pxr.dt*pxr.dyi
+        pxr.dts2dz = 0.5*pxr.dt*pxr.dzi
+        pxr.clightsq = 1.0/pxr.clight**2
+        
         # --- Maxwell solver
         pxr.norderx = self.norderx
         pxr.nordery = self.nordery
@@ -268,18 +284,33 @@ class EM3DPXR(EM3DFFT):
         pxr.nys = 0
         pxr.nzs = 0
 
-	    	
-
         # Current deposition
         pxr.nox = top.depos_order[0][0]
         pxr.noy = top.depos_order[1][0]
         pxr.noz = top.depos_order[2][0]
+
+        # Current deposition algorithm
+        pxr.currdepo=self.currdepo
+        # Tye of MPI communication for the current
+        pxr.mpicom_curr=self.mpicom_curr
+        # Field gathering method
+        pxr.fieldgave=self.fieldgave
+
 
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
         pxr.ntilez = self.ntilez
 
+        # --- Sorting parameters
+        pxr.sorting_activated = self.sorting.activated
+        pxr.sorting_dx = self.sorting.dx*pxr.dx
+        pxr.sorting_dy = self.sorting.dy*pxr.dy
+        pxr.sorting_dz = self.sorting.dz*pxr.dz
+        pxr.sorting_shiftx = self.sorting.xshift      
+        pxr.sorting_shifty = self.sorting.yshift  
+        pxr.sorting_shiftz = self.sorting.zshift  
+                        
         # --- species section
         pxr.nspecies_max=top.pgroup.ns
         
@@ -287,9 +318,15 @@ class EM3DPXR(EM3DFFT):
         pxr.init_species_section() 
         
         for i,s in enumerate(self.listofallspecies):
+            # Check for sorting
+            if (i >= len(self.sorting.periods)):
+              self.sorting.periods.append(0)
+              self.sorting.starts.append(0)
+            # initialize species in pxr  
             pxr.set_particle_species_properties(i+1,s.name,s.mass,s.charge,0, \
                                                 0.,0.,0.,0.,0.,0., \
-                                                0.,0.,0.,0.,0.,0.)
+                                                0.,0.,0.,0.,0.,0., \
+                                                self.sorting.periods[i],self.sorting.starts[i])
             pxr.nspecies+=1
 
         pxr.set_tile_split()
@@ -752,14 +789,14 @@ class EM3DPXR(EM3DFFT):
 		ixl,ixu,iyl,iyu,izl,izu = emK.get_ius()
 
 		fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
-		
+
 		if emK.planj_rfftn is None: 
 			emK.planj_rfftn= emK.create_plan_rfftn(np.asarray(fields_shape))
 		if emK.planj_irfftn is None: 
 			emK.planj_irfftn= emK.create_plan_irfftn(np.asarray(fields_shape))
-			
+	
 		self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
-		
+
 
 		if emK.nx>1:JxF = emK.rfftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
 		if emK.ny>1:JyF = emK.rfftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
@@ -948,6 +985,11 @@ class EM3DPXR(EM3DFFT):
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
 
+        # --- Particle sorting
+        if l_pxr: 
+          if ((self.sorting.activated)and(top.it>0)):        
+            pxr.particle_sorting_sub() 
+
         # --- call beforeloadrho functions
         beforeloadrho.callfuncsinlist()
         pgroups = []
@@ -961,7 +1003,10 @@ class EM3DPXR(EM3DFFT):
         #tendpart=MPI.Wtime()
         #pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
 #        self.solve2ndhalf()
+
         #tdebcell=MPI.Wtime()
+        # --- dosolve
+        # Current deposition + Maxwell
         self.dosolve()
         #tendcell=MPI.Wtime()
         #pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
@@ -1677,8 +1722,8 @@ class EM3DPXR(EM3DFFT):
         if self.l_verbose:print me,'exit push_ions_positions'
         
     def loadsource(self,lzero=None,lfinalize_rho=None,pgroups=None,**kw):
-        '''Charge deposition, uses particles from top directly
-          - jslist: option list of species to load'''
+        '''Current deposition, uses particles from top directly
+           - jslist: option list of species to load'''
         # --- Note that the grid location is advanced even if no field solve
         # --- is being done.
         self.advancezgrid()
@@ -1849,5 +1894,80 @@ class EM3DPXR(EM3DFFT):
         if self.scraper is not None:self.scraper.scrape(js)
         processlostpart(pg,js+1,top.clearlostpart,top.time+top.dt*pg.ndts[js],top.zbeam)
         if self.l_verbose:print me,'enter apply_bnd_conditions'
-            
-                        
+        
+    def get_kinetic_energy(self,sp,**kw):
+        """
+        Get the total kinetic energy of the species sp using PICSAR fortran subroutines
+        
+        input:
+        - sp: species number
+        """
+        total_kinetic_energy = zeros(1)
+        if self.l_verbose:print me,'compute kinetic energy on species',sp
+        pxr.get_kinetic_energy(sp,total_kinetic_energy)
+        #print total_kinetic_energy,sp
+        return total_kinetic_energy[0]
+        
+    def get_field_energy(self,field,**kw):
+        """
+        Get the total field energy for the given component. 
+        The field energy is calculated in parallel with a picsar fortran subroutine.
+        
+        input:
+        - field: field component
+        """
+        field_energy = zeros(1)
+        
+        if field=='ex':
+          pxr.get_field_energy(self.fields.Ex,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+        elif field=='ey':
+          pxr.get_field_energy(self.fields.Ey,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+        elif field=='ez':
+          pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy) 
+        elif field=='bx':
+          pxr.get_field_energy(self.fields.Bx,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+        elif field=='by':
+          pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)   
+        elif field=='bz':
+          pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)                        
+        return field_energy[0]
+        
+    def get_normL2_divEeps0_rho(self):
+        """
+        Compute the L2 norm of divE*eps0 - rho
+        
+        """
+        div = zeros(1)
+        
+        pxr.calc_field_div(pxr.dive,pxr.ex, pxr.ey, pxr.ez, pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.dx,pxr.dy,pxr.dz)
+        
+        pxr.pxrdepose_rho_on_grid()
+        
+        pxr.get_norm_diverho(pxr.dive,pxr.rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,div)
+        
+        return div[0]
+
+
+class Sorting:
+  """ 
+    Class Sorting
+    
+    Used to setup the sorting with picsars
+    
+    activated: >0 sorting is activated
+    periods: list containing the sorting periods for each species
+    starts: first iteration before the start of the sorting
+    dx, dy, dz: the bin size normalized to the cell size
+    xshift,yshift,zshift: shift of the sorting grid
+  
+  """
+  def __init__(self,periods,starts,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0):
+    self.activated = 1
+    self.periods = periods
+    self.starts = starts
+    self.dx = dx
+    self.dy = dy
+    self.dz = dz 
+    self.xshift = xshift
+    self.yshift = yshift
+    self.zshift = zshift

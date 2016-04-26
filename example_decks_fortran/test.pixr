@@ -1,4 +1,23 @@
 ######################### INPUT FILE FOR THE CODE PICSAR
+section::cpusplit
+ # Cpu distributions
+ #nprocx = 2
+ #nprocy = 2
+ #nprocz = 2
+ 
+ # MPI Topologoy
+ # 0 - MPI Cartesian topology
+ # 1 - Home-made Cartesian topology
+ # 2 - Random topology
+ topology = 0
+ 
+ # MPI com type
+ # MPI com for the current deposition
+ # 0 - nonblocking communication (default)
+ # 1 - blocking communication
+ mpicom_curr = 0
+end::cpusplit
+
 section::main
  # Number of grid points in x,y,z
  nx = 100
@@ -12,8 +31,23 @@ section::main
  xmax = 5e-6
  ymax = 5e-6
  zmax = 5e-6
+ 
  # Simulation duration (in 1/w0)
  t_max = 0.5
+
+ # Control of the tiles
+ # ntilex = 2
+ # ntiley = 2
+ # ntilez = 2
+ 
+ # User-defined guard cells
+ # nguardsx = 3
+ # nguardsy = 3
+ # nguardsz = 3
+ # njguardsx = 3
+ # njguardsy = 3
+ # njguardsz = 3
+ 
 end::main
 
 section::solver
@@ -21,7 +55,25 @@ section::solver
  norderx = 2
  nordery = 2
  norderz = 2
+
+ # Current deposition algorithme
+ # 0 - parallel classical deposition (default)
+ # 1 - seauential classical deposition (default)
+ currdepo = 0 
+ 
 end::solver
+
+# Section concerning the plasma general properties
+section::plasma
+ # Maxwell solver
+ # Density in the lab frame
+ nlab=1e25
+ gamma0=1.
+ # distribution
+ # 1 - particles at the same positions
+ # 2 - random positions
+ pdistr=1
+end::plasma
 
 section::species
  name = electron
@@ -72,6 +124,9 @@ section::output
  ex = 1
  ey = 1
  ez = 1
+ bx = 0
+ by = 0
+ bz = 0
  rho = 1
  dive = 1
  jy = 1

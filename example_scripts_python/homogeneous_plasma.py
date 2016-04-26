@@ -1,26 +1,13 @@
-# ______________________________________________________________________________
-#
-# Test script of laser-thin foil interaction for ion acceleration
-#
-# ______________________________________________________________________________
 from warp import *
 from em3dsolverPXR import *
 import os
 from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
+EnableAll()
 home=os.getenv('HOME')
 
-<<<<<<< HEAD
-l_pxr=0
-=======
-# Picsar flag: 0 warp routines, 1 picsar routines
 l_pxr=1
-print ' l_pxr=',l_pxr
-if l_pxr==0:
-  print ' The picsar package will not be used' 
-print
 
->>>>>>> picsar_mpi_com_opt
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
 top.itmomnts = 0
@@ -34,42 +21,34 @@ top.iflabwn = 0
 w3d.lrhodia3d = false
 w3d.lgetese3d = false
 w3d.lgtlchg3d = false
-top.lcomm_cartesian=1
+#top.nxproc = 2
+#top.nyproc = 2
+#top.nzproc = 2
 
-# Flags turning off auto decomp and let user specify its decomp
-top.lautodecomp = 1 # Particles
-top.lfsautodecomp = 1 # fields 
-
-# Flags turning on/off load balancing
-load_balance=1
-dlb_freq=100
-dlb_threshold=10 # dynamic load balancing threshold in % 
-dlb_at_init=1 # Do a load balancing of the simulation at init 
-
-#-------------------------------------------------------------------------------
+# ----------
 # Parameters
-#-------------------------------------------------------------------------------
+# ----------
 
 dfact = 1
-dxfact = 1
-dtfact = 2
+dxfact = 16
+dtfact = 8*4
 N_step = 20000/dtfact
 
 #Two-layer foil:
 #Carbon layer
 carbon_layer_start     = 2
-carbon_layer_width     = 6
+carbon_layer_width     = 10
 carbon_layer_thickness = 0.075
-carbon_layer_e_density = 4.
-nppcell_carbon         = 2500
+carbon_layer_e_density = 400.
+nppcell_carbon         = 25
 #Hydrogen layer
 hydrogen_layer_width     = 6
 hydrogen_layer_thickness = 0.05
-hydrogen_layer_e_density = 2.
-nppcell_hydrogen         = 1600
+hydrogen_layer_e_density = 21.
+nppcell_hydrogen         = 16
 
 #Laser at the left border:
-a0             = 100.
+a0             = 10.
 laser_duration = 10
 laser_width    = 4/2 #(=2w_0)
 #S-pol
@@ -78,9 +57,8 @@ laser_width    = 4/2 #(=2w_0)
 #focused at x=6 from the left border
 
 #Mesh: 
-dt=0.0015
-dx=dy=0.0035
-dz=0.002
+dt=0.005
+dx=dy=dz=0.01
 
 # --- scaling
 carbon_layer_e_density/=dfact
@@ -92,20 +70,20 @@ dt*=dtfact
 #-------------------------------------------------------------------------------
 # main parameters
 #-------------------------------------------------------------------------------
-#dim = "3d"                 # 3D calculation
-dim = "2d"                 # 2D calculation 
+dim = "3d"                 # 3D calculation
+#dim = "2d"                 # 2D calculation 
 #dim = "1d"                 # 1D calculation 
 dpi=100                     # graphics resolution
-l_test             = 0     # Will open output window on screen
+l_test             = 0      # Will open output window on screen 
                             # and stop before entering main loop.
 l_gist             = 0      # Turns gist plotting on/off
 l_restart          = false  # To restart simulation from an old run (works?)
 restart_dump       = ""     # dump file to restart from (works?)
-l_moving_window    = 1      # on/off (Galilean) moving window
+l_moving_window    = 0      # on/off (Galilean) moving window
 l_plasma           = 1      # on/off plasma
 l_usesavedist      = 0      # if on, uses dump of beam particles distribution
 l_smooth           = 1      # on/off smoothing of current density
-l_laser            = 1      # on/off laser
+l_laser            = 0      # on/off laser
 l_pdump            = 0      # on/off regular dump of beam data
 stencil            = 0      # 0 = Yee; 1 = Yee-enlarged (Karkkainen) on EF,B; 2 = Yee-enlarged (Karkkainen) on E,F 
                             # use 0 or 1; 2 does not verify Gauss Law
@@ -114,9 +92,9 @@ dtcoef             = dt/dx  # coefficient to multiply default time step that is 
 top.depos_order    = 1      # particles deposition order (1=linear, 2=quadratic, 3=cubic)
 top.efetch         = 4      # field gather type (1=from nodes "momentum conserving"; 4=from Yee mesh "energy conserving")
 
-top.runid          = "ion acceleration"                         # run name
+top.runid          = "homogeneous_plasma"                         # run name
 top.pline1         = "basic lpa"                         # comment line on plots
-top.runmaker       = "J.-L. Vay,"                        # run makers
+top.runmaker       = "J.-L. Vay, M. Lobet"                        # run makers
 top.lrelativ       = true                                # on/off relativity (for particles push)
 top.pgroup.lebcancel_pusher=0                         # flag for particle pusher (0=Boris pusher; 1=Vay PoP 08 pusher)
 #top.ibpush=2
@@ -125,11 +103,11 @@ l_verbose          = 0                                   # verbosity level (0=of
 #-------------------------------------------------------------------------------
 # diagnostics parameters + a few other settings
 #-------------------------------------------------------------------------------
+live_plot_freq     = 10   # frequency (in time steps) of live plots (off is l_test is off)
 
-live_plot_freq     = 100000000 # frequency (in time steps) of live plots (off is l_test is off)
 fielddiag_period   = 500/dtfact
 partdiag_period    = 500/dtfact
-lparallelo= False
+
 #-------------------------------------------------------------------------------
 # laser parameters
 #-------------------------------------------------------------------------------
@@ -186,13 +164,13 @@ print lambda_plasma_H
 #-------------------------------------------------------------------------------
 # number of plasma macro-particles/cell
 #-------------------------------------------------------------------------------
-nppcellx_C = 10#5
-nppcelly_C = 2#5
-nppcellz_C = 10#5
+nppcellx_C = 1#5
+nppcelly_C = 1#5
+nppcellz_C = 1#5
 
-nppcellx_H = 10#4
-nppcelly_H = 2#4
-nppcellz_H = 10#4
+nppcellx_H = 1#4
+nppcelly_H = 1#4
+nppcellz_H = 1#4
 
 if dim=="2d":
   nppcelly_C = nppcelly_H = 1
@@ -203,12 +181,12 @@ if dim=="1d":
 #-------------------------------------------------------------------------------
 # grid dimensions, nb cells and BC
 #-------------------------------------------------------------------------------
-w3d.zmmax = carbon_layer_start*2.*lambda_laser
-w3d.zmmin = 0.
-w3d.xmmin = -0.5*carbon_layer_width*lambda_laser
-w3d.xmmax = -w3d.xmmin
-w3d.ymmin = -0.5*carbon_layer_width*lambda_laser
-w3d.ymmax = -w3d.ymmin
+w3d.zmmax = 5*lambda_laser
+w3d.zmmin = -5.*lambda_laser
+w3d.xmmin = -5*lambda_laser
+w3d.xmmax = 5*lambda_laser
+w3d.ymmin = -5*lambda_laser
+w3d.ymmax = 5*lambda_laser
 
 w3d.nx = nint((w3d.xmmax-w3d.xmmin)/(dx*lambda_laser))
 w3d.ny = nint((w3d.ymmax-w3d.ymmin)/(dy*lambda_laser))
@@ -216,12 +194,12 @@ w3d.nz = nint((w3d.zmmax-w3d.zmmin)/(dz*lambda_laser))
 
 if dim in ["1d"]:
     w3d.nx = 2
-    w3d.xmmin = -float(w3d.nx)/2.
-    w3d.xmmax = float(w3d.nx)/2.
+    w3d.xmmin = -float(w3d.nx)/2
+    w3d.xmmax = float(w3d.nx)/2
 if dim in ["1d","2d"]:
     w3d.ny = 2
-    w3d.ymmin = -float(w3d.ny)/2.
-    w3d.ymmax = float(w3d.ny)/2.
+    w3d.ymmin = -float(w3d.ny)/2
+    w3d.ymmax = float(w3d.ny)/2
 
 w3d.dx = (w3d.xmmax-w3d.xmmin)/w3d.nx
 w3d.dy = (w3d.ymmax-w3d.ymmin)/w3d.ny
@@ -229,14 +207,14 @@ w3d.dz = (w3d.zmmax-w3d.zmmin)/w3d.nz
 
 # --- sets field boundary conditions
 # --- longitudinal
-w3d.bound0  = w3d.boundnz = periodic
+w3d.bound0  = w3d.boundnz = openbc
 # --- transverse
 w3d.boundxy = periodic
 
 # --- sets particles boundary conditions
 # --- longitudinal
-top.pbound0  = periodic
-top.pboundnz = periodic
+top.pbound0  = absorb
+top.pboundnz = absorb
 # --- transverse
 top.pboundxy = periodic
 
@@ -254,17 +232,15 @@ else:
 #-------------------------------------------------------------------------------
 # set particles weights
 #-------------------------------------------------------------------------------
-weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
-weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
+weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C) 
+weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C) 
 top.wpid = nextpid() # Activate variable weights in the method addpart
 
 # --- create plasma species
 elec_C = Species(type=Electron,weight=weight_C,name='elec_C')
 elec_H = Species(type=Electron,weight=weight_H,name='elec_H')
-ions_C = Species(type=Carbon,weight=weight_C/6.,charge_state=6.,name='ions_C')
+ions_C = Species(type=Carbon,weight=weight_C/6,charge_state=6.,name='ions_C')
 ions_H = Species(type=Proton,weight=weight_H,name='ions_H')
-
-
 
 top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
 top.efetch[...] = top.efetch[0] # same for field gathering
@@ -296,7 +272,8 @@ else:
 # initializes WARP
 #-------------------------------------------------------------------------------
 top.fstype = -1 # sets field solver to None (desactivates electrostatic solver)
-package('w3d');generate()
+package('w3d');
+generate()
 #-------------------------------------------------------------------------------
 # set a few shortcuts
 #-------------------------------------------------------------------------------
@@ -304,43 +281,26 @@ pg = top.pgroup
 
 if l_plasma:
 
-    zmin = carbon_layer_start*lambda_laser
-    zmax = zmin+carbon_layer_thickness*lambda_laser
+    zmin = w3d.zmmin
+    zmax = w3d.zmmax
     xmin = w3d.xmmin
     xmax = w3d.xmmax
     if dim=='3d':
-        ymin=xmin
-        ymax=xmax
+        ymin= w3d.ymmin
+        ymax= w3d.ymmax
         np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
     else:
         ymin=ymax=0.
         np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
     
     elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=0.,vthy=0.,vthz=0.,
+                       vthx=0.2*clight,vthy=0.,vthz=0.,
                        spacing='uniform')
 
     ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
                        vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
- 
-    zmin=zmax+0.
-    zmax+=hydrogen_layer_thickness*lambda_laser                    
-    if dim=='3d':
-        ymin=xmin
-        ymax=xmax
-        np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_H*nppcelly_H*nppcellz_H
-    else:
-        ymin=ymax=0.
-        np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_H*nppcelly_H*nppcellz_H
 
-    elec_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=0.,vthy=0.,vthz=0.,
-                       spacing='uniform')
-
-    ions_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
-                       vthx=0.,vthy=0.,vthz=0.,
-                       spacing='uniform')
 
 laser_total_duration=1.25*laser_duration
 #-------------------------------------------------------------------------------
@@ -367,35 +327,33 @@ def laser_profile(x,y,z):
 
 if l_laser:
   laser_source_z=10*w3d.dz
+  
+  #-------------------------------------------------------------------------------
+  def laser_func(x,y,t):
+    global laser_amplitude,laser_phase,laser_profile,k0,w0,ZR
+    z0 = (carbon_layer_start*lambda_laser-laser_source_z)
+    Rz = z0*(1.+(ZR/z0)**2)
+    E = laser_amplitude(t)*laser_profile(x,y,z0)
+    r = sqrt(x*x+y*y)
+    angle = w0*t+k0*z0-arctan(z0/ZR)+k0*r**2/(2.*Rz)   
+    #return [E*cos(angle),E*sin(angle)]   # for circularly polarized laser
+    return [0,E*sin(angle)]               # for linearly polarized laser
+    #  return [E*sin(angle),0]  
+  
+  
 else:
-  laser_func=laser_source_z=Eamp=None
-
-#-------------------------------------------------------------------------------
-def laser_func(x,y,t):
-  global laser_amplitude,laser_phase,laser_profile,k0,w0,ZR
-  z0 = (carbon_layer_start*lambda_laser-laser_source_z)
-  Rz = z0*(1.+(ZR/z0)**2)
-  E = laser_amplitude(t)*laser_profile(x,y,z0)
-  r = sqrt(x*x+y*y)
-  angle = w0*t+k0*z0-arctan(z0/ZR)+k0*r**2/(2.*Rz)   
-  #return [E*cos(angle),E*sin(angle)]   # for circularly polarized laser
-  return [0,E*sin(angle)]               # for linearly polarized laser
-#  return [E*sin(angle),0]               # for linearly polarized laser
+  laser_func=laser_source_z=Eamp=laser_polangle=None
+             # for linearly polarized laser
 
 #-------------------------------------------------------------------------------
 # initializes main field solver block
 #-------------------------------------------------------------------------------
 if l_pxr:
-    if (dim=='3d'):
-        ntilex = max(1,w3d.nxlocal/10)
-        ntiley = max(1,w3d.nylocal/10)
-        ntilez = max(1,w3d.nzlocal/10)
-    else: 
-        ntilex = max(1,w3d.nxlocal/30)
-        ntiley = 1
-        ntilez = max(1,w3d.nzlocal/30)
-    print ' em=EM3DPXR'
-    em = EM3DPXR(       laser_func=laser_func,
+    ntilex = 1#max(1,w3d.nx/30)
+    ntiley = 1#max(1,w3d.ny/30)
+    ntilez = 1#max(1,w3d.nz/30)
+#    pg.sw=0.
+    em = EM3DPXR(laser_func=laser_func,
                  laser_source_z=laser_source_z,
                  laser_polangle=laser_polangle,
                  laser_emax=Eamp,
@@ -406,35 +364,16 @@ if l_pxr:
                  l_2dxz=dim=="2d",
                  l_1dz=dim=="1d",
                  dtcoef=dtcoef,
-                 l_getrho=0,
+                 l_getrho=1,
                  spectral=0,
                  current_cor=0,
                  listofallspecies=listofallspecies,
                  ntilex=ntilex,
                  ntiley=ntiley,
                  ntilez=ntilez,
-                 l_verbose=l_verbose,
-                 dload_balancing=load_balance, 
-                 dlb_freq=dlb_freq, 
-                 dlb_threshold=dlb_threshold, 
-                 dlb_at_init=dlb_at_init,
-                 # Guard cells
-                 #nxguard=6,
-                 #nyguard=6,
-                 #nzguard=6,
-                 # Optional: current deposition algorithm, 
-                 # 0 - parallel classical current deposition (defaults)
-                 # 1 - sequential classical current deposition
-                 currdepo=0,   
-                 # Optional: mpi com for the current desposition
-                 # 0 - nonblocking communication
-                 # 1 - blocking communication
-                 # 2 - persistent (under development)
-                 mpicom_curr=0,
                  l_verbose=l_verbose)
     step = em.step
 else:
-    print ' em=EM3D'
     em = EM3D(       laser_func=laser_func,
                  laser_source_z=laser_source_z,
                  laser_polangle=laser_polangle,
@@ -446,7 +385,7 @@ else:
                  l_2dxz=dim=="2d",
                  l_1dz=dim=="1d",
                  dtcoef=dtcoef,
-                 l_getrho=0,
+                 l_getrho=1,
                  l_verbose=l_verbose)
 
 #-------------------------------------------------------------------------------
@@ -458,10 +397,11 @@ if l_restart:
 #-------------------------------------------------------------------------------
 # register solver
 #-------------------------------------------------------------------------------
-print ' register solver'
+print 'register solver'
 registersolver(em)
 em.finalize()
 loadrho()
+
 print 'done'
   
 def liveplots():
@@ -472,7 +412,7 @@ def liveplots():
     if dim=="1d":
       em.pfex(view=3,titles=0,gridscale=1.e-12,direction=1)
       ptitles('Ex [V/m]','z [um]')
-      density=elec_C.get_density()+elec_H.get_density()
+      density=elec_C.get_density()
       plsys(4)
       pla(density)
       ptitles('n','z [um]','X [um]')
@@ -482,44 +422,44 @@ def liveplots():
     else:    
       em.pfey(view=3,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-12,l_transpose=1,direction=1)
       ptitles('Ey [TV/m]','z [um]','X [um]')
-      density=elec_C.get_density()+elec_H.get_density()
+      density=elec_C.get_density()
       if dim=='3d':density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=4,titles=0, \
           xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid, \
           ymin=w3d.xmmin,ymax=w3d.xmmax,
           xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
 
-      ptitles('n','z [um]','X [um]')
+      ptitles('n_elec','z [um]','X [um]')
       em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
       ptitles('Ez [GV/m]','z [um]','X [um]')
-      ions_C.ppzx(view=6)
-      elec_C.ppzx(color=red,view=6)
-      ions_H.ppzx(color=blue,view=6)
-      elec_H.ppzx(color=cyan,view=6)
+      
+      density=ions_C.get_density()
+      if dim=='3d':density=density[:,w3d.ny/2,:]
+      ppg(transpose(density),view=6,titles=0, \
+          xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid, \
+          ymin=w3d.xmmin,ymax=w3d.xmmax,
+          xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
+      ptitles('n_ion','z [um]','X [um]')
+      
+      refresh()
 
 installafterstep(liveplots)
 
+
 # Load additional OpenPMD diagnostic
 diag_f = FieldDiagnostic( period=fielddiag_period, top=top, w3d=w3d, em=em,
-                          comm_world=comm_world, lparallel_output=lparallelo )
+                          comm_world=comm_world, lparallel_output=lparallel )
 diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"elec_C" : elec_C},
-            comm_world=comm_world, lparallel_output=lparallelo )
-diag_elec_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
-            species = {"elec_H" : elec_H},
-            comm_world=comm_world, lparallel_output=lparallelo )
+            comm_world=comm_world, lparallel_output=lparallel )
 diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
             species = {"ions_C" : ions_C},
-            comm_world=comm_world, lparallel_output=lparallelo )
-diag_ions_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
-            species = {"ions_H" : ions_H},
-            comm_world=comm_world, lparallel_output=lparallelo )
-
-installafterstep( diag_f.write )
-installafterstep( diag_elec_C.write )
-installafterstep( diag_elec_H.write )
-installafterstep( diag_ions_C.write )
-installafterstep( diag_ions_H.write )
+            comm_world=comm_world, lparallel_output=lparallel )
+#installafterstep( diag_f.write )
+#installafterstep( diag_elec_C.write )
+#installafterstep( diag_elec_H.write )
+#installafterstep( diag_ions_C.write )
+#installafterstep( diag_ions_H.write )
 
 tottime = AppendableArray()
 def accuttime():
@@ -535,31 +475,18 @@ installafterstep(accuttime)
 if me==0:
     f=PW.PW('sim_params.pck')
     f.weight_C=weight_C
-    f.weight_H=weight_H
     f.dt=top.dt
     f.dens0_C=dens0_C
-    f.dens0_H=dens0_H
     f.close()
 
 print '\nInitialization complete\n'
 
 # if this is a test, then stop, else execute main loop
 if l_test:
-<<<<<<< HEAD
   print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-=======
-  print '<<< To execute n steps, type "em.step(n,a,b)" at the prompt >>>'
-  print '<<< n being the iteration number to perform, a the terminal output period, b the graphic output period>>>'
-  #tdeb=MPI.Wtime()
-  #em.step(700,1,1)
-  #tend=MPI.Wtime()
-  #print("Final runtime (s): "+str(tend-tdeb))
->>>>>>> picsar_mpi_com_opt
 #  raise('')
 else:
-  tdeb=MPI.Wtime()
-  em.step(100,1,1)
-  tend=MPI.Wtime()
-  print("Final runtime (s): "+str(tend-tdeb))
+  step(N_step,1,1)
+  
   
 #pxr.point_to_tile(1,1,1,1)

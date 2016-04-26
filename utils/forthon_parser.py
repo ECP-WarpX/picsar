@@ -638,12 +638,20 @@ def get_subroutine_blocks(listlines):
             subname=curr_line[curr_line.find("subroutine")+len("subroutine"):ip]
             names.append(subname.strip())
             istart.append(i)
+            search_end=True
             while True: # get end of block
                 i=i+1
                 if (i>=Nlines):
                     sys.exit("ERROR: missing end subroutine block")
                 curr_line=listlines[i]
-                if (curr_line.find("end subroutine")>=0):
+                
+                # If an interface is defined in the subroutine
+                # We pass the interface block without looking for "end subroutine"
+                if (curr_line.find("interface")>=0):
+                  search_end = False
+                if (curr_line.find("end interface")>=0):
+                  search_end = True                                 
+                if ((curr_line.find("end subroutine")>=0)and(search_end)):
                     break
             iend.append(i)
     return[names,istart,iend,proceduremod]
@@ -781,13 +789,17 @@ def preprocess_file(listline):
     # Make everything lower case (Fortran is case insensitive)
     for i in range(0,lenlist):
         curr_line=listline[i]
-        # Compiler directive are case sensitive do not lower
-        if not ((curr_line.find("#ifdef")>=0) or (curr_line.find("#else")>=0) or \
-        (curr_line.find("#endif")>=0) ): 
-            curr_line=curr_line.lower()
-        curr_line=rm_comments(curr_line)
-        curr_line=rm_newline(curr_line)
-        curr_line=rm_spechar(curr_line)
+        # Line is not considered 
+        if (curr_line.find("!#do not consider")>=0):
+          curr_line = ""
+        else:
+          # Compiler directive are case sensitive do not lower
+          if not ((curr_line.find("#ifdef")>=0) or (curr_line.find("#if")>=0) or (curr_line.find("#else")>=0) or \
+          (curr_line.find("#endif")>=0)): 
+              curr_line=curr_line.lower()
+          curr_line=rm_comments(curr_line)
+          curr_line=rm_newline(curr_line)
+          curr_line=rm_spechar(curr_line)
         listline[i]=curr_line
 
     # Concatenate continuing lines in single lines
@@ -856,18 +868,23 @@ def concatenate(listline,istart):
     curr_line=listline[i].strip()
     curr_line=rm_comments(curr_line)
     endofcont=False
-    while (not endofcont):
-        iesper=curr_line.find("&")
-        iomp=curr_line.find("!$omp")
-        if ((iesper>= 0) & (iomp==-1)):
+    # If not a precompiler directve, since they can contain &&
+    if not(curr_line.find("#if")>=0):
+      while (not endofcont):
+          iesper=curr_line.find("&")
+          iomp=curr_line.find("!$omp")
+          if ((iesper>= 0) & (iomp==-1)):
             concline=concline+curr_line[0:iesper].strip()
             i=i+1
             nlines=nlines+1
             curr_line=listline[i]
             curr_line=rm_comments(curr_line)
-        else:
+          else:
             concline=concline+curr_line.strip()
             endofcont=True
+    else:
+      nlines=0
+      concline = curr_line
     return [nlines, concline]
 
 # Get type of variables
@@ -1032,7 +1049,10 @@ remove_file(appname+".F90")
 remove_file(appname+".v")
 
 #LIST ALL .F90 or .F files in current directory
-listfiles=["modules.F90", "maxwell.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", "field_gathering.F90", "mpi_derived_types.F90", "boundary.F90", "simple_io.F90", "diags.F90", "submain.F90", "mpi_routines.F90", "control_file.F90", "load_balancing.F90"]
+listfiles=["modules.F90", "sorting.F90", "maxwell.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", \
+"field_gathering.F90", "mpi_derived_types.F90", "boundary.F90", "simple_io.F90", "diags.F90", "submain.F90", \
+"mpi_routines.F90", "control_file.F90", "load_balancing.F90"]
+
 
 # Pre-parse all application files in two .F90 files
 # appname_subroutines.F90 and appnam_modules.F90
@@ -1047,6 +1067,4 @@ parse_forthon_app(appname)
 #fuse_subroutine_module_files(appname)
 
 # Compile app with forthon compiler
-
-
 
