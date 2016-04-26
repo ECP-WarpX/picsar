@@ -1,5 +1,5 @@
 FC=mpif90
-FARGS= -O3 -fopenmp -ftree-vectorize -ftree-vectorizer-verbose=2 
+FARGS= -O3 -fopenmp -g -fbounds-check -ftree-vectorize -ftree-vectorizer-verbose=2 
 #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 #FARGS=-g
 SRCDIR= src

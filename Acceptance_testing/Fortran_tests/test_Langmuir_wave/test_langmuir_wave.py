@@ -201,18 +201,19 @@ def test_langmuir_wave(trun,ttest,tpath):
   ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
   
   ax1.set_xlabel('t (s)')
-  
-  for it in range(0,70,10):
-    dive=LoadBinNumPyArray3D('RESULTS/dive' + str(it) + '.pxr',100,100,100);
-    rho=LoadBinNumPyArray3D('RESULTS/rho'+ str(it) + '.pxr',100,100,100);  
-    norm = LA.norm((dive*eps0-rho)) 
-    print
-    print(" Differences L2 norm ||rho-divE|| iteration it = " + str(it))
-    print "",LA.norm((dive*eps0-rho))
-    print " Total charge "
-    print "",np.sum(rho)
-    print " Total divergence"
-    print "",np.sum(dive*eps0)
+
+  if 0: # Temporarily removed due to MPI-IO issues (plateform dependent)
+      for it in range(0,70,10):
+        dive=LoadBinNumPyArray3D('RESULTS/dive' + str(it) + '.pxr',100,100,100);
+        rho=LoadBinNumPyArray3D('RESULTS/rho'+ str(it) + '.pxr',100,100,100);  
+        norm = LA.norm((dive*eps0-rho)) 
+        print
+        print(" Differences L2 norm ||rho-divE|| iteration it = " + str(it))
+        print "",LA.norm((dive*eps0-rho))
+        print " Total charge "
+        print "",np.sum(rho)
+        print " Total divergence"
+        print "",np.sum(dive*eps0)
   if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
 
   # ____________________________________________________

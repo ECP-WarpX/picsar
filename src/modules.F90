@@ -144,7 +144,8 @@ END MODULE particle_speciesmodule
 MODULE tile_params
 !===============================================================================
 ! # of particle tiles in each dimension
-INTEGER :: ntilex, ntiley, ntilez
+USE constants 
+INTEGER(idp) :: ntilex, ntiley, ntilez
 END MODULE tile_params
 
 
@@ -179,7 +180,7 @@ USE particle_properties
 USE grid_tilemodule
 
 ! Array of  particle species objects
-TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:):: species_parray
+TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:) :: species_parray
 
 END MODULE particles
 
@@ -191,7 +192,9 @@ INTEGER(idp) :: it,nsteps
 REAL(num) :: g0,b0,dt,w0,dtcoef,tmax
 REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t,lambdalab
 LOGICAL :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
-REAL(num), PARAMETER :: resize_factor=1.5_num
+REAL(num), PARAMETER :: resize_factor=2._num
+REAL(num), PARAMETER :: downsize_factor=0.5_num
+REAL(num), PARAMETER :: downsize_threshold=0.4_num
 INTEGER(idp) :: topology
 INTEGER(idp) :: mpicom_curr
 INTEGER(isp) :: seed
@@ -312,25 +315,32 @@ INTEGER(isp) :: errcode, provided, comm, tag
 INTEGER(idp) :: rank
 INTEGER(isp) :: coordinates(3) 
 INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
-INTEGER(isp) :: x_coords, proc_x_min, proc_x_max
-INTEGER(isp):: y_coords, proc_y_min, proc_y_max
-INTEGER(isp) :: z_coords, proc_z_min, proc_z_max
+INTEGER(idp) :: x_coords, proc_x_min, proc_x_max
+INTEGER(idp):: y_coords, proc_y_min, proc_y_max
+INTEGER(idp) :: z_coords, proc_z_min, proc_z_max
 INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
 INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
+! Boundary data
 LOGICAL(idp) :: x_min_boundary, x_max_boundary
 LOGICAL(idp) :: y_min_boundary, y_max_boundary
 LOGICAL(idp) :: z_min_boundary, z_max_boundary
+INTEGER(idp) :: pbound_x_min, pbound_x_max
+INTEGER(idp) :: pbound_y_min, pbound_y_max
+INTEGER(idp) :: pbound_z_min, pbound_z_max
+
 ! The location of the processors
 INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
 INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_max
-INTEGER(idp), DIMENSION(:), POINTER :: old_x_max, old_y_max, old_z_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min, new_cell_x_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_y_min, new_cell_y_max
+INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min, new_cell_z_max
 INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
 INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
 INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max
-! domain and loadbalancing
-LOGICAL :: allow_cpu_reduce = .FALSE.
+! Domain axis 
+LOGICAL(idp) :: l_axis_allocated=.FALSE.
 REAL(num), DIMENSION(:), POINTER :: x_global, y_global, z_global
 REAL(num), DIMENSION(:), POINTER :: xb_global, yb_global, zb_global
 REAL(num), DIMENSION(:), POINTER :: xb_offset_global
@@ -355,6 +365,7 @@ REAL(NUM)    :: sorting_shiftx, sorting_shifty, sorting_shiftz
 LOGICAL      :: sorting_verbose
 
 ! Axis
+INTEGER(idp) :: c_dim = 3
 REAL(num), POINTER, DIMENSION(:) :: x, y, z
 REAL(num), DIMENSION(:), POINTER :: x_grid_mins, x_grid_maxs
 REAL(num), DIMENSION(:), POINTER :: y_grid_mins, y_grid_maxs
@@ -371,7 +382,31 @@ REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 ! Electric Field divergence
 REAL(num), POINTER, DIMENSION(:,:,:) :: dive
 
+! Values used for load balancing 
+REAL(num) :: mpitime_per_it, max_time_per_it, min_time_per_it 
+REAL(num) :: global_time_per_cell, global_time_per_part 
+REAL(num) :: local_time_cell, local_time_part
+INTEGER(idp) :: npart_local, npart_global
+
 END MODULE shared_data
+
+! MODULE FOR MAXWELL SOLVER COEFFICIENTS 
+MODULE kyee_em3d
+USE constants 
+REAL(num) :: alphax = 0.58333333333333337  ! 7./12.
+REAL(num) :: betaxy = 0.083333333333333329 ! 1./12.
+REAL(num) :: betaxz = 0.083333333333333329 ! 1./12.
+REAL(num) :: gammax = 0.020833333333333332 ! 1./48.
+REAL(num) :: alphay = 0.58333333333333337  ! 7./12.
+REAL(num) :: betayx = 0.083333333333333329 ! 1./12.
+REAL(num) :: betayz = 0.083333333333333329 ! 1./12.
+REAL(num) :: gammay = 0.020833333333333332 ! 1./48.
+REAL(num) :: alphaz = 0.58333333333333337  ! 7./12.
+REAL(num) :: betazx = 0.083333333333333329 ! 1./12.
+REAL(num) :: betazy = 0.083333333333333329 ! 1./12.
+REAL(num) :: gammaz = 0.020833333333333332 ! 1./48.
+REAL(num) :: deltaz = 0.000000000000000000 ! for the lehe solver
+END MODULE kyee_em3d
 
 
 MODULE python_pointers

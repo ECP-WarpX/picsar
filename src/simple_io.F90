@@ -132,6 +132,7 @@ CONTAINS
             local_values(temdiag_i_list(3)) = local_values(temdiag_i_list(3))*eps0
           end if
 
+
           ! Ez energy
           if (temdiag_act_list(4).gt.0) then        
             CALL get_loc_field_energy(ez,nx,ny,nz,dx,dy,dz,nxguards,nyguards,nzguards,local_values(temdiag_i_list(4)))
@@ -163,7 +164,7 @@ CONTAINS
           end if
                     
           ! MPI all reduction
-          call MPI_ALLREDUCE(local_values(1),global_values(1),temdiag_totvalues,mpidbl,MPI_SUM,comm,errcode)
+          call MPI_ALLREDUCE(local_values(1),global_values(1),INT(temdiag_totvalues,isp),mpidbl,MPI_SUM,comm,errcode)
           
           ! sqrt for DivE*eps0 - rho
           if (temdiag_act_list(8).gt.0) then 
@@ -229,7 +230,7 @@ CONTAINS
     CHARACTER(LEN=*), INTENT(IN) :: filename
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
-    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(IN OUT) :: array
     INTEGER(KIND=MPI_OFFSET_KIND), INTENT(IN) :: offset
     INTEGER(isp), INTENT(INOUT) :: err
     INTEGER(isp) :: subt, suba, fh, i
@@ -238,20 +239,21 @@ CONTAINS
         MPI_INFO_NULL, fh, errcode)
 
     IF (errcode .NE. 0) THEN
-      IF (rank .EQ. 0) PRINT *, 'file ', TRIM(filename), ' could not be created - Check disk space'
+      IF (rank .EQ. 0) PRINT *, 'file ', TRIM(filename), 'could not be created - Check disk space'
       err = IOR(err, c_err_bad_value)
       RETURN
     ENDIF
 
     subt = create_current_grid_derived_type()
-    suba = create_current_grid_subarray(nxguards, nyguards, nzguards)
+    suba = create_current_grid_subarray(nxg, nyg, nzg)
+   
     CALL MPI_FILE_SET_VIEW(fh, offset, MPI_BYTE, subt, 'native', &
         MPI_INFO_NULL, errcode)
 
     CALL MPI_FILE_WRITE_ALL(fh, array, 1_isp, suba, MPI_STATUS_IGNORE, errcode)
 
-    CALL MPI_FILE_CLOSE(fh, errcode)
-    CALL MPI_TYPE_FREE(subt, errcode)
+     CALL MPI_FILE_CLOSE(fh, errcode)
+     CALL MPI_TYPE_FREE(subt, errcode)
 
   END SUBROUTINE write_single_array_to_file
 
@@ -275,7 +277,7 @@ CONTAINS
                        localtimes(8) + localtimes(11)
     
       ! Average
-      CALL MPI_REDUCE(localtimes,avetimes,20,mpidbl,MPI_SUM,0,comm,errcode)
+      CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
       avetimes = avetimes / nproc
     
       buffer_timestat(1:11,itimestat) = avetimes(1:11)
@@ -296,6 +298,7 @@ CONTAINS
   
   END SUBROUTINE
 
+
   SUBROUTINE final_output_time_statistics
   ! ______________________________________________________
   ! Output of the time statistics at the end of the simulation
@@ -313,4 +316,5 @@ CONTAINS
     END IF
 
   END SUBROUTINE
+
 END MODULE simple_io

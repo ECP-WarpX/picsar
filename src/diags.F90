@@ -41,11 +41,12 @@ USE fields
 USE shared_data
 USE params
 IMPLICIT NONE 
-
+INTEGER(idp) :: c_rho_old
+c_rho_old = 0
 rho = 0.0_num
 ! DEPOSIT Charge on the grid 
 CALL pxrdepose_rho_on_grid_sub_openmp(rho,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	nox,noy,noz,dx,dy,dz,dt)
+	nox,noy,noz,dx,dy,dz,dt,c_rho_old)
 
 END SUBROUTINE pxrdepose_rho_on_grid
 
@@ -55,14 +56,14 @@ END SUBROUTINE pxrdepose_rho_on_grid
 ! charge array. 
 !===============================================================================
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp(rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+	noxx,noyy,nozz,dxx,dyy,dzz,dtt, c_rho_old)
 USE particles
 USE constants
 USE tiling
 USE omp_lib
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz, c_rho_old
 REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
 REAL(num), INTENT(IN OUT) :: rhog(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
 INTEGER(idp) :: ispecies, ix, iy, iz, count
@@ -77,7 +78,7 @@ LOGICAL(idp) :: isdeposited=.FALSE.
 
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles)                         &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old)       &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 !! Current deposition
@@ -111,11 +112,31 @@ DO iz=1,ntilez
                 	isdeposited=.TRUE.
                 ENDIF 
                 ! Depose charge in rhotile
-                CALL pxr_depose_rho_n(currg%rhotile,count,                                                 &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
-                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-                curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,                                         &
-                nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
+                SELECT CASE (c_dim) 
+				CASE (2)
+					SELECT CASE (c_rho_old)
+					CASE(1) ! Rho at older time 
+						CALL pxr_depose_rhoold_n_2dxz(currg%rhotile(:,0,:),count,       &
+						curr_tile%part_x,curr_tile%part_z,     							&
+						curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,     		&
+						curr_tile%part_gaminv,curr_tile%pid(1,wpid),curr%charge,  		&
+						curr_tile%x_grid_tile_min,  curr_tile%z_grid_tile_min,  		&
+						dtt,dxx,dzz,nxc,nzc,                          					&
+						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp)
+					CASE DEFAULT  ! Rho at current time 
+						CALL pxr_depose_rho_n_2dxz(currg%rhotile(:,0,:),count,              &
+						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     			&
+						curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     	&
+						curr_tile%z_grid_tile_min,dxx,dzz,nxc,nzc,                          &
+						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
+					END SELECT 
+				CASE DEFAULT 
+					CALL pxr_depose_rho_n(currg%rhotile,count,                                                 &
+					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
+					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+					curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,                                         &
+					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
+			    END SELECT 
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
             	rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
@@ -1700,6 +1721,337 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         END DO
         RETURN
     END SUBROUTINE pxr_depose_rho_n
+    
+    ! 2D Charge deposition at nth order 
+	subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard,nox,noz, &
+							l_particles_weight,l4symtry,l_2drz, type_rz_depose)
+	   use constants 
+	   implicit none
+	   integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
+	   real(num), dimension(-nxguard:nx+nxguard,0:0,-nzguard:nz+nzguard), intent(in out) :: rho
+	   real(num), dimension(np) :: xp,yp,zp,w
+	   real(num) :: q,dt,dx,dz,xmin,zmin
+	   logical(idp) :: l_particles_weight,l4symtry,l_2drz
+
+	   real(num) :: dxi,dzi,xint,zint, &
+					   oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
+	   real(num) :: x,z,r,wq,invvol
+	   real(num) :: sx(-int(nox/2):int((nox+1)/2)), &
+					   sz(-int(noz/2):int((noz+1)/2))
+	   real(num), parameter :: onesixth=1./6.,twothird=2./3.
+	   integer(idp) :: j,l,ip,jj,ll,ixmin, ixmax, izmin, izmax
+   
+		  dxi = 1./dx
+		  dzi = 1./dz
+		  invvol = dxi*dzi
+
+		  ! Davoine method : limited to order 1 in r
+		  if (type_rz_depose==2) then
+			 nox = 1
+		  endif
+
+		  ixmin = -int(nox/2)
+		  ixmax = int((nox+1)/2)
+		  izmin = -int(noz/2)
+		  izmax = int((noz+1)/2)
+
+		  do ip=1,np
+		
+			! --- computes current position in grid units
+			if (l_2drz) then
+			  r = sqrt(xp(ip)*xp(ip)+yp(ip)*yp(ip))
+			  x = (r-xmin)*dxi
+			  z = (zp(ip)-zmin)*dzi
+			else
+			  x = (xp(ip)-xmin)*dxi
+			  z = (zp(ip)-zmin)*dzi
+			end if
+		
+			! --- applies 4-fold symmetry
+			if (l4symtry) then
+			  x=abs(x)
+			end if
+		
+			! --- finds node of cell containing particles for current positions 
+			! --- (different for odd/even spline orders)
+			if (nox==2*(nox/2)) then
+			  j=nint(x)
+			else
+			  j=floor(x)
+			end if
+			if (noz==2*(noz/2)) then
+			  l=nint(z)
+			else
+			  l=floor(z)
+			end if
+
+			! --- computes distance between particle and node for current positions
+			xint = x-j
+			zint = z-l
+
+			! --- computes particles "weights"
+			if (l_particles_weight) then
+			  wq=q*w(ip)*invvol
+			else
+			  wq=q*invvol
+			end if
+	  
+			! --- computes coefficients for node centered quantities
+			if (type_rz_depose == 2) then ! Davoine method, modified particle shapes in r
+			   sx(0) = 1. - xint  + 1./(4*j+2)*( -xint + xint**2 )
+			   sx(1) = 1. - sx(0)
+			else                          ! Standard method, canonical shapes in r
+			   select case(nox)
+			   case(0)
+				  sx( 0) = 1.
+			   case(1)
+				  sx( 0) = 1.-xint
+				  sx( 1) = xint
+			   case(2)
+				  xintsq = xint*xint
+				  sx(-1) = 0.5*(0.5-xint)**2
+				  sx( 0) = 0.75-xintsq
+				  sx( 1) = 0.5*(0.5+xint)**2
+			   case(3)
+				  oxint = 1.-xint
+				  xintsq = xint*xint
+				  oxintsq = oxint*oxint
+				  sx(-1) = onesixth*oxintsq*oxint
+				  sx( 0) = twothird-xintsq*(1.-xint/2)
+				  sx( 1) = twothird-oxintsq*(1.-oxint/2)
+				  sx( 2) = onesixth*xintsq*xint
+			   end select
+			endif
+
+			select case(noz)
+			 case(0)
+			  sz( 0) = 1.
+			 case(1)
+			  sz( 0) = 1.-zint
+			  sz( 1) = zint
+			 case(2)
+			  zintsq = zint*zint
+			  sz(-1) = 0.5*(0.5-zint)**2
+			  sz( 0) = 0.75-zintsq
+			  sz( 1) = 0.5*(0.5+zint)**2
+			 case(3)
+			  ozint = 1.-zint
+			  zintsq = zint*zint
+			  ozintsq = ozint*ozint
+			  sz(-1) = onesixth*ozintsq*ozint
+			  sz( 0) = twothird-zintsq*(1.-zint/2)
+			  sz( 1) = twothird-ozintsq*(1.-ozint/2)
+			  sz( 2) = onesixth*zintsq*zint
+			end select        
+
+			! --- add charge density contributions
+			 do ll = izmin, izmax
+				do jj = ixmin, ixmax
+				  rho(j+jj,0,l+ll)=rho(j+jj,0,l+ll)+sx(jj)*sz(ll)*wq
+				end do
+			end do
+
+		end do
+
+	  return
+	end subroutine pxr_depose_rho_n_2dxz
+
+	subroutine pxr_depose_rhoold_n_2dxz(rhoold,np,xp,zp,ux,uy,uz,gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz, &
+							l_particles_weight,l4symtry)
+	   use constants 
+	   implicit none
+	   integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard
+	   real(num), dimension(-nxguard:nx+nxguard,0:0,-nzguard:nz+nzguard), intent(in out) :: rhoold
+	   real(num), dimension(np) :: xp,zp,w,ux,uy,uz,gaminv
+	   real(num) :: q,dt,dx,dz,xmin,zmin
+	   logical(idp) :: l_particles_weight,l4symtry
+
+	   real(num) :: dxi,dzi,xint,zint, &
+					   oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
+	   real(num) :: xintold,zintold, &
+					   oxintold,ozintold
+	   real(num) :: x,z,xold,zold,wq,invvol,vx,vy,vz
+	   real(num) :: sx(-int(nox/2):int((nox+1)/2)), &
+					   sz(-int(noz/2):int((noz+1)/2))
+	   real(num) :: sxold(-int(nox/2):int((nox+1)/2)), &
+					   szold(-int(noz/2):int((noz+1)/2))
+	   real(num), parameter :: onesixth=1./6.,twothird=2./3.
+	   integer(idp) :: j,l,ip,jj,ll,jold,lold,ixmin, ixmax, izmin, izmax, istep, ndt,idt
+	   real(num) :: dxp,dzp,x0,z0,x1,z1
+	  
+		  dxi = 1./dx
+		  dzi = 1./dz
+		  invvol = dxi*dzi
+
+		  ixmin = -int(nox/2)
+		  ixmax = int((nox+1)/2)
+		  izmin = -int(noz/2)
+		  izmax = int((noz+1)/2)
+		  ndt = 1
+
+		  do ip=1,np
+	  
+		   vx = ux(ip)*gaminv(ip)
+		   vy = uy(ip)*gaminv(ip)
+		   vz = uz(ip)*gaminv(ip)
+				
+		   x1 = (xp(ip)-xmin)*dxi
+		   z1 = (zp(ip)-zmin)*dzi
+		   x0 = x1 - vx*dt*dxi
+		   z0 = z1 - vz*dt*dzi
+
+		   dxp=(x1-x0)/ndt
+		   dzp=(z1-z0)/ndt
+	   
+		   xold=x0
+		   zold=z0
+
+		   do idt=1,ndt
+	   
+			if (idt>1) then
+			  xold=x
+			  zold=z
+			end if
+			x=xold+dxp
+			z=zold+dzp
+		
+			if (l4symtry) then
+			  x=abs(x)
+			  xold=abs(xold)
+			end if
+		
+			! --- finds node of cell containing particles for current positions 
+			! --- (different for odd/even spline orders)
+			if (nox==2*(nox/2)) then
+			  j=nint(x)
+			else
+			  j=floor(x)
+			end if
+			if (noz==2*(noz/2)) then
+			  l=nint(z)
+			else
+			  l=floor(z)
+			end if
+
+			if (nox==2*(nox/2)) then
+			  jold=nint(xold)
+			else
+			  jold=floor(xold)
+			end if
+			if (noz==2*(noz/2)) then
+			  lold=nint(zold)
+			else
+			  lold=floor(zold)
+			end if
+
+			xint = x-j
+			zint = z-l
+			xintold = xold-jold
+			zintold = zold-lold
+
+			if (l_particles_weight) then
+			  wq=q*w(ip)*invvol
+			else
+			  wq=q*w(1)*invvol
+			end if
+	  
+			select case(nox)
+			 case(0)
+			  sxold( 0) = 1.
+			 case(1)
+			  sxold( 0) = 1.-xintold
+			  sxold( 1) = xintold
+			 case(2)
+			  xintsq = xintold*xintold
+			  sxold(-1) = 0.5*(0.5-xintold)**2
+			  sxold( 0) = 0.75-xintsq
+			  sxold( 1) = 0.5*(0.5+xintold)**2
+			 case(3)
+			  oxintold = 1.-xintold
+			  xintsq = xintold*xintold
+			  oxintsq = oxintold*oxintold
+			  sxold(-1) = onesixth*oxintsq*oxintold
+			  sxold( 0) = twothird-xintsq*(1.-xintold/2)
+			  sxold( 1) = twothird-oxintsq*(1.-oxintold/2)
+			  sxold( 2) = onesixth*xintsq*xintold
+			end select        
+
+			select case(noz)
+			 case(0)
+			  szold( 0) = 1.
+			 case(1)
+			  szold( 0) = 1.-zintold
+			  szold( 1) = zintold
+			 case(2)
+			  zintsq = zintold*zintold
+			  szold(-1) = 0.5*(0.5-zintold)**2
+			  szold( 0) = 0.75-zintsq
+			  szold( 1) = 0.5*(0.5+zintold)**2
+			 case(3)
+			  ozintold = 1.-zintold
+			  zintsq = zintold*zintold
+			  ozintsq = ozintold*ozintold
+			  szold(-1) = onesixth*ozintsq*ozintold
+			  szold( 0) = twothird-zintsq*(1.-zintold/2)
+			  szold( 1) = twothird-ozintsq*(1.-ozintold/2)
+			  szold( 2) = onesixth*zintsq*zintold
+			end select 
+		
+			select case(nox)
+			 case(0)
+			  sx( 0) = 1.
+			 case(1)
+			  sx( 0) = 1.-xint
+			  sx( 1) = xint
+			 case(2)
+			  xintsq = xint*xint
+			  sx(-1) = 0.5*(0.5-xint)**2
+			  sx( 0) = 0.75-xintsq
+			  sx( 1) = 0.5*(0.5+xint)**2
+			 case(3)
+			  oxint = 1.-xint
+			  xintsq = xint*xint
+			  oxintsq = oxint*oxint
+			  sx(-1) = onesixth*oxintsq*oxint
+			  sx( 0) = twothird-xintsq*(1.-xint/2)
+			  sx( 1) = twothird-oxintsq*(1.-oxint/2)
+			  sx( 2) = onesixth*xintsq*xint
+			end select        
+
+			select case(noz)
+			 case(0)
+			  sz( 0) = 1.
+			 case(1)
+			  sz( 0) = 1.-zint
+			  sz( 1) = zint
+			 case(2)
+			  zintsq = zint*zint
+			  sz(-1) = 0.5*(0.5-zint)**2
+			  sz( 0) = 0.75-zintsq
+			  sz( 1) = 0.5*(0.5+zint)**2
+			 case(3)
+			  ozint = 1.-zint
+			  zintsq = zint*zint
+			  ozintsq = ozint*ozint
+			  sz(-1) = onesixth*ozintsq*ozint
+			  sz( 0) = twothird-zintsq*(1.-zint/2)
+			  sz( 1) = twothird-ozintsq*(1.-ozint/2)
+			  sz( 2) = onesixth*zintsq*zint
+			end select        
+
+			 do ll = izmin, izmax
+				do jj = ixmin, ixmax
+
+				  rhoold(jold+jj,0,lold+ll) = rhoold(jold+jj,0,lold+ll) + sxold(jj)*szold(ll)*wq
+
+				end do
+			end do
+		  end do
+		end do
+
+	  return
+	end subroutine pxr_depose_rhoold_n_2dxz
+
 
     !!! --- Computes field divergence
     SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
@@ -2055,7 +2407,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         !$OMP END PARALLEL DO
         
         ! All MPI reduction
-        call MPI_ALLREDUCE(total_kinetic_energy_loc,total_kinetic_energy,1,mpidbl,MPI_SUM,comm,errcode)
+        call MPI_ALLREDUCE(total_kinetic_energy_loc,total_kinetic_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
         
         !print*,total_kinetic_energy
     
@@ -2124,7 +2476,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         !$OMP END PARALLEL   
       
         ! All MPI reduction
-        call MPI_ALLREDUCE(field_energy_loc,field_energy,1,mpidbl,MPI_SUM,comm,errcode)
+        call MPI_ALLREDUCE(field_energy_loc,field_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
         
         field_energy = field_energy*dx2*dy2*dz2
                    
@@ -2194,7 +2546,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         !$OMP END PARALLEL  
 
         ! All MPI reduction
-        call MPI_ALLREDUCE(norm_loc,norm,1,mpidbl,MPI_SUM,comm,errcode)
+        call MPI_ALLREDUCE(norm_loc,norm,1_isp,mpidbl,MPI_SUM,comm,errcode)
         
         norm = sqrt(norm)
         

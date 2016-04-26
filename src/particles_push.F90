@@ -64,7 +64,7 @@ tdeb=MPI_WTIME()
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz) &
+!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -113,28 +113,48 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_by(1:count)=0.0_num
 					curr_tile%part_bz(1:count)=0.0_num
 					!!! ---- Loop by blocks over particles in a tile (blocking)
-					CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     &
-										  curr_tile%part_z, curr_tile%part_ex,                                 &
-										  curr_tile%part_ey,curr_tile%part_ez,                   							 &
-										  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, &
-										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
-										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,      &
-										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,           &
-										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 											 &
-										  currg%eztile,                                          &
-										  currg%bxtile,currg%bytile,currg%bztile                 &
-										  ,.FALSE.,.TRUE.)
-										  
+					!!! --- Gather electric field on particles
+					SELECT CASE (c_dim)
+					CASE (2) ! 2D CASE X Z 
+						!!! --- Gather electric field on particles
+						CALL pxr_gete2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
+											  curr_tile%part_z, curr_tile%part_ex,                                                       &
+											  curr_tile%part_ey,curr_tile%part_ez,                   									 &
+											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,      &
+											  curr_tile%nz_cells_tile,nxjg,             				    							 &
+											  nzjg,noxx,nozz,currg%extile,currg%eytile, 												 &
+											  currg%eztile,.FALSE.,.FALSE.,.TRUE.)
+						!!! --- Gather magnetic fields on particles
+						CALL pxr_getb2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
+										  curr_tile%part_z, curr_tile%part_bx,                    									     &
+										  curr_tile%part_by,curr_tile%part_bz,                    										 &
+										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,     	 &    
+										  curr_tile%nz_cells_tile,nxjg,         		       					 						 &
+										  nzjg,noxx,nozz,currg%bxtile,currg%bytile,  	 												 &
+										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)			
+					CASE DEFAULT ! 3D CASE 
+						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
+											  curr_tile%part_z, curr_tile%part_ex,                            	&
+											  curr_tile%part_ey,curr_tile%part_ez,                   			&
+											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			&
+											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
+											  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
+											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
+											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
+											  currg%eztile,                                          			&
+											  currg%bxtile,currg%bytile,currg%bztile                 			&
+											  ,.FALSE.,.TRUE.)
+					END SELECT
 					!! --- Push velocity with E half step
-					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                   &
-					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					   &
+					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
+					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					    &
 					curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
 					!! --- Set gamma of particles 
-					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
 					curr_tile%part_uz, curr_tile%part_gaminv)
 					!! --- Push velocity with B half step
-					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                   &
-					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, &
+					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
+					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,  &
 					curr_tile%part_bz, curr%charge,curr%mass,dtt)
                     !!! --- Push velocity with E half step
                     CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                       &
@@ -207,7 +227,7 @@ LOGICAL(idp) :: isgathered=.FALSE.
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-!$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz) &
+!$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -258,45 +278,49 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_by(1:count)=0.0_num
 					curr_tile%part_bz(1:count)=0.0_num
 					!!! ---- Loop by blocks over particles in a tile (blocking)
-					!!! --- Gather electric and magnetic fields on particles
-					CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     &
-										  curr_tile%part_z, curr_tile%part_ex,                                 &
-										  curr_tile%part_ey,curr_tile%part_ez,                   							 &
-										  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, &
-										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
-										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,      &
-										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,           &
-										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 											 &
-										  currg%eztile,                                          &
-										  currg%bxtile,currg%bytile,currg%bztile                 &
-										  ,.FALSE.,.TRUE.)					
-!					CALL pxr_gete3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
-!										  curr_tile%part_z, curr_tile%part_ex,                                                       &
-!										  curr_tile%part_ey,curr_tile%part_ez,                   									 &
-!										  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                            			 &
-!										  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                  			 &
-!										  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             				     &
-!										  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, &
-!										  currg%eztile,.FALSE.,.TRUE.)
-					!!! --- Gather magnetic fields on particles
-!					CALL pxr_getb3d_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                     &
-!									  curr_tile%part_z, curr_tile%part_bx,                    									     &
-!									  curr_tile%part_by,curr_tile%part_bz,                    										 &
-!									  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                              			 &
-!									  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,                   			 &
-!									  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,                					 &
-!									  nzjg,noxx,noyy,nozz,currg%bxtile,currg%bytile,  	 &
-!									  currg%bztile,.FALSE.,.TRUE.)
+					SELECT CASE (c_dim)
+					CASE (2) ! 2D CASE 
+						!!! --- Gather electric field on particles
+						CALL pxr_gete2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
+											  curr_tile%part_z, curr_tile%part_ex,                                                       &
+											  curr_tile%part_ey,curr_tile%part_ez,                   									 &
+											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,      &
+											  curr_tile%nz_cells_tile,nxjg,             				    							 &
+											  nzjg,noxx,nozz,currg%extile,currg%eytile, 												 &
+											  currg%eztile,.FALSE.,.FALSE.,.TRUE.)
+						!!! --- Gather magnetic fields on particles
+						CALL pxr_getb2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
+										  curr_tile%part_z, curr_tile%part_bx,                    									     &
+										  curr_tile%part_by,curr_tile%part_bz,                    										 &
+										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,     	 &    
+										  curr_tile%nz_cells_tile,nxjg,         		       					 						 &
+										  nzjg,noxx,nozz,currg%bxtile,currg%bytile,  	 												 &
+										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)
+					CASE DEFAULT ! 3D CASE 
+						!!! --- Gather electric and magnetic fields on particles
+						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     		   	&
+											  curr_tile%part_z, curr_tile%part_ex,                      	   	&
+											  curr_tile%part_ey,curr_tile%part_ez,                   		   	&
+											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,          	&
+											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,             	&
+											  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,  	&
+											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,       	&
+											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 				   	&
+											  currg%eztile,                                          			&
+											  currg%bxtile,currg%bytile,currg%bztile                 			&
+											  ,.FALSE.,.TRUE.)	
+					END SELECT 				
+
 					!! --- Push velocity with E half step
-					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
-					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					 &
+					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
+					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					    &
 					curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
 					!! --- Set gamma of particles 
-					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
 					curr_tile%part_uz, curr_tile%part_gaminv)
 					!! --- Push velocity with B half step
-					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
-					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,				     &
+					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 	&
+					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,  &
 					curr_tile%part_bz, curr%charge,curr%mass,dtt*0.5_num)
 					!END DO
 				END DO! END LOOP ON SPECIES
@@ -330,7 +354,7 @@ INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
-!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt) &
+!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,c_dim) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -345,20 +369,28 @@ DO iz=1, ntilez ! LOOP ON TILES
                 IF (count .EQ. 0) CYCLE
                 !!! ---- Loop by blocks over particles in a tile (blocking)
                 !!! --- Push velocity with B half step
-				CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
-				curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, 				     &
+				CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
+				curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, 	  &
 				curr_tile%part_bz, curr%charge,curr%mass,dt*0.5_num)
 				!! --- Push velocity with E half step
-				CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 &
-				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				     &
+				CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
+				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				          &
 				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
 				!! --- Sets gamma of particles
-				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                 &
+				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
 				curr_tile%part_uz, curr_tile%part_gaminv)
-				!! --- Advance particle position of one time step 
-				CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,                    &
-				curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,   				     &
-				curr_tile%part_uz,curr_tile%part_gaminv,dt)
+				SELECT CASE (c_dim)
+				CASE (2) ! 2D CASE 
+					!! --- Advance particle position of one time step 
+					CALL pxr_pushxz(count,curr_tile%part_x,                        				  &
+					curr_tile%part_z, curr_tile%part_ux,   				          				  & 
+					curr_tile%part_uz,curr_tile%part_gaminv,dt)				
+				CASE DEFAULT ! 3D CASE 
+					!! --- Advance particle position of one time step 
+					CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,                     &
+					curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,   				      & 
+					curr_tile%part_uz,curr_tile%part_gaminv,dt)
+				END SELECT 
             END DO! END LOOP ON SPECIES
         END DO
     END DO
@@ -369,6 +401,29 @@ pushtime=pushtime+(tend-tdeb)
 END SUBROUTINE pxrpush_particles_part2
 
 
+
+
+!===============================================================================
+!  Advance particle positions 2D Case
+SUBROUTINE pxr_pushxz(np,xp,zp,uxp,uzp,gaminv,dt)
+!===============================================================================
+USE constants
+USE omp_lib
+IMPLICIT NONE
+INTEGER(idp)   :: np
+REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
+REAL(num) :: dt
+INTEGER(idp)  :: ip
+
+!!$OMP PARALLEL DO PRIVATE(ip)
+DO ip=1,np
+    xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
+    zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
+ENDDO
+!!$OMP END PARALLEL DO
+
+RETURN
+END SUBROUTINE pxr_pushxz
 
 
 !===============================================================================
@@ -395,6 +450,7 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
 
   RETURN
 END SUBROUTINE pxr_pushxyz
+
 
 !===============================================================================
 !  Push the particle velocity with E field

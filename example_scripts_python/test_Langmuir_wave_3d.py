@@ -226,7 +226,7 @@ def test_langmuir_wave():
   ions_C = Species(type=Proton,weight=weight_C,name='ions')
 
   # --- Init the sorting
-  sort = sorting(periods=[10,10],starts=[0,0],dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
+  sort = Sorting(periods=[10,10],starts=[0,0],dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
 
   top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
   top.efetch[...] = top.efetch[0] # same for field gathering

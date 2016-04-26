@@ -148,10 +148,9 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Ex
-
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
@@ -160,9 +159,10 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+
 ! advance Ey
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
@@ -174,9 +174,9 @@ do l = -nzs, nz+nzs
             end do
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance Ez
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
@@ -185,8 +185,8 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 end subroutine pxrpush_em2d_evec_norder
 
@@ -213,19 +213,19 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Ex
-
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
 			Ex(j,k,l) = Ex(j,k,l) - dtsdz * (By(j,k,l+1-ist)   - By(j,k  ,l-1))
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+
 ! advance Ey
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
@@ -233,17 +233,18 @@ do l = -nzs, nz+nzs
 			Ey(j,k,l) = Ey(j,k,l) + dtsdz * (Bx(j,k,l+1-ist)   - Bx(j,k,l-1))
     end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
+
 ! advance Ez
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
 			Ez(j,k,l) = Ez(j,k,l) + dtsdx * (By(j+1-ist,k,l) - By(j-1,k  ,l))
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 end subroutine pxrpush_em2d_evec
 
@@ -264,6 +265,8 @@ integer(idp):: j,k,l
 logical :: l_nodalgrid
 
 ! advance Ex
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -273,8 +276,9 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-
+!$OMP END DO
   ! advance Ey
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -284,8 +288,9 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-
+!$OMP END DO
   ! advance Ez 
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -295,7 +300,8 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
-
+!$OMP END DO
+!$OMP END PARALLEL
 return
 end subroutine pxrpush_em3d_evec
 
@@ -322,9 +328,9 @@ else
 ist = 1
 end if
 
+! advance Bx
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
 !$OMP DO COLLAPSE(3)
-! advance Bx
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -338,8 +344,8 @@ do l = -nzs, nz+nzs
     end do
 end do
 !$OMP END DO
-!$OMP DO COLLAPSE(3)
 ! advance By
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -353,8 +359,8 @@ do l = -nzs, nz+nzs
     end do
 end do
 !$OMP END DO
-!$OMP DO COLLAPSE(3)
 ! advance Bz
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
@@ -394,9 +400,9 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Bx
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             do i = 1, norderz/2
@@ -404,9 +410,9 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance By
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             do i = 1, norderx/2
@@ -417,9 +423,9 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance Bz
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             do i = 1, norderx/2
@@ -427,8 +433,8 @@ do l = -nzs, nz+nzs
             end do
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 
 end subroutine pxrpush_em2d_bvec_norder
@@ -454,33 +460,33 @@ end if
 
 k = 0
 
-!!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-!!$OMP DO COLLAPSE(3)
 ! advance Bx
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
                 Bx(j,k,l) = Bx(j,k,l) + dtsdz * (Ey(j,k,  l+1) - Ey(j,k,l-1+ist))
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance By
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
                 By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k,l  ) - Ez(j-1+ist,k,l))
                 By(j,k,l) = By(j,k,l) - dtsdz * (Ex(j  ,k,l+1) - Ex(j,k,l-1+ist))
         end do
 end do
-!!$OMP END DO
-!!$OMP DO COLLAPSE(3)
+!$OMP END DO
 ! advance Bz
+!$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
                 Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k,l) - Ey(j-1+ist,k,l))
         end do
 end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 return
 
 end subroutine pxrpush_em2d_bvec
@@ -500,6 +506,8 @@ integer(idp) :: j,k,l
 logical :: l_nodalgrid
 
 ! advance Bx
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs-1
     do k = -nys, ny+nys-1
         do j = -nxs, nx+nxs
@@ -508,8 +516,9 @@ do l = -nzs, nz+nzs-1
         end do
     end do
 end do
-
+!$OMP END DO
 ! advance By
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs-1
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs-1
@@ -518,8 +527,9 @@ do l = -nzs, nz+nzs-1
         end do
     end do
 end do
-
+!$OMP END DO
 ! advance Bz
+!$OMP DO COLLAPSE(3)
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys-1
         do j = -nxs, nx+nxs-1
@@ -528,6 +538,151 @@ do l = -nzs, nz+nzs
         end do
     end do
 end do
+!$OMP END DO
+!$OMP END PARALLEL
 end subroutine pxrpush_em3d_bvec
 
+!===============================================================================
+! PUSH MAGNETIC FIELD KARKAINNEN 2D/3D
+!===============================================================================
+SUBROUTINE pxr_push_em3d_kyeebvec(ex,ey,ez,bx,by,bz,dtsdx,dtsdy,dtsdz,nx,ny,nz,nxguard,nyguard,nzguard,l_2dxz)
+USE kyee_em3d
+IMPLICIT NONE
+INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
+REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
+REAL(num), INTENT(IN) :: dtsdx,dtsdy,dtsdz
+INTEGER(idp) :: j,k,l
+LOGICAL(idp) :: l_2dxz
 
+IF (.NOT.l_2dxz) THEN
+
+  ! advance Bx
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(j,k,l) &
+  !$OMP SHARED(Ex,Ez,Ey,Bx,By,Bz,alphax,alphay,alphaz,betaxy,betaxz,betayx,betayz,betazx, &
+  !$OMP betazy,gammax,gammay,gammaz,dtsdx,dtsdy,dtsdz,nx,ny,nz)
+  !$OMP DO COLLAPSE(3)
+  DO l = 0, nz-1
+   DO k = 0, ny-1
+    DO j = 0, nx
+      Bx(j,k,l) = Bx(j,k,l) - alphay*dtsdy * (Ez(j  ,k+1,l  ) - Ez(j  ,k  ,l  )) &
+                            - betayx*dtsdy * (Ez(j+1,k+1,l  ) - Ez(j+1,k  ,l  ) &
+                                           +  Ez(j-1,k+1,l  ) - Ez(j-1,k  ,l  )) &
+                            - betayz*dtsdy * (Ez(j  ,k+1,l+1) - Ez(j  ,k  ,l+1) &
+                                           +  Ez(j  ,k+1,l-1) - Ez(j  ,k  ,l-1)) &
+                            - gammay*dtsdy * (Ez(j+1,k+1,l+1) - Ez(j+1,k  ,l+1) &
+                                           +  Ez(j-1,k+1,l+1) - Ez(j-1,k  ,l+1) &
+                                           +  Ez(j+1,k+1,l-1) - Ez(j+1,k  ,l-1) &
+                                           +  Ez(j-1,k+1,l-1) - Ez(j-1,k  ,l-1)) &
+                            + alphaz*dtsdz * (Ey(j  ,k  ,l+1) - Ey(j  ,k  ,l  )) &
+                            + betazx*dtsdz * (Ey(j+1,k  ,l+1) - Ey(j+1,k  ,l  ) &
+                                           +  Ey(j-1,k  ,l+1) - Ey(j-1,k  ,l  )) &
+                            + betazy*dtsdz * (Ey(j  ,k+1,l+1) - Ey(j  ,k+1,l  ) &
+                                           +  Ey(j  ,k-1,l+1) - Ey(j  ,k-1,l  )) &
+                            + gammaz*dtsdz * (Ey(j+1,k+1,l+1) - Ey(j+1,k+1,l  ) &
+                                           +  Ey(j-1,k+1,l+1) - Ey(j-1,k+1,l  ) &
+                                           +  Ey(j+1,k-1,l+1) - Ey(j+1,k-1,l  ) &
+                                           +  Ey(j-1,k-1,l+1) - Ey(j-1,k-1,l  )) 
+    END DO
+   END DO 
+  END DO 
+  !$OMP END DO 
+
+  ! advance By
+  !$OMP DO COLLAPSE(3)
+  DO l = 0, nz-1
+   DO k = 0, ny
+    DO j = 0, nx-1
+      By(j,k,l) = By(j,k,l) + alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &  
+                            + betaxy*dtsdx * (Ez(j+1,k+1,l  ) - Ez(j  ,k+1,l  ) &
+                                           +  Ez(j+1,k-1,l  ) - Ez(j  ,k-1,l  )) &
+                            + betaxz*dtsdx * (Ez(j+1,k  ,l+1) - Ez(j  ,k  ,l+1) &
+                                           +  Ez(j+1,k  ,l-1) - Ez(j  ,k  ,l-1)) &
+                            + gammax*dtsdx * (Ez(j+1,k+1,l+1) - Ez(j  ,k+1,l+1) &
+                                           +  Ez(j+1,k-1,l+1) - Ez(j  ,k-1,l+1) &
+                                           +  Ez(j+1,k+1,l-1) - Ez(j  ,k+1,l-1) &
+                                           +  Ez(j+1,k-1,l-1) - Ez(j  ,k-1,l-1)) &
+                            - alphaz*dtsdz * (Ex(j  ,k  ,l+1) - Ex(j  ,k  ,l  )) &
+                            - betazx*dtsdz * (Ex(j+1,k  ,l+1) - Ex(j+1,k  ,l  ) &
+                                           +  Ex(j-1,k  ,l+1) - Ex(j-1,k  ,l  )) &
+                            - betazy*dtsdz * (Ex(j  ,k+1,l+1) - Ex(j  ,k+1,l  ) &
+                                           +  Ex(j  ,k-1,l+1) - Ex(j  ,k-1,l  )) &
+                            - gammaz*dtsdz * (Ex(j+1,k+1,l+1) - Ex(j+1,k+1,l  ) &
+                                           +  Ex(j-1,k+1,l+1) - Ex(j-1,k+1,l  ) &
+                                           +  Ex(j+1,k-1,l+1) - Ex(j+1,k-1,l  ) &
+                                           +  Ex(j-1,k-1,l+1) - Ex(j-1,k-1,l  )) 
+    END DO
+   END DO
+  END DO 
+  !$OMP END DO 
+  ! advance Bz 
+  !$OMP DO COLLAPSE(3)
+  DO l = 0, nz
+   DO k = 0, ny-1
+    DO j = 0, nx-1
+      Bz(j,k,l) = Bz(j,k,l) - alphax*dtsdx * (Ey(j+1,k  ,l  ) - Ey(j  ,k  ,l  )) &
+                            - betaxy*dtsdx * (Ey(j+1,k+1,l  ) - Ey(j  ,k+1,l  ) &
+                                           +  Ey(j+1,k-1,l  ) - Ey(j  ,k-1,l  )) &
+                            - betaxz*dtsdx * (Ey(j+1,k  ,l+1) - Ey(j  ,k  ,l+1) &
+                                           +  Ey(j+1,k  ,l-1) - Ey(j  ,k  ,l-1)) &
+                            - gammax*dtsdx * (Ey(j+1,k+1,l+1) - Ey(j  ,k+1,l+1) &
+                                           +  Ey(j+1,k-1,l+1) - Ey(j  ,k-1,l+1) &
+                                           +  Ey(j+1,k+1,l-1) - Ey(j  ,k+1,l-1) &
+                                           +  Ey(j+1,k-1,l-1) - Ey(j  ,k-1,l-1)) &
+                            + alphay*dtsdy * (Ex(j  ,k+1,l  ) - Ex(j  ,k  ,l  )) &
+                            + betayx*dtsdy * (Ex(j+1,k+1,l  ) - Ex(j+1,k  ,l  ) &
+                                           +  Ex(j-1,k+1,l  ) - Ex(j-1,k  ,l  )) &
+                            + betayz*dtsdy * (Ex(j  ,k+1,l+1) - Ex(j  ,k  ,l+1) &
+                                           +  Ex(j  ,k+1,l-1) - Ex(j  ,k  ,l-1)) &
+                            + gammay*dtsdy * (Ex(j+1,k+1,l+1) - Ex(j+1,k  ,l+1) &
+                                           +  Ex(j-1,k+1,l+1) - Ex(j-1,k  ,l+1) &
+                                           +  Ex(j+1,k+1,l-1) - Ex(j+1,k  ,l-1) &
+                                           +  Ex(j-1,k+1,l-1) - Ex(j-1,k  ,l-1)) 
+    END DO
+   END DO
+  END DO
+  !$OMP END DO 
+  !$OMP END PARALLEL
+ELSE
+
+  k=0
+  ! advance Bx
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(j,l) &
+  !$OMP SHARED(k,Ex,Ey,Ez,Bx,By,Bz,alphax,alphaz,betaxz,betazx, &
+  !$OMP dtsdx,dtsdz,nx,nz)
+  !$OMP DO COLLAPSE(2)
+  DO l = 0, nz-1
+    DO j = 0, nx
+      Bx(j,k,l) = Bx(j,k,l) +    alphaz*dtsdz * (Ey(j  ,k  ,l+1) - Ey(j  ,k  ,l  )) &
+                            +    betazx*dtsdz * (Ey(j+1,k  ,l+1) - Ey(j+1,k  ,l  ) &
+                                              +  Ey(j-1,k  ,l+1) - Ey(j-1,k  ,l  )) 
+    END DO
+  END DO
+  !$OMP END DO 
+  ! advance By
+  !$OMP DO COLLAPSE(2)
+  DO l = 0, nz-1
+    DO j = 0, nx-1
+      By(j,k,l) = By(j,k,l) +    alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &  
+                            +    betaxz*dtsdx * (Ez(j+1,k  ,l+1) - Ez(j  ,k  ,l+1) &
+                                              +  Ez(j+1,k  ,l-1) - Ez(j  ,k  ,l-1)) &
+                            -    alphaz*dtsdz * (Ex(j  ,k  ,l+1) - Ex(j  ,k  ,l  )) &
+                            -    betazx*dtsdz * (Ex(j+1,k  ,l+1) - Ex(j+1,k  ,l  ) &
+                                              +  Ex(j-1,k  ,l+1) - Ex(j-1,k  ,l  )) 
+    END DO
+  END DO
+  !$OMP END DO 
+  ! advance Bz 
+  !$OMP DO COLLAPSE(2)
+  DO l = 0, nz
+    DO j = 0, nx-1
+      Bz(j,k,l) = Bz(j,k,l) -    alphax*dtsdx * (Ey(j+1,k  ,l  ) - Ey(j  ,k  ,l  )) &
+                            -    betaxz*dtsdx * (Ey(j+1,k  ,l+1) - Ey(j  ,k  ,l+1) &
+                                              +  Ey(j+1,k  ,l-1) - Ey(j  ,k  ,l-1)) 
+    END DO
+  END DO
+  !$OMP END DO 
+  !$OMP END PARALLEL
+END IF
+
+RETURN
+END SUBROUTINE pxr_push_em3d_kyeebvec

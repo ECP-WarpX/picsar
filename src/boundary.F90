@@ -70,8 +70,8 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG X
-    CALL MPI_SENDRECV(field(0,-nyg,-nzg), 1_isp, subarray, proc_x_min, &
-        tag, temp, sz, basetype, proc_x_max, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(0,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), &
+        tag, temp, sz, basetype, INT(proc_x_max,isp), tag, comm, status, errcode)
 
     IF (proc_x_max .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -85,8 +85,8 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_max, &
-        tag, temp, sz, basetype, proc_x_min, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), &
+        tag, temp, sz, basetype, INT(proc_x_min,isp), tag, comm, status, errcode)
 
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -111,8 +111,8 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG Y
-    CALL MPI_SENDRECV(field(-nxg,0,-nzg), 1_isp, subarray, proc_y_min, &
-        tag, temp, sz, basetype, proc_y_max, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,0,-nzg), 1_isp, subarray, INT(proc_y_min,isp), &
+        tag, temp, sz, basetype, INT(proc_y_max,isp), tag, comm, status, errcode)
 
     IF (proc_y_max .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -126,8 +126,8 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, proc_y_max, &
-        tag, temp, sz, basetype, proc_y_min, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, INT(proc_y_max,isp), &
+        tag, temp, sz, basetype, INT(proc_y_min,isp), tag, comm, status, errcode)
 
     IF (proc_y_min .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -152,8 +152,8 @@ CONTAINS
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
     ! MOVE EDGES ALONG Z
-    CALL MPI_SENDRECV(field(-nxg,-nyg,0), 1_isp, subarray, proc_z_min, &
-        tag, temp, sz, basetype, proc_z_max, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,-nyg,0), 1_isp, subarray, INT(proc_z_min,isp), &
+        tag, temp, sz, basetype, INT(proc_z_max,isp), tag, comm, status, errcode)
 
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -167,8 +167,8 @@ CONTAINS
       ENDDO
     ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, proc_z_max, &
-        tag, temp, sz, basetype, proc_z_min, tag, comm, status, errcode)
+    CALL MPI_SENDRECV(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, INT(proc_z_max,isp), &
+        tag, temp, sz, basetype, INT(proc_z_min,isp), tag, comm, status, errcode)
 
     IF (proc_z_min .NE. MPI_PROC_NULL) THEN
       n = 1
@@ -215,14 +215,14 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(0,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
+    CALL MPI_ISEND(field(0,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(nx_local+1,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
+    CALL MPI_IRECV(field(nx_local+1,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
+    CALL MPI_ISEND(field(nx_local+1-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), tag, &
         comm, requests(4), errcode)
 
     CALL MPI_TYPE_FREE(subarray, errcode)
@@ -237,14 +237,14 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(-nxg,0,-nzg), 1_isp, subarray, proc_y_min, tag, &
+    CALL MPI_ISEND(field(-nxg,0,-nzg), 1_isp, subarray, INT(proc_y_min,isp), tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg,ny_local+1,-nzg), 1_isp, subarray, proc_y_max, tag, &
+    CALL MPI_IRECV(field(-nxg,ny_local+1,-nzg), 1_isp, subarray, INT(proc_y_max,isp), tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, proc_y_max, tag, &
+    CALL MPI_ISEND(field(-nxg,ny_local+1-nyg,-nzg), 1_isp, subarray, INT(proc_y_max,isp), tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_y_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_y_min,isp), tag, &
         comm, requests(4), errcode)
 
     ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
@@ -262,14 +262,14 @@ CONTAINS
 
     subarray = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
 
-    CALL MPI_ISEND(field(-nxg,-nyg,0), 1_isp, subarray, proc_z_min, tag, &
+    CALL MPI_ISEND(field(-nxg,-nyg,0), 1_isp, subarray, INT(proc_z_min,isp), tag, &
          comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,nz_local+1), 1_isp, subarray, proc_z_max, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,nz_local+1), 1_isp, subarray, INT(proc_z_max,isp), tag, &
         comm, requests(2), errcode)
 
-    CALL MPI_ISEND(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, proc_z_max, tag, &
+    CALL MPI_ISEND(field(-nxg,-nyg,nz_local+1-nzg), 1_isp, subarray, INT(proc_z_max,isp), tag, &
          comm, requests(3), errcode)
-    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, proc_z_min, tag, &
+    CALL MPI_IRECV(field(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_z_min,isp), tag, &
         comm, requests(4), errcode)
 
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
@@ -406,13 +406,13 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(nn,-nyg,-nzg), 1_isp, subarray, proc_x_max, tag, &
+    CALL MPI_ISEND(array(nn,-nyg,-nzg), 1_isp, subarray, INT(proc_x_max,isp), tag, &
     comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_x_min,isp), tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_x_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_x_min,isp), tag, &
     comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_x_max,isp), tag, &
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
@@ -435,13 +435,13 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,nn,-nzg), 1_isp, subarray, proc_y_max, tag, &
+    CALL MPI_ISEND(array(-nxg,nn,-nzg), 1_isp, subarray, INT(proc_y_max,isp), tag, &
     comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_y_min,isp), tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_y_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_y_min,isp), tag, &
     comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_y_max,isp), tag, &
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
@@ -464,13 +464,13 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg,-nyg,nn), 1_isp, subarray, proc_z_max, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,nn), 1_isp, subarray, INT(proc_z_max,isp), tag, &
     comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_z_min,isp), tag, &
     comm, requests(2), errcode)
-    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, proc_z_min, tag, &
+    CALL MPI_ISEND(array(-nxg,-nyg,-nzg), 1_isp, subarray, INT(proc_z_min,isp), tag, &
     comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_z_max,isp), tag, &
     comm, requests(4), errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
@@ -494,7 +494,17 @@ CONTAINS
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
-
+    INTEGER(isp) :: proc_x_min_mpisp, proc_x_max_mpisp 
+    INTEGER(isp) :: proc_y_min_mpisp, proc_y_max_mpisp 
+    INTEGER(isp) :: proc_z_min_mpisp, proc_z_max_mpisp 
+    
+    proc_x_min_mpisp = proc_x_min
+    proc_x_max_mpisp = proc_x_max
+    proc_y_min_mpisp = proc_y_min
+    proc_y_max_mpisp = proc_y_max
+    proc_z_min_mpisp = proc_z_min
+    proc_z_max_mpisp = proc_z_max
+    
     sizes(1) = nx + 1 + 2 * nxg
     sizes(2) = ny + 1 + 2 * nyg
     sizes(3) = nz + 1 + 2 * nzg
@@ -509,11 +519,11 @@ CONTAINS
       subsizes(3) = sizes(3)
       nn = nx
       subarrayx = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max, tag, comm, reqperjxx(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min, tag, comm, reqperjxx(3), errcode)     
+      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max_mpisp, tag, comm, reqperjxx(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min_mpisp, tag, comm, reqperjxx(3), errcode)     
 
-      call MPI_RECV_INIT(temp1, sz, mpidbl, proc_x_min, tag, comm, reqperjxx(2), errcode)
-      call MPI_RECV_INIT(temp2, sz, mpidbl, proc_x_max, tag, comm, reqperjxx(4), errcode)  
+      call MPI_RECV_INIT(temp1, sz, mpidbl, proc_x_min_mpisp, tag, comm, reqperjxx(2), errcode)
+      call MPI_RECV_INIT(temp2, sz, mpidbl, proc_x_max_mpisp, tag, comm, reqperjxx(4), errcode)  
       
       ! Init Y
       subsizes(1) = sizes(1)
@@ -521,8 +531,8 @@ CONTAINS
       subsizes(3) = sizes(3)
       nn = ny
       subarrayy = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max, tag, comm, reqperjxy(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min, tag, comm, reqperjxy(3), errcode) 
+      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max_mpisp, tag, comm, reqperjxy(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min_mpisp, tag, comm, reqperjxy(3), errcode) 
           
       ! Init Z
       subsizes(1) = sizes(1)
@@ -530,8 +540,8 @@ CONTAINS
       subsizes(3) = nzg+1
       nn = nz
       subarrayz = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max, tag, comm, reqperjxz(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min, tag, comm, reqperjxz(3), errcode) 
+      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max_mpisp, tag, comm, reqperjxz(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min_mpisp, tag, comm, reqperjxz(3), errcode) 
 
       CALL MPI_TYPE_FREE(subarrayx, errcode)
       CALL MPI_TYPE_FREE(subarrayy, errcode)  
@@ -555,11 +565,11 @@ CONTAINS
     temp1  = 0.0_num
     temp2 = 0.0_num
     !call MPI_STARTALL(4_isp,reqperjxx,errcode) 
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min_mpisp, tag, &
     comm, reqperjxx(2), errcode)  
     !call MPI_START(reqperjxx(2),errcode)  
     call MPI_START(reqperjxx(1),errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max_mpisp, tag, &
     comm, reqperjxx(4), errcode)
     !call MPI_START(reqperjxx(4),errcode)
     call MPI_START(reqperjxx(3),errcode)
@@ -585,10 +595,10 @@ CONTAINS
     temp1  = 0.0_num
     temp2 = 0.0_num
     call MPI_START(reqperjxy(1),errcode) 
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min_mpisp, tag, &
     comm, reqperjxy(2), errcode)   
     call MPI_START(reqperjxy(3),errcode) 
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max_mpisp, tag, &
     comm, reqperjxy(4), errcode)   
     CALL MPI_WAITALL(4_isp, reqperjxy, MPI_STATUSES_IGNORE, errcode)
 
@@ -611,12 +621,12 @@ CONTAINS
     temp1  = 0.0_num
     temp2 = 0.0_num
 
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min_mpisp, tag, &
     comm, reqperjxz(2), errcode)
     call MPI_START(reqperjxz(1),errcode)
     !if (rank.eq.0) print*, 'irecv 1'
     
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max_mpisp, tag, &
     comm, reqperjxz(4), errcode)
     call MPI_START(reqperjxz(3),errcode)
     CALL MPI_WAITALL(4_isp, reqperjxz, MPI_STATUSES_IGNORE, errcode)
@@ -652,7 +662,17 @@ CONTAINS
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
-
+    INTEGER(isp) :: proc_x_min_mpisp, proc_x_max_mpisp 
+    INTEGER(isp) :: proc_y_min_mpisp, proc_y_max_mpisp 
+    INTEGER(isp) :: proc_z_min_mpisp, proc_z_max_mpisp 
+    
+    proc_x_min_mpisp = proc_x_min
+    proc_x_max_mpisp = proc_x_max
+    proc_y_min_mpisp = proc_y_min
+    proc_y_max_mpisp = proc_y_max
+    proc_z_min_mpisp = proc_z_min
+    proc_z_max_mpisp = proc_z_max
+    
     sizes(1) = nx + 1 + 2 * nxg
     sizes(2) = ny + 1 + 2 * nyg
     sizes(3) = nz + 1 + 2 * nzg
@@ -667,8 +687,8 @@ CONTAINS
       subsizes(3) = sizes(3)
       nn = nx
       subarrayx = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max, tag, comm, reqperjyx(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min, tag, comm, reqperjyx(3), errcode)     
+      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max_mpisp, tag, comm, reqperjyx(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min_mpisp, tag, comm, reqperjyx(3), errcode)     
       
       ! Init Y
       subsizes(1) = sizes(1)
@@ -676,8 +696,8 @@ CONTAINS
       subsizes(3) = sizes(3)
       nn = ny
       subarrayy = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max, tag, comm, reqperjyy(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min, tag, comm, reqperjyy(3), errcode) 
+      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max_mpisp, tag, comm, reqperjyy(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min_mpisp, tag, comm, reqperjyy(3), errcode) 
           
       ! Init Z
       subsizes(1) = sizes(1)
@@ -685,8 +705,8 @@ CONTAINS
       subsizes(3) = nzg+1
       nn = nz
       subarrayz = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max, tag, comm, reqperjyz(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min, tag, comm, reqperjyz(3), errcode) 
+      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max_mpisp, tag, comm, reqperjyz(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min_mpisp, tag, comm, reqperjyz(3), errcode) 
 
       CALL MPI_TYPE_FREE(subarrayx, errcode)
       CALL MPI_TYPE_FREE(subarrayy, errcode)  
@@ -709,10 +729,10 @@ CONTAINS
     
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min_mpisp, tag, &
     comm, reqperjyx(2), errcode)    
     call MPI_START(reqperjyx(1),errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max_mpisp, tag, &
     comm, reqperjyx(4), errcode)
     call MPI_START(reqperjyx(3),errcode)
     CALL MPI_WAITALL(4_isp, reqperjyx, MPI_STATUSES_IGNORE, errcode)
@@ -736,10 +756,10 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min_mpisp, tag, &
     comm, reqperjyy(2), errcode)   
     CALL MPI_START(reqperjyy(1),errcode) 
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max_mpisp, tag, &
     comm, reqperjyy(4), errcode)
     call MPI_START(reqperjyy(3),errcode)    
     CALL MPI_WAITALL(4_isp, reqperjyy, MPI_STATUSES_IGNORE, errcode)
@@ -763,12 +783,12 @@ CONTAINS
     temp1  = 0.0_num
     temp2 = 0.0_num
 
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min_mpisp, tag, &
     comm, reqperjyz(2), errcode)
     call MPI_START(reqperjyz(1),errcode)
     !if (rank.eq.0) print*, 'irecv 1'
     
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max_mpisp, tag, &
     comm, reqperjyz(4), errcode)
     call MPI_START(reqperjyz(3),errcode)
     CALL MPI_WAITALL(4_isp, reqperjyz, MPI_STATUSES_IGNORE, errcode)
@@ -805,7 +825,17 @@ CONTAINS
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
-
+    INTEGER(isp) :: proc_x_min_mpisp, proc_x_max_mpisp 
+    INTEGER(isp) :: proc_y_min_mpisp, proc_y_max_mpisp 
+    INTEGER(isp) :: proc_z_min_mpisp, proc_z_max_mpisp 
+    
+    proc_x_min_mpisp = proc_x_min
+    proc_x_max_mpisp = proc_x_max
+    proc_y_min_mpisp = proc_y_min
+    proc_y_max_mpisp = proc_y_max
+    proc_z_min_mpisp = proc_z_min
+    proc_z_max_mpisp = proc_z_max
+    
     sizes(1) = nx + 1 + 2 * nxg
     sizes(2) = ny + 1 + 2 * nyg
     sizes(3) = nz + 1 + 2 * nzg
@@ -820,8 +850,8 @@ CONTAINS
       subsizes(3) = sizes(3)
       nn = nx
       subarrayx = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max, tag, comm, reqperjzx(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min, tag, comm, reqperjzx(3), errcode)     
+      call MPI_SEND_INIT(array(nn,-nyg,-nzg), 1_isp, subarrayx,  proc_x_max_mpisp, tag, comm, reqperjzx(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayx, proc_x_min_mpisp, tag, comm, reqperjzx(3), errcode)     
       
       ! Init Y
       subsizes(1) = sizes(1)
@@ -829,8 +859,8 @@ CONTAINS
       subsizes(3) = sizes(3)
       nn = ny
       subarrayy = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max, tag, comm, reqperjzy(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min, tag, comm, reqperjzy(3), errcode) 
+      call MPI_SEND_INIT(array(-nxg,nn,-nzg), 1_isp, subarrayy,  proc_y_max_mpisp, tag, comm, reqperjzy(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayy, proc_y_min_mpisp, tag, comm, reqperjzy(3), errcode) 
           
       ! Init Z
       subsizes(1) = sizes(1)
@@ -838,8 +868,8 @@ CONTAINS
       subsizes(3) = nzg+1
       nn = nz
       subarrayz = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max, tag, comm, reqperjzz(1), errcode)
-      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min, tag, comm, reqperjzz(3), errcode) 
+      call MPI_SEND_INIT(array(-nxg,-nyg,nn), 1_isp, subarrayz,  proc_z_max_mpisp, tag, comm, reqperjzz(1), errcode)
+      call MPI_SEND_INIT(array(-nxg,-nyg,-nzg), 1_isp, subarrayz, proc_z_min_mpisp, tag, comm, reqperjzz(3), errcode) 
 
       CALL MPI_TYPE_FREE(subarrayx, errcode)
       CALL MPI_TYPE_FREE(subarrayy, errcode)  
@@ -862,10 +892,10 @@ CONTAINS
     
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min_mpisp, tag, &
     comm, reqperjzx(2), errcode)    
     call MPI_START(reqperjzx(1),errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max_mpisp, tag, &
     comm, reqperjzx(4), errcode)
     call MPI_START(reqperjzx(3),errcode)
     CALL MPI_WAITALL(4_isp, reqperjzx, MPI_STATUSES_IGNORE, errcode)
@@ -889,10 +919,10 @@ CONTAINS
 
     temp1  = 0.0_num
     temp2 = 0.0_num
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min_mpisp, tag, &
     comm, reqperjzy(2), errcode)   
     CALL MPI_START(reqperjzy(1),errcode) 
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_y_max_mpisp, tag, &
     comm, reqperjzy(4), errcode)
     call MPI_START(reqperjzy(3),errcode)    
     CALL MPI_WAITALL(4_isp, reqperjzy, MPI_STATUSES_IGNORE, errcode)
@@ -916,12 +946,12 @@ CONTAINS
     temp1  = 0.0_num
     temp2 = 0.0_num
 
-    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min, tag, &
+    CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min_mpisp, tag, &
     comm, reqperjzz(2), errcode)
     call MPI_START(reqperjzz(1),errcode)
     !if (rank.eq.0) print*, 'irecv 1'
     
-    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max, tag, &
+    CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max_mpisp, tag, &
     comm, reqperjzz(4), errcode)
     call MPI_START(reqperjzz(3),errcode)
     CALL MPI_WAITALL(4_isp, reqperjzz, MPI_STATUSES_IGNORE, errcode)
@@ -1021,27 +1051,40 @@ END SUBROUTINE charge_bcs
 
 !!! Boundary condition routine on particles
   SUBROUTINE particle_bcs
+  	USE omp_lib
     USE time_stat
     IMPLICIT NONE
-
+	REAL(num) :: tdeb, tend
     REAL(num) :: tmptime
-    
     tmptime = MPI_WTIME()
-
+    tdeb=MPI_WTIME()
+    
+    ! First exchange particles between tiles (NO MPI at that point)
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_tiles: start"
 #endif
-    
-    ! First exchange particles between tiles (NO MPI at that point)
-    CALL particle_bcs_tiles
-
+	SELECT CASE (c_dim)
+	CASE(2)
+#ifdef _OPENMP
+    	CALL particle_bcs_tiles_2d_openmp()
+#else
+    	CALL particle_bcs_tiles_2d()
+#endif
+    CASE DEFAULT 
+#ifdef _OPENMP
+    	CALL particle_bcs_tiles_openmp()
+#else
+    	CALL particle_bcs_tiles()
+#endif
+    END SELECT
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_tiles: stop"
 #endif
 
     localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
-
     tmptime = MPI_WTIME()
+    tend = MPI_WTIME()
+    local_time_part=local_time_part+(tend-tdeb)
 
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_mpi: start"
@@ -1049,13 +1092,12 @@ END SUBROUTINE charge_bcs
 
     ! Then exchange particle between MPI domains
     CALL particle_bcs_mpi_blocking
-
+    
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_mpi: stop"
 #endif
 
     localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
-
   END SUBROUTINE particle_bcs
 
 !!! Boundary condition on tiles
@@ -1090,8 +1132,8 @@ END SUBROUTINE charge_bcs
                         partw=curr_tile%pid(i,wpid)
 
                         ! Case 1: if particle did not leave tile nothing to do
-                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max)) &
-                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max)) &
+                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
                         .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
                         CYCLE
 
@@ -1105,7 +1147,7 @@ END SUBROUTINE charge_bcs
                         indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
                         indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
                         indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
-                        CALL rm_particle_at_tile(curr_tile,i)
+                        CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                         CALL add_particle_at_tile(curr, indx,indy,indz, &
                              partx, party, partz, partux, partuy, partuz, gaminv, partw)
                     END DO !END LOOP ON PARTICLES
@@ -1115,7 +1157,232 @@ END SUBROUTINE charge_bcs
     END DO ! END LOOP ON SPECIES
   END SUBROUTINE particle_bcs_tiles
 
+!!! Boundary condition on tiles - 3D version 
+!!! This version is efficient when the number of tiles is large 
+!!! compared to the number of threads 
+  SUBROUTINE particle_bcs_tiles_openmp()
+    USE omp_lib 
+    IMPLICIT NONE
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
+    INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+    TYPE(particle_species), POINTER :: curr
+    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
+	
+#ifdef _OPENMP
+	nthreads_tot=OMP_GET_MAX_THREADS()
+	CALL OMP_SET_NESTED(.TRUE.)
+#else
+	nthreads_tot=1
+#endif
+	
+	IF (nthreads_tot .GT. 1) THEN 
+		nthreads_loop1=MIN(nspecies,nthreads_tot)
+		nthreads_loop2=MAX(1,nthreads_tot/nthreads_loop1)
+	ELSE 
+		nthreads_loop1=1
+		nthreads_loop2=1
+	ENDIF 
+	
+	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz) &
+	!$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
+    DO ispecies=1, nspecies ! LOOP ON SPECIES
+        curr=> species_parray(ispecies)
+        ! Get first tiles dimensions (may be different from last tile)
+        nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
+        ny0_grid_tile = curr%array_of_tiles(1,1,1)%ny_grid_tile
+        nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
+        DO ipz=1,3
+        	DO ipy=1,3
+        		DO ipx=1,3
+					!$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+					!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+					!$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+					!$OMP indx,indy,indz,ipx,ipy,ipz) COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2) 
+					DO iz=ipz, ntilez,3! LOOP ON TILES
+						DO iy=ipy, ntiley,3
+							DO ix=ipx, ntilex,3
+								curr_tile=>curr%array_of_tiles(ix,iy,iz)
+								nptile=curr_tile%np_tile(1)
+								DO i=nptile, 1, -1! LOOP ON PARTICLES
+									partx=curr_tile%part_x(i)
+									party=curr_tile%part_y(i)
+									partz=curr_tile%part_z(i)
+									partux=curr_tile%part_ux(i)
+									partuy=curr_tile%part_uy(i)
+									partuz=curr_tile%part_uz(i)
+									gaminv=curr_tile%part_gaminv(i)
+									partw=curr_tile%pid(i,wpid)
 
+									! Case 1: if particle did not leave tile nothing to do
+									IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+									.AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
+									.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+									CYCLE
+
+									! Case 2: if particle left MPI domain nothing to do now
+									IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
+									IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
+									IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+
+									! Case 3: particles changed tile. Tranfer particle to new tile
+									! Get new indexes of particle in array of tiles
+									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
+									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+									CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+									CALL add_particle_at_tile(curr, indx,indy,indz, &
+										 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+								END DO !END LOOP ON PARTICLES
+							END DO
+						END DO
+					END DO ! END LOOP ON TILES
+					!$OMP END PARALLEL DO 
+        		END DO
+        	END DO
+        END DO 
+    END DO ! END LOOP ON SPECIES
+    !$OMP END PARALLEL DO 
+  END SUBROUTINE particle_bcs_tiles_openmp
+
+
+!!! Boundary condition on tiles
+  SUBROUTINE particle_bcs_tiles_2d
+    IMPLICIT NONE
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
+    INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+    TYPE(particle_species), POINTER :: curr
+    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    INTEGER(idp) :: test =0
+
+    iy=1
+    DO ispecies=1, nspecies ! LOOP ON SPECIES
+        curr=> species_parray(ispecies)
+        ! Get first tiles dimensions (may be different from last tile)
+        nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
+        nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
+        DO iz=1, ntilez! LOOP ON TILES
+			DO ix=1, ntilex
+				curr_tile=>curr%array_of_tiles(ix,iy,iz)
+				nptile=curr_tile%np_tile(1)
+				DO i=nptile, 1, -1! LOOP ON PARTICLES
+					partx=curr_tile%part_x(i)
+					party=curr_tile%part_y(i)
+					partz=curr_tile%part_z(i)
+					partux=curr_tile%part_ux(i)
+					partuy=curr_tile%part_uy(i)
+					partuz=curr_tile%part_uz(i)
+					gaminv=curr_tile%part_gaminv(i)
+					partw=curr_tile%pid(i,wpid)
+
+					! Case 1: if particle did not leave tile nothing to do
+					IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+					.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+					CYCLE
+
+					! Case 2: if particle left MPI domain nothing to do now
+					IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
+					IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+
+					! Case 3: particles changed tile. Tranfer particle to new tile
+					! Get new indexes of particle in array of tiles
+					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+					CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+					CALL add_particle_at_tile(curr, indx,iy,indz, &
+						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+				END DO !END LOOP ON PARTICLES
+			END DO
+        END DO ! END LOOP ON TILES
+    END DO ! END LOOP ON SPECIES
+  END SUBROUTINE particle_bcs_tiles_2d
+  
+!!! Boundary condition on tiles - 2D version 
+!!! This version is efficient when the number of tiles is large 
+!!! compared to the number of threads 
+  SUBROUTINE particle_bcs_tiles_2d_openmp()
+    USE omp_lib 
+    IMPLICIT NONE
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipz
+    INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+    TYPE(particle_species), POINTER :: curr
+    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
+	
+#ifdef _OPENMP
+	nthreads_tot=OMP_GET_MAX_THREADS()
+	CALL OMP_SET_NESTED(.TRUE.)
+#else
+	nthreads_tot=1
+#endif
+	
+	IF (nthreads_tot .GT. 1) THEN 
+		nthreads_loop1=MIN(nspecies,nthreads_tot)
+		nthreads_loop2=MAX(1,nthreads_tot/nthreads_loop1)
+	ELSE 
+		nthreads_loop1=1
+		nthreads_loop2=1
+	ENDIF 
+	iy=1
+	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipz) &
+	!$OMP SHARED(iy,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
+    DO ispecies=1, nspecies ! LOOP ON SPECIES
+        curr=> species_parray(ispecies)
+        ! Get first tiles dimensions (may be different from last tile)
+        nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
+        ny0_grid_tile = curr%array_of_tiles(1,1,1)%ny_grid_tile
+        nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
+        DO ipz=1,3
+        	DO ipx=1,3
+				!$OMP PARALLEL DO DEFAULT(NONE) SHARED(ipx,ipz,iy,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+				!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+				!$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+				!$OMP indx,indy,indz) COLLAPSE(2) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)  
+				DO iz=ipz, ntilez,3! LOOP ON TILES
+					DO ix=ipx, ntilex,3
+						curr_tile=>curr%array_of_tiles(ix,iy,iz)
+						nptile=curr_tile%np_tile(1)
+						DO i=nptile, 1, -1! LOOP ON PARTICLES
+							partx=curr_tile%part_x(i)
+							party=curr_tile%part_y(i)
+							partz=curr_tile%part_z(i)
+							partux=curr_tile%part_ux(i)
+							partuy=curr_tile%part_uy(i)
+							partuz=curr_tile%part_uz(i)
+							gaminv=curr_tile%part_gaminv(i)
+							partw=curr_tile%pid(i,wpid)
+
+							! Case 1: if particle did not leave tile nothing to do
+							IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+							.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+							CYCLE
+
+							! Case 2: if particle left MPI domain nothing to do now
+							IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
+							IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+
+							! Case 3: particles changed tile. Tranfer particle to new tile
+							! Get new indexes of particle in array of tiles
+							indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+							indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+							CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+							CALL add_particle_at_tile(curr, indx,iy,indz, &
+								 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+						END DO !END LOOP ON PARTICLES
+					END DO
+				END DO ! END LOOP ON TILES
+				!$OMP END PARALLEL DO 
+        	END DO 
+        END DO
+    END DO ! END LOOP ON SPECIES
+    !$OMP END PARALLEL DO 
+  END SUBROUTINE particle_bcs_tiles_2d_openmp
+  
 !!! MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
     INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
@@ -1130,13 +1397,14 @@ END SUBROUTINE charge_bcs
     INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
     INTEGER(isp) :: dest, src
     LOGICAL(idp) :: out_of_bounds
-    INTEGER(isp) :: ispecies, i, ip, ix, iy, iz
-    INTEGER(isp) :: ixtile, iytile, iztile
-    REAL(num) :: part_xyz
+    INTEGER(idp) :: ispecies, i, ip, ix, iy, iz
+    INTEGER(idp) :: ixtile, iytile, iztile
+    REAL(num) :: part_xyz, tdeb, tend
     TYPE(particle_species), POINTER :: currsp
     TYPE(particle_tile), POINTER :: curr
 
     DO ispecies=1, nspecies !LOOP ON SPECIES
+        tdeb=MPI_WTIME()
         ! Init send recv buffers
         currsp => species_parray(ispecies)
         nptoexch=0
@@ -1155,9 +1423,6 @@ END SUBROUTINE charge_bcs
                     ! Else, search for outbound particles
                     ALLOCATE(mask(1:curr%np_tile(1)))
                     mask=.TRUE.
-                    xbd = 0
-                    ybd = 0
-                    zbd = 0
                     part_xyz=0.
                     ! Identify outbounds particles
                     DO i = 1, curr%np_tile(1) !LOOP ON PARTICLES
@@ -1170,31 +1435,55 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. x_min_local) THEN
                             xbd = -1
                             IF (x_min_boundary) THEN
-                                curr%part_x(i) = part_xyz + length_x
+                            	SELECT CASE (pbound_x_min)
+                            	CASE (1_idp) ! absorbing 
+                            		mask(i)=.FALSE.
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_x(i) = part_xyz + length_x
+                                END SELECT 
                             ENDIF
                         ENDIF
                         ! Particle has left this processor
                         IF (part_xyz .GE. x_max_local) THEN
                             xbd = 1
                             IF (x_max_boundary) THEN
-                                curr%part_x(i) = part_xyz - length_x
+                            	SELECT CASE (pbound_x_max)
+                            	CASE (1_idp) ! absorbing
+                            		mask(i)=.FALSE.
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_x(i) = part_xyz - length_x
+                                END SELECT
                             ENDIF
                         ENDIF
 
                         part_xyz = curr%part_y(i)
                         ! Particle has left this processor
-                        IF (part_xyz .LT. y_min_local) THEN
+                        IF ((part_xyz .LT. y_min_local) .AND. (c_dim .EQ. 3)) THEN
                             ybd = -1
                             IF (y_min_boundary) THEN
-                                curr%part_y(i) = part_xyz + length_y
+                            	SELECT CASE (pbound_y_min)! absorbing 
+                            	CASE (1_idp)
+                            		mask(i)=.FALSE.
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                               		curr%part_y(i) = part_xyz + length_y
+                                END SELECT
                             ENDIF
                         ENDIF
 
                         ! Particle has left this processor
-                        IF (part_xyz .GE. y_max_local) THEN
+                        IF ((part_xyz .GE. y_max_local) .AND. (c_dim .EQ. 3)) THEN
                             ybd = 1
                             IF (y_max_boundary) THEN
-                                curr%part_y(i) = part_xyz - length_y
+                            	SELECT CASE (pbound_y_max) 
+                            	CASE (1_idp) ! absorbing 
+                            		mask(i)=.FALSE. 
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_y(i) = part_xyz - length_y
+                                END SELECT
                             ENDIF
                         ENDIF
 
@@ -1203,7 +1492,13 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. z_min_local) THEN
                             zbd = -1
                             IF (z_min_boundary) THEN
-                                curr%part_z(i) = part_xyz + length_z
+								SELECT CASE (pbound_z_min)
+								CASE (1_idp) ! absorbing 
+									mask(i)=.FALSE.
+									CYCLE
+								CASE DEFAULT ! periodic 
+									curr%part_z(i) = part_xyz + length_z
+								END SELECT
                             ENDIF
                         ENDIF
 
@@ -1212,7 +1507,13 @@ END SUBROUTINE charge_bcs
                             zbd = 1
                             ! Particle has left the system
                             IF (z_max_boundary) THEN
-                                curr%part_z(i) = part_xyz - length_z
+                            	SELECT CASE (pbound_z_max)
+                            	CASE (1_idp) ! absorbing 
+                            		mask(i)=.FALSE.
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_z(i) = part_xyz - length_z
+                                END SELECT
                             ENDIF
                         ENDIF
 
@@ -1233,11 +1534,13 @@ END SUBROUTINE charge_bcs
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
                     ! Remove outbound particles from current tile
-                    CALL rm_particles_from_species(currsp, curr, mask)
+                    CALL rm_particles_from_species_with_mask(currsp, ixtile,iytile,iztile, mask)
                     DEALLOCATE(mask)
                   ENDDO
                ENDDO
             ENDDO ! END LOOP ON TILES
+            tend=MPI_WTIME()
+    		local_time_part=local_time_part+(tend-tdeb)
             ! SEND/RECEIVE PARTICLES TO/FROM ADJACENT SUBDOMAINS
             DO iz = -1, 1
                 DO iy = -1, 1
