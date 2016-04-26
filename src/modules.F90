@@ -34,6 +34,7 @@ USE constants
 REAL(num) :: dxi,dyi,dzi
 REAL(num) :: invvol
 REAL(num) :: dts2dx,dts2dy,dts2dz
+REAL(num) :: dtsdx0,dtsdy0,dtsdz0
 REAL(num) :: clightsq
 END MODULE precomputed
 
@@ -224,9 +225,11 @@ MODULE time_stat
 !===============================================================================
 use constants
 
-INTEGER(idp) :: timestat_activated
-INTEGER(idp) :: timestat_period
-REAL(num), dimension(20) :: localtimes
+INTEGER(idp)                           :: timestat_activated
+INTEGER(idp)                           :: timestat_period
+REAL(num), dimension(20)               :: localtimes
+REAL(num), DIMENSION(:,:), ALLOCATABLE :: buffer_timestat
+INTEGER(idp)                           :: itimestat,nbuffertimestat
 
 END MODULE
 
@@ -349,6 +352,7 @@ REAL(num):: z_min_local, z_max_local
 INTEGER(idp) :: sorting_activated                   ! Activation of soting
 REAL(NUM)    :: sorting_dx, sorting_dy, sorting_dz  ! Bin space steps
 REAL(NUM)    :: sorting_shiftx, sorting_shifty, sorting_shiftz
+LOGICAL      :: sorting_verbose
 
 ! Axis
 REAL(num), POINTER, DIMENSION(:) :: x, y, z

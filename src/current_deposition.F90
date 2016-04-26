@@ -373,9 +373,20 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   ! Esirkepov tiling version 
   ELSE IF (currdepo.EQ.1) THEN
 
+    ! Order 1
+    IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
+
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_1_1_1, &
+         jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	       nox,noy,noz,dx,dy,dz,dt)
+    
+    ELSE
+
     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
+	       
+	  ENDIF
   ! _______________________________________________________	
 	! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE
@@ -387,7 +398,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     !     jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	  !     nox,noy,noz,dx,dy,dz,dt)
 
-    CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_1_1_1, &
+      !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_1_1_1, &
+      !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	    !   nox,noy,noz,dx,dy,dz,dt)
+
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_1_1_1, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
 
@@ -4319,7 +4334,7 @@ IMPLICIT NONE
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
     INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
     INTEGER(idp) :: nnx, nnxy,ngridx, ngridy, n,nn,nv
-    INTEGER(idp) :: moff(1:8)
+    INTEGER(idp) :: moffjx(1:8), moffjy(1:8), moffjz(1:8)
 
     INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: vx,vy,vz
@@ -4329,16 +4344,16 @@ IMPLICIT NONE
     REAL(num) :: sy1,sy2,sy3,sy4,sz1,sz2,sz3,sz4
     REAL(num) :: sy01,sy02,sy03,sy04,sz01,sz02,sz03,sz04
     REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
-    REAL(num):: wwwx1(LVEC,8),wwwx2(LVEC,8),wwwy1(LVEC,8),wwwy2(LVEC,8),wwwz1(LVEC,8),wwwz2(LVEC,8)
     REAL(num):: wx1,wx2,wy1,wy2,wz1,wz2
     INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
     LOGICAL(idp) :: l_particles_weight,l4symtry ! Useless here but need to be passed in argument to match func_order arguments
     REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
     REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
     REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
-    REAL(num) ::  dtsdx,dtsdy,dtsdz
+    
+    REAL(num), DIMENSION(LVEC,48) :: sdx,sdy,sdz
+    
     INTEGER(idp) :: dix,diy,diz
-    REAL(num) ::dtsdx0,dtsdy0,dtsdz0
     INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp
     INTEGER(idp) :: iixporig,ijxporig,ikxporig
     REAL(num) :: invdtdx,invdtdy,invdtdz
@@ -4348,24 +4363,32 @@ IMPLICIT NONE
 
     ngridx=nx+1+2*nxguard
     ngridy=ny+1+2*nyguard
-    ncx=nx+4
-    ncy=ny+4
-    ncz=nz+4
+    ncx=nx+5
+    ncy=ny+5
+    ncz=nz+5
     NCELLS=ncx*ncy*ncz
     ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
+    ALLOCATE(sx(-1:2), sx0(-1:2), dsx(-1:2))
+    ALLOCATE(sy(-1:2), sy0(-1:2), dsy(-1:2))
+    ALLOCATE(sz(-1:2), sz0(-1:2), dsz(-1:2))    
     jxcells=0.0_num
     jycells=0.0_num
     jzcells=0.0_num
     nnx = ngridx
     nnxy = ngridx*ngridy
-    moff = (/-nnxy,0_idp,nnxy,2_idp*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2_idp*nnxy/)
     iixporig=-2_idp
     ijxporig=-2_idp
     ikxporig=-2_idp
-    orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+    !orig=iixporig+nxguard+nnx*(ijxporig+nyguard)+(ikxporig+nzguard)*nnxy
+    orig=(nxguard+iixporig) + (nyguard+ijxporig)*nnx + (nzguard+ikxporig)*nnxy
+    
     ngx=(ngridx-ncx)
     ncxy=ncx*ncy
     ngxy=(ngridx*ngridy-ncxy)
+
+    moffjx = (/0_idp,nnx,2_idp*nnx,3_idp*nnx,nnxy,nnx+nnxy,2_idp*nnx+nnxy,3_idp*nnx+nnxy/)
+    moffjy = (/0_idp, 1_idp, 2_idp, 3_idp, nnxy, 1_idp+nnxy, 2_idp+nnxy, 3_idp+nnxy/)
+    moffjz = (/0_idp, 1_idp, 2_idp, 3_idp, nnx, 1_idp+nnx, 2_idp+nnx, 3_idp+nnx/)
 
     h1=(/1_num,0_num,1_num,0_num/); sgn=(/1_num,-1_num,1_num,-1_num/)
     h11=(/0_num,1_num,1_num,0_num/); h12=(/1_num,0_num,0_num,1_num/)
@@ -4433,9 +4456,16 @@ IMPLICIT NONE
             diz = ikxp-ikxp0
   
             ! --- zero out coefficients (needed because of different dix and diz for each particle)
-            sx=0.0_num;sy=0.0_num;sz=0.0_num
+            sx=0.0_num
+            sy=0.0_num
+            sz=0.0_num
   
             ! --- computes coefficients for quantities centered between nodes
+!#if DEBUG==1
+!  if ((dix>1).or.(diy>1).or.(diz>1)) then
+!    print*,'',dix,diy,diz
+!  end if
+!#endif            
             sx( 0+dix) = 1.0_num-xint
             sx( 1+dix) = xint
             sy( 0+diy) = 1.0_num-yint
@@ -4448,10 +4478,401 @@ IMPLICIT NONE
             dsy = sy - sy0
             dsz = sz - sz0  
   
-            ICELL(n,1)=1+(iixp0-iixporig)+(ijxp0-ijxporig)*ncx+(ikxp0-ikxporig)*ncxy
-            ICELL(n,2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
-            ICELL(n,3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
+            ! Icell like in the previous function
+            !ICELL(n,1)=1+(iixp0-iixporig)+(ijxp0-ijxporig)*ncx+(ikxp0-ikxporig)*ncxy
+            ! With the shift
+            ICELL(n,1)=(iixp0-iixporig)+(ijxp0-ijxporig-1)*ncx+(ikxp0-ikxporig-1)*ncxy
+            !ICELL(n,2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
+            !ICELL(n,3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
 
+  ! Weight
+  sdx(n,1)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(-1) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(-1))
+  sdx(n,2)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(-1) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(-1))
+  sdx(n,3)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(-1) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(-1))
+  sdx(n,4)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(-1) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(-1))
+  sdx(n,5)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(0) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(0))
+  sdx(n,6)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(0) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(0))
+  sdx(n,7)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(0) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(0))
+  sdx(n,8)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(0) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(0))
+  sdx(n,9)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(1) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(1))
+  sdx(n,10)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(1) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(1))
+  sdx(n,11)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(1) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(1))
+  sdx(n,12)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(1) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(1))
+  sdx(n,13)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(2) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(2))
+  sdx(n,14)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(2) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(2))
+  sdx(n,15)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(2) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(2))
+  sdx(n,16)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(2) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(2))
+  sdx(n,17)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(-1) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(-1))
+  sdx(n,17)=sdx(n,17)+sdx(n,1)
+  sdx(n,18)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(-1) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(-1))
+  sdx(n,18)=sdx(n,18)+sdx(n,2)
+  sdx(n,19)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(-1) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(-1))
+  sdx(n,19)=sdx(n,19)+sdx(n,3)
+  sdx(n,20)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(-1) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(-1))
+  sdx(n,20)=sdx(n,20)+sdx(n,4)
+  sdx(n,21)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(0) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(0))
+  sdx(n,21)=sdx(n,21)+sdx(n,5)
+  sdx(n,22)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(0) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(0))
+  sdx(n,22)=sdx(n,22)+sdx(n,6)
+  sdx(n,23)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(0) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(0))
+  sdx(n,23)=sdx(n,23)+sdx(n,7)
+  sdx(n,24)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(0) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(0))
+  sdx(n,24)=sdx(n,24)+sdx(n,8)
+  sdx(n,25)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(1) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(1))
+  sdx(n,25)=sdx(n,25)+sdx(n,9)
+  sdx(n,26)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(1) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(1))
+  sdx(n,26)=sdx(n,26)+sdx(n,10)
+  sdx(n,27)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(1) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(1))
+  sdx(n,27)=sdx(n,27)+sdx(n,11)
+  sdx(n,28)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(1) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(1))
+  sdx(n,28)=sdx(n,28)+sdx(n,12)
+  sdx(n,29)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(2) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(2))
+  sdx(n,29)=sdx(n,29)+sdx(n,13)
+  sdx(n,30)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(2) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(2))
+  sdx(n,30)=sdx(n,30)+sdx(n,14)
+  sdx(n,31)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(2) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(2))
+  sdx(n,31)=sdx(n,31)+sdx(n,15)
+  sdx(n,32)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(2) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(2))
+  sdx(n,32)=sdx(n,32)+sdx(n,16)
+  sdx(n,33)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(-1) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(-1))
+  sdx(n,33)=sdx(n,33)+sdx(n,17)
+  sdx(n,34)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(-1) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(-1))
+  sdx(n,34)=sdx(n,34)+sdx(n,18)
+  sdx(n,35)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(-1) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(-1))
+  sdx(n,35)=sdx(n,35)+sdx(n,19)
+  sdx(n,36)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(-1) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(-1))
+  sdx(n,36)=sdx(n,36)+sdx(n,20)
+  sdx(n,37)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(0) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(0))
+  sdx(n,37)=sdx(n,37)+sdx(n,21)
+  sdx(n,38)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(0) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(0))
+  sdx(n,38)=sdx(n,38)+sdx(n,22)
+  sdx(n,39)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(0) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(0))
+  sdx(n,39)=sdx(n,39)+sdx(n,23)
+  sdx(n,40)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(0) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(0))
+  sdx(n,40)=sdx(n,40)+sdx(n,24)
+  sdx(n,41)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(1) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(1))
+  sdx(n,41)=sdx(n,41)+sdx(n,25)
+  sdx(n,42)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(1) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(1))
+  sdx(n,42)=sdx(n,42)+sdx(n,26)
+  sdx(n,43)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(1) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(1))
+  sdx(n,43)=sdx(n,43)+sdx(n,27)
+  sdx(n,44)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(1) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(1))
+  sdx(n,44)=sdx(n,44)+sdx(n,28)
+  sdx(n,45)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(2) + &
+  (0.5_num*sy0(-1)+1.0_num/3.0_num*dsy(-1))*dsz(2))
+  sdx(n,45)=sdx(n,45)+sdx(n,29)
+  sdx(n,46)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(2) + &
+  (0.5_num*sy0(0)+1.0_num/3.0_num*dsy(0))*dsz(2))
+  sdx(n,46)=sdx(n,46)+sdx(n,30)
+  sdx(n,47)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(2) + &
+  (0.5_num*sy0(1)+1.0_num/3.0_num*dsy(1))*dsz(2))
+  sdx(n,47)=sdx(n,47)+sdx(n,31)
+  sdx(n,48)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(2) + &
+  (0.5_num*sy0(2)+1.0_num/3.0_num*dsy(2))*dsz(2))
+  sdx(n,48)=sdx(n,48)+sdx(n,32)
+
+  sdy(n,1)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(-1) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(-1))
+  sdy(n,2)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(0) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(0))
+  sdy(n,3)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(1) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(1))
+  sdy(n,4)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(2) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(2))
+  sdy(n,5)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(-1) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(-1))
+  sdy(n,6)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(0) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(0))
+  sdy(n,7)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(1) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(1))
+  sdy(n,8)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(2) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(2))
+  sdy(n,9)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(-1) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(-1))
+  sdy(n,10)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(0) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(0))
+  sdy(n,11)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(1) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(1))
+  sdy(n,12)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(2) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(2))
+  sdy(n,13)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(-1) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(-1))
+  sdy(n,14)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(0) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(0))
+  sdy(n,15)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(1) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(1))
+  sdy(n,16)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(2) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(2))
+  sdy(n,17)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(-1) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(-1))
+  sdy(n,17)=sdy(n,17)+sdy(n,1)
+  sdy(n,18)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(0) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(0))
+  sdy(n,18)=sdy(n,18)+sdy(n,2)
+  sdy(n,19)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(1) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(1))
+  sdy(n,19)=sdy(n,19)+sdy(n,3)
+  sdy(n,20)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(2) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(2))
+  sdy(n,20)=sdy(n,20)+sdy(n,4)
+  sdy(n,21)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(-1) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(-1))
+  sdy(n,21)=sdy(n,21)+sdy(n,5)
+  sdy(n,22)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(0) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(0))
+  sdy(n,22)=sdy(n,22)+sdy(n,6)
+  sdy(n,23)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(1) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(1))
+  sdy(n,23)=sdy(n,23)+sdy(n,7)
+  sdy(n,24)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(2) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(2))
+  sdy(n,24)=sdy(n,24)+sdy(n,8)
+  sdy(n,25)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(-1) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(-1))
+  sdy(n,25)=sdy(n,25)+sdy(n,9)
+  sdy(n,26)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(0) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(0))
+  sdy(n,26)=sdy(n,26)+sdy(n,10)
+  sdy(n,27)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(1) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(1))
+  sdy(n,27)=sdy(n,27)+sdy(n,11)
+  sdy(n,28)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(2) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(2))
+  sdy(n,28)=sdy(n,28)+sdy(n,12)
+  sdy(n,29)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(-1) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(-1))
+  sdy(n,29)=sdy(n,29)+sdy(n,13)
+  sdy(n,30)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(0) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(0))
+  sdy(n,30)=sdy(n,30)+sdy(n,14)
+  sdy(n,31)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(1) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(1))
+  sdy(n,31)=sdy(n,31)+sdy(n,15)
+  sdy(n,32)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(2) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(2))
+  sdy(n,32)=sdy(n,32)+sdy(n,16)
+  sdy(n,33)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(-1) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(-1))
+  sdy(n,33)=sdy(n,33)+sdy(n,17)
+  sdy(n,34)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(0) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(0))
+  sdy(n,34)=sdy(n,34)+sdy(n,18)
+  sdy(n,35)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(1) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(1))
+  sdy(n,35)=sdy(n,35)+sdy(n,19)
+  sdy(n,36)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(2) + &
+  (0.5_num*sz0(-1)+1.0_num/3.0_num*dsz(-1))*dsx(2))
+  sdy(n,36)=sdy(n,36)+sdy(n,20)
+  sdy(n,37)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(-1) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(-1))
+  sdy(n,37)=sdy(n,37)+sdy(n,21)
+  sdy(n,38)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(0) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(0))
+  sdy(n,38)=sdy(n,38)+sdy(n,22)
+  sdy(n,39)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(1) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(1))
+  sdy(n,39)=sdy(n,39)+sdy(n,23)
+  sdy(n,40)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(2) + &
+  (0.5_num*sz0(0)+1.0_num/3.0_num*dsz(0))*dsx(2))
+  sdy(n,40)=sdy(n,40)+sdy(n,24)
+  sdy(n,41)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(-1) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(-1))
+  sdy(n,41)=sdy(n,41)+sdy(n,25)
+  sdy(n,42)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(0) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(0))
+  sdy(n,42)=sdy(n,42)+sdy(n,26)
+  sdy(n,43)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(1) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(1))
+  sdy(n,43)=sdy(n,43)+sdy(n,27)
+  sdy(n,44)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(2) + &
+  (0.5_num*sz0(1)+1.0_num/3.0_num*dsz(1))*dsx(2))
+  sdy(n,44)=sdy(n,44)+sdy(n,28)
+  sdy(n,45)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(-1) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(-1))
+  sdy(n,45)=sdy(n,45)+sdy(n,29)
+  sdy(n,46)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(0) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(0))
+  sdy(n,46)=sdy(n,46)+sdy(n,30)
+  sdy(n,47)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(1) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(1))
+  sdy(n,47)=sdy(n,47)+sdy(n,31)
+  sdy(n,48)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(2) + &
+  (0.5_num*sz0(2)+1.0_num/3.0_num*dsz(2))*dsx(2))
+  sdy(n,48)=sdy(n,48)+sdy(n,32)
+
+  sdz(n,1)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(-1) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(-1))
+  sdz(n,2)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(-1) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(-1))
+  sdz(n,3)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(-1) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(-1))
+  sdz(n,4)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(-1) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(-1))
+  sdz(n,5)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(0) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(0))
+  sdz(n,6)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(0) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(0))
+  sdz(n,7)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(0) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(0))
+  sdz(n,8)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(0) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(0))
+  sdz(n,9)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(1) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(1))
+  sdz(n,10)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(1) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(1))
+  sdz(n,11)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(1) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(1))
+  sdz(n,12)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(1) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(1))
+  sdz(n,13)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(2) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(2))
+  sdz(n,14)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(2) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(2))
+  sdz(n,15)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(2) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(2))
+  sdz(n,16)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(2) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(2))
+  sdz(n,17)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(-1) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(-1))
+  sdz(n,17)=sdz(n,17)+sdz(n,1)
+  sdz(n,18)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(-1) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(-1))
+  sdz(n,18)=sdz(n,18)+sdz(n,2)
+  sdz(n,19)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(-1) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(-1))
+  sdz(n,19)=sdz(n,19)+sdz(n,3)
+  sdz(n,20)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(-1) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(-1))
+  sdz(n,20)=sdz(n,20)+sdz(n,4)
+  sdz(n,21)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(0) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(0))
+  sdz(n,21)=sdz(n,21)+sdz(n,5)
+  sdz(n,22)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(0) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(0))
+  sdz(n,22)=sdz(n,22)+sdz(n,6)
+  sdz(n,23)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(0) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(0))
+  sdz(n,23)=sdz(n,23)+sdz(n,7)
+  sdz(n,24)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(0) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(0))
+  sdz(n,24)=sdz(n,24)+sdz(n,8)
+  sdz(n,25)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(1) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(1))
+  sdz(n,25)=sdz(n,25)+sdz(n,9)
+  sdz(n,26)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(1) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(1))
+  sdz(n,26)=sdz(n,26)+sdz(n,10)
+  sdz(n,27)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(1) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(1))
+  sdz(n,27)=sdz(n,27)+sdz(n,11)
+  sdz(n,28)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(1) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(1))
+  sdz(n,28)=sdz(n,28)+sdz(n,12)
+  sdz(n,29)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(2) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(2))
+  sdz(n,29)=sdz(n,29)+sdz(n,13)
+  sdz(n,30)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(2) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(2))
+  sdz(n,30)=sdz(n,30)+sdz(n,14)
+  sdz(n,31)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(2) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(2))
+  sdz(n,31)=sdz(n,31)+sdz(n,15)
+  sdz(n,32)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(2) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(2))
+  sdz(n,32)=sdz(n,32)+sdz(n,16)
+  sdz(n,33)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(-1) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(-1))
+  sdz(n,33)=sdz(n,33)+sdz(n,17)
+  sdz(n,34)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(-1) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(-1))
+  sdz(n,34)=sdz(n,34)+sdz(n,18)
+  sdz(n,35)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(-1) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(-1))
+  sdz(n,35)=sdz(n,35)+sdz(n,19)
+  sdz(n,36)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(-1) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(-1))
+  sdz(n,36)=sdz(n,36)+sdz(n,20)
+  sdz(n,37)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(0) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(0))
+  sdz(n,37)=sdz(n,37)+sdz(n,21)
+  sdz(n,38)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(0) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(0))
+  sdz(n,38)=sdz(n,38)+sdz(n,22)
+  sdz(n,39)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(0) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(0))
+  sdz(n,39)=sdz(n,39)+sdz(n,23)
+  sdz(n,40)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(0) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(0))
+  sdz(n,40)=sdz(n,40)+sdz(n,24)
+  sdz(n,41)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(1) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(1))
+  sdz(n,41)=sdz(n,41)+sdz(n,25)
+  sdz(n,42)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(1) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(1))
+  sdz(n,42)=sdz(n,42)+sdz(n,26)
+  sdz(n,43)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(1) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(1))
+  sdz(n,43)=sdz(n,43)+sdz(n,27)
+  sdz(n,44)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(1) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(1))
+  sdz(n,44)=sdz(n,44)+sdz(n,28)
+  sdz(n,45)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(2) + &
+  (0.5_num*sx0(-1)+1.0_num/3.0_num*dsx(-1))*dsy(2))
+  sdz(n,45)=sdz(n,45)+sdz(n,29)
+  sdz(n,46)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(2) + &
+  (0.5_num*sx0(0)+1.0_num/3.0_num*dsx(0))*dsy(2))
+  sdz(n,46)=sdz(n,46)+sdz(n,30)
+  sdz(n,47)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(2) + &
+  (0.5_num*sx0(1)+1.0_num/3.0_num*dsx(1))*dsy(2))
+  sdz(n,47)=sdz(n,47)+sdz(n,31)
+  sdz(n,48)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(2) + &
+  (0.5_num*sx0(2)+1.0_num/3.0_num*dsx(2))*dsy(2))
+  sdz(n,48)=sdz(n,48)+sdz(n,32)
+ 
         END DO
         !$OMP END SIMD
 
@@ -4461,99 +4882,95 @@ IMPLICIT NONE
             !$OMP SIMD
             DO nv=1,8
                 ! --- JX
-                wx1=wwwx1(n,nv); wx2=wwwx2(n,nv)
-                ! Loop on (i=-1,j,k)
-                jxcells(nv,ICELL(n,1)-ncx-1) = jxcells(nv,ICELL(n,1)-ncx-1) + wx1*sx01(n)*vx(n)
-                ! Loop on (i=0,j,k)
-                jxcells(nv,ICELL(n,1)-ncx)   = jxcells(nv,ICELL(n,1)-ncx)   + wx1*sx02(n)*vx(n)
-                !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)-ncx+1) = jxcells(nv,ICELL(n,1)-ncx+1) + wx1*sx03(n)*vx(n)
-                !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)-ncx+2) = jxcells(nv,ICELL(n,1)-ncx+2) + wx1*sx04(n)*vx(n)
-                ! Loop on (i=-1,j,k)
-                jxcells(nv,ICELL(n,1)+ncx-1) = jxcells(nv,ICELL(n,1)+ncx-1) + wx2*sx01(n)*vx(n)
-                ! Loop on (i=0,j,k)
-                jxcells(nv,ICELL(n,1)+ncx)   = jxcells(nv,ICELL(n,1)+ncx)   + wx2*sx02(n)*vx(n)
-                !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)+ncx+1) = jxcells(nv,ICELL(n,1)+ncx+1) + wx2*sx03(n)*vx(n)
-                !Loop on (i=1,j,k)
-                jxcells(nv,ICELL(n,1)+ncx+2) = jxcells(nv,ICELL(n,1)+ncx+2) + wx2*sx04(n)*vx(n)
 
+                ! ICELL = (-1,-1,-1)
+                ! Loop on (i=-1,j=-1,k=-1)
+                jxcells(nv,ICELL(n,1)) = jxcells(nv,ICELL(n,1)) + sdx(n,nv)
+                ! Loop on (i=-1,j=-1,k=1)
+                jxcells(nv,ICELL(n,1)+2*ncxy)   = jxcells(nv,ICELL(n,1)+2*ncxy) + sdx(n,8+nv)
+                !Loop on (i=0,j,k=-1)
+                jxcells(nv,ICELL(n,1)+1) = jxcells(nv,ICELL(n,1)+1) + sdx(n,16+nv)
+                !Loop on (i=0,j,k=1)
+                jxcells(nv,ICELL(n,1)+1+2*ncxy) = jxcells(nv,ICELL(n,1)+1+2*ncxy) + sdx(n,24+nv)
+                ! Loop on (i=1,j,k=-1)
+                jxcells(nv,ICELL(n,1)+2) = jxcells(nv,ICELL(n,1)+2) + sdx(n,32+nv)
+                ! Loop on (i=1,j,k=1)
+                jxcells(nv,ICELL(n,1)+2+2*ncxy) = jxcells(nv,ICELL(n,1)+2+2*ncxy) + sdx(n,40+nv)
+                
                 ! --- JY
-                wy1=wwwy1(n,nv); wy2=wwwy2(n,nv)
-                ! Loop on (i=-1,j,k)
-                jycells(nv,ICELL(n,2)-ncx-1) = jycells(nv,ICELL(n,2)-ncx-1) + wy1*sx1(n)*vy(n)
-                ! Loop on (i=0,j,k)
-                jycells(nv,ICELL(n,2)-ncx)   = jycells(nv,ICELL(n,2)-ncx)   + wy1*sx2(n)*vy(n)
-                !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)-ncx+1) = jycells(nv,ICELL(n,2)-ncx+1) + wy1*sx3(n)*vy(n)
-                !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)-ncx+2) = jycells(nv,ICELL(n,2)-ncx+2) + wy1*sx4(n)*vy(n)
-                ! Loop on (i=-1,j,k)
-                jycells(nv,ICELL(n,2)+ncx-1) = jycells(nv,ICELL(n,2)+ncx-1) + wy2*sx1(n)*vy(n)
-                ! Loop on (i=0,j,k)
-                jycells(nv,ICELL(n,2)+ncx)   = jycells(nv,ICELL(n,2)+ncx)   + wy2*sx2(n)*vy(n)
-                !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)+ncx+1) = jycells(nv,ICELL(n,2)+ncx+1) + wy2*sx3(n)*vy(n)
-                !Loop on (i=1,j,k)
-                jycells(nv,ICELL(n,2)+ncx+2) = jycells(nv,ICELL(n,2)+ncx+2) + wy2*sx4(n)*vy(n)
+                ! Loop on (i=-1,j=-1,k=-1)
+                jycells(nv,ICELL(n,1))           = jycells(nv,ICELL(n,1)) + sdy(n,nv)
+                ! Loop on (i=-1,j=-1,k=1)
+                jycells(nv,ICELL(n,1)+2*ncxy)    = jycells(nv,ICELL(n,1)+2*ncxy) + sdy(n,nv+8)
+                !Loop on (i=-1,j=0,k=-1)
+                jycells(nv,ICELL(n,1)+ncx)       = jycells(nv,ICELL(n,1)+ncx) + sdy(n,nv+16)
+                !Loop on (i=-1,j=0,k=1)
+                jycells(nv,ICELL(n,1)+ncx+2*ncxy) = jycells(nv,ICELL(n,1)+ncx+2*ncxy) + sdy(n,nv+24)
+                ! Loop on (i=-1,j=1,k=-1)
+                jycells(nv,ICELL(n,1)+2*ncx)      = jycells(nv,ICELL(n,1)+2*ncx)  + sdy(n,nv+32)
+                ! Loop on (i=-1,j=1,k=1)
+                jycells(nv,ICELL(n,1)+2*ncx+2*ncxy)=jycells(nv,ICELL(n,1)+2*ncx+2*ncxy)+ sdy(n,nv+40)
 
                 ! --- JZ
-                wz1=wwwz1(n,nv); wz2=wwwz2(n,nv)
-                ! Loop on (i=-1,j,k)
-                jzcells(nv,ICELL(n,3)-ncx-1) = jzcells(nv,ICELL(n,3)-ncx-1) + wz1*sx1(n)*vz(n)
-                ! Loop on (i=0,j,k)
-                jzcells(nv,ICELL(n,3)-ncx)   = jzcells(nv,ICELL(n,3)-ncx)   + wz1*sx2(n)*vz(n)
-                !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)-ncx+1) = jzcells(nv,ICELL(n,3)-ncx+1) + wz1*sx3(n)*vz(n)
-                !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)-ncx+2) = jzcells(nv,ICELL(n,3)-ncx+2) + wz1*sx4(n)*vz(n)
-                ! Loop on (i=-1,j,k)
-                jzcells(nv,ICELL(n,3)+ncx-1) = jzcells(nv,ICELL(n,3)+ncx-1) + wz2*sx1(n)*vz(n)
-                ! Loop on (i=0,j,k)
-                jzcells(nv,ICELL(n,3)+ncx)   = jzcells(nv,ICELL(n,3)+ncx)   + wz2*sx2(n)*vz(n)
-                !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)+ncx+1) = jzcells(nv,ICELL(n,3)+ncx+1) + wz2*sx3(n)*vz(n)
-                !Loop on (i=1,j,k)
-                jzcells(nv,ICELL(n,3)+ncx+2) = jzcells(nv,ICELL(n,3)+ncx+2) + wz2*sx4(n)*vz(n)
+                ! Loop on (i=-1,j=-1,k=-1)
+                jzcells(nv,ICELL(n,1))     = jzcells(nv,ICELL(n,1)) + sdz(n,nv)
+                ! Loop on (i=-1,j=1,k=-1)
+                jzcells(nv,ICELL(n,1)+2*ncx) = jzcells(nv,ICELL(n,1)+ncx) + sdz(n,nv+8)
+                !Loop on (i=-1,j=-1,k=0)
+                jzcells(nv,ICELL(n,1)+ncxy) = jzcells(nv,ICELL(n,1)+ncxy)+ sdz(n,nv+16)
+                !Loop on (i=-1,j=1,k=0)
+                jzcells(nv,ICELL(n,1)+2*ncx+ncxy) = jzcells(nv,ICELL(n,1)+2*ncx+ncxy) + sdz(n,nv+24)
+                ! Loop on (i=-1,j,k=1)
+                jzcells(nv,ICELL(n,1)+2*ncxy) = jzcells(nv,ICELL(n,1)+2*ncxy) + sdz(n,nv+32)
+                ! Loop on (i=-1,j,k=1)
+                jzcells(nv,ICELL(n,1)+2*ncx+2*ncxy)=jzcells(nv,ICELL(n,1)+2*ncx+2*ncxy)+sdz(n,nv+40)
             END DO
             !$OMP END SIMD
         END DO
     END DO
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
-    DO iz=1, ncz
-        DO iy=1,ncy
+    DO iz=1, ncz-2
+        DO iy=1,ncy-2
             !$OMP SIMD
-            DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+            DO ix=1,ncx-2 !! VECTOR (take ncx multiple of vector length)
                 ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-                igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                !igrid=orig+ic+(iy-1)*ngx+(iz-1)*ngxy
+                igrid =orig+ix+(iy-1)*nnx + (iz-1)*nnxy
+                
+#if DEBUG==1
+  if ((igrid+moffjx(8) > nnxy*(nz+1+2*nzguard)).or.(igrid+moffjx(1)<1)) then
+  print*,iz,iy,ix
+  print*,iz +  nzguard+ikxporig, iy + nyguard+ijxporig, ix + nxguard+iixporig
+  end if
+#endif  
+                
                 ! jx
-                jx(orig+igrid+moff(1))=jx(orig+igrid+moff(1))+jxcells(1,ic)
-                jx(orig+igrid+moff(2))=jx(orig+igrid+moff(2))+jxcells(2,ic)
-                jx(orig+igrid+moff(3))=jx(orig+igrid+moff(3))+jxcells(3,ic)
-                jx(orig+igrid+moff(4))=jx(orig+igrid+moff(4))+jxcells(4,ic)
-                jx(orig+igrid+moff(5))=jx(orig+igrid+moff(5))+jxcells(5,ic)
-                jx(orig+igrid+moff(6))=jx(orig+igrid+moff(6))+jxcells(6,ic)
-                jx(orig+igrid+moff(7))=jx(orig+igrid+moff(7))+jxcells(7,ic)
-                jx(orig+igrid+moff(8))=jx(orig+igrid+moff(8))+jxcells(8,ic)
+                jx(igrid+moffjx(1))=jx(igrid+moffjx(1))+jxcells(1,ic)
+                jx(igrid+moffjx(2))=jx(igrid+moffjx(2))+jxcells(2,ic)
+                jx(igrid+moffjx(3))=jx(igrid+moffjx(3))+jxcells(3,ic)
+                jx(igrid+moffjx(4))=jx(igrid+moffjx(4))+jxcells(4,ic)
+                jx(igrid+moffjx(5))=jx(igrid+moffjx(5))+jxcells(5,ic)
+                jx(igrid+moffjx(6))=jx(igrid+moffjx(6))+jxcells(6,ic)
+                jx(igrid+moffjx(7))=jx(igrid+moffjx(7))+jxcells(7,ic)
+                jx(igrid+moffjx(8))=jx(igrid+moffjx(8))+jxcells(8,ic)
                 ! jy
-                jy(orig+igrid+moff(1))=jy(orig+igrid+moff(1))+jycells(1,ic)
-                jy(orig+igrid+moff(2))=jy(orig+igrid+moff(2))+jycells(2,ic)
-                jy(orig+igrid+moff(3))=jy(orig+igrid+moff(3))+jycells(3,ic)
-                jy(orig+igrid+moff(4))=jy(orig+igrid+moff(4))+jycells(4,ic)
-                jy(orig+igrid+moff(5))=jy(orig+igrid+moff(5))+jycells(5,ic)
-                jy(orig+igrid+moff(6))=jy(orig+igrid+moff(6))+jycells(6,ic)
-                jy(orig+igrid+moff(7))=jy(orig+igrid+moff(7))+jycells(7,ic)
-                jy(orig+igrid+moff(8))=jy(orig+igrid+moff(8))+jycells(8,ic)
+                jy(igrid+moffjy(1))=jy(igrid+moffjy(1))+jycells(1,ic)
+                jy(igrid+moffjy(2))=jy(igrid+moffjy(2))+jycells(2,ic)
+                jy(igrid+moffjy(3))=jy(igrid+moffjy(3))+jycells(3,ic)
+                jy(igrid+moffjy(4))=jy(igrid+moffjy(4))+jycells(4,ic)
+                jy(igrid+moffjy(5))=jy(igrid+moffjy(5))+jycells(5,ic)
+                jy(igrid+moffjy(6))=jy(igrid+moffjy(6))+jycells(6,ic)
+                jy(igrid+moffjy(7))=jy(igrid+moffjy(7))+jycells(7,ic)
+                jy(igrid+moffjy(8))=jy(igrid+moffjy(8))+jycells(8,ic)
                 ! jz
-                jz(orig+igrid+moff(1))=jz(orig+igrid+moff(1))+jzcells(1,ic)
-                jz(orig+igrid+moff(2))=jz(orig+igrid+moff(2))+jzcells(2,ic)
-                jz(orig+igrid+moff(3))=jz(orig+igrid+moff(3))+jzcells(3,ic)
-                jz(orig+igrid+moff(4))=jz(orig+igrid+moff(4))+jzcells(4,ic)
-                jz(orig+igrid+moff(5))=jz(orig+igrid+moff(5))+jzcells(5,ic)
-                jz(orig+igrid+moff(6))=jz(orig+igrid+moff(6))+jzcells(6,ic)
-                jz(orig+igrid+moff(7))=jz(orig+igrid+moff(7))+jzcells(7,ic)
-                jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8,ic)
+                jz(igrid+moffjz(1))=jz(igrid+moffjz(1))+jzcells(1,ic)
+                jz(igrid+moffjz(2))=jz(igrid+moffjz(2))+jzcells(2,ic)
+                jz(igrid+moffjz(3))=jz(igrid+moffjz(3))+jzcells(3,ic)
+                jz(igrid+moffjz(4))=jz(igrid+moffjz(4))+jzcells(4,ic)
+                jz(igrid+moffjz(5))=jz(igrid+moffjz(5))+jzcells(5,ic)
+                jz(igrid+moffjz(6))=jz(igrid+moffjz(6))+jzcells(6,ic)
+                jz(igrid+moffjz(7))=jz(igrid+moffjz(7))+jzcells(7,ic)
+                jz(igrid+moffjz(8))=jz(igrid+moffjz(8))+jzcells(8,ic)
             END DO
             !$OMP END SIMD
         END DO

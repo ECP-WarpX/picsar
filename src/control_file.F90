@@ -59,10 +59,12 @@ CONTAINS
         sorting_shiftx = 0.
         sorting_shifty = 0.
         sorting_shiftz = 0.
+        sorting_verbose = .TRUE.
          
         ! Time stats output activation 
         timestat_activated = 0
         timestat_period = 0
+        nbuffertimestat = 1
         
         l_lower_order_in_v = .FALSE.
 
@@ -335,7 +337,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length),*) sorting_shifty 
              ELSE IF (INDEX(buffer,'shiftz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_shiftz                                                              
+                READ(buffer(ix+1:string_length),*) sorting_shiftz       
+             ELSE IF (INDEX(buffer,'verbose') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length),*) sorting_verbose                                                                        
             ELSE IF (INDEX(buffer,'end::sorting') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -358,7 +363,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') timestat_activated
             ELSE IF (INDEX(buffer,'period') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') timestat_period                                        
+                READ(buffer(ix+1:string_length), '(i10)') timestat_period
+            ELSE IF (INDEX(buffer,'buffersize') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat                                        
             ELSE IF (INDEX(buffer,'end::timestat') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

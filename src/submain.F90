@@ -76,6 +76,9 @@ DO i=1,nst
     END IF
 END DO
 
+!!! --- Output time statistics
+CALL final_output_time_statistics
+
 !!! --- Stop Vtune analysis
 #if PROFILING==1            
 CALL stop_collection()      
@@ -140,6 +143,9 @@ invvol = dxi*dyi*dzi
 dts2dx = 0.5_num*dt*dxi
 dts2dy = 0.5_num*dt*dyi
 dts2dz = 0.5_num*dt*dzi
+dtsdx0 = dt*dxi
+dtsdy0 = dt*dyi
+dtsdz0 = dt*dzi
 clightsq = 1.0_num/clight**2
 
 ! Summary
@@ -189,6 +195,7 @@ IF (rank .EQ. 0) THEN
   ! Diags
   IF (timestat_activated.gt.0) THEN  
     write(0,*) 'Output of time statistics activated'
+    write(0,*) 'Buffer size:',nbuffertimestat
   ELSE
     write(0,*) 'Output of time statistics non-activated'
   ENDIF

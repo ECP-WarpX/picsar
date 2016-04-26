@@ -1889,7 +1889,11 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ENDIF    
     END SUBROUTINE
 
+    ! _____________________________________________________
     SUBROUTINE init_time_stat_output
+    ! Initialize outputs of the time statistics
+    !
+    ! _____________________________________________________
       USE time_stat
       USE shared_data
       USE params
@@ -1907,6 +1911,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         
         IF (rank.eq.0) WRITE(0,*) ' Initialization of the time statistics output: ',nb_timestat
         
+        itimestat = 1 ! index in the buffer
+        
+        ALLOCATE(buffer_timestat(nb_timestat,nbuffertimestat)) ! Buffer before output
+      
+      ELSE
+        timestat_period = 0       
       ENDIF
     
     END SUBROUTINE

@@ -31,8 +31,6 @@ MODULE sorting
     
     IF ((sorting_activated.gt.0)) THEN
     
-      !IF ((rank.eq.0).and.(verbose)) WRITE(0,*) 'Particle sorting'
-    
       tdeb=MPI_WTIME()
     
       CALL particle_sorting_sub
@@ -72,7 +70,7 @@ MODULE sorting
     
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank, &
-    !$OMP sorting_shiftx,sorting_shifty,sorting_shiftz,sorting_dx,sorting_dy,sorting_dz) &
+    !$OMP sorting_shiftx,sorting_shifty,sorting_shiftz,sorting_dx,sorting_dy,sorting_dz,sorting_verbose) &
     !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count, &
     !$OMP nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered,sxmin,symin,szmin)
     DO iz=1, ntilez ! LOOP ON TILES
@@ -111,6 +109,9 @@ MODULE sorting
 				      ! If the sorting period > 0 and the current iteration corresponds to a multiple of the period
 				      IF ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
 
+                IF ((sorting_verbose).and.(rank.eq.0).and. &
+                    (iz.eq.1).and.(iy.eq.1).and.(ix.eq.1)) WRITE(0,*) 'Particle sorting, species',ispecies
+ 
 					      ! - Get current tile properties
 					      ! - Init current tile variables				    
 					      curr_tile=>curr%array_of_tiles(ix,iy,iz)

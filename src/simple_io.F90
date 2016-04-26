@@ -278,13 +278,39 @@ CONTAINS
       CALL MPI_REDUCE(localtimes,avetimes,20,mpidbl,MPI_SUM,0,comm,errcode)
       avetimes = avetimes / nproc
     
-      IF (rank.eq.0) THEN
-        write(41) avetimes(1:11)
-      end if
-      
+      buffer_timestat(1:11,itimestat) = avetimes(1:11)
+      itimestat = itimestat + 1
+    
+      ! Flush entire buffer when full   
+      IF (itimestat.gt.nbuffertimestat) THEN
+    
+        IF (rank.eq.0) THEN
+          write(41) buffer_timestat(1:11,1:nbuffertimestat)
+        end if
+        
+        itimestat=1
+        
+      END IF
       
     endif
   
   END SUBROUTINE
 
+  SUBROUTINE final_output_time_statistics
+  ! ______________________________________________________
+  ! Output of the time statistics at the end of the simulation
+  ! Purge the buffer
+  ! ______________________________________________________
+    USE time_stat
+    USE params
+    USE shared_data
+    IMPLICIT NONE
+    
+    IF (timestat_activated.gt.0) THEN
+    
+      write(41) buffer_timestat(1:11,1:itimestat)
+      
+    END IF
+
+  END SUBROUTINE
 END MODULE simple_io
