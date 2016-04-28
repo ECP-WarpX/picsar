@@ -74,7 +74,7 @@ class EM3DPXR(EM3DFFT):
         if self.finalized and not lforce: return
         EM3DFFT.finalize(self)
         if l_pxr:self.allocatefieldarraysPXR()
-        loadrho()
+
     def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
       ixt = ix
       iyt = iy
@@ -1799,7 +1799,6 @@ class EM3DPXR(EM3DFFT):
                  pxr.pxrdepose_rho_on_grid_sub_openmp(f.Rhoold_local,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards, 
                  pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,1)
              tend=MPI.Wtime()
-             pxr.local_time_part+=(tend-tdeb)
         else:
 
             for pgroup in pgroups:
