@@ -62,10 +62,6 @@ DO i=1,nst
     CALL calc_diags
     !!! --- Output simulation results
     CALL output_routines
-    !!! --- Output temproral diagnostics
-    CALL output_temporal_diagnostics
-    !!! --- Output time statistics
-    CALL output_time_statistics
     
     it = it+1
     timeit=MPI_WTIME()
@@ -178,7 +174,10 @@ IF (rank .EQ. 0) THEN
     write(0,*) 'shiftx:',sorting_shiftx
     write(0,*) 'shifty:',sorting_shifty
     write(0,*) 'shiftz:',sorting_shiftz    
-    write(0,*) ''     
+    write(0,*) ''    
+  ELSE
+    write(0,*) 'Particle sorting non-activated'
+    write(0,*) ''    
   ENDIF
   
   ! Species properties

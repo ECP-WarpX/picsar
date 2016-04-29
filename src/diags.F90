@@ -18,6 +18,11 @@ CONTAINS
         IMPLICIT NONE
 
         REAL(num) :: tmptime
+        
+#if defined(DEBUG)
+        WRITE(0,*) "Calc_diags: start"
+#endif
+        
         tmptime = MPI_WTIME()        
 
         ! - Computes electric field divergence on grid at n+1
@@ -30,6 +35,10 @@ CONTAINS
         CALL charge_bcs()
 
         localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
+
+#if defined(DEBUG)
+        WRITE(0,*) "Calc_diags: stop"
+#endif
 
     END SUBROUTINE calc_diags
 

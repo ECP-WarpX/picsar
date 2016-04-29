@@ -398,13 +398,13 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     !     jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	  !     nox,noy,noz,dx,dy,dz,dt)
 
-      !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_1_1_1, &
-      !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	    !   nox,noy,noz,dx,dy,dz,dt)
-
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_1_1_1, &
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_1_1_1, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
+
+      !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_1_1_1, &
+      !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	    !   nox,noy,noz,dx,dy,dz,dt)
 
     ! Order 2
     ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
@@ -1366,7 +1366,7 @@ DO iz=1,ntilez
 					curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
 					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     						   &
 					curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,	                                           &
-					nxjg,nzjg,noxx,nozz,.TRUE.,.FALSE.,.FALSE.,0_idp) 
+					nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp) 
 				CASE DEFAULT 
 					CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                              &
 					currg%jztile,count,                              									       &
@@ -1374,7 +1374,7 @@ DO iz=1,ntilez
 					curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
 					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
 					curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                     &
-					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 				
+					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp) 				
 			   END SELECT	
 
             END DO! END LOOP ON SPECIES

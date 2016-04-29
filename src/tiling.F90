@@ -351,25 +351,23 @@ CONTAINS
 	END SUBROUTINE init_tile_arrays
 
 
-
-
-    SUBROUTINE init_tile_arrays_for_species(nspec, species_array, aofgtiles, ntx, nty, ntz)
+    SUBROUTINE init_tile_arrays_for_species(nspec2,species_array,aofgtiles,ntx2,nty2,ntz2)
         IMPLICIT NONE
-        TYPE(grid_tile), DIMENSION(ntx,nty,ntz), INTENT(IN OUT) :: aofgtiles
-        TYPE(particle_species), DIMENSION(nspec), TARGET, INTENT(IN OUT) :: species_array
-        INTEGER(idp), INTENT(IN) :: nspec, ntx, nty, ntz
+        INTEGER(idp), INTENT(IN) :: nspec2, ntx2, nty2, ntz2
+        TYPE(grid_tile), DIMENSION(ntx2,nty2,ntz2), INTENT(IN OUT) :: aofgtiles
+        TYPE(particle_species), DIMENSION(nspec2), TARGET, INTENT(IN OUT) :: species_array
         INTEGER(idp) :: ispecies, ix, iy, iz
         INTEGER(idp) :: n1, n2, n3, ng1, ng2, ng3
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
         
         ! Allocate particle tile arrays 
-        DO ispecies=1,nspec ! LOOP ON SPECIES
+        DO ispecies=1,nspec2 ! LOOP ON SPECIES
             curr=>species_array(ispecies)
             curr%species_npart=0
-            DO iz=1, ntz! LOOP ON TILES
-                DO iy=1, nty
-                    DO ix=1,ntx
+            DO iz=1, ntz2! LOOP ON TILES
+                DO iy=1, nty2
+                    DO ix=1,ntx2
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         ! - Max size of particle arrays of current ile
                         n1=curr_tile%nx_cells_tile
@@ -378,17 +376,17 @@ CONTAINS
                         curr_tile%npmax_tile=MAX(n1*n2*n3*curr%nppcell,1_idp)
                         curr_tile%np_tile(1)=0
                         ! Set number of guard cells for each tile 
-                        IF ((ix .GT. 1) .AND. (ix .LT. ntx)) THEN
+                        IF ((ix .GT. 1) .AND. (ix .LT. ntx2)) THEN
                         	curr_tile%nxg_tile=MAX(nox+1,2)
                         ELSE
                         	curr_tile%nxg_tile=nxjguards
                         END IF
-                        IF ((iy .GT. 1) .AND. (iy .LT. nty) .AND. (c_dim .EQ. 3)) THEN
+                        IF ((iy .GT. 1) .AND. (iy .LT. nty2) .AND. (c_dim .EQ. 3)) THEN
                         	curr_tile%nyg_tile=MAX(noy+1,2)
                         ELSE
                         	curr_tile%nyg_tile=nyjguards
                         END IF
-                        IF ((iz .GT. 1) .AND. (iz .LT. ntz)) THEN
+                        IF ((iz .GT. 1) .AND. (iz .LT. ntz2)) THEN
                         	curr_tile%nzg_tile=MAX(noz+1,2)
                         ELSE
                         	curr_tile%nzg_tile=nzjguards
@@ -406,12 +404,12 @@ CONTAINS
         ! - Have to set it manually for each element through
         ! - a DO loop see add_particle_at_tile
         !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-        !$OMP SHARED(species_array, ntx, nty, ntz, nspec) &
+        !$OMP SHARED(species_array, ntx2, nty2, ntz2, nspec2) &
         !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile)
-        DO iz=1, ntz ! LOOP ON TILES
-            DO iy=1, nty
-                DO ix=1, ntx
-                    DO ispecies=1, nspec ! LOOP ON SPECIES
+        DO iz=1, ntz2 ! LOOP ON TILES
+            DO iy=1, nty2
+                DO ix=1, ntx2
+                    DO ispecies=1, nspec2 ! LOOP ON SPECIES
                         curr=>species_array(ispecies)
                         curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         !!! --- Init tile arrays
@@ -436,9 +434,9 @@ CONTAINS
         !$OMP END PARALLEL DO
         ! Allocate grid tile arrays
         curr=>species_array(1)
-		DO iz=1, ntz ! LOOP ON TILES
-            DO iy=1, nty
-                DO ix=1, ntx
+		DO iz=1, ntz2 ! LOOP ON TILES
+            DO iy=1, nty2
+                DO ix=1, ntx2
                    		curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         ! - Max size of particle arrays of current ile
                         n1=curr_tile%nx_cells_tile

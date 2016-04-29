@@ -25,9 +25,9 @@ section::main
  # Simulation duration (in 1/w0)
  t_max = 5
  
- ntilex = 2
- ntiley = 2
- ntilez = 2
+ ntilex = 10
+ ntiley = 5
+ ntilez = 5
  
  # Guard cells
  nguardsx = 4

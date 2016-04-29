@@ -1061,7 +1061,11 @@ END SUBROUTINE charge_bcs
     
     ! First exchange particles between tiles (NO MPI at that point)
 #if defined(DEBUG)
+#ifdef _OPENMP
+  WRITE(0,*) "particle_bcs_tiles_openmp: start"
+#else
   WRITE(0,*) "particle_bcs_tiles: start"
+#endif
 #endif
 	SELECT CASE (c_dim)
 	CASE(2)
@@ -1199,8 +1203,9 @@ END SUBROUTINE charge_bcs
         		DO ipx=1,3
 					!$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
 					!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+					!$OMP FIRSTPRIVATE(ipx,ipy,ipz) &
 					!$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
-					!$OMP indx,indy,indz,ipx,ipy,ipz) COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2) 
+					!$OMP indx,indy,indz) COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2) 
 					DO iz=ipz, ntilez,3! LOOP ON TILES
 						DO iy=ipy, ntiley,3
 							DO ix=ipx, ntilex,3
@@ -1339,8 +1344,9 @@ END SUBROUTINE charge_bcs
         nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
         DO ipz=1,3
         	DO ipx=1,3
-				!$OMP PARALLEL DO DEFAULT(NONE) SHARED(ipx,ipz,iy,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+				!$OMP PARALLEL DO DEFAULT(NONE) SHARED(iy,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
 				!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+				!$OMP FIRSTPRIVATE(ipx,ipz) &
 				!$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
 				!$OMP indx,indy,indz) COLLAPSE(2) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)  
 				DO iz=ipz, ntilez,3! LOOP ON TILES
