@@ -5,6 +5,7 @@ import struct
 
 def LoadBinNumPyArray3D(filename,dimx,dimy,dimz):
     """
+    Read Picsar output arrays
     """
     fd=open(filename,'rb');
     dim=np.zeros(3,dtype=np.int32)
@@ -17,7 +18,7 @@ def LoadBinNumPyArray3D(filename,dimx,dimy,dimz):
 
 def read_picsar_temporal_diags(filename):
   """
-  
+  Read Picsar temporal files
   """
   with open(filename,'rb') as file:
     fileContent = file.read()

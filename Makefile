@@ -1,5 +1,5 @@
 FC=mpif90
-FARGS= -O3 -fopenmp -g -fbounds-check -ftree-vectorize -ftree-vectorizer-verbose=2 
+FARGS= -O3 -fopenmp -g -ftree-vectorize -ftree-vectorizer-verbose=2 
 #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 #FARGS=-g
 SRCDIR= src
@@ -13,7 +13,7 @@ all: clean build
 test: test1 test2 test3
 
 
-build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o $(SRCDIR)/tiling.o $(SRCDIR)/sorting.o $(SRCDIR)/particles_push.o $(SRCDIR)/current_deposition.o $(SRCDIR)/field_gathering.o $(SRCDIR)/mpi_derived_types.o $(SRCDIR)/boundary.o $(SRCDIR)/diags.o $(SRCDIR)/simple_io.o $(SRCDIR)/submain.o $(SRCDIR)/mpi_routines.o $(SRCDIR)/control_file.o  $(SRCDIR)/main.o
+build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o $(SRCDIR)/tiling.o $(SRCDIR)/sorting.o $(SRCDIR)/particles_push.o $(SRCDIR)/current_deposition.o $(SRCDIR)/field_gathering.o $(SRCDIR)/mpi_derived_types.o $(SRCDIR)/boundary.o $(SRCDIR)/diags.o $(SRCDIR)/simple_io.o $(SRCDIR)/submain.o $(SRCDIR)/mpi_routines.o $(SRCDIR)/control_file.o $(SRCDIR)/main.o 
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)

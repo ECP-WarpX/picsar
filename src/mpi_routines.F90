@@ -17,25 +17,48 @@ MODULE mpi_routines
 
 CONTAINS
 
-  SUBROUTINE mpi_minimal_init(comm_in)
+SUBROUTINE mpi_minimal_init()
     LOGICAL(isp) :: isinitialized
-	INTEGER(isp) :: nproc_comm, rank_in_comm
-	INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in 
+	  INTEGER(isp) :: nproc_comm, rank_in_comm
 	
+	  !print*,'start mpi_minimal_init()'
+	  !print*,'MPI_INITIALIZED'
     CALL MPI_INITIALIZED(isinitialized,errcode)
-    IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
-    IF (present(comm_in) .AND. comm_in .GE. 0) THEN 
-    	CALL MPI_COMM_DUP(INT(comm_in,isp), comm, errcode)    	
-    ELSE
-    	CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+    IF (.NOT. isinitialized) THEN
+      !print*, 'MPI_INIT_THREAD'
+      CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
     ENDIF
+    !print*,'MPI_COMM_DUP'
+    CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+    !print*,'MPI_COMM_SIZE'
     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
     nproc=INT(nproc_comm,idp)
-    
+    !print*,'MPI_COMM_RANK'
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-	rank=INT(rank_in_comm,idp)	  	  
-
+	  rank=INT(rank_in_comm,idp)	  	  
+	  !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
+
+
+!   SUBROUTINE mpi_minimal_init(comm_in)
+!     LOGICAL(isp) :: isinitialized
+! 	INTEGER(isp) :: nproc_comm, rank_in_comm
+! 	INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in 
+! 	
+!     CALL MPI_INITIALIZED(isinitialized,errcode)
+!     IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
+!     IF (present(comm_in) .AND. comm_in .GE. 0) THEN 
+!     	CALL MPI_COMM_DUP(INT(comm_in,isp), comm, errcode)    	
+!     ELSE
+!     	CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+!     ENDIF
+!     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
+!     nproc=INT(nproc_comm,idp)
+!     
+!     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+! 	rank=INT(rank_in_comm,idp)	  	  
+! 
+!   END SUBROUTINE mpi_minimal_init
 
 
 

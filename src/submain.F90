@@ -62,10 +62,6 @@ DO i=1,nst
     CALL calc_diags
     !!! --- Output simulation results
     CALL output_routines
-    !!! --- Output temproral diagnostics
-    CALL output_temporal_diagnostics
-    !!! --- Output time statistics
-    CALL output_time_statistics
     
     it = it+1
     timeit=MPI_WTIME()
@@ -75,6 +71,9 @@ DO i=1,nst
         " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
     END IF
 END DO
+
+!!! --- Output time statistics
+CALL final_output_time_statistics
 
 !!! --- Stop Vtune analysis
 #if PROFILING==1            
@@ -140,6 +139,9 @@ invvol = dxi*dyi*dzi
 dts2dx = 0.5_num*dt*dxi
 dts2dy = 0.5_num*dt*dyi
 dts2dz = 0.5_num*dt*dzi
+dtsdx0 = dt*dxi
+dtsdy0 = dt*dyi
+dtsdz0 = dt*dzi
 clightsq = 1.0_num/clight**2
 
 ! Summary
@@ -172,7 +174,10 @@ IF (rank .EQ. 0) THEN
     write(0,*) 'shiftx:',sorting_shiftx
     write(0,*) 'shifty:',sorting_shifty
     write(0,*) 'shiftz:',sorting_shiftz    
-    write(0,*) ''     
+    write(0,*) ''    
+  ELSE
+    write(0,*) 'Particle sorting non-activated'
+    write(0,*) ''    
   ENDIF
   
   ! Species properties
@@ -189,6 +194,7 @@ IF (rank .EQ. 0) THEN
   ! Diags
   IF (timestat_activated.gt.0) THEN  
     write(0,*) 'Output of time statistics activated'
+    write(0,*) 'Buffer size:',nbuffertimestat
   ELSE
     write(0,*) 'Output of time statistics non-activated'
   ENDIF

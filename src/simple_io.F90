@@ -16,8 +16,12 @@ CONTAINS
         INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
         INTEGER(KIND=4) :: err=0
         REAL(num) :: tmptime
+
+#if defined(DEBUG)
+        WRITE(0,*) "Output_routines: start"
+#endif
         
-        IF (output_frequency .LT. 1) RETURN
+        IF (output_frequency .GE. 1) THEN
         tmptime = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
@@ -26,16 +30,25 @@ CONTAINS
             !! -- Write grid quantities
             IF (c_output_ex .EQ. 1) THEN
                 ! - Write current density ex
+#if (DEBUG==9)
+                WRITE(0,*) "Write current density ex"
+#endif                
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))// &
                 TRIM(ADJUSTL(strtemp))//'.pxr', ex, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
             IF (c_output_ey .EQ. 1) THEN
-                ! - Write current density jx
+                ! - Write current density ey
+#if (DEBUG==9)
+                WRITE(0,*) "Write current density ey"
+#endif                
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileey))// &
                 TRIM(ADJUSTL(strtemp))//'.pxr', ey, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
-            ENDIF
+            ENDIF               
             IF (c_output_ez .EQ. 1) THEN
-                ! - Write current density jx
+                ! - Write current density ez
+#if (DEBUG==9)
+                WRITE(0,*) "Write current density ez"
+#endif                 
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileez))// &
                 TRIM(ADJUSTL(strtemp))//'.pxr', ez, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
             ENDIF
@@ -79,9 +92,21 @@ CONTAINS
                 CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filerho))// &
                 TRIM(ADJUSTL(strtemp))//'.pxr', rho, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
             ENDIF
+            
+            ENDIF
+          localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
+            
         ENDIF
+
+        !!! --- Output temproral diagnostics
+        CALL output_temporal_diagnostics
         
-        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
+        !!! --- Output time statistics
+        CALL output_time_statistics
+
+#if defined(DEBUG)
+        WRITE(0,*) "Output_routines: stop"
+#endif        
         
     END SUBROUTINE output_routines
 
@@ -104,6 +129,10 @@ CONTAINS
         INTEGER(idp) :: ispecies
         INTEGER(isp) :: i
         REAL(num) :: tmptime
+
+#if defined(DEBUG)
+        WRITE(0,*) "output_temporal_diagnostics: start"
+#endif 
         
         IF ((temdiag_frequency.gt.0).and.(MOD(it,temdiag_frequency).EQ. 0)) THEN
         
@@ -218,6 +247,10 @@ CONTAINS
           localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
           
         ENDIF
+
+#if defined(DEBUG)
+        WRITE(0,*) "output_temporal_diagnostics: stop"
+#endif
         
     END SUBROUTINE
 
@@ -235,22 +268,44 @@ CONTAINS
     INTEGER(isp), INTENT(INOUT) :: err
     INTEGER(isp) :: subt, suba, fh, i
 
+#if DEBUG==9
+   WRITE(0,*) SIZE(array)
+#endif
+
+
     CALL MPI_FILE_OPEN(comm, TRIM(filename), MPI_MODE_CREATE + MPI_MODE_WRONLY, &
         MPI_INFO_NULL, fh, errcode)
+
+#if DEBUG==9
+   WRITE(0,*) "File opened"
+#endif
 
     IF (errcode .NE. 0) THEN
       IF (rank .EQ. 0) PRINT *, 'file ', TRIM(filename), 'could not be created - Check disk space'
       err = IOR(err, c_err_bad_value)
       RETURN
     ENDIF
-
+    
     subt = create_current_grid_derived_type()
     suba = create_current_grid_subarray(nxg, nyg, nzg)
+
+#if DEBUG==9
+   WRITE(0,*) "Subarrays created"
+#endif
+
    
     CALL MPI_FILE_SET_VIEW(fh, offset, MPI_BYTE, subt, 'native', &
         MPI_INFO_NULL, errcode)
 
+#if DEBUG==9
+   WRITE(0,*) "MPI_FILE_SET_VIEW"
+#endif
+
     CALL MPI_FILE_WRITE_ALL(fh, array, 1_isp, suba, MPI_STATUS_IGNORE, errcode)
+
+#if DEBUG==9
+   WRITE(0,*) " MPI_FILE_WRITE_ALL"
+#endif
 
      CALL MPI_FILE_CLOSE(fh, errcode)
      CALL MPI_TYPE_FREE(subt, errcode)
@@ -268,6 +323,10 @@ CONTAINS
     IMPLICIT NONE
     
     REAL(num), DIMENSION(20) :: avetimes
+ 
+#if defined(DEBUG)
+        WRITE(0,*) "output_time_statistic: start"
+#endif 
     
     IF ((timestat_period.gt.0).and.(MOD(it,timestat_period).eq.0)) then
     
@@ -280,14 +339,45 @@ CONTAINS
       CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
       avetimes = avetimes / nproc
     
-      IF (rank.eq.0) THEN
-        write(41) avetimes(1:11)
-      end if
-      
+      buffer_timestat(1:11,itimestat) = avetimes(1:11)
+      itimestat = itimestat + 1
+    
+      ! Flush entire buffer when full   
+      IF (itimestat.gt.nbuffertimestat) THEN
+    
+        IF (rank.eq.0) THEN
+          write(41) buffer_timestat(1:11,1:nbuffertimestat)
+        end if
+        
+        itimestat=1
+        
+      END IF
       
     endif
+
+#if defined(DEBUG)
+        WRITE(0,*) "output_time_statistic: stop"
+#endif 
   
   END SUBROUTINE
 
+
+  SUBROUTINE final_output_time_statistics
+  ! ______________________________________________________
+  ! Output of the time statistics at the end of the simulation
+  ! Purge the buffer
+  ! ______________________________________________________
+    USE time_stat
+    USE params
+    USE shared_data
+    IMPLICIT NONE
+    
+    IF (timestat_activated.gt.0) THEN
+    
+      write(41) buffer_timestat(1:11,1:itimestat)
+      
+    END IF
+
+  END SUBROUTINE
 
 END MODULE simple_io

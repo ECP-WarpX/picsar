@@ -57,7 +57,7 @@ section::solver
  # 3 - Classical vectorized
  # 4 - Classical tiling/non-optimized
  # 5 - Classical sequential/non-optimized
- currdepo = 3
+ currdepo = 0
  
  # Field gathering method
  # 0 - Optimized functions (default)
