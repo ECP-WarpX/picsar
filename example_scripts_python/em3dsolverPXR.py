@@ -216,13 +216,13 @@ class EM3DPXR(EM3DFFT):
         pxr.z_grid_min_local=pxr.z_min_local
         pxr.z_grid_max_local=pxr.z_max_local
         
-        pxr.length_x=pxr.xmax-pxr.xmin
-        pxr.length_y=pxr.ymax-pxr.ymin
-        pxr.length_z=pxr.zmax-pxr.zmin
+        pxr.length_x = pxr.xmax-pxr.xmin
+        pxr.length_y = pxr.ymax-pxr.ymin
+        pxr.length_z = pxr.zmax-pxr.zmin
         
 		# INIT MPI_DATA FOR PICSAR
         # Init communicator variable in picsar 
-        pxr.mpi_minimal_init(top.fsdecomp.mpi_comm)
+        pxr.mpi_minimal_init_python(top.fsdecomp.mpi_comm)
         
         # allocate grid quantities 
         pxr.allocate_grid_quantities()
