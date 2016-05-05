@@ -30,12 +30,12 @@ section::main
  ntilez = 5
  
  # Guard cells
- nguardsx = 4
- nguardsy = 4
- nguardsz = 4
- njguardsx = 4
- njguardsy = 4
- njguardsz = 4
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
  
 end::main
 
@@ -64,6 +64,11 @@ section::solver
  # 1 - non-optimized functions
  fieldgave = 0
  
+ # Type of particle communication
+ # 0 - Combined MPI/Tile communications
+ # 1 - Seperated MPI/Tile communications
+ partcom = 1
+ 
 end::solver
 
 section::plasma
@@ -88,7 +93,7 @@ section::species
  name = electron
  mass = 1
  charge = -1
- nppcell = 5
+ nppcell = 10
  x_min = -20e-6
  y_min = -20e-6
  z_min = -20e-6
@@ -111,7 +116,7 @@ section::species
  name = proton
  mass = 1836
  charge = 1
- nppcell = 5
+ nppcell = 10
  x_min = -20e-6
  y_min = -20e-6
  z_min = -20e-6
@@ -132,7 +137,7 @@ end::species
 
 section::output
  output_frequency = 10
- output_step_min  = 0
+ output_step_min  = 1000
  output_step_max  = 1000
  ex = 1
  ey = 1

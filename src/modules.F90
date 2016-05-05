@@ -58,6 +58,20 @@ USE constants
 TYPE grid_tile
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile, &
  								bxtile, bytile, bztile,  jxtile, jytile, jztile,rhotile
+    !DIR$ ATTRIBUTES FASTMEM  :: extile 					
+    !DIR$ ATTRIBUTES FASTMEM  :: eytile
+    !DIR$ ATTRIBUTES FASTMEM  :: eztile     	 
+
+    !DIR$ ATTRIBUTES FASTMEM  :: bxtile 					
+    !DIR$ ATTRIBUTES FASTMEM  :: bytile
+    !DIR$ ATTRIBUTES FASTMEM  :: bztile        
+
+    !DIR$ ATTRIBUTES FASTMEM  :: jxtile 					
+    !DIR$ ATTRIBUTES FASTMEM  :: jytile
+    !DIR$ ATTRIBUTES FASTMEM  :: jztile       
+    
+    !DIR$ ATTRIBUTES FASTMEM  :: rhotile      
+      			
 END TYPE
 TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
 END MODULE grid_tilemodule
@@ -86,19 +100,33 @@ TYPE particle_tile
     LOGICAL :: subdomain_bound = .FALSE.
     ! Particle arrays
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
+    !DIR$ ATTRIBUTES FASTMEM  :: part_x
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
+    !DIR$ ATTRIBUTES FASTMEM  :: part_y    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
+    !DIR$ ATTRIBUTES FASTMEM  :: part_z
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
+    !DIR$ ATTRIBUTES FASTMEM  :: part_ux
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
+    !DIR$ ATTRIBUTES FASTMEM  :: part_uy
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
+    !DIR$ ATTRIBUTES FASTMEM  :: part_uz
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
+    !DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
+    !DIR$ ATTRIBUTES FASTMEM  :: part_ex
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
+    !DIR$ ATTRIBUTES FASTMEM  :: part_ey    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
+    !DIR$ ATTRIBUTES FASTMEM  :: part_ez
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
+    !DIR$ ATTRIBUTES FASTMEM  :: part_bx    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
+    !DIR$ ATTRIBUTES FASTMEM  :: part_by    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
+    !DIR$ ATTRIBUTES FASTMEM  :: part_bz    
     REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+    !DIR$ ATTRIBUTES FASTMEM  :: pid
 END TYPE
 END MODULE particle_tilemodule
 
@@ -200,6 +228,7 @@ INTEGER(idp) :: mpicom_curr
 INTEGER(isp) :: seed
 INTEGER(idp) :: currdepo                            ! Current deposition method
 INTEGER(idp) :: fieldgave                           ! Field gathering method
+INTEGER(idp) :: partcom                             ! Type of comm routine to use for particles
 END MODULE params
 
 !===============================================================================
@@ -221,6 +250,51 @@ use constants
 INTEGER(isp) :: reqperjxx(4),reqperjxy(4),reqperjxz(4)
 INTEGER(isp) :: reqperjyx(4),reqperjyy(4),reqperjyz(4)
 INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
+
+
+  TYPE part_com_buffer
+      REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
+      !DIR$ ATTRIBUTES FASTMEM  :: part_x
+      REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
+      !DIR$ ATTRIBUTES FASTMEM  :: part_y    
+      REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
+      !DIR$ ATTRIBUTES FASTMEM  :: part_z
+      REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
+      !DIR$ ATTRIBUTES FASTMEM  :: part_ux
+      REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
+      !DIR$ ATTRIBUTES FASTMEM  :: part_uy
+      REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
+      !DIR$ ATTRIBUTES FASTMEM  :: part_uz
+      REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
+      !DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+      !DIR$ ATTRIBUTES FASTMEM  :: pid
+      INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: boundid
+      INTEGER(idp), DIMENSION(0:27) :: bin_npart
+      INTEGER(idp), DIMENSION(0:27) :: bin_pos
+  END TYPE    
+
+  TYPE mpi_buffer
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_x
+      !DIR$ ATTRIBUTES FASTMEM  :: part_x
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_y
+      !DIR$ ATTRIBUTES FASTMEM  :: part_y    
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_z
+      !DIR$ ATTRIBUTES FASTMEM  :: part_z
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_ux
+      !DIR$ ATTRIBUTES FASTMEM  :: part_ux
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uy
+      !DIR$ ATTRIBUTES FASTMEM  :: part_uy
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uz
+      !DIR$ ATTRIBUTES FASTMEM  :: part_uz
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_gaminv
+      !DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+      !DIR$ ATTRIBUTES FASTMEM  :: pid
+      INTEGER(idp), dimension(27) :: npart
+  END TYPE
+
+
 END MODULE communications
 
 !===============================================================================
@@ -423,34 +497,50 @@ REAL(num) :: xtmin, ytmin, ztmin
 REAL(num) :: xtmax, ytmax, ztmax
 REAL(num) :: xgtmin, ygtmin, zgtmin
 REAL(num) :: xgtmax, ygtmax, zgtmax
+
 REAL(num), DIMENSION(:), POINTER :: partx
-REAL(num), DIMENSION(:), POINTER :: party
-REAL(num), DIMENSION(:), POINTER :: partz
-REAL(num), DIMENSION(:), POINTER :: partux
-REAL(num), DIMENSION(:), POINTER :: partuy
-REAL(num), DIMENSION(:), POINTER :: partuz
-REAL(num), DIMENSION(:), POINTER :: partgaminv
-REAL(num), DIMENSION(:,:), POINTER :: pid
-REAL(num), DIMENSION(:), POINTER :: partex
-REAL(num), DIMENSION(:), POINTER :: partey
-REAL(num), DIMENSION(:), POINTER :: partez
-REAL(num), DIMENSION(:), POINTER :: partbx
-REAL(num), DIMENSION(:), POINTER :: partby
-REAL(num), DIMENSION(:), POINTER :: partbz
 !dir$ attributes align:64 :: partx
+!!DIR$ ATTRIBUTES FASTMEM  :: partx
+REAL(num), DIMENSION(:), POINTER :: party
 !dir$ attributes align:64 :: party
+!!DIR$ ATTRIBUTES FASTMEM  :: party
+REAL(num), DIMENSION(:), POINTER :: partz
 !dir$ attributes align:64 :: partz
+!!DIR$ ATTRIBUTES FASTMEM  :: partz
+REAL(num), DIMENSION(:), POINTER :: partux
 !dir$ attributes align:64 :: partux
+!!DIR$ ATTRIBUTES FASTMEM  :: partux
+REAL(num), DIMENSION(:), POINTER :: partuy
 !dir$ attributes align:64 :: partuy
+!!DIR$ ATTRIBUTES FASTMEM  :: partuy
+REAL(num), DIMENSION(:), POINTER :: partuz
 !dir$ attributes align:64 :: partuz
+!!DIR$ ATTRIBUTES FASTMEM  :: partuz
+REAL(num), DIMENSION(:), POINTER :: partgaminv
 !dir$ attributes align:64 :: partgaminv
+!!DIR$ ATTRIBUTES FASTMEM  :: partgaminv
+REAL(num), DIMENSION(:,:), POINTER :: pid
 !dir$ attributes align:64 :: pid
+!!DIR$ ATTRIBUTES FASTMEM  :: pid
+REAL(num), DIMENSION(:), POINTER :: partex
 !dir$ attributes align:64 :: partex
+!!DIR$ ATTRIBUTES FASTMEM  :: partex
+REAL(num), DIMENSION(:), POINTER :: partey
 !dir$ attributes align:64 :: partey
+!!DIR$ ATTRIBUTES FASTMEM  :: partey
+REAL(num), DIMENSION(:), POINTER :: partez
 !dir$ attributes align:64 :: partez
+!!DIR$ ATTRIBUTES FASTMEM  :: partez
+REAL(num), DIMENSION(:), POINTER :: partbx
 !dir$ attributes align:64 :: partbx
+!!DIR$ ATTRIBUTES FASTMEM  :: partbx
+REAL(num), DIMENSION(:), POINTER :: partby
 !dir$ attributes align:64 :: partby
+!!DIR$ ATTRIBUTES FASTMEM  :: partby
+REAL(num), DIMENSION(:), POINTER :: partbz
 !dir$ attributes align:64 :: partbz
+!!DIR$ ATTRIBUTES FASTMEM  :: partbz
+
 END MODULE python_pointers
 
 

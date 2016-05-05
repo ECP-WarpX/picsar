@@ -202,9 +202,9 @@ CONTAINS
         nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
 
         ! Get particle index in array of tile
-		ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-		iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-		iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+		    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
+		    iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
+		    iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
@@ -259,6 +259,51 @@ CONTAINS
         curr%part_by(count)  = 0._num
         curr%part_bz(count)  = 0._num
     END SUBROUTINE add_particle_at_tile
+
+    ! __________________________________________________________________________
+    SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, partx, party, &
+            partz, partux, partuy, partuz, gaminv, partw)
+    ! 
+    ! Add a particle with its properties to the list of particles inside the tile            
+    ! __________________________________________________________________________            
+        IMPLICIT NONE
+        INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew
+        REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
+        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
+        TYPE(particle_tile), POINTER :: curr
+        
+        curr=>currsp%array_of_tiles(ixt,iyt,izt)
+        ! If no particles in tile, allocate particle arrays
+        IF (.NOT. curr%l_arrays_allocated) THEN
+            CALL allocate_tile_arrays(curr)
+        ENDIF
+
+        ! Sanity check for max number of particles in tile
+        count = curr%np_tile(1)
+        npnew = count + np
+        nmax  = curr%npmax_tile
+        IF (npnew .GT. nmax) THEN
+        ! Resize particle tile arrays if tile is full
+        	currsp%are_tiles_reallocated(ixt,iyt,izt)=1
+            CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
+        ENDIF
+        ! Finally, add particle to tile
+        curr%np_tile(1)=npnew
+        curr%part_x(count+1:npnew)  = partx(:)
+        curr%part_y(count+1:npnew)  = party
+        curr%part_z(count+1:npnew)  = partz
+        curr%part_ux(count+1:npnew) = partux
+        curr%part_uy(count+1:npnew) = partuy
+        curr%part_uz(count+1:npnew) = partuz
+        curr%part_gaminv(count+1:npnew) = gaminv
+        curr%pid(count+1:npnew,wpid) = partw
+        curr%part_ex(count+1:npnew)  = 0._num
+        curr%part_ey(count+1:npnew)  = 0._num
+        curr%part_ez(count+1:npnew)  = 0._num
+        curr%part_bx(count+1:npnew)  = 0._num
+        curr%part_by(count+1:npnew)  = 0._num
+        curr%part_bz(count+1:npnew)  = 0._num
+    END SUBROUTINE add_group_of_particles_at_tile
 
     !!! --- Remove particles from tile using a mask variable
     !!! --- This technique avoids packing or reallocating arrays

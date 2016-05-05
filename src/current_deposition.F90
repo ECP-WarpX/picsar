@@ -760,6 +760,9 @@ func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
   REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), DIMENSION(:,:), ALLOCATABLE :: jxcells,jycells,jzcells
+  !DIR$ ATTRIBUTES FASTMEM  :: jxcells				
+  !DIR$ ATTRIBUTES FASTMEM  :: jycells
+  !DIR$ ATTRIBUTES FASTMEM  :: jzcells   
   INTEGER(idp) :: ispecies, ix, iy, iz, np, ncells
   INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
   INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc

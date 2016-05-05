@@ -49,6 +49,7 @@ class EM3DPXR(EM3DFFT):
                       'currdepo':0,     # Current deposition method
                       'mpicom_curr':0,   # Com type Current deposition
                       'fieldgave':0,     # Field gathering method
+                      'partcom':0,
                       'sorting':None
                       }
 
@@ -295,7 +296,8 @@ class EM3DPXR(EM3DFFT):
         pxr.mpicom_curr=self.mpicom_curr
         # Field gathering method
         pxr.fieldgave=self.fieldgave
-
+        # Particle communication
+        pxr.partcom=self.partcom
 
         # --- Tiling parameters
         pxr.ntilex = self.ntilex

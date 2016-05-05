@@ -723,6 +723,13 @@ SUBROUTINE mpi_minimal_init()
     WRITE(0,'(X,A22,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
     percenttimes(19), avetimes(19)/nsteps*1e3
     WRITE(0,'(X,A22,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
+    
+    WRITE(0,'(A,F6.2,",fieldgave=",F6.2,",part_mpi_com=",F6.2,&
+    ",part_omp_com=",F6.2,",currdepo=",F6.2,",maxwell=",F6.2,",sorting=",F6.2,",diags=",F6.2,")")') &
+    "(nmpi=,nomp=,name=,kernel=",avetimes(20), &
+    avetimes(1),avetimes(2),avetimes(11),avetimes(4),&
+    avetimes(5)+avetimes(7),avetimes(10),avetimes(9)
+
   ENDIF    
   
   END SUBROUTINE

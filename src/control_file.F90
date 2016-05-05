@@ -51,6 +51,9 @@ CONTAINS
         ! Field gathering algorithm 
         fieldgave = 0
         
+        ! Particle communication routine
+        partcom = 0
+        
         ! Sorting activation (not activated by default)       
         sorting_activated = 0
         sorting_dx = 1.
@@ -169,6 +172,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) currdepo 
+            ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) partcom
             ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) sorting_activated                                                                                                                               
@@ -239,6 +245,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') mpicom_curr
+            ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') partcom
             ELSE IF (INDEX(buffer,'end::cpusplit') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

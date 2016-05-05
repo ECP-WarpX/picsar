@@ -33,6 +33,9 @@ CONTAINS
         CALL pxrdepose_rho_on_grid()
         
         CALL charge_bcs()
+        
+        ! Get the total number of particles
+        !CALL get_tot_number_of_particles(ntot)
 
         localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
 
@@ -2281,6 +2284,85 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
       ENDIF
     
     END SUBROUTINE
+
+    ! ____________________________________________________________________________________
+    SUBROUTINE get_tot_number_of_particles_from_species(is,nptot)
+    ! This subroutine determine the total number of particles in the domain 
+    ! from species is
+    !
+    ! Mathieu Lobet May 2016
+    ! ____________________________________________________________________________________    
+        USE particle_tilemodule
+        USE particle_speciesmodule
+        USE tile_params
+        USE particles
+        USE mpi_derived_types
+        USE shared_data
+        USE tiling
+        IMPLICIT NONE    
+    
+        INTEGER(idp), INTENT(INOUT) :: nptot
+        INTEGER(idp), INTENT(IN) :: is
+        INTEGER(idp) :: nptot_loc
+        INTEGER(idp) :: ix,iy,iz,np,ip,n
+        TYPE(particle_tile), POINTER :: curr_tile
+        TYPE(particle_species), POINTER :: curr
+            
+        nptot = 0
+        
+        ! Current species    
+        curr=>species_parray(is)
+            
+        ! Loop over the tiles
+        !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+        !$OMP SHARED(curr, ntilex,ntiley,ntilez) &
+        !$OMP PRIVATE(ix,iy,iz,n,is,curr_tile,ip) &
+        !$OMP reduction(+:nptot_loc)
+        DO iz=1, ntilez
+            DO iy=1, ntiley
+                DO ix=1, ntilex
+                
+                    curr_tile=>curr%array_of_tiles(ix,iy,iz)               
+                    nptot_loc = nptot_loc + curr_tile%np_tile(1)                 
+                    
+                End do
+            End do 
+        End do
+        !$OMP END PARALLEL DO
+        
+        ! All MPI reduction
+        call MPI_ALLREDUCE(nptot_loc,nptot,1_isp,mpidbl,MPI_SUM,comm,errcode)
+    
+    END SUBROUTINE
+
+    ! ____________________________________________________________________________________
+    SUBROUTINE get_tot_number_of_particles(nptot)
+    ! This subroutine determine the total number of particles all species included
+    !
+    ! Mathieu Lobet May 2016
+    ! ____________________________________________________________________________________    
+        USE particle_tilemodule
+        USE particle_speciesmodule
+        USE tile_params
+        USE particles
+        USE mpi_derived_types
+        USE shared_data
+        USE tiling
+        IMPLICIT NONE    
+    
+        INTEGER(idp), INTENT(OUT) :: nptot
+        INTEGER(idp) :: is, nptottmp
+
+        nptot = 0
+
+        DO is=1,nspecies
+          nptottmp = 0
+          CALL get_tot_number_of_particles_from_species(is,nptottmp)
+          nptot = nptot + nptottmp
+        ENDDO
+    
+    END SUBROUTINE
+
 
     !!! --- Determine the local kinetic energy for the species ispecies
     SUBROUTINE get_loc_kinetic_energy(ispecies,kinetic_energy_loc)
