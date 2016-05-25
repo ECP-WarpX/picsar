@@ -6,6 +6,7 @@ MODULE constants
 INTEGER, PARAMETER :: num = 8
 INTEGER, PARAMETER :: isp = 4
 INTEGER, PARAMETER :: idp = 8
+INTEGER, PARAMETER :: cpx = 16
 REAL(num), PARAMETER :: emass   = 9.10938291e-31_num,      &
                         pmass   = 1.6726231000000001e-27_num,      &
                         echarge = 1.6021764620000001e-19_num,      &
@@ -170,7 +171,7 @@ END MODULE particle_properties
 
 
 !===============================================================================
-MODULE particles
+MODULE particles !#do not parse
 !===============================================================================
 USE constants
 USE tile_params
