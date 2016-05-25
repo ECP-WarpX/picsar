@@ -42,7 +42,8 @@ def fortran_preparser(filelist,filewrite):
         listlines_1=(preprocess_file(listlines))
         print("Sanity check of file "+filelist[ifile])
         #listlines_2=sanity_check_1(listlines_1)
-        listlines=sanity_check_3(listlines_1)
+        #listlines=sanity_check_3(listlines_1)
+        listlines=listlines_1
         ##### Parse modules
         print("Now parsing modules of file "+filelist[ifile])
         listlines_modules=listlines_modules+preparse_modules(listlines)
@@ -1049,7 +1050,7 @@ remove_file(appname+".F90")
 remove_file(appname+".v")
 
 #LIST ALL .F90 or .F files in current directory
-listfiles=["modules.F90", "sorting.F90", "maxwell.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", \
+listfiles=["modules.F90", "sorting.F90", "maxwell.F90","GPSTD.F90", "tiling.F90", "particles_push.F90", "current_deposition.F90", \
 "field_gathering.F90", "mpi_derived_types.F90", "boundary.F90", "simple_io.F90", "diags.F90", "submain.F90", \
 "mpi_routines.F90", "control_file.F90", "load_balancing.F90"]
 
