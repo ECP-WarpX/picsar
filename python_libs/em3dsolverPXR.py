@@ -1,5 +1,11 @@
 """Class for 2D & 3D FFT-based electromagnetic solver """
 from warp.field_solvers.em3dsolverFFT import *
+try: 
+    #import warp.field_solvers.GPSTD as gpstd
+	import GPSTDPXR as gpstd
+except: 
+	#import GPSTDPXR as gpstd
+    import warp.field_solvers.GPSTD as gpstd
 try:
     import picsarpy as pxrpy
     pxr = pxrpy.picsar
@@ -28,7 +34,6 @@ try:
 except:
     fft = np.fft
     l_fftw=False
-
 
 
 
@@ -72,9 +77,14 @@ class EM3DPXR(EM3DFFT):
 
     def finalize(self,lforce=False):
         if self.finalized and not lforce: return
-        EM3DFFT.finalize(self)
-        if l_pxr:self.allocatefieldarraysPXR()
-
+        if l_pxr:
+        	EM3D.finalize(self)
+        	print("HELLO")
+        	self.allocatefieldarraysFFT()
+        	self.allocatefieldarraysPXR()
+        else: 
+			EM3DFFT.finalize(self)
+			
     def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
       ixt = ix
       iyt = iy
@@ -929,7 +939,6 @@ class EM3DPXR(EM3DFFT):
 
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
-    
         top.zgrid+=top.vbeamfrm*top.dt
         top.zbeam=top.zgrid
         # --- gather fields from grid to particles
@@ -984,7 +993,6 @@ class EM3DPXR(EM3DFFT):
                         self.push_velocity_full(0,pg)
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
-
         # --- Particle sorting
         if l_pxr: 
           if ((self.sorting.activated)and(top.it>0)):        
@@ -998,8 +1006,11 @@ class EM3DPXR(EM3DFFT):
         self.pgroups = pgroups
 #        self.loadsource(pgroups=pgroups)
         #tdebpart=MPI.Wtime()
+
         self.loadrho(pgroups=pgroups)
+
         self.loadj(pgroups=pgroups)
+
         #tendpart=MPI.Wtime()
         #pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
 #        self.solve2ndhalf()
@@ -1007,7 +1018,9 @@ class EM3DPXR(EM3DFFT):
         #tdebcell=MPI.Wtime()
         # --- dosolve
         # Current deposition + Maxwell
+
         self.dosolve()
+
         #tendcell=MPI.Wtime()
         #pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
     
@@ -1024,14 +1037,14 @@ class EM3DPXR(EM3DFFT):
                     self.fetcheb(0,pg)
                     if l_last:
                         self.push_velocity_first_half(0,pg)
-
+ 
         # --- update time, time counter
         top.time+=top.dt
         if top.it%top.nhist==0:
 #           zmmnt()
            minidiag(top.it,top.time,top.lspecial)
         top.it+=1
-        
+       
         # Load balance every dlb_freq time step
         if (l_pxr & (self.dload_balancing & (top.it%self.dlb_freq==0))):
             pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
@@ -1058,7 +1071,7 @@ class EM3DPXR(EM3DFFT):
 			    self.load_balance_2d('Init')
 			else: 
 				self.load_balance_3d('Init')
-        
+       
         # PXr custom outputs mpi-io
         if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)): 
         	self.output_pxr(top.it)
@@ -1066,6 +1079,7 @@ class EM3DPXR(EM3DFFT):
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
 
+    	
     def load_balance_3d(self,imbalance): 
         if (l_pxr): 
             ## --- Compute time per part and per cell 
@@ -1945,6 +1959,259 @@ class EM3DPXR(EM3DFFT):
         pxr.get_norm_diverho(pxr.dive,pxr.rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,div)
         
         return div[0]
+        
+    def allocatefieldarraysFFT(self):
+        def fc(x,norder):
+            fact1 = 1
+            fact2 = 1
+            result = 0
+            for i in range(abs(norder)/2):
+	            fact1 *= max(i,1)
+	            fact2 *= max(2*i,1)*max(2*i-1,1)
+	            result += x**(2*i+1)*fact2/float(2**(2*i)*fact1**2*(2*i+1))
+            return result
+
+
+        f=self.fields
+        b=self.block
+        s=self
+        f.spectral = (self.spectral > 0)
+        bc_periodic = [self.bounds[0]==periodic,
+                       self.bounds[2]==periodic,
+                       self.bounds[4]==periodic]
+        if self.current_cor:
+            f.nxdrho = f.nx
+            f.nydrho = f.ny
+            f.nzdrho = f.nz
+            f.nxdrhoguard = f.nxguard
+            f.nydrhoguard = f.nyguard
+            f.nzdrhoguard = f.nzguard
+            f.gchange()
+
+        if self.spectral:
+            
+            kwGPSTD = {'l_staggered':s.l_spectral_staggered,\
+                     'l_staggered_a_la_brendan':s.l_staggered_a_la_brendan, \
+                     'spectral':s.spectral,\
+                     'norderx':s.norderx,\
+                     'nordery':s.nordery,\
+                     'norderz':s.norderz,\
+                     'nxguard':s.nxguard,\
+                     'nyguard':s.nyguard,\
+                     'nzguard':s.nzguard,\
+                     'dt':top.dt,\
+                     'dx':w3d.dx,\
+                     'dy':w3d.dy,\
+                     'dz':w3d.dz,\
+                     'ntsub':s.ntsub,\
+                     'l_pushf':s.l_pushf,\
+                     'l_pushg':s.l_pushg,\
+                     'l_getrho':s.l_getrho,\
+                     'clight':clight}
+
+            if s.ntsub is np.inf:
+                if not self.l_getrho:
+                    self.l_getrho = True
+                    f.nxr = f.nx
+                    f.nyr = f.ny
+                    f.nzr = f.nz
+                    f.gchange()
+
+                self.GPSTDMaxwell = gpstd.PSATD_Maxwell(yf=self.fields,
+                                                  eps0=eps0,
+                                                  bc_periodic=bc_periodic,
+                                                  **kwGPSTD)
+            else:
+                if self.l_pushf and not self.l_getrho:
+                    self.l_getrho = True
+                    f.nxr = f.nx
+                    f.nyr = f.ny
+                    f.nzr = f.nz
+                    f.gchange()
+                self.GPSTDMaxwell = gpstd.GPSTD_Maxwell(yf=self.fields,
+                                                  eps0=eps0,
+                                                  bc_periodic=bc_periodic,
+                                                  **kwGPSTD)
+
+            self.FSpace = self.GPSTDMaxwell
+        else:
+            kwFS = {'l_staggered':s.l_spectral_staggered,\
+                     'l_staggered_a_la_brendan':s.l_staggered_a_la_brendan, \
+                     'spectral':s.spectral,\
+                     'norderx':s.norderx,\
+                     'nordery':s.nordery,\
+                     'norderz':s.norderz,\
+                     'nxguard':s.nxguard,\
+                     'nyguard':s.nyguard,\
+                     'nzguard':s.nzguard,\
+                     'dt':top.dt,\
+                     'dx':w3d.dx,\
+                     'dy':w3d.dy,\
+                     'nx':max([1,self.fields.nx]),\
+                     'ny':max([1,self.fields.ny]),\
+                     'nz':max([1,self.fields.nz]),\
+                     'dz':w3d.dz}
+            self.FSpace = Fourier_Space(bc_periodic=bc_periodic,**kwFS)
+
+        # --- computes Brendan's Jz,Jx multipliers
+        if self.Jmult and self.GPSTDMaxwell.nz>1:
+                k = self.GPSTDMaxwell.k
+                if self.GPSTDMaxwell.nx>1:kxvzdto2 = 0.5*self.GPSTDMaxwell.kx*clight*top.dt
+                if self.GPSTDMaxwell.ny>1:kyvzdto2 = 0.5*self.GPSTDMaxwell.ky*clight*top.dt
+                kzvzdto2 = 0.5*self.GPSTDMaxwell.kz*clight*top.dt
+                sinkzvzdto2 = sin(kzvzdto2)
+                coskzvzdto2 = cos(kzvzdto2)
+                kdto2 = 0.5*k*clight*top.dt
+                sinkdto2 = sin(kdto2)
+                coskdto2 = cos(kdto2)
+                numer = clight*top.dt*k*self.kz*(self.sinkzvzdto2**2-self.sinkdto2**2)
+                denom = 2*sinkdto2*sinkzvzdto2 \
+                      * (self.GPSTDMaxwell.kz*sinkzvzdto2*coskdto2-k*coskzvzdto2*sinkdto2)
+                denomno0 = where(denom==0.,0.0001,self.denom)
+                
+                raise Exception("What is the 3-D version of Brendan's correction?")
+
+                ktest=where((pi/2-kxvzdto2**2/(2*pi))>0,(pi/2-kxvzdto2**2/(2*pi)),0)
+
+                Jmultiplier = where(abs(self.kzvzdto2)<ktest,numer/denomno0,0)
+
+                self.Jmultiplier[0,:]=self.Jmultiplier[1,:]
+                self.Jmultiplier[:,0]=self.Jmultiplier[:,1]
+ 
+        # --- set Ex,By multipliers (ebcor=0,1,2)
+        if self.l_correct_num_Cherenkov and self.spectral:
+              emK = self.FSpace
+#              k = emK.k
+              k = sqrt(emK.kx_unmod*emK.kx_unmod+emK.ky_unmod*emK.ky_unmod+emK.kz_unmod*emK.kz_unmod)
+              if top.boost_gamma==1.:
+                  raise Exception('Error: l_correct_num_Cherenkov=True with top.boost_gamma=1.')
+
+              b0 = sqrt(1.-1./top.boost_gamma**2)
+              self.b0=b0
+              self.ebcor = 2
+
+              if 0:
+ 
+              # --- old coefs
+                  # --- set Ex,By multipliers (ebcor=0,1,2)
+                  if self.ebcor==2:
+                      self.kzvzdto2 = where(emK.kz_unmod==0,0.0001,0.5*emK.kz_unmod*b0*clight*top.dt)
+                      self.sinkzvzdto2 = sin(self.kzvzdto2)
+                      self.coskzvzdto2 = cos(self.kzvzdto2)
+                      self.Exmultiplier = self.kzvzdto2*self.coskzvzdto2/self.sinkzvzdto2
+
+                      self.kdto2 = where(k==0,0.0001,0.5*k*clight*top.dt)
+                      self.sinkdto2 = sin(self.kdto2)
+                      self.coskdto2 = cos(self.kdto2)
+                      self.Bymultiplier = self.kdto2*self.coskdto2/self.sinkdto2
+
+                  if self.ebcor==1:
+                      self.kzvzdto2 = where(emK.kz_unmod==0,0.0001,0.5*emK.kz_unmod*b0*clight*top.dt)
+                      self.sinkzvzdto2 = sin(self.kzvzdto2)
+                      self.coskzvzdto2 = cos(self.kzvzdto2)
+                      self.kdto2 = where(k==0,0.0001,0.5*k*clight*top.dt)
+                      self.sinkdto2 = sin(self.kdto2)
+                      self.coskdto2 = cos(self.kdto2)
+                      self.Exmultiplier = self.kdto2*self.sinkdto2**2*self.sinkzvzdto2*self.coskzvzdto2/ \
+                        (self.kzvzdto2*(self.kdto2*self.sinkdto2**2+ \
+                        (self.sinkdto2*self.coskdto2-self.kdto2)*self.sinkzvzdto2**2))
+
+              else:
+              # --- new cooefs
+                  if self.ebcor==2:
+                      # --- set Ex multiplier
+                      self.kzvzdto2 = where(emK.kz_unmod==0,0.0001,0.5*emK.kz_unmod*b0*clight*top.dt)
+                      self.sinkzvzdto2 = sin(self.kzvzdto2)
+                      self.coskzvzdto2 = cos(self.kzvzdto2)
+                      self.Exmultiplier = self.kzvzdto2*self.coskzvzdto2/self.sinkzvzdto2
+                      # --- set By multiplier
+                      if self.norderx is inf:
+                          self.kdto2 = where(k==0,0.0001,0.5*k*clight*top.dt)
+                      else:
+                          self.kdto2 = sqrt((fc(sin(emK.kx_unmod*0.5*self.dx),self.norderx)/(0.5*self.dx))**2+ \
+                              (fc(sin(emK.kz_unmod*0.5*self.dz),self.norderz)/(0.5*self.dz))**2)
+                          self.kdto2 = where(self.kdto2==0,0.0001,0.5*self.kdto2*clight*top.dt)
+                      if 0:#self.solver==PSATD:
+                          self.Bymultiplier = self.kdto2/tan(self.kdto2)
+                      else:
+                          self.thetadto2=self.ntsub*arcsin(self.kdto2/self.ntsub)
+                          self.Bymultiplier = self.kdto2/(tan(self.thetadto2)*cos(self.thetadto2/self.ntsub))
+
+                  if self.ebcor==1:
+                      self.kzvzdto2 = where(emK.kz_unmod==0,0.0001,0.5*emK.kz_unmod*b0*clight*top.dt)
+                      self.sinkzvzdto2 = sin(self.kzvzdto2)
+                      self.coskzvzdto2 = cos(self.kzvzdto2)
+                      if self.norderx is None:
+                          self.kdto2 = where(k==0,0.0001,0.5*k*clight*top.dt)
+                      else:
+                          self.kdto2 = sqrt((fc(sin(emK.kx_unmod*0.5*self.dx),self.norderx)/(0.5*self.dx))**2+ \
+                              (fc(sin(emK.kz_unmod*0.5*self.dz),self.norderz)/(0.5*self.dz))**2)
+                          self.kdto2 = where(self.kdto2==0,0.0001,0.5*self.kdto2*clight*top.dt)
+                          self.kzvzdto2 = fc(sin(emK.kz_unmod*0.5*self.dz),self.norderz)/(0.5*self.dz)
+                          self.kzvzdto2 = where(self.kzvzdto2==0,0.0001,0.5*self.kzvzdto2*b0*clight*top.dt)
+                      if 0:#:self.solver==PSATD:
+                          self.sinkdto2 = sin(self.kdto2)
+                          self.coskdto2 = cos(self.kdto2)
+                          self.Exmultiplier = self.kdto2*self.sinkdto2**2*self.sinkzvzdto2*self.coskzvzdto2/ \
+                           (self.kzvzdto2*(self.kdto2*self.sinkdto2**2+ \
+                           (self.sinkdto2*self.coskdto2-self.kdto2)*self.sinkzvzdto2**2))
+                      else:
+                          self.thetadto2=self.ntsub*arcsin(self.kdto2/self.ntsub)
+                          self.Exmultiplier = self.ntsub*self.sinkzvzdto2*self.coskzvzdto2*sin(self.thetadto2)**2/ \
+                           (self.kzvzdto2*(self.ntsub*sin(self.thetadto2)**2-self.sinkzvzdto2**2* \
+                           (self.ntsub-sin(2*self.thetadto2)/sin(2*self.thetadto2/self.ntsub))))
+           
+
+        if 0:#self.spectral:
+                  emK = self.FSpace
+                  b0 = sqrt(1.-1./top.boost_gamma**2)
+                  self.cut = 0.6
+                  k = sqrt(emK.kx_unmod*emK.kx_unmod+emK.kz_unmod*emK.kz_unmod)
+                  self.k_source_filter = where(k*self.dz/pi>self.cut*min(1.,self.dz/(b0*clight*top.dt)),0.,1.)
+                  if self.l_getrho:emK.add_Sfilter('rho',self.k_source_filter)
+                  emK.add_Sfilter('jx',self.k_source_filter)
+                  emK.add_Sfilter('jy',self.k_source_filter)
+                  emK.add_Sfilter('jz',self.k_source_filter)
+              
+        if self.spectral:
+            kwPML = kwGPSTD
+
+            if s.ntsub==inf:
+                GPSTD_PML = gpstd.PSATD_Maxwell_PML
+            else:
+                GPSTD_PML = gpstd.GPSTD_Maxwell_PML
+                
+            # --- sides
+            if b.xlbnd==openbc: s.xlPML = GPSTD_PML(syf=b.sidexl.syf,**kwPML)
+            if b.xrbnd==openbc: s.xrPML = GPSTD_PML(syf=b.sidexr.syf,**kwPML)
+            if b.ylbnd==openbc: s.ylPML = GPSTD_PML(syf=b.sideyl.syf,**kwPML)
+            if b.yrbnd==openbc: s.yrPML = GPSTD_PML(syf=b.sideyr.syf,**kwPML)
+            if b.zlbnd==openbc: s.zlPML = GPSTD_PML(syf=b.sidezl.syf,**kwPML)
+            if b.zrbnd==openbc: s.zrPML = GPSTD_PML(syf=b.sidezr.syf,**kwPML)
+
+            # --- edges
+            if(b.xlbnd==openbc and b.ylbnd==openbc): s.xlylPML = GPSTD_PML(syf=b.edgexlyl.syf,**kwPML)
+            if(b.xrbnd==openbc and b.ylbnd==openbc): s.xrylPML = GPSTD_PML(syf=b.edgexryl.syf,**kwPML)
+            if(b.xlbnd==openbc and b.yrbnd==openbc): s.xlyrPML = GPSTD_PML(syf=b.edgexlyr.syf,**kwPML)
+            if(b.xrbnd==openbc and b.yrbnd==openbc): s.xryrPML = GPSTD_PML(syf=b.edgexryr.syf,**kwPML)
+            if(b.xlbnd==openbc and b.zlbnd==openbc): s.xlzlPML = GPSTD_PML(syf=b.edgexlzl.syf,**kwPML)
+            if(b.xrbnd==openbc and b.zlbnd==openbc): s.xrzlPML = GPSTD_PML(syf=b.edgexrzl.syf,**kwPML)
+            if(b.xlbnd==openbc and b.zrbnd==openbc): s.xlzrPML = GPSTD_PML(syf=b.edgexlzr.syf,**kwPML)
+            if(b.xrbnd==openbc and b.zrbnd==openbc): s.xrzrPML = GPSTD_PML(syf=b.edgexrzr.syf,**kwPML)
+            if(b.ylbnd==openbc and b.zlbnd==openbc): s.ylzlPML = GPSTD_PML(syf=b.edgeylzl.syf,**kwPML)
+            if(b.yrbnd==openbc and b.zlbnd==openbc): s.yrzlPML = GPSTD_PML(syf=b.edgeyrzl.syf,**kwPML)
+            if(b.ylbnd==openbc and b.zrbnd==openbc): s.ylzrPML = GPSTD_PML(syf=b.edgeylzr.syf,**kwPML)
+            if(b.yrbnd==openbc and b.zrbnd==openbc): s.yrzrPML = GPSTD_PML(syf=b.edgeyrzr.syf,**kwPML)
+
+            # --- corners
+            if(b.xlbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc): s.xlylzlPML = GPSTD_PML(syf=b.cornerxlylzl.syf,**kwPML)
+            if(b.xrbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc): s.xrylzlPML = GPSTD_PML(syf=b.cornerxrylzl.syf,**kwPML)
+            if(b.xlbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc): s.xlyrzlPML = GPSTD_PML(syf=b.cornerxlyrzl.syf,**kwPML)
+            if(b.xrbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc): s.xryrzlPML = GPSTD_PML(syf=b.cornerxryrzl.syf,**kwPML)
+            if(b.xlbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc): s.xlylzrPML = GPSTD_PML(syf=b.cornerxlylzr.syf,**kwPML)
+            if(b.xrbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc): s.xrylzrPML = GPSTD_PML(syf=b.cornerxrylzr.syf,**kwPML)
+            if(b.xlbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc): s.xlyrzrPML = GPSTD_PML(syf=b.cornerxlyrzr.syf,**kwPML)
+            if(b.xrbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc): s.xryrzrPML = GPSTD_PML(syf=b.cornerxryrzr.syf,**kwPML)
 
 
 class Sorting:
@@ -1970,3 +2237,5 @@ class Sorting:
     self.xshift = xshift
     self.yshift = yshift
     self.zshift = zshift
+
+
