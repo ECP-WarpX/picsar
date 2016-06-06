@@ -288,7 +288,7 @@ CONTAINS
     
     subt = create_current_grid_derived_type()
     suba = create_current_grid_subarray(nxg, nyg, nzg)
-
+    
 #if DEBUG==9
    WRITE(0,*) "Subarrays created"
 #endif
