@@ -158,10 +158,10 @@ CONTAINS
     ng(3)= ng3
     ndim = 3
     DO i = 1, ndim
-      start(i) = 1 + ng(i)
+      start(i) = 1 + ng(i)                                                                                                                                                             
       n_global(i) = n_local(i) + 2 * ng(i)
     ENDDO
-    n_local=n_local-1 ! remove last point 
+    n_local=n_local-1 ! remove last point
 
     ! old version 
     !create_grid_subarray = &
