@@ -38,10 +38,10 @@ INTEGER :: i,ierror,j,l
   CALL mpi_minimal_init
 
   IF (rank .EQ. 0) THEN
-    write(0,*),'_________________________________________________________________'
-    write(0,*),''
-    write(0,*),' PICSAR'
-    write(0,*),'_________________________________________________________________'
+    write(0,*) "_________________________________________________________________"
+    write(0,*) ""
+    write(0,*) " PICSAR"
+    write(0,*) "_________________________________________________________________"
   ENDIF
 
 ! --- Check domain decomposition / Create Cartesian communicator / Allocate grid arrays

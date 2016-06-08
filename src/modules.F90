@@ -285,12 +285,12 @@ CHARACTER(len=string_length), dimension(10) :: temdiag_name_list ! Filename for 
 INTEGER(isp), dimension(10) :: temdiag_i_list                    ! Array of index to locate the value in the big array
 INTEGER(isp), dimension(10) :: temdiag_nb_values                 ! Array containing the number of values in the big array
 
-INTEGER :: temdiag_nb
-INTEGER :: temdiag_nb_part
-INTEGER :: temdiag_nb_field
-INTEGER :: temdiag_totvalues
-INTEGER :: temdiag_frequency
-INTEGER :: temdiag_format
+INTEGER(idp) :: temdiag_nb
+INTEGER(idp) :: temdiag_nb_part
+INTEGER(idp) :: temdiag_nb_field
+INTEGER(idp) :: temdiag_totvalues
+INTEGER(idp) :: temdiag_frequency
+INTEGER(idp) :: temdiag_format
 REAL(num), dimension(:),allocatable :: temdiag_array             ! Big array containing all the temporal diag at a given iteration
 
 END MODULE output_data
