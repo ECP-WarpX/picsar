@@ -4174,12 +4174,12 @@ DO ip=1,np
     dsy = sy - sy0
     dsz = sz - sz0
     ! --- computes min/max positions of current contributions
-    ixmin = min(0,dix)
-    ixmax = max(0,dix)+1
-    iymin = min(0,diy)
-    iymax = max(0,diy)+1
-    izmin = min(0,diz)
-    izmax = max(0,diz)+1
+    ixmin = min(0_idp,dix)
+    ixmax = max(0_idp,dix)+1
+    iymin = min(0_idp,diy)
+    iymax = max(0_idp,diy)+1
+    izmin = min(0_idp,diz)
+    izmax = max(0_idp,diz)+1
     
     ! --- add current contributions
     DO k=izmin, izmax
@@ -5541,12 +5541,12 @@ DO ip=1,np
         dsz = sz - sz0
 
 ! --- computes min/max positions of current contributions
-        ixmin = min(0,dix)-int(nox/2)
-        ixmax = max(0,dix)+int((nox+1)/2)
-        iymin = min(0,diy)-int(noy/2)
-        iymax = max(0,diy)+int((noy+1)/2)
-        izmin = min(0,diz)-int(noz/2)
-        izmax = max(0,diz)+int((noz+1)/2)
+        ixmin = min(0_idp,dix)-int(nox/2)
+        ixmax = max(0_idp,dix)+int((nox+1)/2)
+        iymin = min(0_idp,diy)-int(noy/2)
+        iymax = max(0_idp,diy)+int((noy+1)/2)
+        izmin = min(0_idp,diz)-int(noz/2)
+        izmax = max(0_idp,diz)+int((noz+1)/2)
 ! --- add current contributions
         DO k=izmin, izmax
             DO j=iymin, iymax
@@ -5897,12 +5897,12 @@ subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,x
         dsz = sz - sz0
         
         ! --- computes min/max positions of current contributions
-        ixmin = min(0,dix)-int(nox/2)
-        ixmax = max(0,dix)+int((nox+1)/2)
-        iymin = min(0,diy)-int(noy/2)
-        iymax = max(0,diy)+int((noy+1)/2)
-        izmin = min(0,diz)-int(noz/2)
-        izmax = max(0,diz)+int((noz+1)/2)
+        ixmin = min(0_idp,dix)-int(nox/2)
+        ixmax = max(0_idp,dix)+int((nox+1)/2)
+        iymin = min(0_idp,diy)-int(noy/2)
+        iymax = max(0_idp,diy)+int((noy+1)/2)
+        izmin = min(0_idp,diz)-int(noz/2)
+        izmax = max(0_idp,diz)+int((noz+1)/2)
 
         ! --- add current contributions
         do k=izmin, izmax
@@ -6245,12 +6245,12 @@ subroutine picsar_depose_jxjyjz_esirkepov_n(cj,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
         dsz = sz - sz0
         
         ! --- computes min/max positions of current contributions
-        ixmin = min(0,dix)-int(nox/2)
-        ixmax = max(0,dix)+int((nox+1)/2)
-        iymin = min(0,diy)-int(noy/2)
-        iymax = max(0,diy)+int((noy+1)/2)
-        izmin = min(0,diz)-int(noz/2)
-        izmax = max(0,diz)+int((noz+1)/2)
+        ixmin = min(0_idp,dix)-int(nox/2)
+        ixmax = max(0_idp,dix)+int((nox+1)/2)
+        iymin = min(0_idp,diy)-int(noy/2)
+        iymax = max(0_idp,diy)+int((noy+1)/2)
+        izmin = min(0_idp,diz)-int(noz/2)
+        izmax = max(0_idp,diz)+int((noz+1)/2)
 
         ! --- add current contributions
         do k=izmin, izmax
@@ -6561,10 +6561,10 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
         dsz = sz - sz0
 
         ! --- computes min/max positions of current contributions
-        ixmin = min(0,dix)-int(nox/2)
-        ixmax = max(0,dix)+int((nox+1)/2)
-        izmin = min(0,diz)-int(noz/2)
-        izmax = max(0,diz)+int((noz+1)/2)
+        ixmin = min(0_idp,dix)-int(nox/2)
+        ixmax = max(0_idp,dix)+int((nox+1)/2)
+        izmin = min(0_idp,diz)-int(noz/2)
+        izmax = max(0_idp,diz)+int((noz+1)/2)
         
         ! --- add current contributions
         ! --- NB : the current is later divided by the cylindrical cell volume in applybc_j

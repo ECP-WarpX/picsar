@@ -1149,9 +1149,9 @@ END SUBROUTINE charge_bcs
 
                         ! Case 3: particles changed tile. Tranfer particle to new tile
                         ! Get new indexes of particle in array of tiles
-                        indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-                        indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+                        indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+                        indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
+                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
                         CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                         CALL add_particle_at_tile(curr, indx,indy,indz, &
                              partx, party, partz, partux, partuy, partuz, gaminv, partw)
@@ -1184,7 +1184,7 @@ END SUBROUTINE charge_bcs
 	
 	IF (nthreads_tot .GT. 1) THEN 
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
-		nthreads_loop2=MAX(1,nthreads_tot/nthreads_loop1)
+		nthreads_loop2=MAX(1_idp,nthreads_tot/nthreads_loop1)
 	ELSE 
 		nthreads_loop1=1
 		nthreads_loop2=1
@@ -1235,9 +1235,9 @@ END SUBROUTINE charge_bcs
 
 									! Case 3: particles changed tile. Tranfer particle to new tile
 									! Get new indexes of particle in array of tiles
-									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
+									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 									CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 									CALL add_particle_at_tile(curr, indx,indy,indz, &
 										 partx, party, partz, partux, partuy, partuz, gaminv, partw)
@@ -1295,8 +1295,8 @@ END SUBROUTINE charge_bcs
 
 					! Case 3: particles changed tile. Tranfer particle to new tile
 					! Get new indexes of particle in array of tiles
-					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 					CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 					CALL add_particle_at_tile(curr, indx,iy,indz, &
 						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
@@ -1328,7 +1328,7 @@ END SUBROUTINE charge_bcs
 	
 	IF (nthreads_tot .GT. 1) THEN 
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
-		nthreads_loop2=MAX(1,nthreads_tot/nthreads_loop1)
+		nthreads_loop2=MAX(1_idp,nthreads_tot/nthreads_loop1)
 	ELSE 
 		nthreads_loop1=1
 		nthreads_loop2=1
@@ -1375,8 +1375,8 @@ END SUBROUTINE charge_bcs
 
 							! Case 3: particles changed tile. Tranfer particle to new tile
 							! Get new indexes of particle in array of tiles
-							indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-							indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+							indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+							indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 							CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 							CALL add_particle_at_tile(curr, indx,iy,indz, &
 								 partx, party, partz, partux, partuy, partuz, gaminv, partw)

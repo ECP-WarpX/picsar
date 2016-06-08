@@ -202,9 +202,9 @@ CONTAINS
         nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
 
         ! Get particle index in array of tile
-		ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-		iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-		iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+		ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+		iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
+		iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
@@ -377,17 +377,17 @@ CONTAINS
                         curr_tile%np_tile(1)=0
                         ! Set number of guard cells for each tile 
                         IF ((ix .GT. 1) .AND. (ix .LT. ntx2)) THEN
-                        	curr_tile%nxg_tile=MAX(nox+1,2)
+                        	curr_tile%nxg_tile=MAX(nox+1,2_idp)
                         ELSE
                         	curr_tile%nxg_tile=nxjguards
                         END IF
                         IF ((iy .GT. 1) .AND. (iy .LT. nty2) .AND. (c_dim .EQ. 3)) THEN
-                        	curr_tile%nyg_tile=MAX(noy+1,2)
+                        	curr_tile%nyg_tile=MAX(noy+1,2_idp)
                         ELSE
                         	curr_tile%nyg_tile=nyjguards
                         END IF
                         IF ((iz .GT. 1) .AND. (iz .LT. ntz2)) THEN
-                        	curr_tile%nzg_tile=MAX(noz+1,2)
+                        	curr_tile%nzg_tile=MAX(noz+1,2_idp)
                         ELSE
                         	curr_tile%nzg_tile=nzjguards
                         END IF                        
@@ -535,9 +535,9 @@ CONTAINS
                             DO ipart=1,curr%nppcell
                                 CALL RANDOM_NUMBER(rng(1:6))
                                 ! Sets positions and weight
-                                partx = x_min_local+MIN(rng(1),0.999)*(x_max_local-x_min_local)
-                                party = y_min_local+MIN(rng(2),0.999)*(y_max_local-y_min_local)
-                                partz = z_min_local+MIN(rng(3),0.999)*(z_max_local-z_min_local)
+                                partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
+                                party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
+                                partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
                                 partw = nc*dx*dy*dz/(curr%nppcell)
                                 ! Sets velocity
                                 v=MAX(1e-10_num,rng(4))
