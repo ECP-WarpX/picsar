@@ -374,14 +374,14 @@ SUBROUTINE mpi_minimal_init()
       CALL MPI_BARRIER(comm,errcode)
       new_rank = rank     
       !new_rank_array(old_rank) = rank
-      IF (new_rank.NE.old_rank) WRITE(0,'(A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
-      WRITE(0,'(X,A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
+      !IF (new_rank.NE.old_rank) WRITE(0,'(A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
+      !WRITE(0,'(X,A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
       ! We first fill the x direction, then y and finally z
       x_coords = MOD(rank,nprocx)
       y_coords = MOD((rank-x_coords)/nprocx,nprocy)
       z_coords = (rank-x_coords - y_coords*nprocx)/(nprocx*nprocy)
-      WRITE(0,'(X,A30,3(X,I5))') 'Coordinates from MPI_CART_COORDS:',coordinates(1:3)
-      WRITE(0,'(X,A30,3(X,I5))') 'Theoretical coordinates:',z_coords,y_coords,x_coords
+      !WRITE(0,'(X,A30,3(X,I5))') 'Coordinates from MPI_CART_COORDS:',coordinates(1:3)
+      !WRITE(0,'(X,A30,3(X,I5))') 'Theoretical coordinates:',z_coords,y_coords,x_coords
       CALL MPI_BARRIER(comm,errcode)
       ! -------------------------------------------------------------
 
