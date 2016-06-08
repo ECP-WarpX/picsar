@@ -32,12 +32,12 @@ CONTAINS
         nox = 1
         noy = 1
         noz = 1
-        nxguards=MAX(nox,2)
-        nyguards=MAX(noy,2)
-        nzguards=MAX(noz,2)
-        nxjguards=MAX(nox,2)
-        nyjguards=MAX(noy,2)
-        nzjguards=MAX(noz,2)
+        nxguards=MAX(nox,2_idp)
+        nyguards=MAX(noy,2_idp)
+        nzguards=MAX(noz,2_idp)
+        nxjguards=MAX(nox,2_idp)
+        nyjguards=MAX(noy,2_idp)
+        nzjguards=MAX(noz,2_idp)
         
         ! Topology
         topology = 0
@@ -119,7 +119,7 @@ CONTAINS
     ! Useful for parametric studies
     SUBROUTINE read_from_cl
         INTEGER :: i, ix
-        DO i = 1, IARGC()-1,2
+        DO i = 1, COMMAND_ARGUMENT_COUNT()-1,2
             CALL GETARG(i, buffer)
             IF (INDEX(buffer,'ntilex') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
