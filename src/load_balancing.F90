@@ -886,13 +886,13 @@ IF (nthreads_tot .GT. 1) THEN
     ! Udpate optimal number of tiles 
     SELECT CASE(c_dim)
     CASE (2)
-        ntilex_new = MAX(1,nx/35)
+        ntilex_new = MAX(1_idp,nx/35)
         ntiley_new = 1
-        ntilez_new = MAX(1,nz/35)
+        ntilez_new = MAX(1_idp,nz/35)
     CASE DEFAULT
-        ntilex_new = MAX(1,nx/10)
-        ntiley_new = MAX(1,ny/10)
-        ntilez_new = MAX(1,nz/10)
+        ntilex_new = MAX(1_idp,nx/10)
+        ntiley_new = MAX(1_idp,ny/10)
+        ntilez_new = MAX(1_idp,nz/10)
     END SELECT 
 ELSE
     ntilex_new = 1
