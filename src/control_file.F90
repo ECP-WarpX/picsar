@@ -171,7 +171,10 @@ CONTAINS
                 READ(buffer, *) currdepo 
             ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) sorting_activated                                                                                                                               
+                READ(buffer, *) sorting_activated       
+            ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) mpicom_curr                                                                                                                           
             END IF
         END DO
         RETURN

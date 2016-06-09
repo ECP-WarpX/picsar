@@ -30,8 +30,11 @@ CONTAINS
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
-
-    CALL exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, nx, ny, nz)
+    IF (mpicom_curr.EQ.1) THEN
+    	CALL exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, nx, ny, nz)
+    ELSE 
+		CALL exchange_mpi_3d_grid_array_with_guards_nonblocking(field, nxg, nyg, nzg, nx, ny, nz)
+    ENDIF 
 	
   END SUBROUTINE field_bc
 
@@ -1067,7 +1070,11 @@ CONTAINS
 !!! --- Boundary conditions routine for charge density
 SUBROUTINE charge_bcs
 ! Add charge contribution from adjacent subdomains
-    CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+    IF (mpicom_curr.EQ.1) THEN
+    	CALL summation_bcs(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+    ELSE
+    	CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)    
+    ENDIF 
     !CALL summation_bcs(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
 END SUBROUTINE charge_bcs
 
@@ -1116,9 +1123,12 @@ END SUBROUTINE charge_bcs
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_mpi: start"
 #endif
-
-    ! Then exchange particle between MPI domains
-    CALL particle_bcs_mpi_non_blocking()
+    IF (mpicom_curr.EQ.1) THEN
+    	! Then exchange particle between MPI domains
+    	CALL particle_bcs_mpi_blocking()
+    ELSE 
+    	CALL particle_bcs_mpi_non_blocking()
+    ENDIF 
     
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_mpi: stop"
@@ -1440,8 +1450,18 @@ END SUBROUTINE charge_bcs
         nsend_buf=0
         nout=0
         nrecv_buf=0
-        nbuff=currsp%species_npart*nvar
+        nbuff=0
         ibuff=1
+        ! GET NUMBER OF PARTICLES IN BORDER TILES 
+        DO iztile=1, ntilez !LOOP ON TILES
+            DO iytile=1, ntiley
+                DO ixtile=1, ntilex
+                    curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+                    IF (.NOT. curr%subdomain_bound) CYCLE
+                    	nbuff=nbuff+curr%np_tile(1)
+            	END DO 
+            END DO 
+        END DO 
         ALLOCATE(sendbuf(-1:1,-1:1,-1:1,1:nbuff))
         DO iztile=1, ntilez !LOOP ON TILES
             DO iytile=1, ntiley
