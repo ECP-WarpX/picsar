@@ -216,9 +216,9 @@ COMPLEX(cpx), INTENT(IN OUT), DIMENSION(nc1,nc2,nc3) :: coeff1
 INTEGER(idp) :: i,j,k 
 
 IF (nc1*nc2*nc3 .EQ. 1) THEN 
-    IF ((REALPART(coeff1(1,1,1)) .EQ. 0.) .AND. (IMAGPART(coeff1(1,1,1)) .EQ. 0.)) THEN 
+    IF ((REAL(coeff1(1,1,1)) .EQ. 0.) .AND. (AIMAG(coeff1(1,1,1)) .EQ. 0.)) THEN 
        RETURN 
-    ELSE IF ((REALPART(coeff1(1,1,1)) .EQ. 1.) .AND. (IMAGPART(coeff1(1,1,1)) .EQ. 0.)) THEN 
+    ELSE IF ((REAL(coeff1(1,1,1)) .EQ. 1.) .AND. (AIMAG(coeff1(1,1,1)) .EQ. 0.)) THEN 
         !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(k,j,i) & 
         !$OMP SHARED(anew,block1, n1,n2,n3) NUM_THREADS(nthreads) 
         DO k=1,n3
