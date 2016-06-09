@@ -1900,13 +1900,28 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     ncxy=ncx*ncy
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
+#if defined __INTEL_COMPILER 
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
         !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
         !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
         !DIR$ ASSUME_ALIGNED w:64, gaminv:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-        !$OMP SIMD
+#elif defined __bg__
+        !IBM* ALIGN(64,xp,yp,zp)
+        !IBM* ALIGN(64,uxp,uyp,uzp)
+        !IBM* ALIGN(64,sx,sy,sz)
+        !IBM* ALIGN(64,sy0,sz0)
+        !IBM* ALIGN(64,w, gaminv)
+        !IBM* ALIGN(64,ICELL)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+		!$OMP SIMD 
+#elif defined __bg__
+		!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+		!$DIR SIMD 
+#endif 
         DO n=1,MIN(LVEC,np-ip+1)
             nn=ip+n-1
             ! --- computes position in  grid units at (n+1)
@@ -1951,11 +1966,24 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             sy0(n) = ymid-k0-0.5_num
             sz0(n) = zmid-l0-0.5_num
         END DO
+#if defined _OPENMP && _OPENMP>=201307
         !$OMP END SIMD
+#endif
         DO n=1,MIN(LVEC,np-ip+1)
+
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
             !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
-            !$OMP SIMD
+#elif defined __bg__
+        	!IBM* ALIGN(64,jxcells,jycells,jzcells,mx,my,mz)
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __bg__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO nv=1,8
                 wx=-mx(nv)+sx(n)
                 wx0=-mx(nv)+sx0(n)
@@ -1974,13 +2002,21 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 ! - JZ
                 jzcells(nv,ICELL(n,3))=jzcells(nv,ICELL(n,3))+wwz
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+        !$OMP END SIMD
+#endif
         END DO
     END DO
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
     DO iz=1, ncz
         DO iy=1,ncy
-            !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __bg__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                 ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                 igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
@@ -2012,7 +2048,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jz(orig+igrid+moff(7))=jz(orig+igrid+moff(7))+jzcells(7,ic)
                 jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8,ic)
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+        !$OMP END SIMD
+#endif
         END DO
     END DO
     DEALLOCATE(jxcells,jycells,jzcells)
