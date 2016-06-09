@@ -970,7 +970,7 @@ DO ispecies=1,nspecies
                         ELSE 
                             indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
                             indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
-                            CALL add_particle_at_tile(currsp_new, indx,1,indz, &
+                            CALL add_particle_at_tile(currsp_new, indx,1_idp,indz, &
                                  partx, party, partz, partux, partuy, partuz, gaminv, partw)
                     
                         ENDIF 
