@@ -213,6 +213,8 @@ INTEGER(isp) :: status(MPI_STATUS_SIZE)
 ! Derived types (MPI exchange)
 INTEGER(isp) :: derived_type_grid
 INTEGER(isp) :: derived_subarray_grid
+INTEGER(isp), DIMENSION(100) :: mpi_dtypes
+LOGICAL(isp), DIMENSION(100) :: is_dtype_init = .TRUE. 
 END MODULE mpi_type_constants
 
 !===============================================================================
