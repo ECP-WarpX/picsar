@@ -1907,7 +1907,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
         !DIR$ ASSUME_ALIGNED w:64, gaminv:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,uxp,uyp,uzp)
         !IBM* ALIGN(64,sx,sy,sz)
@@ -1917,7 +1917,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 		!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 
@@ -1974,12 +1974,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
             !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         	!IBM* ALIGN(64,jxcells,jycells,jzcells,mx,my,mz)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -2012,7 +2012,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -2130,7 +2130,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
         !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
         !DIR$ ASSUME_ALIGNED w:64, gaminv:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,uxp,uyp,uzp)
         !IBM* ALIGN(64,sx,sy,sz)
@@ -2140,7 +2140,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 		!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 
@@ -2196,13 +2196,13 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
             !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(32,jxcells, jycells, jzcells)
             !IBM* ALIGN(32,mx,my,mz,sg)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -2476,7 +2476,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         !DIR$ ASSUME_ALIGNED sx00:64,sx01:64,sx02:64
         !DIR$ ASSUME_ALIGNED w:64, wwwx:64,wwwy:64,wwwz:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,sx0,sx1,sx2)
         !IBM* ALIGN(64,sx00,sx01,sx02)
@@ -2485,7 +2485,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 		!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 
@@ -2618,12 +2618,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -2662,12 +2662,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -2692,7 +2692,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -2823,7 +2823,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
         !DIR$ ASSUME_ALIGNED sx00:64,sx01:64,sx02:64
         !DIR$ ASSUME_ALIGNED w:64, wwwx:64,wwwy:64,wwwz:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,sx0,sx1,sx2)
         !IBM* ALIGN(64,sx00,sx01,sx02)
@@ -2832,7 +2832,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 		!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 
@@ -2959,12 +2959,12 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -3001,7 +3001,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -3403,7 +3403,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
         !DIR$ ASSUME_ALIGNED sy01:64,sy02:64,sy03:64,sy04:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,vx,vy,vz)
         !IBM* ALIGN(64,sx1,sx2,sx3,sx4)
@@ -3414,7 +3414,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -3495,12 +3495,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO n=1,MIN(LVEC2,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED w:64, wwwx:64,wwwy:64,wwwz:64
-#elif defined  __bg__
+#elif defined  __IBMBGQ__
             !IBM* ALIGN(64,w, wwwx,wwwy,wwwz)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -3538,12 +3538,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO n=1,MIN(LVEC2,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -3613,7 +3613,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -3726,7 +3726,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
         !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,vx,vy,vz)
         !IBM* ALIGN(64,sx1,sx2,sx3,sx4)
@@ -3735,7 +3735,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 		!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 
@@ -3883,12 +3883,12 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -3961,7 +3961,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -4093,7 +4093,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
         !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
         !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,vx,vy,vz)
         !IBM* ALIGN(64,sx1,sx2,sx3,sx4)
@@ -4102,7 +4102,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 		!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 
@@ -4250,12 +4250,12 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -4924,7 +4924,7 @@ IMPLICIT NONE
         !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
         !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
         !IBM* ALIGN(64, xp,yp,zp)
         !IBM* ALIGN(64,vx,vy,vz)
         !IBM* ALIGN(64,sx1,sx2,sx3,sx4)
@@ -4933,7 +4933,7 @@ IMPLICIT NONE
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 		!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 
@@ -5420,12 +5420,12 @@ IMPLICIT NONE
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -5485,7 +5485,7 @@ IMPLICIT NONE
         DO iy=1,ncy-2
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -6965,7 +6965,7 @@ SUBROUTINE current_reduction(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,nx
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 

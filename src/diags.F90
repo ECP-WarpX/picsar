@@ -376,14 +376,14 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,ww:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,ww,xp,yp,zp,w)
 #endif 
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,ww:64
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -438,12 +438,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             DO m= 1,MIN(nblk,np-ip+1)
 #if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED ww:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
                 !IBM* ALIGN(64,ww)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -719,12 +719,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             !DIR$ ASSUME_ALIGNED zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -761,12 +761,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 !DIR$ ASSUME_ALIGNED sx:64
                 !DIR$ ASSUME_ALIGNED sy:64
                 !DIR$ ASSUME_ALIGNED sz:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
                 !IBM* ALIGN(64,rhocells,sx,sy,sz)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -786,7 +786,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -953,12 +953,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
             !DIR$ ASSUME_ALIGNED ICELL:64, IG:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,sx0,sx1,sx2,ICELL,IG)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1016,12 +1016,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 !DIR$ ASSUME_ALIGNED rhocells:64
 #if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,rhocells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -1040,7 +1040,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1058,7 +1058,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1260,12 +1260,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,ICELL)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1335,12 +1335,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 ic=ICELL(n)
 #if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
                 !IBM* ALIGN(64,rhocells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1367,12 +1367,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 #if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED rhocells:64
             !DIR$ ASSUME_ALIGNED rho:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,rhocells,rho)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1448,12 +1448,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED w:64,sy1:64,sy2:64,sy3:64,sy4:64
             !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,sx1,sx2,sx3,sx4,sy1,sy2,sy3,sy4,ICELL)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1505,12 +1505,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 
 #if defined __INTEL_COMPILER 
                 !$DIR ASSUME_ALIGNED www:64, h1:64, h11:64, h12:64, zdec:64, sgn:64, szz:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
                 !IBM* ALIGN(64,www,h1,h11,h12,zdec,sgn,szz)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -1532,12 +1532,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 
 #if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64, www:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
                 !IBM* ALIGN(64,rhocells,www)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -1570,7 +1570,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -1652,12 +1652,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED ICELL:64, www1:64, www2:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,sx1,sx2,sx3,sx4,ICELL,www1,www2)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!$DIR SIMD 
@@ -1727,12 +1727,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                 ic=ICELL(n)
 #if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
                 !IBM* ALIGN(64,rhocells,www1,www2)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -1768,7 +1768,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
             DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
 			    !$OMP SIMD 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			    !$DIR SIMD 
@@ -2548,12 +2548,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                     DO ip=1,np,LVEC2
 #if defined __INTEL_COMPILER 
                         !DIR$ ASSUME_ALIGNED gaminv:64
-#elif defined __bg__
+#elif defined __IBMBGQ__
                         !IBM* ALIGN(64,gaminv)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
                         !$OMP SIMD SAFELEN(LVEC2) 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			            !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			            !$DIR SIMD 
@@ -2624,7 +2624,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
                         !!DIR$ ASSUME_ALIGNED partgaminv:64
 #if defined _OPENMP && _OPENMP>=201307
                         !$OMP SIMD SAFELEN(LVEC2) 
-#elif defined __bg__
+#elif defined __IBMBGQ__
 			            !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			            !$DIR SIMD 
