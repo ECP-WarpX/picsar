@@ -165,7 +165,7 @@ INTEGER(idp) :: ntot ! total number of particles (all species, all subdomains ->
 !INTEGER(idp), PARAMETER :: nspecies_max=4 ! Max number of particle species
 INTEGER(idp) :: nspecies_max=4 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
-LOGICAL :: l_species_allocated=.FALSE.
+LOGICAL :: l_species_allocated=.FALSE.,  l_pdumps_allocated=.FALSE.
 END MODULE particle_properties
 
 
@@ -292,6 +292,21 @@ INTEGER :: temdiag_totvalues
 INTEGER :: temdiag_frequency
 INTEGER :: temdiag_format
 REAL(num), dimension(:),allocatable :: temdiag_array             ! Big array containing all the temporal diag at a given iteration
+
+
+INTEGER(idp) :: npdumps
+TYPE particle_dump
+	INTEGER(idp) :: ispecies
+	INTEGER(idp) :: diag_period
+	REAL(num) :: dump_x_min, dump_x_max
+	REAL(num) :: dump_y_min, dump_y_max
+	REAL(num) :: dump_z_min, dump_z_max
+	REAL(num) :: dump_ux_min, dump_ux_max
+	REAL(num) :: dump_uy_min, dump_uy_max
+	REAL(num) :: dump_uz_min, dump_uz_max
+END TYPE particle_dump
+
+TYPE(particle_dump), ALLOCATABLE, TARGET, DIMENSION(:) :: particle_dumps
 
 END MODULE output_data
 
