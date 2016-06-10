@@ -17,7 +17,7 @@ USE ITT_SDE_FORTRAN
 #endif                                  
 
 IMPLICIT NONE
-INTEGER :: nst,i
+INTEGER(idp) :: nst,i
 
 !!! --- This is the main PIC LOOP
 IF (rank .EQ. 0) THEN
