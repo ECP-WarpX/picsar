@@ -223,11 +223,17 @@ CALL init_stencil_coefficients()
 !!! --- Set tile split for particles
 CALL set_tile_split
 
+IF (rank .EQ. 0) PRINT *, "SET TILE SPLIT OK"
+
 ! - Allocate particle arrays for each tile of each species
 CALL init_tile_arrays
 
+IF (rank .EQ. 0) PRINT *, "INIT TILES ARRAYS OK"
+
 ! - Load particle distribution on each tile
 CALL load_particles
+
+IF (rank .EQ. 0) PRINT *, "PARTICLES LOAD OK"
 
 ! - Estimate tile size 
 CALL estimate_tile_size
