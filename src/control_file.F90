@@ -93,6 +93,8 @@ CONTAINS
         ! --- Init number of species
         nspecies=0
 
+        ! --- Init number of particle dumps 
+        npdumps = 0
         ! --- Particle distribution
         pdistr=1
         ! Init species array
@@ -109,6 +111,7 @@ CONTAINS
         pbound_x_max=0
         pbound_y_max=0
         pbound_z_max=0
+        
         ! Temporal output
         temdiag_frequency = 0
         temdiag_format = 0
@@ -210,6 +213,8 @@ CONTAINS
                     CALL read_timestat_section
                 CASE('section::sorting')      
                     CALL read_sorting_section
+                CASE('section::particle_dump')
+                    CALL read_particle_dumps_section
                 END SELECT
             END IF
         END DO
@@ -575,6 +580,101 @@ CONTAINS
         END DO
         RETURN
     END SUBROUTINE read_species_section
+
+    SUBROUTINE read_particle_dumps_section
+        INTEGER :: ix = 0, ispecies
+        LOGICAL :: end_section
+        TYPE(particle_dump), POINTER :: dp
+        CHARACTER(LEN=string_length) :: dump_name
+        ! READS SPECIES SECTION OF INPUT FILE
+        IF (.NOT. l_pdumps_allocated) THEN
+            npdumps=0
+            ALLOCATE(particle_dumps(1:nspecies_max))
+            l_pdumps_allocated=.TRUE.
+        ENDIF        
+        npdumps=npdumps+1
+        dp => particle_dumps(npdumps)
+        ! minimal init for filter attributes 
+        dp%ispecies   = -1
+        dp%dump_x_min = xmin
+        dp%dump_x_max = xmax
+        dp%dump_y_min = ymin
+        dp%dump_y_max = ymax
+        dp%dump_z_min = zmin
+        dp%dump_z_max = zmax
+        dp%dump_ux_min = 1e7
+        dp%dump_ux_max = 1e9
+        dp%dump_uy_min = 1e7
+        dp%dump_uy_max = 1e9
+        dp%dump_uz_min = 1e7
+        dp%dump_uz_max = 1e9
+        dp%diag_period = -1
+        end_section=.FALSE.
+        DO WHILE((.NOT. end_section) .AND. (ios==0))
+            READ(fh_input, '(A)', iostat=ios) buffer
+            !WRITE(0,*),TRIM(ADJUSTL(buffer))
+            IF (INDEX(buffer,'#') .GT. 0) THEN
+               CYCLE
+            ENDIF
+            IF (INDEX(buffer,'dump_x_min') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_x_min
+            ELSE IF (INDEX(buffer,'dump_x_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_x_max
+            ELSE IF (INDEX(buffer,'species_name') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dump_name
+                DO ispecies=1,nspecies
+                    IF (INDEX(dump_name,species_parray(ispecies)%name) .GT. 0) THEN 
+                        dp%ispecies=ispecies
+                        EXIT
+                    ENDIF 
+                END DO
+                IF (dp%ispecies .EQ. -1) THEN 
+                    PRINT *, "ERROR IN SPECIES NAME PARTICLE DUMP SECTION !!!"
+                ENDIF
+            ELSE IF (INDEX(buffer,'dump_y_min') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_y_min
+            ELSEIF (INDEX(buffer,'dump_y_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_y_max
+            ELSE IF (INDEX(buffer,'dump_z_min') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_z_min
+            ELSEIF (INDEX(buffer,'dump_z_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length),*) dp%dump_z_max
+            ELSE IF (INDEX(buffer,'dump_ux_min') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_ux_min
+            ELSE IF (INDEX(buffer,'dump_ux_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_ux_max
+            ELSE IF (INDEX(buffer,'dump_uy_min') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_uy_min
+            ELSEIF (INDEX(buffer,'dump_uy_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_uy_max
+            ELSE IF (INDEX(buffer,'dump_uz_min') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dp%dump_uz_min
+            ELSEIF (INDEX(buffer,'dump_uz_max') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length),*) dp%dump_uz_max      
+            ELSEIF (INDEX(buffer,'diag_period') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length),'(i10)') dp%diag_period                   
+            ELSE IF (INDEX(buffer,'end::particle_dump') .GT. 0) THEN
+                end_section =.TRUE.
+            END IF
+        END DO
+        RETURN
+    END SUBROUTINE read_particle_dumps_section
+
+
 
     SUBROUTINE read_output_section
         INTEGER :: ix = 0

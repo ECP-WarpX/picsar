@@ -215,6 +215,7 @@ CALL init_tile_arrays
 ! - Load particle distribution on each tile
 CALL load_particles
 
+! - Estimate tile size 
 CALL estimate_tile_size
 
 ! ----- INIT FIELD ARRAYS
