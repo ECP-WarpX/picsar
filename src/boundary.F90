@@ -1646,10 +1646,13 @@ END SUBROUTINE charge_bcs
     TYPE(particle_species), POINTER :: currsp
     TYPE(particle_tile), POINTER :: curr
     
-    
+    mpitag=0_isp
     ALLOCATE(npart_send(1:nspecies,-1:1,-1:1,-1:1))
     ALLOCATE(npart_recv(1:nspecies,-1:1,-1:1,-1:1))
     ALLOCATE(requests(27*2))
+    
+    npart_recv=0
+    npart_send=0
     
 	! POST IRECV PARTICLES FROM ADJACENT DOMAINS 
 	! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
@@ -1671,6 +1674,7 @@ END SUBROUTINE charge_bcs
     ! GET NUMBER OF PARTICLES AT BORDER OF CURRENT DOMAIN (INIT SEND BUFFER)
     nbuff=0
     DO ispecies=1, nspecies 
+    	currsp => species_parray(ispecies)
 		DO iztile=1, ntilez !LOOP ON TILES
 			DO iytile=1, ntiley
 				DO ixtile=1, ntilex
@@ -1856,7 +1860,7 @@ END SUBROUTINE charge_bcs
 				    IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
 					IF (count .GT. 0) THEN 
 						dest = INT(neighbour(ix,iy,iz),isp)
-						CALL MPI_ISEND(sendbuff(1:count,ix,iy,iz),count, MPI_DOUBLE_PRECISION,dest,MPI_ANY_TAG, &
+						CALL MPI_ISEND(sendbuff(1:count,ix,iy,iz),count, MPI_DOUBLE_PRECISION,dest,mpitag, &
 										comm, requests(ireq),errcode)
 						ireq=ireq+1
 					ENDIF
@@ -1875,6 +1879,7 @@ END SUBROUTINE charge_bcs
 			DO iy = -1, 1
 				DO ix = -1, 1
 					IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+					ispec=0
 					DO ispecies=1,nspecies
 						currsp=> species_parray(ispecies) 
 						DO ipart=1,nvar*npart_recv(ispecies,ix,iy,iz),nvar
