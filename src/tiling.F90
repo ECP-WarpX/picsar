@@ -567,7 +567,7 @@ CONTAINS
         ntot=0
         DO ispecies=1,nspecies
             curr=>species_parray(ispecies)
-            CALL MPI_ALLREDUCE(curr%species_npart,npart,1_isp, MPI_INTEGER,MPI_SUM,comm, err)
+            CALL MPI_ALLREDUCE(curr%species_npart,npart,1_isp, MPI_INTEGER8,MPI_SUM,comm, err)
             ntot=ntot+npart
             IF (rank .EQ. 0) THEN
                 WRITE (0,*) 'Loaded npart = ', npart,' particles of species ', &
