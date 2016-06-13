@@ -79,10 +79,10 @@ do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
-            do i = 1, nordery/2
+            do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
                 Ex(j,k,l) = Ex(j,k,l) + dtsdy(i) * (Bz(j,k+i-ist,l)   - Bz(j,k-i,l  ))
             end do
-            do i = 1, norderz/2
+            do i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
                 Ex(j,k,l) = Ex(j,k,l) - dtsdz(i) * (By(j,k,l+i-ist)   - By(j,k  ,l-i))
             end do
         end do
@@ -95,10 +95,10 @@ do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
-            do i = 1, norderx/2
+            do i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
                 Ey(j,k,l) = Ey(j,k,l) - dtsdx(i) * (Bz(j+i-ist,k,l)   - Bz(j-i,k,l))
             end do
-            do i = 1, norderz/2
+            do i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
                 Ey(j,k,l) = Ey(j,k,l) + dtsdz(i) * (Bx(j,k,l+i-ist)   - Bx(j,k,l-i))
             end do
         end do
@@ -111,10 +111,10 @@ do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
             Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
-            do i = 1, norderx/2
+            do i = 1,   MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
                 Ez(j,k,l) = Ez(j,k,l) + dtsdx(i) * (By(j+i-ist,k,l) - By(j-i,k  ,l))
             end do
-            do i = 1, nordery/2
+            do i = 1,  MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
                 Ez(j,k,l) = Ez(j,k,l) - dtsdy(i) * (Bx(j,k+i-ist,l) - Bx(j  ,k-i,l))
             end do
         end do
@@ -334,10 +334,10 @@ end if
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
-            do i = 1, nordery/2
+            do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
                 Bx(j,k,l) = Bx(j,k,l) - dtsdy(i) * (Ez(j,k+i,l  ) - Ez(j,k-i+ist,l))
             end do
-            do i = 1, norderz/2
+            do i = 1,  MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
                 Bx(j,k,l) = Bx(j,k,l) + dtsdz(i) * (Ey(j,k,  l+i) - Ey(j,k,l-i+ist))
             end do
         end do
@@ -349,10 +349,10 @@ end do
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
-            do i = 1, norderx/2
+            do i = 1,  MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
                 By(j,k,l) = By(j,k,l) + dtsdx(i) * (Ez(j+i,k,l  ) - Ez(j-i+ist,k,l))
             end do
-            do i = 1, norderz/2
+            do i = 1,  MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
                 By(j,k,l) = By(j,k,l) - dtsdz(i) * (Ex(j  ,k,l+i) - Ex(j,k,l-i+ist))
             end do
         end do
@@ -364,10 +364,10 @@ end do
 do l = -nzs, nz+nzs
     do k = -nys, ny+nys
         do j = -nxs, nx+nxs
-            do i = 1, norderx/2
+            do i = 1,  MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
                 Bz(j,k,l) = Bz(j,k,l) - dtsdx(i) * (Ey(j+i,k,l) - Ey(j-i+ist,k,l))
             end do
-            do i = 1, nordery/2
+            do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
                 Bz(j,k,l) = Bz(j,k,l) + dtsdy(i) * (Ex(j,k+i,l) - Ex(j,k-i+ist,l))
             end do
         end do
