@@ -17,48 +17,51 @@ MODULE mpi_routines
 
 CONTAINS
 
-SUBROUTINE mpi_minimal_init()
-    LOGICAL(isp) :: isinitialized
-	  INTEGER(isp) :: nproc_comm, rank_in_comm
-	
-	  !print*,'start mpi_minimal_init()'
-	  !print*,'MPI_INITIALIZED'
-    CALL MPI_INITIALIZED(isinitialized,errcode)
-    IF (.NOT. isinitialized) THEN
-      !print*, 'MPI_INIT_THREAD'
-      CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
-    ENDIF
-    !print*,'MPI_COMM_DUP'
-    CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
-    !print*,'MPI_COMM_SIZE'
-    CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
-    nproc=INT(nproc_comm,idp)
-    !print*,'MPI_COMM_RANK'
-    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-	  rank=INT(rank_in_comm,idp)	  	  
-	  !print*, 'end mpi_minimal_init'
-  END SUBROUTINE mpi_minimal_init
-
-
-!   SUBROUTINE mpi_minimal_init(comm_in)
+! SUBROUTINE mpi_minimal_init()
 !     LOGICAL(isp) :: isinitialized
-! 	INTEGER(isp) :: nproc_comm, rank_in_comm
-! 	INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in 
+! 	  INTEGER(isp) :: nproc_comm, rank_in_comm
 ! 	
+! 	  !print*,'start mpi_minimal_init()'
+! 	  !print*,'MPI_INITIALIZED'
 !     CALL MPI_INITIALIZED(isinitialized,errcode)
-!     IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
-!     IF (present(comm_in) .AND. comm_in .GE. 0) THEN 
-!     	CALL MPI_COMM_DUP(INT(comm_in,isp), comm, errcode)    	
-!     ELSE
-!     	CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+!     IF (.NOT. isinitialized) THEN
+!       !print*, 'MPI_INIT_THREAD'
+!       !CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
+!       CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE,provided,errcode)
+! 
 !     ENDIF
+!     !print*,'MPI_COMM_DUP'
+!     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+!     !print*,'MPI_COMM_SIZE'
 !     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
 !     nproc=INT(nproc_comm,idp)
-!     
+!     !print*,'MPI_COMM_RANK'
 !     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-! 	rank=INT(rank_in_comm,idp)	  	  
-! 
+! 	  rank=INT(rank_in_comm,idp)	  	  
+! 	  !print*, 'end mpi_minimal_init'
 !   END SUBROUTINE mpi_minimal_init
+
+
+  SUBROUTINE mpi_minimal_init(comm_in)
+  LOGICAL(isp) :: isinitialized
+	INTEGER(isp) :: nproc_comm, rank_in_comm
+	INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in 
+	
+    CALL MPI_INITIALIZED(isinitialized,errcode)
+    IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
+    !IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE,provided,errcode)    
+    IF (present(comm_in) .AND. comm_in .GE. 0) THEN 
+    	CALL MPI_COMM_DUP(INT(comm_in,isp), comm, errcode)    	
+    ELSE
+    	CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+    ENDIF
+    CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
+    nproc=INT(nproc_comm,idp)
+    
+    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+	rank=INT(rank_in_comm,idp)	  	  
+
+  END SUBROUTINE mpi_minimal_init
 
 
 
@@ -665,16 +668,18 @@ SUBROUTINE mpi_minimal_init()
     ! ---- Subroutine dedicated to the time report at the end of the simulation
     USE time_stat
     USE params
+    USE omp_lib 
     IMPLICIT NONE
         
     REAL(num), DIMENSION(20) :: mintimes
     REAL(num), DIMENSION(20) :: maxtimes
     REAL(num), DIMENSION(20) :: avetimes
     REAL(num), DIMENSION(20) :: percenttimes
+    INTEGER(idp) :: nthreads_tot
     
-    localtimes(20) = sum(localtimes(1:11))
+    localtimes(20) = sum(localtimes(1:13))
     localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
-                     localtimes(8) + localtimes(11)
+                     localtimes(8) + localtimes(11) + localtimes(13)
     
     ! Reductions
     ! Maximun times
@@ -682,11 +687,11 @@ SUBROUTINE mpi_minimal_init()
     ! Minimum times
     CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
     ! Average
-   CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
-   avetimes = avetimes / nproc
+    CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
+    avetimes = avetimes / nproc
    
-   ! Percentage  
-   percenttimes = avetimes / avetimes(20) * 100
+    ! Percentage  
+    percenttimes = avetimes / avetimes(20) * 100
      
   IF (rank .EQ. 0) THEN
     WRITE(0,*) ""
@@ -715,20 +720,35 @@ SUBROUTINE mpi_minimal_init()
     percenttimes(8), avetimes(8)/nsteps*1e3
     WRITE(0,'(X,A22,5(X,F8.2))') "Sorting:",mintimes(10), avetimes(10), maxtimes(10),&
     percenttimes(10), avetimes(10)/nsteps*1e3    
+    WRITE(0,'(X,A22,5(X,F8.2))') "Charge calculation:", mintimes(12), avetimes(12), maxtimes(12),&
+    percenttimes(12), avetimes(12)/nsteps*1e3     
+    WRITE(0,'(X,A22,5(X,F8.2))') "Charge bound. cond.:", mintimes(13), avetimes(13), maxtimes(13),&
+    percenttimes(13), avetimes(13)/nsteps*1e3          
     WRITE(0,'(X,A22,5(X,F8.2))') "Diags:",mintimes(9), avetimes(9), maxtimes(9),&
     percenttimes(9), avetimes(9)/nsteps*1e3
-    
     
     WRITE(0,*) ""
     WRITE(0,'(X,A22,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
     percenttimes(19), avetimes(19)/nsteps*1e3
     WRITE(0,'(X,A22,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
-    
-    WRITE(0,'(A,F6.2,",fieldgave=",F6.2,",part_mpi_com=",F6.2,&
-    ",part_omp_com=",F6.2,",currdepo=",F6.2,",maxwell=",F6.2,",sorting=",F6.2,",diags=",F6.2,")")') &
-    "(nmpi=,nomp=,name=,kernel=",avetimes(20), &
-    avetimes(1),avetimes(2),avetimes(11),avetimes(4),&
-    avetimes(5)+avetimes(7),avetimes(10),avetimes(9)
+
+	
+#ifdef _OPENMP
+	nthreads_tot=OMP_GET_MAX_THREADS()
+	CALL OMP_SET_NESTED(.TRUE.)
+#else
+	nthreads_tot=1
+#endif
+
+    WRITE(0,*) ''
+    WRITE(0,*) 'For lib_performance python class:' 
+    WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,",part_mpi_com=",F6.2,&
+    ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
+    ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
+    nproc,nthreads_tot,avetimes(20), &
+    avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
+    avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
+    avetimes(12),avetimes(13),avetimes(9)
 
   ENDIF    
   

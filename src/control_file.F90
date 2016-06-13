@@ -48,11 +48,20 @@ CONTAINS
         ! Current deposition algorithm
         currdepo = 0
         
+        ! Charge deposition algorithm
+        rhodepo = 0
+        
         ! Field gathering algorithm 
         fieldgave = 0
         
         ! Particle communication routine
         partcom = 0
+        
+        ! Vector length current deposition
+        lvec_curr_depo = 8
+
+        ! Vector length charge deposition        
+        LVEC_charge_depo = 64
         
         ! Sorting activation (not activated by default)       
         sorting_activated = 0
@@ -172,12 +181,21 @@ CONTAINS
             ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) currdepo 
+            ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) rhodepo                 
             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) partcom
             ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) sorting_activated                                                                                                                               
+                READ(buffer, *) sorting_activated     
+            ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) lvec_curr_depo      
+            ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) lvec_charge_depo                                                                                                                                                       
             END IF
         END DO
         RETURN
@@ -248,6 +266,12 @@ CONTAINS
             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') partcom
+            ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo 
+            ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') lvec_charge_depo                                       
             ELSE IF (INDEX(buffer,'end::cpusplit') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -314,7 +338,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') currdepo        
              ELSE IF (INDEX(buffer,'fieldgave') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fieldgave                                                 
+                READ(buffer(ix+1:string_length), '(i10)') fieldgave     
+             ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') rhodepo                
             ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

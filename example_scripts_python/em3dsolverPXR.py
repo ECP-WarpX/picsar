@@ -49,7 +49,7 @@ class EM3DPXR(EM3DFFT):
                       'currdepo':0,     # Current deposition method
                       'mpicom_curr':0,   # Com type Current deposition
                       'fieldgave':0,     # Field gathering method
-                      'partcom':0,
+                      'partcom':0,       # Particle communication
                       'sorting':None
                       }
 

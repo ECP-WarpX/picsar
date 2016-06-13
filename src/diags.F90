@@ -23,21 +23,26 @@ CONTAINS
         WRITE(0,*) "Calc_diags: start"
 #endif
         
-        tmptime = MPI_WTIME()        
-
-        ! - Computes electric field divergence on grid at n+1
-        dive=0.0_num
-        CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
-
         ! - Computes total charge density
         CALL pxrdepose_rho_on_grid()
         
         CALL charge_bcs()
-        
-        ! Get the total number of particles
-        !CALL get_tot_number_of_particles(ntot)
+     
 
-        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
+        ! - Computes electric field divergence on grid at n+1
+        IF (.FALSE.) THEN
+        
+          tmptime = MPI_WTIME()   
+        
+          dive=0.0_num
+          CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+
+          ! Get the total number of particles
+          !CALL get_tot_number_of_particles(ntot)
+          
+          localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
+          
+        ENDIF
 
 #if defined(DEBUG)
         WRITE(0,*) "Calc_diags: stop"
@@ -52,22 +57,118 @@ SUBROUTINE pxrdepose_rho_on_grid
 USE fields
 USE shared_data
 USE params
+USE time_stat
 IMPLICIT NONE 
-INTEGER(idp) :: c_rho_old
-c_rho_old = 0
-rho = 0.0_num
-! DEPOSIT Charge on the grid 
-CALL pxrdepose_rho_on_grid_sub_openmp(rho,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	nox,noy,noz,dx,dy,dz,dt,c_rho_old)
+
+  INTEGER(idp) :: c_rho_old
+  REAL(num)    :: tmptime
+
+  INTERFACE
+
+    SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
+                     nxguard,nyguard,nzguard,lvect)  !#do not parse
+        USE constants
+        IMPLICIT NONE
+        INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        INTEGER(idp), INTENT (IN) :: lvect
+        REAL(num), INTENT (IN) :: q,dx,dy,dz,xmin,ymin,zmin   
+        REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)             
+        
+    END SUBROUTINE
+
+    SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
+              dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,lvect) !#do not parse
+        USE constants
+        IMPLICIT NONE
+        INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER(idp), INTENT (IN) :: lvect
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num), INTENT (IN) :: q,dx,dy,dz,xmin,ymin,zmin
+    END SUBROUTINE
+
+    SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
+               dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,lvect) !#do not parse                       
+        USE constants
+        IMPLICIT NONE
+        INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER(idp), INTENT (IN) :: lvect
+        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
+        REAL(num), INTENT (IN) :: q,dx,dy,dz,xmin,ymin,zmin
+
+      END SUBROUTINE
+  
+  END INTERFACE
+
+  ! ______________________________________
+  ! Parameters
+  
+  tmptime = MPI_WTIME() 
+  
+  c_rho_old = 0
+  rho = 0.0_num
+  
+  ! ______________________________________
+  ! DEPOSIT Charge on the grid 
+
+  SELECT CASE (c_dim) 
+  ! In 2D
+	CASE (2)
+
+    CALL pxrdepose_rho_on_grid_sub_openmp_2d(rho,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	  nox,noy,noz,dx,dy,dz,dt,c_rho_old)
+  
+  ! In 3D
+  CASE DEFAULT 
+
+  ! Optimized functions
+  IF (rhodepo.EQ.0) THEN
+
+	  ! Order 3
+  	IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN			  
+
+      CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv4_3_3_3,rho,nx,ny,nz, &
+	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
+				  
+	  ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
+
+      CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv2_2_2_2,rho,nx,ny,nz, &
+	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
+				  				  
+	  ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN			
+ 
+      CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv2_1_1_1,rho,nx,ny,nz, &
+	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
+			
+	  ELSE
+
+      CALL pxrdepose_rho_on_grid_sub_openmp_3d(rho,nx,ny,nz, &
+	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,c_rho_old)
+	
+	  ENDIF		
+				  
+	! Non-optimized general function			  
+  ELSE
+
+    CALL pxrdepose_rho_on_grid_sub_openmp_3d(rho,nx,ny,nz, &
+	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,c_rho_old)
+
+  ENDIF
+  
+  END SELECT
+  
+  localtimes(12) = localtimes(12) + (MPI_WTIME() - tmptime)  
 
 END SUBROUTINE pxrdepose_rho_on_grid
 
 !===============================================================================
-! Deposit rho in each tile
+! Deposit rho in each tile in 2D
 ! OpenMP version. Avoids conflict while reducing tile charge in the global 
 ! charge array. 
 !===============================================================================
-SUBROUTINE pxrdepose_rho_on_grid_sub_openmp(rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt, c_rho_old)
 USE particles
 USE constants
@@ -124,8 +225,7 @@ DO iz=1,ntilez
                 	isdeposited=.TRUE.
                 ENDIF 
                 ! Depose charge in rhotile
-                SELECT CASE (c_dim) 
-				CASE (2)
+
 					SELECT CASE (c_rho_old)
 					CASE(1) ! Rho at older time 
 						CALL pxr_depose_rhoold_n_2dxz(currg%rhotile(:,0,:),count,       &
@@ -142,13 +242,7 @@ DO iz=1,ntilez
 						curr_tile%z_grid_tile_min,dxx,dzz,nxc,nzc,                          &
 						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
 					END SELECT 
-				CASE DEFAULT 
-					CALL pxr_depose_rho_n(currg%rhotile,count,                                                 &
-					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
-					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,                                         &
-					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
-			    END SELECT 
+
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
             	rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
@@ -279,7 +373,442 @@ DO iz=1,ntilez
 END DO!END LOOP ON TILES
 !$OMP END DO
 !$OMP END PARALLEL
-END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
+END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d
+
+!===============================================================================
+! Deposit rho in each tile in 3D
+! OpenMP version. Avoids conflict while reducing tile charge in the global 
+! charge array. 
+!===============================================================================
+SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+	noxx,noyy,nozz,dxx,dyy,dzz,dtt,c_rho_old)
+USE particles
+USE constants
+USE tiling
+USE omp_lib
+IMPLICIT NONE
+
+! _______________________________________________________________________
+! Declarations
+
+INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz, c_rho_old
+REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+REAL(num), INTENT(IN OUT) :: rhog(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+INTEGER(idp) :: ispecies, ix, iy, iz, count
+INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
+TYPE(grid_tile), POINTER :: currg
+REAL(num) :: tdeb, tend
+INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+LOGICAL(idp) :: isdeposited=.FALSE.
+
+!$OMP PARALLEL DEFAULT(NONE)                                                              &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old)       &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
+!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
+!! Current deposition
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+        	curr => species_parray(1)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            nxjg=curr_tile%nxg_tile
+            nyjg=curr_tile%nyg_tile
+            nzjg=curr_tile%nzg_tile
+            jmin=curr_tile%nx_tile_min
+        	jmax=curr_tile%nx_tile_max
+            kmin=curr_tile%ny_tile_min
+            kmax=curr_tile%ny_tile_max
+            lmin=curr_tile%nz_tile_min
+            lmax=curr_tile%nz_tile_max
+            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+            nzc=curr_tile%nz_cells_tile         
+			      currg=>aofgrid_tiles(ix,iy,iz)
+            currg%rhotile=0._num
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+           	    curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .EQ. 0) THEN 
+                	CYCLE
+                ELSE 
+                	isdeposited=.TRUE.
+                ENDIF 
+                ! Depose charge in rhotile
+				 
+				    CALL pxr_depose_rho_n(currg%rhotile,count,               &
+					  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
+					  curr_tile%pid(1,wpid),curr%charge,                       &
+					  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+					  curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,       &
+				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
+					
+            END DO! END LOOP ON SPECIES
+            IF (isdeposited) THEN
+            	rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
+            ENDIF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!! Adding charge from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
+!+/- X
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+        	isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- X
+                rhog(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = rhog(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                rhog(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = rhog(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+            ENDIF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!+/- Y
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- Y
+                rhog(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = rhog(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                currg%rhotile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
+                rhog(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = rhog(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
+            END IF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+! +/-Z
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- Z
+                rhog(jmin:jmax,kmin:kmax,lminc:lmin-1) = rhog(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                currg%rhotile(0:nxc, 0:nyc,-nzjg:-1)
+                rhog(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = rhog(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                currg%rhotile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
+            END IF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!$OMP END PARALLEL
+END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
+
+!===============================================================================
+! Deposit rho in each tile in 3D
+! OpenMP version. Avoids conflict while reducing tile charge in the global 
+! charge array. 
+!===============================================================================
+SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2(func_order,rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+	noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvectt,c_rho_old)
+USE particles
+USE constants
+USE tiling
+USE omp_lib
+IMPLICIT NONE
+
+! _______________________________________________________________________
+! Interfaces for func_order
+INTERFACE
+
+  SUBROUTINE func_order(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz, &
+             nxguard,nyguard,nzguard,lvect) !#do not parse
+
+    USE constants
+    IMPLICIT NONE
+
+    INTEGER(idp), INTENT (IN)    :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    REAL(num),    INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+    INTEGER(idp), INTENT (IN)    :: lvect
+    REAL(num),    INTENT(IN)     :: xp(np), yp(np), zp(np), w(np)
+    REAL(num),    INTENT(IN)     :: q,dx,dy,dz,xmin,ymin,zmin
+
+  END SUBROUTINE
+
+END INTERFACE
+
+! _______________________________________________________________________
+! Declarations
+
+INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz, c_rho_old,lvectt
+REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+REAL(num), INTENT(IN OUT) :: rhog(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+INTEGER(idp) :: ispecies, ix, iy, iz, count
+INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+TYPE(particle_species), POINTER :: curr
+TYPE(particle_tile), POINTER :: curr_tile
+TYPE(grid_tile), POINTER :: currg
+REAL(num) :: tdeb, tend
+INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+LOGICAL(idp) :: isdeposited=.FALSE.
+
+
+!$OMP PARALLEL DEFAULT(NONE)                                                              &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old)       &
+!$OMP FIRSTPRIVATE(lvectt)                                                                &
+!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
+!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg,             &
+!$OMP isdeposited)
+!! Current deposition
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+        	curr => species_parray(1)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            nxjg=curr_tile%nxg_tile
+            nyjg=curr_tile%nyg_tile
+            nzjg=curr_tile%nzg_tile
+            jmin=curr_tile%nx_tile_min
+        	jmax=curr_tile%nx_tile_max
+            kmin=curr_tile%ny_tile_min
+            kmax=curr_tile%ny_tile_max
+            lmin=curr_tile%nz_tile_min
+            lmax=curr_tile%nz_tile_max
+            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+            nzc=curr_tile%nz_cells_tile         
+			      currg=>aofgrid_tiles(ix,iy,iz)
+            currg%rhotile=0._num
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+           	    curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .EQ. 0) THEN 
+                	CYCLE
+                ELSE 
+                	isdeposited=.TRUE.
+                ENDIF 
+                ! Depose charge in rhotile
+				 
+				  CALL func_order(currg%rhotile,count,                                           &
+					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
+					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+					curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,                                         &
+				  nxjg,nyjg,nzjg,lvectt) 
+					
+            END DO! END LOOP ON SPECIES
+            IF (isdeposited) THEN
+            	rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
+            ENDIF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!! Adding charge from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
+!+/- X
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+        	isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- X
+                rhog(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = rhog(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                rhog(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = rhog(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+            ENDIF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!+/- Y
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- Y
+                rhog(jmin:jmax,kminc:kmin-1,lminc:lmaxc) = rhog(jmin:jmax,kminc:kmin-1,lminc:lmaxc)+  &
+                currg%rhotile(0:nxc,-nyjg:-1,-nzjg:nzc+nzjg)
+                rhog(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc) = rhog(jmin:jmax,kmax+1:kmaxc,lminc:lmaxc)+  &
+                currg%rhotile(0:nxc,nyc+1:nyc+nyjg,-nzjg:nzc+nzjg)
+            END IF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+! +/-Z
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+DO iz=1,ntilez
+    DO iy=1,ntiley
+        DO ix=1,ntilex
+            isdeposited=.FALSE.
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+                curr => species_parray(ispecies)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .GT. 0) isdeposited=.TRUE.  
+            END DO
+            IF (isdeposited) THEN 
+            	currg=>aofgrid_tiles(ix,iy,iz)
+                curr => species_parray(1)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
+                kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
+                lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
+                nxjg=curr_tile%nxg_tile
+                nyjg=curr_tile%nyg_tile
+                nzjg=curr_tile%nzg_tile
+                jminc=jmin-nxjg; jmaxc=jmax+nxjg
+                kminc=kmin-nyjg; kmaxc=kmax+nyjg
+                lminc=lmin-nzjg; lmaxc=lmax+nzjg
+                nxc=curr_tile%nx_cells_tile
+                nyc=curr_tile%ny_cells_tile
+                nzc=curr_tile%nz_cells_tile
+                ! ----- Add guardcells in adjacent tiles
+                ! --- RHO
+                ! - FACES +/- Z
+                rhog(jmin:jmax,kmin:kmax,lminc:lmin-1) = rhog(jmin:jmax,kmin:kmax,lminc:lmin-1)+  &
+                currg%rhotile(0:nxc, 0:nyc,-nzjg:-1)
+                rhog(jmin:jmax,kmin:kmax,lmax+1:lmaxc) = rhog(jmin:jmax,kmin:kmax,lmax+1:lmaxc)+  &
+                currg%rhotile(0:nxc, 0:nyc,nzc+1:nzc+nzjg)
+            END IF
+        END DO
+    END DO
+END DO!END LOOP ON TILES
+!$OMP END DO
+!$OMP END PARALLEL
+END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
+
 
   !!! --- Order 1 3D scalar charge deposition routine
     !!! This version does not vectorize on SIMD architectures
@@ -440,7 +969,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
     !!! --- Order 1 3D vector charge deposition routine
     !!! --- Computes charge density on grid vectorized with Nishiguchi, Orii and Yabe scheme (NOY)
     !!! --- This routine does vectorize on SIMD architecture but poor performances
-    SUBROUTINE depose_rho_vecNOY_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+    SUBROUTINE depose_rho_vecNOY_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,lvect)
         USE constants
         IMPLICIT NONE
         INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -454,23 +983,23 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
         REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
         INTEGER(idp) :: j,k,l,vv,n,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
-        INTEGER(idp), PARAMETER :: LVEC2=4
-        REAL(num), DIMENSION(LVEC2,8) :: ww
+        INTEGER(idp), INTENT(IN) :: lvect
+        REAL(num), DIMENSION(lvect,8) :: ww
         dxi = 1.0_num/dx
         dyi = 1.0_num/dy
         dzi = 1.0_num/dz
         invvol = dxi*dyi*dzi
-        ALLOCATE(rho1(1:LVEC2,-nxguard:nx+nxguard,-nyguard:ny+nyguard, &
+        ALLOCATE(rho1(1:lvect,-nxguard:nx+nxguard,-nyguard:ny+nyguard, &
                 -nzguard:nz+nzguard))
         rho1=0.0_num
-        DO ip=1,np, LVEC2
+        DO ip=1,np, lvect
             !DIR$ ASSUME_ALIGNED xp:32
             !DIR$ ASSUME_ALIGNED yp:32
             !DIR$ ASSUME_ALIGNED zp:32
             !DIR$ ASSUME_ALIGNED w:32
             !DIR$ ASSUME_ALIGNED ww:32
             !DIR$ IVDEP
-            DO vv=1, MIN(LVEC2,np-ip+1) !!! Vector
+            DO vv=1, MIN(lvect,np-ip+1) !!! Vector
                 n=vv+ip-1
                 ! Calculation relative to particle n
                 ! --- computes current position in grid units
@@ -521,7 +1050,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         END DO
 
         DO jj=-nxguard,nxguard+nx !!! Vector
-            DO vv=1,LVEC2
+            DO vv=1,lvect
                 rho(jj,:,:)=rho(jj,:,:)+rho1(vv,jj,:,:)
             END DO
         END DO
@@ -639,122 +1168,6 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         RETURN
     END SUBROUTINE depose_rho_vecHV_1_1_1
 
-    !!! --- Order 1 3D vector charge deposition routine
-    !!! --- Computes charge density on grid vectorized (HV-SCHEME v2)
-    !!! --- This routine does vectorize on SIMD architecture but poor performances
-    SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-        USE constants
-        IMPLICIT NONE
-        INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC2=64
-        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
-        REAL(num) :: ww
-        INTEGER(idp) :: NCELLS
-        REAL(num) :: xp(np), yp(np), zp(np), w(np)
-        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi
-        REAL(num) :: xint,yint,zint
-        REAL(num) :: x,y,z,invvol
-        REAL(num) :: sx(LVEC2), sy(LVEC2), sz(LVEC2), wq(LVEC2)
-        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-        INTEGER(idp) :: nnx, nnxy
-        INTEGER(idp) :: moff(1:8)
-        REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
-        INTEGER(idp) :: orig, jorig, korig, lorig
-        INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
-
-        ! Init parameters
-        dxi = 1.0_num/dx
-        dyi = 1.0_num/dy
-        dzi = 1.0_num/dz
-        invvol = dxi*dyi*dzi
-        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
-        ncx=nx+2;ncy=ny+2;ncz=nz+2
-        NCELLS=ncx*ncy*ncz
-        ALLOCATE(rhocells(8,NCELLS))
-        rhocells=0.0_num
-        nnx = ngridx
-        nnxy = nnx*ngridy
-        moff = (/0_idp,1_idp,nnx,nnx+1_idp,nnxy,nnxy+1_idp,nnxy+nnx,nnxy+nnx+1_idp/)
-        mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
-        my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
-        mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
-        sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
-        jorig=-1; korig=-1;lorig=-1
-        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-        ngx=(ngridx-ncx)
-        ngxy=(ngridx*ngridy-ncx*ncy)
-        ncxy=ncx*ncy
-        ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC2
-            !DIR$ ASSUME_ALIGNED xp:64
-            !DIR$ ASSUME_ALIGNED yp:64
-            !DIR$ ASSUME_ALIGNED zp:64
-            !DIR$ ASSUME_ALIGNED w:64
-            !DIR$ ASSUME_ALIGNED ICELL:64
-            !$OMP SIMD
-            DO n=1,MIN(LVEC2,np-ip+1)
-                nn=ip+n-1
-                ! Calculation relative to particle n
-                ! --- computes current position in grid units
-                x= (xp(nn)-xmin)*dxi
-                y = (yp(nn)-ymin)*dyi
-                z = (zp(nn)-zmin)*dzi
-                ! --- finds cell containing particles for current positions
-                j=floor(x)
-                k=floor(y)
-                l=floor(z)
-                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncxy
-                ! --- computes distance between particle and node for current positions
-                sx(n) = x-j
-                sy(n) = y-k
-                sz(n) = z-l
-                ! --- computes particles weights
-                wq(n)=q*w(nn)*invvol
-            END DO
-            !$OMP END SIMD
-            ! Current deposition on vertices
-            DO n=1,MIN(LVEC2,np-ip+1)
-                ! --- add charge density contributions to vertices of the current cell
-                ic=ICELL(n)
-                !DIR$ ASSUME_ALIGNED rhocells:64
-                !DIR$ ASSUME_ALIGNED sx:64
-                !DIR$ ASSUME_ALIGNED sy:64
-                !DIR$ ASSUME_ALIGNED sz:64
-                !$OMP SIMD
-                DO nv=1,8 !!! - VECTOR
-                    ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* &
-                        (-mz(nv)+sz(n))*wq(n)*sgn(nv)
-                    rhocells(nv,ic)=rhocells(nv,ic)+ww
-                END DO
-                !$OMP END SIMD
-            END DO
-        END DO
-        ! - reduction of rhocells in rho
-        DO iz=1, ncz
-            DO iy=1,ncy
-                !$OMP SIMD
-                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
-                    ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
-                    rho(orig+igrid+moff(1))=rho(orig+igrid+moff(1))+rhocells(1,ic)
-                    rho(orig+igrid+moff(2))=rho(orig+igrid+moff(2))+rhocells(2,ic)
-                    rho(orig+igrid+moff(3))=rho(orig+igrid+moff(3))+rhocells(3,ic)
-                    rho(orig+igrid+moff(4))=rho(orig+igrid+moff(4))+rhocells(4,ic)
-                    rho(orig+igrid+moff(5))=rho(orig+igrid+moff(5))+rhocells(5,ic)
-                    rho(orig+igrid+moff(6))=rho(orig+igrid+moff(6))+rhocells(6,ic)
-                    rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
-                    rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
-                END DO
-                !$OMP END SIMD
-            END DO
-        END DO
-        DEALLOCATE(rhocells)
-        RETURN
-    END SUBROUTINE depose_rho_vecHVv2_1_1_1
 
     !!! --- Order 2 3D scalar charge deposition routine
     !!! This version does not vectorize on SIMD architectures
@@ -843,149 +1256,6 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         END DO
         RETURN
     END SUBROUTINE depose_rho_scalar_2_2_2
-    !!! --- Order 1 3D vector charge deposition routine
-    !!! --- Computes charge density on grid vectorized (HV-SCHEME)
-    !!! --- This routine does vectorize on SIMD architecture with good performances
-    !!! ---  Speedup>2 on AVX 256 bits
-    SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-        USE constants
-        IMPLICIT NONE
-        INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC2=64
-        INTEGER(idp), DIMENSION(LVEC2) :: ICELL, IG
-        REAL(num) :: ww, wwx,wwy,wwz
-        INTEGER(idp) :: NCELLS
-        REAL(num) :: xp(np), yp(np), zp(np), w(np)
-        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi
-        REAL(num) :: xint,yint,zint,xintsq,yintsq,zintsq
-        REAL(num) :: x,y,z,invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
-        REAL(num) :: sx0(LVEC2), sx1(LVEC2), sx2(LVEC2)
-        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-        INTEGER(idp) :: nnx, nnxy, off0, ind0
-        INTEGER(idp) :: moff(1:8)
-        REAL(num):: ww0(1:LVEC2,1:8),www(1:LVEC2,1:8)
-        INTEGER(idp) :: orig, jorig, korig, lorig
-        INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
-
-        ! Init parameters
-        dxi = 1.0_num/dx
-        dyi = 1.0_num/dy
-        dzi = 1.0_num/dz
-        invvol = dxi*dyi*dzi
-        wq0=q*invvol
-        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
-        ncx=nx+3;ncy=ny+3;ncz=nz+3
-        NCELLS=ncx*ncy*ncz
-        ALLOCATE(rhocells(8,NCELLS))
-        rhocells=0.0_num
-        nnx = nx + 1 + 2*nxguard
-        nnxy = nnx*(ny+1+2*nyguard)
-        moff = (/-nnx-nnxy,-nnxy,nnx-nnxy,-nnx,nnx,-nnx+nnxy,nnxy,nnx+nnxy/)
-	    ww0=0.0_num
-        jorig=-1; korig=-1;lorig=-1
-        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-        ngx=(ngridx-ncx)
-        ngxy=(ngridx*ngridy-ncx*ncy)
-        ncxy=ncx*ncy
-        ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC2
-            !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-            !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
-            !DIR$ ASSUME_ALIGNED ICELL:64, IG:64
-            !$OMP SIMD
-            DO n=1,MIN(LVEC2,np-ip+1)
-                nn=ip+n-1
-                ! Calculation relative to particle n
-                ! --- computes current position in grid units
-                x= (xp(nn)-xmin)*dxi
-                y = (yp(nn)-ymin)*dyi
-                z = (zp(nn)-zmin)*dzi
-                ! --- finds cell containing particles for current positions
-                j=nint(x)
-                k=nint(y)
-                l=nint(z)
-                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncxy
-                IG(n)=ICELL(n)+(k-korig)*ngx+(l-lorig)*ngxy
-                ! --- computes distance between particle and node for current positions
-                xint = x-j
-                yint = y-k
-                zint = z-l
-                xintsq=xint**2
-                yintsq=yint**2
-                zintsq=zint**2
-                ! --- computes particles weights
-                wq=w(nn)*wq0
-                sx0(n)=0.5_num*(0.5_num-xint)**2
-                sx1(n)=(0.75_num-xintsq)
-                sx2(n)=0.5_num*(0.5_num+xint)**2
-                syy0=0.5_num*(0.5_num-yint)**2
-                syy1=(0.75_num-yintsq)
-                syy2=0.5_num*(0.5_num+yint)**2
-                szz0=0.5_num*(0.5_num-zint)**2*wq
-                szz1=(0.75_num-zintsq)*wq
-                szz2=0.5_num*(0.5_num+zint)**2*wq
-                www(n,1) = syy0*szz0
-                www(n,2) = syy1*szz0
-                www(n,3) = syy2*szz0
-                www(n,4) = syy0*szz1
-                www(n,5) = syy2*szz1
-                www(n,6) = syy0*szz2
-                www(n,7) = syy1*szz2
-                www(n,8) = syy2*szz2
-                szy=syy1*szz1 ! central point
-                ww0(n,1)=szy*sx0(n)
-                ww0(n,2)=szy*sx1(n)
-                ww0(n,3)=szy*sx2(n)
-            END DO
-            !$OMP END SIMD
-            ! Current deposition on vertices
-            DO n=1,MIN(LVEC2,np-ip+1)
-                ! --- add charge density contributions to vertices of the current cell
-                !DIR$ ASSUME_ALIGNED rhocells:64
-                !$OMP SIMD
-                DO nv=1,8 !!! - VECTOR
-                    ww=www(n,nv)
-                    ! Loop on (i=-1,j,k)
-                    rhocells(nv,ICELL(n)-1)=rhocells(nv,ICELL(n)-1)+ww*sx0(n)
-                    ! Loop on (i=0,j,k)
-                    rhocells(nv,ICELL(n))=rhocells(nv,ICELL(n))+ww*sx1(n)
-                    !Loop on (i=1,j,k)
-                    rhocells(nv,ICELL(n)+1)=rhocells(nv,ICELL(n)+1)+ww*sx2(n)
-                END DO
-                !$OMP END SIMD
-                !$OMP SIMD
-                DO nv=1,4
-                    rho(orig+IG(n)+nv-2)=rho(orig+IG(n)+nv-2)+ww0(n,nv)
-                END DO
-                !$OMP END SIMD
-            END DO
-        END DO
-        ! - reduction of rhocells in rho
-        DO iz=1, ncz
-            DO iy=1,ncy
-                !$OMP SIMD
-                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
-                    ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
-                    rho(orig+igrid+moff(1))=rho(orig+igrid+moff(1))+rhocells(1,ic)
-                    rho(orig+igrid+moff(2))=rho(orig+igrid+moff(2))+rhocells(2,ic)
-                    rho(orig+igrid+moff(3))=rho(orig+igrid+moff(3))+rhocells(3,ic)
-                    rho(orig+igrid+moff(4))=rho(orig+igrid+moff(4))+rhocells(4,ic)
-                    rho(orig+igrid+moff(5))=rho(orig+igrid+moff(5))+rhocells(5,ic)
-                    rho(orig+igrid+moff(6))=rho(orig+igrid+moff(6))+rhocells(6,ic)
-                    rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
-                    rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
-                END DO
-                !$OMP END SIMD
-            END DO
-        END DO
-        DEALLOCATE(rhocells)
-        RETURN
-    END SUBROUTINE depose_rho_vecHVv2_2_2_2
 
 
     !!! --- Order 3 3D scalar charge deposition routine
@@ -1418,177 +1688,16 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         RETURN
     END SUBROUTINE depose_rho_vecHVv3_3_3_3
 
-    !!! --- Order 3 3D vector charge deposition routine
-    !!! --- Computes charge density on grid vectorized (HV-SCHEME)
-    !!! --- This routine does vectorize on SIMD architecture with good performances
-    !!! ---  Speedup>2 on AVX 256 bits
-    SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-        USE constants
-        IMPLICIT NONE
-        INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-        REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
-        INTEGER(idp), PARAMETER :: LVEC2=16
-        INTEGER(idp), DIMENSION(LVEC2) :: ICELL
-        REAL(num) :: ww, wwx,wwy,wwz
-        INTEGER(idp) :: NCELLS
-        REAL(num) :: xp(np), yp(np), zp(np), w(np)
-        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:LVEC2), &
-                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-        REAL(num) :: x,y,z,invvol, wq0, wq
-        REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2),sx4(LVEC2), sy1, sy2, sy3,sy4, &
-                     sz1, sz2, sz3,sz4, w1,w2
-        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-        INTEGER(idp):: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-        INTEGER(idp) :: nnx, nnxy, off0, ind0
-        INTEGER(idp) :: moff(1:8)
-        REAL(num):: www1(LVEC2,8),www2(LVEC2,8), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
-        INTEGER(idp) :: orig, jorig, korig, lorig
-        INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
-
-        ! Init parameters
-        dxi = 1.0_num/dx
-        dyi = 1.0_num/dy
-        dzi = 1.0_num/dz
-        invvol = dxi*dyi*dzi
-        wq0=q*invvol
-        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
-        ncx=nx+5; ncy=ny+4; ncz=nz+2
-        NCELLS=ncx*ncy*ncz
-        ALLOCATE(rhocells(8,NCELLS))
-        rhocells=0_num
-        nnx = ngridx
-        nnxy = ngridx*ngridy
-        moff = (/-nnxy,0_idp,nnxy,2_idp*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2_idp*nnxy/)
-        jorig=-2_idp; korig=-2_idp;lorig=-1_idp
-        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-        ngx=(ngridx-ncx)
-        ngxy=(ngridx*ngridy-ncx*ncy)
-        ncxy=ncx*ncy
-
-        ! FIRST LOOP: computes cell index of particle and their weight on vertices
-        DO ip=1,np,LVEC2
-            !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-            !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
-            !DIR$ ASSUME_ALIGNED ICELL:64, www1:64, www2:64
-            !$OMP SIMD
-            DO n=1,MIN(LVEC2,np-ip+1)
-                nn=ip+n-1
-                ! Calculation relative to particle n
-                ! --- computes current position in grid units
-                x= (xp(nn)-xmin)*dxi
-                y = (yp(nn)-ymin)*dyi
-                z = (zp(nn)-zmin)*dzi
-                ! --- finds cell containing particles for current positions
-                j=floor(x)
-                k=floor(y)
-                l=floor(z)
-                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncxy
-                wq=w(nn)*wq0
-                ! --- computes distance between particle and node for current positions
-                xint = x-j
-                yint= y-k
-                zint(n) = z-l
-                ! --- computes coefficients for node centered quantities
-                oxint = 1.0_num-xint
-                xintsq = xint*xint
-                oxintsq = oxint*oxint
-                sx1(n) = onesixth*oxintsq*oxint
-                sx2(n) = twothird-xintsq*(1.0_num-xint*0.5_num)
-                sx3(n) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
-                sx4(n) = onesixth*xintsq*xint
-                oyint = 1.0_num-yint
-                yintsq = yint*yint
-                oyintsq = oyint*oyint
-                sy1 = onesixth*oyintsq*oyint
-                sy2 = (twothird-yintsq*(1.0_num-yint*0.5_num))
-                sy3 = (twothird-oyintsq*(1.0_num-oyint*0.5_num))
-                sy4 = onesixth*yintsq*yint
-                ozint = 1.0_num-zint(n)
-                zintsq = zint(n)*zint(n)
-                ozintsq = ozint*ozint
-                sz1 = onesixth*ozintsq*ozint*wq
-                sz2 = (twothird-zintsq*(1.0_num-zint(n)*0.5_num))*wq
-                sz3 = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
-                sz4 = onesixth*zintsq*zint(n)*wq
-                www1(n,1)=sz1*sy1
-                www1(n,2)=sz2*sy1
-                www1(n,3)=sz3*sy1
-                www1(n,4)=sz4*sy1
-                www1(n,5)=sz1*sy2
-                www1(n,6)=sz2*sy2
-                www1(n,7)=sz3*sy2
-                www1(n,8)=sz4*sy2
-                www2(n,1)=sz1*sy3
-                www2(n,2)=sz2*sy3
-                www2(n,3)=sz3*sy3
-                www2(n,4)=sz4*sy3
-                www2(n,5)=sz1*sy4
-                www2(n,6)=sz2*sy4
-                www2(n,7)=sz3*sy4
-                www2(n,8)=sz4*sy4
-            END DO
-            !$OMP END SIMD
-            ! Current deposition on vertices
-            DO n=1,MIN(LVEC2,np-ip+1)
-                ! --- add charge density contributions to vertices of the current cell
-                ic=ICELL(n)
-                !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
-                !$OMP SIMD
-                DO nv=1,8 !!! - VECTOR
-                    w1=www1(n,nv)
-                    ! Loop on (i=-1,j,k)
-                    rhocells(nv,ic-ncx-1) = rhocells(nv,ic-ncx-1) + w1*sx1(n)
-                    ! Loop on (i=0,j,k)
-                    rhocells(nv,ic-ncx)   = rhocells(nv,ic-ncx)   + w1*sx2(n)
-                    !Loop on (i=1,j,k)
-                    rhocells(nv,ic-ncx+1) = rhocells(nv,ic-ncx+1) + w1*sx3(n)
-                    !Loop on (i=1,j,k)
-                    rhocells(nv,ic-ncx+2) = rhocells(nv,ic-ncx+2) + w1*sx4(n)
-
-                    w2=www2(n,nv)
-                    ! Loop on (i=-1,j,k)
-                    rhocells(nv,ic+ncx-1) = rhocells(nv,ic+ncx-1) + w2*sx1(n)
-                    ! Loop on (i=0,j,k)
-                    rhocells(nv,ic+ncx)   = rhocells(nv,ic+ncx)   + w2*sx2(n)
-                    !Loop on (i=1,j,k)
-                    rhocells(nv,ic+ncx+1) = rhocells(nv,ic+ncx+1) + w2*sx3(n)
-                    !Loop on (i=1,j,k)
-                    rhocells(nv,ic+ncx+2) = rhocells(nv,ic+ncx+2) + w2*sx4(n)
-                END DO
-                !$OMP END SIMD
-            END DO
-        END DO
-        ! - reduction of rhocells in rho
-        DO iz=1, ncz
-            DO iy=1,ncy
-                !$OMP SIMD
-                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
-                    ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
-                    rho(orig+igrid+moff(1))=rho(orig+igrid+moff(1))+rhocells(1,ic)
-                    rho(orig+igrid+moff(2))=rho(orig+igrid+moff(2))+rhocells(2,ic)
-                    rho(orig+igrid+moff(3))=rho(orig+igrid+moff(3))+rhocells(3,ic)
-                    rho(orig+igrid+moff(4))=rho(orig+igrid+moff(4))+rhocells(4,ic)
-                    rho(orig+igrid+moff(5))=rho(orig+igrid+moff(5))+rhocells(5,ic)
-                    rho(orig+igrid+moff(6))=rho(orig+igrid+moff(6))+rhocells(6,ic)
-                    rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
-                    rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
-                END DO
-                !$OMP END SIMD
-            END DO
-        END DO
-        DEALLOCATE(rhocells)
-        RETURN
-    END SUBROUTINE depose_rho_vecHVv4_3_3_3
-
     !!! --- General charge deposition routine (Warning: Highly unoptimized routine)
     !!! Computes charge density on grid at arbitrary orders nox, noy and noz
-    SUBROUTINE pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz, &
-                        l_particles_weight, l4symtry)
+    SUBROUTINE pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
+                        nxguard,nyguard,nzguard,nox,noy,noz, &
+                        l_particles_weight,l4symtry)
+
+
         IMPLICIT NONE
         INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+        INTEGER(idp) :: lvect ! Useless here, for the common interface
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: rho
         REAL(num) :: xp(np), yp(np), zp(np), w(np)
         REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
@@ -2065,8 +2174,11 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
 	end subroutine pxr_depose_rhoold_n_2dxz
 
 
-    !!! --- Computes field divergence
+    ! ____________________________________________________________________________________
     SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
+    !
+    ! Computes field divergence
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp) ::  j,k,l
         INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
@@ -2091,8 +2203,12 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         !$OMP END PARALLEL
 
     END SUBROUTINE calc_field_div
-    
+
+    ! _____________________________________________________    
     SUBROUTINE init_diags
+    ! Initialization of the different diags
+    ! 
+    ! _____________________________________________________
         USE shared_data
         IMPLICIT NONE    
     
@@ -2253,11 +2369,11 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         ENDIF    
     END SUBROUTINE
 
-    ! _____________________________________________________
+    ! ____________________________________________________________________________________
     SUBROUTINE init_time_stat_output
     ! Initialize outputs of the time statistics
     !
-    ! _____________________________________________________
+    ! ____________________________________________________________________________________
       USE time_stat
       USE shared_data
       USE params
@@ -2267,7 +2383,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
          
       IF (timestat_activated.gt.0) THEN
       
-        nb_timestat = 11
+        nb_timestat = 13
       
         OPEN(unit=41,file="./RESULTS/time_stat",FORM="unformatted",ACCESS='stream')
         WRITE(41) nb_timestat
@@ -2643,3 +2759,450 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp
         
     END SUBROUTINE
 END MODULE diagnostics
+
+    !!! --- Order 1 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized (HV-SCHEME v2)
+    !!! --- This routine does vectorize on SIMD architecture but poor performances
+    SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
+                     nxguard,nyguard,nzguard,lvect)
+    !
+    ! - lvect: vector length
+    !
+    ! At the origine lvect = 64
+    ! ____________________________________________________________________________________                  
+        USE constants
+        IMPLICIT NONE
+        INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        REAL(num),INTENT(IN OUT)  :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        INTEGER(idp), INTENT (IN) :: lvect
+        REAL(num), INTENT (IN)    :: xp(np), yp(np), zp(np), w(np)
+        REAL(num), INTENT (IN)    :: q,dx,dy,dz,xmin,ymin,zmin
+                
+        INTEGER(idp), DIMENSION(lvect) :: ICELL
+        REAL(num)                 :: ww
+        INTEGER(idp) :: NCELLS
+        REAL(num) :: dxi,dyi,dzi
+        REAL(num) :: xint,yint,zint
+        REAL(num) :: x,y,z,invvol
+        REAL(num) :: sx(lvect), sy(lvect), sz(lvect), wq(lvect)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER(idp) :: nnx, nnxy
+        INTEGER(idp) :: moff(1:8)
+        REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+        INTEGER(idp) :: orig, jorig, korig, lorig
+        INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
+        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
+        !dir$ attributes align:64 :: rhocells
+        
+        ! Init parameters
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
+        ncx=nx+2;ncy=ny+2;ncz=nz+2
+        NCELLS=ncx*ncy*ncz
+        ALLOCATE(rhocells(8,NCELLS))
+        rhocells=0.0_num
+        nnx = ngridx
+        nnxy = nnx*ngridy
+        moff = (/0_idp,1_idp,nnx,nnx+1_idp,nnxy,nnxy+1_idp,nnxy+nnx,nnxy+nnx+1_idp/)
+        mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
+        my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
+        mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
+        sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
+        jorig=-1; korig=-1;lorig=-1
+        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+        ngx=(ngridx-ncx)
+        ngxy=(ngridx*ngridy-ncx*ncy)
+        ncxy=ncx*ncy
+        
+        ! ________________________________________________________________________
+        ! FIRST LOOP: computes cell index of particle and their weight on vertices   
+        DO ip=1,np,lvect
+            !DIR$ ASSUME_ALIGNED xp:64
+            !DIR$ ASSUME_ALIGNED yp:64
+            !DIR$ ASSUME_ALIGNED zp:64
+            !DIR$ ASSUME_ALIGNED w:64
+            !DIR$ ASSUME_ALIGNED ICELL:64
+            !$OMP SIMD
+            DO n=1,MIN(lvect,np-ip+1)
+                nn=ip+n-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x= (xp(nn)-xmin)*dxi
+                y = (yp(nn)-ymin)*dyi
+                z = (zp(nn)-zmin)*dzi
+                ! --- finds cell containing particles for current positions
+                j=floor(x)
+                k=floor(y)
+                l=floor(z)
+                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncxy
+                ! --- computes distance between particle and node for current positions
+                sx(n) = x-j
+                sy(n) = y-k
+                sz(n) = z-l
+                ! --- computes particles weights
+                wq(n)=q*w(nn)*invvol
+            END DO
+            !$OMP END SIMD
+            ! Current deposition on vertices
+            DO n=1,MIN(lvect,np-ip+1)
+                ! --- add charge density contributions to vertices of the current cell
+                ic=ICELL(n)
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !DIR$ ASSUME_ALIGNED sx:64
+                !DIR$ ASSUME_ALIGNED sy:64
+                !DIR$ ASSUME_ALIGNED sz:64
+                !$OMP SIMD
+                DO nv=1,8 !!! - VECTOR
+                    ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* &
+                        (-mz(nv)+sz(n))*wq(n)*sgn(nv)
+                    rhocells(nv,ic)=rhocells(nv,ic)+ww
+                END DO
+                !$OMP END SIMD
+            END DO
+        END DO
+        ! - reduction of rhocells in rho
+        DO iz=1, ncz
+            DO iy=1,ncy
+                !$OMP SIMD
+                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                    ic=ix+(iy-1)*ncx+(iz-1)*ncxy
+                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                    rho(orig+igrid+moff(1))=rho(orig+igrid+moff(1))+rhocells(1,ic)
+                    rho(orig+igrid+moff(2))=rho(orig+igrid+moff(2))+rhocells(2,ic)
+                    rho(orig+igrid+moff(3))=rho(orig+igrid+moff(3))+rhocells(3,ic)
+                    rho(orig+igrid+moff(4))=rho(orig+igrid+moff(4))+rhocells(4,ic)
+                    rho(orig+igrid+moff(5))=rho(orig+igrid+moff(5))+rhocells(5,ic)
+                    rho(orig+igrid+moff(6))=rho(orig+igrid+moff(6))+rhocells(6,ic)
+                    rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
+                    rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
+                END DO
+                !$OMP END SIMD
+            END DO
+        END DO
+        DEALLOCATE(rhocells)
+        RETURN
+    END SUBROUTINE depose_rho_vecHVv2_1_1_1
+
+    !!! --- Order 1 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized (HV-SCHEME)
+    !!! --- This routine does vectorize on SIMD architecture with good performances
+    !!! ---  Speedup>2 on AVX 256 bits
+    SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
+              dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,lvect)
+        !
+        ! - lvect: vector length
+        ! ________________________________________________________________________________
+        USE constants
+        IMPLICIT NONE
+        INTEGER(idp), INTENT (IN)    :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER(idp), INTENT (IN)    :: lvect
+        REAL(num),INTENT(IN OUT)     :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), INTENT (IN)       :: xp(np), yp(np), zp(np), w(np)
+        REAL(num), INTENT (IN)       :: q,dx,dy,dz,xmin,ymin,zmin        
+        
+        REAL(num), DIMENSION(:,:), ALLOCATABLE :: rhocells
+        INTEGER(idp), DIMENSION(lvect) :: ICELL, IG
+        REAL(num)                      :: ww, wwx,wwy,wwz
+        INTEGER(idp) :: NCELLS
+        REAL(num) :: dxi,dyi,dzi
+        REAL(num) :: xint,yint,zint,xintsq,yintsq,zintsq
+        REAL(num) :: x,y,z,invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
+        REAL(num) :: sx0(lvect), sx1(lvect), sx2(lvect)
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER(idp) :: nnx, nnxy, off0, ind0
+        INTEGER(idp) :: moff(1:8)
+        REAL(num):: ww0(1:lvect,1:8),www(1:lvect,1:8)
+        INTEGER(idp) :: orig, jorig, korig, lorig
+        INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
+
+        ! Init parameters
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        wq0=q*invvol
+        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
+        ncx=nx+3;ncy=ny+3;ncz=nz+3
+        NCELLS=ncx*ncy*ncz
+        ALLOCATE(rhocells(8,NCELLS))
+        rhocells=0.0_num
+        nnx = nx + 1 + 2*nxguard
+        nnxy = nnx*(ny+1+2*nyguard)
+        moff = (/-nnx-nnxy,-nnxy,nnx-nnxy,-nnx,nnx,-nnx+nnxy,nnxy,nnx+nnxy/)
+	      ww0=0.0_num
+        jorig=-1; korig=-1;lorig=-1
+        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+        ngx=(ngridx-ncx)
+        ngxy=(ngridx*ngridy-ncx*ncy)
+        ncxy=ncx*ncy
+        ! FIRST LOOP: computes cell index of particle and their weight on vertices
+        
+        DO ip=1,np,lvect
+            !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+            !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
+            !DIR$ ASSUME_ALIGNED ICELL:64, IG:64
+            !$OMP SIMD
+            DO n=1,MIN(lvect,np-ip+1)
+                nn=ip+n-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x= (xp(nn)-xmin)*dxi
+                y = (yp(nn)-ymin)*dyi
+                z = (zp(nn)-zmin)*dzi
+                ! --- finds cell containing particles for current positions
+                j=nint(x)
+                k=nint(y)
+                l=nint(z)
+                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncxy
+                IG(n)=ICELL(n)+(k-korig)*ngx+(l-lorig)*ngxy
+                ! --- computes distance between particle and node for current positions
+                xint = x-j
+                yint = y-k
+                zint = z-l
+                xintsq=xint**2
+                yintsq=yint**2
+                zintsq=zint**2
+                ! --- computes particles weights
+                wq=w(nn)*wq0
+                sx0(n)=0.5_num*(0.5_num-xint)**2
+                sx1(n)=(0.75_num-xintsq)
+                sx2(n)=0.5_num*(0.5_num+xint)**2
+                syy0=0.5_num*(0.5_num-yint)**2
+                syy1=(0.75_num-yintsq)
+                syy2=0.5_num*(0.5_num+yint)**2
+                szz0=0.5_num*(0.5_num-zint)**2*wq
+                szz1=(0.75_num-zintsq)*wq
+                szz2=0.5_num*(0.5_num+zint)**2*wq
+                www(n,1) = syy0*szz0
+                www(n,2) = syy1*szz0
+                www(n,3) = syy2*szz0
+                www(n,4) = syy0*szz1
+                www(n,5) = syy2*szz1
+                www(n,6) = syy0*szz2
+                www(n,7) = syy1*szz2
+                www(n,8) = syy2*szz2
+                szy=syy1*szz1 ! central point
+                ww0(n,1)=szy*sx0(n)
+                ww0(n,2)=szy*sx1(n)
+                ww0(n,3)=szy*sx2(n)
+            END DO
+            !$OMP END SIMD
+            ! Current deposition on vertices
+            DO n=1,MIN(lvect,np-ip+1)
+                ! --- add charge density contributions to vertices of the current cell
+                !DIR$ ASSUME_ALIGNED rhocells:64
+                !$OMP SIMD
+                DO nv=1,8 !!! - VECTOR
+                    ww=www(n,nv)
+                    ! Loop on (i=-1,j,k)
+                    rhocells(nv,ICELL(n)-1)=rhocells(nv,ICELL(n)-1)+ww*sx0(n)
+                    ! Loop on (i=0,j,k)
+                    rhocells(nv,ICELL(n))=rhocells(nv,ICELL(n))+ww*sx1(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ICELL(n)+1)=rhocells(nv,ICELL(n)+1)+ww*sx2(n)
+                END DO
+                !$OMP END SIMD
+                !$OMP SIMD
+                DO nv=1,4
+                    rho(orig+IG(n)+nv-2)=rho(orig+IG(n)+nv-2)+ww0(n,nv)
+                END DO
+                !$OMP END SIMD
+            END DO
+        END DO
+        ! - reduction of rhocells in rho
+        DO iz=1, ncz
+            DO iy=1,ncy
+                !$OMP SIMD
+                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                    ic=ix+(iy-1)*ncx+(iz-1)*ncxy
+                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                    rho(orig+igrid+moff(1))=rho(orig+igrid+moff(1))+rhocells(1,ic)
+                    rho(orig+igrid+moff(2))=rho(orig+igrid+moff(2))+rhocells(2,ic)
+                    rho(orig+igrid+moff(3))=rho(orig+igrid+moff(3))+rhocells(3,ic)
+                    rho(orig+igrid+moff(4))=rho(orig+igrid+moff(4))+rhocells(4,ic)
+                    rho(orig+igrid+moff(5))=rho(orig+igrid+moff(5))+rhocells(5,ic)
+                    rho(orig+igrid+moff(6))=rho(orig+igrid+moff(6))+rhocells(6,ic)
+                    rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
+                    rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
+                END DO
+                !$OMP END SIMD
+            END DO
+        END DO
+        DEALLOCATE(rhocells)
+        RETURN
+    END SUBROUTINE depose_rho_vecHVv2_2_2_2
+
+    !!! --- Order 3 3D vector charge deposition routine
+    !!! --- Computes charge density on grid vectorized (HV-SCHEME)
+    !!! --- This routine does vectorize on SIMD architecture with good performances
+    !!! ---  Speedup>2 on AVX 256 bits
+    SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,lvect)
+        !                                
+        ! - lvect: vector length, lvect originally at 16                                
+        ! ________________________________________________________________________________                                
+        USE constants
+        IMPLICIT NONE
+        INTEGER(idp), INTENT (IN)    :: np,nx,ny,nz,nxguard,nyguard,nzguard
+        INTEGER(idp), INTENT (IN)    :: lvect
+        REAL(num),INTENT(IN OUT)     :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+        REAL(num), INTENT (IN)       :: xp(np), yp(np), zp(np), w(np)
+        REAL(num), INTENT (IN)       :: q,dx,dy,dz,xmin,ymin,zmin        
+         
+        REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
+        INTEGER(idp), DIMENSION(lvect) :: ICELL
+        REAL(num) :: ww, wwx,wwy,wwz
+        INTEGER(idp) :: NCELLS
+        REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:lvect), &
+                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+        REAL(num) :: x,y,z,invvol, wq0, wq
+        REAL(num) :: sx1(lvect), sx2(lvect), sx3(lvect),sx4(lvect), sy1, sy2, sy3,sy4, &
+                     sz1, sz2, sz3,sz4, w1,w2
+        REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+        INTEGER(idp):: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+        INTEGER(idp) :: nnx, nnxy, off0, ind0
+        INTEGER(idp) :: moff(1:8)
+        REAL(num):: www1(lvect,8),www2(lvect,8), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
+        INTEGER(idp) :: orig, jorig, korig, lorig
+        INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
+
+        ! Init parameters
+        dxi = 1.0_num/dx
+        dyi = 1.0_num/dy
+        dzi = 1.0_num/dz
+        invvol = dxi*dyi*dzi
+        wq0=q*invvol
+        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
+        ncx=nx+5; ncy=ny+4; ncz=nz+2
+        NCELLS=ncx*ncy*ncz
+        ALLOCATE(rhocells(8,NCELLS))
+        rhocells=0_num
+        nnx = ngridx
+        nnxy = ngridx*ngridy
+        moff = (/-nnxy,0_idp,nnxy,2_idp*nnxy,nnx-nnxy,nnx,nnx+nnxy,nnx+2_idp*nnxy/)
+        jorig=-2_idp; korig=-2_idp;lorig=-1_idp
+        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+        ngx=(ngridx-ncx)
+        ngxy=(ngridx*ngridy-ncx*ncy)
+        ncxy=ncx*ncy
+
+        ! FIRST LOOP: computes cell index of particle and their weight on vertices
+        DO ip=1,np,lvect
+            !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+            !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
+            !DIR$ ASSUME_ALIGNED ICELL:64, www1:64, www2:64
+            !$OMP SIMD
+            DO n=1,MIN(lvect,np-ip+1)
+                nn=ip+n-1
+                ! Calculation relative to particle n
+                ! --- computes current position in grid units
+                x= (xp(nn)-xmin)*dxi
+                y = (yp(nn)-ymin)*dyi
+                z = (zp(nn)-zmin)*dzi
+                ! --- finds cell containing particles for current positions
+                j=floor(x)
+                k=floor(y)
+                l=floor(z)
+                ICELL(n)=1+(j-jorig)+(k-korig)*(ncx)+(l-lorig)*ncxy
+                wq=w(nn)*wq0
+                ! --- computes distance between particle and node for current positions
+                xint = x-j
+                yint= y-k
+                zint(n) = z-l
+                ! --- computes coefficients for node centered quantities
+                oxint = 1.0_num-xint
+                xintsq = xint*xint
+                oxintsq = oxint*oxint
+                sx1(n) = onesixth*oxintsq*oxint
+                sx2(n) = twothird-xintsq*(1.0_num-xint*0.5_num)
+                sx3(n) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+                sx4(n) = onesixth*xintsq*xint
+                oyint = 1.0_num-yint
+                yintsq = yint*yint
+                oyintsq = oyint*oyint
+                sy1 = onesixth*oyintsq*oyint
+                sy2 = (twothird-yintsq*(1.0_num-yint*0.5_num))
+                sy3 = (twothird-oyintsq*(1.0_num-oyint*0.5_num))
+                sy4 = onesixth*yintsq*yint
+                ozint = 1.0_num-zint(n)
+                zintsq = zint(n)*zint(n)
+                ozintsq = ozint*ozint
+                sz1 = onesixth*ozintsq*ozint*wq
+                sz2 = (twothird-zintsq*(1.0_num-zint(n)*0.5_num))*wq
+                sz3 = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
+                sz4 = onesixth*zintsq*zint(n)*wq
+                www1(n,1)=sz1*sy1
+                www1(n,2)=sz2*sy1
+                www1(n,3)=sz3*sy1
+                www1(n,4)=sz4*sy1
+                www1(n,5)=sz1*sy2
+                www1(n,6)=sz2*sy2
+                www1(n,7)=sz3*sy2
+                www1(n,8)=sz4*sy2
+                www2(n,1)=sz1*sy3
+                www2(n,2)=sz2*sy3
+                www2(n,3)=sz3*sy3
+                www2(n,4)=sz4*sy3
+                www2(n,5)=sz1*sy4
+                www2(n,6)=sz2*sy4
+                www2(n,7)=sz3*sy4
+                www2(n,8)=sz4*sy4
+            END DO
+            !$OMP END SIMD
+            ! Current deposition on vertices
+            DO n=1,MIN(lvect,np-ip+1)
+                ! --- add charge density contributions to vertices of the current cell
+                ic=ICELL(n)
+                !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
+                !$OMP SIMD
+                DO nv=1,8 !!! - VECTOR
+                    w1=www1(n,nv)
+                    ! Loop on (i=-1,j,k)
+                    rhocells(nv,ic-ncx-1) = rhocells(nv,ic-ncx-1) + w1*sx1(n)
+                    ! Loop on (i=0,j,k)
+                    rhocells(nv,ic-ncx)   = rhocells(nv,ic-ncx)   + w1*sx2(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic-ncx+1) = rhocells(nv,ic-ncx+1) + w1*sx3(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic-ncx+2) = rhocells(nv,ic-ncx+2) + w1*sx4(n)
+
+                    w2=www2(n,nv)
+                    ! Loop on (i=-1,j,k)
+                    rhocells(nv,ic+ncx-1) = rhocells(nv,ic+ncx-1) + w2*sx1(n)
+                    ! Loop on (i=0,j,k)
+                    rhocells(nv,ic+ncx)   = rhocells(nv,ic+ncx)   + w2*sx2(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic+ncx+1) = rhocells(nv,ic+ncx+1) + w2*sx3(n)
+                    !Loop on (i=1,j,k)
+                    rhocells(nv,ic+ncx+2) = rhocells(nv,ic+ncx+2) + w2*sx4(n)
+                END DO
+                !$OMP END SIMD
+            END DO
+        END DO
+        ! - reduction of rhocells in rho
+        DO iz=1, ncz
+            DO iy=1,ncy
+                !$OMP SIMD
+                DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
+                    ic=ix+(iy-1)*ncx+(iz-1)*ncxy
+                    igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
+                    rho(orig+igrid+moff(1))=rho(orig+igrid+moff(1))+rhocells(1,ic)
+                    rho(orig+igrid+moff(2))=rho(orig+igrid+moff(2))+rhocells(2,ic)
+                    rho(orig+igrid+moff(3))=rho(orig+igrid+moff(3))+rhocells(3,ic)
+                    rho(orig+igrid+moff(4))=rho(orig+igrid+moff(4))+rhocells(4,ic)
+                    rho(orig+igrid+moff(5))=rho(orig+igrid+moff(5))+rhocells(5,ic)
+                    rho(orig+igrid+moff(6))=rho(orig+igrid+moff(6))+rhocells(6,ic)
+                    rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
+                    rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
+                END DO
+                !$OMP END SIMD
+            END DO
+        END DO
+        DEALLOCATE(rhocells)
+        RETURN
+    END SUBROUTINE depose_rho_vecHVv4_3_3_3

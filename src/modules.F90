@@ -35,6 +35,7 @@ REAL(num) :: dxi,dyi,dzi
 REAL(num) :: invvol
 REAL(num) :: dts2dx,dts2dy,dts2dz
 REAL(num) :: dtsdx0,dtsdy0,dtsdz0
+REAL(num) :: dxs2,dys2,dzs2
 REAL(num) :: clightsq
 END MODULE precomputed
 
@@ -46,7 +47,7 @@ LOGICAL:: l_lower_order_in_v, l_nodalgrid
 INTEGER(idp):: nxs=0, nys=0, nzs=0
 INTEGER(idp):: norderx, nordery, norderz
 INTEGER(idp):: nxguards,nyguards, nzguards, nox, noy, noz, npass(3)
-INTEGER(idp):: nxjguards,nyjguards, nzjguards
+INTEGER(idp):: nxjguards,nyjguards, nzjguards    ! Guard cells for current arrays
 REAL(num):: alpha(3)
 REAL(num), POINTER, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz
 ! Fonberg coefficients
@@ -58,19 +59,19 @@ USE constants
 TYPE grid_tile
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile, &
  								bxtile, bytile, bztile,  jxtile, jytile, jztile,rhotile
-    !DIR$ ATTRIBUTES FASTMEM  :: extile 					
-    !DIR$ ATTRIBUTES FASTMEM  :: eytile
-    !DIR$ ATTRIBUTES FASTMEM  :: eztile     	 
+    !!DIR$ ATTRIBUTES FASTMEM  :: extile 					
+    !!DIR$ ATTRIBUTES FASTMEM  :: eytile
+    !!DIR$ ATTRIBUTES FASTMEM  :: eztile     	 
 
-    !DIR$ ATTRIBUTES FASTMEM  :: bxtile 					
-    !DIR$ ATTRIBUTES FASTMEM  :: bytile
-    !DIR$ ATTRIBUTES FASTMEM  :: bztile        
+    !!DIR$ ATTRIBUTES FASTMEM  :: bxtile 					
+    !!DIR$ ATTRIBUTES FASTMEM  :: bytile
+    !!DIR$ ATTRIBUTES FASTMEM  :: bztile        
 
-    !DIR$ ATTRIBUTES FASTMEM  :: jxtile 					
-    !DIR$ ATTRIBUTES FASTMEM  :: jytile
-    !DIR$ ATTRIBUTES FASTMEM  :: jztile       
+    !!DIR$ ATTRIBUTES FASTMEM  :: jxtile 					
+    !!DIR$ ATTRIBUTES FASTMEM  :: jytile
+    !!DIR$ ATTRIBUTES FASTMEM  :: jztile       
     
-    !DIR$ ATTRIBUTES FASTMEM  :: rhotile      
+    !!DIR$ ATTRIBUTES FASTMEM  :: rhotile      
       			
 END TYPE
 TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
@@ -100,33 +101,33 @@ TYPE particle_tile
     LOGICAL :: subdomain_bound = .FALSE.
     ! Particle arrays
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
-    !DIR$ ATTRIBUTES FASTMEM  :: part_x
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_x
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
-    !DIR$ ATTRIBUTES FASTMEM  :: part_y    
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_y    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
-    !DIR$ ATTRIBUTES FASTMEM  :: part_z
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_z
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
-    !DIR$ ATTRIBUTES FASTMEM  :: part_ux
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_ux
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
-    !DIR$ ATTRIBUTES FASTMEM  :: part_uy
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_uy
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
-    !DIR$ ATTRIBUTES FASTMEM  :: part_uz
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_uz
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
-    !DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
-    !DIR$ ATTRIBUTES FASTMEM  :: part_ex
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_ex
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
-    !DIR$ ATTRIBUTES FASTMEM  :: part_ey    
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_ey    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
-    !DIR$ ATTRIBUTES FASTMEM  :: part_ez
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_ez
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
-    !DIR$ ATTRIBUTES FASTMEM  :: part_bx    
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_bx    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
-    !DIR$ ATTRIBUTES FASTMEM  :: part_by    
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_by    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
-    !DIR$ ATTRIBUTES FASTMEM  :: part_bz    
+    !!DIR$ ATTRIBUTES FASTMEM  :: part_bz    
     REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
-    !DIR$ ATTRIBUTES FASTMEM  :: pid
+    !!DIR$ ATTRIBUTES FASTMEM  :: pid
 END TYPE
 END MODULE particle_tilemodule
 
@@ -190,7 +191,7 @@ INTEGER(idp) :: pdistr
 INTEGER(idp) :: nspecies
 INTEGER(idp) :: ntot ! total number of particles (all species, all subdomains -> useful for stat)
 !INTEGER(idp), PARAMETER :: nspecies_max=4 ! Max number of particle species
-INTEGER(idp) :: nspecies_max=4 ! Max number of particle species
+INTEGER(idp) :: nspecies_max=6 ! Max number of particle species
 REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
 LOGICAL :: l_species_allocated=.FALSE.
 END MODULE particle_properties
@@ -227,8 +228,13 @@ INTEGER(idp) :: topology
 INTEGER(idp) :: mpicom_curr
 INTEGER(isp) :: seed
 INTEGER(idp) :: currdepo                            ! Current deposition method
+INTEGER(idp) :: rhodepo                             ! Charge deposition method
 INTEGER(idp) :: fieldgave                           ! Field gathering method
 INTEGER(idp) :: partcom                             ! Type of comm routine to use for particles
+
+INTEGER(idp) :: LVEC_curr_depo                      ! Vector size for the current deposition
+INTEGER(idp) :: LVEC_charge_depo                    ! Vector size for the charge deposition
+
 END MODULE params
 
 !===============================================================================
@@ -244,7 +250,7 @@ INTEGER(isp) :: derived_subarray_grid
 END MODULE mpi_type_constants
 
 !===============================================================================
-MODULE communications
+MODULE communications  !#do not parse 
 !===============================================================================
 use constants
 INTEGER(isp) :: reqperjxx(4),reqperjxy(4),reqperjxz(4)
@@ -254,43 +260,43 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
 
   TYPE part_com_buffer
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
-      !DIR$ ATTRIBUTES FASTMEM  :: part_x
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_x
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
-      !DIR$ ATTRIBUTES FASTMEM  :: part_y    
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_y    
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
-      !DIR$ ATTRIBUTES FASTMEM  :: part_z
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_z
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
-      !DIR$ ATTRIBUTES FASTMEM  :: part_ux
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_ux
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
-      !DIR$ ATTRIBUTES FASTMEM  :: part_uy
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_uy
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
-      !DIR$ ATTRIBUTES FASTMEM  :: part_uz
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_uz
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
-      !DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
-      !DIR$ ATTRIBUTES FASTMEM  :: pid
+      !!DIR$ ATTRIBUTES FASTMEM  :: pid
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: boundid
-      INTEGER(idp), DIMENSION(0:27) :: bin_npart
-      INTEGER(idp), DIMENSION(0:27) :: bin_pos
+      INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_npart
+      INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_pos
   END TYPE    
 
   TYPE mpi_buffer
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_x
-      !DIR$ ATTRIBUTES FASTMEM  :: part_x
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_x
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_y
-      !DIR$ ATTRIBUTES FASTMEM  :: part_y    
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_y    
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_z
-      !DIR$ ATTRIBUTES FASTMEM  :: part_z
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_z
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_ux
-      !DIR$ ATTRIBUTES FASTMEM  :: part_ux
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_ux
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uy
-      !DIR$ ATTRIBUTES FASTMEM  :: part_uy
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_uy
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uz
-      !DIR$ ATTRIBUTES FASTMEM  :: part_uz
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_uz
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_gaminv
-      !DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+      !!DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
-      !DIR$ ATTRIBUTES FASTMEM  :: pid
+      !!DIR$ ATTRIBUTES FASTMEM  :: pid
       INTEGER(idp), dimension(27) :: npart
   END TYPE
 
@@ -298,7 +304,7 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
 END MODULE communications
 
 !===============================================================================
-MODULE time_stat
+MODULE time_stat !#do not parse
 !===============================================================================
 use constants
 
@@ -422,8 +428,8 @@ REAL(num), DIMENSION(:), POINTER :: yb_offset_global
 REAL(num), DIMENSION(:), POINTER :: zb_offset_global
 ! domain limits and size
 INTEGER(idp)  :: nx, ny, nz ! local number of cells
-INTEGER(idp)  :: nx_grid, ny_grid, nz_grid ! local number of grid points
-INTEGER(idp)  :: nx_global, ny_global, nz_global ! global number of cells
+INTEGER(idp)  :: nx_grid, ny_grid, nz_grid                      ! local number of grid points
+INTEGER(idp)  :: nx_global, ny_global, nz_global                ! global number of cells
 INTEGER(idp)  :: nx_global_grid, ny_global_grid, nz_global_grid ! global number of grid points
 REAL(num):: dx, xmin, xmax, length_x
 REAL(num):: x_min_local, x_max_local

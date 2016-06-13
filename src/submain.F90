@@ -143,6 +143,12 @@ dtsdx0 = dt*dxi
 dtsdy0 = dt*dyi
 dtsdz0 = dt*dzi
 clightsq = 1.0_num/clight**2
+dxs2 = dx*0.5_num
+dys2 = dy*0.5_num
+dzs2 = dz*0.5_num
+
+!- Init stencil coefficients
+CALL init_stencil_coefficients()
 
 ! Summary
 IF (rank .EQ. 0) THEN
@@ -156,7 +162,13 @@ IF (rank .EQ. 0) THEN
   write(0,*) 'Topology:',topology
   write(0,*) 'MPI com current:',mpicom_curr
   write(0,*) 'Current deposition method:',currdepo
+  write(0,*) 'Charge deposition algo:',rhodepo
+  write(0,*) 'Field gathering method:',fieldgave
   write(0,*) 'Current/field gathering order:',nox,noy,noz
+  write(0,*) 'Maxwell derivative coeff:',xcoeffs
+  WRITE(0,*) ''
+  WRITE(0,*) 'Vector length current deposition',lvec_curr_depo
+  WRITE(0,*) 'Vector length charge deposition',lvec_charge_depo
   write(0,*) ''
   write(0,*) 'PLASMA PROPERTIES:'
   write(0,*) 'Distribution:',pdistr
@@ -202,8 +214,6 @@ IF (rank .EQ. 0) THEN
   
 end if
 
-!- Init stencil coefficients
-CALL init_stencil_coefficients()
 
 ! ------ INIT PARTICLE DISTRIBUTIONS
 !!! --- Set tile split for particles
@@ -215,7 +225,7 @@ CALL init_tile_arrays
 ! - Load particle distribution on each tile
 CALL load_particles
 
-CALL estimate_tile_size
+CALL estimate_memory_consumption
 
 ! ----- INIT FIELD ARRAYS
 !!! --- Initialize field/currents arrays

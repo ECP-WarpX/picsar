@@ -331,22 +331,22 @@ CONTAINS
     IF ((timestat_period.gt.0).and.(MOD(it,timestat_period).eq.0)) then
     
     
-      localtimes(20) = sum(localtimes(1:11))
+      localtimes(20) = sum(localtimes(1:13))
       localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
-                       localtimes(8) + localtimes(11)
+                       localtimes(8) + localtimes(11) + localtimes(13)
     
       ! Average
       CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
       avetimes = avetimes / nproc
     
-      buffer_timestat(1:11,itimestat) = avetimes(1:11)
+      buffer_timestat(1:13,itimestat) = avetimes(1:13)
       itimestat = itimestat + 1
     
       ! Flush entire buffer when full   
       IF (itimestat.gt.nbuffertimestat) THEN
     
         IF (rank.eq.0) THEN
-          write(41) buffer_timestat(1:11,1:nbuffertimestat)
+          write(41) buffer_timestat(1:13,1:nbuffertimestat)
         end if
         
         itimestat=1
@@ -374,7 +374,7 @@ CONTAINS
     
     IF (timestat_activated.gt.0) THEN
     
-      write(41) buffer_timestat(1:11,1:itimestat)
+      write(41) buffer_timestat(1:13,1:itimestat)
       
     END IF
 

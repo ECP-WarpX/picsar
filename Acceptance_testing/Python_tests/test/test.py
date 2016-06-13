@@ -89,7 +89,7 @@ for i in range(0,pxr.nspecies):
 
 #### MPI INIT
 print " MPI init"
-pxr.mpi_minimal_init()
+pxr.mpi_minimal_init(-1)
 pxr.mpi_initialise()
 mpirank= pxr.rank
 

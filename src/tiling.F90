@@ -850,24 +850,34 @@ CONTAINS
         
     END SUBROUTINE set_are_tiles_reallocated
 
-    SUBROUTINE estimate_tile_size
+    SUBROUTINE estimate_memory_consumption
       USE shared_data
       USE constants
       USE particles
       USE time_stat
       USE params    
+      USE fields
       IMPLICIT NONE    
 
-      INTEGER(idp) :: ispecies, ix, iy, iz, nbp
-      REAL(num) :: tilesizep
-
       TYPE(particle_species), POINTER :: curr
-      TYPE(particle_tile), POINTER :: curr_tile
+      TYPE(particle_tile), POINTER    :: curr_tile
+
+      INTEGER(idp)                    :: ispecies, ix, iy, iz, nbp
+      INTEGER(idp)                    :: nxc,nyc,nzc
+      REAL(num)                       :: mpipartsize
+      REAL(num)                       :: tilepartsize
+      REAL(num)                       :: tilefieldsize
+      REAL(num)                       :: mpifieldsize      
+      REAL(num)                       :: tilefieldcurrent 
+      CHARACTER(len=2)                :: unity
+
+      ! _________________________________________
+      ! Memory used for particles
            
       !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
       !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
-      !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp) &
-      !$OMP REDUCTION(+:tilesizep)
+      !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp,nxc,nyc,nzc) &
+      !$OMP REDUCTION(+:mpipartsize)
       DO iz=1, ntilez ! LOOP ON TILES
         DO iy=1, ntiley
           DO ix=1, ntilex
@@ -878,9 +888,12 @@ CONTAINS
 					     curr=>species_parray(ispecies)
 	          				    
 			         curr_tile=>curr%array_of_tiles(ix,iy,iz)
-			         nbp=curr_tile%np_tile(1)
+			         nbp=curr_tile%npmax_tile  ! size of the arrays
+			         nxc=curr_tile%nx_cells_tile
+               nyc=curr_tile%ny_cells_tile
+               nzc=curr_tile%nz_cells_tile    
 			         
-			         tilesizep = tilesizep + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
+			         mpipartsize = mpipartsize + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
 
 		        END DO! END LOOP ON SPECIES
           END DO
@@ -888,16 +901,75 @@ CONTAINS
       END DO! END LOOP ON TILES
       !$OMP END PARALLEL DO
 
-      tilesizep = tilesizep/1024.
+      tilepartsize = mpipartsize/(ntilex*ntiley*ntilez)
 
-      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the particles',tilesizep,'Ko'
+      ! _________________________________________
+      ! Memory used for fields
 
-      tilesizep = tilesizep/(ntilex*ntiley*ntilez)
+      mpifieldsize = (nx+2*nxguards+1)*(ny+2*nyguards+1)*(nz+2*nzguards+1)*8.*6.
+      tilefieldsize = mpifieldsize/(ntilex*ntiley*ntilez)
 
-      IF (rank.eq.0) WRITE(0,*) 'Average tile size for particles',tilesizep,'Ko'
-      IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',nx*ny*nz*8.*6.*(ntilex*ntiley*ntilez)/1024.,'Ko'
+      ! _________________________________________
+      ! Memory used for currents
+
+      tilefieldcurrent = (nx+2*nxjguards+1)*(ny+2*nyjguards+1)*(nz+2*nzjguards+1)*8.*3./(ntilex*ntiley*ntilez)
+
+      ! _________________________________________
+      ! Outputs
+      
+      IF (rank.eq.0) WRITE(0,*)
+      IF (rank.eq.0) WRITE(0,*) 'Memory balance:'
+      
+       if (mpipartsize > 1024.) then
+        mpipartsize = mpipartsize/1024.
+        unity = 'Ko'
+      endif
+      if (mpipartsize > 1024.) then
+        mpipartsize = mpipartsize/1024.
+        unity = 'Mo'
+      endif     
+      
+      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the particles',mpipartsize,unity
+
+      if (tilepartsize > 1024.) then
+        tilepartsize = tilepartsize/1024.
+        unity = 'Ko'
+      endif
+      if (tilepartsize > 1024.) then
+        tilepartsize = tilepartsize/1024.
+        unity = 'Mo'
+      endif
+      
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for particles',tilepartsize,unity
+
+
+      if (mpifieldsize > 1024.) then
+        mpifieldsize = mpifieldsize/1024.
+        unity = 'Ko'
+      endif
+      if (mpifieldsize > 1024.) then
+        mpifieldsize = mpifieldsize/1024.
+        unity = 'Mo'
+      endif
+      
+      !IF (rank.eq.0) WRITE(0,*)
+      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the fields',mpifieldsize,unity
+
+      if (tilefieldsize > 1024.) then
+        tilefieldsize = tilefieldsize/1024.
+        unity = 'Ko'
+      endif
+      
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity
+
+      if (tilefieldcurrent > 1024.) then
+        tilefieldcurrent = tilefieldcurrent/1024.
+        unity = 'Ko'
+      endif
+
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for currents',tilefieldcurrent,unity   
       IF (rank.eq.0) WRITE(0,*)
 
-    END SUBROUTINE
+    END SUBROUTINE estimate_memory_consumption
 
 END MODULE tiling

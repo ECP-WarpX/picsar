@@ -316,11 +316,11 @@ subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
 !===============================================================================
 use constants
 use omp_lib
-integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
+integer(idp)          :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
-integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+integer(idp)          :: i,j,k,l,ist
+logical               :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0

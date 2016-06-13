@@ -172,6 +172,9 @@ def test_langmuir_wave():
   # 0 - Optimized functions (default)
   # 1 - non-optimized functions  
   fieldgave=0
+  # Type of particle communication
+  # 0 - optimized version
+  partcom =0
 
   #-------------------------------------------------------------------------------
   # grid dimensions, nb cells and BC
@@ -336,6 +339,7 @@ def test_langmuir_wave():
                    mpicom_curr=mpicom_curr,
                    fieldgave=fieldgave,
                    sorting=sort,
+                   partcom=partcom,
                    l_verbose=l_verbose)
       step = em.step
   else:

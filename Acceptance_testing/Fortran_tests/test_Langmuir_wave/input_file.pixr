@@ -25,9 +25,9 @@ section::main
  # Simulation duration (in 1/w0)
  t_max = 7
  
- ntilex = 5
- ntiley = 5
- ntilez = 5
+ ntilex = 12
+ ntiley = 6
+ ntilez = 6
  
  # Guard cells
  nguardsx = 3
@@ -57,7 +57,7 @@ section::solver
  # 3 - Classical vectorized
  # 4 - Classical tiling/non-optimized
  # 5 - Classical sequential/non-optimized
- currdepo = 0
+ currdepo = 1
  
  # Field gathering method
  # 0 - Optimized functions (default)
@@ -67,7 +67,7 @@ section::solver
  # Type of particle communication
  # 0 - Combined MPI/Tile communications
  # 1 - Seperated MPI/Tile communications
- partcom = 1
+ partcom = 0
  
 end::solver
 
@@ -75,7 +75,7 @@ section::plasma
  # Maxwell solver
  nlab=1.1e25
  gamma0=1.
- pdistr=1
+ pdistr=2
 end::plasma
 
 section::sorting
