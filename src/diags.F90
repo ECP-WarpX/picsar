@@ -905,9 +905,21 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
         moff(8) = nnxy+nnx+1_idp
 
         DO ip=1,np,nblk
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,ww:64
-            !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,ww,xp,yp,zp,w)
+#endif 
+            !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+            !DIR$ ASSUME_ALIGNED w:64,ww:64
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO n=ip,MIN(ip+nblk-1,np) !!!! vector
                 nn=n-ip+1
                 !- Computations relative to particle n
@@ -951,15 +963,29 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                 ww(8,nn) = sx1*sy1*sz1*wq
                 ll(8,nn) = ind0+moff(8)
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             ! --- add charge density contributions
             DO m= 1,MIN(nblk,np-ip+1)
+#if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED ww:64
-                !$OMP SIMD
+#elif defined __IBMBGQ__
+                !IBM* ALIGN(64,ww)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif 
                 DO l=1,8  !!!! Vector
             		rho(ll(l,m)) = rho(ll(l,m))+ww(l,m)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	        !$OMP END SIMD
+#endif
             END DO
         END DO
         DEALLOCATE(ww,ll)
@@ -1428,10 +1454,20 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC2
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
-            !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,xp,yp,zp,w,ICELL)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
@@ -1488,13 +1524,25 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                 www(n,15)=sy(1)*sz(2)
                 www(n,16)=sy(2)*sz(2)
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             ! Current deposition on vertices
             DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
+#if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64
-                !$OMP SIMD
+#elif defined __IBMBGQ__
+                !IBM* ALIGN(64,rhocells)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
                 DO nv=1,16 !!! - VECTOR
                     ww=www(n,nv)
                     !ww=0.1_num
@@ -1507,18 +1555,32 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                     !Loop on (i=1,j,k)
                     rhocells(nv,ic+2)=rhocells(nv,ic+2)+ww*sx4(n)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             END DO
         END DO
         DO nv=1,16
             ind0=off0+moff(nv)
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED rhocells:64
             !DIR$ ASSUME_ALIGNED rho:64
-            !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,rhocells,rho)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO ic=1,NCELLS  !!! VECTOR
                 rho(ic+ind0)=rho(ic+ind0)+rhocells(nv,ic)
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
         END DO
         DEALLOCATE(rhocells)
         RETURN
@@ -1579,11 +1641,21 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC2
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED w:64,sy1:64,sy2:64,sy3:64,sy4:64
             !DIR$ ASSUME_ALIGNED ICELL:64
-            !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,xp,yp,zp,w,sx1,sx2,sx3,sx4,sy1,sy2,sy3,sy4,ICELL)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO n=1,MIN(LVEC2,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
@@ -1624,10 +1696,22 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
 !                sz3 = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
 !                sz4 = onesixth*zintsq*zint(n)*wq
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             DO n=1,MIN(LVEC2,np-ip+1)
+#if defined __INTEL_COMPILER 
                 !$DIR ASSUME_ALIGNED www:64, h1:64, h11:64, h12:64, zdec:64, sgn:64, szz:64
-                !$DIR NOUNROLL
+#elif defined __IBMBGQ__
+                !IBM* ALIGN(64,www,h1,h11,h12,zdec,sgn,szz)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif 
                 DO nv=1,4 !!! Vector
                     zdec(nv)     = (h1(nv)-zint(n))*sgn(nv)
                     szz(nv)      = (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv)+ &
@@ -1642,8 +1726,18 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
             DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
+#if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64, www:64
-                !$OMP SIMD
+#elif defined __IBMBGQ__
+                !IBM* ALIGN(64,rhocells,www)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif 
                 DO nv=1,8 !!! - VECTOR
                     ! Loop on (i=-1,j,k)
                     rhocells(nv,ic-ncx-1) = rhocells(nv,ic-ncx-1) + www(nv,n)*sx1(n)
@@ -1662,13 +1756,21 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                     !Loop on (i=1,j,k)
                     rhocells(nv,ic+ncx+2) = rhocells(nv,ic+ncx+2) + www(nv+8,n)*sx4(n)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	    !$OMP END SIMD
+#endif
             END DO
         END DO
         ! - reduction of rhocells in rho
         DO iz=1, ncz
             DO iy=1,ncy
-                !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif 
                 DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                     ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                     igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
@@ -1681,7 +1783,9 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                     rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
                     rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	    !$OMP END SIMD
+#endif
             END DO
         END DO
         DEALLOCATE(rhocells)
@@ -2530,8 +2634,18 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                 
                     ! Loop over the particles
                     DO ip=1,np,LVEC2
+#if defined __INTEL_COMPILER 
                         !DIR$ ASSUME_ALIGNED gaminv:64
+#elif defined __IBMBGQ__
+                        !IBM* ALIGN(64,gaminv)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
                         !$OMP SIMD SAFELEN(LVEC2) 
+#elif defined __IBMBGQ__
+			            !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			            !$DIR SIMD 
+#endif 
                         DO n=1,MIN(LVEC2,np-ip+1)
             
                             partgam = 1./gaminv(ip+(n-1)) 
@@ -2595,8 +2709,14 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                 
                     ! Loop over the particles (cache)
                     DO ip=1,np,LVEC2
-                        !!DIR$ ASSUME_ALIGNED partgaminv:64
-                        !$OMP SIMD SAFELEN(LVEC2)
+#if defined _OPENMP && _OPENMP>=201307
+                        !$OMP SIMD SAFELEN(LVEC2) 
+#elif defined __IBMBGQ__
+			            !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			            !$DIR SIMD 
+                  !!DIR$ ASSUME_ALIGNED partgaminv:64			            
+#endif 
                         DO n=1,MIN(LVEC2,np-ip+1)
             
                             partgam = 1./curr_tile%part_gaminv(ip+(n-1)) 
@@ -2821,12 +2941,22 @@ END MODULE diagnostics
         ! ________________________________________________________________________
         ! FIRST LOOP: computes cell index of particle and their weight on vertices   
         DO ip=1,np,lvect
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED xp:64
             !DIR$ ASSUME_ALIGNED yp:64
             !DIR$ ASSUME_ALIGNED zp:64
             !DIR$ ASSUME_ALIGNED w:64
             !DIR$ ASSUME_ALIGNED ICELL:64
-            !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,xp,yp,zp,w,ICELL)
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
             DO n=1,MIN(lvect,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
@@ -2846,28 +2976,49 @@ END MODULE diagnostics
                 ! --- computes particles weights
                 wq(n)=q*w(nn)*invvol
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             ! Current deposition on vertices
             DO n=1,MIN(lvect,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
+                ic=ICELL(n)
+#if defined __INTEL_COMPILER 
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !DIR$ ASSUME_ALIGNED sx:64
                 !DIR$ ASSUME_ALIGNED sy:64
                 !DIR$ ASSUME_ALIGNED sz:64
-                !$OMP SIMD
+#elif defined __IBMBGQ__
+                !IBM* ALIGN(64,rhocells,sx,sy,sz)
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif
                 DO nv=1,8 !!! - VECTOR
                     ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* &
                         (-mz(nv)+sz(n))*wq(n)*sgn(nv)
                     rhocells(nv,ic)=rhocells(nv,ic)+ww
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             END DO
         END DO
         ! - reduction of rhocells in rho
         DO iz=1, ncz
             DO iy=1,ncy
-                !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif
                 DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                     ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                     igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
@@ -2880,7 +3031,9 @@ END MODULE diagnostics
                     rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
                     rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             END DO
         END DO
         DEALLOCATE(rhocells)
@@ -2943,10 +3096,20 @@ END MODULE diagnostics
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         
         DO ip=1,np,lvect
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
             !DIR$ ASSUME_ALIGNED ICELL:64, IG:64
-            !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,xp,yp,zp,w,sx0,sx1,sx2,ICELL,IG)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO n=1,MIN(lvect,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
@@ -2991,12 +3154,24 @@ END MODULE diagnostics
                 ww0(n,2)=szy*sx1(n)
                 ww0(n,3)=szy*sx2(n)
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             ! Current deposition on vertices
             DO n=1,MIN(lvect,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
+#if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64
-                !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,rhocells)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif 
                 DO nv=1,8 !!! - VECTOR
                     ww=www(n,nv)
                     ! Loop on (i=-1,j,k)
@@ -3006,12 +3181,22 @@ END MODULE diagnostics
                     !Loop on (i=1,j,k)
                     rhocells(nv,ICELL(n)+1)=rhocells(nv,ICELL(n)+1)+ww*sx2(n)
                 END DO
-                !$OMP END SIMD
-                !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
                 DO nv=1,4
                     rho(orig+IG(n)+nv-2)=rho(orig+IG(n)+nv-2)+ww0(n,nv)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             END DO
         END DO
         ! - reduction of rhocells in rho
@@ -3093,10 +3278,20 @@ END MODULE diagnostics
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,lvect
+#if defined __INTEL_COMPILER 
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
             !DIR$ ASSUME_ALIGNED ICELL:64, www1:64, www2:64
-            !$OMP SIMD
+#elif defined __IBMBGQ__
+            !IBM* ALIGN(64,xp,yp,zp,w,sx1,sx2,sx3,sx4,ICELL,www1,www2)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif 
             DO n=1,MIN(lvect,np-ip+1)
                 nn=ip+n-1
                 ! Calculation relative to particle n
@@ -3153,13 +3348,25 @@ END MODULE diagnostics
                 www2(n,7)=sz3*sy4
                 www2(n,8)=sz4*sy4
             END DO
-            !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	   !$OMP END SIMD
+#endif
             ! Current deposition on vertices
             DO n=1,MIN(lvect,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
+#if defined __INTEL_COMPILER 
                 !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
-                !$OMP SIMD
+#elif defined __IBMBGQ__
+                !IBM* ALIGN(64,rhocells,www1,www2)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif 
                 DO nv=1,8 !!! - VECTOR
                     w1=www1(n,nv)
                     ! Loop on (i=-1,j,k)
@@ -3181,13 +3388,21 @@ END MODULE diagnostics
                     !Loop on (i=1,j,k)
                     rhocells(nv,ic+ncx+2) = rhocells(nv,ic+ncx+2) + w2*sx4(n)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	        !$OMP END SIMD
+#endif
             END DO
         END DO
         ! - reduction of rhocells in rho
         DO iz=1, ncz
             DO iy=1,ncy
-                !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+			    !$OMP SIMD 
+#elif defined __IBMBGQ__
+			    !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			    !$DIR SIMD 
+#endif 
                 DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                     ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                     igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
@@ -3200,7 +3415,9 @@ END MODULE diagnostics
                     rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
                     rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
                 END DO
-                !$OMP END SIMD
+#if defined _OPENMP && _OPENMP>=201307
+       	        !$OMP END SIMD
+#endif
             END DO
         END DO
         DEALLOCATE(rhocells)

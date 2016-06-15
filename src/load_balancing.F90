@@ -886,13 +886,13 @@ IF (nthreads_tot .GT. 1) THEN
     ! Udpate optimal number of tiles 
     SELECT CASE(c_dim)
     CASE (2)
-        ntilex_new = MAX(1,nx/35)
+        ntilex_new = MAX(1_idp,nx/35)
         ntiley_new = 1
-        ntilez_new = MAX(1,nz/35)
+        ntilez_new = MAX(1_idp,nz/35)
     CASE DEFAULT
-        ntilex_new = MAX(1,nx/10)
-        ntiley_new = MAX(1,ny/10)
-        ntilez_new = MAX(1,nz/10)
+        ntilex_new = MAX(1_idp,nx/10)
+        ntiley_new = MAX(1_idp,ny/10)
+        ntilez_new = MAX(1_idp,nz/10)
     END SELECT 
 ELSE
     ntilex_new = 1
@@ -968,9 +968,9 @@ DO ispecies=1,nspecies
                                  partx, party, partz, partux, partuy, partuz, gaminv, partw)
                         ! CASE 2: particle is in the new domain just add it to proper tile of new species array
                         ELSE 
-                            indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex_new)
-                            indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez_new)
-                            CALL add_particle_at_tile(currsp_new, indx,1,indz, &
+                            indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
+                            indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
+                            CALL add_particle_at_tile(currsp_new, indx,1_idp,indz, &
                                  partx, party, partz, partux, partuy, partuz, gaminv, partw)
                     
                         ENDIF 
@@ -996,9 +996,9 @@ DO ispecies=1,nspecies
                                  partx, party, partz, partux, partuy, partuz, gaminv, partw)
                         ! CASE 2: particle is in the new domain just add it to proper tile of new species array
                         ELSE 
-                            indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex_new)
-                            indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley_new)
-                            indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez_new)
+                            indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
+                            indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley_new)
+                            indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
                             CALL add_particle_at_tile(currsp_new, indx,indy,indz, &
                                  partx, party, partz, partux, partuy, partuz, gaminv, partw)
                         ENDIF 

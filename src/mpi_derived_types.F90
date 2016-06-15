@@ -63,20 +63,28 @@ CONTAINS
     INTEGER(idp), INTENT(IN) :: cell_start_x_local
     INTEGER(idp), INTENT(IN) :: cell_start_y_local
     INTEGER(idp), INTENT(IN) :: cell_start_z_local
-    INTEGER(isp) :: create_grid_derived_type
-    INTEGER(idp), DIMENSION(c_ndims) :: n_local, n_global, start
+    INTEGER(isp) :: create_grid_derived_type, ndims
+    INTEGER(isp), DIMENSION(c_ndims) :: n_local, n_global, start
 
-    n_local = (/nx_local+1, ny_local+1, nz_local+1/)
-    n_global = (/nx_global+1, ny_global+1, nz_global+1/)
+    n_local = (/nx_local, ny_local, nz_local/)
+    n_global = (/nx_global, ny_global, nz_global/)
     start = (/cell_start_x_local, cell_start_y_local, cell_start_z_local/)
-
-    create_grid_derived_type = &
-        create_3d_array_derived_type(mpitype, n_local, n_global, start)
+    ! Old version 
+    !create_grid_derived_type = &
+    !    create_3d_array_derived_type(mpitype, n_local, n_global, start)
+    
+    ! New version 
+    ndims=c_ndims
+    CALL MPI_TYPE_CREATE_SUBARRAY(ndims,n_global,n_local,start, MPI_ORDER_FORTRAN, &
+                                mpitype,create_grid_derived_type,errcode)
+    CALL MPI_TYPE_COMMIT(create_grid_derived_type ,errcode)
 
   END FUNCTION create_grid_derived_type
 
   !----------------------------------------------------------------------------
-  ! create_3d_array_derived_type - Creates a derived type representing the 
+  ! create_3d_array_derived_type OLD VERSION - USE MPI_TYPE_CREATE_SUBARRAY 
+  ! instead
+  ! - Creates a derived type representing the 
   ! localization of current CPU among simulation domain
   !----------------------------------------------------------------------------
 
@@ -150,13 +158,20 @@ CONTAINS
     ng(3)= ng3
     ndim = 3
     DO i = 1, ndim
-      start(i) = 1 + ng(i)
+      start(i) = 1 + ng(i)                                                                                                                                                             
       n_global(i) = n_local(i) + 2 * ng(i)
     ENDDO
+    n_local=n_local-1 ! remove last point
 
-    create_grid_subarray = &
-          create_3d_array_derived_type(mpitype, n_local, n_global, start)
+    ! old version 
+    !create_grid_subarray = &
+    !      create_3d_array_derived_type(mpitype, n_local, n_global, start)
 
+    ! new version 
+    CALL MPI_TYPE_CREATE_SUBARRAY(ndim,INT(n_global,isp),INT(n_local,isp),INT(start-1,isp), MPI_ORDER_FORTRAN, &
+                            mpitype,create_grid_subarray,errcode)
+    CALL MPI_TYPE_COMMIT(create_grid_subarray,errcode)
+                            
   END FUNCTION create_grid_subarray
 
 END MODULE mpi_derived_types

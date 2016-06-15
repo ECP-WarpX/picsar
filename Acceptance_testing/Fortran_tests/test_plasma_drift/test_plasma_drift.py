@@ -184,7 +184,7 @@ def test_plasma_drift(trun,ttest,tpath):
   print
   print ' _______________________________________ '
   print ' Check DivE = rho/eps0'
-  if 0: # Temporarily removed due to MPI-IO issues (plateform dependent)
+  if 0:
       for it in range(0,200,20):
         dive=LoadBinNumPyArray3D('RESULTS/dive' + str(it) + '.pxr',100,100,100);
         rho=LoadBinNumPyArray3D('RESULTS/rho'+ str(it) + '.pxr',100,100,100);  

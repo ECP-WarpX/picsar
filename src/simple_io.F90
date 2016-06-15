@@ -21,12 +21,13 @@ CONTAINS
         WRITE(0,*) "Output_routines: start"
 #endif
         
+        WRITE(strtemp,'(I5)') it
+        
         IF (output_frequency .GE. 1) THEN
         tmptime = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
             !!! --- Write output to disk
-            WRITE(strtemp,'(I5)') it
             !! -- Write grid quantities
             IF (c_output_ex .EQ. 1) THEN
                 ! - Write current density ex
@@ -97,7 +98,13 @@ CONTAINS
           localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
             
         ENDIF
-
+        
+        !!! --- Write particle diags
+        tmptime=MPI_WTIME()
+        CALL write_particles_to_file(strtemp, it)
+        tmptime=MPI_WTIME()-tmptime
+        IF (rank .EQ. 0) PRINT *, "time io part", tmptime
+        
         !!! --- Output temproral diagnostics
         CALL output_temporal_diagnostics
         
@@ -288,7 +295,7 @@ CONTAINS
     
     subt = create_current_grid_derived_type()
     suba = create_current_grid_subarray(nxg, nyg, nzg)
-
+    
 #if DEBUG==9
    WRITE(0,*) "Subarrays created"
 #endif
@@ -311,6 +318,243 @@ CONTAINS
      CALL MPI_TYPE_FREE(subt, errcode)
 
   END SUBROUTINE write_single_array_to_file
+
+  SUBROUTINE write_particles_to_file(it, step)
+  USE particles
+  USE constants
+  CHARACTER(LEN=*), INTENT(IN) :: it
+  INTEGER(idp), INTENT(IN) :: step 
+  REAL(num), ALLOCATABLE, DIMENSION(:) :: arr 
+  LOGICAL(isp), ALLOCATABLE, DIMENSION(:) :: mask 
+  INTEGER(idp) :: narr , idump, ncurr, ndump 
+  INTEGER(isp) :: fh
+  INTEGER(idp) :: offset 
+  TYPE(particle_species), POINTER :: curr
+  TYPE(particle_dump), POINTER :: dp 
+  
+  DO idump = 1, npdumps
+    ! POINT TOWARDS CURRENT SPECIES 
+    dp => particle_dumps(idump)
+    IF (dp%diag_period .lt.1) CYCLE
+    IF (MOD(step,dp%diag_period) .NE. 0) CYCLE
+    
+    curr => species_parray(dp%ispecies)
+    narr = curr%species_npart
+    
+    ! GET TOTAL NUMBER OF PART TO DUMP 
+    ALLOCATE(mask(narr))
+    CALL get_particles_to_dump(idump,mask,narr,ndump) 
+        
+    CALL MPI_ALLREDUCE(ndump,ncurr,1_isp, MPI_INTEGER8, MPI_SUM, comm, errcode)
+    
+    ! OPENING INPUT FILE 
+    CALL MPI_FILE_OPEN(comm, TRIM('./RESULTS/'//TRIM(ADJUSTL(curr%name))//'_it_'// &
+    TRIM(ADJUSTL(it))),MPI_MODE_CREATE + MPI_MODE_WRONLY, MPI_INFO_NULL, fh, errcode) 
+    
+    ALLOCATE(arr(ndump))
+
+    ! WRITE - X 
+    offset = 0 
+    CALL concatenate_particle_variable(idump, 1_idp, arr, ndump, mask, narr)
+    CALL write_particle_variable(fh, arr,ndump, mpidbl, errcode, offset)
+    ! WRITE - Y
+
+    offset = offset + ndump* SIZEOF(arr(1))
+    CALL concatenate_particle_variable(idump, 2_idp,  arr, ndump, mask, narr)
+    CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+    ! WRITE - Z
+    offset = offset + ndump * SIZEOF(arr(1))
+    CALL concatenate_particle_variable(idump, 3_idp,  arr, ndump, mask, narr)
+    CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+
+    ! WRITE - Ux
+    offset = offset + ndump * SIZEOF(arr(1))
+    CALL concatenate_particle_variable(idump, 4_idp,  arr, ndump, mask, narr)
+    CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+
+    ! WRITE - Uy
+    offset = offset + ndump * SIZEOF(arr(1))
+    CALL concatenate_particle_variable(idump, 5_idp,  arr, ndump, mask, narr)
+    CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+
+    ! WRITE - Uz
+    offset = offset + ndump * SIZEOF(arr(1))
+    CALL concatenate_particle_variable(idump, 6_idp,  arr, ndump, mask, narr)
+    CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+
+    ! WRITE - Weight
+    offset = offset + ndump * SIZEOF(arr(1))
+    CALL concatenate_particle_variable(idump, 7_idp,  arr, ndump, mask, narr)
+    CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+
+    DEALLOCATE(arr, mask)
+    
+    CALL MPI_FILE_CLOSE(fh, errcode)
+  END DO ! END LOOP ON SPECIES 
+  END SUBROUTINE write_particles_to_file
+
+  SUBROUTINE get_particles_to_dump(idump,mask,narr,ndump) 
+  USE constants
+  USE particles
+  USE tiling 
+  USE output_data
+  
+  INTEGER(idp), INTENT(IN) :: idump, narr
+  INTEGER(idp), INTENT(IN OUT) :: ndump 
+  LOGICAL(isp), DIMENSION(narr), INTENT(IN OUT) :: mask 
+  INTEGER(idp) :: ix, iy, iz, count, ncurr, ip
+  TYPE(particle_species), POINTER :: curr
+  TYPE(particle_dump), POINTER :: dp
+  TYPE(particle_tile), POINTER :: curr_tile
+  REAL(num) :: partx, party, partz, partux, partuy, partuz
+  ndump = 0
+  mask = .FALSE. 
+  
+  dp => particle_dumps(idump)
+  curr => species_parray(dp%ispecies)
+  DO iz=1,ntilez
+      DO iy=1,ntiley
+          DO ix=1,ntilex
+              curr_tile=>curr%array_of_tiles(ix,iy,iz)
+              count=curr_tile%np_tile(1)
+              IF (count .EQ. 0) THEN 
+                CYCLE
+              ELSE 
+                DO ip = 1, count
+                    partx= curr_tile%part_x(ip)
+                    party= curr_tile%part_y(ip)
+                    partz= curr_tile%part_z(ip)
+                    partux= curr_tile%part_ux(ip)
+                    partuy= curr_tile%part_uy(ip)
+                    partuz= curr_tile%part_uz(ip)
+                    IF ((partx .GT. dp%dump_x_min) .AND. (partx .LT. dp%dump_x_max) .AND. &
+                        (party .GT. dp%dump_y_min) .AND. (party .LT. dp%dump_y_max) .AND. &
+                        (partz .GT. dp%dump_z_min) .AND. (partz .LT. dp%dump_z_max) .AND. &
+                        (partux .GT. dp%dump_ux_min) .AND. (partux .LT. dp%dump_ux_max) .AND. &
+                        (partuy .GT. dp%dump_uy_min) .AND. (partuy .LT. dp%dump_uy_max) .AND. &
+                        (partuz .GT. dp%dump_uz_min) .AND. (partuz .LT. dp%dump_uz_max)) THEN 
+                        ndump = ndump+1
+                        mask(ip) = .TRUE. 
+                    ENDIF
+                END DO 
+              ENDIF 
+          END DO
+      END DO
+  END DO!END LOOP ON TILES
+  
+  
+  END SUBROUTINE get_particles_to_dump
+
+
+  SUBROUTINE concatenate_particle_variable(idump, var, arr, narr, mask, nmask)
+  USE particles
+  USE constants
+  USE tiling
+  INTEGER(idp), INTENT(IN) :: idump, narr, var, nmask
+  LOGICAL(isp), DIMENSION(nmask), INTENT(IN) :: mask 
+  REAL(num), DIMENSION(narr), INTENT(IN OUT) :: arr 
+  INTEGER(idp) :: ix, iy, iz, count, ncurr, np, ip
+  TYPE(particle_species), POINTER :: curr
+  TYPE(particle_tile), POINTER :: curr_tile
+  TYPE(particle_dump), POINTER :: dp
+  ncurr = 0
+  np = 0  
+  
+  dp => particle_dumps(idump)
+  curr => species_parray(dp%ispecies)
+  DO iz=1,ntilez
+      DO iy=1,ntiley
+          DO ix=1,ntilex
+              curr_tile=>curr%array_of_tiles(ix,iy,iz)
+              count=curr_tile%np_tile(1)
+              IF (count .EQ. 0) THEN 
+                CYCLE
+              ELSE 
+                SELECT CASE (var)
+                CASE (1) ! x 
+                    DO ip=1,count
+                        np = np+1
+                        IF (mask(np)) THEN 
+                            arr(ncurr+1) = curr_tile%part_x(ip)
+                            ncurr = ncurr+1
+                        END IF 
+                    END DO 
+                CASE (2) ! y 
+                    DO ip=1,count
+                        np = np+1
+                        IF (mask(np)) THEN 
+                            arr(ncurr+1) = curr_tile%part_y(ip)
+                            ncurr = ncurr+1
+                        END IF 
+                    END DO 
+                CASE (3) ! z
+                    DO ip=1,count
+                        np = np+1
+                        IF (mask(np)) THEN 
+                            arr(ncurr+1) = curr_tile%part_z(ip)
+                            ncurr = ncurr+1
+                        END IF 
+                    END DO 
+                CASE (4) ! ux 
+                    DO ip=1,count
+                        np = np+1
+                        IF (mask(np)) THEN 
+                            arr(ncurr+1) = curr_tile%part_ux(ip)
+                            ncurr = ncurr+1
+                        END IF 
+                    END DO 
+                CASE (5) ! uy 
+                    DO ip=1,count
+                        np = np+1
+                        IF (mask(np)) THEN 
+                            arr(ncurr+1) = curr_tile%part_uy(ip)
+                            ncurr = ncurr+1
+                        END IF 
+                    END DO 
+                CASE (6) ! uz 
+                    DO ip=1,count
+                        np = np+1
+                        IF (mask(np)) THEN 
+                            arr(ncurr+1) = curr_tile%part_uz(ip)
+                            ncurr = ncurr+1
+                        END IF 
+                    END DO 
+                CASE (7) ! weight
+                    DO ip=1,count
+                        np = np+1
+                        IF (mask(np)) THEN 
+                            arr(ncurr+1) = curr_tile%pid(ip,wpid)
+                            ncurr = ncurr+1
+                        END IF 
+                    END DO 
+                END SELECT 
+              ENDIF 
+          END DO
+      END DO
+  END DO!END LOOP ON TILES
+
+  END SUBROUTINE concatenate_particle_variable
+
+ ! -- This subroutine writes a particle array property (e.g x, y,z, px etc.) 
+ ! -- in the file  of file handler fh. The array is appended at offset (in bytes) in fh 
+  SUBROUTINE write_particle_variable(fh, array, narr, mpitype, err, offset)
+    INTEGER(isp), INTENT(IN) :: fh
+    INTEGER(idp), INTENT(IN) :: narr
+    REAL(num), DIMENSION(narr), INTENT(IN) :: array
+    INTEGER(idp), INTENT(IN) :: offset
+    INTEGER(isp), INTENT(IN) :: mpitype
+    INTEGER(isp), INTENT(INOUT) :: err
+    
+    !CALL MPI_FILE_OPEN(comm, TRIM(filename), MPI_MODE_CREATE + MPI_MODE_WRONLY, &
+    !MPI_INFO_NULL, fh, err)
+    
+    CALL MPI_FILE_SET_VIEW(fh, offset, MPI_BYTE, mpitype, 'native', &
+    MPI_INFO_NULL, err)
+    
+    CALL MPI_FILE_WRITE_ALL(fh, array, INT(narr,isp), mpitype, MPI_STATUS_IGNORE, err)
+    
+  END SUBROUTINE write_particle_variable
+
 
   SUBROUTINE output_time_statistics
   ! ______________________________________________________

@@ -17,39 +17,36 @@ MODULE mpi_routines
 
 CONTAINS
 
-! SUBROUTINE mpi_minimal_init()
-!     LOGICAL(isp) :: isinitialized
-! 	  INTEGER(isp) :: nproc_comm, rank_in_comm
-! 	
-! 	  !print*,'start mpi_minimal_init()'
-! 	  !print*,'MPI_INITIALIZED'
-!     CALL MPI_INITIALIZED(isinitialized,errcode)
-!     IF (.NOT. isinitialized) THEN
-!       !print*, 'MPI_INIT_THREAD'
-!       !CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
-!       CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE,provided,errcode)
-! 
-!     ENDIF
-!     !print*,'MPI_COMM_DUP'
-!     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
-!     !print*,'MPI_COMM_SIZE'
-!     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
-!     nproc=INT(nproc_comm,idp)
-!     !print*,'MPI_COMM_RANK'
-!     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-! 	  rank=INT(rank_in_comm,idp)	  	  
-! 	  !print*, 'end mpi_minimal_init'
-!   END SUBROUTINE mpi_minimal_init
+SUBROUTINE mpi_minimal_init()
+    LOGICAL(isp) :: isinitialized
+	  INTEGER(isp) :: nproc_comm, rank_in_comm
+	
+	  !print*,'start mpi_minimal_init()'
+	  !print*,'MPI_INITIALIZED'
+    CALL MPI_INITIALIZED(isinitialized,errcode)
+    IF (.NOT. isinitialized) THEN
+      !print*, 'MPI_INIT_THREAD'
+      CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
+      !CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE,provided,errcode)
+    ENDIF
+    !print*,'MPI_COMM_DUP'
+    CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+    !print*,'MPI_COMM_SIZE'
+    CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
+    nproc=INT(nproc_comm,idp)
+    !print*,'MPI_COMM_RANK'
+    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+	  rank=INT(rank_in_comm,idp)	  	  
+	  !print*, 'end mpi_minimal_init'
+  END SUBROUTINE mpi_minimal_init
 
-
-  SUBROUTINE mpi_minimal_init(comm_in)
-  LOGICAL(isp) :: isinitialized
+  SUBROUTINE mpi_minimal_init_python(comm_in)
+    LOGICAL(isp) :: isinitialized
 	INTEGER(isp) :: nproc_comm, rank_in_comm
 	INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in 
 	
     CALL MPI_INITIALIZED(isinitialized,errcode)
     IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
-    !IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE,provided,errcode)    
     IF (present(comm_in) .AND. comm_in .GE. 0) THEN 
     	CALL MPI_COMM_DUP(INT(comm_in,isp), comm, errcode)    	
     ELSE
@@ -61,9 +58,7 @@ CONTAINS
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
 	rank=INT(rank_in_comm,idp)	  	  
 
-  END SUBROUTINE mpi_minimal_init
-
-
+  END SUBROUTINE mpi_minimal_init_python
 
   SUBROUTINE setup_communicator
 
@@ -377,14 +372,14 @@ CONTAINS
       CALL MPI_BARRIER(comm,errcode)
       new_rank = rank     
       !new_rank_array(old_rank) = rank
-      IF (new_rank.NE.old_rank) WRITE(0,'(A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
-      WRITE(0,'(X,A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
+      !IF (new_rank.NE.old_rank) WRITE(0,'(A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
+      !WRITE(0,'(X,A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
       ! We first fill the x direction, then y and finally z
       x_coords = MOD(rank,nprocx)
       y_coords = MOD((rank-x_coords)/nprocx,nprocy)
       z_coords = (rank-x_coords - y_coords*nprocx)/(nprocx*nprocy)
-      WRITE(0,'(X,A30,3(X,I5))') 'Coordinates from MPI_CART_COORDS:',coordinates(1:3)
-      WRITE(0,'(X,A30,3(X,I5))') 'Theoretical coordinates:',z_coords,y_coords,x_coords
+      !WRITE(0,'(X,A30,3(X,I5))') 'Coordinates from MPI_CART_COORDS:',coordinates(1:3)
+      !WRITE(0,'(X,A30,3(X,I5))') 'Theoretical coordinates:',z_coords,y_coords,x_coords
       CALL MPI_BARRIER(comm,errcode)
       ! -------------------------------------------------------------
 
