@@ -1,4 +1,4 @@
-MDULE diagnostics
+MODULE diagnostics
 !!!! --- This module contains useful diagnostics to test code correctness
     USE constants
     IMPLICIT NONE

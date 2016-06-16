@@ -22,13 +22,14 @@ CONTAINS
 #endif
         
         WRITE(strtemp,'(I5)') it
-        
+        PRINT *, it, "I AM HERE", output_frequency, output_step_min, output_step_max
         IF (output_frequency .GE. 1) THEN
         tmptime = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
             !!! --- Write output to disk
             !! -- Write grid quantities
+            PRINT *, it, "HELLO THERE"
             IF (c_output_ex .EQ. 1) THEN
                 ! - Write current density ex
 #if (DEBUG==9)
@@ -393,7 +394,7 @@ CONTAINS
     DEALLOCATE(arr, mask)
     
     CALL MPI_FILE_CLOSE(fh, errcode)
-    tottime = tmptime-MPI_WTIME()
+    tottime = MPI_WTIME()-tmptime
   END DO ! END LOOP ON SPECIES 
 
   IF (rank .EQ. 0) PRINT *, "Total part dump time ", tottime, "(s)"
