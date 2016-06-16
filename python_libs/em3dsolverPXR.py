@@ -55,6 +55,8 @@ class EM3DPXR(EM3DFFT):
                       'mpicom_curr':0,   # Com type Current deposition
                       'fieldgave':0,     # Field gathering method
                       'partcom':0,       # Particle communication
+                      'lvec_curr_depo':8,
+                      'lvec_charge_depo':64,                      
                       'sorting':None
                       }
 
@@ -307,7 +309,11 @@ class EM3DPXR(EM3DFFT):
         pxr.fieldgave=self.fieldgave
         # Particle communication
         pxr.partcom=self.partcom
-
+        
+        # lvec size for the current deposition
+        pxr.lvec_curr_depo = self.lvec_curr_depo
+        # lvec size for the charge deposition
+        pxr.lvec_charge_depo = self.lvec_charge_depo
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
@@ -500,6 +506,7 @@ class EM3DPXR(EM3DFFT):
                     self.fields.Ex_inz*=-1.
                     self.fields.Ey_inz*=-1.
             if self.l_verbose:print 'push_e',self,dt,top.it,self.icycle
+            
             if self.l_pxr:
                 f=self.fields
                 l_pushe=False
@@ -939,7 +946,7 @@ class EM3DPXR(EM3DFFT):
 
     def onestep(self,l_first,l_last):
 
-        # --- Iterationnumber
+        # --- Iteration number
         pxr.it = top.it
 
         # --- call beforestep functions
@@ -1000,7 +1007,7 @@ class EM3DPXR(EM3DFFT):
                         particleboundaries3d(pg,-1,False)
         # --- Particle sorting
         if l_pxr: 
-          if ((self.sorting.activated)and(top.it>0)):   
+          if ((self.sorting.activated)and(top.it>=0)):   
             pxr.particle_sorting_sub() 
 
         # --- call beforeloadrho functions
@@ -1808,14 +1815,31 @@ class EM3DPXR(EM3DFFT):
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
 			# Depose currents in PXR 
-             pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
-             pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
+
+             if pxr.c_dim == 2:
+           
+               pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
+               pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
+             
+             elif pxr.c_dim ==3:
+			
+               pxr.jx = self.fields.Jx
+               pxr.jy = self.fields.Jy
+               pxr.jz = self.fields.Jz
+               pxr.pxrdepose_currents_on_grid_jxjyjz()
+             
 			# Depose charge density in PXR if required 
              if self.l_getrho : # Depose Rho in PXR 
                if pxr.c_dim == 2:
+               
 				         pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)	
+               
                elif pxr.c_dim ==3:
-				         pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
+               
+                 pxr.rho = self.fields.Rho
+                 pxr.pxrdepose_rho_on_grid()
+               
+				         #pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
              if self.current_cor: # Depose Rhoold_local in PXR 
                  pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rhoold_local,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,1)
              tend=MPI.Wtime()

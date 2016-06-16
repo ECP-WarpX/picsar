@@ -1099,7 +1099,8 @@ END SUBROUTINE charge_bcs
     tmptime = MPI_WTIME()
     tdeb=MPI_WTIME()
     
-    
+    ! ___________________________________________
+    ! OpenMP and MPI exchanges are done separately
     IF (partcom.eq.1) THEN
     
     ! First exchange particles between tiles (NO MPI at that point)
@@ -1153,6 +1154,7 @@ END SUBROUTINE charge_bcs
 
     localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
     
+    ! _____________________________________________
     ! Tile and MPI com in one
     ! Default
     ELSE

@@ -308,9 +308,9 @@ def test_langmuir_wave():
   # initializes main field solver block
   #-------------------------------------------------------------------------------
   if l_pxr:
-      ntilex =  4#max(1,w3d.nxlocal/10)
-      ntiley = 4#max(1,w3d.nylocal/10)
-      ntilez =4 #max(1,w3d.nzlocal/10)
+      ntilex = max(1,w3d.nxlocal/10)
+      ntiley = max(1,w3d.nylocal/10)
+      ntilez = max(1,w3d.nzlocal/10)
   #    pg.sw=0.
       print ' em=EM3DPXR'
       em = EM3DPXR(laser_func=laser_func,

@@ -113,7 +113,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1    
+    END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1  
+      
     SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
@@ -125,6 +126,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
     END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2  
+    
     SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
@@ -323,6 +325,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/no tiling
+  
   
   IF (currdepo.EQ.5) THEN
 
@@ -1467,7 +1470,8 @@ INTERFACE
   END SUBROUTINE
 
 END INTERFACE
-
+  
+  
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
@@ -1690,14 +1694,14 @@ dep_curr_time=dep_curr_time+(tend-tdeb)
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 
 
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 !===============================================================================
 ! Deposit current in each tile with Esirkepov method
 ! This subroutine is called from Python and does not have interface arguments 
 ! OpenMP version. Avoids conflict while reducing tile currents in the global 
 ! current array. 
 !===============================================================================
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 USE particles
 USE constants
 USE tiling
@@ -1705,21 +1709,21 @@ USE omp_lib
 USE timing
 USE time_stat
 IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+INTEGER(idp), INTENT(IN)        :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+INTEGER(idp), INTENT(IN)        :: noxx,noyy,nozz
+REAL(num), INTENT(IN)           :: dxx,dyy,dzz, dtt
+REAL(num), INTENT(IN OUT)       :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), INTENT(IN OUT)       :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+REAL(num), INTENT(IN OUT)       :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+INTEGER(idp)                    :: ispecies, ix, iy, iz, count
+INTEGER(idp)                    :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp)                    :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
 TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-TYPE(grid_tile), POINTER :: currg
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-LOGICAL(idp) :: isdeposited=.FALSE.
+TYPE(particle_tile), POINTER    :: curr_tile
+TYPE(grid_tile), POINTER        :: currg
+REAL(num)                       :: tdeb, tend
+INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+LOGICAL(idp)                    :: isdeposited=.FALSE.
 
 
 tdeb=MPI_WTIME()
