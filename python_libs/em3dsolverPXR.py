@@ -321,6 +321,7 @@ class EM3DPXR(EM3DFFT):
         pxr.sorting_shiftx = self.sorting.xshift      
         pxr.sorting_shifty = self.sorting.yshift  
         pxr.sorting_shiftz = self.sorting.zshift  
+        pxr.sorting_verbose = self.sorting.verbose
                         
         # --- species section
         pxr.nspecies_max=top.pgroup.ns
@@ -938,6 +939,9 @@ class EM3DPXR(EM3DFFT):
 
     def onestep(self,l_first,l_last):
 
+        # --- Iterationnumber
+        pxr.it = top.it
+
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
         top.zgrid+=top.vbeamfrm*top.dt
@@ -996,7 +1000,7 @@ class EM3DPXR(EM3DFFT):
                         particleboundaries3d(pg,-1,False)
         # --- Particle sorting
         if l_pxr: 
-          if ((self.sorting.activated)and(top.it>0)):        
+          if ((self.sorting.activated)and(top.it>0)):   
             pxr.particle_sorting_sub() 
 
         # --- call beforeloadrho functions
@@ -2228,7 +2232,7 @@ class Sorting:
     xshift,yshift,zshift: shift of the sorting grid
   
   """
-  def __init__(self,periods,starts,activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0):
+  def __init__(self,periods,starts,activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0,verbose=False):
     self.activated = activated
     self.periods = periods
     self.starts = starts
@@ -2238,5 +2242,6 @@ class Sorting:
     self.xshift = xshift
     self.yshift = yshift
     self.zshift = zshift
+    self.verbose = verbose
 
 

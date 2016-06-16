@@ -67,7 +67,6 @@ MODULE sorting
     REAL(num) :: sxmin,symin,szmin
     REAL(num) :: tdeb, tend
     
-    
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank, &
     !$OMP sorting_shiftx,sorting_shifty,sorting_shiftz,sorting_dx,sorting_dy,sorting_dz,sorting_verbose) &
@@ -104,11 +103,11 @@ MODULE sorting
 				    DO ispecies=1, nspecies
 
 					    curr=>species_parray(ispecies)
-
 				      
 				      ! If the sorting period > 0 and the current iteration corresponds to a multiple of the period
 				      IF ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
 
+              
                 IF ((sorting_verbose).and.(rank.eq.0).and. &
                     (iz.eq.1).and.(iy.eq.1).and.(ix.eq.1)) WRITE(0,*) 'Particle sorting, species',ispecies
  
