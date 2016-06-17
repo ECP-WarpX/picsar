@@ -23,7 +23,7 @@ CONTAINS
 #endif
         
         WRITE(strtemp,'(I5)') it
-        PRINT *, it, "I AM HERE", output_frequency, output_step_min, output_step_max
+
         IF (output_frequency .GE. 1) THEN
         tmptime = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
@@ -144,7 +144,7 @@ CONTAINS
         tmptime=MPI_WTIME()-tmptime
         IF (rank .EQ. 0) PRINT *, "Part dump in ", tmptime, "(s) "
         
-        !!! --- Output temproral diagnostics
+        !!! --- Output temporal diagnostics
         CALL output_temporal_diagnostics
         
         !!! --- Output time statistics
