@@ -23,13 +23,14 @@ CONTAINS
 #endif
         
         WRITE(strtemp,'(I5)') it
-        
+        PRINT *, it, "I AM HERE", output_frequency, output_step_min, output_step_max
         IF (output_frequency .GE. 1) THEN
         tmptime = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
             !!! --- Write output to disk
             !! -- Write grid quantities
+            PRINT *, it, "HELLO THERE"
             IF (c_output_ex .EQ. 1) THEN
                 ! - Write current density ex
 
@@ -132,15 +133,16 @@ CONTAINS
             ENDIF
             
             ENDIF
-          localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
-            
+          localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime) 
+          tmptime = MPI_WTIME() - tmptime
+          IF (rank .EQ. 0) PRINT *, "Fields dump in ", tmptime, " (s)"
         ENDIF
         
         !!! --- Write particle diags
         tmptime=MPI_WTIME()
         CALL write_particles_to_file(strtemp, it)
         tmptime=MPI_WTIME()-tmptime
-        IF (rank .EQ. 0) PRINT *, "time io part", tmptime
+        IF (rank .EQ. 0) PRINT *, "Part dump in ", tmptime, "(s) "
         
         !!! --- Output temproral diagnostics
         CALL output_temporal_diagnostics
@@ -391,13 +393,14 @@ CONTAINS
   INTEGER(idp) :: offset 
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER :: dp 
-  
+  REAL(num) :: tmptime, tottime
+
+  tottime = 0_num  
   DO idump = 1, npdumps
     ! POINT TOWARDS CURRENT SPECIES 
     dp => particle_dumps(idump)
     IF (dp%diag_period .lt.1) CYCLE
     IF (MOD(step,dp%diag_period) .NE. 0) CYCLE
-    
     curr => species_parray(dp%ispecies)
     narr = curr%species_npart
     
@@ -407,6 +410,7 @@ CONTAINS
         
     CALL MPI_ALLREDUCE(ndump,ncurr,1_isp, MPI_INTEGER8, MPI_SUM, comm, errcode)
     
+    tmptime = MPI_WTIME()
     ! OPENING INPUT FILE 
     CALL MPI_FILE_OPEN(comm, TRIM('./RESULTS/'//TRIM(ADJUSTL(curr%name))//'_it_'// &
     TRIM(ADJUSTL(it))),MPI_MODE_CREATE + MPI_MODE_WRONLY, MPI_INFO_NULL, fh, errcode) 
@@ -450,7 +454,10 @@ CONTAINS
     DEALLOCATE(arr, mask)
     
     CALL MPI_FILE_CLOSE(fh, errcode)
+    tottime = MPI_WTIME()-tmptime
   END DO ! END LOOP ON SPECIES 
+
+  IF (rank .EQ. 0) PRINT *, "Total part dump time ", tottime, "(s)"
   END SUBROUTINE write_particles_to_file
 
   SUBROUTINE get_particles_to_dump(idump,mask,narr,ndump) 
