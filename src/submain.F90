@@ -31,7 +31,11 @@ CALL start_collection()
 
 DO i=1,nst
     IF (rank .EQ. 0) startit=MPI_WTIME()
+    
+    !!! --- Init iteration variables
     pushtime=0._num
+    divE_computed = .False.
+    
     !!! --- Field gather & particle push
     !IF (rank .EQ. 0) PRINT *, "#1"
     CALL push_particles

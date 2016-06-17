@@ -18,6 +18,7 @@ import struct
 from PyLoadArrayPicsar import *
 from numpy import linalg as LA
 from subprocess import call
+from Field import *
 
 def test_homogeneous_plasma(trun,ttest,tpath):
   """
@@ -165,18 +166,16 @@ def test_homogeneous_plasma(trun,ttest,tpath):
   
   print ' _________________________________ '
   print ' Check DivE = rho/eps0'
-  if 0: # Temporarily removed due to MPI-IO issues (plateform dependent)
+  if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
       for it in range(0,50,10):
-        dive=LoadBinNumPyArray3D('RESULTS/dive' + str(it) + '.pxr',100,100,100);
-        rho=LoadBinNumPyArray3D('RESULTS/rho'+ str(it) + '.pxr',100,100,100);  
-        norm = LA.norm((dive*eps0-rho)) 
+        dive=Field('RESULTS/dive' + str(it) + '.pxr')
+        rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
+        norm = LA.norm((dive.f*eps0-rho.f)) 
         print
         print(" Differences norme L2 ||rho-divE|| iteration it = " + str(it))
-        print "",LA.norm((dive*eps0-rho))
-        print " Total charge "
-        print "",np.sum(rho)
-        print " Total divergence at "
-        print "",np.sum(dive*eps0)
+        print " Norm(dive.f*eps0-rho.f):",norm
+        print " Total charge:",np.sum(rho.f)
+        print " Total divergence:",np.sum(dive.f*eps0)
         if ttest: assert (norm < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
 
   if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"

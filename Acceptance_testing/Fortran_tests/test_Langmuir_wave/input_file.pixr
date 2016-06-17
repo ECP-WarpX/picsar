@@ -75,7 +75,7 @@ section::plasma
  # Maxwell solver
  nlab=1.1e25
  gamma0=1.
- pdistr=2
+ pdistr=1
 end::plasma
 
 section::sorting
@@ -137,7 +137,7 @@ end::species
 
 section::output
  output_frequency = 10
- output_step_min  = 1000
+ output_step_min  = 0
  output_step_max  = 1000
  ex = 1
  ey = 1

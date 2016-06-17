@@ -62,6 +62,11 @@ section::solver
  # 0 - Optimized functions (default)
  # 1 - non-optimized functions
  fieldgave = 0
+
+ # Type of particle communication
+ # 0 - Combined MPI/Tile communications
+ # 1 - Seperated MPI/Tile communications
+ partcom = 0
  
 end::solver
 
@@ -101,8 +106,8 @@ section::species
  vth_x = 0.1
  vth_y = 0.1
  vth_z = 0.1
- sorting_period=5  
- sorting_start=5
+ sorting_period=10  
+ sorting_start=0
 end::species
 
 section::species
@@ -124,13 +129,13 @@ section::species
  vth_x = 0.001
  vth_y = 0.001
  vth_z = 0.001
- sorting_period=5  
- sorting_start=5
+ sorting_period=10  
+ sorting_start=0
 end::species
 
 section::output
  output_frequency = 10
- output_step_min  = 1000
+ output_step_min  = 0
  output_step_max  = 1000
  ex = 1
  ey = 1

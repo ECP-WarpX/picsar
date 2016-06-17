@@ -21,6 +21,7 @@ from PyLoadArrayPicsar import *
 from numpy import linalg as LA
 from subprocess import call
 import pytest
+from Field import *
 
 def help():
     print ' Help:'
@@ -202,18 +203,18 @@ def test_langmuir_wave(trun,ttest,tpath):
   
   ax1.set_xlabel('t (s)')
 
-  if 0: # Temporarily removed due to MPI-IO issues (plateform dependent)
+  if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
       for it in range(0,70,10):
-        dive=LoadBinNumPyArray3D('RESULTS/dive' + str(it) + '.pxr',100,100,100);
-        rho=LoadBinNumPyArray3D('RESULTS/rho'+ str(it) + '.pxr',100,100,100);  
-        norm = LA.norm((dive*eps0-rho)) 
+        dive=Field('RESULTS/dive' + str(it) + '.pxr')
+        rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
+        norm = LA.norm((dive.f*eps0-rho.f)) 
         print
         print(" Differences L2 norm ||rho-divE|| iteration it = " + str(it))
-        print "",LA.norm((dive*eps0-rho))
+        print "",LA.norm((dive.f*eps0-rho.f))
         print " Total charge "
-        print "",np.sum(rho)
+        print "",np.sum(rho.f)
         print " Total divergence"
-        print "",np.sum(dive*eps0)
+        print "",np.sum(dive.f*eps0)
   if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
 
   # ____________________________________________________

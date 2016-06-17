@@ -183,7 +183,7 @@ section::species
 end::species
 
 section::species
- name = electron_y
+ name = electron_x
  mass = 1
  charge = -1
  nppcell = 3
@@ -194,9 +194,9 @@ section::species
  y_max = 1e-6
  z_max = 1e-6
  ! Drift velocity (in clight)
- vdrift_x = 0.
+ vdrift_x = 0.9
  vdrift_y = 0.
- vdrift_z = 0.9
+ vdrift_z = 0.
  ! Thermal velocity (in clight)
  vth_x = 0.0
  vth_y = 0.0
@@ -205,7 +205,7 @@ section::species
 end::species
 
 section::species
- name = positron_y
+ name = positron_x
  mass = 1
  charge = 1
  nppcell = 3
@@ -216,9 +216,9 @@ section::species
  y_max = 1e-6
  z_max = 1e-6
  ! Drift velocity (in clight)
- vdrift_x = 0.
+ vdrift_x = 0.9
  vdrift_y = 0.
- vdrift_z = 0.9
+ vdrift_z = 0.
  ! Thermal velocity (in clight)
  vth_x = 0.
  vth_y = 0.
@@ -235,6 +235,7 @@ section::output
  ez = 1
  rho = 1
  dive = 1
+ jx = 1
  jy = 1
  jz = 1
 end::output

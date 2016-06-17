@@ -375,6 +375,8 @@ INTEGER(idp) :: temdiag_frequency
 INTEGER(idp) :: temdiag_format
 REAL(num), dimension(:),allocatable :: temdiag_array             ! Big array containing all the temporal diag at a given iteration
 
+! Computation flags
+LOGICAL      :: divE_computed
 
 INTEGER(idp) :: npdumps
 TYPE particle_dump
@@ -420,12 +422,12 @@ INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
 INTEGER(isp) :: nprocdir(3)
 INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
 ! Boundary data
-LOGICAL(idp) :: x_min_boundary, x_max_boundary
-LOGICAL(idp) :: y_min_boundary, y_max_boundary
-LOGICAL(idp) :: z_min_boundary, z_max_boundary
-INTEGER(idp) :: pbound_x_min, pbound_x_max
-INTEGER(idp) :: pbound_y_min, pbound_y_max
-INTEGER(idp) :: pbound_z_min, pbound_z_max
+LOGICAL(idp)                        :: x_min_boundary, x_max_boundary
+LOGICAL(idp)                        :: y_min_boundary, y_max_boundary
+LOGICAL(idp)                        :: z_min_boundary, z_max_boundary
+INTEGER(idp)                        :: pbound_x_min, pbound_x_max
+INTEGER(idp)                        :: pbound_y_min, pbound_y_max
+INTEGER(idp)                        :: pbound_z_min, pbound_z_max
 
 ! The location of the processors
 INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
@@ -434,27 +436,27 @@ INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_max
 INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min, new_cell_x_max
 INTEGER(idp), DIMENSION(:), POINTER :: new_cell_y_min, new_cell_y_max
 INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min, new_cell_z_max
-INTEGER(idp) :: nx_global_grid_min, nx_global_grid_max
-INTEGER(idp) :: ny_global_grid_min, ny_global_grid_max
-INTEGER(idp) :: nz_global_grid_min, nz_global_grid_max
+INTEGER(idp)                        :: nx_global_grid_min, nx_global_grid_max
+INTEGER(idp)                        :: ny_global_grid_min, ny_global_grid_max
+INTEGER(idp)                        :: nz_global_grid_min, nz_global_grid_max
 ! Domain axis 
-LOGICAL(idp) :: l_axis_allocated=.FALSE.
-REAL(num), DIMENSION(:), POINTER :: x_global, y_global, z_global
-REAL(num), DIMENSION(:), POINTER :: xb_global, yb_global, zb_global
-REAL(num), DIMENSION(:), POINTER :: xb_offset_global
-REAL(num), DIMENSION(:), POINTER :: yb_offset_global
-REAL(num), DIMENSION(:), POINTER :: zb_offset_global
+LOGICAL(idp)                        :: l_axis_allocated=.FALSE.
+REAL(num), DIMENSION(:), POINTER    :: x_global, y_global, z_global
+REAL(num), DIMENSION(:), POINTER    :: xb_global, yb_global, zb_global
+REAL(num), DIMENSION(:), POINTER    :: xb_offset_global
+REAL(num), DIMENSION(:), POINTER    :: yb_offset_global
+REAL(num), DIMENSION(:), POINTER    :: zb_offset_global
 ! domain limits and size
-INTEGER(idp)  :: nx, ny, nz ! local number of cells
-INTEGER(idp)  :: nx_grid, ny_grid, nz_grid                      ! local number of grid points
-INTEGER(idp)  :: nx_global, ny_global, nz_global                ! global number of cells
-INTEGER(idp)  :: nx_global_grid, ny_global_grid, nz_global_grid ! global number of grid points
-REAL(num):: dx, xmin, xmax, length_x
-REAL(num):: x_min_local, x_max_local
-REAL(num):: dy, ymin, ymax,length_y
-REAL(num):: y_min_local, y_max_local
-REAL(num):: dz, zmin, zmax,length_z
-REAL(num):: z_min_local, z_max_local
+INTEGER(idp)                        :: nx, ny, nz ! local number of cells
+INTEGER(idp)                        :: nx_grid, ny_grid, nz_grid ! local number of grid points
+INTEGER(idp)                        :: nx_global, ny_global, nz_global ! global number of cells
+INTEGER(idp)                        :: nx_global_grid, ny_global_grid, nz_global_grid ! global number of grid points
+REAL(num)                           :: dx, xmin, xmax, length_x
+REAL(num)                           :: x_min_local, x_max_local
+REAL(num)                           :: dy, ymin, ymax,length_y
+REAL(num)                           :: y_min_local, y_max_local
+REAL(num)                           :: dz, zmin, zmax,length_z
+REAL(num)                           :: z_min_local, z_max_local
 
 ! Sorting
 INTEGER(idp) :: sorting_activated                   ! Activation of soting

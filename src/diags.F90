@@ -30,12 +30,14 @@ CONTAINS
      
 
         ! - Computes electric field divergence on grid at n+1
-        IF (.FALSE.) THEN
+        IF (.False.) THEN
         
           tmptime = MPI_WTIME()   
         
-          dive=0.0_num
-          CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+          IF (.not.(divE_computed))  then
+            CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+            divE_computed = .true.
+          ENDIF
 
           ! Get the total number of particles
           !CALL get_tot_number_of_particles(ntot)

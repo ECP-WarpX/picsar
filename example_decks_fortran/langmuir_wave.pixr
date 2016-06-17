@@ -75,7 +75,7 @@ section::plasma
  # Maxwell solver
  nlab=1.1e25
  gamma0=1.
- pdistr=2
+ pdistr=1
 end::plasma
 
 section::sorting
@@ -108,8 +108,8 @@ section::species
  vth_x = 0.0
  vth_y = 0.0
  vth_z = 0.0
- sorting_period=10
- sorting_start=10
+ sorting_period=20
+ sorting_start=20
 end::species
 
 section::species
@@ -131,13 +131,13 @@ section::species
  vth_x = 0.
  vth_y = 0.
  vth_z = 0.
- sorting_period=10
- sorting_start=10
+ sorting_period=20
+ sorting_start=20
 end::species
 
 section::output
  output_frequency = 10
- output_step_min  = 1000
+ output_step_min  = 0
  output_step_max  = 1000
  ex = 1
  ey = 1
