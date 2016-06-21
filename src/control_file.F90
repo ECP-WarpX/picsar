@@ -669,7 +669,7 @@ CONTAINS
                     ENDIF 
                 END DO
                 IF (dp%ispecies .EQ. -1) THEN 
-                    WRITE(0,*), "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
+                    WRITE(0,*) "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
                 ENDIF
             ELSE IF (INDEX(buffer,'dump_y_min') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
