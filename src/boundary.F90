@@ -1499,7 +1499,7 @@ END SUBROUTINE charge_bcs
 	
 	IF (nthreads_tot .GT. 1) THEN 
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
-		nthreads_loop2=MAX(1,nthreads_tot/nthreads_loop1)
+		nthreads_loop2=MAX(1_idp,nthreads_tot/nthreads_loop1)
 	ELSE 
 		nthreads_loop1=1
 		nthreads_loop2=1
@@ -1596,9 +1596,9 @@ END SUBROUTINE charge_bcs
 									
 									ENDIF
 
-									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx))+1,ntilex)
-									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy))+1,ntiley)
-									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz))+1,ntilez)
+									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
+									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 
                   ! Direction of the particle
 									dirx = indx - ix
@@ -2278,7 +2278,7 @@ END SUBROUTINE charge_bcs
 	
 	IF (nthreads_tot .GT. 1) THEN 
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
-		nthreads_loop2=MAX(1,nthreads_tot/nthreads_loop1)
+		nthreads_loop2=MAX(1_idp,nthreads_tot/nthreads_loop1)
 	ELSE 
 		nthreads_loop1=1
 		nthreads_loop2=1
@@ -2495,9 +2495,9 @@ END SUBROUTINE charge_bcs
 
 									! Case 3: particles changed tile. Tranfer particle to new tile
 									! Get new indexes of particle in array of tiles
-									indx = MIN(FLOOR((partx-x_min_local+dxs2)*(nx0_grid_tile_dx))+1,ntilex)
-									indy = MIN(FLOOR((party-y_min_local+dys2)*(ny0_grid_tile_dy))+1,ntiley)
-									indz = MIN(FLOOR((partz-z_min_local+dzs2)*(nz0_grid_tile_dz))+1,ntilez)
+									indx = MIN(FLOOR((partx-x_min_local+dxs2)*(nx0_grid_tile_dx),idp)+1,ntilex)
+									indy = MIN(FLOOR((party-y_min_local+dys2)*(ny0_grid_tile_dy),idp)+1,ntiley)
+									indz = MIN(FLOOR((partz-z_min_local+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
 									!if ((indx.eq.0).or.(indy.eq.0).or.(indz.eq.0)) THEN
                    !print*,'xmin',x_min_local,'xmax',x_max_local,'x',partx,xbd
                    !print*,'ymin',y_min_local,'ymax',y_max_local,'y',party,ybd
@@ -2913,9 +2913,9 @@ END SUBROUTINE charge_bcs
         DO i = 1,nrecv_buf_tot
 
         ! Get particle index in array of tile
-		    indx = MIN(FLOOR((recvbuf(i,1)-x_min_local+dxs2)*(nx0_grid_tile_dx))+1,ntilex)
-		    indy = MIN(FLOOR((recvbuf(i,2)-y_min_local+dys2)*(ny0_grid_tile_dy))+1,ntiley)
-		    indz = MIN(FLOOR((recvbuf(i,3)-z_min_local+dzs2)*(nz0_grid_tile_dz))+1,ntilez)
+		    indx = MIN(FLOOR((recvbuf(i,1)-x_min_local+dxs2)*(nx0_grid_tile_dx),idp)+1,ntilex)
+		    indy = MIN(FLOOR((recvbuf(i,2)-y_min_local+dys2)*(ny0_grid_tile_dy),idp)+1,ntiley)
+		    indz = MIN(FLOOR((recvbuf(i,3)-z_min_local+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
 		    
 ! 				IF (((recvbuf(i,1) .LT. x_min_local) .OR. (recvbuf(i,1) .GE. x_max_local)) .OR. &
 ! 					 ((recvbuf(i,2) .LT. y_min_local) .OR. (recvbuf(i,2) .GE. y_max_local)) .OR. &
