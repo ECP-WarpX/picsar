@@ -8,9 +8,6 @@
 ! - gete3d_energy_conserving_1_1_1
 ! - getb3d_energy_conserving_1_1_1
 ! 
-! - gete3d_energy_conserving_1_1_1_2
-! - getb3d_energy_conserving_1_1_1_2
-! 
 ! - gete3d_energy_conserving_2_2_2
 ! - getb3d_energy_conserving_2_2_2
 ! 
@@ -148,7 +145,17 @@ sy0=0.0_num
 sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
-!OMP SIMD reduction(+:ex,+:ey,+:ez)
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif
 DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi
@@ -256,7 +263,17 @@ sy0=0.0_num
 sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
-!OMP SIMD reduction(+:bx,+:by,+:bz)
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif
 DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi
@@ -327,289 +344,6 @@ DEALLOCATE(sx0,sz0)
 RETURN
 END SUBROUTINE getb3d_energy_conserving_1_1_1
 
-!=================================================================================
-! Gathering of electric field from Yee grid ("energy conserving") on particles
-! at order 1
-SUBROUTINE gete3d_energy_conserving_1_1_1_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg)
-!=================================================================================
-
-USE omp_lib
-USE constants
-IMPLICIT NONE
-INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-REAL(num), DIMENSION(np) :: xp,yp,zp,ex,ey,ez
-REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-INTEGER(idp) :: ip,i, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-REAL(num), DIMENSION(0:1) :: sx
-REAL(num), DIMENSION(0:1) :: sy
-REAL(num), DIMENSION(0:1) :: sz
-REAL(num), DIMENSION(:), ALLOCATABLE :: sx0,sy0,sz0
-REAL(num), DIMENSION(8) :: vecttmp
-REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
-ALLOCATE(sx0(0:1),sy0(0:1),sz0(0:1))
-sx=0.0_num
-sy=0.0_num
-sz=0.0_num
-sx0=0.0_num
-sy0=0.0_num
-sz0=0.0_num
-!!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
-!!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
-!!$OMP SIMD reduction(+:ex,ey,ez)
-DO ip=1,np
-    
-    x = (xp(ip)-xmin)*dxi
-    y = (yp(ip)-ymin)*dyi
-    z = (zp(ip)-zmin)*dzi
-    
-    ! Compute index of particle
-    j=floor(x)
-    j0=floor(x-0.5_num)
-    k=floor(y)
-    k0=floor(y-0.5_num)
-    l=floor(z)
-    l0=floor(z-0.5_num)
-    xint=x-j
-    yint=y-k
-    zint=z-l
-    
-    ! Compute shape factors
-    sx( 0) = 1.0_num-xint
-    sx( 1) = xint
-    sy( 0) = 1.0_num-yint
-    sy( 1) = yint
-    sz( 0) = 1.0_num-zint
-    sz( 1) = zint
-    xint=x-0.5_num-j0
-    yint=y-0.5_num-k0
-    zint=z-0.5_num-l0
-    sx0( 0) = 1.0_num-xint
-    sx0( 1) = xint
-    sy0( 0) = 1.0_num-yint
-    sy0( 1) = yint
-    sz0( 0) = 1.0_num-zint
-    sz0( 1) = zint
-
-    ! Compute Ex on particle    
-    vecttmp(1) = sx(0)*sy0(0)*sz0(0)*exg(j0,k,l)
-    vecttmp(2) = sx(1)*sy0(0)*sz0(0)*exg(j0+1,k,l)
-    vecttmp(3) = sx(0)*sy0(1)*sz0(0)*exg(j0,k+1,l)
-    vecttmp(4) = sx(1)*sy0(1)*sz0(0)*exg(j0+1,k+1,l)
-    vecttmp(5) = sx(0)*sy0(0)*sz0(1)*exg(j0,k,l+1)
-    vecttmp(6) = sx(1)*sy0(0)*sz0(1)*exg(j0+1,k,l+1)
-    vecttmp(7) = sx(0)*sy0(1)*sz0(1)*exg(j0,k+1,l+1)
-    vecttmp(8) = sx(1)*sy0(1)*sz0(1)*exg(j0+1,k+1,l+1)
-    
-    vecttmp(1) = vecttmp(1) + vecttmp(5)
-    vecttmp(2) = vecttmp(2) + vecttmp(6)    
-    vecttmp(3) = vecttmp(3) + vecttmp(7)    
-    vecttmp(4) = vecttmp(4) + vecttmp(8)    
-    vecttmp(1) = vecttmp(1) + vecttmp(3) 
-    vecttmp(2) = vecttmp(2) + vecttmp(4)    
-    ex(ip) = vecttmp(1) + vecttmp(2)
-    
-    !Do i=1,8
-    !  ex(ip) = ex(ip) + vecttmp(i)
-    !end do
-       
-    ! Compute Ey on particle
-    vecttmp(1) = sx0(0)*sy(0)*sz0(0)*eyg(j,k0,l)
-    vecttmp(2) = sx0(1)*sy(0)*sz0(0)*eyg(j+1,k0,l)
-    vecttmp(3) = sx0(0)*sy(1)*sz0(0)*eyg(j,k0+1,l)
-    vecttmp(4) = sx0(1)*sy(1)*sz0(0)*eyg(j+1,k0+1,l)
-    vecttmp(5) = sx0(0)*sy(0)*sz0(1)*eyg(j,k0,l+1)
-    vecttmp(6) = sx0(1)*sy(0)*sz0(1)*eyg(j+1,k0,l+1)
-    vecttmp(7) = sx0(0)*sy(1)*sz0(1)*eyg(j,k0+1,l+1)
-    vecttmp(8) = sx0(1)*sy(1)*sz0(1)*eyg(j+1,k0+1,l+1)
-    
-    vecttmp(1) = vecttmp(1) + vecttmp(5)
-    vecttmp(2) = vecttmp(2) + vecttmp(6)    
-    vecttmp(3) = vecttmp(3) + vecttmp(7)    
-    vecttmp(4) = vecttmp(4) + vecttmp(8)         
-    vecttmp(1) = vecttmp(1) + vecttmp(3) 
-    vecttmp(2) = vecttmp(2) + vecttmp(4)  
-    ey(ip) = vecttmp(1) + vecttmp(2)
-    
-    !Do i=1,8
-    !  ey(ip) = ey(ip) + vecttmp(i)
-    !end do    
-    
-    ! Compute Ez on particle
-    vecttmp(1) = sx0(0)*sy0(0)*sz(0)*ezg(j,k,l0)
-    vecttmp(2) = sx0(1)*sy0(0)*sz(0)*ezg(j+1,k,l0)
-    vecttmp(3) = sx0(0)*sy0(1)*sz(0)*ezg(j,k+1,l0)
-    vecttmp(4) = sx0(1)*sy0(1)*sz(0)*ezg(j+1,k+1,l0)
-    vecttmp(5) = sx0(0)*sy0(0)*sz(1)*ezg(j,k,l0+1)
-    vecttmp(6) = sx0(1)*sy0(0)*sz(1)*ezg(j+1,k,l0+1)
-    vecttmp(7) = sx0(0)*sy0(1)*sz(1)*ezg(j,k+1,l0+1)
-    vecttmp(8) = sx0(1)*sy0(1)*sz(1)*ezg(j+1,k+1,l0+1)
-    
-    vecttmp(1) = vecttmp(1) + vecttmp(5)
-    vecttmp(2) = vecttmp(2) + vecttmp(6)    
-    vecttmp(3) = vecttmp(3) + vecttmp(7)    
-    vecttmp(4) = vecttmp(4) + vecttmp(8)        
-    vecttmp(1) = vecttmp(1) + vecttmp(3) 
-    vecttmp(2) = vecttmp(2) + vecttmp(4)  
-    ez(ip) = vecttmp(1) + vecttmp(2)
-
-    !Do i=1,8
-    !  ez(ip) = ez(ip) + vecttmp(i)
-    !end do 
-        
-END DO
-!!$OMP END PARALLEL DO
-DEALLOCATE(sx0,sz0)
-RETURN
-END SUBROUTINE gete3d_energy_conserving_1_1_1_2
-
-!=================================================================================
-! Gathering of Magnetic field from Yee grid ("energy conserving") on particles
-! at order 1
-SUBROUTINE getb3d_energy_conserving_1_1_1_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg)
-!=================================================================================
-
-USE omp_lib
-USE constants
-IMPLICIT NONE
-INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
-REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
-REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-REAL(num), DIMENSION(0:1) :: sx
-REAL(num), DIMENSION(0:1) :: sy
-REAL(num), DIMENSION(0:1) :: sz
-REAL(num), DIMENSION(:), ALLOCATABLE :: sx0,sy0,sz0
-REAL(num), DIMENSION(8) :: vecttmp
-REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
-ALLOCATE(sx0(0:1),sy0(0:1),sz0(0:1))
-sx=0.0_num
-sy=0.0_num
-sz=0.0_num
-sx0=0.0_num
-sy0=0.0_num
-sz0=0.0_num
-!!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
-!!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
-DO ip=1,np
-    
-    x = (xp(ip)-xmin)*dxi
-    y = (yp(ip)-ymin)*dyi
-    z = (zp(ip)-zmin)*dzi
-    
-    ! Compute index of particle
-    j=floor(x)
-    j0=floor(x-0.5_num)
-    k=floor(y)
-    k0=floor(y-0.5_num)
-    l=floor(z)
-    l0=floor(z-0.5_num)
-    
-    ! Compute shape factors
-    xint=x-j
-    yint=y-k
-    zint=z-l    
-    sx( 0) = 1.0_num-xint
-    sx( 1) = xint
-    sy( 0) = 1.0_num-yint
-    sy( 1) = yint
-    sz( 0) = 1.0_num-zint
-    sz( 1) = zint
-    
-    xint=x-0.5_num-j0
-    yint=y-0.5_num-k0
-    zint=z-0.5_num-l0
-    sx0( 0) = 1.0_num-xint
-    sx0( 1) = xint
-    sy0( 0) = 1.0_num-yint
-    sy0( 1) = yint
-    sz0( 0) = 1.0_num-zint
-    sz0( 1) = zint
-    
-    ! Compute Bx on particle
-    vecttmp(1) = sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
-    vecttmp(2) = sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
-    vecttmp(3) = sx(0)*sy0(1)*sz0(0)*bxg(j,k0+1,l0)
-    vecttmp(4) = sx(1)*sy0(1)*sz0(0)*bxg(j+1,k0+1,l0)
-    vecttmp(5) = sx(0)*sy0(0)*sz0(1)*bxg(j,k0,l0+1)
-    vecttmp(6) = sx(1)*sy0(0)*sz0(1)*bxg(j+1,k0,l0+1)
-    vecttmp(7) = sx(0)*sy0(1)*sz0(1)*bxg(j,k0+1,l0+1)
-    vecttmp(8) = sx(1)*sy0(1)*sz0(1)*bxg(j+1,k0+1,l0+1)
-
-    vecttmp(1) = vecttmp(1) + vecttmp(5)
-    vecttmp(2) = vecttmp(2) + vecttmp(6)    
-    vecttmp(3) = vecttmp(3) + vecttmp(7)    
-    vecttmp(4) = vecttmp(4) + vecttmp(8) 
-        
-    vecttmp(1) = vecttmp(1) + vecttmp(3) 
-    vecttmp(2) = vecttmp(2) + vecttmp(4) 
-    
-    bx(ip) = vecttmp(1) + vecttmp(2)
-    
-    ! Compute By on particle
-    vecttmp(1) = sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
-    vecttmp(2) = sx0(1)*sy(0)*sz0(0)*byg(j0+1,k,l0)
-    vecttmp(3) = sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
-    vecttmp(4) = sx0(1)*sy(1)*sz0(0)*byg(j0+1,k+1,l0)
-    vecttmp(5) = sx0(0)*sy(0)*sz0(1)*byg(j0,k,l0+1)
-    vecttmp(6) = sx0(1)*sy(0)*sz0(1)*byg(j0+1,k,l0+1)
-    vecttmp(7) = sx0(0)*sy(1)*sz0(1)*byg(j0,k+1,l0+1)
-    vecttmp(8) = sx0(1)*sy(1)*sz0(1)*byg(j0+1,k+1,l0+1)
-
-    vecttmp(1) = vecttmp(1) + vecttmp(5)
-    vecttmp(2) = vecttmp(2) + vecttmp(6)    
-    vecttmp(3) = vecttmp(3) + vecttmp(7)    
-    vecttmp(4) = vecttmp(4) + vecttmp(8) 
-        
-    vecttmp(1) = vecttmp(1) + vecttmp(3) 
-    vecttmp(2) = vecttmp(2) + vecttmp(4)
-
-    by(ip) = vecttmp(1) + vecttmp(2)
-    
-    ! Compute Bz on particle
-    vecttmp(1) = sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
-    vecttmp(2) = sx0(1)*sy0(0)*sz(0)*bzg(j0+1,k0,l)
-    vecttmp(3) = sx0(0)*sy0(1)*sz(0)*bzg(j0,k0+1,l)
-    vecttmp(4) = sx0(1)*sy0(1)*sz(0)*bzg(j0+1,k0+1,l)
-    vecttmp(5) = sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1)
-    vecttmp(6) = sx0(1)*sy0(0)*sz(1)*bzg(j0+1,k0,l+1)
-    vecttmp(7) = sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
-    vecttmp(8) = sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
-
-    vecttmp(1) = vecttmp(1) + vecttmp(5)
-    vecttmp(2) = vecttmp(2) + vecttmp(6)    
-    vecttmp(3) = vecttmp(3) + vecttmp(7)    
-    vecttmp(4) = vecttmp(4) + vecttmp(8) 
-        
-    vecttmp(1) = vecttmp(1) + vecttmp(3) 
-    vecttmp(2) = vecttmp(2) + vecttmp(4)
-
-    bz(ip) = vecttmp(1) + vecttmp(2)
-    
-END DO
-!!$OMP END PARALLEL DO
-DEALLOCATE(sx0,sz0)
-RETURN
-END SUBROUTINE getb3d_energy_conserving_1_1_1_2
 
 !=================================================================================
 ! Gathering of Magnetic field from Yee grid ("energy conserving") on particles
@@ -646,6 +380,17 @@ SUBROUTINE getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
   sz0=0.0_num
   !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
   !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif  
   DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi
@@ -820,6 +565,17 @@ sy0=0.0_num
 sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif
 DO ip=1,np
   
   x = (xp(ip)-xmin)*dxi
@@ -993,6 +749,17 @@ SUBROUTINE getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
   sz0=0.0_num
   !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
   !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif  
   DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi
@@ -1295,6 +1062,17 @@ sy0=0.0_num
 sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, & 
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif
 DO ip=1,np
     
     x = (xp(ip)-xmin)*dxi

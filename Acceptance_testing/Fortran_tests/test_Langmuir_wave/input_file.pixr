@@ -108,8 +108,8 @@ section::species
  vth_x = 0.0
  vth_y = 0.0
  vth_z = 0.0
- sorting_period=10
- sorting_start=10
+ sorting_period=20
+ sorting_start=20
 end::species
 
 section::species
@@ -131,8 +131,8 @@ section::species
  vth_x = 0.
  vth_y = 0.
  vth_z = 0.
- sorting_period=10
- sorting_start=10
+ sorting_period=20
+ sorting_start=20
 end::species
 
 section::output

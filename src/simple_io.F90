@@ -30,7 +30,6 @@ CONTAINS
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
             !!! --- Write output to disk
             !! -- Write grid quantities
-            PRINT *, it, "HELLO THERE"
             IF (c_output_ex .EQ. 1) THEN
                 ! - Write current density ex
 
@@ -139,10 +138,10 @@ CONTAINS
         ENDIF
         
         !!! --- Write particle diags
-        tmptime=MPI_WTIME()
-        CALL write_particles_to_file(strtemp, it)
-        tmptime=MPI_WTIME()-tmptime
-        IF (rank .EQ. 0) PRINT *, "Part dump in ", tmptime, "(s) "
+        !tmptime=MPI_WTIME()
+        !CALL write_particles_to_file(strtemp, it)
+        !tmptime=MPI_WTIME()-tmptime
+        !IF (rank .EQ. 0) PRINT *, "Part dump in ", tmptime, "(s) "
         
         !!! --- Output temporal diagnostics
         CALL output_temporal_diagnostics
@@ -155,7 +154,6 @@ CONTAINS
 #endif        
         
     END SUBROUTINE output_routines
-
 
     ! --------------------------------------------------------------------------
     ! Output temporal diagnostics
