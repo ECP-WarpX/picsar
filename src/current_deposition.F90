@@ -494,6 +494,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 	   
   ENDIF
 
+  !print*,'rank',rank,'sum(jx)',sum(jx),sum(jy),sum(jz)
+
 !!! --- Stop Vtune analysis
 #if PROFILING==2                     
   CALL stop_collection()            
@@ -4895,7 +4897,7 @@ DO ip=1,np
     iymax = max(0_idp,diy)+1
     izmin = min(0_idp,diz)
     izmax = max(0_idp,diz)+1
-    
+
     ! --- add current contributions
     DO k=izmin, izmax
       DO j=iymin, iymax
@@ -4925,6 +4927,27 @@ DO ip=1,np
       END DO
     END DO
 
+!    print*,ip,'sum(sdx)',sum(sdx),sum(sdy),sum(sdz)
+!     print*,'sx0',sx0(:)
+!     print*,'sy0',sy0(:)
+!     print*,'sz0',sz0(:)
+!     print*,'sx',sx(:)
+!     print*,'sy',sy(:)
+!     print*,'sz',sz(:)    
+!     print*,'dsx',dsx(:)   
+!     print*,'dsy',dsy(:)      
+!     print*,'dsz',dsz(:)     
+!     print*,'wqx',wqx,wqy,wqz,wq
+!     print*,'invdtdx',invdtdx,invdtdy,invdtdz
+!     print*,'dtsdx0',dtsdx0,dtsdy0,dtsdz0
+!     print*,'x',x,y,z,xold,yold,zold
+!     print*,onethird
+!     print*,'sum(jx)',sum(jx),sum(jy),sum(jz)
+!     print*,'x',xp(ip),yp(ip),zp(ip)    
+!     print*
+!     read*
+!     stop
+
 ENDDO
 
 
@@ -4939,7 +4962,7 @@ DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
 RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 
-! _________________________________________________________________ 
+! ________________________________________________________________________________________ 
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
@@ -4947,11 +4970,12 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
 !
 ! Esirkepov current deposition optimized at order 1
 ! This function gives slightly better performances with AVX512 vector registers
-! _________________________________________________________________  
+! We can expect 30% speedup on KNL however performances are bad with small vector registers
+! ________________________________________________________________________________________
 USE constants
 USE precomputed
 IMPLICIT NONE
-    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard, nox, noy,noz
+    INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard, nox, noy,noz
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -4971,16 +4995,15 @@ IMPLICIT NONE
     INTEGER(isp)             :: moffjx(1:8), moffjy(1:8), moffjz(1:8)
 
     INTEGER(isp), DIMENSION(LVEC,3) :: ICELL
-    REAL(num), DIMENSION(LVEC)      :: vx,vy,vz
+    REAL(num)                :: vx,vy,vz
     REAL(num), DIMENSION(LVEC,48)   :: sdx,sdy,sdz    
     REAL(num)                ::  wwwx(LVEC,16), wwwy(LVEC,16),wwwz(LVEC,16), wq
     REAL(num)                :: sx1(LVEC),sx2(LVEC),sx3(LVEC),sx4(LVEC)
     REAL(num)                :: sx01(LVEC),sx02(LVEC),sx03(LVEC),sx04(LVEC)
-    REAL(num)                :: sy1,sy2,sy3,sy4,sz1,sz2,sz3,sz4
     REAL(num)                :: sy01,sy02,sy03,sy04,sz01,sz02,sz03,sz04
     REAL(num), DIMENSION(4)  :: szz, zdec, h1, h11, h12, sgn
     REAL(num)                :: wx1,wx2,wy1,wy2,wz1,wz2
-    INTEGER(isp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
+    INTEGER(isp)             :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
     REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
     REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
     REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
@@ -4988,10 +5011,13 @@ IMPLICIT NONE
     INTEGER(isp)             :: dix,diy,diz
     INTEGER(isp)             :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp
     INTEGER(isp)             :: iixporig,ijxporig,ikxporig
+    INTEGER(isp)             :: errcode
     REAL(num)                :: invdtdx,invdtdy,invdtdz
     REAL(num)                :: wqx,wqy,wqz
-    REAL(num)                :: xold,yold,zold
+    REAL(num)                :: xold,yold,zold, oldsum
   
+    ! ___________________________________________
+    ! Computation of the parameters
 
     ngridx=nx+1+2*nxguard
     ngridy=ny+1+2*nyguard
@@ -5025,23 +5051,28 @@ IMPLICIT NONE
     h1=(/1_num,0_num,1_num,0_num/); sgn=(/1_num,-1_num,1_num,-1_num/)
     h11=(/0_num,1_num,1_num,0_num/); h12=(/1_num,0_num,0_num,1_num/)
     
+    invdtdx = 1.0_num/(dt*dy*dz)
+    invdtdy = 1.0_num/(dt*dx*dz)
+    invdtdz = 1.0_num/(dt*dx*dy)
+    
+    sx0 = 0._num
+    sy0 = 0._num
+    sz0 = 0._num
+    
 !#if DEBUG==1
 !        print*,'Compute weights'
 !#endif    
     
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
+
 #if defined __INTEL_COMPILER 
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-        !DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
-        !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
-        !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
+        !!DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
         !DIR$ ASSUME_ALIGNED ICELL:64
 #elif defined __IBMBGQ__
         !IBM* ALIGN(64, xp,yp,zp)
-        !IBM* ALIGN(64,vx,vy,vz)
-        !IBM* ALIGN(64,sx1,sx2,sx3,sx4)
-        !IBM* ALIGN(64,sx01,sx02,sx03,sx04)
+        !!IBM* ALIGN(64,vx,vy,vz)
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
@@ -5059,14 +5090,14 @@ IMPLICIT NONE
             z = (zp(nn)-zmin)*dzi
 
             ! --- Computes velocity
-            vx(n) = uxp(nn)*gaminv(nn)
-            vy(n) = uyp(nn)*gaminv(nn)
-            vz(n) = uzp(nn)*gaminv(nn)
+            vx = uxp(nn)*gaminv(nn)
+            vy = uyp(nn)*gaminv(nn)
+            vz = uzp(nn)*gaminv(nn)
 
             ! --- computes old position in grid units
-						xold=x-dtsdx0*vx(n)
-						yold=y-dtsdy0*vy(n)
-						zold=z-dtsdz0*vz(n)
+						xold=x-dtsdx0*vx
+						yold=y-dtsdy0*vy
+						zold=z-dtsdz0*vz
 						
 						! --- computes particles weights
 						wq=q*w(ip)
@@ -5545,6 +5576,42 @@ IMPLICIT NONE
   sdz(n,48)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(2) + &
   (0.5_num*sx0(2)+onethird*dsx(2))*dsy(2))
   sdz(n,48)=sdz(n,48)+sdz(n,32)
+
+! Debugging
+!   IF (isNaN(sum(sdx(n,:))).OR.isNaN(sum(sdy(n,:))).OR.isNaN(sum(sdz(n,:))))then
+!     print*,n,'sum(sdx)',sum(sdx(n,:)),sum(sdy(n,:)),sum(sdz(n,:))
+!     print*,'sx0',sx0(:)
+!     print*,'sy0',sy0(:)
+!     print*,'sz0',sz0(:)
+!     print*,'dsx',dsx(:)   
+!     print*,'dsy',dsy(:)      
+!     print*,'dsz',dsz(:)     
+!     print*,onethird
+!     print*
+!     stop
+!   ENDIF
+ 
+ !   IF ((sum(sdx(n,:))+sum(sdy(n,:))+sum(sdz(n,:))).eq.0) THEN
+!   !IF (rank.eq.1) THEN
+!     print*,ip,n,nn,'sum(sdx)',sum(sdx(n,:)),sum(sdy(n,:)),sum(sdz(n,:)) 
+!     print*,'sx0',sx0(:)
+!     print*,'sy0',sy0(:)
+!     print*,'sz0',sz0(:)
+!     print*,'sx',sx(:)
+!     print*,'sy',sy(:)
+!     print*,'sz',sz(:)    
+!     print*,'dsx',dsx(:)   
+!     print*,'dsy',dsy(:)      
+!     print*,'dsz',dsz(:)     
+!     print*,'wqx',wqx,wqy,wqz,wq
+!     print*,'invdtdx',invdtdx,invdtdy,invdtdz
+!     print*,'dtsdx0',dtsdx0,dtsdy0,dtsdz0
+!     print*,'x',x,y,z,xold,yold,zold
+!     print*,onethird
+!     print*
+!     read*
+!   stop
+!   ENDIF
  
         END DO
 
@@ -5596,29 +5663,83 @@ IMPLICIT NONE
                 ! Loop on (i=-1,j=1,k=1)
                 jycells(nv,ICELL(n,1)+2*ncx+2*ncxy)=jycells(nv,ICELL(n,1)+2*ncx+2*ncxy)+ sdy(n,nv+40)
 
+!                 IF (n.eq.5) then
+!                   print*,'before',nv
+!                   print*,jzcells(nv,ICELL(n,1)),sdz(n,nv)
+!                   print*,jzcells(nv,ICELL(n,1)+ncx),sdz(n,nv+8)
+!                   print*,jzcells(nv,ICELL(n,1)+ncxy),sdz(n,nv+16)
+!                   print*,jzcells(nv,ICELL(n,1)+2*ncx+ncxy),sdz(n,nv+24)
+!                   print*,jzcells(nv,ICELL(n,1)+2*ncxy),sdz(n,nv+32)
+!                   print*,jzcells(nv,ICELL(n,1)+2*ncx+2*ncxy),sdz(n,nv+40) 
+!                 end if
+
+!                 oldsum = sum(jzcells(:,:))
+
                 ! --- JZ
                 ! Loop on (i=-1,j=-1,k=-1)
                 jzcells(nv,ICELL(n,1))     = jzcells(nv,ICELL(n,1)) + sdz(n,nv)
+
+!               IF (sum(jzcells(:,:)).ne.(oldsum+sdz(n,nv))) THEN
+!                 print*, nv,sum(jzcells(:,:)),oldsum+sdz(n,nv)
+!               ENDIF
+
+!                 oldsum = sum(jzcells(:,:))
+                
                 ! Loop on (i=-1,j=1,k=-1)
-                jzcells(nv,ICELL(n,1)+2*ncx) = jzcells(nv,ICELL(n,1)+ncx) + sdz(n,nv+8)
+                jzcells(nv,ICELL(n,1)+2*ncx) = jzcells(nv,ICELL(n,1)+2*ncx) + sdz(n,nv+8)
+                
+!               IF (sum(jzcells(:,:)).ne.(oldsum+sdz(n,nv+8))) THEN
+!                 print*, nv,sum(jzcells(:,:)),oldsum+sdz(n,nv+8)
+!                 print*, sdz(n,nv+8)
+!               ENDIF
+              
                 !Loop on (i=-1,j=-1,k=0)
                 jzcells(nv,ICELL(n,1)+ncxy) = jzcells(nv,ICELL(n,1)+ncxy)+ sdz(n,nv+16)
                 !Loop on (i=-1,j=1,k=0)
                 jzcells(nv,ICELL(n,1)+2*ncx+ncxy) = jzcells(nv,ICELL(n,1)+2*ncx+ncxy) + sdz(n,nv+24)
                 ! Loop on (i=-1,j,k=1)
                 jzcells(nv,ICELL(n,1)+2*ncxy) = jzcells(nv,ICELL(n,1)+2*ncxy) + sdz(n,nv+32)
+                
+!                 oldsum = sum(jzcells(:,:))                
+                
                 ! Loop on (i=-1,j,k=1)
                 jzcells(nv,ICELL(n,1)+2*ncx+2*ncxy)=jzcells(nv,ICELL(n,1)+2*ncx+2*ncxy)+sdz(n,nv+40)
+
+!               IF (sum(jzcells(:,:)).ne.(oldsum+sdz(n,nv+40))) THEN
+!                 print*, nv,sum(jzcells(:,:)),oldsum+sdz(n,nv+40)
+!               ENDIF
+
+!                 IF ((n.eq.5)) then
+!                   print*,'after',nv
+!                   print*,jzcells(nv,ICELL(n,1)),sdz(n,nv)
+!                   print*,jzcells(nv,ICELL(n,1)+ncx),sdz(n,nv+8)
+!                   print*,jzcells(nv,ICELL(n,1)+ncxy),sdz(n,nv+16)
+!                   print*,jzcells(nv,ICELL(n,1)+2*ncx+ncxy),sdz(n,nv+24)
+!                   print*,jzcells(nv,ICELL(n,1)+2*ncxy),sdz(n,nv+32)
+!                   print*,jzcells(nv,ICELL(n,1)+2*ncx+2*ncxy),sdz(n,nv+40)                  
+!                 end if
+
+
             END DO
 #if defined _OPENMP && _OPENMP>=201307
        	!$OMP END SIMD
 #endif
+
+!     print*,ip,n,'sum(sdx)',sum(sdx(n,:)),sum(sdy(n,:)),sum(sdz(n,:)) 
+!     print*,'jx',sum(jxcells),sum(jycells),sum(jzcells(:,:))
+!     nn=ip+n-1
+!     print*,'x',xp(nn),yp(nn),zp(nn)
+!     print*
+!     read*
+
         END DO
     END DO
     
 !#if DEBUG==1
 !        print*,'Reduction of jxcells,jycells,jzcells in jx,jy,jz'
 !#endif    
+    
+    !print*,'jxcells',sum(jxcells),sum(jycells),sum(jzcells)
     
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
     DO iz=1, ncz-2
@@ -5633,14 +5754,7 @@ IMPLICIT NONE
             DO ix=1,ncx-2 !! VECTOR (take ncx multiple of vector length)
                 ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                 !igrid=orig+ic+(iy-1)*ngx+(iz-1)*ngxy
-                igrid =orig+ix+(iy-1)*nnx + (iz-1)*nnxy
-                
-#if DEBUG==1
-  if ((igrid+moffjx(8) > nnxy*(nz+1+2*nzguard)).or.(igrid+moffjx(1)<1)) then
-  print*,iz,iy,ix
-  print*,iz +  nzguard+ikxporig, iy + nyguard+ijxporig, ix + nxguard+iixporig
-  end if
-#endif  
+                igrid =orig+ix+(iy-1)*nnx+(iz-1)*nnxy
                 
                 ! jx
                 jx(igrid+moffjx(1))=jx(igrid+moffjx(1))+jxcells(1,ic)
@@ -5673,11 +5787,37 @@ IMPLICIT NONE
 #if defined _OPENMP && _OPENMP>=201307
        	!$OMP END SIMD
 #endif
+
+            DO ix=1,ncx-2 !! VECTOR (take ncx multiple of vector length)
+                ic=ix+(iy-1)*ncx+(iz-1)*ncxy
+                !igrid=orig+ic+(iy-1)*ngx+(iz-1)*ngxy
+                igrid =orig+ix+(iy-1)*nnx+(iz-1)*nnxy
+                
+! #if defined _OPENMP && _OPENMP>=201307
+!       !$OMP SIMD 
+! #elif defined __IBMBGQ__
+! 			!IBM* SIMD_LEVEL
+! #elif defined __INTEL_COMPILER 
+! 			!$DIR SIMD 
+! #endif                
+!                 DO nv=1,8
+!                   ! jx
+!                   jx(igrid+moffjx(nv))=jx(igrid+moffjx(nv))+jxcells(nv,ic)
+!                   ! jy
+!                   jy(igrid+moffjy(nv))=jy(igrid+moffjy(nv))+jycells(nv,ic)
+!                   ! jz
+!                   jz(igrid+moffjz(nv))=jz(igrid+moffjz(nv))+jzcells(nv,ic)
+!                 ENDDO
+! #if defined _OPENMP && _OPENMP>=201307
+!        !$OMP END SIMD
+! #endif
+           END DO
         END DO
     END DO
     DEALLOCATE(jxcells,jycells,jzcells)
     RETURN
 
+    print*,'jxtot',sum(jx),sum(jy),sum(jz)
 
 END SUBROUTINE
 
@@ -6494,6 +6634,158 @@ END DO
 DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
 RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_2_2_2
+
+! ________________________________________________________________________________________
+SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      nox,noy,noz,l_particles_weight,l4symtry)
+! ________________________________________________________________________________________                                      
+  USE omp_lib
+  USE constants
+  IMPLICIT NONE
+  
+  INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+  REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+  REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+  REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
+  REAL(num) :: clghtisq,usq,xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz, &
+                                      s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz,         &
+                                      oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
+                                      dtsdx0,dtsdy0,dtsdz0
+  REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER :: onethird=1.0_num/3.0_num
+  REAL(num), PARAMETER :: twothird=2.0_num/3.0_num
+  REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
+  REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
+  REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
+  INTEGER(isp), DIMENSION(LVEC,3)      :: ICELL  
+  INTEGER(idp)                         :: iixp0,ijxp0,ikxp0 
+  INTEGER(idp) :: iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+                                      ixmin, ixmax, iymin, iymax, izmin, izmax
+  INTEGER(isp) :: n,nn                                   
+  LOGICAL(idp) :: l_particles_weight,l4symtry
+
+  ! ______________________________________________________
+  ! Computation of the parameters
+
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
+  dtsdx0 = dt*dxi
+  dtsdy0 = dt*dyi
+  dtsdz0 = dt*dzi
+  invvol = 1.0_num/(dx*dy*dz)
+  invdtdx = 1.0_num/(dt*dy*dz)
+  invdtdy = 1.0_num/(dt*dx*dz)
+  invdtdz = 1.0_num/(dt*dx*dy)
+  ALLOCATE(sdx(-2:2,-2:2,-2:2),sdy(-2:2,-2:2,-2:2),sdz(-2:2,-2:2,-2:2))
+  ALLOCATE(sx(-2:2), sx0(-2:2), dsx(-2:2))
+  ALLOCATE(sy(-2:2), sy0(-2:2), dsy(-2:2))
+  ALLOCATE(sz(-2:2), sz0(-2:2), dsz(-2:2))
+  clghtisq = 1.0_num/clight**2
+  sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
+  sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
+  dtsdz0 = dt*dzi
+
+  ! ______________________________________________________
+  ! Loop ober the particles
+  DO ip=1,np, LVEC
+#if defined __INTEL_COMPILER 
+        !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+        !DIR$ ASSUME_ALIGNED ICELL:64
+#elif defined __IBMBGQ__
+        !IBM* ALIGN(64, xp,yp,zp)
+        !IBM* ALIGN(64,ICELL)
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+		!$OMP SIMD 
+#elif defined __IBMBGQ__
+		!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+		!$DIR SIMD 
+#endif  
+    DO n=1,MIN(LVEC,np-ip+1)
+      nn=ip+n-1
+      ! --- computes current position in grid units
+      x = (xp(nn)-xmin)*dxi
+      y = (yp(nn)-ymin)*dyi
+      z = (zp(nn)-zmin)*dzi
+      ! --- computes velocity
+      vx = uxp(nn)*gaminv(nn)
+      vy = uyp(nn)*gaminv(nn)
+      vz = uzp(nn)*gaminv(nn)
+      ! --- computes old position in grid units
+      xold=x-dtsdx0*vx
+      yold=y-dtsdy0*vy
+      zold=z-dtsdz0*vz
+      ! --- computes particles weights
+      wq=q*w(ip)
+      wqx = wq*invdtdx
+      wqy = wq*invdtdy
+      wqz = wq*invdtdz
+      ! --- finds node of cell containing particles for current positions
+      iixp0=nint(x)
+      ijxp0=nint(y)
+      ikxp0=nint(z)
+      ! --- computes distance between particle and node for current positions
+      xint=x-iixp0
+      yint=y-ijxp0
+      zint=z-ikxp0
+      ! --- computes coefficients for node centered quantities
+      xintsq = xint*xint
+      sx0(-1) = 0.5_num*(0.5_num-xint)**2
+      sx0( 0) = 0.75_num-xintsq
+      sx0( 1) = 0.5_num*(0.5_num+xint)**2
+      yintsq = yint*yint
+      sy0(-1) = 0.5_num*(0.5_num-yint)**2
+      sy0( 0) = 0.75_num-yintsq
+      sy0( 1) = 0.5_num*(0.5_num+yint)**2
+      zintsq = zint*zint
+      sz0(-1) = 0.5_num*(0.5_num-zint)**2
+      sz0( 0) = 0.75_num-zintsq
+      sz0( 1) = 0.5_num*(0.5_num+zint)**2
+      ! --- finds node of cell containing particles for old positions
+      iixp=nint(xold)
+      ijxp=nint(yold)
+      ikxp=nint(zold)
+      ! --- computes distance between particle and node for old positions
+      xint = xold-iixp
+      yint = yold-ijxp
+      zint = zold-ikxp
+      ! --- computes node separation between old and current positions
+      dix = iixp-iixp0
+      diy = ijxp-ijxp0
+      diz = ikxp-ikxp0
+      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      sx(-2)=0.0_num;sy(-2)=0.0_num;sz(-2)=0.0_num
+      sx(-1)=0.0_num;sy(-1)=0.0_num;sz(-1)=0.0_num
+      sx(0)=0.0_num;sy(0)=0.0_num;sz(0)=0.0_num
+      sx(1)=0.0_num;sy(1)=0.0_num;sz(1)=0.0_num
+      sx(2)=0.0_num;sy(2)=0.0_num;sz(2)=0.0_num
+      ! --- computes coefficients for quantities centered between nodes
+      xintsq = xint*xint
+      sx(-1+dix) = 0.5_num*(0.5_num-xint)**2
+      sx( 0+dix) = 0.75_num-xintsq
+      sx( 1+dix) = 0.5_num*(0.5_num+xint)**2
+      yintsq = yint*yint
+      sy(-1+diy) = 0.5_num*(0.5_num-yint)**2
+      sy( 0+diy) = 0.75_num-yintsq
+      sy( 1+diy) = 0.5_num*(0.5_num+yint)**2
+      zintsq = zint*zint
+      sz(-1+diz) = 0.5_num*(0.5_num-zint)**2
+      sz( 0+diz) = 0.75_num-zintsq
+      sz( 1+diz) = 0.5_num*(0.5_num+zint)**2
+      ! --- computes coefficients difference
+      dsx = sx - sx0
+      dsy = sy - sy0
+      dsz = sz - sz0
+      
+    END DO
+  END DO
+  
+END SUBROUTINE
 
 ! _________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &

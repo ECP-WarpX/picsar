@@ -218,10 +218,10 @@ END MODULE particles
 MODULE params
 !===============================================================================
 USE constants
-INTEGER(idp) :: it,nsteps
-REAL(num) :: g0,b0,dt,w0,dtcoef,tmax
-REAL(num) :: theta,nlab,wlab,nc,w0_l,w0_t,lambdalab
-LOGICAL :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
+INTEGER(idp)         :: it,nsteps
+REAL(num)            :: g0,b0,dt,w0,dtcoef,tmax
+REAL(num)            :: theta,nlab,wlab,nc,w0_l,w0_t,lambdalab
+LOGICAL              :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
 REAL(num), PARAMETER :: resize_factor=2._num
 REAL(num), PARAMETER :: downsize_factor=0.5_num
 REAL(num), PARAMETER :: downsize_threshold=0.4_num
@@ -235,6 +235,8 @@ INTEGER(idp) :: partcom                             ! Type of comm routine to us
 
 INTEGER(idp) :: LVEC_curr_depo                      ! Vector size for the current deposition
 INTEGER(idp) :: LVEC_charge_depo                    ! Vector size for the charge deposition
+
+INTEGER(isp) :: mpi_buf_size
 
 END MODULE params
 
@@ -259,7 +261,6 @@ use constants
 INTEGER(isp) :: reqperjxx(4),reqperjxy(4),reqperjxz(4)
 INTEGER(isp) :: reqperjyx(4),reqperjyy(4),reqperjyz(4)
 INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
-
 
   TYPE part_com_buffer
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
@@ -417,9 +418,9 @@ INTEGER(isp) :: coordinates(3)
 INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
 INTEGER(idp) :: x_coords, proc_x_min, proc_x_max
 INTEGER(idp):: y_coords, proc_y_min, proc_y_max
-INTEGER(idp) :: z_coords, proc_z_min, proc_z_max
-INTEGER(idp) :: nproc, nprocx, nprocy, nprocz
-INTEGER(isp) :: nprocdir(3)
+INTEGER(idp)                        :: z_coords, proc_z_min, proc_z_max
+INTEGER(idp)                        :: nproc, nprocx, nprocy, nprocz
+INTEGER(isp)                        :: nprocdir(3)
 INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
 ! Boundary data
 LOGICAL(idp)                        :: x_min_boundary, x_max_boundary

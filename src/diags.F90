@@ -26,6 +26,7 @@ CONTAINS
         ! - Computes total charge density
         CALL pxrdepose_rho_on_grid()
         
+        ! - Charge boundary conditions
         CALL charge_bcs()
      
 

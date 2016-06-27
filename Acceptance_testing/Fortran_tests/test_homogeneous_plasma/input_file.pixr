@@ -30,12 +30,12 @@ section::main
  ntilez = 5
  
  # Guard cells
- nguardsx = 4
- nguardsy = 4
- nguardsz = 4
- njguardsx = 4
- njguardsy = 4
- njguardsz = 4
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
  
 end::main
 
@@ -56,7 +56,7 @@ section::solver
  # 3 - Classical vectorized
  # 4 - Classical tiling/non-optimized
  # 5 - Classical sequential/non-optimized
- currdepo = 0
+ currdepo = 1
  
  # Field gathering method
  # 0 - Optimized functions (default)

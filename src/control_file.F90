@@ -63,6 +63,9 @@ CONTAINS
         ! Vector length charge deposition        
         LVEC_charge_depo = 64
         
+        ! Size of the particle mpi buffer
+        mpi_buf_size = 10000
+        
         ! Sorting activation (not activated by default)       
         sorting_activated = 0
         sorting_dx = 1.
@@ -87,6 +90,7 @@ CONTAINS
         alpha = 0.5_num
         ! --- sets max time in the simulation (in 1/w0)
         tmax = 40.0_num
+        nsteps = 0
 
         !-------------------------------------------------------------------------------
         ! plasma parameters (cold plasma)
@@ -198,11 +202,13 @@ CONTAINS
                 READ(buffer, *) lvec_curr_depo      
             ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) lvec_charge_depo                                                                                                                                                       
+                READ(buffer, *) lvec_charge_depo             
             ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) mpicom_curr                                                                                                                           
-
+                READ(buffer, *) mpicom_curr     
+            ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) mpi_buf_size 
             END IF
         END DO
         RETURN
@@ -350,7 +356,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') fieldgave     
              ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') rhodepo                
+                READ(buffer(ix+1:string_length), '(i10)') rhodepo
+             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') partcom                                
             ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -486,6 +495,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'t_max') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) tmax
+            ELSE IF (INDEX(buffer,'nsteps') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) nsteps                
             ELSE IF (INDEX(buffer,'nguardsx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nxguards

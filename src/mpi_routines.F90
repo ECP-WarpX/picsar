@@ -659,8 +659,11 @@ SUBROUTINE mpi_minimal_init()
 
   END SUBROUTINE mpi_close
 
+! ________________________________________________________________________________________
   SUBROUTINE time_statistics
-    ! ---- Subroutine dedicated to the time report at the end of the simulation
+!
+!  Subroutine dedicated to the time report at the end of the simulation
+! ________________________________________________________________________________________    
     USE time_stat
     USE params
     USE omp_lib 
@@ -715,7 +718,7 @@ SUBROUTINE mpi_minimal_init()
     percenttimes(8), avetimes(8)/nsteps*1e3
     WRITE(0,'(X,A22,5(X,F8.2))') "Sorting:",mintimes(10), avetimes(10), maxtimes(10),&
     percenttimes(10), avetimes(10)/nsteps*1e3    
-    WRITE(0,'(X,A22,5(X,F8.2))') "Charge calculation:", mintimes(12), avetimes(12), maxtimes(12),&
+    WRITE(0,'(X,A22,5(X,F8.2))') "Charge deposition:", mintimes(12), avetimes(12), maxtimes(12),&
     percenttimes(12), avetimes(12)/nsteps*1e3     
     WRITE(0,'(X,A22,5(X,F8.2))') "Charge bound. cond.:", mintimes(13), avetimes(13), maxtimes(13),&
     percenttimes(13), avetimes(13)/nsteps*1e3          

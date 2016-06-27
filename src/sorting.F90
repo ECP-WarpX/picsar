@@ -146,7 +146,8 @@ MODULE sorting
   END SUBROUTINE particle_sorting_sub
 
 
-  SUBROUTINE pxr_particle_bin_sorting(np2,xp,yp,zp,ux,uy,uz,gam,pid,wpid,xmin2,ymin2,zmin2,xmax2,ymax2,zmax2,dxf,dyf,dzf)
+  SUBROUTINE pxr_particle_bin_sorting(np2,xp,yp,zp,ux,uy,uz,gam,pid,wpid,&
+            xmin2,ymin2,zmin2,xmax2,ymax2,zmax2,dxf,dyf,dzf)
     ! __________________________________________________________________________________
     ! 
     ! Particle bin sorting algorithm
@@ -180,16 +181,16 @@ MODULE sorting
     real(num), dimension(np2), intent(inout)      :: ux,uy,uz
     real(num), dimension(np2), intent(inout)      :: gam
         
-    REAL(num), DIMENSION(np2,1), intent(inout)      :: pid
+    REAL(num), DIMENSION(np2,1), intent(inout)    :: pid
         
-    real(num), dimension(np2)      :: xps,yps,zps     
-    real(num), dimension(np2)      :: uxs,uys,uzs 
-    real(num), dimension(np2)      :: gams 
-    real(num), dimension(np2,wpid)      :: pids
+    real(num), dimension(np2)                     :: xps,yps,zps     
+    real(num), dimension(np2)                     :: uxs,uys,uzs 
+    real(num), dimension(np2)                     :: gams 
+    real(num), dimension(np2,wpid)                :: pids
             
-    integer(idp), dimension(np2)               :: hcnb        ! Cell number
-    integer(idp), dimension(:),allocatable    :: piihc       ! Particle indexes in the grid
-    integer(idp), dimension(:),allocatable    :: nbppc       ! Number of particles per cells
+    integer(idp), dimension(np2)                  :: hcnb        ! Cell number
+    integer(idp), dimension(:),allocatable        :: piihc       ! Particle indexes in the grid
+    integer(idp), dimension(:),allocatable        :: nbppc       ! Number of particles per cells
 
     ! Bin sizes
     dxi = 1./dxf
@@ -228,14 +229,16 @@ MODULE sorting
       
       ! Bin id
       hcnb(ip) = iz*nx3*ny3 + iy*nx3 + ix+1
-      !IF (hcnb(ip) > nbhc) THEN
-      !  if (rank.eq.0) print*, 'Bin id',hcnb(ip),nbhc
-      !  if (rank.eq.0) print*, 'Particle ix,iy,iz',ix,iy,iz
-      !  if (rank.eq.0) print*, 'Particle x,y,z',xp(ip),yp(ip),zp(ip)
-      !  if (rank.eq.0) print*, 'Particle x2,y2,z2',x2,y2,z2
-      !  if (rank.eq.0) print*, 'Particle dx,dy,dz',dx,dy,dz  
-      !  if (rank.eq.0) print*, 'Particle nx,ny,nz',nx3,ny3,nz3          
-      !ENDIF
+      IF ((hcnb(ip) > nbhc).OR.(hcnb(ip)<1)) THEN
+        print*, 'Bin id',ip,hcnb(ip),nbhc
+        print*, 'Particle ix,iy,iz',ix,iy,iz
+        print*, 'Particle x,y,z',xp(ip),yp(ip),zp(ip)
+        print*, 'Particle x2,y2,z2',x2,y2,z2
+        print*, 'xmin,ymin,zmin',xmin2,ymin2,zmin2
+        print*, 'Particle dx,dy,dz',dxi,dyi,dzi  
+        print*, 'Particle nx,ny,nz',nx3,ny3,nz3  
+        stop        
+      ENDIF
 
       ! We count the number of particles in each bin
       nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1  

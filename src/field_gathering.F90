@@ -1067,7 +1067,7 @@ sz0=0.0_num
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-			!$DIR SIMD 
+			!DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
@@ -1335,7 +1335,9 @@ DO ip=1,np
     ez(ip) = ez(ip) + sx0(1)*sy0(2)*sz(2)*ezg(j+1,k+2,l0+2)
     ez(ip) = ez(ip) + sx0(2)*sy0(2)*sz(2)*ezg(j+2,k+2,l0+2)
 END DO
-!!$OMP END PARALLEL DO
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP END SIMD 
+#endif
 DEALLOCATE(sx0,sz0)
 RETURN
 END SUBROUTINE gete3d_energy_conserving_3_3_3

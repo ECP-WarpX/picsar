@@ -136,8 +136,12 @@ w0    = w0_l
 dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 it = 0
 
-!!! --- set number of time steps
-nsteps = nint(tmax/(w0_l*dt))
+!!! --- set number of time steps or total time
+if (tmax.eq.0) then
+  tmax = nsteps*w0_l*dt
+else
+  nsteps = nint(tmax/(w0_l*dt))
+endif
 
 !!! --- Sorting
 
@@ -183,6 +187,7 @@ IF (rank .EQ. 0) THEN
   write(0,*) 'Charge deposition algo:',rhodepo
   write(0,*) 'Field gathering method:',fieldgave
   write(0,*) 'Current/field gathering order:',nox,noy,noz
+  write(0,*) 'Part com type:',partcom
   write(0,*) 'Maxwell derivative coeff:',xcoeffs
   WRITE(0,*) ''
   WRITE(0,*) 'Vector length current deposition',lvec_curr_depo

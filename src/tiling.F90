@@ -850,7 +850,12 @@ CONTAINS
         
     END SUBROUTINE set_are_tiles_reallocated
 
+! ________________________________________________________________________________________
     SUBROUTINE estimate_memory_consumption
+!
+! Estimate the memory that will be used in the simulation
+!    
+! ________________________________________________________________________________________    
       USE shared_data
       USE constants
       USE particles
