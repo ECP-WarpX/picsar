@@ -314,8 +314,11 @@ use constants
 
 INTEGER(idp)                           :: timestat_activated
 INTEGER(idp)                           :: timestat_period
-REAL(num), dimension(20)               :: localtimes
-REAL(num), DIMENSION(:,:), POINTER :: buffer_timestat
+
+REAL(num), dimension(5)                :: init_localtimes    ! MPI local times for the initialization
+
+REAL(num), dimension(20)               :: localtimes         ! MPI local times for the main loop
+REAL(num), DIMENSION(:,:), POINTER     :: buffer_timestat
 INTEGER(idp)                           :: itimestat,nbuffertimestat
 
 END MODULE

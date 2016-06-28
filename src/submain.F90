@@ -115,14 +115,19 @@ USE precomputed
 
 !use IFPORT ! uncomment if using the intel compiler (for rand)
 IMPLICIT NONE
-INTEGER(idp) :: i,ierror,j,k,l, ispecies, ipart, count
-INTEGER(idp) :: jmin, jmax, lmin, lmax, kmin, kmax
-INTEGER(idp) :: ix, iy, iz
-INTEGER(idp) :: npartemp, ncurr
-REAL(num) :: v, th, phi
+INTEGER(idp)                    :: i,ierror,j,k,l, ispecies, ipart, count
+INTEGER(idp)                    :: jmin, jmax, lmin, lmax, kmin, kmax
+INTEGER(idp)                    :: ix, iy, iz
+INTEGER(idp)                    :: npartemp, ncurr
+REAL(num)                       :: v, th, phi
+REAL(num)                       :: tdeb
 TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
+TYPE(particle_tile), POINTER    :: curr_tile
 !real(8) :: rand
+
+! Time statistics
+init_localtimes(:) = 0
+localtimes(:)=0
 
 ! Few calculations and updates      
 nc    = nlab*g0          ! density (in the simulation frame)
@@ -237,8 +242,10 @@ IF (rank .EQ. 0) THEN
   
 end if
 
-
 ! ------ INIT PARTICLE DISTRIBUTIONS
+
+tdeb=MPI_WTIME()
+
 !!! --- Set tile split for particles
 CALL set_tile_split
 
@@ -254,6 +261,8 @@ CALL load_particles
 
 IF (rank .EQ. 0) PRINT *, "PARTICLES LOAD OK"
 
+init_localtimes(1) = MPI_WTIME() - tdeb
+
 ! - Estimate tile size 
 CALL estimate_memory_consumption
 
@@ -263,9 +272,6 @@ CALL estimate_memory_consumption
 ex=0.0_num;ey=0.0_num;ez=0.0_num
 bx=0.0_num;by=0.0_num;bz=0.0_num
 jx=0.0_num;jy=0.0_num;jz=0.0_num
-
-! ---- INIT TIME STATISTICS
-localtimes(:)=0
 
 END SUBROUTINE initall
 

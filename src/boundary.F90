@@ -2504,7 +2504,7 @@ END SUBROUTINE charge_bcs
 									indx = MIN(FLOOR((partx-x_min_local+dxs2)*(nx0_grid_tile_dx),idp)+1,ntilex)
 									indy = MIN(FLOOR((party-y_min_local+dys2)*(ny0_grid_tile_dy),idp)+1,ntiley)
 									indz = MIN(FLOOR((partz-z_min_local+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
-									!if ((indx.eq.0).or.(indy.eq.0).or.(indz.eq.0)) THEN
+									!if ((indx.le.0).or.(indy.le.0).or.(indz.le.0)) THEN
                    !print*,'xmin',x_min_local,'xmax',x_max_local,'x',partx,xbd
                    !print*,'ymin',y_min_local,'ymax',y_max_local,'y',party,ybd
                    !print*,'zmin',z_min_local,'zmax',z_max_local,'z',partz,zbd
