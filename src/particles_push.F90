@@ -116,22 +116,16 @@ DO iz=1, ntilez ! LOOP ON TILES
 					!!! --- Gather electric field on particles
 					SELECT CASE (c_dim)
 					CASE (2) ! 2D CASE X Z 
-						!!! --- Gather electric field on particles
-						CALL pxr_gete2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
-											  curr_tile%part_z, curr_tile%part_ex,                                                       &
-											  curr_tile%part_ey,curr_tile%part_ez,                   									 &
-											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,      &
-											  curr_tile%nz_cells_tile,nxjg,             				    							 &
-											  nzjg,noxx,nozz,currg%extile,currg%eytile, 												 &
-											  currg%eztile,.FALSE.,.FALSE.,.TRUE.)
-						!!! --- Gather magnetic fields on particles
-						CALL pxr_getb2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
+										  	
+						!!! --- Gather electric and magnetic fields on particles				  
+            CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
 										  curr_tile%part_z, curr_tile%part_bx,                    									     &
 										  curr_tile%part_by,curr_tile%part_bz,                    										 &
 										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,     	 &    
 										  curr_tile%nz_cells_tile,nxjg,         		       					 						 &
 										  nzjg,noxx,nozz,currg%bxtile,currg%bytile,  	 												 &
-										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)			
+										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)											  
+										  										  		
 					CASE DEFAULT ! 3D CASE 
 						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
 											  curr_tile%part_z, curr_tile%part_ex,                            	&

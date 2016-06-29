@@ -17,6 +17,10 @@ MODULE control_file
 CONTAINS
     ! Routine that proceeds to default init
     SUBROUTINE default_init
+    
+        ! --- Dimension
+        c_dim = 3
+    
         ! --- Init particle tiling split
         ntilex = 1
         ntiley = 1
