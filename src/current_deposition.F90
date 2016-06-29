@@ -60,6 +60,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   IMPLICIT NONE 
   REAL(num) :: tdeb, tend
 
+  
+  ! ___________________________________________________________________________
   ! Interfaces for func_order
   INTERFACE
   
@@ -319,7 +321,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     END SUBROUTINE
     
   END INTERFACE
-  
+  ! ___________________________________________________________________________
+    
 #if defined(DEBUG)
   WRITE(0,*) "Depose_currents_on_grid: start"
 #endif
