@@ -3,7 +3,6 @@ MODULE simple_io
   USE mpi_derived_types
   USE fields
   USE shared_data
-  USE diagnostics
   IMPLICIT NONE
 
 CONTAINS
@@ -12,6 +11,7 @@ CONTAINS
         USE shared_data
         USE params
         USE time_stat
+        USE diagnostics
         IMPLICIT NONE
         CHARACTER(LEN=string_length) :: strtemp
         INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
@@ -301,19 +301,21 @@ CONTAINS
 
   ! ______________________________________________________________________________________
   SUBROUTINE write_3d_field_array_to_file(filename, array,     &
-             xmin, xmax, ymin, ymax, zmin, zmax, nxg, nyg, nzg, nx_local, &
-             ny_local, nz_local, nx_global, ny_global, nz_global)
+             xmin2, xmax2, ymin2, ymax2, zmin2, zmax2, nxg, nyg, nzg, nx_local, &
+             ny_local, nz_local, nx_global2, ny_global2, nz_global2)
   !
   ! This subroutine writes the field arrays (e.g EM fields, Currents)
   ! to disk using MPI-IO (H. VINCENTI, M. LOBET)
   ! The files have a header with the main parameters
   ! ______________________________________________________________________________________
 
+    IMPLICIT NONE
+
     CHARACTER(LEN=*), INTENT(IN)              :: filename
     INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN)                  :: nx_local, ny_local, nz_local
-    INTEGER(idp), INTENT(IN)                  :: nx_global, ny_global, nz_global    
-    REAL(num), INTENT(IN)                     :: xmin,xmax,ymin,ymax,zmin,zmax
+    INTEGER(idp), INTENT(IN)                  :: nx_global2, ny_global2, nz_global2    
+    REAL(num), INTENT(IN)                     :: xmin2,xmax2,ymin2,ymax2,zmin2,zmax2
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(IN OUT) :: array
     INTEGER(KIND=MPI_OFFSET_KIND)             :: offset
     INTEGER(isp)                              :: err

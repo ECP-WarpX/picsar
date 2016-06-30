@@ -124,6 +124,7 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,z
   ! ______________________________________________                                  
   ! Arbitrary order, non-optimized subroutines
   IF (fieldgave.eq.1) THEN
+  
 
     !!! --- Gather electric field on particles
     CALL pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,&
@@ -137,6 +138,7 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,z
   ! ________________________________________
   ! Optimized subroutines, default  
   ELSE
+
   
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
   

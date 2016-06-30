@@ -329,6 +329,9 @@ class EM3DPXR(EM3DFFT):
         pxr.sorting_shiftz = self.sorting.zshift  
         pxr.sorting_verbose = self.sorting.verbose
                         
+        # --- time statistics
+        self.time_stat_loc_array = zeros([20])
+                        
         # --- species section
         pxr.nspecies_max=top.pgroup.ns
         
@@ -970,10 +973,13 @@ class EM3DPXR(EM3DFFT):
         # --- push 
         if l_first:
             if l_pxr:
+                # Particle pusher
                 tdebpart=MPI.Wtime()
                 pxr.pxrpush_particles_part2()
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
+                self.time_stat_loc_array[0] += (tendpart-tdebpart)
+                
                 pxr.particle_bcs()
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
@@ -988,11 +994,18 @@ class EM3DPXR(EM3DFFT):
                         particleboundaries3d(pg,-1,False)
         else:        
             if l_pxr:
+                
+                # Particle pusher
                 tdebpart=MPI.Wtime()
                 pxr.push_particles()
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
+                self.time_stat_loc_array[0] += (tendpart-tdebpart)
+                
+                # Particle boundary conditions
                 pxr.particle_bcs()
+                
+                
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1988,7 +2001,42 @@ class EM3DPXR(EM3DFFT):
         pxr.get_norm_diverho(pxr.dive,pxr.rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,div)
         
         return div[0]
+
+    def display_picsar_time_statistics(self):
+        """
+        Display the Picsar time statistics 
+        """
+        pxr.time_statistics()
         
+    def display_time_statistics(self):
+        """
+        Display the time statistics 
+        """
+        self.time_stat_ave_array = zeros([20])
+        self.time_stat_min_array = zeros([20])
+        self.time_stat_max_array = zeros([20])                
+        nproc = pxr.nprocx*pxr.nprocy*pxr.nprocz
+        
+        MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_ave_array,MPI.DOUBLE], op=MPI.SUM, root=0)
+        MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_min_array,MPI.DOUBLE], op=MPI.MIN, root=0)
+        MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_max_array,MPI.DOUBLE], op=MPI.MAX, root=0)  
+                      
+        self.time_stat_ave_array[:] /= nproc
+        self.time_stat_min_array[:] /= nproc  
+        self.time_stat_max_array[:] /= nproc 
+                      
+        if me==0:
+        
+					print ' ________________________________________________'
+					print
+					print '  Time statisctics'
+					print ' ________________________________________________'        
+				
+					print ' Part                               {:^7} {:^7}'.format('min', 'ave', 'max')
+					print ' Particle pusher + field gathering: {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
+					print
+        
+                    
     def allocatefieldarraysFFT(self):
         def fc(x,norder):
             fact1 = 1
