@@ -709,7 +709,7 @@ SUBROUTINE mpi_minimal_init()
     WRITE(0,*) '___________________________________________________________________________'
     WRITE(0,'(X,A40,X)') "Time statistics main loop:"
     WRITE(0,*) ""
-    WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (us)"
+    WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
     WRITE(0,*) "---------------------------------------------------------------------------"
     WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
     percenttimes(1), avetimes(1)/nsteps*1e3

@@ -9452,8 +9452,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
               if(k<izmax) then
                  sdz(i,k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))        ! Wz coefficient from esirkepov
                  if (k>izmin) sdz(i,k)=sdz(i,k)+sdz(i,k-1)         ! Integration of Wz along z
-                 jz(ic,kc) = jz(ic,kc) + sdz(i,k)              ! Deposition on the current
-                 
+                 jz(ic,kc) = jz(ic,kc) + sdz(i,k)                  ! Deposition on the current
               end if
            end do
         end do
