@@ -29,66 +29,91 @@ END IF
 CALL start_collection()                
 #endif                                
 
-DO i=1,nst
-    IF (rank .EQ. 0) startit=MPI_WTIME()
-    
-    !!! --- Init iteration variables
-    pushtime=0._num
-    divE_computed = .False.
-    
-    !!! --- Field gather & particle push
-    !IF (rank .EQ. 0) PRINT *, "#1"
-    CALL push_particles
-    !IF (rank .EQ. 0) PRINT *, "#2"
-    !!! --- Apply BC on particles
-    CALL particle_bcs
-    !IF (rank .EQ. 0) PRINT *, "#3"
-    !!! --- Particle Sorting
-    !write(0,*),'Sorting'
-    CALL pxr_particle_sorting
-    !IF (rank .EQ. 0) PRINT *, "#4"
-    !!! --- Deposit current of particle species on the grid
-    !write(0,*),'Depose currents'
-    CALL pxrdepose_currents_on_grid_jxjyjz  
-    !IF (rank .EQ. 0) PRINT *, "#5"
-    !!! --- Boundary conditions for currents
-    !write(0,*),'Current_bcs'
-    CALL current_bcs
-    !IF (rank .EQ. 0) PRINT *, "#6"
-    !!! --- Push B field half a time step
-    !write(0,*),'push_bfield'
-    CALL push_bfield
-    !IF (rank .EQ. 0) PRINT *, "#7"
-    !!! --- Boundary conditions for B
-    CALL bfield_bcs
-    !IF (rank .EQ. 0) PRINT *, "#8"
-    !!! --- Push E field  a full time step
-    CALL push_efield
-    !IF (rank .EQ. 0) PRINT *, "#9"
-    !!! --- Boundary conditions for E
-    CALL efield_bcs
-    !IF (rank .EQ. 0) PRINT *, "#10"
-    !!! --- push B field half a time step
-    CALL push_bfield
-    !IF (rank .EQ. 0) PRINT *, "#11"
-    !!! --- Boundary conditions for B
-    CALL bfield_bcs
-    !IF (rank .EQ. 0) PRINT *, "#12"
-    !!! --- Computes derived quantities
-    CALL calc_diags
-    !IF (rank .EQ. 0) PRINT *, "#13"
-    !!! --- Output simulation results
-    CALL output_routines
-    !IF (rank .EQ. 0) PRINT *, "#14"
-    
-    it = it+1
-    timeit=MPI_WTIME()
+IF (c_dim.eq.3) THEN
 
-   IF (rank .EQ. 0)  THEN
-        WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
-        " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
-    END IF
-END DO
+  DO i=1,nst
+      IF (rank .EQ. 0) startit=MPI_WTIME()
+    
+      !!! --- Init iteration variables
+      pushtime=0._num
+      divE_computed = .False.
+    
+      !!! --- Field gather & particle push
+      !IF (rank .EQ. 0) PRINT *, "#1"
+      CALL push_particles
+      !IF (rank .EQ. 0) PRINT *, "#2"
+      !!! --- Apply BC on particles
+      CALL particle_bcs
+      !IF (rank .EQ. 0) PRINT *, "#3"
+      !!! --- Particle Sorting
+      !write(0,*),'Sorting'
+      CALL pxr_particle_sorting
+      !IF (rank .EQ. 0) PRINT *, "#4"
+      !!! --- Deposit current of particle species on the grid
+      !write(0,*),'Depose currents'
+      CALL pxrdepose_currents_on_grid_jxjyjz  
+      !IF (rank .EQ. 0) PRINT *, "#5"
+      !!! --- Boundary conditions for currents
+      !write(0,*),'Current_bcs'
+      CALL current_bcs
+      !IF (rank .EQ. 0) PRINT *, "#6"
+      !!! --- Push B field half a time step
+      !write(0,*),'push_bfield'
+      CALL push_bfield
+      !IF (rank .EQ. 0) PRINT *, "#7"
+      !!! --- Boundary conditions for B
+      CALL bfield_bcs
+      !IF (rank .EQ. 0) PRINT *, "#8"
+      !!! --- Push E field  a full time step
+      CALL push_efield
+      !IF (rank .EQ. 0) PRINT *, "#9"
+      !!! --- Boundary conditions for E
+      CALL efield_bcs
+      !IF (rank .EQ. 0) PRINT *, "#10"
+      !!! --- push B field half a time step
+      CALL push_bfield
+      !IF (rank .EQ. 0) PRINT *, "#11"
+      !!! --- Boundary conditions for B
+      CALL bfield_bcs
+      !IF (rank .EQ. 0) PRINT *, "#12"
+      !!! --- Computes derived quantities
+      CALL calc_diags
+      !IF (rank .EQ. 0) PRINT *, "#13"
+      !!! --- Output simulation results
+      CALL output_routines
+      !IF (rank .EQ. 0) PRINT *, "#14"
+    
+      it = it+1
+      timeit=MPI_WTIME()
+
+     IF (rank .EQ. 0)  THEN
+          WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
+          " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
+      END IF
+  END DO
+
+ELSE IF (c_dim.eq.2) THEN
+
+  DO i=1,nst
+      IF (rank .EQ. 0) startit=MPI_WTIME()
+
+      !!! --- Init iteration variables
+      pushtime=0._num
+      divE_computed = .False.
+
+      !!! --- Field gather & particle push
+      CALL push_particles
+
+      it = it+1
+      timeit=MPI_WTIME()
+
+     IF (rank .EQ. 0)  THEN
+          WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
+          " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
+      END IF
+  END DO
+  
+ENDIF
 
 !!! --- Output time statistics
 CALL final_output_time_statistics
@@ -129,6 +154,15 @@ TYPE(particle_tile), POINTER    :: curr_tile
 init_localtimes(:) = 0
 localtimes(:)=0
 
+! Dimension parameter check
+IF (c_dim.eq.2) THEN
+  dy = 1.
+  ntiley = 1
+  ymin = 0
+  ymax = 0
+  ny = 1
+ENDIF
+
 ! Few calculations and updates      
 nc    = nlab*g0          ! density (in the simulation frame)
 wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
@@ -137,8 +171,12 @@ w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (i
 w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
 w0    = w0_l 
 
-!!! --- Set time step/ itß
-dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+!!! --- Set time step/ it
+IF (c_dim.eq.3) THEN
+  dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+ELSE IF (c_dim.eq.2) THEN
+  dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
+ENDIF
 it = 0
 
 !!! --- set number of time steps or total time
@@ -158,7 +196,7 @@ sorting_shiftx = sorting_shiftx*dx
 sorting_shifty = sorting_shifty*dy
 sorting_shiftz = sorting_shiftz*dz
 
-!!! --- Precomputed data
+!!! --- Precomputed parameters
 dxi = 1.0_num/dx
 dyi = 1.0_num/dy
 dzi = 1.0_num/dz
@@ -181,9 +219,11 @@ CALL init_stencil_coefficients()
 IF (rank .EQ. 0) THEN
   write(0,*) ''
   write(0,*) 'SIMULATION PARAMETERS:'
+  write(0,*) 'Dimension:',c_dim  
   write(0,*) 'dx, dy, dz:',dx,dy,dz
   write(0,*) 'dt:',dt,'s',dt*1e15,'fs'
   write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
+  write(0,*) 'Number of steps:',nsteps
   write(0,*) 'Tiles:',ntilex,ntiley,ntilez
   write(0,*) 'Guard cells:',nxguards,nyguards,nzguards
   write(0,*) 'Topology:',topology

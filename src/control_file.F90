@@ -212,7 +212,10 @@ CONTAINS
                 READ(buffer, *) mpicom_curr     
             ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) mpi_buf_size 
+                READ(buffer, *) mpi_buf_size
+            ELSE IF (INDEX(buffer,'c_dim') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) c_dim                  
             END IF
         END DO
         RETURN
@@ -290,7 +293,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo 
             ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') lvec_charge_depo                                       
+                READ(buffer(ix+1:string_length), '(i10)') lvec_charge_depo
+            ELSE IF (INDEX(buffer,'c_dim') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_dim                
             ELSE IF (INDEX(buffer,'end::cpusplit') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -447,8 +453,11 @@ CONTAINS
             !WRITE(0,*),TRIM(ADJUSTL(buffer))
             IF (INDEX(buffer,'#') .GT. 0) THEN
                CYCLE
-            ENDIF 
-            IF (INDEX(buffer,'nx') .GT. 0) THEN
+            ENDIF
+            IF (INDEX(buffer,'c_dim') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_dim
+            ELSE IF (INDEX(buffer,'nx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nx_global_grid
                 nx_global=nx_global_grid-1
