@@ -6808,13 +6808,13 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
   ikxporig=-nzguard
 
   moffjx = (/0_isp, 1_isp, 2_isp, 3_isp, nnx, 1_isp+nnx, 2_isp+nnx, 3_isp+nnx/)
-  moffjy = (/0_isp, nnx, 2*nnx, 3*nnx, 1_isp, 1_isp+nnx, 1_isp+2*nnx, 1_isp+3*nnx/)
-  moffjz = (/0_isp, nnxy, 2_isp*nnxy, 3_isp*nnxy, 1_isp, 1_isp+nnxy, 1_isp+2*nnxy, 1_isp+3*nnxy/)
+  moffjy = (/0_isp, nnx, 2_isp*nnx, 3_isp*nnx, 1_isp, 1_isp+nnx, 1_isp+2_isp*nnx, 1_isp+3_isp*nnx/)
+  moffjz = (/0_isp, nnxy, 2_isp*nnxy, 3_isp*nnxy, 1_isp, 1_isp+nnxy, 1_isp+2_isp*nnxy, 1_isp+3_isp*nnxy/)
   
-  moffjxc = (/2*ncx,4*ncx,ncxy,ncxy+2*ncx,ncxy+4*ncx,&
-              2*ncxy,2*ncxy+2*ncx,2*ncxy+4*ncx,&
-              3*ncxy,3*ncxy+2*ncx,3*ncxy+4*ncx,&
-              4*ncxy,4*ncxy+2*ncx,4*ncxy+4*ncx/)
+  moffjxc = (/2_isp*ncx,4_isp*ncx,ncxy,ncxy+2_isp*ncx,ncxy+4_isp*ncx,&
+              2_isp*ncxy,2_isp*ncxy+2_isp*ncx,2_isp*ncxy+4_isp*ncx,&
+              3_isp*ncxy,3_isp*ncxy+2_isp*ncx,3_isp*ncxy+4_isp*ncx,&
+              4_isp*ncxy,4_isp*ncxy+2_isp*ncx,4_isp*ncxy+4_isp*ncx/)
   
   orig=(nxguard+iixporig) + (nyguard+ijxporig)*nnx + (nzguard+ikxporig)*nnxy
 
@@ -9519,8 +9519,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
               if(k<izmax) then
                  sdz(i,k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))        ! Wz coefficient from esirkepov
                  if (k>izmin) sdz(i,k)=sdz(i,k)+sdz(i,k-1)         ! Integration of Wz along z
-                 jz(ic,kc) = jz(ic,kc) + sdz(i,k)              ! Deposition on the current
-                 
+                 jz(ic,kc) = jz(ic,kc) + sdz(i,k)                  ! Deposition on the current
               end if
            end do
         end do

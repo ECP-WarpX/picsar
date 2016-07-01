@@ -1162,10 +1162,29 @@ END SUBROUTINE charge_bcs
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_tiles_and_mpi: start"
 #endif
-    
+
       tmptime = MPI_WTIME()
+
+      SELECT CASE (c_dim)
+      ! __________________________
+      ! 2D
+      CASE(2)
+
+#ifdef _OPENMP
+    	  CALL particle_bcs_tiles_2d_openmp()
+#else
+    	  CALL particle_bcs_tiles_2d()
+#endif
+
+    	  CALL particle_bcs_mpi_non_blocking()
+
+      ! __________________________
+      ! 3D
+      CASE DEFAULT 	
     
-      CALL particle_bcs_tiles_and_mpi_3d
+        CALL particle_bcs_tiles_and_mpi_3d
+      
+      END SELECT
       
       localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
     

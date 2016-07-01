@@ -129,15 +129,21 @@ DO iz=1, ntilez ! LOOP ON TILES
 					CASE (2) ! 2D CASE X Z 
 										  	
 						!!! --- Gather electric and magnetic fields on particles				  
-            CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
-										  curr_tile%part_z, curr_tile%part_bx,                    									     &
-										  curr_tile%part_by,curr_tile%part_bz,                    										 &
-										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,     	 &    
-										  curr_tile%nz_cells_tile,nxjg,         		       					 						 &
-										  nzjg,noxx,nozz,currg%bxtile,currg%bytile,  	 												 &
-										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)											  
+            CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
+											  curr_tile%part_z, curr_tile%part_ex,                            	&
+											  curr_tile%part_ey,curr_tile%part_ez,                   			&
+											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			&
+											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
+											  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
+											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
+											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
+											  currg%eztile,                                          			&
+											  currg%bxtile,currg%bytile,currg%bztile                 			&
+											  ,.FALSE.,.TRUE.)										  
 										  										  		
-					CASE DEFAULT ! 3D CASE 
+					CASE DEFAULT ! 3D CASE
+					 
+						!!! --- Gather electric and magnetic fields on particles						
 						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
 											  curr_tile%part_z, curr_tile%part_ex,                            	&
 											  curr_tile%part_ey,curr_tile%part_ez,                   			&
@@ -188,6 +194,7 @@ tend=MPI_WTIME()
 pushtime=pushtime+(tend-tdeb)
 localtimes(1) = localtimes(1) + (tend-tdeb)
 END SUBROUTINE push_particles_sub
+
 
 ! ________________________________________________________________________________________
 SUBROUTINE push_particles_sub_2d(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
@@ -330,6 +337,7 @@ pushtime=pushtime+(tend-tdeb)
 localtimes(1) = localtimes(1) + (tend-tdeb)
 END SUBROUTINE push_particles_sub_2d
 
+
 !===============================================================================
 !  Field gathering+ (E & B) Push half a time step 
 !===============================================================================
@@ -426,22 +434,18 @@ DO iz=1, ntilez ! LOOP ON TILES
 					!!! ---- Loop by blocks over particles in a tile (blocking)
 					SELECT CASE (c_dim)
 					CASE (2) ! 2D CASE 
-						!!! --- Gather electric field on particles
-						CALL pxr_gete2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
-											  curr_tile%part_z, curr_tile%part_ex,                                                       &
-											  curr_tile%part_ey,curr_tile%part_ez,                   									 &
-											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,      &
-											  curr_tile%nz_cells_tile,nxjg,             				    							 &
-											  nzjg,noxx,nozz,currg%extile,currg%eytile, 												 &
-											  currg%eztile,.FALSE.,.FALSE.,.TRUE.)
-						!!! --- Gather magnetic fields on particles
-						CALL pxr_getb2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
-										  curr_tile%part_z, curr_tile%part_bx,                    									     &
-										  curr_tile%part_by,curr_tile%part_bz,                    										 &
-										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,     	 &    
-										  curr_tile%nz_cells_tile,nxjg,         		       					 						 &
-										  nzjg,noxx,nozz,currg%bxtile,currg%bytile,  	 												 &
-										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)
+						!!! --- Gather electric and magnetic fields on particles				  
+            CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
+											  curr_tile%part_z, curr_tile%part_ex,                            	&
+											  curr_tile%part_ey,curr_tile%part_ez,                   			&
+											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			&
+											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
+											  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
+											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
+											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
+											  currg%eztile,                                          			&
+											  currg%bxtile,currg%bytile,currg%bztile                 			&
+											  ,.FALSE.,.TRUE.)		
 					CASE DEFAULT ! 3D CASE 
 						!!! --- Gather electric and magnetic fields on particles
 						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     		   	&
@@ -628,21 +632,27 @@ SUBROUTINE pxr_epush_v(np,uxp,uyp,uzp,ex,ey,ez,q,m,dt)
 USE constants
 IMPLICIT NONE
 INTEGER(idp) :: np
-REAL(num):: uxp(np),uyp(np),uzp(np)
-REAL(num):: ex(np),ey(np),ez(np)
-REAL(num):: q,m,dt
-
+REAL(num)    :: uxp(np),uyp(np),uzp(np)
+REAL(num)    :: ex(np),ey(np),ez(np)
+REAL(num)    :: q,m,dt
 INTEGER(idp) :: ip
-REAL(num):: const
+REAL(num)    :: const
 
 const = q*dt/m
-!!$OMP PARALLEL DO PRIVATE(ip)
+
+#if defined _OPENMP && _OPENMP>=201307
+		!$OMP SIMD 
+#elif defined __IBMBGQ__
+		!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+		!$DIR SIMD 
+#endif  
 DO ip=1,np
     uxp(ip) = uxp(ip) + ex(ip)*const
     uyp(ip) = uyp(ip) + ey(ip)*const
     uzp(ip) = uzp(ip) + ez(ip)*const
 ENDDO
-!!$OMP END PARALLEL DO
+!$OMP END SIMD
 
 RETURN
 END SUBROUTINE pxr_epush_v
