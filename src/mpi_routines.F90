@@ -711,8 +711,10 @@ SUBROUTINE mpi_minimal_init()
     WRITE(0,*) ""
     WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
     WRITE(0,*) "---------------------------------------------------------------------------"
-    WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
+    WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher + field gathering:", mintimes(1), avetimes(1), maxtimes(1),&
     percenttimes(1), avetimes(1)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Field gathering (if non coupled):",mintimes(14), avetimes(14), maxtimes(14),&
+    percenttimes(14), avetimes(14)/nsteps*1e3
     WRITE(0,'(X,A25,5(X,F8.2))') "Particle MPI bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
     percenttimes(2), avetimes(2)/nsteps*1e3
     WRITE(0,'(X,A25,5(X,F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), avetimes(11), maxtimes(11),&

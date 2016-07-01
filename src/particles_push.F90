@@ -114,6 +114,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_bz(1:count)=0.0_num
 					!!! ---- Loop by blocks over particles in a tile (blocking)
 					!!! --- Gather electric field on particles
+					
 					SELECT CASE (c_dim)
 					CASE (2) ! 2D CASE X Z 
 										  	
@@ -145,6 +146,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  currg%bxtile,currg%bytile,currg%bztile                 			&
 											  ,.FALSE.,.TRUE.)
 					END SELECT
+					
 					!! --- Push velocity with E half step
 					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
 					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					    &
