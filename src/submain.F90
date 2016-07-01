@@ -24,11 +24,18 @@ IF (rank .EQ. 0) THEN
 WRITE (0,*) "nsteps = ", nst
 END IF
 
-!!! --- Start Vtune analysis
+!!! --- Start Vtune/SDE analysis
 #if PROFILING==1                      
 CALL start_collection()                
 #endif                                
 
+! ________________________________________________________________________________________
+! 
+! Main loop
+! ________________________________________________________________________________________
+
+! ___________________________________________
+! Loop in 3D
 IF (c_dim.eq.3) THEN
 
   DO i=1,nst
@@ -92,6 +99,8 @@ IF (c_dim.eq.3) THEN
       END IF
   END DO
 
+! ___________________________________________
+! Loop in 2D
 ELSE IF (c_dim.eq.2) THEN
 
   DO i=1,nst
@@ -103,6 +112,12 @@ ELSE IF (c_dim.eq.2) THEN
 
       !!! --- Field gather & particle push
       CALL push_particles
+
+      !!! --- Apply BC on particles
+      CALL particle_bcs_2d
+
+      !!! --- Deposit current of particle species on the grid
+      CALL pxrdepose_currents_on_grid_jxjyjz_2d
 
       it = it+1
       timeit=MPI_WTIME()

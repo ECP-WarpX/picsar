@@ -4,6 +4,7 @@
 !
 ! List of subroutines:
 ! - pxrdepose_currents_on_grid_jxjyjz
+!
 ! - pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 ! - pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 ! - pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
@@ -45,9 +46,9 @@
 
 ! _____________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
-  ! 
-  ! Main subroutine called in submain
-  ! ___________________________________________________________________
+! 
+! Main subroutine called in submain
+! ___________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -530,6 +531,69 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 #endif
 
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
+
+! _____________________________________________________________________
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
+! 
+! Main subroutine for the current deposition called in submain for the 2d
+! ___________________________________________________________________
+  USE fields
+  USE shared_data
+  USE params
+  USE time_stat
+#if defined(PROFILING) && PROFILING==2      
+  USE ITT_SDE_FORTRAN                       
+#endif                                   
+  IMPLICIT NONE 
+  
+  REAL(num) :: tdeb, tend
+  
+  ! ___________________________________________________________________________
+  ! Interfaces for func_order
+  INTERFACE
+    
+    
+  END INTERFACE
+  ! ___________________________________________________________________________
+
+! For debugging    
+#if defined(DEBUG)
+  WRITE(0,*) "Depose_currents_on_grid: start"
+#endif
+
+  ! For time statistics
+  tdeb=MPI_WTIME()
+
+! For profiling with Vtune/SDE
+#if PROFILING==2              
+  CALL start_collection()     
+#endif                        
+
+  jx = 0.0_num
+  jy = 0.0_num
+  jz = 0.0_num
+
+  ! Current deposition branches
+
+  CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	       nox,noy,noz,dx,dy,dz,dt)
+
+! Stop Vtune/SDE analysis
+#if PROFILING==2                     
+  CALL stop_collection()            
+#endif                               
+
+  ! For time statistics
+  tend = MPI_WTIME()
+  localtimes(3)=localtimes(3)+(tend-tdeb)
+  
+! For debugging   
+#if defined(DEBUG)
+  WRITE(0,*) "Depose_current_on_grid: stop"
+#endif
+
+END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
+
 
 !===============================================================================
 ! Deposit current in each tile with the classical method
@@ -1730,9 +1794,9 @@ dep_curr_time=dep_curr_time+(tend-tdeb)
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 
 
+!===============================================================================
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-!===============================================================================
 ! Deposit current in each tile with Esirkepov method
 ! This subroutine is called from Python and does not have interface arguments 
 ! OpenMP version. Avoids conflict while reducing tile currents in the global 
@@ -1745,6 +1809,7 @@ USE omp_lib
 USE timing
 USE time_stat
 IMPLICIT NONE
+
 INTEGER(idp), INTENT(IN)        :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
 INTEGER(idp), INTENT(IN)        :: noxx,noyy,nozz
 REAL(num), INTENT(IN)           :: dxx,dyy,dzz, dtt
@@ -9152,10 +9217,12 @@ subroutine picsar_depose_jxjyjz_esirkepov_n(cj,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
 end subroutine picsar_depose_jxjyjz_esirkepov_n
 
 
-!!! 2D Current deposition esirkepov n order 
+! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
+! 2D Current deposition esirkepov n order (from 0 to 3)
+! ________________________________________________________________________________________
    use constants
    implicit none
    integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose

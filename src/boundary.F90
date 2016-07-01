@@ -1176,6 +1176,80 @@ END SUBROUTINE charge_bcs
     
   END SUBROUTINE particle_bcs
 
+!!! Boundary condition routine on particles
+  SUBROUTINE particle_bcs_2d
+  	USE omp_lib
+    USE time_stat
+    IMPLICIT NONE
+	  REAL(num) :: tdeb, tend
+    REAL(num) :: tmptime
+    tmptime = MPI_WTIME()
+    tdeb=MPI_WTIME()
+    
+    ! ___________________________________________
+    ! OpenMP and MPI exchanges are done separately
+    IF (partcom.eq.1) THEN
+    
+    ! First exchange particles between tiles (NO MPI at that point)
+#if defined(DEBUG)
+#ifdef _OPENMP
+  WRITE(0,*) "particle_bcs_tiles_openmp: start"
+#else
+  WRITE(0,*) "particle_bcs_tiles: start"
+#endif
+#endif
+
+#ifdef _OPENMP
+    	CALL particle_bcs_tiles_2d_openmp()
+#else
+    	CALL particle_bcs_tiles_2d()
+#endif
+
+    localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
+    tmptime = MPI_WTIME()
+    tend = MPI_WTIME()
+    local_time_part=local_time_part+(tend-tdeb)
+
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_mpi: start"
+#endif
+
+    	CALL particle_bcs_mpi_non_blocking_2d()
+    
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_mpi: stop"
+#endif
+
+    localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
+    
+    ! _____________________________________________
+    ! Tile and MPI com in one
+    ! Default
+    ELSE
+
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_tiles_and_mpi: start"
+#endif
+    
+      tmptime = MPI_WTIME()
+    
+#ifdef _OPENMP
+    	CALL particle_bcs_tiles_2d_openmp()
+#else
+    	CALL particle_bcs_tiles_2d()
+#endif
+
+    	CALL particle_bcs_mpi_non_blocking_2d()
+      
+      localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
+    
+#if defined(DEBUG)
+  WRITE(0,*) "particle_bcs_tiles_and_mpi: stop"
+#endif    
+    ENDIF
+    
+  END SUBROUTINE particle_bcs_2d
+
 !!! Boundary condition on tiles
   SUBROUTINE particle_bcs_tiles
     IMPLICIT NONE
@@ -1429,7 +1503,7 @@ END SUBROUTINE charge_bcs
 						nptile=curr_tile%np_tile(1)
 						DO i=nptile, 1, -1! LOOP ON PARTICLES
 							partx=curr_tile%part_x(i)
-							party=curr_tile%part_y(i)
+							!party=curr_tile%part_y(i)
 							partz=curr_tile%part_z(i)
 							partux=curr_tile%part_ux(i)
 							partuy=curr_tile%part_uy(i)
@@ -1450,9 +1524,12 @@ END SUBROUTINE charge_bcs
 							! Get new indexes of particle in array of tiles
 							indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
 							indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
-							CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-							CALL add_particle_at_tile(curr, indx,iy,indz, &
-								 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+							!CALL rm_particle_at_tile_2d(curr,ix,iy,iz,i)
+							CALL rm_particle_at_tile_2d(curr,ix,iz,i)
+							!CALL add_particle_at_tile(curr, indx,iy,indz, &
+							!	 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+							CALL add_particle_at_tile_2d(curr, indx,indz, &
+								 partx, partz, partux, partuy, partuz, gaminv, partw)								 
 						END DO !END LOOP ON PARTICLES
 					END DO
 				END DO ! END LOOP ON TILES
@@ -2235,6 +2312,242 @@ END SUBROUTINE charge_bcs
 
   DEALLOCATE(sendbuff,recvbuff,npart_send,npart_recv,requests)
   END SUBROUTINE particle_bcs_mpi_non_blocking
+
+! ________________________________________________________________________________________
+  SUBROUTINE particle_bcs_mpi_non_blocking_2d
+! MPI Boundary condition routine on particles in 2D
+! ________________________________________________________________________________________
+
+    INTEGER(isp), PARAMETER                  :: nvar=8 ! Simple implementation
+    INTEGER(isp), DIMENSION(-1:1,-1:1)       :: nptoexch
+    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: sendbuff, recvbuff
+    REAL(num), ALLOCATABLE, DIMENSION(:)     :: temp
+    LOGICAL(idp), ALLOCATABLE, DIMENSION(:)  :: mask
+    INTEGER(isp)                             :: ibuff, isend, nout, nbuff, ninit
+    INTEGER(isp) :: xbd, ybd, zbd
+    INTEGER(isp) :: ixp, iyp, izp
+    INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
+    INTEGER(isp) :: mpitag, count
+    INTEGER(idp), ALLOCATABLE, DIMENSION(:,:,:) :: npart_recv, npart_send
+    INTEGER(isp) :: dest, src, ireq
+    INTEGER(isp), DIMENSION(:), ALLOCATABLE :: requests 
+    LOGICAL(idp) :: out_of_bounds
+    INTEGER(idp) :: ispecies, i, ip, ix, iy, iz, npcurr, ipart
+    INTEGER(idp) :: ixtile, iytile, iztile, ispec, nmax
+    REAL(num) :: part_xyz, tdeb, tend
+    TYPE(particle_species), POINTER :: currsp
+    TYPE(particle_tile), POINTER :: curr
+    
+    mpitag=0_isp
+    ALLOCATE(npart_send(1:nspecies,-1:1,-1:1))
+    ALLOCATE(npart_recv(1:nspecies,-1:1,-1:1))
+    ALLOCATE(requests(27*2))
+    
+    npart_recv=0
+    npart_send=0
+    
+	! POST IRECV PARTICLES FROM ADJACENT DOMAINS 
+	! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
+	ireq=1
+	DO iz = -1, 1
+			DO ix = -1, 1
+				IF (ABS(ix) + ABS(iz) .EQ. 0) CYCLE
+				count=nspecies
+				dest = neighbour(ix,0,iz)
+				CALL MPI_IRECV(npart_recv(1:count,ix,iz), count,  MPI_INTEGER8, dest, mpitag,    &
+								comm, requests(ireq), errcode)   
+				ireq=ireq+1 
+			END DO 
+	END DO 
+
+    
+    ! GET NUMBER OF PARTICLES AT BORDER OF CURRENT DOMAIN (INIT SEND BUFFER)
+    nbuff=0
+    DO ispecies=1, nspecies 
+    	currsp => species_parray(ispecies)
+		DO iztile=1, ntilez !LOOP ON TILES
+				DO ixtile=1, ntilex
+					curr=>currsp%array_of_tiles(ixtile,1,iztile)
+					IF (.NOT. curr%subdomain_bound) CYCLE
+					nbuff=nbuff+ curr%np_tile(1) 
+				END DO 
+		END DO 
+	END DO 
+	
+	ALLOCATE(sendbuff(1:nbuff,-1:1,-1:1))
+	! PUT PARTICLES TO BE SENT IN BUFFER 
+	nptoexch=0
+    DO ispecies=1, nspecies !LOOP ON SPECIES
+        ! Init send recv buffers
+        currsp => species_parray(ispecies)
+        DO iztile=1, ntilez !LOOP ON TILES
+                DO ixtile=1, ntilex
+                    curr=>currsp%array_of_tiles(ixtile,1,iztile)
+                    ! If not subdomain border, nothing to do
+                    IF (.NOT. curr%subdomain_bound) CYCLE
+                    ! Else, search for outbound particles
+                    part_xyz=0.
+                    ! Identify outbounds particles
+                	npcurr=curr%np_tile(1)
+                    DO i = npcurr,1,-1 !LOOP ON PARTICLES
+                        xbd = 0
+                        zbd = 0
+                        out_of_bounds = .FALSE.
+                        part_xyz = curr%part_x(i)
+                        ! Particle has left this processor
+                        IF (part_xyz .LT. x_min_local) THEN
+                            xbd = -1
+                            IF (x_min_boundary) THEN
+                            	SELECT CASE (pbound_x_min)
+                            	CASE (1_idp) ! absorbing 
+                            		mask(i)=.FALSE.
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_x(i) = part_xyz + length_x
+                                END SELECT 
+                            ENDIF
+                        ENDIF
+                        ! Particle has left this processor
+                        IF (part_xyz .GE. x_max_local) THEN
+                            xbd = 1
+                            IF (x_max_boundary) THEN
+                            	SELECT CASE (pbound_x_max)
+                            	CASE (1_idp) ! absorbing
+                            		mask(i)=.FALSE.
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_x(i) = part_xyz - length_x
+                                END SELECT
+                            ENDIF
+                        ENDIF
+
+                        part_xyz = curr%part_z(i)
+                        ! Particle has left this processor
+                        IF (part_xyz .LT. z_min_local) THEN
+                            zbd = -1
+                            IF (z_min_boundary) THEN
+								SELECT CASE (pbound_z_min)
+								CASE (1_idp) ! absorbing 
+									mask(i)=.FALSE.
+									CYCLE
+								CASE DEFAULT ! periodic 
+									curr%part_z(i) = part_xyz + length_z
+								END SELECT
+                            ENDIF
+                        ENDIF
+
+                        ! Particle has left this processor
+                        IF (part_xyz .GE. z_max_local) THEN
+                            zbd = 1
+                            ! Particle has left the system
+                            IF (z_max_boundary) THEN
+                            	SELECT CASE (pbound_z_max)
+                            	CASE (1_idp) ! absorbing 
+                            		mask(i)=.FALSE.
+                            		CYCLE
+                            	CASE DEFAULT ! periodic 
+                                	curr%part_z(i) = part_xyz - length_z
+                                END SELECT
+                            ENDIF
+                        ENDIF
+
+                        IF (ABS(xbd) + ABS(zbd) .GT. 0) THEN
+                        ! Particle has left processor, send it to its neighbour
+                            ibuff=nptoexch(xbd,zbd)*nvar+1
+                            sendbuff(ibuff,xbd,zbd)    = curr%part_x(i)
+                            sendbuff(ibuff+1,xbd,zbd)  = curr%part_z(i)
+                            sendbuff(ibuff+2,xbd,zbd)  = curr%part_ux(i)
+                            sendbuff(ibuff+3,xbd,zbd)  = curr%part_uy(i)
+                            sendbuff(ibuff+4,xbd,zbd)  = curr%part_uz(i)
+                            sendbuff(ibuff+5,xbd,zbd)  = curr%part_gaminv(i)
+                            sendbuff(ibuff+6,xbd,zbd)  = curr%pid(i,wpid)
+                        	  npart_send(ispecies, xbd,zbd)=npart_send(ispecies,xbd,zbd)+1
+                            nptoexch(xbd,zbd) = nptoexch(xbd,zbd)+1
+                            ! Remove particle of current species from current tile 
+                       	    CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i)
+                        ENDIF
+                    ENDDO !END LOOP ON PARTICLES
+                  ENDDO
+            ENDDO ! END LOOP ON TILES
+		ENDDO ! END LOOP ON SPECIES 
+		
+		! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
+		DO iz = -1, 1
+				DO ix = -1, 1
+				    IF (ABS(ix) + ABS(iz) .EQ. 0) CYCLE
+					count=nspecies
+					src = INT(neighbour(ix,0,iz),isp)
+					CALL MPI_ISEND(npart_send(1:count,ix,iz), count,  MPI_INTEGER8, src, mpitag,    &
+									comm, requests(ireq), errcode)   
+					ireq=ireq+1 
+				END DO 
+	    END DO 
+
+		CALL MPI_WAITALL(ireq-1_isp,requests, MPI_STATUSES_IGNORE, errcode)
+		requests=0_isp
+		ireq=1
+		
+		! ----- POST IRECV FOR PARTICLE DATA 
+		nmax=nvar*MAXVAL(SUM(npart_recv,1))
+		ALLOCATE(recvbuff(nmax,-1:1,-1:1))
+		DO iz = -1, 1
+				DO ix = -1, 1
+					count=nvar*SUM(npart_recv(:,ix,iz))
+				    IF (ABS(ix)  + ABS(iz) .EQ. 0) CYCLE
+					IF (count .GT. 0) THEN 
+						src = INT(neighbour(ix,0,iz),isp)
+						CALL MPI_IRECV(recvbuff(1:count,ix,iz),count, MPI_DOUBLE_PRECISION,src,MPI_ANY_TAG, &
+										comm, requests(ireq),errcode)
+						ireq=ireq+1
+					ENDIF
+				END DO 
+	    END DO 
+
+		! ----- POST ISEND FOR PARTICLE DATA 
+		DO iz = -1, 1
+			DO iy = -1, 1
+				DO ix = -1, 1
+					count=nvar*SUM(npart_send(:,ix,iz))
+				    IF (ABS(ix) + ABS(iz) .EQ. 0) CYCLE
+					IF (count .GT. 0) THEN 
+						dest = INT(neighbour(ix,0,iz),isp)
+						CALL MPI_ISEND(sendbuff(1:count,ix,iz),count, MPI_DOUBLE_PRECISION,dest,mpitag, &
+										comm, requests(ireq),errcode)
+						ireq=ireq+1
+					ENDIF
+				END DO 
+			END DO 
+	    END DO 	
+	    
+	    ! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
+		count=ireq-1
+		IF (count .GT. 0_isp) THEN 
+			CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+		ENDIF
+
+		! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
+		DO iz = -1, 1
+				DO ix = -1, 1
+					IF (ABS(ix) + ABS(iz) .EQ. 0) CYCLE
+					ispec=0
+					DO ispecies=1,nspecies
+						currsp=> species_parray(ispecies) 
+						DO ipart=1,nvar*npart_recv(ispecies,ix,iz),nvar
+							ibuff=ispec+ipart 
+							CALL add_particle_to_species_2d(currsp, recvbuff(ibuff,ix,iz), &
+							recvbuff(ibuff+1,ix,iz), recvbuff(ibuff+2,ix,iz), 	   &
+							recvbuff(ibuff+3,ix,iz), recvbuff(ibuff+4,ix,iz), 	   &    
+							recvbuff(ibuff+5,ix,iz), recvbuff(ibuff+6,ix,iz))
+						END DO 
+						ispec=ispec+nvar*npart_recv(ispecies,ix,iz)
+					END DO 
+				END DO 
+	    END DO 	
+
+
+  DEALLOCATE(sendbuff,recvbuff,npart_send,npart_recv,requests)
+  END SUBROUTINE particle_bcs_mpi_non_blocking_2d
+
 
   ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs_tiles_and_mpi_3d
