@@ -1199,6 +1199,8 @@ END SUBROUTINE charge_bcs
   SUBROUTINE particle_bcs_2d
   	USE omp_lib
     USE time_stat
+    USE tiling
+    
     IMPLICIT NONE
 	  REAL(num) :: tdeb, tend
     REAL(num) :: tmptime
@@ -2379,6 +2381,7 @@ END SUBROUTINE charge_bcs
 			END DO 
 	END DO 
 
+
     
     ! GET NUMBER OF PARTICLES AT BORDER OF CURRENT DOMAIN (INIT SEND BUFFER)
     nbuff=0
@@ -2392,7 +2395,8 @@ END SUBROUTINE charge_bcs
 				END DO 
 		END DO 
 	END DO 
-	
+
+
 	ALLOCATE(sendbuff(1:nbuff,-1:1,-1:1))
 	! PUT PARTICLES TO BE SENT IN BUFFER 
 	nptoexch=0
@@ -2489,7 +2493,8 @@ END SUBROUTINE charge_bcs
                   ENDDO
             ENDDO ! END LOOP ON TILES
 		ENDDO ! END LOOP ON SPECIES 
-		
+
+
 		! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
 		DO iz = -1, 1
 				DO ix = -1, 1
@@ -2501,6 +2506,7 @@ END SUBROUTINE charge_bcs
 					ireq=ireq+1 
 				END DO 
 	    END DO 
+
 
 		CALL MPI_WAITALL(ireq-1_isp,requests, MPI_STATUSES_IGNORE, errcode)
 		requests=0_isp
@@ -2522,9 +2528,9 @@ END SUBROUTINE charge_bcs
 				END DO 
 	    END DO 
 
+
 		! ----- POST ISEND FOR PARTICLE DATA 
 		DO iz = -1, 1
-			DO iy = -1, 1
 				DO ix = -1, 1
 					count=nvar*SUM(npart_send(:,ix,iz))
 				    IF (ABS(ix) + ABS(iz) .EQ. 0) CYCLE
@@ -2535,14 +2541,15 @@ END SUBROUTINE charge_bcs
 						ireq=ireq+1
 					ENDIF
 				END DO 
-			END DO 
 	    END DO 	
-	    
+
+    
 	    ! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
 		count=ireq-1
 		IF (count .GT. 0_isp) THEN 
 			CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
 		ENDIF
+
 
 		! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
 		DO iz = -1, 1

@@ -186,6 +186,35 @@ CONTAINS
     END SUBROUTINE set_tile_split_for_species
 
     !!! --- Add particle to array of tiles
+    SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, &
+               partux, partuy, partuz, gaminv, partw)
+        IMPLICIT NONE
+        REAL(num) :: partx, partz, partux, partuy, partuz, partw, gaminv
+        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
+        TYPE(particle_tile), POINTER :: curr
+        INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, nptile
+        INTEGER(idp) :: ixtile, iytile, iztile
+
+
+        ! Get first tiles dimensions (may be different from last tile)
+        nx0_grid_tile = currsp%array_of_tiles(1,1,1)%nx_grid_tile
+        nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
+
+        ! Get particle index in array of tile
+	    	ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+		    iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+
+        ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
+        !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+        
+        CALL add_particle_at_tile_2d(currsp,ixtile,iztile, partx, partz, &
+                partux, partuy, partuz, gaminv, partw)
+
+        ! Update total number of particle species
+        currsp%species_npart=currsp%species_npart+1
+    END SUBROUTINE add_particle_to_species_2d
+
+    !!! --- Add particle to array of tiles
     SUBROUTINE add_particle_to_species(currsp, partx, party, partz, &
                partux, partuy, partuz, gaminv, partw)
         IMPLICIT NONE
@@ -216,34 +245,52 @@ CONTAINS
         currsp%species_npart=currsp%species_npart+1
     END SUBROUTINE add_particle_to_species
 
-    !!! --- Add particle to array of tiles
-    SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, &
-               partux, partuy, partuz, gaminv, partw)
-        IMPLICIT NONE
-        REAL(num) :: partx, partz, partux, partuy, partuz, partw, gaminv
-        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER :: curr
-        INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, nptile
-        INTEGER(idp) :: ixtile, iytile, iztile
-
-
-        ! Get first tiles dimensions (may be different from last tile)
-        nx0_grid_tile = currsp%array_of_tiles(1,1,1)%nx_grid_tile
-        nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
-
-        ! Get particle index in array of tile
-	    	ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
-		    iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
-
-        ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
-        !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
-        
-        CALL add_particle_at_tile_2d(currsp,ixtile,iztile, partx, partz, &
+    ! ____________________________________________________________________________________
+    SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, &
                 partux, partuy, partuz, gaminv, partw)
+    ! 
+    ! In 2D, add a particle with its properties to the list of particles 
+    ! inside the tile
+    ! ____________________________________________________________________________________            
+        IMPLICIT NONE
+        
+        ! ___ Arguments _________________________________________________________
+        INTEGER(idp) :: count, nmax, ixt, izt
+        REAL(num)    :: partx, partz, partux, partuy, partuz, gaminv, partw
+        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
+        TYPE(particle_tile), POINTER                    :: curr
+        
+        curr=>currsp%array_of_tiles(ixt,1,izt)
+        ! If no particles in tile, allocate particle arrays
+        IF (.NOT. curr%l_arrays_allocated) THEN
+            CALL allocate_tile_arrays(curr)
+        ENDIF
 
-        ! Update total number of particle species
-        currsp%species_npart=currsp%species_npart+1
-    END SUBROUTINE add_particle_to_species_2d
+        ! Sanity check for max number of particles in tile
+        count = curr%np_tile(1)+1
+        nmax  = curr%npmax_tile
+        IF (count .GT. nmax) THEN
+        ! Resize particle tile arrays if tile is full
+        	currsp%are_tiles_reallocated(ixt,1,izt)=1
+            CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
+        ENDIF
+        ! Finally, add particle to tile
+        curr%np_tile(1)=count
+        curr%part_x(count)  = partx
+        curr%part_z(count)  = partz
+        curr%part_ux(count) = partux
+        curr%part_uy(count) = partuy
+        curr%part_uz(count) = partuz
+        curr%part_gaminv(count) = gaminv
+        curr%pid(count,wpid) = partw
+        curr%part_ex(count)  = 0._num
+        curr%part_ey(count)  = 0._num
+        curr%part_ez(count)  = 0._num
+        curr%part_bx(count)  = 0._num
+        curr%part_by(count)  = 0._num
+        curr%part_bz(count)  = 0._num
+    END SUBROUTINE add_particle_at_tile_2d
+
 
     ! __________________________________________________________________________
     SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
@@ -288,50 +335,6 @@ CONTAINS
         curr%part_by(count)  = 0._num
         curr%part_bz(count)  = 0._num
     END SUBROUTINE add_particle_at_tile
-
-    ! __________________________________________________________________________
-    SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, &
-                partux, partuy, partuz, gaminv, partw)
-    ! 
-    ! In 2D, add a particle with its properties to the list of particles 
-    ! inside the tile
-    ! __________________________________________________________________________            
-        IMPLICIT NONE
-        INTEGER(idp) :: count, nmax, ixt, izt
-        REAL(num) :: partx, partz, partux, partuy, partuz, gaminv, partw
-        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER :: curr
-        
-        curr=>currsp%array_of_tiles(ixt,1,izt)
-        ! If no particles in tile, allocate particle arrays
-        IF (.NOT. curr%l_arrays_allocated) THEN
-            CALL allocate_tile_arrays(curr)
-        ENDIF
-
-        ! Sanity check for max number of particles in tile
-        count = curr%np_tile(1)+1
-        nmax  = curr%npmax_tile
-        IF (count .GT. nmax) THEN
-        ! Resize particle tile arrays if tile is full
-        	currsp%are_tiles_reallocated(ixt,1,izt)=1
-            CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
-        ENDIF
-        ! Finally, add particle to tile
-        curr%np_tile(1)=count
-        curr%part_x(count)  = partx
-        curr%part_z(count)  = partz
-        curr%part_ux(count) = partux
-        curr%part_uy(count) = partuy
-        curr%part_uz(count) = partuz
-        curr%part_gaminv(count) = gaminv
-        curr%pid(count,wpid) = partw
-        curr%part_ex(count)  = 0._num
-        curr%part_ey(count)  = 0._num
-        curr%part_ez(count)  = 0._num
-        curr%part_bx(count)  = 0._num
-        curr%part_by(count)  = 0._num
-        curr%part_bz(count)  = 0._num
-    END SUBROUTINE add_particle_at_tile_2d
 
     ! __________________________________________________________________________
     SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, partx, party, &
@@ -396,7 +399,14 @@ CONTAINS
             ENDIF  
         ENDDO
     END SUBROUTINE rm_particles_from_species_with_mask
-    
+
+    SUBROUTINE rm_particles_from_species_2d(currsp, ixt, izt, ipart)
+        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
+        INTEGER(idp), INTENT(IN) :: ipart, ixt, izt
+        
+        CALL rm_particle_at_tile_2d(currsp,ixt, izt, ipart)
+        currsp%species_npart=currsp%species_npart-1
+    END SUBROUTINE rm_particles_from_species_2d    
     
     !!! --- Remove a particle in a given tile from species currsp
     SUBROUTINE rm_particles_from_species(currsp, ixt, iyt, izt, ipart)
@@ -407,14 +417,40 @@ CONTAINS
         currsp%species_npart=currsp%species_npart-1
     END SUBROUTINE rm_particles_from_species
 
-    SUBROUTINE rm_particles_from_species_2d(currsp, ixt, izt, ipart)
+    SUBROUTINE rm_particle_at_tile_2d(currsp,ixt,izt, index)
+        IMPLICIT NONE
+        INTEGER(idp)                                    :: index, ixt, izt
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        INTEGER(idp), INTENT(IN) :: ipart, ixt, izt
+        TYPE(particle_tile), POINTER                    :: curr
+        curr=>currsp%array_of_tiles(ixt,1,izt)
         
-        CALL rm_particle_at_tile_2d(currsp,ixt, izt, ipart)
-        currsp%species_npart=currsp%species_npart-1
-    END SUBROUTINE rm_particles_from_species_2d
-    
+        IF (index .EQ. curr%np_tile(1)) THEN
+            ! If particle i is last element
+            ! Simply decreases particle number
+            curr%np_tile(1)=curr%np_tile(1)-1
+        ELSE
+            ! Particle i replaced by last element
+            ! Particle number is decreased
+            curr%part_x(index)=curr%part_x(curr%np_tile(1))
+            curr%part_z(index)=curr%part_z(curr%np_tile(1))
+            curr%part_ux(index)=curr%part_ux(curr%np_tile(1))
+            curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
+            curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
+            curr%part_gaminv(index)=curr%part_gaminv(curr%np_tile(1))
+            curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
+            curr%np_tile=curr%np_tile(1)-1
+        END IF
+        
+        ! Avoid memory leaks 
+        ! Reduce array size if # of particles in array lower than 
+        ! 30% of array size 
+        IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN 
+        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN 
+        		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
+        		currsp%are_tiles_reallocated(ixt,1,izt)=1
+        	ENDIF 
+        ENDIF 
+    END SUBROUTINE rm_particle_at_tile_2d    
     
     SUBROUTINE rm_particle_at_tile(currsp,ixt,iyt,izt, index)
         IMPLICIT NONE
@@ -452,40 +488,6 @@ CONTAINS
         ENDIF 
     END SUBROUTINE rm_particle_at_tile
 
-    SUBROUTINE rm_particle_at_tile_2d(currsp,ixt,izt, index)
-        IMPLICIT NONE
-        INTEGER(idp)                                    :: index, ixt, izt
-        TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER                    :: curr
-        curr=>currsp%array_of_tiles(ixt,1,izt)
-        
-        IF (index .EQ. curr%np_tile(1)) THEN
-            ! If particle i is last element
-            ! Simply decreases particle number
-            curr%np_tile(1)=curr%np_tile(1)-1
-        ELSE
-            ! Particle i replaced by last element
-            ! Particle number is decreased
-            curr%part_x(index)=curr%part_x(curr%np_tile(1))
-            curr%part_z(index)=curr%part_z(curr%np_tile(1))
-            curr%part_ux(index)=curr%part_ux(curr%np_tile(1))
-            curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
-            curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
-            curr%part_gaminv(index)=curr%part_gaminv(curr%np_tile(1))
-            curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
-            curr%np_tile=curr%np_tile(1)-1
-        END IF
-        
-        ! Avoid memory leaks 
-        ! Reduce array size if # of particles in array lower than 
-        ! 30% of array size 
-        IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN 
-        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN 
-        		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
-        		currsp%are_tiles_reallocated(ixt,1,izt)=1
-        	ENDIF 
-        ENDIF 
-    END SUBROUTINE rm_particle_at_tile_2d
 
     SUBROUTINE allocate_tile_arrays(curr_tile)
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr_tile

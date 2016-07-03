@@ -980,7 +980,10 @@ class EM3DPXR(EM3DFFT):
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
                 self.time_stat_loc_array[0] += (tendpart-tdebpart)
                 
-                pxr.particle_bcs()
+                pxr.particle_bcs_2d()
+                
+                #pxr.particle_bcs()
+                
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1829,16 +1832,19 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
 			# Depose currents in PXR 
 
+             pxr.jx = self.fields.Jx
+             pxr.jy = self.fields.Jy
+             pxr.jz = self.fields.Jz
+
              if pxr.c_dim == 2:
+
+               pxr.pxrdepose_currents_on_grid_jxjyjz_2d()
            
-               pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
-               pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
+               #pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
+               #pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
              
              elif pxr.c_dim ==3:
 			
-               pxr.jx = self.fields.Jx
-               pxr.jy = self.fields.Jy
-               pxr.jz = self.fields.Jz
                pxr.pxrdepose_currents_on_grid_jxjyjz()
              
 			# Depose charge density in PXR if required 
@@ -1974,19 +1980,37 @@ class EM3DPXR(EM3DFFT):
         """
         field_energy = zeros(1)
         
-        if field=='ex':
-          pxr.get_field_energy(self.fields.Ex,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-        elif field=='ey':
-          pxr.get_field_energy(self.fields.Ey,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-        elif field=='ez':
-          pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy) 
-        elif field=='bx':
-          pxr.get_field_energy(self.fields.Bx,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-        elif field=='by':
-          pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)   
-        elif field=='bz':
-          pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)                        
-        return field_energy[0]
+        if pxr.c_dim==2:
+
+					if field=='ex':
+						pxr.get_field_energy_2d(self.fields.Ex,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+					elif field=='ey':
+						pxr.get_field_energy_2d(self.fields.Ey,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+					elif field=='ez':
+						pxr.get_field_energy_2d(self.fields.Ez,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy) 
+					elif field=='bx':
+						pxr.get_field_energy_2d(self.fields.Bx,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+					elif field=='by':
+						pxr.get_field_energy_2d(self.fields.By,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)   
+					elif field=='bz':
+						pxr.get_field_energy_2d(self.fields.Bz,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)                        
+					return field_energy[0]
+        
+        else:
+        
+					if field=='ex':
+						pxr.get_field_energy(self.fields.Ex,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+					elif field=='ey':
+						pxr.get_field_energy(self.fields.Ey,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+					elif field=='ez':
+						pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy) 
+					elif field=='bx':
+						pxr.get_field_energy(self.fields.Bx,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+					elif field=='by':
+						pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)   
+					elif field=='bz':
+						pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)                        
+					return field_energy[0]
         
     def get_normL2_divEeps0_rho(self):
         """

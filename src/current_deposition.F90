@@ -552,9 +552,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Interfaces for func_order
   INTERFACE
 
-    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
+    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & 
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 nox,noz,l_particles_weight)
+                                                 nox,noz,l_particles_weight)!#do not parse
       USE omp_lib
       USE constants
       implicit none
@@ -1858,8 +1858,8 @@ REAL(num), INTENT(IN)     :: dxx,dyy,dzz, dtt
 REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
 REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
 REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+INTEGER(idp)              :: ispecies, ix, iy, iz, count
+INTEGER(idp)              :: jmin, jmax, kmin, kmax, lmin, lmax
 INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER :: curr_tile
@@ -1868,6 +1868,7 @@ REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 LOGICAL(idp) :: isdeposited=.FALSE.
 
+! ___ Interface _________________________________________________
 ! For the func_order input function
 INTERFACE
   SUBROUTINE func_order(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & !#do not parse
@@ -1901,7 +1902,7 @@ DO iz=1,ntilez
             nxjg=curr_tile%nxg_tile
             nzjg=curr_tile%nzg_tile
             jmin=curr_tile%nx_tile_min
-        	jmax=curr_tile%nx_tile_max
+        	  jmax=curr_tile%nx_tile_max
             kmin=curr_tile%ny_tile_min
             kmax=curr_tile%ny_tile_max
             lmin=curr_tile%nz_tile_min
@@ -1944,20 +1945,21 @@ END DO!END LOOP ON TILES
 !$OMP END DO
 !! Adding currents from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
 !+/- X
-!$OMP DO COLLAPSE(2) SCHEDULE(runtime)
+!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
 DO iz=1,ntilez
+    DO iy=1,ntiley
         DO ix=1,ntilex
         	isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
-                curr_tile=>curr%array_of_tiles(ix,1,iz)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .GT. 0) isdeposited=.TRUE.  
             END DO
             IF (isdeposited) THEN 
-            	  currg=>aofgrid_tiles(ix,1,iz)
+            	currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-           		  curr_tile=>curr%array_of_tiles(ix,1,iz)
+           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -1973,16 +1975,16 @@ DO iz=1,ntilez
                 ! ----- Add guardcells in adjacent tiles
                 ! --- JX
                 ! - FACES +/- X
-                jxg(jminc:jmin-1,0,lminc:lmaxc) = jxg(jminc:jmin-1,0,lminc:lmaxc)+  &
-                currg%jxtile(-nxjg:-1,0,-nzjg:nzc+nzjg)
-                jxg(jmax+1:jmaxc,0,lminc:lmaxc) = jxg(jmax+1:jmaxc,0,lminc:lmaxc)+  &
-                currg%jxtile(nxc+1:nxc+nxjg,0,-nzjg:nzc+nzjg)
+                jxg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jxg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jxtile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                jxg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jxg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jxtile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
                 ! --- JY
                 ! - FACES +/- X
-                jyg(jminc:jmin-1,0,lminc:lmaxc) = jyg(jminc:jmin-1,0,lminc:lmaxc)+  &
-                currg%jytile(-nxjg:-1,0,-nzjg:nzc+nzjg)
-                jyg(jmax+1:jmaxc,0,lminc:lmaxc) = jyg(jmax+1:jmaxc,0,lminc:lmaxc)+  &
-                currg%jytile(nxc+1:nxc+nxjg,0,-nzjg:nzc+nzjg)
+                jyg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jyg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jytile(-nxjg:-1,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
+                jyg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc) = jyg(jmax+1:jmaxc,kminc:kmaxc,lminc:lmaxc)+  &
+                currg%jytile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
                 ! --- JZ
                 ! - FACES +/- X
                 jzg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc) = jzg(jminc:jmin-1,kminc:kmaxc,lminc:lmaxc)+  &
@@ -1991,6 +1993,7 @@ DO iz=1,ntilez
                 currg%jztile(nxc+1:nxc+nxjg,-nyjg:nyc+nyjg,-nzjg:nzc+nzjg)
             ENDIF
         END DO
+    END DO
 END DO!END LOOP ON TILES
 !$OMP END DO
 !+/- Y
@@ -9548,7 +9551,8 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
                    s1x,s2x,s1z,s2z,invvol,invdtdx,invdtdz, &
                    oxint,ozint,xintsq,zintsq,oxintsq,ozintsq, &
                    dtsdx0,dtsdz0,dts2dx0,dts2dz0
-   real(num), parameter :: onesixth=1./6.,twothird=2./3.
+   real(num), parameter :: onesixth=1./6.
+   real(num), parameter :: twothird=2./3.
    real(num), dimension(:), allocatable :: sx, sx0, dsx, sz, sz0, dsz
    integer(idp) :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,idx,idz,i,k,ic,kc, &
                    ixmin, ixmax, izmin, izmax, icell, ncells, ndtodx, ndtodz, &
@@ -9878,7 +9882,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), parameter                  :: onesixth=1./6.,twothird=2./3.
   real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
   integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,idx,idz,i,k,ic,kc
-  integer(idp)                          :: ixmin, ixmax, izmin, izmax, icell, ncells, ndtodx, ndtodz
+  integer(idp)                          :: ixmin, ixmax, izmin, izmax, icell, ndtodx, ndtodz
   integer(idp)                          :: xl,xu,zl,zu
 
   ! Parameter initialization
@@ -10008,7 +10012,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
         END IF
         
         ! -- Jy (2D Esirkepov scheme)
-        jy(ic,kc) = jy(ic,kc) + wq*vy*invvol/ncells* &
+        jy(ic,kc) = jy(ic,kc) + wq*vy*invvol* &
         ( (sz0(k)+0.5*dsz(k))*sx0(i) + (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) )
         
         ! --- Jz
@@ -10017,10 +10021,22 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
           if (k>izmin) sdz(i,k)=sdz(i,k)+sdz(i,k-1)         ! Integration of Wz along z
           jz(ic,kc) = jz(ic,kc) + sdz(i,k)                  ! Deposition on the current
         END IF
+
+! __ DEbug _______________________________
+!  print*,'sum',sum(jx),sum(jy),sum(jz)
+!  print*,'j',jy(ic,kc)
+!  print*,'sdx',sdx(i,k),sdz(i,k)
+!  print*,'wq',wqx,wqz,wq
+!  print*,'s',sz0(k),sx0(i)
+!  print*,'dsx',dsx(i),dsz(k)
+!  read*        
+        
       END DO
     END DO
 
   END DO
+  
+  
   DEALLOCATE(sdx,sdz,sx,sx0,dsx,sz,sz0,dsz)
 
 End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3

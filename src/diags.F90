@@ -2743,6 +2743,39 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
     
     END SUBROUTINE get_kinetic_energy
 
+    ! ____________________________________________________________________________________
+    SUBROUTINE get_loc_field_energy_2d(field,nx2,nz2,dx2,dz2,nxguard,nzguard,field_energy)
+    !
+    ! Determine the local field energy for the given field in 2d  
+    ! ____________________________________________________________________________________    
+        USE constants
+        IMPLICIT NONE
+        
+        ! __ Parameters ________________________________
+        INTEGER(idp)                :: nx2,nz2
+        INTEGER(idp)                :: nxguard,nzguard        
+        REAL(num)                   :: field_energy
+        INTEGER(idp)                :: j,k,l
+        REAL(num)                   :: dx2,dz2
+        REAL(num), dimension(-nxguard:nx2+nxguard,1,-nzguard:nz2+nzguard), intent(in) :: field        
+        field_energy = 0
+ 
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+        !$OMP DO COLLAPSE(2) REDUCTION(+:field_energy)
+        do l = 1, nz2
+                do j = 1, nx2
+                
+                  field_energy = field_energy + field(j,1,l)*field(j,1,l)*0.5
+                
+                end do
+        end do
+      !$OMP END DO
+      !$OMP END PARALLEL   
+      
+      field_energy = field_energy*dx2*dz2
+    
+    END SUBROUTINE
+
     !!! --- Determine the local field energy for the given field
     SUBROUTINE get_loc_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
         USE constants
@@ -2773,6 +2806,46 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
       field_energy = field_energy*dx2*dy2*dz2
     
     END SUBROUTINE
+
+    ! ____________________________________________________________________________________
+    SUBROUTINE get_field_energy_2d(field,nx2,nz2,dx2,dz2,nxguard,nzguard,field_energy)
+    !
+    ! Determine the total field energy for the given field    
+    ! ____________________________________________________________________________________    
+        USE constants
+        USE mpi_derived_types
+        USE mpi_type_constants
+        USE shared_data
+        
+        ! __ Parameters _____________________________________
+        IMPLICIT NONE
+        INTEGER(idp)                :: nx2,nz2
+        INTEGER(idp)                :: nxguard,nzguard
+        REAL(num),dimension(-nxguard:nx2+nxguard,1,-nzguard:nz2+nzguard) :: field
+        REAL(num)                   :: field_energy,field_energy_loc
+        INTEGER(idp)                :: j,k,l
+        REAL(num)                   :: dx2,dz2
+
+        field_energy = 0
+        field_energy_loc = 0
+ 
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+        !$OMP DO COLLAPSE(2) REDUCTION(+:field_energy_loc)
+        do l = 1, nz2
+                do j = 1, nx2
+                  field_energy_loc = field_energy_loc + field(j,1,l)*field(j,1,l)*0.5
+                end do
+        end do
+        !$OMP END DO
+        !$OMP END PARALLEL   
+      
+        ! All MPI reduction
+        call MPI_ALLREDUCE(field_energy_loc,field_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
+        
+        field_energy = field_energy*dx2*dz2
+                   
+    END SUBROUTINE
+
     
     !!! --- Determine the total field energy for the given field
     SUBROUTINE get_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
