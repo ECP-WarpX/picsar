@@ -81,6 +81,7 @@ Temporal diagnosctics enable to outpout the time evolution of several physical q
 Temporal output files can be binary files (`format=1`) or ascii files (`format=1`).
 The output frequency can be controled via the keyword `frequency`.
 The different diagnostics can be activated with their flags:
+
 * `kinE=1` for the kinetic energies
 * `exE=1`, `eyE=1`, `ezE=1`: electric field energies
 * `bxE=1`, `byE=1`, `bzE=1`: magnetic field energies
@@ -98,6 +99,7 @@ It corresponds to the section named `timestat`.
 ####A. cpusplit section
 
 This section enables to configure the MPI decomposition and other parameters:
+
 * `nprocx`, `nprocy`, `nprocz`: number of processors in each direction x, y, z
 * `topology`: the MPI topology, 0 corresponds to cartesian
 
