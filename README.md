@@ -133,9 +133,10 @@ This section enables to controle the solver and algorithm parameters:
 * `fieldgave`: field gathering
    * `=0`: vectorized subroutine when `nox=noy=noz`
    * `=1`: non-optimized subroutines
+   
 * `rhodepo`: charge deposition
-   * `=0`: vectorized subroutines when `nox=noy=noz`
-   * `=1`: non-optimized subroutines
+  * `=0`: vectorized subroutines when `nox=noy=noz`
+  * `=1`: non-optimized subroutines
    
 - `partcom`: particle communications
   - `=0`: Communications betrween tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
