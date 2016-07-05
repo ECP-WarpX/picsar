@@ -119,7 +119,7 @@ This section enables to configure the general simulation parameters:
 
 ####C. solver section
 
-This section enables to controle the solver and algorithm parameters:
+This section, `section::solver`, enables to controle the solver and algorithm parameters:
 
 * `norderx`, `nordery`, `norderz`: Maxwell solver orders
 * `nox`, `noy`, `noz`: shape factor (interpolation) orders, note that optimized subroutines only work when `nox=noy=noz`
@@ -130,6 +130,7 @@ This section enables to controle the solver and algorithm parameters:
    * `=3`: Classical current deposition with Tiling/OpenMP and optimized/vectorized subroutines. This provides the best performance even with AVX architectures.
    * `=4`: Classical current deposition with Tiling/openMP and non-optimized subroutines.
    * `=5`: Classical current deposition sequential
+   
 * `fieldgave`: field gathering
    * `=0`: vectorized subroutine when `nox=noy=noz`
    * `=1`: non-optimized subroutines
@@ -141,3 +142,27 @@ This section enables to controle the solver and algorithm parameters:
 - `partcom`: particle communications
   - `=0`: Communications betrween tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
   - `=1`: Communications are done seperatly
+
+####D. Plasma section
+
+This section, `section::plasma`, enables to controle the plasma parameters:
+
+* `nlab`: density in the laboratory
+
+* `pdistr`: initial distribution
+  * `=1`: ordered space initialization
+  * `=2`: random space initialization
+  
+####E. Species section 
+
+This section, `section::species`, enables to configure the species properties. It has to be repeated for each species. 
+
+* `name`: species name
+* `mass`: species mass normalized to the electronic mass
+* `charge`: species charge normalized to the positron charge
+* `nppcell`: number of particles per cell
+* `x_min`, `x_max`, `y_min`, `y_max`, `z_min`, `z_max`: plasma expansion in each direction
+* `vdrift_x`, `vdrift_y`, `vdrift_z`: drift velocity in each direction
+* `vth_x`, `vth_y`, `vth_z`: thermal velocity in each direction
+* `sorting_period`: period of the sorting
+* `sorting_start`: beginning of the sorting
