@@ -119,6 +119,9 @@ ELSE IF (c_dim.eq.2) THEN
       !!! --- Deposit current of particle species on the grid
       CALL pxrdepose_currents_on_grid_jxjyjz_2d
 
+      !!! --- Boundary conditions for currents
+      !CALL current_bcs
+
       it = it+1
       timeit=MPI_WTIME()
 

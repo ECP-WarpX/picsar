@@ -2,8 +2,8 @@
 from numpy import *
 
 # Parameters
-nox=3 # order of gathering
-noz=3
+nox=2 # order of gathering
+noz=2
 l4symtry=False
 l_particles_weight=True
 final_loop_lin=0
@@ -71,9 +71,10 @@ fh.write(indent_1+"real(num)                             :: invvol,invdtdx,invdt
 fh.write(indent_1+"real(num)                             :: oxint,ozint,xintsq,zintsq,oxintsq,ozintsq\n")
 fh.write(indent_1+"real(num)                             :: dtsdx0,dtsdz0,dts2dx0,dts2dz0\n")
 fh.write(indent_1+"real(num), parameter                  :: onesixth=1./6.,twothird=2./3.\n")
+fh.write(indent_1+"real(num), parameter                  :: onethird=1./3.\n")
 fh.write(indent_1+"real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz\n")
 fh.write(indent_1+"integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,idx,idz,i,k,ic,kc\n")
-fh.write(indent_1+"integer(idp)                          :: ixmin, ixmax, izmin, izmax, icell, ncells, ndtodx, ndtodz\n")
+fh.write(indent_1+"integer(idp)                          :: ixmin, ixmax, izmin, izmax, icell, ndtodx, ndtodz\n")
 fh.write(indent_1+"integer(idp)                          :: xl,xu,zl,zu\n")
 
 fh.write(indent_1+"\n");
@@ -82,7 +83,7 @@ fh.write(indent_1+"dxi = 1.0_num/dx\n");
 fh.write(indent_1+"dzi = 1.0_num/dz\n");
 fh.write(indent_1+"dtsdx0 = dt*dxi\n");
 fh.write(indent_1+"dtsdz0 = dt*dzi\n");
-fh.write(indent_1+"invvol = 1.0_num/(dx*dy*dz)\n");
+fh.write(indent_1+"invvol = 1.0_num/(dx*dz)\n");
 fh.write(indent_1+"invdtdx = 1.0_num/(dt*dz)\n");
 fh.write(indent_1+"invdtdz = 1.0_num/(dt*dx)\n");
 fh.write(indent_1+"dtsdz0 = dt*dzi\n");
@@ -289,8 +290,8 @@ elif (final_loop_lin==0):
 
   fh.write(indent_4+"\n")
   fh.write(indent_4+"! -- Jy (2D Esirkepov scheme)\n")  
-  fh.write(indent_4+"jy(ic,kc) = jy(ic,kc) + wq*vy*invvol/ncells* &\n") 
-  fh.write(indent_4+"( (sz0(k)+0.5*dsz(k))*sx0(i) + (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) )\n")                
+  fh.write(indent_4+"jy(ic,kc) = jy(ic,kc) + wq*vy*invvol* &\n") 
+  fh.write(indent_4+"( (sz0(k)+0.5*dsz(k))*sx0(i) + (0.5*sz0(k)+onethird*dsz(k))*dsx(i) )\n")                
 
   fh.write(indent_4+"\n") 
   fh.write(indent_4+"! --- Jz\n") 
