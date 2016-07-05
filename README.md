@@ -140,7 +140,7 @@ This section, `section::solver`, enables to controle the solver and algorithm pa
   * `=1`: non-optimized subroutines
    
 - `partcom`: particle communications
-  - `=0`: Communications betrween tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
+  - `=0`: Communications between tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
   - `=1`: Communications are done seperatly
 
 ####D. Plasma section
@@ -171,5 +171,6 @@ This section, `section::species`, enables to configure the species properties. I
 
 This section, `section::sorting`, enables to controle the particle cell sorting algorithm.
 
+* `activation`: activation of the sorting
 * `dx`, `dy`, `dz`: size of the sorting cells
 * `shiftx`, `shifty`, `shiftz`: shift of the sorting grid
