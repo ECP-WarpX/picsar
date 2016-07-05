@@ -532,11 +532,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
-! _____________________________________________________________________
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 ! 
 ! Main subroutine for the current deposition called in submain for the 2d
-! ___________________________________________________________________
+! ________________________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -546,11 +546,27 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 #endif                                   
   IMPLICIT NONE 
   
+  ! __ Parameter declaration __________________________________________________
   REAL(num) :: tdeb, tend
   
   ! ___________________________________________________________________________
   ! Interfaces for func_order
   INTERFACE
+
+    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & 
+                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
+                                                 nox,noz,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
+      USE omp_lib
+      USE constants
+      implicit none
+  
+      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
+      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+      real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
+      real(num)                             :: q,dt,dx,dz,xmin,zmin
+      logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+      real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
+    END SUBROUTINE
 
     SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & 
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
@@ -599,10 +615,10 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   jy = 0.0_num
   jz = 0.0_num
 
-  ! Current deposition branches
+  ! __ Current deposition ________________________________________________________________
 
   ! _______________________________________________________
-  ! Esirkepov OpenMP/tiling version
+  ! Esirkepov OpenMP/tiling version non-vectorized but more optimized than the general order subroutine
   IF (currdepo.EQ.1) THEN
 
     ! Order 1
@@ -610,9 +626,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
     ! Order 2
-    ELSE IF ((nox.eq.2).AND.(noz.eq.2)) THEN 
-      CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	       nox,noy,noz,dx,dy,dz,dt)
+    ELSE IF ((nox.eq.2).AND.(noz.eq.2)) THEN
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_2_2,jx,jy,jz,&
+                     nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
     ! Order 3
     ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN 
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_3_3,jx,jy,jz,&
@@ -623,13 +639,28 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 	       nox,noy,noz,dx,dy,dz,dt)
 	  ENDIF
 
-  ! _______________________________________________________	
+  ! _______________________________________________________
 	! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE
 
+    ! Order 1
+    IF ((nox.eq.1).AND.(noz.eq.1)) THEN 
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
-  
+    ! Order 2
+    ELSE IF ((nox.eq.2).AND.(noz.eq.2)) THEN
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_2_2,jx,jy,jz,&
+                     nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+    ! Order 3
+    ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN 
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_3_3,jx,jy,jz,&
+                     nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+    ! Order n
+    ELSE
+      CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	       nox,noy,noz,dx,dy,dz,dt)
+	  ENDIF
+	    
   ENDIF
 
 ! Stop Vtune/SDE analysis
