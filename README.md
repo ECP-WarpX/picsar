@@ -166,3 +166,10 @@ This section, `section::species`, enables to configure the species properties. I
 * `vth_x`, `vth_y`, `vth_z`: thermal velocity in each direction
 * `sorting_period`: period of the sorting
 * `sorting_start`: beginning of the sorting
+
+####F. Sorting section
+
+This section, `section::sorting`, enables to controle the particle cell sorting algorithm.
+
+* `dx`, `dy`, `dz`: size of the sorting cells
+* `shiftx`, `shifty`, `shiftz`: shift of the sorting grid
