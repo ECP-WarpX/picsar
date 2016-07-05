@@ -77,13 +77,27 @@ For the moment, the code outputs binary matrix files with extensions ".pxr" that
 
 ####B.  Temporal diagnostics
 
-Temporal diagnosctics enable to outpout the time evolution of several physical quantities such as the species kinetic energies, the field energies and the L2 norm of divergence of the field minus the charge. Temporal diagnostics can be configurated using the section `temporal`. Output format can be controled using the keyword `format`. Temporal output files can be binary files (`format=1`) or ascii files (`format=1`).
+Temporal diagnosctics enable to outpout the time evolution of several physical quantities such as the species kinetic energies, the field energies and the L2 norm of divergence of the field minus the charge. Temporal diagnostics can be configurated using the section `temporal`. Output format can be controled using the keyword `format`.
+Temporal output files can be binary files (`format=1`) or ascii files (`format=1`).
+The output frequency can be controled via the keyword `frequency`.
+The different diagnostics can be activated with their flags:
+* `kinE=1` for the kinetic energies
+* `exE=1`, `eyE=1`, `ezE=1`: electric field energies
+* `bxE=1`, `byE=1`, `bzE=1`: magnetic field energies
+* `divE-rho=1`: the L2 norm of divergence of the field minus the charge
 
 ####C.  Time statistics
 
-Time statistics refer to the caomputation of the simulation spend in each significant part of the code.
+Time statistics refer to the computation of the simulation times spend in each significant part of the code. A final time survey is automatically provided at the end of a simulation with the stand-alone code.
+The time statisctics function enables to outpout in files the time spend in the main subroutines for each iteration.
+It corresponds to the section named `timestat`.
 
 **5. Configuration of the input file**
 -----------------------
 
 ####A. cpusplit section
+
+This section enables to configure the MPI decomposition and other parameters:
+* `nprocx`, `nprocy`, `nprocz`: number of processors in each direction x, y, z
+* `topology`: the MPI topology, 0 corresponds to cartesian
+
