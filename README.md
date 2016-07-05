@@ -96,10 +96,29 @@ It corresponds to the section named `timestat`.
 **5. Configuration of the input file**
 -----------------------
 
+The input file is divided into sections. Sections start by `section::name` where `name` is the section name and end with `end::name`.
+
 ####A. cpusplit section
 
 This section enables to configure the MPI decomposition and other parameters:
 
 * `nprocx`, `nprocy`, `nprocz`: number of processors in each direction x, y, z
 * `topology`: the MPI topology, 0 corresponds to cartesian
+
+####B. main section
+
+This section enables to configure the general simulation parameters:
+
+* `nx`, `ny`, `nz`: number of grid points (domain discretization) in each direction
+* `xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax`: Origin of simulation axes
+* `t_max`: final time
+* `nsteps`: can be specified instead of the final time, else nsteps is determine from the final time and the CFL condition
+* `ntilex`, `ntiley`, `ntilez`: MPI sub-domain discetization into tiles
+* `nguardsx`, `nguardsy`, `nguardsz`: guard cells for the field arrays
+* `njguardsx`, `njguardsy`, `njguardsz`: guard cells for the current arrays
+
+####C. solver section
+
+This section enables to controle the solver and algorithm parameters:
+
 
