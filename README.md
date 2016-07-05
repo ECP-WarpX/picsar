@@ -26,7 +26,7 @@ generation of exascale computers.
 * MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
-* Vectorized subroutines (field gathering, classicla current deposition)
+* Vectorized subroutines (field gathering, classical current deposition)
 
 ####C.  Python glue: 
 
@@ -73,9 +73,17 @@ If the code (Fortran or python version) was compiled with OpenMP, you can set "x
 
 ####A.  Field diagnostics
 
-For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`. In the Fotran version, the output frequency is controlled by setting the flag `output_frequency` in the output section of the `input_file.pixr`. Use `output_frequency=-1` to disable outputs. The code places output files in a `RESULTS` directory where the code is ran. This directory has to be created before running the code in your submission script. 
+For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`. In the Fortran version, the output frequency is controlled by setting the flag `output_frequency` in the output section of the `input_file.pixr`. Use `output_frequency=-1` to disable outputs. The code places output files in a `RESULTS` directory where the code is ran. This directory has to be created before running the code in your submission script. 
 
 ####B.  Temporal diagnostics
 
+Temporal diagnosctics enable to outpout the time evolution of several physical quantities such as the species kinetic energies, the field energies and the L2 norm of divergence of the field minus the charge. Temporal diagnostics can be configurated using the section `temporal`. Output format can be controled using the keyword `format`. Temporal output files can be binary files (`format=1`) or ascii files (`format=1`).
 
-####C.  Time statisctics
+####C.  Time statistics
+
+Time statistics refer to the caomputation of the simulation spend in each significant part of the code.
+
+**5. Configuration of the input file**
+-----------------------
+
+####A. cpusplit section
