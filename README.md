@@ -26,6 +26,7 @@ generation of exascale computers.
 * MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
+* Vectorized subroutines (field gathering, classicla current deposition)
 
 ####C.  Python glue: 
 
@@ -36,15 +37,24 @@ generation of exascale computers.
 **2. Compiling**
 -------------
 
-* Python installation: in order to install picsar in the form of a Python module, read detailed instructions in the file `INSTALL_PYTHON.md`
+####A.  Python installation 
 
+In order to install picsar in the form of a Python module, read detailed instructions in the file `INSTALL_PYTHON.md`
 
-* Fortran installation: To build the code in full Fotran 90 read instructions from the file  `INSTALL_FORTRAN.md` 
+####B.  Fortran installation 
+
+To build the code in full Fotran 90 read instructions from the file  `INSTALL_FORTRAN.md` 
 
 **3. Running simulations**
 -----------------------
 
-* Python mode: an example of python script `test.py` is provided in `example_scripts_python`. To run this script in parallel, simply type : mpirun -np NMPI python test.py with NMPI the number of MPI processes. 
+* Python mode: an example of python script `test.py` is provided in `example_scripts_python`. To run this script in parallel, simply type :
+
+```
+mpirun -np NMPI python test.py 
+```
+
+with NMPI the number of MPI processes. 
 
 * Fortran mode: PICSAR input parameters must be provided in an input file named "input_file.pxr" in the folder where the code is ran. An example (`test.pxr`) of input file is provided in `example_decks_fortran/`. To run the executable on n MPI processes: "mpirun -np n ./picsar". Notice that if nprocx, nprocy and nprocz are provided in the input file as part of the "cpusplit" section, then n must be equal to nprocx x nprocy x nprocz with nprocx, nprocy, nprocz the number of processors along x,y,z directions. Otherwise, if nprocx, nprocy and nprocz are not defined, the code performs automatic CPU split in each direction. User can specify some arguments in the command line. For the moments this feature supports only the number of tiles in each dimension and the init of particle distribution. Ex: mpirun -np 1 ./picsar -ntilex ntx -ntiley nty -ntilez ntz -distr 1 with ntx, nty and ntz the number of tiles in each dimension (default is one) and distr the type of particle init ("1" for init on the x-axis of the grid and "2" for Random).
 
