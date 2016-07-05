@@ -121,4 +121,7 @@ This section enables to configure the general simulation parameters:
 
 This section enables to controle the solver and algorithm parameters:
 
-
+* `norderx`, `nordery`, `norderz`: Maxwell solver orders
+* `nox`, `noy`, `noz`: shape factor (interpolation) orders, note that optimized subroutines only work when `nox=noy=noz`
+* `currdepo`: current deposition algorithm
+  * `=0`: Esirkepov with tiling and optimized for AVX512. For the moment, in 3D, only nox=noy=noz=1 provides better performances.
