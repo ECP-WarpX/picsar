@@ -124,4 +124,18 @@ This section enables to controle the solver and algorithm parameters:
 * `norderx`, `nordery`, `norderz`: Maxwell solver orders
 * `nox`, `noy`, `noz`: shape factor (interpolation) orders, note that optimized subroutines only work when `nox=noy=noz`
 * `currdepo`: current deposition algorithm
- * `=0`: Esirkepov with tiling and optimized for AVX512. For the moment, in 3D, only nox=noy=noz=1 provides better performances.
+   * `=0`: Esirkepov with tiling/OpenMP and optimized for AVX512. For the moment, in 3D, only `nox=noy=noz=1` provides better performances.
+   * `=1`: Esirkepov with tiling/OpenMP and non-optimized. The functions provided for `nox=noy=noz` are much faster than using different orders (in this case, an arbitrary order subroutine with many if-statements is used).
+   * `=2`: Esirkepov sequential
+   * `=3`: Classical current deposition with Tiling/OpenMP and optimized/vectorized subroutines. This provides the best performance even with AVX architectures.
+   * `=4`: Classical current deposition with Tiling/openMP and non-optimized subroutines.
+   * `=5`: Classical current deposition sequential
+* `fieldgave`: field gathering
+   * `=0`: vectorized subroutine when `nox=noy=noz`
+   * `=1`: non-optimized subroutines
+* `rhodepo`: charge deposition
+   * `=0`: vectorized subroutines when `nox=noy=noz`
+   * `=1`: non-optimized subroutines
+* `partcom`: particle communications
+   * `=0`: Communications betrween tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
+   * `=1`: Communications are done seperatly
