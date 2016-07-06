@@ -1,3 +1,10 @@
+! ________________________________________________________________________________________
+!
+! MAXWELL.F90
+!
+!
+! ________________________________________________________________________________________
+
 !===============================================================================
 ! PUSH B field half a time step
 !==============================================================================
@@ -12,12 +19,22 @@ IMPLICIT NONE
 REAL(num) :: tmptime
 tmptime = MPI_WTIME()
 
-CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
-    0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-    nx,ny,nz, norderx,nordery,norderz,                                  &
-    nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-    l_nodalgrid)
+  ! Yee scheme at order 2
+  IF ((norderx.eq.2).AND.(nordery.eq.2)) then
+    CALL pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
+              0.5_num*dt/dx,0.5_num*dt/dy,0.5_num*dt/dz,&
+              nx,ny,nz,nxguards,nyguards,nzguards,nxs,nys,nzs, &
+              l_nodalgrid)
+  ! Yee scheme arbitrary order
+  ELSE
+    CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
+        0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
+        nx,ny,nz, norderx,nordery,norderz,                                  &
+        nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
+        l_nodalgrid)
+  ENDIF
 
+  
 localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
 
 END SUBROUTINE push_bfield
@@ -43,7 +60,7 @@ SUBROUTINE push_bfield_2d
   IF ((norderx.eq.2).AND.(nordery.eq.2)) then
 
     CALL pxrpush_em2d_bvec(ex,ey,ez,bx,by,bz,                  &
-                           dt/dx,0._num,dt/dz,nx,0_idp,nz,          &
+                           0.5_num*dt/dx,0._num,0.5_num*dt/dz,nx,0_idp,nz,          &
                            nxguards,0_idp,nzguards,nxs,0_idp,nzs, &
                            l_nodalgrid)
 
