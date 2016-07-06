@@ -2,8 +2,8 @@
 from numpy import *
 
 # Parameters
-nox=2 # order of gathering
-noz=2
+nox=1 # order of gathering
+noz=1
 l4symtry=False
 l_particles_weight=True
 final_loop_lin=0

@@ -23,6 +23,45 @@ localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
 END SUBROUTINE push_bfield
 
 
+! ________________________________________________________________________________________
+SUBROUTINE push_bfield_2d
+!
+! PUSH B field half a time step in 2D
+! ________________________________________________________________________________________
+
+  USE constants
+  USE params
+  USE fields
+  USE shared_data
+  USE time_stat
+  IMPLICIT NONE
+
+  REAL(num) :: tmptime
+  tmptime = MPI_WTIME()
+
+  ! Yee scheme at order 2
+  IF ((norderx.eq.2).AND.(nordery.eq.2)) then
+
+    CALL pxrpush_em2d_bvec(ex,ey,ez,bx,by,bz,                  &
+                           dt/dx,0._num,dt/dz,nx,0_idp,nz,          &
+                           nxguards,0_idp,nzguards,nxs,0_idp,nzs, &
+                           l_nodalgrid)
+
+  ! Yee scheme arbitrary order
+  ELSE
+
+    CALL pxrpush_em2d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
+      0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
+      nx,ny,nz, norderx,nordery,norderz,                                  &
+      nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
+      l_nodalgrid)
+
+  ENDIF
+  localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+
+END SUBROUTINE push_bfield_2d
+
+
 !===============================================================================
 ! PUSH E field a full  time step
 !==============================================================================
@@ -458,14 +497,14 @@ else
 ist = 1
 end if
 
-k = 0
+k = 0_idp
 
 ! advance Bx
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
 !$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
-                Bx(j,k,l) = Bx(j,k,l) + dtsdz * (Ey(j,k,  l+1) - Ey(j,k,l-1+ist))
+                Bx(j,0,l) = Bx(j,0,l) + dtsdz * (Ey(j,0,l+1) - Ey(j,0,l-1+ist))
         end do
 end do
 !$OMP END DO
@@ -473,8 +512,8 @@ end do
 !$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
-                By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k,l  ) - Ez(j-1+ist,k,l))
-                By(j,k,l) = By(j,k,l) - dtsdz * (Ex(j  ,k,l+1) - Ex(j,k,l-1+ist))
+                By(j,0,l) = By(j,0,l) + dtsdx * (Ez(j+1,0,l  ) - Ez(j-1+ist,0,l))
+                By(j,0,l) = By(j,0,l) - dtsdz * (Ex(j  ,0,l+1) - Ex(j,0,l-1+ist))
         end do
 end do
 !$OMP END DO
@@ -482,7 +521,7 @@ end do
 !$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
-                Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k,l) - Ey(j-1+ist,k,l))
+                Bz(j,0,l) = Bz(j,0,l) - dtsdx * (Ey(j+1,0,l) - Ey(j-1+ist,0,l))
         end do
 end do
 !$OMP END DO

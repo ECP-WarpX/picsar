@@ -122,6 +122,9 @@ ELSE IF (c_dim.eq.2) THEN
       !!! --- Boundary conditions for currents
       !CALL current_bcs
 
+      !!! --- Push B field half a time step
+      CALL push_bfield_2d
+
       it = it+1
       timeit=MPI_WTIME()
 
