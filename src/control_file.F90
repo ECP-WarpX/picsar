@@ -43,7 +43,7 @@ CONTAINS
         topology = 0
         
         ! MPI communication
-        mpicom_curr = 0
+        mpicom_curr = 1
         
         ! Current deposition algorithm
         currdepo = 0

@@ -1123,7 +1123,7 @@ END SUBROUTINE charge_bcs
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_mpi: start"
 #endif
-    IF (mpicom_curr.EQ.1) THEN
+    IF (mpicom_curr .EQ. 1) THEN
     	! Then exchange particle between MPI domains
     	CALL particle_bcs_mpi_blocking()
     ELSE 
@@ -1630,7 +1630,7 @@ END SUBROUTINE charge_bcs
     INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuff, recvbuff
     REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
-    LOGICAL(idp), ALLOCATABLE, DIMENSION(:) :: mask
+    LOGICAL(idp) :: remove_from_sim
     INTEGER(isp) :: ibuff, isend, nout, nbuff, ninit
     INTEGER(isp) :: xbd, ybd, zbd
     INTEGER(isp) :: ixp, iyp, izp
@@ -1706,7 +1706,7 @@ END SUBROUTINE charge_bcs
                         xbd = 0
                         ybd = 0
                         zbd = 0
-                        out_of_bounds = .FALSE.
+                        remove_from_sim = .FALSE.
                         part_xyz = curr%part_x(i)
                         ! Particle has left this processor
                         IF (part_xyz .LT. x_min_local) THEN
@@ -1714,8 +1714,7 @@ END SUBROUTINE charge_bcs
                             IF (x_min_boundary) THEN
                             	SELECT CASE (pbound_x_min)
                             	CASE (1_idp) ! absorbing 
-                            		mask(i)=.FALSE.
-                            		CYCLE
+                            		remove_from_sim=.TRUE.
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT 
@@ -1727,8 +1726,7 @@ END SUBROUTINE charge_bcs
                             IF (x_max_boundary) THEN
                             	SELECT CASE (pbound_x_max)
                             	CASE (1_idp) ! absorbing
-                            		mask(i)=.FALSE.
-                            		CYCLE
+                            		remove_from_sim=.TRUE.
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -1742,8 +1740,7 @@ END SUBROUTINE charge_bcs
                             IF (y_min_boundary) THEN
                             	SELECT CASE (pbound_y_min)! absorbing 
                             	CASE (1_idp)
-                            		mask(i)=.FALSE.
-                            		CYCLE
+                            		remove_from_sim=.TRUE.
                             	CASE DEFAULT ! periodic 
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -1756,8 +1753,7 @@ END SUBROUTINE charge_bcs
                             IF (y_max_boundary) THEN
                             	SELECT CASE (pbound_y_max) 
                             	CASE (1_idp) ! absorbing 
-                            		mask(i)=.FALSE. 
-                            		CYCLE
+                            		remove_from_sim=.TRUE.
                             	CASE DEFAULT ! periodic 
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -1771,8 +1767,7 @@ END SUBROUTINE charge_bcs
                             IF (z_min_boundary) THEN
 								SELECT CASE (pbound_z_min)
 								CASE (1_idp) ! absorbing 
-									mask(i)=.FALSE.
-									CYCLE
+									remove_from_sim=.TRUE.
 								CASE DEFAULT ! periodic 
 									curr%part_z(i) = part_xyz + length_z
 								END SELECT
@@ -1786,8 +1781,7 @@ END SUBROUTINE charge_bcs
                             IF (z_max_boundary) THEN
                             	SELECT CASE (pbound_z_max)
                             	CASE (1_idp) ! absorbing 
-                            		mask(i)=.FALSE.
-                            		CYCLE
+                            		remove_from_sim=.TRUE.
                             	CASE DEFAULT ! periodic 
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
@@ -1796,19 +1790,21 @@ END SUBROUTINE charge_bcs
 
                         IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
                         ! Particle has left processor, send it to its neighbour
-                            ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
-                            sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
-                            sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
-                            sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
-                            sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
-                            sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
-                            sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
-                            sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
-                            sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
-                        	npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
-                            nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
-                            ! Remove particle of current species from current tile 
-                       	    CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
+                        	IF (.NOT. remove_from_sim) THEN 
+								ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
+								sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
+								sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
+								sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
+								sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
+								sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
+								sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
+								sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
+								sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
+								npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
+								nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
+								! Remove particle of current species from current tile 
+							ENDIF
+							CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
                   ENDDO
@@ -1899,8 +1895,5 @@ END SUBROUTINE charge_bcs
 
   DEALLOCATE(sendbuff,recvbuff,npart_send,npart_recv,requests)
   END SUBROUTINE particle_bcs_mpi_non_blocking
-
-
-
 
 END MODULE boundary
