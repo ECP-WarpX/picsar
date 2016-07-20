@@ -1463,8 +1463,8 @@ END SUBROUTINE charge_bcs
                     	nbuff=nbuff+curr%np_tile(1)
             	END DO 
             END DO 
-        END DO 
-        ALLOCATE(sendbuf(-1:1,-1:1,-1:1,1:nbuff))
+        END DO
+        ALLOCATE(sendbuf(-1:1,-1:1,-1:1,1:nbuff*nvar))
         DO iztile=1, ntilez !LOOP ON TILES
             DO iytile=1, ntiley
                 DO ixtile=1, ntilex
@@ -1686,7 +1686,7 @@ END SUBROUTINE charge_bcs
 		END DO 
 	END DO 
 	
-	ALLOCATE(sendbuff(1:nbuff,-1:1,-1:1,-1:1))
+	ALLOCATE(sendbuff(1:nbuff*nvar,-1:1,-1:1,-1:1))
 	! PUT PARTICLES TO BE SENT IN BUFFER 
 	nptoexch=0
     DO ispecies=1, nspecies !LOOP ON SPECIES
