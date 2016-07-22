@@ -47,7 +47,7 @@ CONTAINS
         topology = 0
         
         ! MPI communication
-        mpicom_curr = 0
+        mpicom_curr = 1
         
         ! Current deposition algorithm
         currdepo = 0
@@ -713,6 +713,7 @@ CONTAINS
                 END DO
                 IF (dp%ispecies .EQ. -1) THEN 
                     WRITE(0,*) "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
+
                 ENDIF
             ELSE IF (INDEX(buffer,'dump_y_min') .GT. 0) THEN
                 ix = INDEX(buffer, "=")

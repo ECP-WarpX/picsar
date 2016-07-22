@@ -10,10 +10,8 @@ try:
     import picsarpy as pxrpy
     pxr = pxrpy.picsar
     l_pxr=True
-    print 'PICSAR package found and loaded.'
 except:
     l_pxr=False
-    print 'PICSAR package not found.'
 try: 
     from mpi4py import MPI 
 except: 
@@ -52,7 +50,7 @@ class EM3DPXR(EM3DFFT):
                       'l_output_grid':0,
                       'l_output_freq':1,
                       'currdepo':0,     # Current deposition method
-                      'mpicom_curr':0,   # Com type Current deposition
+                      'mpicom_curr':1,   # Com type Current deposition
                       'fieldgave':0,     # Field gathering method
                       'partcom':0,       # Particle communication
                       'lvec_curr_depo':8,
@@ -80,7 +78,7 @@ class EM3DPXR(EM3DFFT):
 
     def finalize(self,lforce=False):
         if self.finalized and not lforce: return
-        if l_pxr:
+        if self.l_pxr:
         	EM3D.finalize(self)
         	self.allocatefieldarraysFFT()
         	self.allocatefieldarraysPXR()
@@ -349,10 +347,10 @@ class EM3DPXR(EM3DFFT):
                                                 0.,0.,0.,0.,0.,0., \
                                                 self.sorting.periods[i],self.sorting.starts[i])
             pxr.nspecies+=1
-
+      
         pxr.set_tile_split()
         pxr.init_tile_arrays()
-        
+
         for i,s in enumerate(self.listofallspecies):
             pxr.py_add_particles_to_species(i+1, s.nps, 
                                             s.getx(bcast=0,gather=0), 
@@ -368,7 +366,7 @@ class EM3DPXR(EM3DFFT):
         top.pgroup.ns=1
         top.pgroup.nps=0
         top.pgroup.gchange()
-        
+
         # --- mirror PXR tile structure in Warp with list of pgroups
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
