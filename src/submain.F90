@@ -47,7 +47,7 @@ IF (c_dim.eq.3) THEN
     
       !!! --- Field gather & particle push
       !IF (rank .EQ. 0) PRINT *, "#1"
-      CALL push_particles
+      CALL field_gathering_plus_particle_pusher
       !IF (rank .EQ. 0) PRINT *, "#2"
       !!! --- Apply BC on particles
       CALL particle_bcs
@@ -111,7 +111,7 @@ ELSE IF (c_dim.eq.2) THEN
       divE_computed = .False.
 
       !!! --- Field gather & particle push
-      CALL push_particles
+      CALL field_gathering_plus_particle_pusher
 
       !!! --- Apply BC on particles
       CALL particle_bcs_2d
@@ -120,7 +120,7 @@ ELSE IF (c_dim.eq.2) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_2d
 
       !!! --- Boundary conditions for currents
-      !CALL current_bcs
+      CALL current_bcs
 
       !!! --- Push B field half a time step
       CALL push_bfield_2d
@@ -252,12 +252,14 @@ IF (rank .EQ. 0) THEN
   write(0,*) 'Current deposition method:',currdepo
   write(0,*) 'Charge deposition algo:',rhodepo
   write(0,*) 'Field gathering method:',fieldgave
+  write(0,*) 'Field gathering plus particle pusher seperated:',fg_p_pp_seperated
   write(0,*) 'Current/field gathering order:',nox,noy,noz
   write(0,*) 'Part com type:',partcom
   write(0,*) 'Maxwell derivative coeff:',xcoeffs
   WRITE(0,*) ''
   WRITE(0,*) 'Vector length current deposition',lvec_curr_depo
   WRITE(0,*) 'Vector length charge deposition',lvec_charge_depo
+  WRITE(0,*) 'Vector length field gathering',lvec_fieldgathe  
   write(0,*) ''
   write(0,*) 'PLASMA PROPERTIES:'
   write(0,*) 'Distribution:',pdistr

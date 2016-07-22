@@ -1,8 +1,12 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 ! 
-! Field gathering
+! FIELD_GATHERING.F90
 ! 
 ! List of subroutines:
+!
+! - field_gathering
+! - field_gathering_sub
+!
 ! - geteb3d_energy_conserving
 ! 
 ! - gete3d_energy_conserving_1_1_1
@@ -16,6 +20,161 @@
 ! 
 ! - pxr_getb3d_n_energy_conserving
 ! - pxr_gete3d_n_energy_conserving
+! ________________________________________________________________________________________
+
+! ________________________________________________________________________________________
+SUBROUTINE field_gathering
+!
+! Field gathering main subroutine in 3D called in the main loop when not coupled
+! with the particle pusher
+! ________________________________________________________________________________________
+  USE fields
+  USE shared_data
+  USE params
+  USE time_stat
+  IMPLICIT NONE
+
+#if defined(DEBUG)
+  WRITE(0,*) "Field gathering: start"
+#endif
+
+  CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+
+
+#if defined(DEBUG)
+  WRITE(0,*) "Field gathering: stop"
+#endif
+	 
+END SUBROUTINE field_gathering
+
+! ________________________________________________________________________________________
+SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
+			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+!
+! This subroutine performs the field gathering in 3D only
+! ________________________________________________________________________________________			
+  USE particles
+  USE constants
+  USE tiling
+  USE time_stat
+  ! Vtune/SDE profiling
+#if defined(PROFILING) && PROFILING==3  
+    USE ITT_SDE_FORTRAN                   
+#endif                                  
+  IMPLICIT NONE
+
+  ! ___ Parameter declaration ________________________________________
+  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
+  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+  INTEGER(idp)             :: ispecies, ix, iy, iz, count
+  INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
+  TYPE(particle_species), POINTER :: curr
+  TYPE(grid_tile), POINTER        :: currg
+  TYPE(particle_tile), POINTER    :: curr_tile
+  REAL(num)                :: tdeb, tend
+  INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
+  INTEGER(idp)             :: nxjg,nyjg,nzjg
+  LOGICAL(idp)             :: isgathered=.FALSE.
+
+  tdeb=MPI_WTIME()
+
+#if PROFILING==3               
+  CALL start_collection()      
+#endif                         
+
+  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+  !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
+  !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
+  !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
+  !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
+  DO iz=1, ntilez ! LOOP ON TILES
+    DO iy=1, ntiley
+        DO ix=1, ntilex
+          curr=>species_parray(1)
+          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          nxjg=curr_tile%nxg_tile
+          nyjg=curr_tile%nyg_tile
+          nzjg=curr_tile%nzg_tile
+          jmin=curr_tile%nx_tile_min-nxjg
+          jmax=curr_tile%nx_tile_max+nxjg
+          kmin=curr_tile%ny_tile_min-nyjg
+          kmax=curr_tile%ny_tile_max+nyjg
+          lmin=curr_tile%nz_tile_min-nzjg
+          lmax=curr_tile%nz_tile_max+nzjg
+          nxc=curr_tile%nx_cells_tile
+          nyc=curr_tile%ny_cells_tile
+          nzc=curr_tile%nz_cells_tile
+          isgathered=.FALSE.
+          
+          DO ispecies=1, nspecies ! LOOP ON SPECIES
+            curr=>species_parray(ispecies)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            count=curr_tile%np_tile(1)
+            IF (count .GT. 0) isgathered=.TRUE.
+          END DO
+          IF (isgathered) THEN
+            currg=>aofgrid_tiles(ix,iy,iz)
+            currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
+            currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
+            currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
+            currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
+            currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
+            currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
+            DO ispecies=1, nspecies ! LOOP ON SPECIES
+              ! - Get current tile properties
+              ! - Init current tile variables
+					curr=>species_parray(ispecies)
+					curr_tile=>curr%array_of_tiles(ix,iy,iz)
+					count=curr_tile%np_tile(1)
+					IF (count .EQ. 0) CYCLE
+					curr_tile%part_ex(1:count) = 0.0_num
+					curr_tile%part_ey(1:count) = 0.0_num
+					curr_tile%part_ez(1:count) = 0.0_num
+					curr_tile%part_bx(1:count)=0.0_num
+					curr_tile%part_by(1:count)=0.0_num
+					curr_tile%part_bz(1:count)=0.0_num
+					!!! ---- Loop by blocks over particles in a tile (blocking)
+					!!! --- Gather electric field on particles
+					
+						!!! --- Gather electric and magnetic fields on particles						
+						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,    &
+											  curr_tile%part_z, curr_tile%part_ex,                           &
+											  curr_tile%part_ey,curr_tile%part_ez,                   			   &
+											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			 &
+											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,           &
+											  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,&
+											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,     &
+											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					       &
+											  currg%eztile,                                          			&
+											  currg%bxtile,currg%bytile,currg%bztile                 			&
+											  ,.FALSE._idp,.TRUE._idp)
+                    
+                END DO! END LOOP ON SPECIES
+            ENDIF
+        END DO
+    END DO
+  END DO! END LOOP ON TILES
+  !$OMP END PARALLEL DO
+
+#if PROFILING==3            
+  CALL stop_collection()    
+#endif                      
+
+  tend=MPI_WTIME()
+  localtimes(14) = localtimes(14) + (tend-tdeb)
+
+END SUBROUTINE field_gathering_sub
+
+
+
 
 !=================================================================================
 ! General subroutines for the 3D field gathering
@@ -35,8 +194,8 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
               
   ! ______________________________________________                                  
   ! Arbitrary order, non-optimized subroutines
-  IF (fieldgave.eq.1) THEN
-
+  
+  IF (fieldgave.eq.3) THEN
 
     !!! --- Gather electric field on particles
     CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
@@ -45,14 +204,47 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
     !!! --- Gather magnetic fields on particles
     CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
                                  dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                 nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v)		
+                                 nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v)	
+
+  ! ______________________________________________                                  
+  ! Non-optimized scalar subroutines
+    
+  ELSE IF (fieldgave.eq.2) THEN	
+
+    IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
+      !!! --- Gather electric field on particles
+      CALL gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        exg,eyg,ezg,l_lower_order_in_v)
+      !!! --- Gather magnetic fields on particles
+      CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        bxg,byg,bzg,l_lower_order_in_v)    
+    ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+      !!! --- Gather electric field on particles
+      CALL gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        exg,eyg,ezg,l_lower_order_in_v)
+      !!! --- Gather magnetic fields on particles
+      CALL getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        bxg,byg,bzg,l_lower_order_in_v)       
+    ELSE
+    !!! --- Gather electric field on particles
+    CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
+                                 dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                 nox,noy,noz,exg,eyg,ezg,l4symtry,l_lower_order_in_v)
+    !!! --- Gather magnetic fields on particles
+    CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
+                                 dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                 nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v) 
+    ENDIF
   
   ! ________________________________________
-  ! Optimized subroutines, default  
-  ELSE
+  ! Optimized subroutines, E and B in two separated vectorized loop 
+  ELSE IF (fieldgave.eq.1) THEN	
   
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
-  
       !!! --- Gather electric field on particles
       CALL gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -61,7 +253,6 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
       CALL getb3d_energy_conserving_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                         bxg,byg,bzg,l_lower_order_in_v) 
-                                      
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
 
       !!! --- Gather electric field on particles
@@ -72,9 +263,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
       CALL getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                         bxg,byg,bzg,l_lower_order_in_v) 
-
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-
       !!! --- Gather electric field on particles
       CALL gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -83,10 +272,8 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
       CALL getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                         bxg,byg,bzg,l_lower_order_in_v) 
-    
     ! Arbitrary order             
     ELSE
-
       !!! --- Gather electric field on particles
       CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
                                    dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -95,15 +282,40 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
       CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
                                    dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                    nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v)			  
-    
     ENDIF				  
-					    
+  ! ________________________________________
+  ! Optimized subroutines, E and B in the same vectorized loop, default 
+  ELSE
+    IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
+      CALL geteb3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)                                   
+    ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
+      !!! --- Gather electric field on particles
+      CALL gete3d_energy_conserving_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        exg,eyg,ezg,l_lower_order_in_v)
+      !!! --- Gather magnetic fields on particles
+      CALL getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        bxg,byg,bzg,l_lower_order_in_v) 
+    ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+      CALL geteb3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v) 
+    ! Arbitrary order             
+    ELSE
+      !!! --- Gather electric field on particles
+      CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
+                                   dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                   nox,noy,noz,exg,eyg,ezg,l4symtry,l_lower_order_in_v)
+      !!! --- Gather magnetic fields on particles
+      CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
+                                   dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                   nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v)			  
+    ENDIF						    
   ENDIF
-
-
 END SUBROUTINE
-
-
 
 
 !=================================================================================
@@ -124,8 +336,6 @@ logical(idp)                         :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
 REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(isp)                         :: ip, j, k, l
-INTEGER(isp)                         :: ixmin, ixmax, iymin, iymax, izmin, izmax
-INTEGER(isp)                         :: ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0
 INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
 REAL(num)                            :: dxi, dyi, dzi, x, y, z
 REAL(num)                            :: xint, yint, zint, &
@@ -149,6 +359,13 @@ sz0=0.0_num
 
 IF (l_lower_order_in_v) THEN
 
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+#endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
@@ -231,9 +448,17 @@ IF (l_lower_order_in_v) THEN
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD 
 #endif
-    
+
+! l_lower_order_in_v false    
 ELSE
 
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+#endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
@@ -319,6 +544,7 @@ RETURN
 END SUBROUTINE gete3d_energy_conserving_1_1_1
 
 
+
 !=================================================================================
 SUBROUTINE getb3d_energy_conserving_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -337,8 +563,7 @@ REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
 logical(idp)                         :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
-INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+INTEGER(idp) :: ip, j, k, l, jj, kk, ll, j0, k0, l0
 REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
               xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
 REAL(num), DIMENSION(0:1) :: sx, sx0
@@ -359,6 +584,13 @@ sz0=0.0_num
 
 IF (l_lower_order_in_v) THEN
 
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,bx,by,bz)
+#endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
@@ -423,6 +655,13 @@ IF (l_lower_order_in_v) THEN
 
 ELSE
 
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,bx,by,bz)
+#endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
@@ -506,6 +745,159 @@ ELSE
 ENDIF
 RETURN
 END SUBROUTINE getb3d_energy_conserving_1_1_1
+
+! ________________________________________________________________________________________
+SUBROUTINE geteb3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+!
+! Field gathering CIC (order 1) with gathering of E and B merged in a single loop
+! This function is vectorized
+! Input parameters:
+! - np: number of particles
+! - xp,yp,zp: particle position
+! - ex,ey,ez: particle electric field
+! - bx,by,bz: particle magnetic field
+! - xmin,ymin,zmin: tile minimum grid position
+! - dx,dy,dz: space step
+! - dt: time step
+! - nx,ny,nz: number of grid points in each direction
+! - nxguard, nyguard, nzguard: number of guard cells in each direction 
+! - exg,eyg,ezg: electric field grid
+! - bxg,byg,bzg: magnetic field grid
+! - lvect: vector size for cache blocking
+! - l_lower_order_in_v: 
+! ________________________________________________________________________________________
+
+  USE omp_lib
+  USE constants
+  USE params
+  
+  IMPLICIT NONE
+  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp)                         :: lvect
+  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  logical(idp)                         :: l_lower_order_in_v
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(isp)                         :: ip, j, k, l
+  INTEGER(isp)                         :: nn,n
+  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z
+  REAL(num)                            :: xint, yint, zint, &
+                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num), DIMENSION(0:1)            :: sx, sx0
+  REAL(num), DIMENSION(0:1)            :: sy, sy0
+  REAL(num), DIMENSION(0:1)            :: sz, sz0
+  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
+
+  sx=0.0_num
+  sy=0.0_num
+  sz=0.0_num
+  sx0=0.0_num
+  sy0=0.0_num
+  sz0=0.0_num
+
+  ! ___ Loop on partciles _______________________
+  DO ip=1,np,lvect
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* ALIGN(64,bx,by,bz)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif
+    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+  
+      x = (xp(nn)-xmin)*dxi
+      y = (yp(nn)-ymin)*dyi
+      z = (zp(nn)-zmin)*dzi
+    
+      ! Compute index of particle
+    
+      j=floor(x)
+      j0=floor(x)
+      k=floor(y)
+      k0=floor(y)
+      l=floor(z)
+      l0=floor(z)
+    
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      sx( 0) = 1.0_num-xint
+      sx( 1) = xint
+      sy( 0) = 1.0_num-yint
+      sy( 1) = yint
+      sz( 0) = 1.0_num-zint
+      sz( 1) = zint
+    
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+    
+      sx0( 0) = 1.0_num
+      sy0( 0) = 1.0_num
+      sz0( 0) = 1.0_num
+    
+      ! Compute Ex on particle
+      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(0)*exg(j0,k,l)
+      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(0)*exg(j0,k+1,l)
+      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(1)*exg(j0,k,l+1)
+      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(1)*exg(j0,k+1,l+1)
+    
+      ! Compute Ey on particle
+      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(0)*eyg(j,k0,l)
+      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(0)*eyg(j+1,k0,l)
+      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(1)*eyg(j,k0,l+1)
+      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(1)*eyg(j+1,k0,l+1)
+    
+      ! Compute Ez on particle
+      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(0)*ezg(j,k,l0)
+      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(0)*ezg(j+1,k,l0)
+      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(0)*ezg(j,k+1,l0)
+      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(0)*ezg(j+1,k+1,l0)
+    
+      ! Compute Bx on particle
+      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
+      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
+    
+      ! Compute By on particle
+      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
+      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
+    
+      ! Compute Bz on particle
+      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
+      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1) 
+
+    END DO
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+  ENDDO
+
+RETURN
+END SUBROUTINE geteb3d_energy_conserving_1_1_1
 
 
 !=================================================================================
@@ -1639,6 +2031,36 @@ ELSE
   RETURN
 END SUBROUTINE getb3d_energy_conserving_3_3_3
 
+! ________________________________________________________________________________________
+SUBROUTINE geteb3d_energy_conserving_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+!
+! Field gathering TSC (order 2) with gathering of E and B merged in a single loop
+! This function is vectorized
+! Input parameters:
+! - np: number of particles
+! - xp,yp,zp: particle position
+! - ex,ey,ez: particle electric field
+! - bx,by,bz: particle magnetic field
+! - xmin,ymin,zmin: tile minimum grid position
+! - dx,dy,dz: space step
+! - dt: time step
+! - nx,ny,nz: number of grid points in each direction
+! - nxguard, nyguard, nzguard: number of guard cells in each direction 
+! - exg,eyg,ezg: electric field grid
+! - bxg,byg,bzg: magnetic field grid
+! - lvect: vector size for cache blocking
+! - l_lower_order_in_v: 
+! ________________________________________________________________________________________
+
+  USE omp_lib
+  USE constants
+  USE params
+  
+
+END SUBROUTINE
+
 !=================================================================================
 SUBROUTINE gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -1647,35 +2069,35 @@ SUBROUTINE gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
 ! at order 3  
 ! This function is vectorized   
 !=================================================================================                                 
-USE omp_lib
-USE constants
-IMPLICIT NONE
+  USE omp_lib
+  USE constants
+  IMPLICIT NONE
 
-INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
-REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez
-  LOGICAL(idp)                         :: l_lower_order_in_v 
-REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
-INTEGER(idp)                           :: ip, j, k, l 
-INTEGER(idp)                           :: ixmin, ixmax, iymin, iymax, izmin, izmax, &
-              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-REAL(num)                              :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-REAL(num), DIMENSION(-1:2) :: sx,sx0
-REAL(num), DIMENSION(-1:2) :: sy,sy0
-REAL(num), DIMENSION(-1:2) :: sz,sz0
-REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+  INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez
+  LOGICAL(idp)                           :: l_lower_order_in_v 
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+  REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(idp)                           :: ip, j, k, l 
+  INTEGER(idp)                           :: jj, kk, ll, j0, k0, l0
+  REAL(num)                              :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num), DIMENSION(-1:2)             :: sx,sx0
+  REAL(num), DIMENSION(-1:2)             :: sy,sy0
+  REAL(num), DIMENSION(-1:2)             :: sz,sz0
+  REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
 
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
 
-sx=0.0_num
-sy=0.0_num
-sz=0.0_num
-sx0=0.0_num
-sy0=0.0_num
-sz0=0.0_num
+  sx=0.0_num
+  sy=0.0_num
+  sz=0.0_num
+  sx0=0.0_num
+  sy0=0.0_num
+  sz0=0.0_num
 
 IF (l_lower_order_in_v ) THEN
 
@@ -2193,6 +2615,1316 @@ ENDIF
 
 RETURN
 END SUBROUTINE gete3d_energy_conserving_3_3_3
+
+
+! ________________________________________________________________________________________
+SUBROUTINE geteb3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                                           xmin,ymin,zmin,       &
+                                           dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                           exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
+!
+! Field gathering CIC (order 1) with gathering of E and B merged in a single loop
+! This function is vectorized
+! Input parameters:
+! - np: number of particles
+! - xp,yp,zp: particle position
+! - ex,ey,ez: particle electric field
+! - bx,by,bz: particle magnetic field
+! - xmin,ymin,zmin: tile minimum grid position
+! - dx,dy,dz: space step
+! - dt: time step
+! - nx,ny,nz: number of grid points in each direction
+! - nxguard, nyguard, nzguard: number of guard cells in each direction 
+! - exg,eyg,ezg: electric field grid
+! - bxg,byg,bzg: magnetic field grid
+! - lvect: vector size for cache blocking
+! - l_lower_order_in_v: 
+! ________________________________________________________________________________________                                
+  USE omp_lib
+  USE constants
+  IMPLICIT NONE
+
+  ! ___ Parameter declaration _________________________________________________
+  INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  INTEGER(idp)                           :: lvect
+  LOGICAL(idp)                           :: l_lower_order_in_v 
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
+  REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(isp)                           :: ip, j, k, l 
+  INTEGER(idp)                           :: jj, kk, ll, j0, k0, l0
+  REAL(num)                              :: dxi, dyi, dzi, x, y, z, xint, yint, zint
+  REAL(num)                              :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  INTEGER(isp)                           :: nn              
+  REAL(num), DIMENSION(-1:2)             :: sx,sx0
+  REAL(num), DIMENSION(-1:2)             :: sy,sy0
+  REAL(num), DIMENSION(-1:2)             :: sz,sz0
+  REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
+
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
+
+  sx=0.0_num
+  sy=0.0_num
+  sz=0.0_num
+  sx0=0.0_num
+  sy0=0.0_num
+  sz0=0.0_num
+
+  ! ___ Loop on partciles _______________________
+  DO ip=1,np,lvect
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* ALIGN(64,bx,by,bz)
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !$DIR SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!DIR$ DISTRIBUTE POINT
+#endif
+    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+
+      x = (xp(nn)-xmin)*dxi
+      y = (yp(nn)-ymin)*dyi
+      z = (zp(nn)-zmin)*dzi
+    
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x)
+      k=floor(y)
+      k0=floor(y)
+      l=floor(z)
+      l0=floor(z)
+    
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      oxint = 1.0_num-xint
+      xintsq = xint*xint
+      oxintsq = oxint*oxint
+      sx(-1) = onesixth*oxintsq*oxint
+      sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
+      sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+      sx( 2) = onesixth*xintsq*xint
+    
+      oyint = 1.0_num-yint
+      yintsq = yint*yint
+      oyintsq = oyint*oyint
+      sy(-1) = onesixth*oyintsq*oyint
+      sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
+      sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
+      sy( 2) = onesixth*yintsq*yint
+    
+      ozint = 1.0_num-zint
+      zintsq = zint*zint
+      ozintsq = ozint*ozint
+      sz(-1) = onesixth*ozintsq*ozint
+      sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
+      sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
+      sz( 2) = onesixth*zintsq*zint
+    
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+    
+      xintsq = xint*xint
+      sx0(-1) = 0.5_num*(0.5_num-xint)**2
+      sx0( 0) = 0.75_num-xintsq
+      sx0( 1) = 0.5_num*(0.5_num+xint)**2
+    
+      yintsq = yint*yint
+      sy0(-1) = 0.5_num*(0.5_num-yint)**2
+      sy0( 0) = 0.75_num-yintsq
+      sy0( 1) = 0.5_num*(0.5_num+yint)**2
+    
+      zintsq = zint*zint
+      sz0(-1) = 0.5_num*(0.5_num-zint)**2
+      sz0( 0) = 0.75_num-zintsq
+      sz0( 1) = 0.5_num*(0.5_num+zint)**2
+
+      ! Compute Ex on particle
+      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(-1)*exg(j0-1,k-1,l-1)
+      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(-1)*exg(j0,k-1,l-1)
+      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(-1)*exg(j0+1,k-1,l-1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(-1)*exg(j0-1,k,l-1)
+      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(-1)*exg(j0,k,l-1)
+      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(-1)*exg(j0+1,k,l-1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(-1)*exg(j0-1,k+1,l-1)
+      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(-1)*exg(j0,k+1,l-1)
+      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(-1)*exg(j0+1,k+1,l-1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(-1)*exg(j0-1,k+2,l-1)
+      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(-1)*exg(j0,k+2,l-1)
+      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(-1)*exg(j0+1,k+2,l-1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(0)*exg(j0-1,k-1,l)
+      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(0)*exg(j0,k-1,l)
+      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(0)*exg(j0+1,k-1,l)
+      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(0)*exg(j0-1,k,l)
+      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(0)*exg(j0,k,l)
+      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(0)*exg(j0+1,k,l)
+      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(0)*exg(j0-1,k+1,l)
+      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(0)*exg(j0,k+1,l)
+      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(0)*exg(j0+1,k+1,l)
+      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(0)*exg(j0-1,k+2,l)
+      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(0)*exg(j0,k+2,l)
+      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(0)*exg(j0+1,k+2,l)
+      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(1)*exg(j0-1,k-1,l+1)
+      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(1)*exg(j0,k-1,l+1)
+      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(1)*exg(j0+1,k-1,l+1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(1)*exg(j0-1,k,l+1)
+      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(1)*exg(j0,k,l+1)
+      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(1)*exg(j0+1,k,l+1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(1)*exg(j0-1,k+1,l+1)
+      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(1)*exg(j0,k+1,l+1)
+      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(1)*exg(j0+1,k+1,l+1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(1)*exg(j0-1,k+2,l+1)
+      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(1)*exg(j0,k+2,l+1)
+      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(1)*exg(j0+1,k+2,l+1)
+      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(2)*exg(j0-1,k-1,l+2)
+      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(2)*exg(j0,k-1,l+2)
+      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(2)*exg(j0+1,k-1,l+2)
+      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(2)*exg(j0-1,k,l+2)
+      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(2)*exg(j0,k,l+2)
+      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(2)*exg(j0+1,k,l+2)
+      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(2)*exg(j0-1,k+1,l+2)
+      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(2)*exg(j0,k+1,l+2)
+      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(2)*exg(j0+1,k+1,l+2)
+      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(2)*exg(j0-1,k+2,l+2)
+      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(2)*exg(j0,k+2,l+2)
+      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(2)*exg(j0+1,k+2,l+2)
+    
+      ! Compute Ey on particle
+      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(-1)*eyg(j-1,k0-1,l-1)
+      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(-1)*eyg(j,k0-1,l-1)
+      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(-1)*eyg(j+1,k0-1,l-1)
+      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(-1)*eyg(j+2,k0-1,l-1)
+      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(-1)*eyg(j-1,k0,l-1)
+      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(-1)*eyg(j,k0,l-1)
+      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(-1)*eyg(j+1,k0,l-1)
+      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(-1)*eyg(j+2,k0,l-1)
+      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(-1)*eyg(j-1,k0+1,l-1)
+      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(-1)*eyg(j,k0+1,l-1)
+      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(-1)*eyg(j+1,k0+1,l-1)
+      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(-1)*eyg(j+2,k0+1,l-1)
+      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(0)*eyg(j-1,k0-1,l)
+      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(0)*eyg(j,k0-1,l)
+      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(0)*eyg(j+1,k0-1,l)
+      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(0)*eyg(j+2,k0-1,l)
+      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(0)*eyg(j-1,k0,l)
+      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(0)*eyg(j,k0,l)
+      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(0)*eyg(j+1,k0,l)
+      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(0)*eyg(j+2,k0,l)
+      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(0)*eyg(j-1,k0+1,l)
+      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(0)*eyg(j,k0+1,l)
+      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(0)*eyg(j+1,k0+1,l)
+      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(0)*eyg(j+2,k0+1,l)
+      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(1)*eyg(j-1,k0-1,l+1)
+      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(1)*eyg(j,k0-1,l+1)
+      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(1)*eyg(j+1,k0-1,l+1)
+      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(1)*eyg(j+2,k0-1,l+1)
+      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(1)*eyg(j-1,k0,l+1)
+      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(1)*eyg(j,k0,l+1)
+      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(1)*eyg(j+1,k0,l+1)
+      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(1)*eyg(j+2,k0,l+1)
+      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(1)*eyg(j-1,k0+1,l+1)
+      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(1)*eyg(j,k0+1,l+1)
+      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(1)*eyg(j+1,k0+1,l+1)
+      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(1)*eyg(j+2,k0+1,l+1)
+      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(2)*eyg(j-1,k0-1,l+2)
+      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(2)*eyg(j,k0-1,l+2)
+      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(2)*eyg(j+1,k0-1,l+2)
+      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(2)*eyg(j+2,k0-1,l+2)
+      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(2)*eyg(j-1,k0,l+2)
+      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(2)*eyg(j,k0,l+2)
+      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(2)*eyg(j+1,k0,l+2)
+      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(2)*eyg(j+2,k0,l+2)
+      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(2)*eyg(j-1,k0+1,l+2)
+      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(2)*eyg(j,k0+1,l+2)
+      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(2)*eyg(j+1,k0+1,l+2)
+      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(2)*eyg(j+2,k0+1,l+2)
+    
+      ! Compute Ez on particle
+      ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(-1)*ezg(j-1,k-1,l0-1)
+      ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(-1)*ezg(j,k-1,l0-1)
+      ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(-1)*ezg(j+1,k-1,l0-1)
+      ez(nn) = ez(nn) + sx(2)*sy(-1)*sz0(-1)*ezg(j+2,k-1,l0-1)
+      ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(-1)*ezg(j-1,k,l0-1)
+      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(-1)*ezg(j,k,l0-1)
+      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(-1)*ezg(j+1,k,l0-1)
+      ez(nn) = ez(nn) + sx(2)*sy(0)*sz0(-1)*ezg(j+2,k,l0-1)
+      ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(-1)*ezg(j-1,k+1,l0-1)
+      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(-1)*ezg(j,k+1,l0-1)
+      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(-1)*ezg(j+1,k+1,l0-1)
+      ez(nn) = ez(nn) + sx(2)*sy(1)*sz0(-1)*ezg(j+2,k+1,l0-1)
+      ez(nn) = ez(nn) + sx(-1)*sy(2)*sz0(-1)*ezg(j-1,k+2,l0-1)
+      ez(nn) = ez(nn) + sx(0)*sy(2)*sz0(-1)*ezg(j,k+2,l0-1)
+      ez(nn) = ez(nn) + sx(1)*sy(2)*sz0(-1)*ezg(j+1,k+2,l0-1)
+      ez(nn) = ez(nn) + sx(2)*sy(2)*sz0(-1)*ezg(j+2,k+2,l0-1)
+      ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(0)*ezg(j-1,k-1,l0)
+      ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(0)*ezg(j,k-1,l0)
+      ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(0)*ezg(j+1,k-1,l0)
+      ez(nn) = ez(nn) + sx(2)*sy(-1)*sz0(0)*ezg(j+2,k-1,l0)
+      ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(0)*ezg(j-1,k,l0)
+      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(0)*ezg(j,k,l0)
+      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(0)*ezg(j+1,k,l0)
+      ez(nn) = ez(nn) + sx(2)*sy(0)*sz0(0)*ezg(j+2,k,l0)
+      ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(0)*ezg(j-1,k+1,l0)
+      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(0)*ezg(j,k+1,l0)
+      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(0)*ezg(j+1,k+1,l0)
+      ez(nn) = ez(nn) + sx(2)*sy(1)*sz0(0)*ezg(j+2,k+1,l0)
+      ez(nn) = ez(nn) + sx(-1)*sy(2)*sz0(0)*ezg(j-1,k+2,l0)
+      ez(nn) = ez(nn) + sx(0)*sy(2)*sz0(0)*ezg(j,k+2,l0)
+      ez(nn) = ez(nn) + sx(1)*sy(2)*sz0(0)*ezg(j+1,k+2,l0)
+      ez(nn) = ez(nn) + sx(2)*sy(2)*sz0(0)*ezg(j+2,k+2,l0)
+      ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(1)*ezg(j-1,k-1,l0+1)
+      ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(1)*ezg(j,k-1,l0+1)
+      ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(1)*ezg(j+1,k-1,l0+1)
+      ez(nn) = ez(nn) + sx(2)*sy(-1)*sz0(1)*ezg(j+2,k-1,l0+1)
+      ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(1)*ezg(j-1,k,l0+1)
+      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(1)*ezg(j,k,l0+1)
+      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(1)*ezg(j+1,k,l0+1)
+      ez(nn) = ez(nn) + sx(2)*sy(0)*sz0(1)*ezg(j+2,k,l0+1)
+      ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(1)*ezg(j-1,k+1,l0+1)
+      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(1)*ezg(j,k+1,l0+1)
+      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(1)*ezg(j+1,k+1,l0+1)
+      ez(nn) = ez(nn) + sx(2)*sy(1)*sz0(1)*ezg(j+2,k+1,l0+1)
+      ez(nn) = ez(nn) + sx(-1)*sy(2)*sz0(1)*ezg(j-1,k+2,l0+1)
+      ez(nn) = ez(nn) + sx(0)*sy(2)*sz0(1)*ezg(j,k+2,l0+1)
+      ez(nn) = ez(nn) + sx(1)*sy(2)*sz0(1)*ezg(j+1,k+2,l0+1)
+      ez(nn) = ez(nn) + sx(2)*sy(2)*sz0(1)*ezg(j+2,k+2,l0+1)
+
+      ! Compute Bx on particle
+      bx(nn) = bx(nn) + sx(-1)*sy0(-1)*sz0(-1)*bxg(j-1,k0-1,l0-1)
+      bx(nn) = bx(nn) + sx(0)*sy0(-1)*sz0(-1)*bxg(j,k0-1,l0-1)
+      bx(nn) = bx(nn) + sx(1)*sy0(-1)*sz0(-1)*bxg(j+1,k0-1,l0-1)
+      bx(nn) = bx(nn) + sx(2)*sy0(-1)*sz0(-1)*bxg(j+2,k0-1,l0-1)
+      bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(-1)*bxg(j-1,k0,l0-1)
+      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(-1)*bxg(j,k0,l0-1)
+      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(-1)*bxg(j+1,k0,l0-1)
+      bx(nn) = bx(nn) + sx(2)*sy0(0)*sz0(-1)*bxg(j+2,k0,l0-1)
+      bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(-1)*bxg(j-1,k0+1,l0-1)
+      bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(-1)*bxg(j,k0+1,l0-1)
+      bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(-1)*bxg(j+1,k0+1,l0-1)
+      bx(nn) = bx(nn) + sx(2)*sy0(1)*sz0(-1)*bxg(j+2,k0+1,l0-1)
+      bx(nn) = bx(nn) + sx(-1)*sy0(-1)*sz0(0)*bxg(j-1,k0-1,l0)
+      bx(nn) = bx(nn) + sx(0)*sy0(-1)*sz0(0)*bxg(j,k0-1,l0)
+      bx(nn) = bx(nn) + sx(1)*sy0(-1)*sz0(0)*bxg(j+1,k0-1,l0)
+      bx(nn) = bx(nn) + sx(2)*sy0(-1)*sz0(0)*bxg(j+2,k0-1,l0)
+      bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(0)*bxg(j-1,k0,l0)
+      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
+      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
+      bx(nn) = bx(nn) + sx(2)*sy0(0)*sz0(0)*bxg(j+2,k0,l0)
+      bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(0)*bxg(j-1,k0+1,l0)
+      bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(0)*bxg(j,k0+1,l0)
+      bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(0)*bxg(j+1,k0+1,l0)
+      bx(nn) = bx(nn) + sx(2)*sy0(1)*sz0(0)*bxg(j+2,k0+1,l0)
+      bx(nn) = bx(nn) + sx(-1)*sy0(-1)*sz0(1)*bxg(j-1,k0-1,l0+1)
+      bx(nn) = bx(nn) + sx(0)*sy0(-1)*sz0(1)*bxg(j,k0-1,l0+1)
+      bx(nn) = bx(nn) + sx(1)*sy0(-1)*sz0(1)*bxg(j+1,k0-1,l0+1)
+      bx(nn) = bx(nn) + sx(2)*sy0(-1)*sz0(1)*bxg(j+2,k0-1,l0+1)
+      bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(1)*bxg(j-1,k0,l0+1)
+      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(1)*bxg(j,k0,l0+1)
+      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(1)*bxg(j+1,k0,l0+1)
+      bx(nn) = bx(nn) + sx(2)*sy0(0)*sz0(1)*bxg(j+2,k0,l0+1)
+      bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(1)*bxg(j-1,k0+1,l0+1)
+      bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(1)*bxg(j,k0+1,l0+1)
+      bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(1)*bxg(j+1,k0+1,l0+1)
+      bx(nn) = bx(nn) + sx(2)*sy0(1)*sz0(1)*bxg(j+2,k0+1,l0+1)
+    
+      ! Compute By on particle
+      by(nn) = by(nn) + sx0(-1)*sy(-1)*sz0(-1)*byg(j0-1,k-1,l0-1)
+      by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(-1)*byg(j0,k-1,l0-1)
+      by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(-1)*byg(j0+1,k-1,l0-1)
+      by(nn) = by(nn) + sx0(-1)*sy(0)*sz0(-1)*byg(j0-1,k,l0-1)
+      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(-1)*byg(j0,k,l0-1)
+      by(nn) = by(nn) + sx0(1)*sy(0)*sz0(-1)*byg(j0+1,k,l0-1)
+      by(nn) = by(nn) + sx0(-1)*sy(1)*sz0(-1)*byg(j0-1,k+1,l0-1)
+      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(-1)*byg(j0,k+1,l0-1)
+      by(nn) = by(nn) + sx0(1)*sy(1)*sz0(-1)*byg(j0+1,k+1,l0-1)
+      by(nn) = by(nn) + sx0(-1)*sy(2)*sz0(-1)*byg(j0-1,k+2,l0-1)
+      by(nn) = by(nn) + sx0(0)*sy(2)*sz0(-1)*byg(j0,k+2,l0-1)
+      by(nn) = by(nn) + sx0(1)*sy(2)*sz0(-1)*byg(j0+1,k+2,l0-1)
+      by(nn) = by(nn) + sx0(-1)*sy(-1)*sz0(0)*byg(j0-1,k-1,l0)
+      by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(0)*byg(j0,k-1,l0)
+      by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(0)*byg(j0+1,k-1,l0)
+      by(nn) = by(nn) + sx0(-1)*sy(0)*sz0(0)*byg(j0-1,k,l0)
+      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
+      by(nn) = by(nn) + sx0(1)*sy(0)*sz0(0)*byg(j0+1,k,l0)
+      by(nn) = by(nn) + sx0(-1)*sy(1)*sz0(0)*byg(j0-1,k+1,l0)
+      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
+      by(nn) = by(nn) + sx0(1)*sy(1)*sz0(0)*byg(j0+1,k+1,l0)
+      by(nn) = by(nn) + sx0(-1)*sy(2)*sz0(0)*byg(j0-1,k+2,l0)
+      by(nn) = by(nn) + sx0(0)*sy(2)*sz0(0)*byg(j0,k+2,l0)
+      by(nn) = by(nn) + sx0(1)*sy(2)*sz0(0)*byg(j0+1,k+2,l0)
+      by(nn) = by(nn) + sx0(-1)*sy(-1)*sz0(1)*byg(j0-1,k-1,l0+1)
+      by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(1)*byg(j0,k-1,l0+1)
+      by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(1)*byg(j0+1,k-1,l0+1)
+      by(nn) = by(nn) + sx0(-1)*sy(0)*sz0(1)*byg(j0-1,k,l0+1)
+      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(1)*byg(j0,k,l0+1)
+      by(nn) = by(nn) + sx0(1)*sy(0)*sz0(1)*byg(j0+1,k,l0+1)
+      by(nn) = by(nn) + sx0(-1)*sy(1)*sz0(1)*byg(j0-1,k+1,l0+1)
+      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(1)*byg(j0,k+1,l0+1)
+      by(nn) = by(nn) + sx0(1)*sy(1)*sz0(1)*byg(j0+1,k+1,l0+1)
+      by(nn) = by(nn) + sx0(-1)*sy(2)*sz0(1)*byg(j0-1,k+2,l0+1)
+      by(nn) = by(nn) + sx0(0)*sy(2)*sz0(1)*byg(j0,k+2,l0+1)
+      by(nn) = by(nn) + sx0(1)*sy(2)*sz0(1)*byg(j0+1,k+2,l0+1)
+    
+      ! Compute Bz on particle
+      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(-1)*bzg(j0-1,k0-1,l-1)
+      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(-1)*bzg(j0,k0-1,l-1)
+      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(-1)*bzg(j0+1,k0-1,l-1)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(-1)*bzg(j0-1,k0,l-1)
+      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(-1)*bzg(j0,k0,l-1)
+      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(-1)*bzg(j0+1,k0,l-1)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(-1)*bzg(j0-1,k0+1,l-1)
+      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(-1)*bzg(j0,k0+1,l-1)
+      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(-1)*bzg(j0+1,k0+1,l-1)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(0)*bzg(j0-1,k0-1,l)
+      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(0)*bzg(j0,k0-1,l)
+      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(0)*bzg(j0+1,k0-1,l)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(0)*bzg(j0-1,k0,l)
+      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
+      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(0)*bzg(j0+1,k0,l)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(0)*bzg(j0-1,k0+1,l)
+      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(0)*bzg(j0,k0+1,l)
+      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(0)*bzg(j0+1,k0+1,l)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(1)*bzg(j0-1,k0-1,l+1)
+      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(1)*bzg(j0,k0-1,l+1)
+      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(1)*bzg(j0+1,k0-1,l+1)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(1)*bzg(j0-1,k0,l+1)
+      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1)
+      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(1)*bzg(j0+1,k0,l+1)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(1)*bzg(j0-1,k0+1,l+1)
+      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
+      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(2)*bzg(j0-1,k0-1,l+2)
+      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(2)*bzg(j0,k0-1,l+2)
+      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(2)*bzg(j0+1,k0-1,l+2)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(2)*bzg(j0-1,k0,l+2)
+      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(2)*bzg(j0,k0,l+2)
+      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(2)*bzg(j0+1,k0,l+2)
+      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(2)*bzg(j0-1,k0+1,l+2)
+      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(2)*bzg(j0,k0+1,l+2)
+      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(2)*bzg(j0+1,k0+1,l+2)
+    
+    ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif  
+  ENDDO
+  
+  RETURN 
+END SUBROUTINE
+
+
+
+! ________________________________________________________________________________________
+SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,l_lower_order_in_v)
+!
+! Scalar version: gathering of electric field from Yee grid ("energy conserving") on particles
+! at order 1
+! ________________________________________________________________________________________
+
+USE omp_lib
+USE constants
+USE params
+
+IMPLICIT NONE
+INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
+logical(idp)                         :: l_lower_order_in_v
+REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
+INTEGER(isp)                         :: ip, j, k, l
+INTEGER(isp)                         :: ixmin, ixmax, iymin, iymax, izmin, izmax
+INTEGER(isp)                         :: ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0
+INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+REAL(num)                            :: dxi, dyi, dzi, x, y, z
+REAL(num)                            :: xint, yint, zint, &
+              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+REAL(num), DIMENSION(0:1)            :: sx, sx0
+REAL(num), DIMENSION(0:1)            :: sy, sy0
+REAL(num), DIMENSION(0:1)            :: sz, sz0
+REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+dxi = 1.0_num/dx
+dyi = 1.0_num/dy
+dzi = 1.0_num/dz
+
+ixmin = 0
+ixmax = 0
+iymin = 0
+iymax = 0
+izmin = 0
+izmax = 0
+
+sx=0.0_num
+sy=0.0_num
+sz=0.0_num
+sx0=0.0_num
+sy0=0.0_num
+sz0=0.0_num
+
+IF (l_lower_order_in_v) THEN
+
+  ixmin0 = 0
+  ixmax0 = 0
+  iymin0 = 0
+  iymax0 = 0
+  izmin0 = 0
+  izmax0 = 0
+
+  DO ip=1,np
+  
+    x = (xp(ip)-xmin)*dxi
+    y = (yp(ip)-ymin)*dyi
+    z = (zp(ip)-zmin)*dzi
+    
+    ! Compute index of particle
+    
+    j=floor(x)
+    j0=floor(x)
+    k=floor(y)
+    k0=floor(y)
+    l=floor(z)
+    l0=floor(z)
+    
+    xint=x-j
+    yint=y-k
+    zint=z-l
+    
+    ! Compute shape factors
+    sx( 0) = 1.0_num-xint
+    sx( 1) = xint
+    sy( 0) = 1.0_num-yint
+    sy( 1) = yint
+    sz( 0) = 1.0_num-zint
+    sz( 1) = zint
+    
+    xint=x-0.5_num-j0
+    yint=y-0.5_num-k0
+    zint=z-0.5_num-l0
+    
+    sx0( 0) = 1.0_num
+    sy0( 0) = 1.0_num
+    sz0( 0) = 1.0_num
+    
+    do ll = izmin, izmax+1
+      do kk = iymin, iymax+1
+        do jj = ixmin0, ixmax0
+          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+        end do
+      end do
+    end do
+
+    do ll = izmin, izmax+1
+      do kk = iymin0, iymax0
+        do jj = ixmin, ixmax+1
+          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+        end do
+      end do
+    end do
+
+    do ll = izmin0, izmax0
+      do kk = iymin, iymax+1
+        do jj = ixmin, ixmax+1
+          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+        end do
+      end do
+    end do
+
+    ! Debugging
+!     IF (it.gt.0) THEN
+!       print*,'ex,ey,ez',ex(ip),ey(ip),ez(ip)
+!       print*,'j',j,k,l
+!       print*,'j0',j0,k0,l0  
+!       print*,'sx',sx(:)
+!       print*,'sy',sy(:)   
+!       print*,'sz',sz(:)   
+!       print*,'sx0',sx0(:)
+!       print*,'sy0',sy0(:)   
+!       print*,'sz0',sz0(:)            
+!       read*
+!     ENDIF
+
+  END DO
+
+! __ l_lower_order_in_v false  _____________________________
+ELSE
+
+  ixmin0 = 0
+  ixmax0 = 1
+  iymin0 = 0
+  iymax0 = 1
+  izmin0 = 0
+  izmax0 = 1
+
+  DO ip=1,np
+    
+    x = (xp(ip)-xmin)*dxi
+    y = (yp(ip)-ymin)*dyi
+    z = (zp(ip)-zmin)*dzi
+  
+    ! Compute index of particle
+    j=floor(x)
+    j0=floor(x-0.5_num)
+    k=floor(y)
+    k0=floor(y-0.5_num)
+    l=floor(z)
+    l0=floor(z-0.5_num)
+    xint=x-j
+    yint=y-k
+    zint=z-l
+  
+    ! Compute shape factors
+    sx( 0) = 1.0_num-xint
+    sx( 1) = xint
+    sy( 0) = 1.0_num-yint
+    sy( 1) = yint
+    sz( 0) = 1.0_num-zint
+    sz( 1) = zint
+    xint=x-0.5_num-j0
+    yint=y-0.5_num-k0
+    zint=z-0.5_num-l0
+    sx0( 0) = 1.0_num-xint
+    sx0( 1) = xint
+    sy0( 0) = 1.0_num-yint
+    sy0( 1) = yint
+    sz0( 0) = 1.0_num-zint
+    sz0( 1) = zint
+    
+    do ll = izmin, izmax+1
+      do kk = iymin, iymax+1
+        do jj = ixmin0, ixmax0
+          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+        end do
+      end do
+    end do
+
+    do ll = izmin, izmax+1
+      do kk = iymin0, iymax0
+        do jj = ixmin, ixmax+1
+          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+        end do
+      end do
+    end do
+
+    do ll = izmin0, izmax0
+      do kk = iymin, iymax+1
+        do jj = ixmin, ixmax+1
+          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+        end do
+      end do
+    end do
+      
+  END DO
+ENDIF
+
+RETURN
+END SUBROUTINE gete3d_energy_conserving_scalar_1_1_1
+
+
+
+
+! ________________________________________________________________________________________
+SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      bxg,byg,bzg,l_lower_order_in_v)
+! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles
+! at order 1
+! This function is vectorized                                      
+! ________________________________________________________________________________________
+
+USE omp_lib
+USE constants
+IMPLICIT NONE
+
+INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
+logical(idp)                         :: l_lower_order_in_v
+REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
+REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
+INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+              ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+REAL(num), DIMENSION(0:1)            :: sx, sx0
+REAL(num), DIMENSION(0:1)            :: sy, sy0
+REAL(num), DIMENSION(0:1)            :: sz, sz0
+REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+
+dxi = 1.0_num/dx
+dyi = 1.0_num/dy
+dzi = 1.0_num/dz
+
+sx=0.0_num
+sy=0.0_num
+sz=0.0_num
+sx0=0.0_num
+sy0=0.0_num
+sz0=0.0_num
+
+ixmin = 0
+ixmax = 0
+iymin = 0
+iymax = 0
+izmin = 0
+izmax = 0
+
+
+IF (l_lower_order_in_v) THEN
+
+  ixmin0 = 0
+  ixmax0 = 0
+  iymin0 = 0
+  iymax0 = 0
+  izmin0 = 0
+  izmax0 = 0
+
+  DO ip=1,np
+  
+    x = (xp(ip)-xmin)*dxi
+    y = (yp(ip)-ymin)*dyi
+    z = (zp(ip)-zmin)*dzi
+    
+    ! Compute index of particle
+    j=floor(x)
+    j0=floor(x)
+    k=floor(y)
+    k0=floor(y)
+    l=floor(z)
+    l0=floor(z)
+    
+    xint=x-j
+    yint=y-k
+    zint=z-l
+    
+    ! Compute shape factors
+    sx( 0) = 1.0_num-xint
+    sx( 1) = xint
+    sy( 0) = 1.0_num-yint
+    sy( 1) = yint
+    sz( 0) = 1.0_num-zint
+    sz( 1) = zint
+    
+    xint=x-0.5_num-j0
+    yint=y-0.5_num-k0
+    zint=z-0.5_num-l0
+    
+    sx0( 0) = 1.0_num
+    sy0( 0) = 1.0_num
+    sz0( 0) = 1.0_num
+    
+    do ll = izmin0, izmax0
+      do kk = iymin0, iymax0
+        do jj = ixmin, ixmax+1
+          bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)
+        end do
+      end do
+    end do
+
+    do ll = izmin0, izmax0
+      do kk = iymin, iymax+1
+        do jj = ixmin0, ixmax0
+          by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)
+        end do
+      end do
+    end do
+
+    do ll = izmin, izmax+1
+      do kk = iymin0, iymax0
+        do jj = ixmin0, ixmax0
+          bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
+        end do
+      end do
+    end do
+  
+  END DO
+
+ELSE
+
+  ixmin0 = 0
+  ixmax0 = 1
+  iymin0 = 0
+  iymax0 = 1
+  izmin0 = 0
+  izmax0 = 1
+
+  DO ip=1,np
+    
+      x = (xp(ip)-xmin)*dxi
+      y = (yp(ip)-ymin)*dyi
+      z = (zp(ip)-zmin)*dzi
+    
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x-0.5_num)
+      k=floor(y)
+      k0=floor(y-0.5_num)
+      l=floor(z)
+      l0=floor(z-0.5_num)
+    
+      ! Compute shape factors
+      xint=x-j
+      yint=y-k
+      zint=z-l    
+      sx( 0) = 1.0_num-xint
+      sx( 1) = xint
+      sy( 0) = 1.0_num-yint
+      sy( 1) = yint
+      sz( 0) = 1.0_num-zint
+      sz( 1) = zint
+    
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+    
+      sx0( 0) = 1.0_num-xint
+      sx0( 1) = xint
+      sy0( 0) = 1.0_num-yint
+      sy0( 1) = yint
+      sz0( 0) = 1.0_num-zint
+      sz0( 1) = zint
+    
+      do ll = izmin0, izmax0
+        do kk = iymin0, iymax0
+          do jj = ixmin, ixmax+1
+            bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin0, izmax0
+        do kk = iymin, iymax+1
+          do jj = ixmin0, ixmax0
+            by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin, izmax+1
+        do kk = iymin0, iymax0
+          do jj = ixmin0, ixmax0
+            bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
+          end do
+        end do
+      end do
+  END DO
+ENDIF
+RETURN
+END SUBROUTINE getb3d_energy_conserving_scalar_1_1_1
+
+
+! ________________________________________________________________________________________
+SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,l_lower_order_in_v)
+!
+! Scalar version: gathering of electric field from Yee grid ("energy conserving") on particles
+! at order 3
+! ________________________________________________________________________________________
+
+  USE omp_lib
+  USE constants
+  USE params
+
+  IMPLICIT NONE
+  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
+  logical(idp)                         :: l_lower_order_in_v
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(isp)                         :: ip, j, k, l
+  INTEGER(isp)                         :: ixmin, ixmax, iymin, iymax, izmin, izmax
+  INTEGER(isp)                         :: ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0
+  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z
+  REAL(num)                            :: xint, yint, zint, &
+                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num), DIMENSION(-1:2)            :: sx, sx0
+  REAL(num), DIMENSION(-1:2)            :: sy, sy0
+  REAL(num), DIMENSION(-1:2)            :: sz, sz0
+  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+  dxi = 1./dx
+  dyi = 1./dy
+  dzi = 1./dz
+
+  ixmin = -1
+  ixmax =  1
+  iymin = -1
+  iymax =  1
+  izmin = -1
+  izmax =  1
+
+  sx=0.0_num
+  sy=0.0_num
+  sz=0.0_num
+  sx0=0.0_num
+  sy0=0.0_num
+  sz0=0.0_num
+
+  IF (l_lower_order_in_v) THEN
+
+    ixmin0 = -1
+    ixmax0 =  1
+    iymin0 = -1
+    iymax0 =  1
+    izmin0 = -1
+    izmax0 =  1
+
+    DO ip=1,np
+
+      x = (xp(ip)-xmin)*dxi
+      y = (yp(ip)-ymin)*dyi
+      z = (zp(ip)-zmin)*dzi
+
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x)
+      k=floor(y)
+      k0=floor(y)
+      l=floor(z)
+      l0=floor(z)
+    
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      oxint = 1.0_num-xint
+      xintsq = xint*xint
+      oxintsq = oxint*oxint
+      sx(-1) = onesixth*oxintsq*oxint
+      sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
+      sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+      sx( 2) = onesixth*xintsq*xint
+    
+      oyint = 1.0_num-yint
+      yintsq = yint*yint
+      oyintsq = oyint*oyint
+      sy(-1) = onesixth*oyintsq*oyint
+      sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
+      sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
+      sy( 2) = onesixth*yintsq*yint
+    
+      ozint = 1.0_num-zint
+      zintsq = zint*zint
+      ozintsq = ozint*ozint
+      sz(-1) = onesixth*ozintsq*ozint
+      sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
+      sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
+      sz( 2) = onesixth*zintsq*zint
+    
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+    
+      xintsq = xint*xint
+      sx0(-1) = 0.5_num*(0.5_num-xint)**2
+      sx0( 0) = 0.75_num-xintsq
+      sx0( 1) = 0.5_num*(0.5_num+xint)**2
+    
+      yintsq = yint*yint
+      sy0(-1) = 0.5_num*(0.5_num-yint)**2
+      sy0( 0) = 0.75_num-yintsq
+      sy0( 1) = 0.5_num*(0.5_num+yint)**2
+    
+      zintsq = zint*zint
+      sz0(-1) = 0.5_num*(0.5_num-zint)**2
+      sz0( 0) = 0.75_num-zintsq
+      sz0( 1) = 0.5_num*(0.5_num+zint)**2
+
+      do ll = izmin, izmax+1
+        do kk = iymin, iymax+1
+          do jj = ixmin0, ixmax0
+            ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin, izmax+1
+        do kk = iymin0, iymax0
+          do jj = ixmin, ixmax+1
+            ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin0, izmax0
+        do kk = iymin, iymax+1
+          do jj = ixmin, ixmax+1
+            ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+          end do
+        end do
+      end do
+    
+    ENDDO
+  ELSE
+
+    ixmin0 = -1
+    ixmax0 =  2
+    iymin0 = -1
+    iymax0 =  2
+    izmin0 = -1
+    izmax0 =  2
+
+    DO ip=1,np
+
+      x = (xp(ip)-xmin)*dxi
+      y = (yp(ip)-ymin)*dyi
+      z = (zp(ip)-zmin)*dzi
+    
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x-0.5_num)
+      k=floor(y)
+      k0=floor(y-0.5_num)
+      l=floor(z)
+      l0=floor(z-0.5_num)
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      oxint = 1.0_num-xint
+      xintsq = xint*xint
+      oxintsq = oxint*oxint
+      sx(-1) = onesixth*oxintsq*oxint
+      sx( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
+      sx( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+      sx( 2) = onesixth*xintsq*xint
+      oyint = 1.0_num-yint
+      yintsq = yint*yint
+      oyintsq = oyint*oyint
+      sy(-1) = onesixth*oyintsq*oyint
+      sy( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
+      sy( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+      sy( 2) = onesixth*yintsq*yint
+      ozint = 1.0_num-zint
+      zintsq = zint*zint
+      ozintsq = ozint*ozint
+      sz(-1) = onesixth*ozintsq*ozint
+      sz( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
+      sz( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+      sz( 2) = onesixth*zintsq*zint
+    
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+    
+      oxint = 1.0_num-xint
+      xintsq = xint*xint
+      oxintsq = oxint*oxint
+      sx0(-1) = onesixth*oxintsq*oxint
+      sx0( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
+      sx0( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+      sx0( 2) = onesixth*xintsq*xint
+    
+      oyint = 1.0_num-yint
+      yintsq = yint*yint
+      oyintsq = oyint*oyint
+      sy0(-1) = onesixth*oyintsq*oyint
+      sy0( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
+      sy0( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+      sy0( 2) = onesixth*yintsq*yint
+    
+      ozint = 1.0_num-zint
+      zintsq = zint*zint
+      ozintsq = ozint*ozint
+      sz0(-1) = onesixth*ozintsq*ozint
+      sz0( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
+      sz0( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+      sz0( 2) = onesixth*zintsq*zint
+
+      do ll = izmin, izmax+1
+        do kk = iymin, iymax+1
+          do jj = ixmin0, ixmax0
+            ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin, izmax+1
+        do kk = iymin0, iymax0
+          do jj = ixmin, ixmax+1
+            ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin0, izmax0
+        do kk = iymin, iymax+1
+          do jj = ixmin, ixmax+1
+            ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+          end do
+        end do
+      end do
+  
+    ENDDO ! end loop on particles
+  
+  ENDIF
+
+RETURN
+END SUBROUTINE
+
+! ________________________________________________________________________________________
+SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      bxg,byg,bzg,l_lower_order_in_v)
+! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles
+! at order 3
+! This function is vectorized                                      
+! ________________________________________________________________________________________
+
+  USE omp_lib
+  USE constants
+  IMPLICIT NONE
+
+  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
+  logical(idp)                         :: l_lower_order_in_v
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
+  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+                ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num), DIMENSION(-1:2)           :: sx, sx0
+  REAL(num), DIMENSION(-1:2)           :: sy, sy0
+  REAL(num), DIMENSION(-1:2)           :: sz, sz0
+  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+  dxi = 1./dx
+  dyi = 1./dy
+  dzi = 1./dz
+
+  ixmin = -1
+  ixmax =  1
+  iymin = -1
+  iymax =  1
+  izmin = -1
+  izmax =  1
+
+  if (l_lower_order_in_v) then
+  
+    ixmin0 = -1
+    ixmax0 =  1
+    iymin0 = -1
+    iymax0 =  1
+    izmin0 = -1
+    izmax0 =  1
+
+    DO ip=1,np   
+
+      x = (xp(ip)-xmin)*dxi
+      y = (yp(ip)-ymin)*dyi
+      z = (zp(ip)-zmin)*dzi
+    
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x)
+      k=floor(y)
+      k0=floor(y)
+      l=floor(z)
+      l0=floor(z)
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      oxint = 1.0_num-xint
+      xintsq = xint*xint
+      oxintsq = oxint*oxint
+      sx(-1) = onesixth*oxintsq*oxint
+      sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
+      sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+      sx( 2) = onesixth*xintsq*xint
+    
+      oyint = 1.0_num-yint
+      yintsq = yint*yint
+      oyintsq = oyint*oyint
+      sy(-1) = onesixth*oyintsq*oyint
+      sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
+      sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
+      sy( 2) = onesixth*yintsq*yint
+    
+      ozint = 1.0_num-zint
+      zintsq = zint*zint
+      ozintsq = ozint*ozint
+      sz(-1) = onesixth*ozintsq*ozint
+      sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
+      sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
+      sz( 2) = onesixth*zintsq*zint
+    
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+      xintsq = xint*xint
+      sx0(-1) = 0.5_num*(0.5_num-xint)**2
+      sx0( 0) = 0.75_num-xintsq
+      sx0( 1) = 0.5_num*(0.5_num+xint)**2
+      yintsq = yint*yint
+      sy0(-1) = 0.5_num*(0.5_num-yint)**2
+      sy0( 0) = 0.75_num-yintsq
+      sy0( 1) = 0.5_num*(0.5_num+yint)**2
+      zintsq = zint*zint
+      sz0(-1) = 0.5_num*(0.5_num-zint)**2
+      sz0( 0) = 0.75_num-zintsq
+      sz0( 1) = 0.5_num*(0.5_num+zint)**2
+
+      do ll = izmin0, izmax0
+        do kk = iymin0, iymax0
+          do jj = ixmin, ixmax+1
+            bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin0, izmax0
+        do kk = iymin, iymax+1
+          do jj = ixmin0, ixmax0
+            by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin, izmax+1
+        do kk = iymin0, iymax0
+          do jj = ixmin0, ixmax0
+            bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
+          end do
+        end do
+      end do
+      
+    ENDDO
+    
+  ELSE
+  
+    ixmin0 = -1
+    ixmax0 =  2
+    iymin0 = -1
+    iymax0 =  2
+    izmin0 = -1
+    izmax0 =  2
+
+    DO ip=1,np  
+    
+      x = (xp(ip)-xmin)*dxi
+      y = (yp(ip)-ymin)*dyi
+      z = (zp(ip)-zmin)*dzi
+    
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x-0.5_num)
+      k=floor(y)
+      k0=floor(y-0.5_num)
+      l=floor(z)
+      l0=floor(z-0.5_num)
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      oxint = 1.0_num-xint
+      xintsq = xint*xint
+      oxintsq = oxint*oxint
+      sx(-1) = onesixth*oxintsq*oxint
+      sx( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
+      sx( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+      sx( 2) = onesixth*xintsq*xint
+      oyint = 1.0_num-yint
+      yintsq = yint*yint
+      oyintsq = oyint*oyint
+      sy(-1) = onesixth*oyintsq*oyint
+      sy( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
+      sy( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+      sy( 2) = onesixth*yintsq*yint
+      ozint = 1.0_num-zint
+      zintsq = zint*zint
+      ozintsq = ozint*ozint
+      sz(-1) = onesixth*ozintsq*ozint
+      sz( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
+      sz( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+      sz( 2) = onesixth*zintsq*zint
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+    
+      oxint = 1.0_num-xint
+      xintsq = xint*xint
+      oxintsq = oxint*oxint
+      sx0(-1) = onesixth*oxintsq*oxint
+      sx0( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
+      sx0( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+      sx0( 2) = onesixth*xintsq*xint
+    
+      oyint = 1.0_num-yint
+      yintsq = yint*yint
+      oyintsq = oyint*oyint
+      sy0(-1) = onesixth*oyintsq*oyint
+      sy0( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
+      sy0( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+      sy0( 2) = onesixth*yintsq*yint
+    
+      ozint = 1.0_num-zint
+      zintsq = zint*zint
+      ozintsq = ozint*ozint
+      sz0(-1) = onesixth*ozintsq*ozint
+      sz0( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
+      sz0( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+      sz0( 2) = onesixth*zintsq*zint    
+
+      do ll = izmin0, izmax0
+        do kk = iymin0, iymax0
+          do jj = ixmin, ixmax+1
+            bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin0, izmax0
+        do kk = iymin, iymax+1
+          do jj = ixmin0, ixmax0
+            by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)
+          end do
+        end do
+      end do
+
+      do ll = izmin, izmax+1
+        do kk = iymin0, iymax0
+          do jj = ixmin0, ixmax0
+            bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
+          end do
+        end do
+      end do
+    
+    ENDDO
+    
+  ENDIF
+  
+RETURN
+END SUBROUTINE
 
 !=================================================================================
 ! Gathering of electric field from Yee grid ("energy conserving") on particles
@@ -3406,7 +5138,6 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
           do kk = iymin, iymax+1
             do jj = ixmin, ixmax+1
               ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
-              print*,ez(ip),ezg(j+jj,k+kk,l0+ll),sx(jj)*sy(kk)*sz0(ll)
             end do
           end do
         end do

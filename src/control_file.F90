@@ -61,11 +61,17 @@ CONTAINS
         ! Particle communication routine
         partcom = 0
         
+        ! Field gathering + part. pusher
+        fg_p_pp_seperated = 0
+        
         ! Vector length current deposition
         lvec_curr_depo = 8
 
         ! Vector length charge deposition        
         LVEC_charge_depo = 64
+        
+        ! Vector length field gathering
+        LVEC_fieldgathe = 256
         
         ! Size of the particle mpi buffer
         mpi_buf_size = 10000
@@ -206,7 +212,10 @@ CONTAINS
                 READ(buffer, *) lvec_curr_depo      
             ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) lvec_charge_depo             
+                READ(buffer, *) lvec_charge_depo
+            ELSE IF (INDEX(buffer,'lvec_fieldgathe') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) lvec_fieldgathe   
             ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) mpicom_curr     
@@ -288,15 +297,21 @@ CONTAINS
             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') partcom
+            ELSE IF (INDEX(buffer,'fg_p_pp_seperated') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_seperated
             ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo 
             ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') lvec_charge_depo
+            ELSE IF (INDEX(buffer,'lvec_fieldgathe') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') lvec_fieldgathe
             ELSE IF (INDEX(buffer,'c_dim') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') c_dim                
+                READ(buffer(ix+1:string_length), '(i10)') c_dim
             ELSE IF (INDEX(buffer,'end::cpusplit') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -357,11 +372,11 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') noy
             ELSE IF (INDEX(buffer,'noz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') noz                                                             
+                READ(buffer(ix+1:string_length), '(i10)') noz
              ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') currdepo        
-             ELSE IF (INDEX(buffer,'fieldgave') .GT. 0) THEN
+             ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') fieldgave     
              ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
@@ -369,7 +384,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') rhodepo
              ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') partcom                                
+                READ(buffer(ix+1:string_length), '(i10)') partcom  
+            ELSE IF (INDEX(buffer,'fg_p_pp_seperated') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_seperated                                              
             ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

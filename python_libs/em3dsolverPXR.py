@@ -1000,7 +1000,8 @@ class EM3DPXR(EM3DFFT):
                 
                 # Particle pusher
                 tdebpart=MPI.Wtime()
-                pxr.push_particles()
+                #pxr.push_particles()
+                pxr.field_gathering_plus_particle_pusher()
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
                 self.time_stat_loc_array[0] += (tendpart-tdebpart)

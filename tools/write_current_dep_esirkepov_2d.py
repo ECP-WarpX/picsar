@@ -2,11 +2,11 @@
 from numpy import *
 
 # Parameters
-nox=1 # order of gathering
-noz=1
+nox=3 # order of gathering
+noz=3
 l4symtry=False
 l_particles_weight=True
-final_loop_lin=0
+final_loop_lin=2
 filename="depose_jxjyjz_esirkepov_"+str(nox)+"_"+str(noz)+".F90"
 subroutine_deposej="depose_jxjyjz_esirkepov2d_lin_"+str(nox)+"_"+str(noz)
 indent_cont_1="                                      "
@@ -40,6 +40,10 @@ def plusi(i):
             return "+"+str(abs(i))
         else:
             return "-"+str(abs(i))
+
+# Check
+print 'ixmin',ixmin,'ixmax',ixmax
+print 'izmin',izmin,'izmax',izmax
 
 # Open file
 fh=open(filename,"w")
@@ -256,14 +260,48 @@ if(noz==3):
 
 fh.write(indent_1+"\n");   
 fh.write(indent_2+"! --- computes coefficients difference\n");
-fh.write(indent_2+"dsx = sx - sx0\n");
-fh.write(indent_2+"dsz = sz - sz0\n");
+for i in range(xl,xu+1):
+  fh.write(indent_2+"dsx(%d) = sx(%d) - sx0(%d)\n"%(i,i,i));
+  fh.write(indent_2+"dsz(%d) = sz(%d) - sz0(%d)\n"%(i,i,i));
 fh.write(indent_2+"\n")
+
 # The final loop ic completely linearized
+# This is for the vectorized version
 if final_loop_lin==1:
   fh.write(indent_2+"! --- add current contributions\n")
 
-
+  # For x
+  fh.write(indent_1+"\n");  
+  l = 0
+  for k in range(izmin,izmax+1):  
+    for i in range(ixmin,8+ixmin-1+1):
+      l += 1
+      if(i<ixmax):
+        #print i,k,l      
+        fh.write(indent_2+"sdx(n,%d)  = wqx*dsx(%d)*( sz0(%d) + 0.5*dsz(%d) )\n"%(l,i,k,k));
+        if (i>ixmin):
+          fh.write(indent_2+"sdx(n,%d) = sdx(n,%d)+sdx(n,%d)\n"%(l,l,l-1));       
+  # For y
+  fh.write(indent_1+"\n");    
+  l = 0
+  for k in range(izmin,izmax+1):  
+    for i in range(ixmin,8+ixmin-1+1):
+       l += 1   
+       if (i<=ixmax):
+         fh.write(indent_2+"sdy(n,%d) = wq*vy*invvol* &\n"%(l)) 
+         fh.write(indent_2+"( (sz0(%d)+0.5*dsz(%d))*sx0(%d) + (0.5*sz0(%d)+onethird*dsz(%d))*dsx(%d))\n"%(k,k,i,k,k,i))   
+     
+  # For z
+  fh.write(indent_1+"\n");  
+  l = 0
+  for k in range(izmin,izmax+1):  
+    for i in range(ixmin,8+ixmin-1+1):
+      l+=1
+      if((k<izmax)and(i<=ixmax)):
+        fh.write(indent_2+"sdz(n,%d)  = wqz*dsz(%d)*(sx0(%d)+0.5*dsx(%d))\n"%(l,k,i,i)); 
+        if(k>izmin):
+          fh.write(indent_2+"sdz(n,%d) = sdz(n,%d)+sdz(n,%d)\n"%(l,l,l-1));             
+                            
 # The final loop is not linearized
 elif (final_loop_lin==0):
 
@@ -296,7 +334,7 @@ elif (final_loop_lin==0):
   fh.write(indent_4+"\n") 
   fh.write(indent_4+"! --- Jz\n") 
   fh.write(indent_4+"IF(k<izmax) THEN\n")
-  fh.write(indent_5+"sdz(i,k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))        ! Wz coefficient from esirkepov&\n")
+  fh.write(indent_5+"sdz(i,k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))        ! Wz coefficient from esirkepov\n")
   fh.write(indent_5+"if (k>izmin) sdz(i,k)=sdz(i,k)+sdz(i,k-1)         ! Integration of Wz along z\n")
   fh.write(indent_5+"jz(ic,kc) = jz(ic,kc) + sdz(i,k)                  ! Deposition on the current\n")
   fh.write(indent_4+"END IF\n")
@@ -304,7 +342,37 @@ elif (final_loop_lin==0):
   fh.write(indent_3+"END DO\n")
   fh.write(indent_2+"END DO\n")
 
-                                                            
+# The final loop is not linearized
+elif (final_loop_lin==2):
+    
+  # For x
+  fh.write(indent_1+"\n");    
+  l = 0
+  for k in range(izmin,izmax+1):  
+    for i in range(ixmin,ixmax+1):
+      if (i<ixmax):
+        fh.write(indent_4+"sdx(n,%d,%d)  = wqx*dsx(%d)*( sz0(%d) + 0.5*dsz(%d) )  \n"%(i,k,i,k,k))
+        if (i>ixmin):
+          fh.write(indent_4+"sdx(n,%d,%d)=sdx(n,%d,%d)+sdx(n,%d-1,%d)    \n"%(i,k,i,k,i,k))  
+              
+  # For y
+  fh.write(indent_1+"\n");    
+  l = 0
+  for k in range(izmin,izmax+1):  
+    for i in range(ixmin,ixmax+1):
+        fh.write(indent_4+"sdy(n,%d,%d) = wq*vy*invvol* &\n"%(i,k)) 
+        fh.write(indent_4+"( (sz0(%d)+0.5*dsz(%d))*sx0(%d) + (0.5*sz0(%d)+onethird*dsz(%d))*dsx(%d) )\n"%(k,k,i,k,k,i))     
+    
+  # For z
+  fh.write(indent_1+"\n");    
+  l = 0
+  for k in range(izmin,izmax+1):  
+    for i in range(ixmin,ixmax+1):
+      if (k<izmax):
+        fh.write(indent_5+"sdz(n,%d,%d)=wqz*dsz(%d)*(sx0(%d)+0.5*dsx(%d))    \n"%(i,k,k,i,i))
+        if (k>izmin):
+          fh.write(indent_5+"sdz(n,%d,%d)=sdz(n,%d,%d)+sdz(n,%d,%d-1)    \n"%(i,k,i,k,i,k))
+                                                                
 # End do particles  
 fh.write("\n")
 fh.write(indent_1+"END DO\n")

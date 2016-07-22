@@ -2606,10 +2606,11 @@ END SUBROUTINE charge_bcs
     TYPE(mpi_buffer), dimension(:,:,:,:), ALLOCATABLE :: tilebuf
     INTEGER(isp), DIMENSION(:,:), ALLOCATABLE         :: nrecv_buf
     INTEGER(isp), DIMENSION(:), ALLOCATABLE           :: reqs
-    INTEGER(isp) :: nrecv_buf_tot,npos, typebuffer
-    REAL(num) :: nx0_grid_tile_dx, ny0_grid_tile_dy, nz0_grid_tile_dz
-    INTEGER(isp) :: stats(2)
-    INTEGER(idp) :: recvbuf_index(27)
+    INTEGER(isp)                                      :: nrecv_buf_tot,npos, typebuffer
+    REAL(num)                                         :: nx0_grid_tile_dx
+    REAL(num)                                         :: ny0_grid_tile_dy,nz0_grid_tile_dz
+    INTEGER(isp)                                      :: stats(2)
+    INTEGER(idp)                                      :: recvbuf_index(27)
 	
 	  ! _________________________________________________________
 	  ! Determine number of threads to be used for nested parallel region

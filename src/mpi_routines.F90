@@ -676,7 +676,7 @@ SUBROUTINE mpi_minimal_init()
     INTEGER(idp)             :: nthreads_tot
     
     ! Total times
-    localtimes(20) = sum(localtimes(1:13))
+    localtimes(20) = sum(localtimes(1:14))
     localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
                      localtimes(8) + localtimes(11) + localtimes(13)
     localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)                 
@@ -711,10 +711,15 @@ SUBROUTINE mpi_minimal_init()
     WRITE(0,*) ""
     WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
     WRITE(0,*) "---------------------------------------------------------------------------"
-    WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher + field gathering:", mintimes(1), avetimes(1), maxtimes(1),&
-    percenttimes(1), avetimes(1)/nsteps*1e3
-    WRITE(0,'(X,A25,5(X,F8.2))') "Field gathering (if non coupled):",mintimes(14), avetimes(14), maxtimes(14),&
-    percenttimes(14), avetimes(14)/nsteps*1e3
+    IF (fg_p_pp_seperated.le.1) THEN
+      WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher + field gathering:", mintimes(1), avetimes(1), maxtimes(1),&
+      percenttimes(1), avetimes(1)/nsteps*1e3
+    ELSE
+      WRITE(0,'(X,A25,5(X,F8.2))') "Field gathering:",mintimes(14), avetimes(14), maxtimes(14),&
+      percenttimes(14), avetimes(14)/nsteps*1e3    
+      WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
+      percenttimes(1), avetimes(1)/nsteps*1e3
+    ENDIF
     WRITE(0,'(X,A25,5(X,F8.2))') "Particle MPI bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
     percenttimes(2), avetimes(2)/nsteps*1e3
     WRITE(0,'(X,A25,5(X,F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), avetimes(11), maxtimes(11),&
@@ -756,14 +761,25 @@ SUBROUTINE mpi_minimal_init()
 #endif
 
     WRITE(0,*) ''
-    WRITE(0,*) 'For lib_performance python class:' 
-    WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,",part_mpi_com=",F6.2,&
-    ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
-    ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
-    nproc,nthreads_tot,avetimes(20), &
-    avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
-    avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
-    avetimes(12),avetimes(13),avetimes(9)
+    IF (fg_p_pp_seperated.le.1) THEN    
+      WRITE(0,*) 'For lib_performance python class:' 
+      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,",part_mpi_com=",F6.2,&
+      ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
+      ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
+      nproc,nthreads_tot,avetimes(20), &
+      avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
+      avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
+      avetimes(12),avetimes(13),avetimes(9)
+    ELSE
+      WRITE(0,*) 'For lib_performance python class:' 
+      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,"partpusher=",F6.2,",part_mpi_com=",F6.2,&
+      ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
+      ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
+      nproc,nthreads_tot,avetimes(20), &
+      avetimes(14),avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
+      avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
+      avetimes(12),avetimes(13),avetimes(9)
+    ENDIF
 
   ENDIF    
   

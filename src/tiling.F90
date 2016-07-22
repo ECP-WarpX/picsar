@@ -1025,6 +1025,7 @@ CONTAINS
 
       INTEGER(idp)                    :: ispecies, ix, iy, iz, nbp
       INTEGER(idp)                    :: nxc,nyc,nzc
+      REAL(num)                       :: nctot,ncloc
       REAL(num)                       :: mpipartsize
       REAL(num)                       :: tilepartsize
       REAL(num)                       :: tilefieldsize
@@ -1040,7 +1041,7 @@ CONTAINS
         !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
         !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
         !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp,nxc,nyc,nzc) &
-        !$OMP REDUCTION(+:mpipartsize)
+        !$OMP REDUCTION(+:mpipartsize,ncloc)
         DO iz=1, ntilez ! LOOP ON TILES
           DO iy=1, ntiley
             DO ix=1, ntilex
@@ -1054,9 +1055,10 @@ CONTAINS
                  nbp=curr_tile%npmax_tile  ! size of the arrays
                  nxc=curr_tile%nx_cells_tile
                  nyc=curr_tile%ny_cells_tile
-                 nzc=curr_tile%nz_cells_tile    
+                 nzc=curr_tile%nz_cells_tile 
                
                  mpipartsize = mpipartsize + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
+                 ncloc = ncloc + nxc*nyc*nzc
 
               END DO! END LOOP ON SPECIES
             END DO
@@ -1069,7 +1071,7 @@ CONTAINS
         !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) &
         !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
         !$OMP PRIVATE(ix,iz,ispecies,curr,curr_tile,nbp,nxc,nzc) &
-        !$OMP REDUCTION(+:mpipartsize)
+        !$OMP REDUCTION(+:mpipartsize,ncloc)
         DO iz=1, ntilez ! LOOP ON TILES
             DO ix=1, ntilex
 
@@ -1084,6 +1086,7 @@ CONTAINS
                  nzc=curr_tile%nz_cells_tile    
                
                  mpipartsize = mpipartsize + nbp*8*13 ! 8 for double, 13 for x,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
+                 ncloc = ncloc + nxc*nzc
 
               END DO! END LOOP ON SPECIES
           END DO
@@ -1093,9 +1096,12 @@ CONTAINS
       
       IF (c_dim.eq.3) THEN
         tilepartsize = mpipartsize/(ntilex*ntiley*ntilez)
+        ncloc = ncloc / (ntilex*ntiley*ntilez)
       ELSE IF (c_dim.eq.2) THEN
         tilepartsize = mpipartsize/(ntilex*ntilez)
+        ncloc = ncloc / (ntilex*ntilez)
       ENDIF
+      
       ! _________________________________________
       ! Memory used for fields
 
@@ -1151,6 +1157,8 @@ CONTAINS
         mpifieldsize = mpifieldsize/1024.
         unity = 'Mo'
       endif
+  
+      IF (rank.eq.0) WRITE(0,*) 'Average number of cells per tiles',ncloc
       
       !IF (rank.eq.0) WRITE(0,*)
       IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the fields',mpifieldsize,unity

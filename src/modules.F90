@@ -129,6 +129,22 @@ TYPE particle_tile
     !!DIR$ ATTRIBUTES FASTMEM  :: part_bz    
     REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
     !!DIR$ ATTRIBUTES FASTMEM  :: pid
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: part_x
+    !dir$ attributes align:64 :: part_y
+    !dir$ attributes align:64 :: part_z
+    !dir$ attributes align:64 :: part_ux  
+    !dir$ attributes align:64 :: part_uy
+    !dir$ attributes align:64 :: part_uz
+    !dir$ attributes align:64 :: part_gaminv
+    !dir$ attributes align:64 :: part_ex  
+    !dir$ attributes align:64 :: part_ey
+    !dir$ attributes align:64 :: part_ez
+    !dir$ attributes align:64 :: part_bx
+    !dir$ attributes align:64 :: part_by
+    !dir$ attributes align:64 :: part_bz
+    !dir$ attributes align:64 :: pid                         
+#endif
 END TYPE
 END MODULE particle_tilemodule
 
@@ -232,9 +248,11 @@ INTEGER(idp) :: currdepo                            ! Current deposition method
 INTEGER(idp) :: rhodepo                             ! Charge deposition method
 INTEGER(idp) :: fieldgave                           ! Field gathering method
 INTEGER(idp) :: partcom                             ! Type of comm routine to use for particles
+INTEGER(idp) :: fg_p_pp_seperated                   ! Field gathering + part. pusher seperated flag
 
 INTEGER(idp) :: LVEC_curr_depo                      ! Vector size for the current deposition
 INTEGER(idp) :: LVEC_charge_depo                    ! Vector size for the charge deposition
+INTEGER(idp) :: LVEC_fieldgathe                     ! Vector size for the field gathering
 
 INTEGER(isp) :: mpi_buf_size
 
