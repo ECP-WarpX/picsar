@@ -12,7 +12,7 @@ USE omp_lib
 USE diagnostics
 USE simple_io
 USE sorting
-#if defined(PROFILING) && PROFILING>0  
+#if (defined(PROFILING) && PROFILING>0)||(defined(DFP))
 USE ITT_SDE_FORTRAN                     
 #endif                                  
 
@@ -28,6 +28,10 @@ END IF
 #if PROFILING==1                      
 CALL start_collection()                
 #endif                                
+! Intel Design Forward project
+#if defined(DFP)
+ CALL DFP_MAIN_START
+#endif
 
 ! ________________________________________________________________________________________
 ! 
@@ -136,13 +140,23 @@ ELSE IF (c_dim.eq.2) THEN
   
 ENDIF
 
-!!! --- Output time statistics
-CALL final_output_time_statistics
-
 !!! --- Stop Vtune analysis
 #if PROFILING==1            
 CALL stop_collection()      
-#endif                     
+#endif  
+! Intel Design Forward project
+#if defined(DFP)
+ CALL DFP_MAIN_STOP
+#endif
+
+! Intel Design Forward project
+#if defined(DFP)
+ CALL DFP_FINAL_START
+#endif
+
+!!! --- Output time statistics
+CALL final_output_time_statistics
+                   
 
 END SUBROUTINE step
 

@@ -86,7 +86,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 
   subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                    dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                   nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
+                                                   nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose) !#do not parse
     USE omp_lib
     USE constants
     implicit none
@@ -156,7 +156,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order 3
     ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN 
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3,jx,jy,jz,&
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_3_3,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order n
     ELSE
@@ -2294,5 +2294,5 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
   
   !print*,'finished'
   
-End subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3                                                
+End subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3
 

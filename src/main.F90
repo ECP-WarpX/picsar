@@ -20,10 +20,17 @@ USE mpi_routines
 USE control_file
 USE time_stat
 USE diagnostics
+#if (defined(PROFILING) && PROFILING>0)||(defined(DFP))
+USE ITT_SDE_FORTRAN                     
+#endif   
 
 IMPLICIT NONE
 INTEGER :: i,ierror,j,l
 
+! Intel Design Forward project
+#if defined(DFP)
+ CALL DFP_INIT_START
+#endif
 
 ! --- default init
   CALL default_init
@@ -53,6 +60,11 @@ INTEGER :: i,ierror,j,l
 ! --- Diagnostics  
   CALL init_diags
 
+! Intel Design Forward project
+#if defined(DFP)
+ CALL DFP_INIT_STOP
+#endif
+
 !----------------------------------------------
 ! THIS IS THE PIC ALGORITHM TIME LOOP
 !----------------------------------------------
@@ -64,5 +76,10 @@ IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsi
 CALL time_statistics
 
 CALL mpi_close
+
+! Intel Design Forward project
+#if defined(DFP)
+ CALL DFP_FINAL_STOP
+#endif
 
 END PROGRAM main
