@@ -83,11 +83,11 @@ contains
    end subroutine
 
    Subroutine DFP_FINAL_START()
-     CALL FORTRAN_DFP_MAIN_START()
+     CALL FORTRAN_DFP_FINAL_START()
    end subroutine
 
    Subroutine DFP_FINAL_STOP()
-     CALL FORTRAN_DFP_MAIN_STOP()
+     CALL FORTRAN_DFP_FINAL_STOP()
    end subroutine
 
 END MODULE

@@ -31,7 +31,7 @@ CALL start_collection()
 #endif                                
 ! Intel Design Forward project
 #if defined(DFP)
- CALL DFP_MAIN_START
+ CALL DFP_MAIN_START()
 #endif
 
 ! ________________________________________________________________________________________
