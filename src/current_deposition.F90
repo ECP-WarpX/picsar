@@ -328,8 +328,10 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   WRITE(0,*) "Depose_currents_on_grid: start"
 #endif
 
-  tdeb=MPI_WTIME()
-
+  IF (it.ge.timestat_itstart) THEN
+    tdeb=MPI_WTIME()
+  ENDIF
+  
 #if PROFILING==2              
   CALL start_collection()     
 #endif                        
@@ -512,9 +514,10 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   CALL stop_collection()            
 #endif                               
 
-  tend = MPI_WTIME()
-
-  localtimes(3)=localtimes(3)+(tend-tdeb)
+  IF (it.ge.timestat_itstart) THEN
+    tend = MPI_WTIME()
+    localtimes(3)=localtimes(3)+(tend-tdeb)
+  ENDIF
 
 #if defined(DEBUG)
   WRITE(0,*) "Depose_current_on_grid: stop"

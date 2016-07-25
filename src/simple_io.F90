@@ -16,16 +16,20 @@ CONTAINS
         CHARACTER(LEN=string_length) :: strtemp
         INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
         INTEGER(KIND=4) :: err=0
-        REAL(num) :: tmptime
+        REAL(num) :: tmptime,tmptime2
 
 #if defined(DEBUG)
         WRITE(0,*) "Output_routines: start"
 #endif
-        
+
+        IF (it.ge.timestat_itstart) THEN
+        tmptime = MPI_WTIME()
+        ENDIF
+
         WRITE(strtemp,'(I5)') it
 
         IF (output_frequency .GE. 1) THEN
-        tmptime = MPI_WTIME()
+        tmptime2 = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
             !!! --- Write output to disk
@@ -132,9 +136,8 @@ CONTAINS
             ENDIF
             
             ENDIF
-          localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime) 
-          tmptime = MPI_WTIME() - tmptime
-          IF (rank .EQ. 0) PRINT *, "Fields dump in ", tmptime, " (s)"
+          tmptime2 = MPI_WTIME() - tmptime2
+          IF (rank .EQ. 0) PRINT *, "Fields dump in ", tmptime2, " (s)"
         ENDIF
         
         !!! --- Write particle diags
@@ -149,6 +152,9 @@ CONTAINS
         !!! --- Output time statistics
         CALL output_time_statistics
 
+        IF (it.ge.timestat_itstart) THEN
+        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime) 
+        ENDIF
 #if defined(DEBUG)
         WRITE(0,*) "Output_routines: stop"
 #endif        

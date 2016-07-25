@@ -1011,12 +1011,17 @@ CONTAINS
 #if defined(DEBUG)
   WRITE(0,*) "efield_bcs: start"
 #endif
-    tmptime = MPI_WTIME()
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
     ! Electric field MPI exchange between subdomains
     CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+    IF (it.ge.timestat_itstart) THEN    
     localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
+    ENDIF
 #if defined(DEBUG)
   WRITE(0,*) "efield_bcs: stop"
 #endif    
@@ -1028,12 +1033,16 @@ CONTAINS
 #if defined(DEBUG)
   WRITE(0,*) "bfield_bcs: start"
 #endif    
-    tmptime = MPI_WTIME()
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
     ! Magnetic field MPI exchange between subdomains
     CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
     CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+    IF (it.ge.timestat_itstart) THEN    
     localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
+    ENDIF
 #if defined(DEBUG)
   WRITE(0,*) "bfield_bcs: stop"
 #endif    
@@ -1042,7 +1051,9 @@ CONTAINS
 !!! --- Boundary conditions routine for currents
   SUBROUTINE current_bcs
     REAL(num) :: tmptime
-    tmptime = MPI_WTIME()
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
     ! Add current contribution from adjacent subdomains
     
     IF (mpicom_curr.EQ.2) THEN
@@ -1064,8 +1075,9 @@ CONTAINS
       CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
     
     ENDIF
-    
+    IF (it.ge.timestat_itstart) THEN    
     localtimes(4) = localtimes(4) + (MPI_WTIME() - tmptime)
+    ENDIF
   END SUBROUTINE current_bcs
 
 !!! --- Boundary conditions routine for charge density
@@ -1076,15 +1088,18 @@ SUBROUTINE charge_bcs
 
 
     REAL(num) :: tmptime
+    IF (it.ge.timestat_itstart) THEN    
     tmptime = MPI_WTIME() 
+    ENDIF
 
     IF (mpicom_curr.EQ.1) THEN
     	CALL summation_bcs(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
     ELSE
     	CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)    
     ENDIF 
-    
+    IF (it.ge.timestat_itstart) THEN       
     localtimes(13) = localtimes(13) + (MPI_WTIME() - tmptime) 
+    ENDIF
     
 END SUBROUTINE charge_bcs
 
@@ -1096,7 +1111,10 @@ END SUBROUTINE charge_bcs
     IMPLICIT NONE
 	  REAL(num) :: tdeb, tend
     REAL(num) :: tmptime
-    tmptime = MPI_WTIME()
+    
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
     tdeb=MPI_WTIME()
     
     ! ___________________________________________
@@ -1133,8 +1151,10 @@ END SUBROUTINE charge_bcs
   WRITE(0,*) "particle_bcs_tiles: stop"
 #endif
 
-    localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
-    tmptime = MPI_WTIME()
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
+      tmptime = MPI_WTIME()
+    ENDIF
     tend = MPI_WTIME()
     local_time_part=local_time_part+(tend-tdeb)
 
@@ -1152,7 +1172,9 @@ END SUBROUTINE charge_bcs
   WRITE(0,*) "particle_bcs_mpi: stop"
 #endif
 
-    localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
+    ENDIF
     
     ! _____________________________________________
     ! Tile and MPI com in one
@@ -1163,7 +1185,9 @@ END SUBROUTINE charge_bcs
   WRITE(0,*) "particle_bcs_tiles_and_mpi: start"
 #endif
 
-      tmptime = MPI_WTIME()
+      IF (it.ge.timestat_itstart) THEN
+        tmptime = MPI_WTIME()
+      ENDIF
 
       SELECT CASE (c_dim)
       ! __________________________
@@ -1186,7 +1210,9 @@ END SUBROUTINE charge_bcs
       
       END SELECT
       
-      localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
+      IF (it.ge.timestat_itstart) THEN
+        localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
+      ENDIF
     
 #if defined(DEBUG)
   WRITE(0,*) "particle_bcs_tiles_and_mpi: stop"

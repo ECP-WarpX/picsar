@@ -17,7 +17,10 @@ USE time_stat
 IMPLICIT NONE
 
 REAL(num) :: tmptime
-tmptime = MPI_WTIME()
+
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2)) then
@@ -34,8 +37,9 @@ tmptime = MPI_WTIME()
         l_nodalgrid)
   ENDIF
 
-  
-localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+IF (it.ge.timestat_itstart) THEN  
+  localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+ENDIF
 
 END SUBROUTINE push_bfield
 
@@ -54,7 +58,9 @@ SUBROUTINE push_bfield_2d
   IMPLICIT NONE
 
   REAL(num) :: tmptime
+  IF (it.ge.timestat_itstart) THEN  
   tmptime = MPI_WTIME()
+  ENDIF
 
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2)) then
@@ -74,7 +80,10 @@ SUBROUTINE push_bfield_2d
       l_nodalgrid)
 
   ENDIF
-  localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+
+  IF (it.ge.timestat_itstart) THEN  
+    localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+  ENDIF
 
 END SUBROUTINE push_bfield_2d
 
@@ -91,7 +100,9 @@ USE time_stat
 IMPLICIT NONE
 
 REAL(num) :: tmptime
-tmptime = MPI_WTIME()
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 
 CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
     clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
@@ -100,8 +111,9 @@ CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,      
     nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
     l_nodalgrid)
 
-localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
-
+IF (it.ge.timestat_itstart) THEN
+  localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+ENDIF
 END SUBROUTINE push_efield
 
 

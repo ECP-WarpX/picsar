@@ -327,11 +327,14 @@ END MODULE communications
 
 !===============================================================================
 MODULE time_stat !#do not parse
+! Module for the time statistics
 !===============================================================================
 use constants
 
-INTEGER(idp)                           :: timestat_activated
-INTEGER(idp)                           :: timestat_period
+INTEGER(idp)                           :: timestat_activated ! Activation of the outputs
+INTEGER(idp)                           :: timestat_period    ! Period for the outputs
+INTEGER(idp)                           :: timestat_itstart   ! First iteration for the time statistics
+INTEGER(idp)                           :: timestat_perit     ! Flag to activate the time statistics per iteration
 
 REAL(num), dimension(5)                :: init_localtimes    ! MPI local times for the initialization
 

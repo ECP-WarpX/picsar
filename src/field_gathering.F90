@@ -84,7 +84,9 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   INTEGER(idp)             :: nxjg,nyjg,nzjg
   LOGICAL(idp)             :: isgathered=.FALSE.
 
-  tdeb=MPI_WTIME()
+  IF (it.ge.timestat_itstart) THEN
+    tdeb=MPI_WTIME()
+  ENDIF
 
 #if PROFILING==3               
   CALL start_collection()      
@@ -168,8 +170,10 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   CALL stop_collection()    
 #endif                      
 
-  tend=MPI_WTIME()
-  localtimes(14) = localtimes(14) + (tend-tdeb)
+  IF (it.ge.timestat_itstart) THEN
+    tend=MPI_WTIME()
+    localtimes(14) = localtimes(14) + (tend-tdeb)
+  ENDIF
 
 END SUBROUTINE field_gathering_sub
 

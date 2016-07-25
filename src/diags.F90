@@ -32,8 +32,10 @@ CONTAINS
 
         ! - Computes electric field divergence on grid at n+1
         IF (.False.) THEN
-        
+
+          IF (it.ge.timestat_itstart) THEN        
           tmptime = MPI_WTIME()   
+          ENDIF
         
           IF (.not.(divE_computed))  then
             CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
@@ -43,7 +45,9 @@ CONTAINS
           ! Get the total number of particles
           !CALL get_tot_number_of_particles(ntot)
           
+          IF (it.ge.timestat_itstart) THEN
           localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
+          ENDIF
           
         ENDIF
 
@@ -107,8 +111,10 @@ IMPLICIT NONE
 
   ! ______________________________________
   ! Parameters
-  
-  tmptime = MPI_WTIME() 
+
+  IF (it.ge.timestat_itstart) THEN  
+    tmptime = MPI_WTIME() 
+  ENDIF
   
   c_rho_old = 0
   rho = 0.0_num
@@ -161,8 +167,9 @@ IMPLICIT NONE
   ENDIF
   
   END SELECT
-  
+  IF (it.ge.timestat_itstart) THEN
   localtimes(12) = localtimes(12) + (MPI_WTIME() - tmptime)  
+  ENDIF
 
 END SUBROUTINE pxrdepose_rho_on_grid
 

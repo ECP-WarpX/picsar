@@ -12,6 +12,7 @@ USE omp_lib
 USE diagnostics
 USE simple_io
 USE sorting
+USE mpi_routines
 #if (defined(PROFILING) && PROFILING>0)||(defined(DFP))
 USE ITT_SDE_FORTRAN                     
 #endif                                  
@@ -97,6 +98,8 @@ IF (c_dim.eq.3) THEN
       it = it+1
       timeit=MPI_WTIME()
 
+      CALL time_statistics_per_iteration
+
      IF (rank .EQ. 0)  THEN
           WRITE(0,*) 'it = ',it,' || time = ',it*dt, " || push/part (ns)= ", pushtime*1e9_num/ntot, &
           " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
@@ -156,7 +159,6 @@ CALL stop_collection()
 
 !!! --- Output time statistics
 CALL final_output_time_statistics
-                   
 
 END SUBROUTINE step
 
@@ -311,9 +313,11 @@ IF (rank .EQ. 0) THEN
   ! Diags
   IF (timestat_activated.gt.0) THEN  
     write(0,*) 'Output of time statistics activated'
+    write(0,*) 'Computation of the time statistics starts at',timestat_itstart
     write(0,*) 'Buffer size:',nbuffertimestat
   ELSE
     write(0,*) 'Output of time statistics non-activated'
+    write(0,'(X,"Computation of the time statistics starts at iteration:",I5)') timestat_itstart    
   ENDIF
   write(0,*) 
   

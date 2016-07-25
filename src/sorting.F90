@@ -30,13 +30,17 @@ MODULE sorting
     REAL(num) :: tdeb, tend
     
     IF ((sorting_activated.gt.0)) THEN
-    
+
+      IF (it.ge.timestat_itstart) THEN       
       tdeb=MPI_WTIME()
+      ENDIF
     
       CALL particle_sorting_sub
-        
+
+      IF (it.ge.timestat_itstart) THEN          
       tend=MPI_WTIME()
       localtimes(10) = localtimes(10) + (tend-tdeb)    
+      ENDIF
   
     ENDIF
   

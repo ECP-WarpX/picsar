@@ -89,6 +89,8 @@ CONTAINS
         ! Time stats output activation 
         timestat_activated = 0
         timestat_period = 0
+        timestat_itstart = 0
+        timestat_perit = 0
         nbuffertimestat = 1
         
         l_lower_order_in_v = .FALSE.
@@ -452,6 +454,12 @@ CONTAINS
             ELSE IF (INDEX(buffer,'period') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') timestat_period
+            ELSE IF (INDEX(buffer,'it_start') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') timestat_itstart
+            ELSE IF (INDEX(buffer,'per_it') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') timestat_perit 
             ELSE IF (INDEX(buffer,'buffersize') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat                                        

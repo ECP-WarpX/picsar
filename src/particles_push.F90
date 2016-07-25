@@ -96,7 +96,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   INTEGER(idp)             :: nxjg,nyjg,nzjg
   LOGICAL(idp)             :: isgathered=.FALSE.
 
-tdeb=MPI_WTIME()
+    tdeb=MPI_WTIME()
 
 #if PROFILING==3               
   CALL start_collection()      
@@ -223,9 +223,11 @@ END DO! END LOOP ON TILES
   CALL stop_collection()    
 #endif                      
 
-tend=MPI_WTIME()
-pushtime=pushtime+(tend-tdeb)
-localtimes(1) = localtimes(1) + (tend-tdeb)
+IF (it.ge.timestat_itstart) THEN
+  tend=MPI_WTIME()
+  localtimes(1) = localtimes(1) + (tend-tdeb)
+ENDIF
+pushtime=pushtime+(MPI_WTIME()-tdeb)
 END SUBROUTINE field_gathering_plus_particle_pusher_sub
 
 
@@ -265,7 +267,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
   INTEGER(idp)             :: nxjg,nyjg,nzjg
   LOGICAL(idp)             :: isgathered=.FALSE.
 
-tdeb=MPI_WTIME()
+  IF (it.ge.timestat_itstart) THEN
+    tdeb=MPI_WTIME()
+  ENDIF
 
 #if PROFILING==3               
   CALL start_collection()      
@@ -372,9 +376,11 @@ END DO! END LOOP ON TILES
   CALL stop_collection()    
 #endif                      
 
-tend=MPI_WTIME()
-pushtime=pushtime+(tend-tdeb)
-localtimes(1) = localtimes(1) + (tend-tdeb)
+IF (it.ge.timestat_itstart) THEN
+  tend=MPI_WTIME()
+  localtimes(1) = localtimes(1) + (tend-tdeb)
+ENDIF
+  pushtime=pushtime+(tend-tdeb)
 END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 
 
