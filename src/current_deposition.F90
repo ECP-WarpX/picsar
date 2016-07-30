@@ -53,10 +53,12 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   USE shared_data
   USE params
   USE time_stat
-#if defined(PROFILING) && PROFILING==2      
-  USE ITT_SDE_FORTRAN                       
+#if defined(VTUNE) && VTUNE==2      
+  USE ITT_FORTRAN                       
 #endif                                   
-  
+#if defined(SDE) && SDE==2      
+  USE SDE_FORTRAN                       
+#endif    
   
   IMPLICIT NONE 
   REAL(num) :: tdeb, tend
@@ -332,9 +334,12 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     tdeb=MPI_WTIME()
   ENDIF
   
-#if PROFILING==2              
-  CALL start_collection()     
+#if VTUNE==2              
+  CALL start_vtune_collection()     
 #endif                        
+#if SDE==2              
+  CALL start_vtune_collection()     
+#endif  
 
   jx = 0.0_num
   jy = 0.0_num
@@ -510,9 +515,12 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   !print*,'rank',rank,'sum(jx)',sum(jx),sum(jy),sum(jz)
 
 !!! --- Stop Vtune analysis
-#if PROFILING==2                     
-  CALL stop_collection()            
+#if VTUNE==2                     
+  CALL stop_vtune_collection()            
 #endif                               
+#if SDE==2                     
+  CALL stop_sde_collection()            
+#endif  
 
   IF (it.ge.timestat_itstart) THEN
     tend = MPI_WTIME()

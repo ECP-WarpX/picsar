@@ -103,6 +103,8 @@ SUBROUTINE mpi_minimal_init()
             WRITE(0,*) '*** ERROR ***'
             WRITE(0,*) 'nprocx*nprocy*nprocz =/ # of MPI processes'
             WRITE(0,*) ' Check input file '
+            WRITE(0,*) ' Total number of processors:',nproc
+            WRITE(0,*) ' Number of processors in each direction:',nprocx,nprocy,nprocz
             CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
         ENDIF
     ENDIF
@@ -111,7 +113,7 @@ SUBROUTINE mpi_minimal_init()
       IF (rank .EQ. 0) THEN
         WRITE(0,*) '*** ERROR ***'
         WRITE(0,*) 'Simulation domain is too small.'
-        WRITE(0,*) nx_global_grid,nxguards
+        WRITE(0,*) 'nx_global_grid',nx_global_grid,'nxguards',nxguards
         WRITE(0,*) ny_global_grid,nyguards
         WRITE(0,*) nz_global_grid,nzguards
       ENDIF
@@ -577,9 +579,6 @@ SUBROUTINE mpi_minimal_init()
     CALL allocate_grid_quantities()
     start_time = MPI_WTIME()
     
-    
-    
-
   END SUBROUTINE mpi_initialise
 
 
@@ -772,7 +771,7 @@ SUBROUTINE mpi_minimal_init()
       avetimes(12),avetimes(13),avetimes(9)
     ELSE
       WRITE(0,*) 'For lib_performance python class:' 
-      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,"partpusher=",F6.2,",part_mpi_com=",F6.2,&
+      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,",partpusher=",F6.2,",part_mpi_com=",F6.2,&
       ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
       ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
       nproc,nthreads_tot,avetimes(20), &

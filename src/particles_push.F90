@@ -271,8 +271,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
     tdeb=MPI_WTIME()
   ENDIF
 
-#if PROFILING==3               
-  CALL start_collection()      
+#if VTUNE==3               
+  CALL start_vtune_collection()      
 #endif                         
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -372,8 +372,8 @@ DO iz=1, ntilez ! LOOP ON TILES
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
 
-#if PROFILING==3            
-  CALL stop_collection()    
+#if VTUNE==3            
+  CALL stop_vtune_collection()    
 #endif                      
 
 IF (it.ge.timestat_itstart) THEN
@@ -420,10 +420,11 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   INTEGER(idp)             :: nxjg,nyjg,nzjg
   LOGICAL(idp)             :: isgathered=.FALSE.
 
+
   tdeb=MPI_WTIME()
 
-#if PROFILING==3               
-  CALL start_collection()      
+#if VTUNE==3               
+  CALL start_vtune_collection()      
 #endif                         
 
 #if defined(DEBUG)
@@ -505,13 +506,15 @@ DO iz=1, ntilez ! LOOP ON TILES
 END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
 
-#if PROFILING==3            
-  CALL stop_collection()    
+#if VTUNE==3            
+  CALL stop_vtune_collection()    
 #endif                      
 
 tend=MPI_WTIME()
 pushtime=pushtime+(tend-tdeb)
+  IF (it.ge.timestat_itstart) THEN
 localtimes(1) = localtimes(1) + (tend-tdeb)
+  ENDIF
 
 #if defined(DEBUG)
   WRITE(0,*) "Push_particles: stop"
@@ -1155,7 +1158,6 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 #endif 
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
 #endif
     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
   
@@ -1209,6 +1211,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(0)*ezg(j+1,k,l0)
       ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(0)*ezg(j,k+1,l0)
       ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(0)*ezg(j+1,k+1,l0)
+
+#if defined __INTEL_COMPILER 
+!DIR$ DISTRIBUTE POINT
+#endif
     
       ! Compute Bx on particle
       bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
@@ -1663,6 +1669,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       ez(nn) = ez(nn) + sx(0)*sy(2)*sz0(1)*ezg(j,k+2,l0+1)
       ez(nn) = ez(nn) + sx(1)*sy(2)*sz0(1)*ezg(j+1,k+2,l0+1)
       ez(nn) = ez(nn) + sx(2)*sy(2)*sz0(1)*ezg(j+2,k+2,l0+1)
+
+#if defined __INTEL_COMPILER 
+!DIR$ DISTRIBUTE POINT
+#endif
 
       ! Compute Bx on particle
       bx(nn) = bx(nn) + sx(-1)*sy0(-1)*sz0(-1)*bxg(j-1,k0-1,l0-1)

@@ -59,9 +59,12 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   USE tiling
   USE time_stat
   ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3  
-    USE ITT_SDE_FORTRAN                   
-#endif                                  
+#if defined(VTUNE) && VTUNE==3      
+  USE ITT_FORTRAN                       
+#endif                                   
+#if defined(SDE) && SDE==3  
+  USE SDE_FORTRAN                       
+#endif                                   
   IMPLICIT NONE
 
   ! ___ Parameter declaration ________________________________________
@@ -88,9 +91,12 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
     tdeb=MPI_WTIME()
   ENDIF
 
-#if PROFILING==3               
-  CALL start_collection()      
+#if VTUNE==3               
+  CALL start_vtune_collection()      
 #endif                         
+#if SDE==3              
+  CALL start_sde_collection()      
+#endif  
 
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
@@ -166,9 +172,12 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   END DO! END LOOP ON TILES
   !$OMP END PARALLEL DO
 
-#if PROFILING==3            
-  CALL stop_collection()    
+#if VTUNE==3            
+  CALL stop_vtune_collection()    
 #endif                      
+#if SDE==3            
+  CALL stop_sde_collection()    
+#endif 
 
   IF (it.ge.timestat_itstart) THEN
     tend=MPI_WTIME()

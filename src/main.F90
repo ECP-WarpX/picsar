@@ -20,8 +20,11 @@ USE mpi_routines
 USE control_file
 USE time_stat
 USE diagnostics
-#if (defined(PROFILING) && PROFILING>0)||(defined(DFP))
-USE ITT_SDE_FORTRAN                     
+#if (defined(VTUNE) && VTUNE>0)
+USE ITT_FORTRAN                     
+#endif 
+#if (defined(SDE) && SDE>0)||(defined(DFP))
+USE SDE_FORTRAN                     
 #endif   
 
 IMPLICIT NONE
@@ -38,8 +41,12 @@ INTEGER :: i,ierror,j,l
 ! --- reads input_file
   CALL read_input_file
 
+#if (defined(VTUNE) || defined(SDE) || defined(DFP) || defined(ALLINEA))
+! No command line
+#else
 ! --- reads from command line
   CALL read_from_cl
+#endif
 
 ! --- mpi init communicator
   CALL mpi_minimal_init

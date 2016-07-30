@@ -13,9 +13,12 @@ USE diagnostics
 USE simple_io
 USE sorting
 USE mpi_routines
-#if (defined(PROFILING) && PROFILING>0)||(defined(DFP))
-USE ITT_SDE_FORTRAN                     
+#if (defined(VTUNE) && VTUNE>0)
+USE ITT_FORTRAN                     
 #endif                                  
+#if (defined(SDE) && SDE>0)||(defined(DFP))
+USE SDE_FORTRAN                     
+#endif          
 
 IMPLICIT NONE
 INTEGER(idp) :: nst,i
@@ -26,9 +29,15 @@ WRITE (0,*) "nsteps = ", nst
 END IF
 
 !!! --- Start Vtune/SDE analysis
-#if PROFILING==1                      
-CALL start_collection()                
-#endif                                
+#if VTUNE==1                      
+CALL start_vtune_collection()                
+#endif
+#if SDE==1                      
+CALL start_sde_collection()                
+#endif
+#if ALLINEA==1      
+CALL ALLINEA_START_SAMPLING
+#endif                         
 ! Intel Design Forward project
 #if defined(DFP)
  CALL DFP_MAIN_START()
@@ -144,9 +153,15 @@ ELSE IF (c_dim.eq.2) THEN
 ENDIF
 
 !!! --- Stop Vtune analysis
-#if PROFILING==1            
-CALL stop_collection()      
-#endif  
+#if VTUNE==1            
+CALL stop_vtune_collection()      
+#endif
+#if SDE==1            
+CALL stop_sde_collection()      
+#endif 
+#if ALLINEA==1      
+CALL ALLINEA_STOP_SAMPLING
+#endif   
 ! Intel Design Forward project
 #if defined(DFP)
  CALL DFP_MAIN_STOP
@@ -262,8 +277,6 @@ IF (rank .EQ. 0) THEN
   write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
   write(0,*) 'Number of steps:',nsteps
   write(0,*) 'Tiles:',ntilex,ntiley,ntilez
-  write(0,*) 'Guard cells:',nxguards,nyguards,nzguards
-  write(0,*) 'Topology:',topology
   write(0,*) 'MPI com current:',mpicom_curr
   write(0,*) 'Current deposition method:',currdepo
   write(0,*) 'Charge deposition algo:',rhodepo
@@ -285,6 +298,13 @@ IF (rank .EQ. 0) THEN
   write(0,*) 'cold plasma wavelength:',lambdalab,'m',lambdalab*1e6,'um'
   write(0,*) ''
   
+  write(0,'(" MPI domain decomposition")')  
+  write(0,*) 'Topology:',topology
+  write(0,'(" Local number of cells:",I5,X,I5,X,I5)') nx,ny,nz
+  write(0,'(" Local number of grid point:",I5,X,I5,X,I5)') nx_grid,ny_grid,nz_grid  
+  write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
+  write(0,*) ''  
+    
   IF (sorting_activated.gt.0) THEN 
     write(0,*) 'Particle sorting activated'
     write(0,*) 'dx:',sorting_dx

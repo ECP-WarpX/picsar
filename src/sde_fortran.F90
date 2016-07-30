@@ -1,22 +1,14 @@
 ! __________________________________________________________________
-! ITT_SDE_FORTRAN.F90
+! SDE_FORTRAN.F90
 ! 
-! Tools to use Vtune and SDE with fortran
+! Tools to use SDE with Picsar
 ! 
 ! __________________________________________________________________
 
-MODULE ITT_SDE_FORTRAN
+MODULE SDE_FORTRAN
 USE, INTRINSIC :: ISO_C_BINDING
 
 INTERFACE
-   
-   SUBROUTINE FORTRAN_ITT_RESUME() &
-      BIND(C, NAME='fortran_itt_resume')
-   END SUBROUTINE FORTRAN_ITT_RESUME
-
-   SUBROUTINE FORTRAN_ITT_PAUSE() &
-      BIND(C, NAME='fortran_itt_pause')
-   END SUBROUTINE FORTRAN_ITT_PAUSE
 
    SUBROUTINE FORTRAN_SDE_START() &
       BIND(C, NAME='fortran_sde_start')
@@ -54,17 +46,15 @@ END INTERFACE
 
 contains
 
-   subroutine start_collection()
-     write(0,*) "Profiling: start collecting data"
+   subroutine start_sde_collection()
+     write(0,*) "SDE profiling: start collecting data"
      call fortran_sde_start()
-     call fortran_itt_resume()
-   end subroutine start_collection
+   end subroutine start_sde_collection
 
-   subroutine stop_collection() 
-    call fortran_itt_pause()
+   subroutine stop_sde_collection() 
     call fortran_sde_stop()
-    write(0,*) "Profiling: stop collecting data"
-   end subroutine stop_collection
+    write(0,*) "SDE profiling: stop collecting data"
+   end subroutine stop_sde_collection
 
    Subroutine dfp_init_start()
      CALL FORTRAN_DFP_INIT_START()

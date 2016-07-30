@@ -2332,8 +2332,11 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
         ENDIF
     
         ! Creation of the result folder
+#if (defined(VTUNE) || defined(SDE) || defined(DFP) || defined(ALLINEA))
+#else
         IF (rank.eq.0) CALL system('mkdir RESULTS')
-        IF (rank.eq.0) CALL system('rm RESULTS/*')        
+        IF (rank.eq.0) CALL system('rm RESULTS/*')  
+#endif      
         ! Initialization of the temporal diags 
         CALL init_temp_diags
         
