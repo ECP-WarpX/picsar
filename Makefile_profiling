@@ -1,6 +1,7 @@
 # Makefile for profiling:
 # - SDE
 # - Vtune
+# - Allinea Map
 #
 # PROFILING:
 # - 0: No profiling

@@ -6520,32 +6520,32 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
                                       s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz,         &
                                       oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
                                       dtsdx0,dtsdy0,dtsdz0
-REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
-REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
-REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
-INTEGER :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
-                                      ixmin, ixmax, iymin, iymax, izmin, izmax
-LOGICAL(idp) :: l_particles_weight,l4symtry
+	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+	REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
+	REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
+	REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
+	INTEGER :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+																				ixmin, ixmax, iymin, iymax, izmin, izmax
+	LOGICAL(idp) :: l_particles_weight,l4symtry
 
-! PARAMETER INIT
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
-dtsdx0 = dt*dxi
-dtsdy0 = dt*dyi
-dtsdz0 = dt*dzi
-invvol = 1.0_num/(dx*dy*dz)
-invdtdx = 1.0_num/(dt*dy*dz)
-invdtdy = 1.0_num/(dt*dx*dz)
-invdtdz = 1.0_num/(dt*dx*dy)
-ALLOCATE(sdx(-2:2,-2:2,-2:2),sdy(-2:2,-2:2,-2:2),sdz(-2:2,-2:2,-2:2))
-ALLOCATE(sx(-2:2), sx0(-2:2), dsx(-2:2))
-ALLOCATE(sy(-2:2), sy0(-2:2), dsy(-2:2))
-ALLOCATE(sz(-2:2), sz0(-2:2), dsz(-2:2))
-clghtisq = 1.0_num/clight**2
-sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
+	! PARAMETER INIT
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
+	dtsdx0 = dt*dxi
+	dtsdy0 = dt*dyi
+	dtsdz0 = dt*dzi
+	invvol = 1.0_num/(dx*dy*dz)
+	invdtdx = 1.0_num/(dt*dy*dz)
+	invdtdy = 1.0_num/(dt*dx*dz)
+	invdtdz = 1.0_num/(dt*dx*dy)
+	ALLOCATE(sdx(-2:2,-2:2,-2:2),sdy(-2:2,-2:2,-2:2),sdz(-2:2,-2:2,-2:2))
+	ALLOCATE(sx(-2:2), sx0(-2:2), dsx(-2:2))
+	ALLOCATE(sy(-2:2), sy0(-2:2), dsy(-2:2))
+	ALLOCATE(sz(-2:2), sz0(-2:2), dsz(-2:2))
+	clghtisq = 1.0_num/clight**2
+	sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
+	sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
 
 dtsdz0 = dt*dzi
 DO ip=1,np

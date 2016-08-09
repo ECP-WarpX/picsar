@@ -22,10 +22,10 @@ MODULE boundary
 
   IMPLICIT NONE
 
-CONTAINS
+  CONTAINS
 
-!!! --- Exchange field values at processor boundaries and apply field
-!!! --- boundary conditions
+  !!! --- Exchange field values at processor boundaries and apply field
+  !!! --- boundary conditions
   SUBROUTINE field_bc(field, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
