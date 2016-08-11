@@ -1368,7 +1368,8 @@ END SUBROUTINE charge_bcs
     INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
 	
 #ifdef _OPENMP
-	nthreads_tot=OMP_GET_MAX_THREADS()
+	!nthreads_tot=OMP_GET_MAX_THREADS()
+	nthreads_tot=OMP_GET_NUM_THREADS()
 	CALL OMP_SET_NESTED(.TRUE.)
 #else
 	nthreads_tot=1
@@ -1587,25 +1588,29 @@ END SUBROUTINE charge_bcs
     !$OMP END PARALLEL DO 
   END SUBROUTINE particle_bcs_tiles_2d_openmp
 
+! Experimental subroutine
+#if defined(EXP)
   ! __________________________________________________________________
   SUBROUTINE particle_bsc_openmp_reordering
-  ! Experimental subroutine
+  ! ********** EXPERIMENTAL subroutine ****************************
+  ! => should not be used
   ! This subroutine process the particle boundary conditions
   ! For this aim, the particles are reordered into buckets in the particle arrays
   ! Each bucket corresponds to the group of particle to be exchanged in a common direction
   ! Exchanges between tiles and between MPI domains is combined for better efficiency
   ! This subroutine is less efficient that particle_bcs_tiles_openmp
+  ! Mathieu Lobet, 2016
   ! __________________________________________________________________
 
     USE omp_lib 
     USE communications
     IMPLICIT NONE
     
-    INTEGER(idp):: i, is, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
+    INTEGER(idp) :: i, is, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
-    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    TYPE(particle_tile), POINTER    :: curr_tile, curr_tile_add
+    REAL(num)    :: partx, party, partz, partux, partuy, partuz, partw, gaminv
     INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
     INTEGER(idp) :: dirx,diry,dirz
     INTEGER(idp) :: k,ib
@@ -1631,8 +1636,10 @@ END SUBROUTINE charge_bcs
 	
 	ALLOCATE(buffer(ntilex,ntiley,ntilez,nspecies))
 	
-	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz) &
-	!$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
+	  !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,&
+	  !$OMP nz0_grid_tile,ipx,ipy,ipz,indx,indy,indz,partw,ib,k,dirx,diry,dirz,&
+	  !$OMP partx, party, partz, curr_tile,nptile,partux,partuy,partuz) &
+	  !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,buffer) NUM_THREADS(nthreads_loop1) 
     DO is=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(is)
@@ -1811,7 +1818,9 @@ END SUBROUTINE charge_bcs
    ! Exchange between tiles
    ! Reordered buffer are copied in parallel
 
-	  !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz) &
+	  !$OMP PARALLEL DO DEFAULT(NONE) &
+	  !$OMP PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,&
+	  !$OMP         ipx,ipy,ipz,ib,indx,indy,indz,nptile,ipmin,ipmax,curr_tile) &
 	  !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,buffer) NUM_THREADS(nthreads_loop1) 
     DO is=1, nspecies ! LOOP ON SPECIES
@@ -1881,7 +1890,7 @@ END SUBROUTINE charge_bcs
     !$OMP END PARALLEL DO 
 
   END SUBROUTINE particle_bsc_openmp_reordering
-  
+#endif 
   
 !!! MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
@@ -2638,7 +2647,8 @@ END SUBROUTINE charge_bcs
 	  ! Determine number of threads to be used for nested parallel region
 	
 #ifdef _OPENMP
-	nthreads_tot=OMP_GET_MAX_THREADS()
+	!nthreads_tot=OMP_GET_MAX_THREADS()
+	nthreads_tot=OMP_GET_NUM_THREADS()
 	CALL OMP_SET_NESTED(.TRUE.)
 #else
 	nthreads_tot=1
@@ -2669,7 +2679,9 @@ END SUBROUTINE charge_bcs
 	
 	  !$OMP PARALLEL DO DEFAULT(NONE) &
 	  !$OMP PRIVATE(curr,is,ib,k,nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz,&
-	  !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz) &
+	  !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,xbd,ybd,zbd,gaminv,&
+	  !$OMP partw,indx,indy,indz,partx,party,partz,curr_tile,nptile,partux,partuy,partuz,&
+	  !$OMP j) &
 	  !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
 	  !$OMP length_x,length_y,length_z,dxs2,dys2,dzs2, &
 	  !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary,  &
@@ -2929,7 +2941,8 @@ END SUBROUTINE charge_bcs
     
     !print*,'Creation of the send buffer'
 	  !$OMP PARALLEL DO DEFAULT(NONE) &
-	  !$OMP PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz) &
+	  !$OMP PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz,&
+	  !$OMP ib,k,j) &
 	  !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez, & 
     !$OMP dx,dy,dz,mpi_npart,bufsend,tilebuf) &
     !$OMP NUM_THREADS(nthreads_loop1) 

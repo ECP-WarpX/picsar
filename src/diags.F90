@@ -3288,7 +3288,13 @@ END MODULE diagnostics
         ! - reduction of rhocells in rho
         DO iz=1, ncz
             DO iy=1,ncy
-                !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
                 DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                     ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                     igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
@@ -3301,7 +3307,9 @@ END MODULE diagnostics
                     rho(orig+igrid+moff(7))=rho(orig+igrid+moff(7))+rhocells(7,ic)
                     rho(orig+igrid+moff(8))=rho(orig+igrid+moff(8))+rhocells(8,ic)
                 END DO
+#if defined _OPENMP && _OPENMP>=201307
                 !$OMP END SIMD
+#endif
             END DO
         END DO
         DEALLOCATE(rhocells)

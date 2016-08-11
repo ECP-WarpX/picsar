@@ -84,15 +84,17 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   END SUBROUTINE
 
-  subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
+  subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,&
+                                                   gaminv,w,q,xmin,zmin, &
                                                    dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                   nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose) !#do not parse
+                                                   nox,noz,lvect,l_particles_weight,&
+                                                   l4symtry,l_2drz,type_rz_depose) !#do not parse
     USE omp_lib
     USE constants
     implicit none
     integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard, type_rz_depose
     integer(idp)                          :: lvect
-    real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+    real(num), dimension((1+nx+2*nxguard)*(1+nz+2*nzguard)), intent(in out) :: jx,jy,jz
     real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
     real(num)                             :: q,dt,dx,dz,xmin,zmin
     logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
@@ -1781,9 +1783,10 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3
 
 
 ! ________________________________________________________________________________________
-subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
+subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,&
+          gaminv,w,q,xmin,zmin, &
+          dt,dx,dz,nx,nz,nxguard,nzguard,&
+          nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 !
 ! 2D Current deposition with the method of Esirkepov at order 3
 ! Vectorized subroutine
@@ -1814,7 +1817,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
   
   ! __ Parameter declaration ____________________________________________________
   ! In/out parameters
-  integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard, type_rz_depose
+  integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
   integer(idp)                          :: lvect
   real(num), dimension((1+nx+2*nxguard)*(1+nz+2*nzguard)), intent(in out) :: jx,jy,jz
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w

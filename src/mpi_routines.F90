@@ -764,7 +764,7 @@ SUBROUTINE mpi_minimal_init()
       WRITE(0,*) 'For lib_performance python class:' 
       WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,",part_mpi_com=",F6.2,&
       ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
-      ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
+      ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")')&
       nproc,nthreads_tot,avetimes(20), &
       avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
       avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&

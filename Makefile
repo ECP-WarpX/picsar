@@ -3,6 +3,9 @@
 # PICSAR FORTRAN Makefile
 #
 # This makefile contains many compiling options and possibilities
+#
+# Mira/Vesta: FC=mpixlf90_r FARGS='-O3 -qsmp=omp -g'
+# Mathieu Lobet, 2016
 # ________________________________________________________________________________________
 
 # ________________________________________________________________________________________
@@ -148,7 +151,7 @@ build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o \
 	mv $(APPNAME) $(BINDIR)
 	
 clean:
-	rm -rf $(SRCDIR)/*.o *.mod $(MODDIR)/*.mod $(BINDIR) RESULTS
+	rm -rf $(SRCDIR)/*.o *.mod $(MODDIR)/*.mod $(BINDIR) RESULTS Acceptance_testing/Gcov_tests/*.o
 
 createdir:
 	mkdir -p $(MODDIR)
@@ -189,7 +192,10 @@ help:
 # make tests
 
 Acceptance_testing/Gcov_tests/%.o:Acceptance_testing/Gcov_tests/%.F90
-	$(FC) -c $(FARGS) -JModules -o $@ $<
+	$(FC) -c $(FARGS) -o $@ $<
+	
+cleantest:
+	rm Acceptance_testing/Gcov_tests/*.o
 	
 buildtest: $(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
@@ -201,8 +207,8 @@ buildtest: $(SRCDIR)/modules.o \
 	$(SRCDIR)/field_gathering.o \
 	Acceptance_testing/Gcov_tests/field_gathering_test.o \
 	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
-	$(FC) $(FARGS) -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
-	$(FC) $(FARGS) -JModules -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
 #	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o			
 
 test1:

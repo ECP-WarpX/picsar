@@ -2870,35 +2870,48 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
-    USE precomputed
     IMPLICIT NONE
-    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-    REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-    REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-    REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-    REAL(num), DIMENSION(:,:), ALLOCATABLE:: jxcells,jycells,jzcells
+    
+    INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
+    REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jx
+    REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jy
+    REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jz
+    REAL(num), DIMENSION(:,:), ALLOCATABLE :: jxcells,jycells,jzcells
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
-    REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    REAL(num) :: xint,yint,zint, &
+    REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
+    REAL(num)                :: xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-    REAL(num) :: x,y,z,xmid,ymid,zmid
-    REAL(num) ::   wqx,wqy,wqz,ww, wwx, wwy, wwz
-    REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic
-    INTEGER(idp) :: nnx, nnxy, n,nn,nv
-    INTEGER(idp) :: moff(1:8)
+    REAL(num)                :: x,y,z,xmid,ymid,zmid
+    REAL(num)                :: wqx,wqy,wqz,ww, wwx, wwy, wwz
+    REAL(num)                :: invvol,dxi,dyi,dzi
+    REAL(num)                :: dts2dx,dts2dy,dts2dz
+    REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+    INTEGER(idp)             :: j,k,l,j0,k0,l0,ip, NCELLS, ic
+    INTEGER(idp)             :: nnx, nnxy, n,nn,nv
+    INTEGER(idp)             :: moff(1:8)
     INTEGER(idp), DIMENSION(LVEC,3) :: ICELL, IG
-    REAL(num) :: vx,vy,vz
-    REAL(num) :: ww0x(LVEC,4),ww0y(LVEC,4),ww0z(LVEC,4), wwwx(LVEC,8), &
+    REAL(num)                :: vx,vy,vz
+    REAL(num)                :: ww0x(LVEC,4),ww0y(LVEC,4),ww0z(LVEC,4), wwwx(LVEC,8), &
     wwwy(LVEC,8),wwwz(LVEC,8), wq
-    REAL(num) :: sx0(LVEC),sx1(LVEC),sx2(LVEC)
-    REAL(num) :: sx00(LVEC),sx01(LVEC),sx02(LVEC)
+    REAL(num)                :: sx0(LVEC),sx1(LVEC),sx2(LVEC)
+    REAL(num)                :: sx00(LVEC),sx01(LVEC),sx02(LVEC)
     REAL(num) :: sy0,sy1,sy2,sy00,sy01,sy02
     REAL(num) :: sz0,sz1,sz2,sz00,sz01,sz02, syz
     INTEGER(idp) :: igrid,orig, jorig, korig, lorig
     INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
+    ! ___ Parameter initialization _________________
+
     ww0x=0._num; ww0y=0._num; ww0z=0._num
+    
+    dxi = 1.0_num/dx
+    dyi = 1.0_num/dy
+    dzi = 1.0_num/dz
+    invvol = dxi*dyi*dzi
+    dts2dx = 0.5_num*dt*dxi
+    dts2dy = 0.5_num*dt*dyi
+    dts2dz = 0.5_num*dt*dzi
+    
     ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
     ncx=nx+4;ncy=ny+4;ncz=nz+4
     NCELLS=ncx*ncy*ncz
@@ -2912,10 +2925,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     ngx=(ngridx-ncx)
     ngxy=(ngridx*ngridy-ncx*ncy)
     ncxy=ncx*ncy
+    
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
 #if defined __INTEL_COMPILER 
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+        !DIR$ ASSUME_ALIGNED gaminv:64      
         !DIR$ ASSUME_ALIGNED sx0:64,sx1:64,sx2:64
         !DIR$ ASSUME_ALIGNED sx00:64,sx01:64,sx02:64
         !DIR$ ASSUME_ALIGNED w:64, wwwx:64,wwwy:64,wwwz:64
@@ -3056,6 +3071,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             ww0z(n,1)=syz*sx0(n)
             ww0z(n,2)=syz*sx1(n)
             ww0z(n,3)=syz*sx2(n)
+
+            
         END DO
 #if defined _OPENMP && _OPENMP>=201307
        	   !$OMP END SIMD
@@ -3099,10 +3116,13 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jzcells(nv,ICELL(n,3))   = jzcells(nv,ICELL(n,3))   +wwz*sx1(n)
                 !Loop on (i=1,j,k)
                 jzcells(nv,ICELL(n,3)+1) = jzcells(nv,ICELL(n,3)+1) +wwz*sx2(n)
+
+                
             END DO
 #if defined _OPENMP && _OPENMP>=201307
        	   !$OMP END SIMD
 #endif
+
 		END DO
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
@@ -3173,13 +3193,30 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jz(orig+igrid+moff(6))=jz(orig+igrid+moff(6))+jzcells(6,ic)
                 jz(orig+igrid+moff(7))=jz(orig+igrid+moff(7))+jzcells(7,ic)
                 jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8,ic)
+                
+                !print*,sum(jx),sum(jy)
+                !read*
+                
             END DO
 #if defined _OPENMP && _OPENMP>=201307
        	   !$OMP END SIMD
 #endif
         END DO
     END DO
-    DEALLOCATE(jxcells,jycells,jzcells)
+
+    ! ___ Debugging ___________________
+!     print*
+!     print*,'q:',q
+!     print*,'sum w',sum(w)
+!     print*,'min x',minval(xp),minval(yp),minval(zp)
+!     print*,'max x',maxval(xp),maxval(yp),maxval(zp)
+!     print*,'max ux',maxval(uxp),maxval(uyp),maxval(uzp) 
+!     print*,'max gamma',minval(1/gaminv),maxval(1/gaminv)        
+!     print*,'sum jx',sum(jx),sum(jy),sum(jz)
+!     print*,'sum jxcells',sum(jxcells),sum(jycells),sum(jzcells) 
+    
+    DEALLOCATE(jxcells,jycells,jzcells)   
+    
     RETURN
 END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 
@@ -3213,8 +3250,10 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
 ! - jxcells, jycells, jzcells updated
 ! ________________________________________________________________________________________
     USE constants
-    USE precomputed
     IMPLICIT NONE
+    
+    ! ____ Parameter initialization _____________________________________
+    
     INTEGER(idp), INTENT(IN)                      :: np,nx,ny,nz,ncells
     INTEGER(idp), INTENT(IN)                      :: ncx, ncy, ncz
     INTEGER(idp)                                  :: nxguard,nyguard,nzguard
@@ -3226,15 +3265,18 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num)                                     :: xint,yint,zint, &
                    oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
     REAL(num)                                     :: x,y,z,xmid,ymid,zmid
-    REAL(num) ::   wqx,wqy,wqz,ww, wwx, wwy, wwz
+    REAL(num)                                     ::   wqx,wqy,wqz,ww, wwx, wwy, wwz
+    REAL(num)                                     :: invvol,dxi,dyi,dzi
+    REAL(num)                                     :: dts2dx,dts2dy,dts2dz
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
     INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip, ic
     INTEGER(isp)                                  :: nnx, nnxy, n,nn,nv
     INTEGER(isp), DIMENSION(LVECT,3)              :: ICELL, IG
-    REAL(num) :: vx,vy,vz
-    REAL(num) :: ww0x(LVECT,4),ww0y(LVECT,4),ww0z(LVECT,4), wwwx(LVECT,8), &
-    wwwy(LVECT,8),wwwz(LVECT,8), wq
-    REAL(num) :: sx0(LVECT),sx1(LVECT),sx2(LVECT)
+    REAL(num)                                     :: vx,vy,vz
+    REAL(num)                                     :: ww0x(LVECT,4),ww0y(LVECT,4),ww0z(LVECT,4)
+    REAL(num)                                     :: wwwx(LVECT,8),wwwy(LVECT,8),wwwz(LVECT,8)
+    REAL(num)                                     :: wq
+    REAL(num)                                     :: sx0(LVECT),sx1(LVECT),sx2(LVECT)
     REAL(num)                                     :: sx00(LVECT),sx01(LVECT),sx02(LVECT)
     REAL(num)                                     :: sy0,sy1,sy2,sy00,sy01,sy02
     REAL(num)                                     :: sz0,sz1,sz2,sz00,sz01,sz02, syz
@@ -3248,6 +3290,14 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
     ww0x=0._num
     ww0y=0._num
     ww0z=0._num
+
+    dxi = 1.0_num/dx
+    dyi = 1.0_num/dy
+    dzi = 1.0_num/dz
+    invvol = dxi*dyi*dzi
+    dts2dx = 0.5_num*dt*dxi
+    dts2dy = 0.5_num*dt*dyi
+    dts2dz = 0.5_num*dt*dzi
     
     ngridx=nx+1+2*nxguard
     ngridy=ny+1+2*nyguard
@@ -3262,6 +3312,8 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
     ngx=(ngridx-ncx)
     ngxy=(ngridx*ngridy-ncx*ncy)
     ncxy=ncx*ncy
+
+    ! ___ Computation ______________________________________________
 
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
@@ -3476,6 +3528,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 !!! This version does not vectorize on SIMD architectures
 SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+           
     USE constants
     IMPLICIT NONE
     INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -3489,6 +3542,8 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
     REAL(num), DIMENSION(4) :: sx(-1:2), sy(-1:2), sz(-1:2), sx0(-1:2), sy0(-1:2), sz0(-1:2)
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
     INTEGER(idp) :: j,k,l,j0,k0,l0,ip
+    
+    
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
     dzi = 1.0_num/dz
@@ -3530,6 +3585,7 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
         j0=floor(xmid-0.5_num)
         k0=floor(ymid-0.5_num)
         l0=floor(zmid-0.5_num)
+        
         ! --- computes set of coefficients for node centered quantities
         xint = xmid-j
         yint = ymid-k
@@ -3538,22 +3594,22 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
         xintsq = xint*xint
         oxintsq = oxint*oxint
         sx(-1) = onesixth*oxintsq*oxint
-        sx( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
-        sx( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+        sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
+        sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx( 2) = onesixth*xintsq*xint
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
         sy(-1) = onesixth*oyintsq*oyint
-        sy( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
-        sy( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+        sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
+        sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy( 2) = onesixth*yintsq*yint
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
         sz(-1) = onesixth*ozintsq*ozint
-        sz( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
-        sz( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+        sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
+        sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz( 2) = onesixth*zintsq*zint
 
         ! --- computes set of coefficients for staggered quantities
@@ -3564,22 +3620,22 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
         xintsq = xint*xint
         oxintsq = oxint*oxint
         sx0(-1) = onesixth*oxintsq*oxint
-        sx0( 0) = twothird-xintsq*(1.0_num-xint/2.0_num)
-        sx0( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
+        sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
+        sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0( 2) = onesixth*xintsq*xint
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
         sy0(-1) = onesixth*oyintsq*oyint
-        sy0( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)
-        sy0( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
+        sy0( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
+        sy0( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0( 2) = onesixth*yintsq*yint
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
         sz0(-1) = onesixth*ozintsq*ozint
-        sz0( 0) = twothird-zintsq*(1.0_num-zint/2.0_num)
-        sz0( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
+        sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
+        sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0( 2) = onesixth*zintsq*zint
 
         ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
@@ -3781,6 +3837,7 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
         jz(j  ,k+2,l0+2)  = jz(j  ,k+2,l0+2)  +   sx(0 )*sy(2 )*sz0(2 )*wqz
         jz(j+1,k+2,l0+2)  = jz(j+1,k+2,l0+2)  +   sx(1 )*sy(2 )*sz0(2 )*wqz
         jz(j+2,k+2,l0+2)  = jz(j+2,k+2,l0+2)  +   sx(2 )*sy(2 )*sz0(2 )*wqz
+        
     END DO
     RETURN
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
@@ -4118,6 +4175,8 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
     USE constants
     IMPLICIT NONE
+    
+    ! ___ Parameter declaration _______________________________________
     INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -4174,6 +4233,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #if defined __INTEL_COMPILER 
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
+        !DIR$ ASSUME_ALIGNED gaminv:64
         !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
         !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
         !DIR$ ASSUME_ALIGNED ICELL:64
@@ -4236,7 +4296,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             oyint   = 1.0_num-yint
             yintsq  = yint*yint
             oyintsq = oyint*oyint
-            sy1  = onesixth*oyintsq*oyint
+            sy1     = onesixth*oyintsq*oyint
             sy2  = (twothird-yintsq*(1.0_num-yint*0.5_num))
             sy3  = (twothird-oyintsq*(1.0_num-oyint*0.5_num))
             sy4  = onesixth*yintsq*yint
@@ -4262,8 +4322,8 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             oyint    = 1.0_num-yint
             yintsq   = yint*yint
             oyintsq  = oyint*oyint
-            sy01  = onesixth*oyintsq*oyint
-            sy02  = (twothird-yintsq*(1.0_num-yint*0.5_num))
+            sy01     = onesixth*oyintsq*oyint
+            sy02     = (twothird-yintsq*(1.0_num-yint*0.5_num))
             sy03  = (twothird-oyintsq*(1.0_num-oyint*0.5_num))
             sy04  = onesixth*yintsq*yint
             ozint = 1.0_num-zint
@@ -4486,8 +4546,8 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
 ! - jxcells, jycells, jzcells updated
 ! ________________________________________________________________________________________
     USE constants
-    USE precomputed
     IMPLICIT NONE
+    
     INTEGER(idp), INTENT(IN)                      :: np,nx,ny,nz
     INTEGER(idp), INTENT(IN)                      :: lvect
     INTEGER(idp), INTENT(IN)                      :: nxguard,nyguard,nzguard
@@ -4498,23 +4558,27 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
 
     REAL(num)                                     :: xint,yint,zint, &
                  oxint,oyint,ozint,xintsq,yintsq,zintsq, oxintsq,oyintsq, ozintsq
-    REAL(num) :: x,y,z,xmid,ymid,zmid
-    REAL(num) ::   ww, wwx, wwy, wwz
-    REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+    REAL(num)                                     :: x,y,z,xmid,ymid,zmid
+    REAL(num)                                     :: ww, wwx, wwy, wwz
+    REAL(num), PARAMETER                          :: onesixth=1.0_num/6.0_num
+    REAL(num), PARAMETER                          :: twothird=2.0_num/3.0_num
+    REAL(num)                                     :: invvol,dxi,dyi,dzi
+    REAL(num)                                     :: dts2dx,dts2dy,dts2dz
     INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip
     INTEGER(isp)                                  :: NCELLS, ic, ix, iy, iz
     INTEGER(isp)                                  :: nnx, nnxy,ngridx, ngridy
     INTEGER(isp)                                  :: n,nn,nv
     INTEGER(isp), DIMENSION(lvect,3)              :: ICELL
     REAL(num), DIMENSION(lvect)                   :: vx,vy,vz
-    REAL(num) ::  wwwx(lvect,16), wwwy(lvect,16),wwwz(lvect,16), wq
-    REAL(num) :: sx1(lvect),sx2(lvect),sx3(lvect),sx4(lvect)
+    REAL(num)                                     :: wwwx(lvect,16), wwwy(lvect,16),wwwz(lvect,16)
+    REAL(num)                                     :: wq
+    REAL(num)                                     :: sx1(lvect),sx2(lvect),sx3(lvect),sx4(lvect)
     REAL(num) :: sx01(lvect),sx02(lvect),sx03(lvect),sx04(lvect)
     REAL(num) :: sy1,sy2,sy3,sy4,sz1,sz2,sz3,sz4
     REAL(num) :: sy01,sy02,sy03,sy04,sz01,sz02,sz03,sz04
     REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
     REAL(num):: wwwx1(lvect,8),wwwx2(lvect,8),wwwy1(lvect,8),wwwy2(lvect,8),wwwz1(lvect,8),wwwz2(lvect,8)
-    REAL(num):: wx1,wx2,wy1,wy2,wz1,wz2
+    REAL(num)                                     :: wx1,wx2,wy1,wy2,wz1,wz2
     INTEGER(isp)                                  :: orig, ncxy, ngx, ngxy
     INTEGER(isp)                                  :: igrid, jorig, korig, lorig
 
@@ -4522,6 +4586,14 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
     ! Parameters
     ngridx=nx+1+2*nxguard
     ngridy=ny+1+2*nyguard
+    
+    dxi = 1.0_num/dx
+    dyi = 1.0_num/dy
+    dzi = 1.0_num/dz
+    invvol = dxi*dyi*dzi
+    dts2dx = 0.5_num*dt*dxi
+    dts2dy = 0.5_num*dt*dyi
+    dts2dz = 0.5_num*dt*dzi
     
     nnx = ngridx
     nnxy = ngridx*ngridy
@@ -4542,13 +4614,12 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
 
     DO ip=1,np, LVEC
 #if defined __INTEL_COMPILER 
-
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
+        !DIR$ ASSUME_ALIGNED gaminv:64        
         !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
         !DIR$ ASSUME_ALIGNED sx01:64,sx02:64,sx03:64,sx04:64
         !DIR$ ASSUME_ALIGNED ICELL:64
-
 #elif defined __IBMBGQ__
         !IBM* ALIGN(64,xp,yp,zp)
         !IBM* ALIGN(64,vx,vy,vz)
@@ -4609,10 +4680,10 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
             oyint   = 1.0_num-yint
             yintsq  = yint*yint
             oyintsq = oyint*oyint
-            sy1  = onesixth*oyintsq*oyint
-            sy2  = (twothird-yintsq*(1.0_num-yint*0.5_num))
-            sy3  = (twothird-oyintsq*(1.0_num-oyint*0.5_num))
-            sy4  = onesixth*yintsq*yint
+            sy1     = onesixth*oyintsq*oyint
+            sy2     = (twothird-yintsq*(1.0_num-yint*0.5_num))
+            sy3     = (twothird-oyintsq*(1.0_num-oyint*0.5_num))
+            sy4     = onesixth*yintsq*yint
             ozint = 1.0_num-zint
             zintsq = zint*zint
             ozintsq = ozint*ozint
@@ -8103,27 +8174,28 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
 nox,noy,noz,l_particles_weight,l4symtry)
 !===========================================================================================
 
-USE constants
-IMPLICIT NONE
+	USE constants
+	IMPLICIT NONE
 
-INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
-REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
-REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
-REAL(num) :: xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
-s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz, &
-oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
-dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
-REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
-REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
-REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
-INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
-ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
-xl,xu,yl,yu,zl,zu
-LOGICAL(idp) :: l_particles_weight,l4symtry
+	INTEGER(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+	REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin	
+	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+
+	REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
+	REAL(num) :: xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
+	s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz, &
+	oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
+	dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
+	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+	REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
+	REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
+	REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
+	INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+	ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
+	xl,xu,yl,yu,zl,zu
+	LOGICAL(idp) :: l_particles_weight,l4symtry
 
 ! PARAMETER INIT
 ndtodx = int(clight*dt/dx)
@@ -8149,7 +8221,6 @@ yl = -int(noy/2)-1-ndtody
 yu = int((noy+1)/2)+1+ndtody
 zl = -int(noz/2)-1-ndtodz
 zu = int((noz+1)/2)+1+ndtodz
-
 
 ALLOCATE(sdx(xl:xu,yl:yu,zl:zu),sdy(xl:xu,yl:yu,zl:zu),sdz(xl:xu,yl:yu,zl:zu))
 ALLOCATE(sx(xl:xu), sx0(xl:xu), dsx(xl:xu))
@@ -8434,6 +8505,7 @@ DO ip=1,np
                 END DO
             END DO
         END DO
+        
     END DO
 END DO
 
@@ -9246,7 +9318,9 @@ SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
                 jz(igrid+moff(7))=jz(igrid+moff(7))+jzcells(7,ic)
                 jz(igrid+moff(8))=jz(igrid+moff(8))+jzcells(8,ic)
             END DO
+#if defined _OPENMP && _OPENMP>=201307
             !$OMP END SIMD
+#endif
         END DO
     END DO
     RETURN
@@ -9308,7 +9382,13 @@ SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
     DO iz=1, ncz
         DO iy=1,ncy
-            !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
             DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                 ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                 igrid=ic+(iy-1)*ngx+(iz-1)*ngxy + orig
@@ -9340,7 +9420,9 @@ SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
                 jz(igrid+moff(7))=jz(igrid+moff(7))+jzcells(7,ic)
                 jz(igrid+moff(8))=jz(igrid+moff(8))+jzcells(8,ic)
             END DO
+#if defined _OPENMP && _OPENMP>=201307
             !$OMP END SIMD
+#endif 
         END DO
     END DO
 
@@ -9404,7 +9486,13 @@ SUBROUTINE current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,&
     ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
     DO iz=1, ncz
         DO iy=1,ncy
-            !$OMP SIMD
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!$DIR SIMD 
+#endif
             DO ix=1,ncx !! VECTOR (take ncx multiple of vector length)
                 ic=ix+(iy-1)*ncx+(iz-1)*ncxy
                 igrid=ic+(iy-1)*ngx+(iz-1)*ngxy + orig

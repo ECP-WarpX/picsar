@@ -140,7 +140,7 @@ PROGRAM field_gathering_3d_test
   yp = ymin + yp*(ymax - ymin)
   zp = zmin + zp*(zmax - zmin)
 
-  gaminv = 1._num / sqrt(1 - uxp**2 + uyp**2 + uxp**2)
+  gaminv = 1._num / sqrt(1 - (uxp**2 + uyp**2 + uxp**2))
   
   uxp = uxp * gaminv
   uyp = uyp * gaminv
