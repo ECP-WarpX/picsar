@@ -39,7 +39,7 @@ SUBROUTINE field_gathering
 #endif
 
   CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-	 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+	 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
 
 
 #if defined(DEBUG)
@@ -50,7 +50,8 @@ END SUBROUTINE field_gathering
 
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,&
+			dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
 !
 ! This subroutine performs the field gathering in 3D only
 ! ________________________________________________________________________________________			
@@ -70,6 +71,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   ! ___ Parameter declaration ________________________________________
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  LOGICAL                  :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -85,7 +87,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   REAL(num)                :: tdeb, tend
   INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
   INTEGER(idp)             :: nxjg,nyjg,nzjg
-  LOGICAL(idp)             :: isgathered=.FALSE.
+  LOGICAL                  :: isgathered=.FALSE.
 
   IF (it.ge.timestat_itstart) THEN
     tdeb=MPI_WTIME()
@@ -100,7 +102,8 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-  !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
+  !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
+  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -163,7 +166,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					       &
 											  currg%eztile,                                          			&
 											  currg%bxtile,currg%bytile,currg%bztile                 			&
-											  ,.FALSE._idp,.TRUE._idp)
+											  ,.FALSE.,l_lower_order_in_v_in)
                     
                 END DO! END LOOP ON SPECIES
             ENDIF
@@ -198,12 +201,13 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
   USE constants
   USE params
   implicit none
-  integer(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-  logical(idp), intent(in) :: l4symtry,l_lower_order_in_v
+  
+  integer(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  logical, intent(in)      :: l4symtry,l_lower_order_in_v
   real(num), dimension(np) :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  real(num)                :: xmin,ymin,zmin,dx,dy,dz  
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg    
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
-  real(num) :: xmin,ymin,zmin,dx,dy,dz
               
   ! ______________________________________________                                  
   ! Arbitrary order, non-optimized subroutines
@@ -267,7 +271,6 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                         bxg,byg,bzg,l_lower_order_in_v) 
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
-
       !!! --- Gather electric field on particles
       CALL gete3d_energy_conserving_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -341,7 +344,7 @@ IMPLICIT NONE
 
 INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-logical(idp)                         :: l_lower_order_in_v
+LOGICAL                              :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
 REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(isp)                         :: ip, j, k, l
@@ -569,7 +572,7 @@ IMPLICIT NONE
 
 INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-logical(idp)                         :: l_lower_order_in_v
+LOGICAL                              :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(idp) :: ip, j, k, l, jj, kk, ll, j0, k0, l0
@@ -786,7 +789,7 @@ SUBROUTINE geteb3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ym
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz
-  logical(idp)                         :: l_lower_order_in_v
+  LOGICAL                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -1051,7 +1054,7 @@ SUBROUTINE getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-  logical(idp)                         :: l_lower_order_in_v
+  LOGICAL                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                         :: ip, j, k, l
@@ -1111,10 +1114,12 @@ SUBROUTINE getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
     sx(-1) = 0.5_num*(0.5_num-xint)**2
     sx( 0) = 0.75_num-xintsq
     sx( 1) = 0.5_num*(0.5_num+xint)**2
+    
     yintsq = yint*yint
     sy(-1) = 0.5_num*(0.5_num-yint)**2
     sy( 0) = 0.75_num-yintsq
     sy( 1) = 0.5_num*(0.5_num+yint)**2
+    
     zintsq = zint*zint
     sz(-1) = 0.5_num*(0.5_num-zint)**2
     sz( 0) = 0.75_num-zintsq
@@ -1173,6 +1178,7 @@ SUBROUTINE getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
     bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
     bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
 
+
   END DO
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP END SIMD 
@@ -1204,6 +1210,7 @@ SUBROUTINE getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
     k0=floor(y)
     l=nint(z)
     l0=floor(z)
+    
     xint=x-j
     yint=y-k
     zint=z-l
@@ -1213,14 +1220,17 @@ SUBROUTINE getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
     sx(-1) = 0.5_num*(0.5_num-xint)**2
     sx( 0) = 0.75_num-xintsq
     sx( 1) = 0.5_num*(0.5_num+xint)**2
+    
     yintsq = yint*yint
     sy(-1) = 0.5_num*(0.5_num-yint)**2
     sy( 0) = 0.75_num-yintsq
     sy( 1) = 0.5_num*(0.5_num+yint)**2
+    
     zintsq = zint*zint
     sz(-1) = 0.5_num*(0.5_num-zint)**2
     sz( 0) = 0.75_num-zintsq
     sz( 1) = 0.5_num*(0.5_num+zint)**2
+    
     xint=x-0.5_num-j0
     yint=y-0.5_num-k0
     zint=z-0.5_num-l0
@@ -1326,6 +1336,7 @@ SUBROUTINE getb3d_energy_conserving_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
     bz(ip) = bz(ip) + sx0(-1)*sy0(1)*sz(1)*bzg(j0-1,k0+1,l+1)
     bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
     bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
+    
   END DO
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP END SIMD 
@@ -1350,7 +1361,7 @@ SUBROUTINE gete3d_energy_conserving_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
   
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-  LOGICAL(idp)                         :: l_lower_order_in_v
+  LOGICAL                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -1693,7 +1704,7 @@ SUBROUTINE geteb3d_energy_conserving_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ym
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(idp)                           :: l_lower_order_in_v 
+  LOGICAL                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
@@ -1792,106 +1803,106 @@ SUBROUTINE geteb3d_energy_conserving_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ym
 			sz0( 1) = zint
 
 			! Compute Ex on particle
-			ex(ip) = ex(ip) + sx0(0)*sy(-1)*sz(-1)*exg(j0,k-1,l-1)
-			ex(ip) = ex(ip) + sx0(1)*sy(-1)*sz(-1)*exg(j0+1,k-1,l-1)
-			ex(ip) = ex(ip) + sx0(0)*sy(0)*sz(-1)*exg(j0,k,l-1)
-			ex(ip) = ex(ip) + sx0(1)*sy(0)*sz(-1)*exg(j0+1,k,l-1)
-			ex(ip) = ex(ip) + sx0(0)*sy(1)*sz(-1)*exg(j0,k+1,l-1)
-			ex(ip) = ex(ip) + sx0(1)*sy(1)*sz(-1)*exg(j0+1,k+1,l-1)
-			ex(ip) = ex(ip) + sx0(0)*sy(-1)*sz(0)*exg(j0,k-1,l)
-			ex(ip) = ex(ip) + sx0(1)*sy(-1)*sz(0)*exg(j0+1,k-1,l)
-			ex(ip) = ex(ip) + sx0(0)*sy(0)*sz(0)*exg(j0,k,l)
-			ex(ip) = ex(ip) + sx0(1)*sy(0)*sz(0)*exg(j0+1,k,l)
-			ex(ip) = ex(ip) + sx0(0)*sy(1)*sz(0)*exg(j0,k+1,l)
-			ex(ip) = ex(ip) + sx0(1)*sy(1)*sz(0)*exg(j0+1,k+1,l)
-			ex(ip) = ex(ip) + sx0(0)*sy(-1)*sz(1)*exg(j0,k-1,l+1)
-			ex(ip) = ex(ip) + sx0(1)*sy(-1)*sz(1)*exg(j0+1,k-1,l+1)
-			ex(ip) = ex(ip) + sx0(0)*sy(0)*sz(1)*exg(j0,k,l+1)
-			ex(ip) = ex(ip) + sx0(1)*sy(0)*sz(1)*exg(j0+1,k,l+1)
-			ex(ip) = ex(ip) + sx0(0)*sy(1)*sz(1)*exg(j0,k+1,l+1)
-			ex(ip) = ex(ip) + sx0(1)*sy(1)*sz(1)*exg(j0+1,k+1,l+1)
+			ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(-1)*exg(j0,k-1,l-1)
+			ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(-1)*exg(j0+1,k-1,l-1)
+			ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(-1)*exg(j0,k,l-1)
+			ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(-1)*exg(j0+1,k,l-1)
+			ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(-1)*exg(j0,k+1,l-1)
+			ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(-1)*exg(j0+1,k+1,l-1)
+			ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(0)*exg(j0,k-1,l)
+			ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(0)*exg(j0+1,k-1,l)
+			ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(0)*exg(j0,k,l)
+			ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(0)*exg(j0+1,k,l)
+			ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(0)*exg(j0,k+1,l)
+			ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(0)*exg(j0+1,k+1,l)
+			ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(1)*exg(j0,k-1,l+1)
+			ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(1)*exg(j0+1,k-1,l+1)
+			ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(1)*exg(j0,k,l+1)
+			ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(1)*exg(j0+1,k,l+1)
+			ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(1)*exg(j0,k+1,l+1)
+			ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(1)*exg(j0+1,k+1,l+1)
     
 			! Compute Ey on particle
-			ey(ip) = ey(ip) + sx(-1)*sy0(0)*sz(-1)*eyg(j-1,k0,l-1)
-			ey(ip) = ey(ip) + sx(0)*sy0(0)*sz(-1)*eyg(j,k0,l-1)
-			ey(ip) = ey(ip) + sx(1)*sy0(0)*sz(-1)*eyg(j+1,k0,l-1)
-			ey(ip) = ey(ip) + sx(-1)*sy0(1)*sz(-1)*eyg(j-1,k0+1,l-1)
-			ey(ip) = ey(ip) + sx(0)*sy0(1)*sz(-1)*eyg(j,k0+1,l-1)
-			ey(ip) = ey(ip) + sx(1)*sy0(1)*sz(-1)*eyg(j+1,k0+1,l-1)
-			ey(ip) = ey(ip) + sx(-1)*sy0(0)*sz(0)*eyg(j-1,k0,l)
-			ey(ip) = ey(ip) + sx(0)*sy0(0)*sz(0)*eyg(j,k0,l)
-			ey(ip) = ey(ip) + sx(1)*sy0(0)*sz(0)*eyg(j+1,k0,l)
-			ey(ip) = ey(ip) + sx(-1)*sy0(1)*sz(0)*eyg(j-1,k0+1,l)
-			ey(ip) = ey(ip) + sx(0)*sy0(1)*sz(0)*eyg(j,k0+1,l)
-			ey(ip) = ey(ip) + sx(1)*sy0(1)*sz(0)*eyg(j+1,k0+1,l)
-			ey(ip) = ey(ip) + sx(-1)*sy0(0)*sz(1)*eyg(j-1,k0,l+1)
-			ey(ip) = ey(ip) + sx(0)*sy0(0)*sz(1)*eyg(j,k0,l+1)
-			ey(ip) = ey(ip) + sx(1)*sy0(0)*sz(1)*eyg(j+1,k0,l+1)
-			ey(ip) = ey(ip) + sx(-1)*sy0(1)*sz(1)*eyg(j-1,k0+1,l+1)
-			ey(ip) = ey(ip) + sx(0)*sy0(1)*sz(1)*eyg(j,k0+1,l+1)
-			ey(ip) = ey(ip) + sx(1)*sy0(1)*sz(1)*eyg(j+1,k0+1,l+1)
+			ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(-1)*eyg(j-1,k0,l-1)
+			ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(-1)*eyg(j,k0,l-1)
+			ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(-1)*eyg(j+1,k0,l-1)
+			ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(-1)*eyg(j-1,k0+1,l-1)
+			ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(-1)*eyg(j,k0+1,l-1)
+			ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(-1)*eyg(j+1,k0+1,l-1)
+			ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(0)*eyg(j-1,k0,l)
+			ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(0)*eyg(j,k0,l)
+			ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(0)*eyg(j+1,k0,l)
+			ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(0)*eyg(j-1,k0+1,l)
+			ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(0)*eyg(j,k0+1,l)
+			ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(0)*eyg(j+1,k0+1,l)
+			ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(1)*eyg(j-1,k0,l+1)
+			ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(1)*eyg(j,k0,l+1)
+			ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(1)*eyg(j+1,k0,l+1)
+			ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(1)*eyg(j-1,k0+1,l+1)
+			ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(1)*eyg(j,k0+1,l+1)
+			ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(1)*eyg(j+1,k0+1,l+1)
     
 			! Compute Ez on particle
-			ez(ip) = ez(ip) + sx(-1)*sy(-1)*sz0(0)*ezg(j-1,k-1,l0)
-			ez(ip) = ez(ip) + sx(0)*sy(-1)*sz0(0)*ezg(j,k-1,l0)
-			ez(ip) = ez(ip) + sx(1)*sy(-1)*sz0(0)*ezg(j+1,k-1,l0)
-			ez(ip) = ez(ip) + sx(-1)*sy(0)*sz0(0)*ezg(j-1,k,l0)
-			ez(ip) = ez(ip) + sx(0)*sy(0)*sz0(0)*ezg(j,k,l0)
-			ez(ip) = ez(ip) + sx(1)*sy(0)*sz0(0)*ezg(j+1,k,l0)
-			ez(ip) = ez(ip) + sx(-1)*sy(1)*sz0(0)*ezg(j-1,k+1,l0)
-			ez(ip) = ez(ip) + sx(0)*sy(1)*sz0(0)*ezg(j,k+1,l0)
-			ez(ip) = ez(ip) + sx(1)*sy(1)*sz0(0)*ezg(j+1,k+1,l0)
-			ez(ip) = ez(ip) + sx(-1)*sy(-1)*sz0(1)*ezg(j-1,k-1,l0+1)
-			ez(ip) = ez(ip) + sx(0)*sy(-1)*sz0(1)*ezg(j,k-1,l0+1)
-			ez(ip) = ez(ip) + sx(1)*sy(-1)*sz0(1)*ezg(j+1,k-1,l0+1)
-			ez(ip) = ez(ip) + sx(-1)*sy(0)*sz0(1)*ezg(j-1,k,l0+1)
-			ez(ip) = ez(ip) + sx(0)*sy(0)*sz0(1)*ezg(j,k,l0+1)
-			ez(ip) = ez(ip) + sx(1)*sy(0)*sz0(1)*ezg(j+1,k,l0+1)
-			ez(ip) = ez(ip) + sx(-1)*sy(1)*sz0(1)*ezg(j-1,k+1,l0+1)
-			ez(ip) = ez(ip) + sx(0)*sy(1)*sz0(1)*ezg(j,k+1,l0+1)
-			ez(ip) = ez(ip) + sx(1)*sy(1)*sz0(1)*ezg(j+1,k+1,l0+1)
+			ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(0)*ezg(j-1,k-1,l0)
+			ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(0)*ezg(j,k-1,l0)
+			ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(0)*ezg(j+1,k-1,l0)
+			ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(0)*ezg(j-1,k,l0)
+			ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(0)*ezg(j,k,l0)
+			ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(0)*ezg(j+1,k,l0)
+			ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(0)*ezg(j-1,k+1,l0)
+			ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(0)*ezg(j,k+1,l0)
+			ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(0)*ezg(j+1,k+1,l0)
+			ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(1)*ezg(j-1,k-1,l0+1)
+			ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(1)*ezg(j,k-1,l0+1)
+			ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(1)*ezg(j+1,k-1,l0+1)
+			ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(1)*ezg(j-1,k,l0+1)
+			ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(1)*ezg(j,k,l0+1)
+			ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(1)*ezg(j+1,k,l0+1)
+			ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(1)*ezg(j-1,k+1,l0+1)
+			ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(1)*ezg(j,k+1,l0+1)
+			ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(1)*ezg(j+1,k+1,l0+1)
 
 			! Compute Bx on particle
-			bx(ip) = bx(ip) + sx(-1)*sy0(0)*sz0(0)*bxg(j-1,k0,l0)
-			bx(ip) = bx(ip) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
-			bx(ip) = bx(ip) + sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
-			bx(ip) = bx(ip) + sx(-1)*sy0(1)*sz0(0)*bxg(j-1,k0+1,l0)
-			bx(ip) = bx(ip) + sx(0)*sy0(1)*sz0(0)*bxg(j,k0+1,l0)
-			bx(ip) = bx(ip) + sx(1)*sy0(1)*sz0(0)*bxg(j+1,k0+1,l0)
-			bx(ip) = bx(ip) + sx(-1)*sy0(0)*sz0(1)*bxg(j-1,k0,l0+1)
-			bx(ip) = bx(ip) + sx(0)*sy0(0)*sz0(1)*bxg(j,k0,l0+1)
-			bx(ip) = bx(ip) + sx(1)*sy0(0)*sz0(1)*bxg(j+1,k0,l0+1)
-			bx(ip) = bx(ip) + sx(-1)*sy0(1)*sz0(1)*bxg(j-1,k0+1,l0+1)
-			bx(ip) = bx(ip) + sx(0)*sy0(1)*sz0(1)*bxg(j,k0+1,l0+1)
-			bx(ip) = bx(ip) + sx(1)*sy0(1)*sz0(1)*bxg(j+1,k0+1,l0+1)
+			bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(0)*bxg(j-1,k0,l0)
+			bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
+			bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
+			bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(0)*bxg(j-1,k0+1,l0)
+			bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(0)*bxg(j,k0+1,l0)
+			bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(0)*bxg(j+1,k0+1,l0)
+			bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(1)*bxg(j-1,k0,l0+1)
+			bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(1)*bxg(j,k0,l0+1)
+			bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(1)*bxg(j+1,k0,l0+1)
+			bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(1)*bxg(j-1,k0+1,l0+1)
+			bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(1)*bxg(j,k0+1,l0+1)
+			bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(1)*bxg(j+1,k0+1,l0+1)
     
 			! Compute By on particle
-			by(ip) = by(ip) + sx0(0)*sy(-1)*sz0(0)*byg(j0,k-1,l0)
-			by(ip) = by(ip) + sx0(1)*sy(-1)*sz0(0)*byg(j0+1,k-1,l0)
-			by(ip) = by(ip) + sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
-			by(ip) = by(ip) + sx0(1)*sy(0)*sz0(0)*byg(j0+1,k,l0)
-			by(ip) = by(ip) + sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
-			by(ip) = by(ip) + sx0(1)*sy(1)*sz0(0)*byg(j0+1,k+1,l0)
-			by(ip) = by(ip) + sx0(0)*sy(-1)*sz0(1)*byg(j0,k-1,l0+1)
-			by(ip) = by(ip) + sx0(1)*sy(-1)*sz0(1)*byg(j0+1,k-1,l0+1)
-			by(ip) = by(ip) + sx0(0)*sy(0)*sz0(1)*byg(j0,k,l0+1)
-			by(ip) = by(ip) + sx0(1)*sy(0)*sz0(1)*byg(j0+1,k,l0+1)
-			by(ip) = by(ip) + sx0(0)*sy(1)*sz0(1)*byg(j0,k+1,l0+1)
-			by(ip) = by(ip) + sx0(1)*sy(1)*sz0(1)*byg(j0+1,k+1,l0+1)
+			by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(0)*byg(j0,k-1,l0)
+			by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(0)*byg(j0+1,k-1,l0)
+			by(nn) = by(nn) + sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
+			by(nn) = by(nn) + sx0(1)*sy(0)*sz0(0)*byg(j0+1,k,l0)
+			by(nn) = by(nn) + sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
+			by(nn) = by(nn) + sx0(1)*sy(1)*sz0(0)*byg(j0+1,k+1,l0)
+			by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(1)*byg(j0,k-1,l0+1)
+			by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(1)*byg(j0+1,k-1,l0+1)
+			by(nn) = by(nn) + sx0(0)*sy(0)*sz0(1)*byg(j0,k,l0+1)
+			by(nn) = by(nn) + sx0(1)*sy(0)*sz0(1)*byg(j0+1,k,l0+1)
+			by(nn) = by(nn) + sx0(0)*sy(1)*sz0(1)*byg(j0,k+1,l0+1)
+			by(nn) = by(nn) + sx0(1)*sy(1)*sz0(1)*byg(j0+1,k+1,l0+1)
     
 			! Compute Bz on particle
-			bz(ip) = bz(ip) + sx0(0)*sy0(0)*sz(-1)*bzg(j0,k0,l-1)
-			bz(ip) = bz(ip) + sx0(1)*sy0(0)*sz(-1)*bzg(j0+1,k0,l-1)
-			bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(-1)*bzg(j0,k0+1,l-1)
-			bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(-1)*bzg(j0+1,k0+1,l-1)
-			bz(ip) = bz(ip) + sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
-			bz(ip) = bz(ip) + sx0(1)*sy0(0)*sz(0)*bzg(j0+1,k0,l)
-			bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(0)*bzg(j0,k0+1,l)
-			bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(0)*bzg(j0+1,k0+1,l)
-			bz(ip) = bz(ip) + sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1)
-			bz(ip) = bz(ip) + sx0(1)*sy0(0)*sz(1)*bzg(j0+1,k0,l+1)
-			bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
-			bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
+			bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(-1)*bzg(j0,k0,l-1)
+			bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(-1)*bzg(j0+1,k0,l-1)
+			bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(-1)*bzg(j0,k0+1,l-1)
+			bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(-1)*bzg(j0+1,k0+1,l-1)
+			bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
+			bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(0)*bzg(j0+1,k0,l)
+			bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(0)*bzg(j0,k0+1,l)
+			bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(0)*bzg(j0+1,k0+1,l)
+			bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1)
+			bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(1)*bzg(j0+1,k0,l+1)
+			bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
+			bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
       
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
@@ -2175,7 +2186,7 @@ SUBROUTINE getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-  LOGICAL(idp)                         :: l_lower_order_in_v  
+  LOGICAL                              :: l_lower_order_in_v  
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                         :: ip, j, k, l
@@ -2688,7 +2699,7 @@ SUBROUTINE gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
 
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez
-  LOGICAL(idp)                           :: l_lower_order_in_v 
+  LOGICAL                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                           :: ip, j, k, l 
@@ -3262,7 +3273,7 @@ SUBROUTINE geteb3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(idp)                           :: l_lower_order_in_v 
+  LOGICAL                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
@@ -4174,7 +4185,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(idp)                           :: l_lower_order_in_v 
+  LOGICAL                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
@@ -4754,7 +4765,7 @@ USE params
 IMPLICIT NONE
 INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-logical(idp)                         :: l_lower_order_in_v
+logical                              :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
 REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(isp)                         :: ip, j, k, l
@@ -4964,7 +4975,7 @@ IMPLICIT NONE
 
 INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-logical(idp)                         :: l_lower_order_in_v
+logical                              :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -5154,7 +5165,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-  logical(idp)                         :: l_lower_order_in_v
+  logical                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -5409,7 +5420,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,
 
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-  logical(idp)                         :: l_lower_order_in_v
+  logical                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -6240,7 +6251,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
       implicit none
       integer(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
       real(num), dimension(np) :: xp,yp,zp,bx,by,bz
-      logical(idp) :: l4symtry,l_lower_order_in_v
+      logical      :: l4symtry,l_lower_order_in_v
       real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
       real(num) :: xmin,ymin,zmin,dx,dy,dz
       integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -6555,7 +6566,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
       implicit none
       integer(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
       real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-      logical(idp) :: l4symtry,l_lower_order_in_v
+      logical      :: l4symtry,l_lower_order_in_v
       real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
       real(num) :: xmin,ymin,zmin,dx,dy,dz
       integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &

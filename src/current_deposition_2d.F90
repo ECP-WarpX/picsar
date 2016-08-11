@@ -843,11 +843,13 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), parameter                  :: onesixth=1./6.,twothird=2./3.
   real(num), parameter                  :: onethird=1./3.  
   real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
-  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,idx,idz,i,k,ic,kc
-  integer(idp)                          :: ixmin, ixmax, izmin, izmax, icell, ndtodx, ndtodz
+  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,idx,idz,i,k,ic,kc
+  integer(isp)                          :: dix,diz
+  integer(isp)                          :: ixmin, ixmax, izmin, izmax
+  integer(idp)                          :: icell, ndtodx, ndtodz
   integer(idp)                          :: xl,xu,zl,zu
 
-  ! Parameter initialization
+  ! __ Parameter initialization ______________________________
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
   dtsdx0 = dt*dxi
@@ -1018,8 +1020,10 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), parameter                  :: onesixth=1./6.,twothird=2./3.
   real(num), parameter                  :: onethird=1./3.  
   real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
-  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,idx,idz,i,k,ic,kc
-  integer(idp)                          :: ixmin, ixmax, izmin, izmax, icell, ndtodx, ndtodz
+  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,idx,idz,i,k,ic,kc
+  integer(isp)                          :: dix,diz
+  integer(isp)                          :: ixmin, ixmax, izmin, izmax
+  integer(idp)                          :: icell, ndtodx, ndtodz
   integer(idp)                          :: xl,xu,zl,zu
 
   ! Parameter initialization
@@ -1202,8 +1206,10 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num)                             :: dtsdx0,dtsdz0,dts2dx0,dts2dz0
   real(num), parameter                  :: onesixth=1./6.,twothird=2./3.
   real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
-  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,idx,idz,i,k,ic,kc
-  integer(idp)                          :: ixmin, ixmax, izmin, izmax, icell, ndtodx, ndtodz
+  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,idx,idz,i,k,ic,kc
+  integer(idp)                          :: icell, ndtodx, ndtodz
+  integer(isp)                          :: dix,diz
+  integer(isp)                          :: ixmin, ixmax, izmin, izmax  
   integer(idp)                          :: xl,xu,zl,zu
 
   ! Parameter initialization

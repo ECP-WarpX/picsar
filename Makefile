@@ -43,7 +43,7 @@ FC=mpif90
 # C compiler
 CC=mpicc
 # Fortran compiler arguments
-FARGS= -O3 -fopenmp
+FARGS= -O3 -fopenmp -JModules
 
 # Source directory
 SRCDIR=src
@@ -63,12 +63,12 @@ ifeq ($(COMP),gnu)
 
   ifeq ($(MODE),prod)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -ftree-vectorize -ftree-vectorizer-verbose=2
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize -ftree-vectorizer-verbose=2
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -g -fcheck=bound -ftree-vectorize -ftree-vectorizer-verbose=2	
+	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize -ftree-vectorizer-verbose=2	
 	endif
 	
 	# ___ Architecture ________
@@ -82,19 +82,19 @@ else ifeq ($(COMP),intel)
   # ___ Mode ______________
   ifeq ($(MODE),prod)
 	  FC=mpif90
-	  FARGS= -O3 -qopenmp -align array64byte -qopt-streaming-stores
+	  FARGS= -O3 -qopenmp -JModules -align array64byte -qopt-streaming-stores
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
-	  FARGS= -O3 -qopenmp -check bounds -D DEBUG=1
+	  FARGS= -O3 -qopenmp -JModules -check bounds -D DEBUG=1
 	else ifeq ($(MODE),vtune)
 	  FC=mpif90
-	  FARGS= -O3 -qopenmp -check bounds -D DEBUG=1	
+	  FARGS= -O3 -qopenmp -JModules -check bounds -D DEBUG=1	
 	else ifeq ($(MODE),sde)
 	  FC=mpif90
-	  FARGS= -O3 -qopenmp -check bounds -D DEBUG=1	
+	  FARGS= -O3 -qopenmp -JModules -check bounds -D DEBUG=1	
 	else ifeq ($(MODE),map)			  
 	  FC=mpif90
-	  FARGS= -O3 -qopenmp -check bounds -D DEBUG=1	
+	  FARGS= -O3 -qopenmp -JModules -check bounds -D DEBUG=1	
   endif
   
   # ___ Architecture ________
@@ -121,7 +121,7 @@ FDEPT= $(FSOURCE:.F90=.d)
 # ________________________________________________________
 
 $(SRCDIR)/%.o $(SRCDIR)/%.mod:$(SRCDIR)/%.F90
-	$(FC) -c $(FARGS) -JModules -o $@ $<
+	$(FC) -c $(FARGS) -o $@ $<
 
 all: clean echo createdir build
 test: test1 test2 test3
@@ -143,7 +143,7 @@ build:$(SRCDIR)/modules.o $(SRCDIR)/maxwell.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/control_file.o \
 	$(SRCDIR)/main.o 
-	$(FC) $(FARGS) -JModules -o $(APPNAME) $(SRCDIR)/*.o
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
 	
@@ -171,7 +171,8 @@ help:
 	@echo ' Targets:'
 	@echo ' - build'
 	@echo ' - clean'
-	@echo ' - test'
+	@echo ' - buildtest'
+	@echo ' - test_gcov'
 	@echo	
 	@echo ' COMP= Compiler type:'
 	@echo ' - gnu: gnu compiler'
@@ -192,9 +193,16 @@ Acceptance_testing/Gcov_tests/%.o:Acceptance_testing/Gcov_tests/%.F90
 	
 buildtest: $(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/current_deposition_2d.o \
+	$(SRCDIR)/current_deposition.o \
+	$(SRCDIR)/particles_push_2d.o \
+	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering.o \
-	Acceptance_testing/Gcov_tests/field_gathering_test.o
+	Acceptance_testing/Gcov_tests/field_gathering_test.o \
+	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
 	$(FC) $(FARGS) -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
+	$(FC) $(FARGS) -JModules -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
 #	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o			
 
 test1:
@@ -214,5 +222,5 @@ test_physics:
 	
 test_gcov:
 	./Acceptance_testing/Gcov_tests/field_gathering_3d_test
-
+	./Acceptance_testing/Gcov_tests/current_deposition_3d_test
 

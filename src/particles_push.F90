@@ -27,29 +27,29 @@ SUBROUTINE field_gathering_plus_particle_pusher
 
     ! Particle advance (one time step)
     CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-     nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+     nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
 
     CASE DEFAULT ! 3D CASE 
   
       ! The field gathering and the particle pusher are performed together
       IF (fg_p_pp_seperated.eq.0) THEN
 
-        CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-         nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+        CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,&
+        nxguards,nyguards,nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
 
       ELSE IF (fg_p_pp_seperated.eq.1) THEN
 
         CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-         nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+         nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
     
       ! The field gathering and the particle pusher are performed separately
       ELSE
 
         CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-         nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+         nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
     
         CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-         nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+         nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
        
       ENDIF
 
@@ -63,7 +63,8 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+			     nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,  &
+			     nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
 ! Particle pusher in 3D called by the main function push_particle
 ! ________________________________________________________________________________________
   USE particles
@@ -79,6 +80,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   ! ___ Parameter declaration __________________________________________
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  LOGICAL                  :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -104,7 +106,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
+!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
+!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -171,7 +174,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
 											  currg%eztile,                                          			&
 											  currg%bxtile,currg%bytile,currg%bztile                 			&
-											  ,.FALSE.,.TRUE.)										  
+											  ,.FALSE.,l_lower_order_in_v_in)										  
 										  										  		
 					CASE DEFAULT ! 3D CASE
 					 
@@ -186,7 +189,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
 											  currg%eztile,                                          			&
 											  currg%bxtile,currg%bytile,currg%bztile                 			&
-											  ,.FALSE.,.TRUE.)
+											  ,.FALSE.,l_lower_order_in_v_in)
 					END SELECT
 					
 					!! --- Push velocity with E half step
@@ -233,7 +236,7 @@ END SUBROUTINE field_gathering_plus_particle_pusher_sub
 
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
 ! Particle pusher in 3D called by the main function push_particle
 ! ________________________________________________________________________________________
   USE particles
@@ -250,6 +253,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
   ! ___ Parameter declaration __________________________________________
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  LOGICAL                  :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -386,7 +390,8 @@ END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 
 ! ________________________________________________________________________________________
 SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,&
+			noxx,noyy,nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
 !			
 ! Particle pusher in 3D called by the main function push_particle
 ! ________________________________________________________________________________________
@@ -403,6 +408,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   ! ___ Parameter declaration __________________________________________
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  LOGICAL                  :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)

@@ -93,7 +93,7 @@ CONTAINS
         timestat_perit = 0
         nbuffertimestat = 1
         
-        l_lower_order_in_v = .FALSE.
+        l_lower_order_in_v = .TRUE.
 
         ! --- sets coefficient multiplying Courant time step
         dtcoef = 0.7_num

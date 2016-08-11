@@ -3,13 +3,17 @@
 ! FIELD_GATHERING_3D_TEST.F90
 ! Test code for the field gathering in 3D
 !
-! This program does not need MPI
+! This program does not need MPI or OpenMP but some subroutines are vectorized
+! Mathieu Lobet, 2016.08
 ! ________________________________________________________________________________________
 
 PROGRAM field_gathering_3d_test
 
   USE constants
   IMPLICIT NONE
+  
+  ! __________________________________________________________________
+  ! Parameter declaration
 
   INTEGER(idp)                             :: i,n
   INTEGER(idp)                             :: np
@@ -20,10 +24,13 @@ PROGRAM field_gathering_3d_test
   LOGICAL                                  :: passed  
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
+  REAL(num)                                :: q,m   
   REAL(num)                                :: Ef,Bf   
   REAL(num)                                :: epsilon   
-  REAL(num)                                :: dx,dy,dz  
+  REAL(num)                                :: dx,dy,dz,dt  
   REAL(num), dimension(:), allocatable     :: xp,yp,zp 
+  REAL(num), dimension(:), allocatable     :: uxp,uyp,uzp
+  REAL(num), dimension(:), allocatable     :: gaminv,w  
   REAL(num), dimension(:), allocatable     :: ex,ey,ez  
   REAL(num), dimension(:), allocatable     :: bx,by,bz   
   REAL(num), dimension(:,:,:), allocatable :: exg,eyg,ezg 
@@ -38,7 +45,7 @@ PROGRAM field_gathering_3d_test
   write(0,'(" ____________________________________________________________________________")')
   write(0,*) 'TEST: field gathering 3D'
 
-  ! _____________________________________________
+  ! _________________________________________________________________
   ! Parameter initialization
   
   np = 50000
@@ -60,13 +67,18 @@ PROGRAM field_gathering_3d_test
   Ef = 1E12 !V/m
   Bf = 1E4  !T
   
+  q = -1._num
+  m = 1._num
+  
   dx = 1.E-6
   dy = 1.E-6
   dz = 1.E-6
+
+  dt = 0.5_num * 1._num / sqrt(1._num / dx**2 + 1._num / dy**2 + 1._num / dz**2 )
   
   epsilon = 1E-6
   
-  l_lower_order_in_v = .FALSE.
+  l_lower_order_in_v = .TRUE.
   
   passed = .TRUE.
   
@@ -77,6 +89,8 @@ PROGRAM field_gathering_3d_test
   write(0,*) 'l_lower_order_in_v:',l_lower_order_in_v
   write(0,'(" xmax:",F12.5," ymax:",F12.5," zmax",F12.5 )') xmax,ymax,zmax
     
+  ! __ array allocations ________________________________________________
+    
   ALLOCATE(exg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
   ALLOCATE(eyg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
   ALLOCATE(ezg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
@@ -86,10 +100,14 @@ PROGRAM field_gathering_3d_test
   ALLOCATE(bzg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
   
   ALLOCATE(xp(np),yp(np),zp(np)) 
+
+  ALLOCATE(uxp(np),uyp(np),uzp(np))
+  ALLOCATE(w(np),gaminv(np))  
     
   ALLOCATE(ex(np),ey(np),ez(np))    
   ALLOCATE(bx(np),by(np),bz(np))   
-  ! Initialization of the arrays
+  
+  ! __ Initialization of the arrays _________________________________
   CALL init_random_seed()
   
   CALL RANDOM_NUMBER(xp(1:np))
@@ -104,6 +122,12 @@ PROGRAM field_gathering_3d_test
   CALL RANDOM_NUMBER(byg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
   CALL RANDOM_NUMBER(bzg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
 
+  CALL RANDOM_NUMBER(uxp(1:np))
+  CALL RANDOM_NUMBER(uyp(1:np))  
+  CALL RANDOM_NUMBER(uzp(1:np)) 
+  
+  CALL RANDOM_NUMBER(w(1:np))
+
   exg = exg*Ef
   eyg = eyg*Ef
   ezg = ezg*Ef
@@ -115,6 +139,12 @@ PROGRAM field_gathering_3d_test
   xp = xmin + xp*(xmax - xmin)
   yp = ymin + yp*(ymax - ymin)
   zp = zmin + zp*(zmax - zmin)
+
+  gaminv = 1._num / sqrt(1 - uxp**2 + uyp**2 + uxp**2)
+  
+  uxp = uxp * gaminv
+  uyp = uyp * gaminv
+  uzp = uzp * gaminv
   
   sumex = 0
   sumey = 0
@@ -195,6 +225,26 @@ PROGRAM field_gathering_3d_test
 	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
 	i = i + 1	
 
+!   name(i) = 'field_gathering_plus_particle_pusher_1_1_1'
+!   ex = 0
+!   ey = 0
+!   ez = 0
+!   bx = 0
+!   by = 0
+!   bz = 0
+!   CALL field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
+!                                       ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+!                                       dx,dy,dz,dt,nx,ny,nz,nxguard,nyguard,nzguard, &
+!                                       exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
+! 	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+! 	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+! 	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+! 	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+! 	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+! 	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+! 	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+! 	i = i + 1	
+	
 	n = i-1
 	
 	write(0,*)
@@ -613,11 +663,11 @@ PROGRAM field_gathering_3d_test
   IF (passed) THEN
 		!write(0,'("\033[32m **** TEST PASSED **** \033[0m")')	
 		!CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
-		CALL system('printf "\e[32m ********** TEST FIELD GATHERING PASSED **********  \e[0m \n"')
+		CALL system('printf "\e[32m ********** TEST FIELD GATHERING 3D PASSED **********  \e[0m \n"')
   ELSE
 		!write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
 		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
-		CALL system('printf "\e[31m ********** TEST FIELD GATHERING FAILED **********  \e[0m \n"')
+		CALL system('printf "\e[31m ********** TEST FIELD GATHERING 3D FAILED **********  \e[0m \n"')
   ENDIF
   
   write(0,'(" ____________________________________________________________________________")')

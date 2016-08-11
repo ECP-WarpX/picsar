@@ -387,45 +387,33 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   ELSE IF (currdepo.EQ.3) THEN
   
     IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
-  
       ! Old version with reduction for each species
       !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_vecHVv3_3_3_3, &
       !jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
-
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( &
            depose_jxjyjz_vecHV_vnr_3_3_3, current_reduction_3_3_3,&
            jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-    
     ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
-
       ! Old version with reduction for each species
       !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_vecHVv2_2_2_2, &
       !jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
-
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( &
            depose_jxjyjz_vecHV_vnr_2_2_2, current_reduction_2_2_2,&
            jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-    
     ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
-
       ! Old version with reduction for each species
       !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_vecHVv2_1_1_1, &
       !jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
-           
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( &
            depose_jxjyjz_vecHV_vnr_1_1_1, current_reduction_1_1_1,&
            jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-
       !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( &
       !     depose_jxjyjz_vecHV_vnr_1_1_1, current_reduction_1_1_1,&
       !     jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-    
     ELSE
-    
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
            jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	         nox,noy,noz,dx,dy,dz,dt)    
-    
     ENDIF
   ! _______________________________________________________    
   ! Esirkepov sequential version   
@@ -1136,7 +1124,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3(&
 curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvect)
-!!!! Boucle sur les especes a l'exterieu !!!! 
+!!!! Boucle sur les especes a l'exterieur !!!! 
 !	
 ! Deposit current in each tile with the classical method
 ! OpenMP version. Avoids conflict while reducing tile currents in the global 
@@ -8117,6 +8105,7 @@ nox,noy,noz,l_particles_weight,l4symtry)
 
 USE constants
 IMPLICIT NONE
+
 INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
 REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
