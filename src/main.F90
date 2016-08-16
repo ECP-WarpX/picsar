@@ -1,5 +1,17 @@
 !===============================================================================
-! PICSAR 3D version 2.0 with tiling, H. VINCENTI 09/15/2015
+!
+! PICSAR
+! 
+!>version 2.0
+!>09/15/2015
+!
+!>@author
+!>Henri Vincenti
+!>Mathieu Lobet
+!
+!>@section Presentation
+!
+!
 ! INCLUDES: 
 ! - Arbitrary order field solver (Maxwell.F90)
 ! - High order current deposition/field gathering routines (current_deposition.F90, field_gathering.F90)
@@ -7,6 +19,7 @@
 ! - MPI-IO outputs
 ! - OpenMP Parallelization (current_deposition.F90, field_gathering.F90, particle_push.F90, Maxwell.F90)
 ! - Tiling of particles for better memory locality
+
 !===============================================================================
 
 PROGRAM main

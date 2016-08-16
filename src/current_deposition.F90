@@ -1,6 +1,14 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 ! 
 ! CURRENT_DEPOSITION.F90
+!
+! @author
+! Henri Vincenti,
+! Mathieu Lobet
+!
+! Brief description:
+! This file contains subroutines for the current deposition in 3D
+! @brief
 !
 ! List of subroutines:
 ! - pxrdepose_currents_on_grid_jxjyjz

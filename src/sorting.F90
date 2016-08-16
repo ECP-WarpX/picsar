@@ -1,11 +1,25 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 ! 
 ! SORTING.F90
-! Contains sorting algorithms for the particles
-! 
+!
+!
+!> Module for the particle sorting
+!> @brief
+!>
+!> This module contains sorting algorithms for the particles
+!> @details
+!>
+!> @author
+!> Mathieu Lobet
+!>
+!> @date
+!> 04/2016
+!
 ! List of subroutines:
 ! - pxr_particle_sorting
 ! - particle_sorting_sub
+! - pxr_particle_bin_sorting
+! ________________________________________________________________________________________
 
 MODULE sorting
 
@@ -13,11 +27,20 @@ MODULE sorting
 
   CONTAINS
 
+    ! ____________________________________________________________________________________
+    !> Main subroutine called to sort the particles in the Fortran PIC loop
   SUBROUTINE pxr_particle_sorting
-    ! __________________________________________________________________________________
     ! 
-    ! Main subroutine called to sort the particles in the Fortran PIC loop
-    ! __________________________________________________________________________________
+    !> @author
+    !> Mathieu Lobet
+    !   
+    !> @details
+    !> This subroutine is called in the main loop of the Fortran kernel.
+    !> This subroutine calls particle_sorting_sub() and times it.
+    ! 
+    !> @date
+    !> 2016
+    ! ____________________________________________________________________________________
     USE tiling
     USE shared_data
     USE constants
@@ -46,11 +69,23 @@ MODULE sorting
   
   END SUBROUTINE
 
+  ! ______________________________________________________________________________________!
+  ! particle_sorting_sub
+  !
+  !> General subroutine for the particle sorting, used in Python PIC loop
+  !> @brief
+  !>
+  !> This subroutine is called in pxr_particle_sorting() used in the main loop
+  !> @details
+  !> 
+  !> @author
+  !> Mathieu Lobet
+  !
+  !> @date 2016  
   SUBROUTINE particle_sorting_sub
-    ! __________________________________________________________________________________
-    ! 
-    ! General subroutine for the particle sorting, used in Python PIC loop
-    ! __________________________________________________________________________________
+  ! 
+  ! 
+  ! ______________________________________________________________________________________
     USE tiling
     USE shared_data
     USE constants
@@ -150,19 +185,34 @@ MODULE sorting
   END SUBROUTINE particle_sorting_sub
 
 
+    ! ____________________________________________________________________________________
+    ! pxr_particle_bin_sorting
+    !
+    !>
+    !> @brief
+    !> Particle cell sorting subroutine using the bin sorting algorithm
+    !> @details
+    !> This subroutine uses a bin sorting algorithm to sort particles (including their property arrays).
+    !> Here, the bins corresponds to the cells of a cartesian array.
+    !> The cell size is specified by the user.
+    !>
+    !> @author
+    !> Mathieu Lobet
+    
+    !> @date 2016
+    !
   SUBROUTINE pxr_particle_bin_sorting(np2,xp,yp,zp,ux,uy,uz,gam,pid,wpid,&
             xmin2,ymin2,zmin2,xmax2,ymax2,zmax2,dxf,dyf,dzf)
-    ! __________________________________________________________________________________
-    ! 
-    ! Particle bin sorting algorithm
-    ! This subroutine uses a bin sorting algorithm to sort particles (including their property arrays)
-    ! 
-    ! np: number of particles
-    ! xp,yp,zp: particle positions
-    ! xp,yp,zp: particle momenta
-    ! xmin,ymin,zmin: minimum point position on the local grid 
-    ! xmax,ymax,zmax: maximum point position on the local grid           
-    ! dxf,dyf,dzf: bin space steps
+    !
+    !> @param[in] np2 number of particles
+    !> @param[inout] xp,yp,zp particle positions
+    !> @param[inout] uxp,uyp,uzp particle momenta
+    !> @param[inout] gam particle gamma factor
+    !> @param[inout] pid particle id
+    !> @param[inout] wpid particle weight
+    !> @param[in] xmin,ymin,zmin minimum point position on the local grid 
+    !> @param[in] xmax,ymax,zmax maximum point position on the local grid           
+    !> @param[in] dxf,dyf,dzf bin space steps
     ! ___________________________________________________________________________________
     USE constants
     implicit none
@@ -175,11 +225,11 @@ MODULE sorting
     
     integer(idp) :: wpid
     
-    real(num) :: dxi,dyi,dzi
-    real(num) :: dxf,dyf,dzf           
-    real(num) :: x2,y2,z2
-    real(num) :: xmin2,ymin2,zmin2
-    real(num) :: xmax2,ymax2,zmax2
+    real(num)    :: dxi,dyi,dzi
+    real(num)    :: dxf,dyf,dzf           
+    real(num)    :: x2,y2,z2
+    real(num)    :: xmin2,ymin2,zmin2
+    real(num)    :: xmax2,ymax2,zmax2
             
     real(num), dimension(np2), intent(inout)      :: xp,yp,zp
     real(num), dimension(np2), intent(inout)      :: ux,uy,uz

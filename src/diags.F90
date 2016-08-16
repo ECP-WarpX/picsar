@@ -1,3 +1,16 @@
+! ________________________________________________________________________________________
+!
+! DIAGS.F90
+!
+!>@author
+!>Henri Vincenti,
+!>Mathieu Lobet
+!>
+! Brief description:
+!> Module containing routines for processing the diagnostics
+!> @brief
+! ________________________________________________________________________________________
+
 MODULE diagnostics
 !!!! --- This module contains useful diagnostics to test code correctness
     USE constants

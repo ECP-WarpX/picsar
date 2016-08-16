@@ -1,0 +1,163 @@
+\hypertarget{field__gathering__2d_8_f90}{}\section{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/field\+\_\+gathering\+\_\+2d.F90 File Reference}
+\label{field__gathering__2d_8_f90}\index{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/field\+\_\+gathering\+\_\+2d.\+F90@{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/field\+\_\+gathering\+\_\+2d.\+F90}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{field__gathering__2d_8_f90_a6d4781dd6cacd0867443a1d9ff142ad7}{geteb2dxz\+\_\+energy\+\_\+conserving} (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, l4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\item 
+subroutine \hyperlink{field__gathering__2d_8_f90_ab93a0f4d8c25f1ff4ec81319daea39e2}{pxr\+\_\+gete2dxz\+\_\+n\+\_\+energy\+\_\+conserving} (np, xp, yp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, exg, eyg, ezg, l4symtry, l\+\_\+2drz, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\item 
+subroutine \hyperlink{field__gathering__2d_8_f90_aa70004798c24521d5eb8c929aa0d556b}{pxr\+\_\+getb2dxz\+\_\+n\+\_\+energy\+\_\+conserving} (np, xp, yp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, bxg, byg, bzg, l4symtry, l\+\_\+2drz, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\item 
+subroutine \hyperlink{field__gathering__2d_8_f90_ac842cd53f1a2f6a52d1374176622815a}{pxr\+\_\+gete2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3} (np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                                                           nxguard, nzguard, exg, eyg, ezg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\item 
+subroutine \hyperlink{field__gathering__2d_8_f90_a2717b1bd0676de944fad842e8169a3a9}{pxr\+\_\+getb2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3} (np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\index{field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}!geteb2dxz\+\_\+energy\+\_\+conserving@{geteb2dxz\+\_\+energy\+\_\+conserving}}
+\index{geteb2dxz\+\_\+energy\+\_\+conserving@{geteb2dxz\+\_\+energy\+\_\+conserving}!field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}}
+\subsubsection[{\texorpdfstring{geteb2dxz\+\_\+energy\+\_\+conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, l4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{geteb2dxz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, l4symtry, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb2dxz\+\_\+energy\+\_\+conserving (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{integer(idp)}]{nox, }
+\item[{integer(idp)}]{noy, }
+\item[{integer(idp)}]{noz, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
+\item[{logical(idp), intent(in)}]{l4symtry, }
+\item[{logical(idp), intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{field__gathering__2d_8_f90_a6d4781dd6cacd0867443a1d9ff142ad7}{}\label{field__gathering__2d_8_f90_a6d4781dd6cacd0867443a1d9ff142ad7}
+\index{field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}!pxr\+\_\+getb2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3@{pxr\+\_\+getb2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3}}
+\index{pxr\+\_\+getb2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3@{pxr\+\_\+getb2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3}!field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+getb2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3(np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{pxr_getb2dxz_energy_conserving_3_3(np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+getb2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{bzg, }
+\item[{logical(idp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{field__gathering__2d_8_f90_a2717b1bd0676de944fad842e8169a3a9}{}\label{field__gathering__2d_8_f90_a2717b1bd0676de944fad842e8169a3a9}
+\index{field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}!pxr\+\_\+getb2dxz\+\_\+n\+\_\+energy\+\_\+conserving@{pxr\+\_\+getb2dxz\+\_\+n\+\_\+energy\+\_\+conserving}}
+\index{pxr\+\_\+getb2dxz\+\_\+n\+\_\+energy\+\_\+conserving@{pxr\+\_\+getb2dxz\+\_\+n\+\_\+energy\+\_\+conserving}!field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+getb2dxz\+\_\+n\+\_\+energy\+\_\+conserving(np, xp, yp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, bxg, byg, bzg, l4symtry, l\+\_\+2drz, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{pxr_getb2dxz_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, bxg, byg, bzg, l4symtry, l_2drz, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+getb2dxz\+\_\+n\+\_\+energy\+\_\+conserving (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{integer(idp)}]{nox, }
+\item[{integer(idp)}]{noz, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{bzg, }
+\item[{logical(idp)}]{l4symtry, }
+\item[{logical(idp)}]{l\+\_\+2drz, }
+\item[{logical(idp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{field__gathering__2d_8_f90_aa70004798c24521d5eb8c929aa0d556b}{}\label{field__gathering__2d_8_f90_aa70004798c24521d5eb8c929aa0d556b}
+\index{field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}!pxr\+\_\+gete2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3@{pxr\+\_\+gete2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3}}
+\index{pxr\+\_\+gete2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3@{pxr\+\_\+gete2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3}!field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+gete2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3(np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                                                           nxguard, nzguard, exg, eyg, ezg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{pxr_gete2dxz_energy_conserving_3_3(np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                                                           nxguard, nzguard, exg, eyg, ezg, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+gete2dxz\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{ezg, }
+\item[{logical(idp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{field__gathering__2d_8_f90_ac842cd53f1a2f6a52d1374176622815a}{}\label{field__gathering__2d_8_f90_ac842cd53f1a2f6a52d1374176622815a}
+\index{field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}!pxr\+\_\+gete2dxz\+\_\+n\+\_\+energy\+\_\+conserving@{pxr\+\_\+gete2dxz\+\_\+n\+\_\+energy\+\_\+conserving}}
+\index{pxr\+\_\+gete2dxz\+\_\+n\+\_\+energy\+\_\+conserving@{pxr\+\_\+gete2dxz\+\_\+n\+\_\+energy\+\_\+conserving}!field\+\_\+gathering\+\_\+2d.\+F90@{field\+\_\+gathering\+\_\+2d.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+gete2dxz\+\_\+n\+\_\+energy\+\_\+conserving(np, xp, yp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, exg, eyg, ezg, l4symtry, l\+\_\+2drz, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{pxr_gete2dxz_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, exg, eyg, ezg, l4symtry, l_2drz, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+gete2dxz\+\_\+n\+\_\+energy\+\_\+conserving (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{integer(idp)}]{nox, }
+\item[{integer(idp)}]{noz, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,1,-\/nzguard\+:nz+nzguard)}]{ezg, }
+\item[{logical(idp)}]{l4symtry, }
+\item[{logical(idp)}]{l\+\_\+2drz, }
+\item[{logical(idp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{field__gathering__2d_8_f90_ab93a0f4d8c25f1ff4ec81319daea39e2}{}\label{field__gathering__2d_8_f90_ab93a0f4d8c25f1ff4ec81319daea39e2}

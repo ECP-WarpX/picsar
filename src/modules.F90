@@ -1,22 +1,36 @@
 !===============================================================================
 ! Contains shared data
 !===============================================================================
+!> Module containing the Picsar constant parameters
 MODULE constants
 !===============================================================================
+!>
+!> @num Float precision
 INTEGER, PARAMETER :: num = 8
+!> @isp Integer 4 byte precision
 INTEGER, PARAMETER :: isp = 4
+!> @idp integer double precision
 INTEGER, PARAMETER :: idp = 8
 INTEGER, PARAMETER :: cpx = 8
-REAL(num), PARAMETER :: emass   = 9.10938291e-31_num,      &
-                        pmass   = 1.6726231000000001e-27_num,      &
-                        echarge = 1.6021764620000001e-19_num,      &
-                        clight  = 2.99792458e8_num,                 &
-                        mu0     = 1.2566370614359173e-06_num,      &
-                        eps0    = 8.854187817620389e-12_num,      &
-                        imu0    = 795774.715459,               &
-                        pi      = 3.14159265358979323_num
+!> Electron mass
+REAL(num), PARAMETER :: emass   = 9.10938291e-31_num
+!> Proton mass
+REAL(num), PARAMETER :: pmass   = 1.6726231000000001e-27_num
+!> Electron charge
+REAL(num), PARAMETER :: echarge = 1.6021764620000001e-19_num
+!> Speed of light in vacuum
+REAL(num), PARAMETER :: clight  = 2.99792458e8_num
+!> Magnetic constant
+REAL(num), PARAMETER :: mu0     = 1.2566370614359173e-06_num
+!> Vacuum permeability
+REAL(num), PARAMETER :: eps0    = 8.854187817620389e-12_num
+REAL(num), PARAMETER :: imu0    = 795774.715459
+!> The famous pi value
+REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
+!> Dimension of the cartesian topology
 INTEGER(isp), PARAMETER :: c_ndims = 3
 ! direction parameters
+!> x direction parameter
 INTEGER, PARAMETER :: c_dir_x = 1
 INTEGER, PARAMETER :: c_dir_y = 2
 INTEGER, PARAMETER :: c_dir_z = 3
@@ -24,15 +38,21 @@ LOGICAL:: l_smooth_compensate
 INTEGER, PARAMETER :: string_length = 264
 ! Error handling
 INTEGER, PARAMETER :: c_err_bad_value = 2**4
+!> Vector length
 INTEGER(idp), PARAMETER :: LVEC = 8
 END MODULE constants
 
-!===============================================================================
+!=========================================================================================
+!> This module contains useful pre-computed parameters for some subroutines
 MODULE precomputed
-! Contains useful pre-computed parameters for subroutines
-!===============================================================================
+!=========================================================================================
 USE constants
-REAL(num) :: dxi,dyi,dzi
+!> Inverse of the space discretization:
+!> \f$ 1/dx \f$
+REAL(num) :: dxi
+!> Inverse of the space discretization:
+!> \f$ 1/dy \f$
+REAL(num) :: dyi,dzi
 REAL(num) :: invvol
 REAL(num) :: dts2dx,dts2dy,dts2dz
 REAL(num) :: dtsdx0,dtsdy0,dtsdz0
@@ -40,9 +60,10 @@ REAL(num) :: dxs2,dys2,dzs2
 REAL(num) :: clightsq
 END MODULE precomputed
 
-!===============================================================================
+!=========================================================================================
+!> Module containing parameters and data structures for the fields
 MODULE fields
-!===============================================================================
+!=========================================================================================
 USE constants
 LOGICAL:: l_lower_order_in_v, l_nodalgrid
 INTEGER(idp):: nxs=0, nys=0, nzs=0
@@ -55,7 +76,12 @@ REAL(num), POINTER, DIMENSION(:,:,:) :: ex,ey,ez,bx,by,bz,jx,jy,jz
 REAL(num), POINTER, DIMENSION(:) :: xcoeffs, ycoeffs, zcoeffs
 END MODULE fields
 
+! ________________________________________________________________________________________
+!> Module containing the field tile data structure
 MODULE grid_tilemodule !#do not parse 
+!
+! 
+! ________________________________________________________________________________________
 USE constants 
 TYPE grid_tile
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile, &

@@ -1,0 +1,128 @@
+\hypertarget{namespacesorting}{}\section{sorting Module Reference}
+\label{namespacesorting}\index{sorting@{sorting}}
+
+
+Module for the particle sorting.  
+
+
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{namespacesorting_a87a0a7dcccbf50dc52ec0f6d03892df0}{pxr\+\_\+particle\+\_\+sorting}
+\begin{DoxyCompactList}\small\item\em Main subroutine called to sort the particles in the Fortran P\+IC loop. \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespacesorting_a1aa6cb1a11b013d93cabdee6bf4910d9}{particle\+\_\+sorting\+\_\+sub}
+\begin{DoxyCompactList}\small\item\em General subroutine for the particle sorting, used in Python P\+IC loop. \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespacesorting_ab1b6f85a226345de94537dc63205a182}{pxr\+\_\+particle\+\_\+bin\+\_\+sorting} (np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,                                       xmin2, ymin2, zmin2, xmax2, ymax2, zmax2, dxf, dyf, dzf)
+\begin{DoxyCompactList}\small\item\em Particle cell sorting subroutine using the bin sorting algorithm. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Module for the particle sorting. 
+
+This module contains sorting algorithms for the particles
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+04/2016 
+\end{DoxyDate}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\index{sorting@{sorting}!particle\+\_\+sorting\+\_\+sub@{particle\+\_\+sorting\+\_\+sub}}
+\index{particle\+\_\+sorting\+\_\+sub@{particle\+\_\+sorting\+\_\+sub}!sorting@{sorting}}
+\subsubsection[{\texorpdfstring{particle\+\_\+sorting\+\_\+sub}{particle_sorting_sub}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine sorting\+::particle\+\_\+sorting\+\_\+sub (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesorting_a1aa6cb1a11b013d93cabdee6bf4910d9}{}\label{namespacesorting_a1aa6cb1a11b013d93cabdee6bf4910d9}
+
+
+General subroutine for the particle sorting, used in Python P\+IC loop. 
+
+This subroutine is called in \hyperlink{namespacesorting_a87a0a7dcccbf50dc52ec0f6d03892df0}{pxr\+\_\+particle\+\_\+sorting()} used in the main loop
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+\index{sorting@{sorting}!pxr\+\_\+particle\+\_\+bin\+\_\+sorting@{pxr\+\_\+particle\+\_\+bin\+\_\+sorting}}
+\index{pxr\+\_\+particle\+\_\+bin\+\_\+sorting@{pxr\+\_\+particle\+\_\+bin\+\_\+sorting}!sorting@{sorting}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+particle\+\_\+bin\+\_\+sorting(np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,                                       xmin2, ymin2, zmin2, xmax2, ymax2, zmax2, dxf, dyf, dzf)}{pxr_particle_bin_sorting(np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,                                       xmin2, ymin2, zmin2, xmax2, ymax2, zmax2, dxf, dyf, dzf)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine sorting\+::pxr\+\_\+particle\+\_\+bin\+\_\+sorting (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np2, }
+\item[{real(num), dimension(np2), intent(inout)}]{xp, }
+\item[{real(num), dimension(np2), intent(inout)}]{yp, }
+\item[{real(num), dimension(np2), intent(inout)}]{zp, }
+\item[{real(num), dimension(np2), intent(inout)}]{ux, }
+\item[{real(num), dimension(np2), intent(inout)}]{uy, }
+\item[{real(num), dimension(np2), intent(inout)}]{uz, }
+\item[{real(num), dimension(np2), intent(inout)}]{gam, }
+\item[{real(num), dimension(np2,1), intent(inout)}]{pid, }
+\item[{integer(idp)}]{wpid, }
+\item[{real(num)}]{xmin2, }
+\item[{real(num)}]{ymin2, }
+\item[{real(num)}]{zmin2, }
+\item[{real(num)}]{xmax2, }
+\item[{real(num)}]{ymax2, }
+\item[{real(num)}]{zmax2, }
+\item[{real(num)}]{dxf, }
+\item[{real(num)}]{dyf, }
+\item[{real(num)}]{dzf}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesorting_ab1b6f85a226345de94537dc63205a182}{}\label{namespacesorting_ab1b6f85a226345de94537dc63205a182}
+
+
+Particle cell sorting subroutine using the bin sorting algorithm. 
+
+This subroutine uses a bin sorting algorithm to sort particles (including their property arrays). Here, the bins corresponds to the cells of a cartesian array. The cell size is specified by the user.
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np2} & np2 number of particles \\
+\hline
+\mbox{\tt in,out}  & {\em xp,yp,zp} & particle positions \\
+\hline
+\mbox{\tt in,out}  & {\em uxp,uyp,uzp} & particle momenta \\
+\hline
+\mbox{\tt in,out}  & {\em gam} & particle gamma factor \\
+\hline
+\mbox{\tt in,out}  & {\em pid} & particle id \\
+\hline
+\mbox{\tt in,out}  & {\em wpid} & particle weight \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & minimum point position on the local grid \\
+\hline
+\mbox{\tt in}  & {\em xmax,ymax,zmax} & maximum point position on the local grid \\
+\hline
+\mbox{\tt in}  & {\em dxf,dyf,dzf} & bin space steps \\
+\hline
+\end{DoxyParams}
+\index{sorting@{sorting}!pxr\+\_\+particle\+\_\+sorting@{pxr\+\_\+particle\+\_\+sorting}}
+\index{pxr\+\_\+particle\+\_\+sorting@{pxr\+\_\+particle\+\_\+sorting}!sorting@{sorting}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+particle\+\_\+sorting}{pxr_particle_sorting}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine sorting\+::pxr\+\_\+particle\+\_\+sorting (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesorting_a87a0a7dcccbf50dc52ec0f6d03892df0}{}\label{namespacesorting_a87a0a7dcccbf50dc52ec0f6d03892df0}
+
+
+Main subroutine called to sort the particles in the Fortran P\+IC loop. 
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet
+\end{DoxyAuthor}
+This subroutine is called in the main loop of the Fortran kernel. This subroutine calls \hyperlink{namespacesorting_a1aa6cb1a11b013d93cabdee6bf4910d9}{particle\+\_\+sorting\+\_\+sub()} and times it.
+
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}

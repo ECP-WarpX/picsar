@@ -1,6 +1,18 @@
-!!!! --- MODULE COUNTAINING ROUTINE FOR BOUNDARY CONDITIONS ON FIELDS, CURRENTS AND PARTICLES
-!!!! --- For the moment this module handles:
-!!!! ---  periodic external boundary conditions for particles and fields
+! ________________________________________________________________________________________
+!
+! BOUNDARY.F90
+!
+!>@author
+!>Henri Vincenti,
+!>Mathieu Lobet
+!>
+! Brief description:
+!> Module containing routines for boundary conditions on fields, currents and particles
+!> @brief
+!>
+!> For the moment this module handles:
+!> periodic external boundary conditions for particles and fields
+!>
 ! List of suboutines:
 ! - field_bc
 ! - exchange_mpi_3d_grid_array_with_guards
@@ -8,6 +20,8 @@
 ! - summation_bcs
 ! - summation_bcs_nonblocking
 ! - particle_bcs_tiles_and_mpi_3d
+!
+! ________________________________________________________________________________________
 
 MODULE boundary
 
@@ -1589,7 +1603,7 @@ END SUBROUTINE charge_bcs
   END SUBROUTINE particle_bcs_tiles_2d_openmp
 
 ! Experimental subroutine
-#if defined(EXP)
+#if defined(DEV)
   ! __________________________________________________________________
   SUBROUTINE particle_bsc_openmp_reordering
   ! ********** EXPERIMENTAL subroutine ****************************
