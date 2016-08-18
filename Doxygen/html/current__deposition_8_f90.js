@@ -8,7 +8,6 @@ var current__deposition_8_f90 =
     [ "depose_jxjyjz_esirkepov_3_3_3", "current__deposition_8_f90.html#a764fd99e306237a96ae8675235ca96bb", null ],
     [ "depose_jxjyjz_esirkepov_vechv_1_1_1", "current__deposition_8_f90.html#a29f972e9b6064aee31d065c4f54aa184", null ],
     [ "depose_jxjyjz_esirkepov_vechv_2_2_2", "current__deposition_8_f90.html#aa0e11e28c778e0f5357c21b9326ff40d", null ],
-    [ "depose_jxjyjz_esirkepov_vechvv2_1_1_1", "current__deposition_8_f90.html#a9e06342da8a62b4436f8e05a624119ce", null ],
     [ "depose_jxjyjz_scalar_1_1_1", "current__deposition_8_f90.html#a7347c7791083dae1b946cdbdce60602f", null ],
     [ "depose_jxjyjz_scalar_2_2_2", "current__deposition_8_f90.html#a3b2c43f71118a3d22ad1d1fea9494fa4", null ],
     [ "depose_jxjyjz_scalar_3_3_3", "current__deposition_8_f90.html#a9b0dd01b38cde503f1aac44bb2bd1ca8", null ],

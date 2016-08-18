@@ -35,19 +35,19 @@ real(\hyperlink{namespaceconstants_afe19f7f8af171411c51fb763b36e3823}{num}), par
 integer(\hyperlink{namespaceconstants_a5a2ae450a00d2a29f9b70dcb776f7a2f}{isp}), parameter \hyperlink{namespaceconstants_aad8d45b739c41f2926fd2accb3de9dd2}{c\+\_\+ndims} = 3
 \begin{DoxyCompactList}\small\item\em Dimension of the cartesian topology. \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a8e38e74e9723ce351e7a20787e649e89}{c\+\_\+dir\+\_\+x} = 1
-\begin{DoxyCompactList}\small\item\em x direction parameter \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em x direction index parameter \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a5d84bc6ed2e3bd7b6e64704dc587825b}{c\+\_\+dir\+\_\+y} = 2
-\item 
+\begin{DoxyCompactList}\small\item\em y direction index parameter \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a9d2fa70332164d956c148a895e769983}{c\+\_\+dir\+\_\+z} = 3
-\item 
+\begin{DoxyCompactList}\small\item\em z direction index parameter \end{DoxyCompactList}\item 
 logical \hyperlink{namespaceconstants_a91e41f33367410db88a66890aae444cc}{l\+\_\+smooth\+\_\+compensate}
 \item 
 integer, parameter \hyperlink{namespaceconstants_a6082bfa433cfb27d3f80d0f32b278570}{string\+\_\+length} = 264
-\item 
+\begin{DoxyCompactList}\small\item\em string length parameter for some outputs \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a0c96dab545557ad23bf55d7576f5405f}{c\+\_\+err\+\_\+bad\+\_\+value} = 2$\ast$$\ast$4
 \item 
 integer(\hyperlink{namespaceconstants_ae345db51770e3628e6aaf76e6a45e160}{idp}), parameter \hyperlink{namespaceconstants_a68354913203e3e01c9b0b547e9d95aae}{lvec} = 8
-\begin{DoxyCompactList}\small\item\em Vector length. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Vector length for some vectorized loops. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
@@ -59,14 +59,22 @@ Module containing the Picsar constant parameters.
 \subsubsection[{\texorpdfstring{c\+\_\+dir\+\_\+x}{c_dir_x}}]{\setlength{\rightskip}{0pt plus 5cm}integer, parameter constants\+::c\+\_\+dir\+\_\+x = 1}\hypertarget{namespaceconstants_a8e38e74e9723ce351e7a20787e649e89}{}\label{namespaceconstants_a8e38e74e9723ce351e7a20787e649e89}
 
 
-x direction parameter 
+x direction index parameter 
 
 \index{constants@{constants}!c\+\_\+dir\+\_\+y@{c\+\_\+dir\+\_\+y}}
 \index{c\+\_\+dir\+\_\+y@{c\+\_\+dir\+\_\+y}!constants@{constants}}
 \subsubsection[{\texorpdfstring{c\+\_\+dir\+\_\+y}{c_dir_y}}]{\setlength{\rightskip}{0pt plus 5cm}integer, parameter constants\+::c\+\_\+dir\+\_\+y = 2}\hypertarget{namespaceconstants_a5d84bc6ed2e3bd7b6e64704dc587825b}{}\label{namespaceconstants_a5d84bc6ed2e3bd7b6e64704dc587825b}
+
+
+y direction index parameter 
+
 \index{constants@{constants}!c\+\_\+dir\+\_\+z@{c\+\_\+dir\+\_\+z}}
 \index{c\+\_\+dir\+\_\+z@{c\+\_\+dir\+\_\+z}!constants@{constants}}
 \subsubsection[{\texorpdfstring{c\+\_\+dir\+\_\+z}{c_dir_z}}]{\setlength{\rightskip}{0pt plus 5cm}integer, parameter constants\+::c\+\_\+dir\+\_\+z = 3}\hypertarget{namespaceconstants_a9d2fa70332164d956c148a895e769983}{}\label{namespaceconstants_a9d2fa70332164d956c148a895e769983}
+
+
+z direction index parameter 
+
 \index{constants@{constants}!c\+\_\+err\+\_\+bad\+\_\+value@{c\+\_\+err\+\_\+bad\+\_\+value}}
 \index{c\+\_\+err\+\_\+bad\+\_\+value@{c\+\_\+err\+\_\+bad\+\_\+value}!constants@{constants}}
 \subsubsection[{\texorpdfstring{c\+\_\+err\+\_\+bad\+\_\+value}{c_err_bad_value}}]{\setlength{\rightskip}{0pt plus 5cm}integer, parameter constants\+::c\+\_\+err\+\_\+bad\+\_\+value = 2$\ast$$\ast$4}\hypertarget{namespaceconstants_a0c96dab545557ad23bf55d7576f5405f}{}\label{namespaceconstants_a0c96dab545557ad23bf55d7576f5405f}
@@ -133,7 +141,7 @@ Integer 4 byte precision
 \subsubsection[{\texorpdfstring{lvec}{lvec}}]{\setlength{\rightskip}{0pt plus 5cm}integer({\bf idp}), parameter constants\+::lvec = 8}\hypertarget{namespaceconstants_a68354913203e3e01c9b0b547e9d95aae}{}\label{namespaceconstants_a68354913203e3e01c9b0b547e9d95aae}
 
 
-Vector length. 
+Vector length for some vectorized loops. 
 
 \index{constants@{constants}!mu0@{mu0}}
 \index{mu0@{mu0}!constants@{constants}}
@@ -166,3 +174,7 @@ Proton mass.
 \index{constants@{constants}!string\+\_\+length@{string\+\_\+length}}
 \index{string\+\_\+length@{string\+\_\+length}!constants@{constants}}
 \subsubsection[{\texorpdfstring{string\+\_\+length}{string_length}}]{\setlength{\rightskip}{0pt plus 5cm}integer, parameter constants\+::string\+\_\+length = 264}\hypertarget{namespaceconstants_a6082bfa433cfb27d3f80d0f32b278570}{}\label{namespaceconstants_a6082bfa433cfb27d3f80d0f32b278570}
+
+
+string length parameter for some outputs 
+

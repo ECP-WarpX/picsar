@@ -1,12 +1,17 @@
 \hypertarget{namespaceparams}{}\section{params Module Reference}
 \label{namespaceparams}\index{params@{params}}
+
+
+Module containing useful configuration and simulation parameters.  
+
+
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
 integer(idp) \hyperlink{namespaceparams_aa53b49f79463d25c9fe7a51e6b990067}{it}
-\item 
+\begin{DoxyCompactList}\small\item\em iteration number \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_af579aad3e0f1bb760fb94ef0bf1c4b0a}{nsteps}
-\item 
+\begin{DoxyCompactList}\small\item\em Total number of steps. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceparams_af27554c70c98a90a2d5fbd7a4083f366}{g0}
 \item 
 real(num) \hyperlink{namespaceparams_a856909cec83e772b7266d146b4e70d7f}{b0}
@@ -50,24 +55,27 @@ integer(idp) \hyperlink{namespaceparams_a5e7c931ca55f3ac5e5171dc97c3269b1}{mpico
 integer(isp) \hyperlink{namespaceparams_ae32095407c8380779cfc1562a62d15e3}{seed}
 \item 
 integer(idp) \hyperlink{namespaceparams_af4ccf29a8c1f3a8a47f08f5cbbcd30eb}{currdepo}
-\item 
+\begin{DoxyCompactList}\small\item\em Current deposition method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_ae892561d7462a1e54b9b6b2bbe1adc4c}{rhodepo}
-\item 
+\begin{DoxyCompactList}\small\item\em Charge deposition method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_afd98a17f8dde6a4f7d4e7b0efb7384ea}{fieldgave}
-\item 
+\begin{DoxyCompactList}\small\item\em Field gathering method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_aa63204e737d29465924b4275b46ddfb3}{partcom}
-\item 
+\begin{DoxyCompactList}\small\item\em Type of comm routine to use for particles. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_a58efb719fdc3fbbfa8c6beb237ce2716}{fg\+\_\+p\+\_\+pp\+\_\+seperated}
-\item 
+\begin{DoxyCompactList}\small\item\em Field gathering + part. pusher seperated flag. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_aedb04c2dd01619937eaad2ce0a2626a5}{lvec\+\_\+curr\+\_\+depo}
-\item 
+\begin{DoxyCompactList}\small\item\em Vector size for the current deposition. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_a73dceeb78f9f0abe2d39ba48e2aee2d9}{lvec\+\_\+charge\+\_\+depo}
-\item 
+\begin{DoxyCompactList}\small\item\em Vector size for the charge deposition. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_acb2db26088c715aabd2ca6722e0bcdc6}{lvec\+\_\+fieldgathe}
-\item 
+\begin{DoxyCompactList}\small\item\em Vector size for the field gathering. \end{DoxyCompactList}\item 
 integer(isp) \hyperlink{namespaceparams_aa785f776093a166811d21fa25c320b75}{mpi\+\_\+buf\+\_\+size}
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em M\+PI buffer size. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
+
+\subsection{Detailed Description}
+Module containing useful configuration and simulation parameters. 
 
 \subsection{Variable Documentation}
 \index{params@{params}!b0@{b0}}
@@ -76,6 +84,10 @@ integer(isp) \hyperlink{namespaceparams_aa785f776093a166811d21fa25c320b75}{mpi\+
 \index{params@{params}!currdepo@{currdepo}}
 \index{currdepo@{currdepo}!params@{params}}
 \subsubsection[{\texorpdfstring{currdepo}{currdepo}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::currdepo}\hypertarget{namespaceparams_af4ccf29a8c1f3a8a47f08f5cbbcd30eb}{}\label{namespaceparams_af4ccf29a8c1f3a8a47f08f5cbbcd30eb}
+
+
+Current deposition method. 
+
 \index{params@{params}!downsize\+\_\+factor@{downsize\+\_\+factor}}
 \index{downsize\+\_\+factor@{downsize\+\_\+factor}!params@{params}}
 \subsubsection[{\texorpdfstring{downsize\+\_\+factor}{downsize_factor}}]{\setlength{\rightskip}{0pt plus 5cm}real(num), parameter params\+::downsize\+\_\+factor =0.\+5\+\_\+num}\hypertarget{namespaceparams_a1e70b45a865ed6ef7927e0b49669a567}{}\label{namespaceparams_a1e70b45a865ed6ef7927e0b49669a567}
@@ -91,15 +103,27 @@ integer(isp) \hyperlink{namespaceparams_aa785f776093a166811d21fa25c320b75}{mpi\+
 \index{params@{params}!fg\+\_\+p\+\_\+pp\+\_\+seperated@{fg\+\_\+p\+\_\+pp\+\_\+seperated}}
 \index{fg\+\_\+p\+\_\+pp\+\_\+seperated@{fg\+\_\+p\+\_\+pp\+\_\+seperated}!params@{params}}
 \subsubsection[{\texorpdfstring{fg\+\_\+p\+\_\+pp\+\_\+seperated}{fg_p_pp_seperated}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::fg\+\_\+p\+\_\+pp\+\_\+seperated}\hypertarget{namespaceparams_a58efb719fdc3fbbfa8c6beb237ce2716}{}\label{namespaceparams_a58efb719fdc3fbbfa8c6beb237ce2716}
+
+
+Field gathering + part. pusher seperated flag. 
+
 \index{params@{params}!fieldgave@{fieldgave}}
 \index{fieldgave@{fieldgave}!params@{params}}
 \subsubsection[{\texorpdfstring{fieldgave}{fieldgave}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::fieldgave}\hypertarget{namespaceparams_afd98a17f8dde6a4f7d4e7b0efb7384ea}{}\label{namespaceparams_afd98a17f8dde6a4f7d4e7b0efb7384ea}
+
+
+Field gathering method. 
+
 \index{params@{params}!g0@{g0}}
 \index{g0@{g0}!params@{params}}
 \subsubsection[{\texorpdfstring{g0}{g0}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) params\+::g0}\hypertarget{namespaceparams_af27554c70c98a90a2d5fbd7a4083f366}{}\label{namespaceparams_af27554c70c98a90a2d5fbd7a4083f366}
 \index{params@{params}!it@{it}}
 \index{it@{it}!params@{params}}
 \subsubsection[{\texorpdfstring{it}{it}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::it}\hypertarget{namespaceparams_aa53b49f79463d25c9fe7a51e6b990067}{}\label{namespaceparams_aa53b49f79463d25c9fe7a51e6b990067}
+
+
+iteration number 
+
 \index{params@{params}!l\+\_\+ck@{l\+\_\+ck}}
 \index{l\+\_\+ck@{l\+\_\+ck}!params@{params}}
 \subsubsection[{\texorpdfstring{l\+\_\+ck}{l_ck}}]{\setlength{\rightskip}{0pt plus 5cm}logical params\+::l\+\_\+ck =.F\+A\+L\+S\+E.}\hypertarget{namespaceparams_a7e70ec0bfba23188ddeb3004e464a69b}{}\label{namespaceparams_a7e70ec0bfba23188ddeb3004e464a69b}
@@ -112,15 +136,31 @@ integer(isp) \hyperlink{namespaceparams_aa785f776093a166811d21fa25c320b75}{mpi\+
 \index{params@{params}!lvec\+\_\+charge\+\_\+depo@{lvec\+\_\+charge\+\_\+depo}}
 \index{lvec\+\_\+charge\+\_\+depo@{lvec\+\_\+charge\+\_\+depo}!params@{params}}
 \subsubsection[{\texorpdfstring{lvec\+\_\+charge\+\_\+depo}{lvec_charge_depo}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::lvec\+\_\+charge\+\_\+depo}\hypertarget{namespaceparams_a73dceeb78f9f0abe2d39ba48e2aee2d9}{}\label{namespaceparams_a73dceeb78f9f0abe2d39ba48e2aee2d9}
+
+
+Vector size for the charge deposition. 
+
 \index{params@{params}!lvec\+\_\+curr\+\_\+depo@{lvec\+\_\+curr\+\_\+depo}}
 \index{lvec\+\_\+curr\+\_\+depo@{lvec\+\_\+curr\+\_\+depo}!params@{params}}
 \subsubsection[{\texorpdfstring{lvec\+\_\+curr\+\_\+depo}{lvec_curr_depo}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::lvec\+\_\+curr\+\_\+depo}\hypertarget{namespaceparams_aedb04c2dd01619937eaad2ce0a2626a5}{}\label{namespaceparams_aedb04c2dd01619937eaad2ce0a2626a5}
+
+
+Vector size for the current deposition. 
+
 \index{params@{params}!lvec\+\_\+fieldgathe@{lvec\+\_\+fieldgathe}}
 \index{lvec\+\_\+fieldgathe@{lvec\+\_\+fieldgathe}!params@{params}}
 \subsubsection[{\texorpdfstring{lvec\+\_\+fieldgathe}{lvec_fieldgathe}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::lvec\+\_\+fieldgathe}\hypertarget{namespaceparams_acb2db26088c715aabd2ca6722e0bcdc6}{}\label{namespaceparams_acb2db26088c715aabd2ca6722e0bcdc6}
+
+
+Vector size for the field gathering. 
+
 \index{params@{params}!mpi\+\_\+buf\+\_\+size@{mpi\+\_\+buf\+\_\+size}}
 \index{mpi\+\_\+buf\+\_\+size@{mpi\+\_\+buf\+\_\+size}!params@{params}}
 \subsubsection[{\texorpdfstring{mpi\+\_\+buf\+\_\+size}{mpi_buf_size}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp) params\+::mpi\+\_\+buf\+\_\+size}\hypertarget{namespaceparams_aa785f776093a166811d21fa25c320b75}{}\label{namespaceparams_aa785f776093a166811d21fa25c320b75}
+
+
+M\+PI buffer size. 
+
 \index{params@{params}!mpicom\+\_\+curr@{mpicom\+\_\+curr}}
 \index{mpicom\+\_\+curr@{mpicom\+\_\+curr}!params@{params}}
 \subsubsection[{\texorpdfstring{mpicom\+\_\+curr}{mpicom_curr}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::mpicom\+\_\+curr}\hypertarget{namespaceparams_a5e7c931ca55f3ac5e5171dc97c3269b1}{}\label{namespaceparams_a5e7c931ca55f3ac5e5171dc97c3269b1}
@@ -133,15 +173,27 @@ integer(isp) \hyperlink{namespaceparams_aa785f776093a166811d21fa25c320b75}{mpi\+
 \index{params@{params}!nsteps@{nsteps}}
 \index{nsteps@{nsteps}!params@{params}}
 \subsubsection[{\texorpdfstring{nsteps}{nsteps}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::nsteps}\hypertarget{namespaceparams_af579aad3e0f1bb760fb94ef0bf1c4b0a}{}\label{namespaceparams_af579aad3e0f1bb760fb94ef0bf1c4b0a}
+
+
+Total number of steps. 
+
 \index{params@{params}!partcom@{partcom}}
 \index{partcom@{partcom}!params@{params}}
 \subsubsection[{\texorpdfstring{partcom}{partcom}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::partcom}\hypertarget{namespaceparams_aa63204e737d29465924b4275b46ddfb3}{}\label{namespaceparams_aa63204e737d29465924b4275b46ddfb3}
+
+
+Type of comm routine to use for particles. 
+
 \index{params@{params}!resize\+\_\+factor@{resize\+\_\+factor}}
 \index{resize\+\_\+factor@{resize\+\_\+factor}!params@{params}}
 \subsubsection[{\texorpdfstring{resize\+\_\+factor}{resize_factor}}]{\setlength{\rightskip}{0pt plus 5cm}real(num), parameter params\+::resize\+\_\+factor =2.\+\_\+num}\hypertarget{namespaceparams_a70195e670ef122bc4f91d74793b68621}{}\label{namespaceparams_a70195e670ef122bc4f91d74793b68621}
 \index{params@{params}!rhodepo@{rhodepo}}
 \index{rhodepo@{rhodepo}!params@{params}}
 \subsubsection[{\texorpdfstring{rhodepo}{rhodepo}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) params\+::rhodepo}\hypertarget{namespaceparams_ae892561d7462a1e54b9b6b2bbe1adc4c}{}\label{namespaceparams_ae892561d7462a1e54b9b6b2bbe1adc4c}
+
+
+Charge deposition method. 
+
 \index{params@{params}!seed@{seed}}
 \index{seed@{seed}!params@{params}}
 \subsubsection[{\texorpdfstring{seed}{seed}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp) params\+::seed}\hypertarget{namespaceparams_ae32095407c8380779cfc1562a62d15e3}{}\label{namespaceparams_ae32095407c8380779cfc1562a62d15e3}

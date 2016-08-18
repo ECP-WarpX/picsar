@@ -1,12 +1,17 @@
 \hypertarget{namespacecontrol__file}{}\section{control\+\_\+file Module Reference}
 \label{namespacecontrol__file}\index{control\+\_\+file@{control\+\_\+file}}
+
+
+Module containing routines for the default initialization, for reading the input file and the command line arguments.  
+
+
 \subsection*{Functions/\+Subroutines}
 \begin{DoxyCompactItemize}
 \item 
 subroutine \hyperlink{namespacecontrol__file_a80a60361388cc26b8fe06e18e81dc50a}{default\+\_\+init}
 \item 
 subroutine \hyperlink{namespacecontrol__file_afa9aa95463bcdfe5197ba2ac94793e9f}{read\+\_\+from\+\_\+cl}
-\item 
+\begin{DoxyCompactList}\small\item\em Routine that reads command line arguments. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespacecontrol__file_a12ed3f461d585d4199bd6d079a5d74c3}{read\+\_\+input\+\_\+file}
 \item 
 subroutine \hyperlink{namespacecontrol__file_a488db4847d7ab565187470e915cfcb81}{read\+\_\+cpusplit\+\_\+section}
@@ -44,6 +49,17 @@ character(len=string\+\_\+length) \hyperlink{namespacecontrol__file_ac0826d7eca5
 \end{DoxyCompactItemize}
 
 
+\subsection{Detailed Description}
+Module containing routines for the default initialization, for reading the input file and the command line arguments. 
+
+\begin{DoxyAuthor}{Author}
+Henri Vincenti, Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2015-\/2016 
+\end{DoxyDate}
+
+
 \subsection{Function/\+Subroutine Documentation}
 \index{control\+\_\+file@{control\+\_\+file}!default\+\_\+init@{default\+\_\+init}}
 \index{default\+\_\+init@{default\+\_\+init}!control\+\_\+file@{control\+\_\+file}}
@@ -73,7 +89,11 @@ character(len=string\+\_\+length) \hyperlink{namespacecontrol__file_ac0826d7eca5
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespacecontrol__file_afa9aa95463bcdfe5197ba2ac94793e9f}{}\label{namespacecontrol__file_afa9aa95463bcdfe5197ba2ac94793e9f}
-\index{control\+\_\+file@{control\+\_\+file}!read\+\_\+input\+\_\+file@{read\+\_\+input\+\_\+file}}
+
+
+Routine that reads command line arguments. 
+
+Useful for parametric studies \index{control\+\_\+file@{control\+\_\+file}!read\+\_\+input\+\_\+file@{read\+\_\+input\+\_\+file}}
 \index{read\+\_\+input\+\_\+file@{read\+\_\+input\+\_\+file}!control\+\_\+file@{control\+\_\+file}}
 \subsubsection[{\texorpdfstring{read\+\_\+input\+\_\+file}{read_input_file}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine control\+\_\+file\+::read\+\_\+input\+\_\+file (
 \begin{DoxyParamCaption}

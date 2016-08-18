@@ -8,7 +8,7 @@ type \hyperlink{structgrid__tilemodule_1_1grid__tile}{grid\+\_\+tilemodule\+::gr
 type \hyperlink{structparticle__tilemodule_1_1particle__tile}{particle\+\_\+tilemodule\+::particle\+\_\+tile}
 \item 
 type \hyperlink{structparticle__speciesmodule_1_1particle__species}{particle\+\_\+speciesmodule\+::particle\+\_\+species}
-\item 
+\begin{DoxyCompactList}\small\item\em Fortran object representing a particle species. \end{DoxyCompactList}\item 
 type \hyperlink{structcommunications_1_1part__com__buffer}{communications\+::part\+\_\+com\+\_\+buffer}
 \item 
 type \hyperlink{structcommunications_1_1mpi__buffer}{communications\+::mpi\+\_\+buffer}
@@ -21,39 +21,39 @@ type \hyperlink{structoutput__data_1_1particle__dump}{output\+\_\+data\+::partic
 module \hyperlink{namespaceconstants}{constants}
 \begin{DoxyCompactList}\small\item\em Module containing the Picsar constant parameters. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceprecomputed}{precomputed}
-\begin{DoxyCompactList}\small\item\em This module contains useful pre-\/computed parameters for some subroutines. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Module containing useful pre-\/computed parameters for some subroutines. \end{DoxyCompactList}\item 
 module \hyperlink{namespacefields}{fields}
 \begin{DoxyCompactList}\small\item\em Module containing parameters and data structures for the fields. \end{DoxyCompactList}\item 
 module \hyperlink{namespacegrid__tilemodule}{grid\+\_\+tilemodule}
 \begin{DoxyCompactList}\small\item\em Module containing the field tile data structure. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceparticle__tilemodule}{particle\+\_\+tilemodule}
-\item 
+\begin{DoxyCompactList}\small\item\em Module containing the Fortran object descriptor representing a particle tile. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceparticle__speciesmodule}{particle\+\_\+speciesmodule}
-\item 
+\begin{DoxyCompactList}\small\item\em Module containing the Fortran object descriptor representing a particle species. \end{DoxyCompactList}\item 
 module \hyperlink{namespacetile__params}{tile\+\_\+params}
-\item 
+\begin{DoxyCompactList}\small\item\em Module for the tile parameters. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceparticle__properties}{particle\+\_\+properties}
-\item 
+\begin{DoxyCompactList}\small\item\em Module containing useful properties for the particles. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceparticles}{particles}
-\item 
+\begin{DoxyCompactList}\small\item\em Module containing the array of species. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceparams}{params}
-\item 
+\begin{DoxyCompactList}\small\item\em Module containing useful configuration and simulation parameters. \end{DoxyCompactList}\item 
 module \hyperlink{namespacempi__type__constants}{mpi\+\_\+type\+\_\+constants}
-\item 
+\begin{DoxyCompactList}\small\item\em Module containing M\+PI parameters. \end{DoxyCompactList}\item 
 module \hyperlink{namespacecommunications}{communications}
-\item 
+\begin{DoxyCompactList}\small\item\em Module for the communications. \end{DoxyCompactList}\item 
 module \hyperlink{namespacetime__stat}{time\+\_\+stat}
-\item 
+\begin{DoxyCompactList}\small\item\em Module for the time statistics. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceoutput__data}{output\+\_\+data}
 \item 
 module \hyperlink{namespacetiming}{timing}
-\item 
+\begin{DoxyCompactList}\small\item\em Module for the timing. This module should be merged with the time statistics. \end{DoxyCompactList}\item 
 module \hyperlink{namespaceshared__data}{shared\+\_\+data}
-\item 
+\begin{DoxyCompactList}\small\item\em Module for the data shared with Python. \end{DoxyCompactList}\item 
 module \hyperlink{namespacekyee__em3d}{kyee\+\_\+em3d}
-\item 
+\begin{DoxyCompactList}\small\item\em Module for the Maxwell Solver coefficients. \end{DoxyCompactList}\item 
 module \hyperlink{namespacepython__pointers}{python\+\_\+pointers}
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Module containing pointer to the python arrays. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
@@ -84,25 +84,25 @@ real(num), parameter \hyperlink{namespaceconstants_a736c2860cb0585043ad4abcd1c33
 integer(isp), parameter \hyperlink{namespaceconstants_aad8d45b739c41f2926fd2accb3de9dd2}{constants\+::c\+\_\+ndims} = 3
 \begin{DoxyCompactList}\small\item\em Dimension of the cartesian topology. \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a8e38e74e9723ce351e7a20787e649e89}{constants\+::c\+\_\+dir\+\_\+x} = 1
-\begin{DoxyCompactList}\small\item\em x direction parameter \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em x direction index parameter \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a5d84bc6ed2e3bd7b6e64704dc587825b}{constants\+::c\+\_\+dir\+\_\+y} = 2
-\item 
+\begin{DoxyCompactList}\small\item\em y direction index parameter \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a9d2fa70332164d956c148a895e769983}{constants\+::c\+\_\+dir\+\_\+z} = 3
-\item 
+\begin{DoxyCompactList}\small\item\em z direction index parameter \end{DoxyCompactList}\item 
 logical \hyperlink{namespaceconstants_a91e41f33367410db88a66890aae444cc}{constants\+::l\+\_\+smooth\+\_\+compensate}
 \item 
 integer, parameter \hyperlink{namespaceconstants_a6082bfa433cfb27d3f80d0f32b278570}{constants\+::string\+\_\+length} = 264
-\item 
+\begin{DoxyCompactList}\small\item\em string length parameter for some outputs \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a0c96dab545557ad23bf55d7576f5405f}{constants\+::c\+\_\+err\+\_\+bad\+\_\+value} = 2$\ast$$\ast$4
 \item 
 integer(idp), parameter \hyperlink{namespaceconstants_a68354913203e3e01c9b0b547e9d95aae}{constants\+::lvec} = 8
-\begin{DoxyCompactList}\small\item\em Vector length. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Vector length for some vectorized loops. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceprecomputed_a3277a11e038b89b7572ad654aa6ebdf9}{precomputed\+::dxi}
 \begin{DoxyCompactList}\small\item\em Inverse of the space discretization\+: $ 1/dx $. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceprecomputed_aba4c7d47df04f7bff362b159a9507bd0}{precomputed\+::dyi}
 \begin{DoxyCompactList}\small\item\em Inverse of the space discretization\+: $ 1/dy $. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceprecomputed_a3c123d2eff796366a81e11166d6c27ff}{precomputed\+::dzi}
-\item 
+\begin{DoxyCompactList}\small\item\em Inverse of the space discretization\+: $ 1/dz $. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceprecomputed_a6292a71558c6ec034afe504b6cf7b513}{precomputed\+::invvol}
 \item 
 real(num) \hyperlink{namespaceprecomputed_a49f042055cd92a009da4a02b628430f7}{precomputed\+::dts2dx}
@@ -190,11 +190,11 @@ real(num), dimension(\+:), pointer \hyperlink{namespacefields_aab4aa30b16b003222
 type(grid\+\_\+tile), dimension(\+:,\+:,\+:), allocatable, target \hyperlink{namespacegrid__tilemodule_aaf5f66ae67467ddc14c20d57a5fed954}{grid\+\_\+tilemodule\+::aofgrid\+\_\+tiles}
 \item 
 integer(idp) \hyperlink{namespacetile__params_a7208f23629d2bb2074bd84e2d014932c}{tile\+\_\+params\+::ntilex}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of tile in the x direction. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespacetile__params_a820079c73bdf0bd85aa8d2cf6b1a2b40}{tile\+\_\+params\+::ntiley}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of tile in the y direction. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespacetile__params_ac5c03752e70281443173d320d476f1e9}{tile\+\_\+params\+::ntilez}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of tile in the z direction. \end{DoxyCompactList}\item 
 integer(idp), parameter \hyperlink{namespaceparticle__properties_a9a2b5f322610353c06693336b21439f7}{particle\+\_\+properties\+::npid} =1
 \item 
 integer(idp), parameter \hyperlink{namespaceparticle__properties_a9661ac258a1ee308b3cad93e5da3c579}{particle\+\_\+properties\+::wpid} =1
@@ -206,13 +206,13 @@ logical \hyperlink{namespaceparticle__properties_a886a9f7d338c6c8fc14d80df9ac732
 logical \hyperlink{namespaceparticle__properties_adf7851e9d61da6389c759e11e09d218a}{particle\+\_\+properties\+::l4symtry} = .F\+A\+L\+S\+E.
 \item 
 integer(idp) \hyperlink{namespaceparticle__properties_aaf6c9fb8697f29ccff6e1d82ee7f477a}{particle\+\_\+properties\+::pdistr}
-\item 
+\begin{DoxyCompactList}\small\item\em Particle initial distribution. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparticle__properties_a5aabee3c3d0e9e902989125d50e03426}{particle\+\_\+properties\+::nspecies}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of species. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparticle__properties_a9fa6e3ec64928bf64db8c78d73f97389}{particle\+\_\+properties\+::ntot}
-\item 
+\begin{DoxyCompactList}\small\item\em total number of particles (all species, all subdomains -\/$>$ useful for stat) \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparticle__properties_a7f6d8f4edc23a026743320958d14d534}{particle\+\_\+properties\+::nspecies\+\_\+max} =6
-\item 
+\begin{DoxyCompactList}\small\item\em Max number of particle species. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceparticle__properties_a68abb05c88189b0d3f2ac02b0bde9d83}{particle\+\_\+properties\+::fdxrand} =0.\+0\+\_\+num
 \item 
 real(num) \hyperlink{namespaceparticle__properties_ac28362a40a4b808ff8ede4d94c4423f3}{particle\+\_\+properties\+::fdzrand} =0.\+0\+\_\+num
@@ -228,11 +228,11 @@ logical \hyperlink{namespaceparticle__properties_a3dcd8fa47e189305bb2534a72c4a8d
 logical \hyperlink{namespaceparticle__properties_a5ab16464c3ac1b31175817e811763fe1}{particle\+\_\+properties\+::l\+\_\+pdumps\+\_\+allocated} =.F\+A\+L\+S\+E.
 \item 
 type(particle\+\_\+species), dimension(\+:), allocatable, target \hyperlink{namespaceparticles_ab5efcd7db2bd15deeba572ac268eef8e}{particles\+::species\+\_\+parray}
-\item 
+\begin{DoxyCompactList}\small\item\em Array of particle species objects. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_aa53b49f79463d25c9fe7a51e6b990067}{params\+::it}
-\item 
+\begin{DoxyCompactList}\small\item\em iteration number \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_af579aad3e0f1bb760fb94ef0bf1c4b0a}{params\+::nsteps}
-\item 
+\begin{DoxyCompactList}\small\item\em Total number of steps. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceparams_af27554c70c98a90a2d5fbd7a4083f366}{params\+::g0}
 \item 
 real(num) \hyperlink{namespaceparams_a856909cec83e772b7266d146b4e70d7f}{params\+::b0}
@@ -276,23 +276,23 @@ integer(idp) \hyperlink{namespaceparams_a5e7c931ca55f3ac5e5171dc97c3269b1}{param
 integer(isp) \hyperlink{namespaceparams_ae32095407c8380779cfc1562a62d15e3}{params\+::seed}
 \item 
 integer(idp) \hyperlink{namespaceparams_af4ccf29a8c1f3a8a47f08f5cbbcd30eb}{params\+::currdepo}
-\item 
+\begin{DoxyCompactList}\small\item\em Current deposition method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_ae892561d7462a1e54b9b6b2bbe1adc4c}{params\+::rhodepo}
-\item 
+\begin{DoxyCompactList}\small\item\em Charge deposition method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_afd98a17f8dde6a4f7d4e7b0efb7384ea}{params\+::fieldgave}
-\item 
+\begin{DoxyCompactList}\small\item\em Field gathering method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_aa63204e737d29465924b4275b46ddfb3}{params\+::partcom}
-\item 
+\begin{DoxyCompactList}\small\item\em Type of comm routine to use for particles. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_a58efb719fdc3fbbfa8c6beb237ce2716}{params\+::fg\+\_\+p\+\_\+pp\+\_\+seperated}
-\item 
+\begin{DoxyCompactList}\small\item\em Field gathering + part. pusher seperated flag. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_aedb04c2dd01619937eaad2ce0a2626a5}{params\+::lvec\+\_\+curr\+\_\+depo}
-\item 
+\begin{DoxyCompactList}\small\item\em Vector size for the current deposition. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_a73dceeb78f9f0abe2d39ba48e2aee2d9}{params\+::lvec\+\_\+charge\+\_\+depo}
-\item 
+\begin{DoxyCompactList}\small\item\em Vector size for the charge deposition. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_acb2db26088c715aabd2ca6722e0bcdc6}{params\+::lvec\+\_\+fieldgathe}
-\item 
+\begin{DoxyCompactList}\small\item\em Vector size for the field gathering. \end{DoxyCompactList}\item 
 integer(isp) \hyperlink{namespaceparams_aa785f776093a166811d21fa25c320b75}{params\+::mpi\+\_\+buf\+\_\+size}
-\item 
+\begin{DoxyCompactList}\small\item\em M\+PI buffer size. \end{DoxyCompactList}\item 
 integer(isp) \hyperlink{namespacempi__type__constants_a19270446a7b267fa3b13821e93b1744f}{mpi\+\_\+type\+\_\+constants\+::mpidbl} = M\+P\+I\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON
 \item 
 integer(isp), dimension(mpi\+\_\+status\+\_\+size) \hyperlink{namespacempi__type__constants_a364a6ee99d8c7ba31bde4f8d2108beaa}{mpi\+\_\+type\+\_\+constants\+::status}
@@ -324,23 +324,23 @@ integer(isp), dimension(4) \hyperlink{namespacecommunications_a76e287cb90a196830
 integer(isp), dimension(4) \hyperlink{namespacecommunications_af38ed57408b60ed5170d54b350aa1b32}{communications\+::reqperjzz}
 \item 
 integer(idp) \hyperlink{namespacetime__stat_a1945506276b001ce513b77a643537925}{time\+\_\+stat\+::timestat\+\_\+activated}
-\item 
+\begin{DoxyCompactList}\small\item\em Activation of the outputs. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespacetime__stat_ab14608304df879ee0678f16685c5d61e}{time\+\_\+stat\+::timestat\+\_\+period}
-\item 
+\begin{DoxyCompactList}\small\item\em Period for the outputs. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespacetime__stat_acb480c360afa0c963ea37a4a3b0cbb88}{time\+\_\+stat\+::timestat\+\_\+itstart}
-\item 
+\begin{DoxyCompactList}\small\item\em First iteration for the time statistics. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespacetime__stat_ad186476b25a6b961d4149313b0fc6657}{time\+\_\+stat\+::timestat\+\_\+perit}
-\item 
+\begin{DoxyCompactList}\small\item\em ! Flag to activate the time statistics per iteration \end{DoxyCompactList}\item 
 real(num), dimension(5) \hyperlink{namespacetime__stat_a80c25f7e592de42aba002a7756c9976a}{time\+\_\+stat\+::init\+\_\+localtimes}
-\item 
+\begin{DoxyCompactList}\small\item\em M\+PI local times for the initialization. \end{DoxyCompactList}\item 
 real(num), dimension(20) \hyperlink{namespacetime__stat_a886a71aaf720ea3a044d9f0bcaf97eca}{time\+\_\+stat\+::localtimes}
-\item 
+\begin{DoxyCompactList}\small\item\em M\+PI local times for the main loop. \end{DoxyCompactList}\item 
 real(num), dimension(\+:,\+:), pointer \hyperlink{namespacetime__stat_a70919afd7f3ed4f096d2ca67741fafd0}{time\+\_\+stat\+::buffer\+\_\+timestat}
-\item 
+\begin{DoxyCompactList}\small\item\em Buffer for the output. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespacetime__stat_ae56826ec9ad1786db72cebc001ac6c8b}{time\+\_\+stat\+::itimestat}
 \item 
 integer(idp) \hyperlink{namespacetime__stat_a59f96deeaa99d052a09d3f13fd832018}{time\+\_\+stat\+::nbuffertimestat}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of entries in the buffer. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceoutput__data_a3eebf5510f6656fe8385302d2aba28d5}{output\+\_\+data\+::startsim} =0.\+0\+\_\+num
 \item 
 real(num) \hyperlink{namespaceoutput__data_a1ed464801538daa68f0f138d06be9c8a}{output\+\_\+data\+::endsim} =0.\+0\+\_\+num
@@ -402,17 +402,17 @@ character(len=string\+\_\+length) \hyperlink{namespaceoutput__data_a655183a11c6b
 character(len=string\+\_\+length) \hyperlink{namespaceoutput__data_abd9468ccde074971628171196a7873f2}{output\+\_\+data\+::filerho} =\textquotesingle{}rho\textquotesingle{}
 \item 
 integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a63d2f446c4aca8bf956973b6ff9bcfb0}{output\+\_\+data\+::temdiag\+\_\+act\+\_\+list}
-\item 
+\begin{DoxyCompactList}\small\item\em Array of activation flags. \end{DoxyCompactList}\item 
 character(len=string\+\_\+length), dimension(10) \hyperlink{namespaceoutput__data_a891f4f8be197dbbfe91c01ee5260b4c2}{output\+\_\+data\+::temdiag\+\_\+name\+\_\+list}
-\item 
+\begin{DoxyCompactList}\small\item\em Filename for the different temporal diags. \end{DoxyCompactList}\item 
 integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a272ff12d370f1ddd453ed84e0aea955b}{output\+\_\+data\+::temdiag\+\_\+i\+\_\+list}
-\item 
+\begin{DoxyCompactList}\small\item\em Array of index to locate the value in the big array. \end{DoxyCompactList}\item 
 integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a2c62698838d0295802c6b2a6637c3827}{output\+\_\+data\+::temdiag\+\_\+nb\+\_\+values}
-\item 
+\begin{DoxyCompactList}\small\item\em Array containing the number of values in the big array. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceoutput__data_a996655a7d030216dcce6367a59b22ae8}{output\+\_\+data\+::temdiag\+\_\+nb}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of temoral diags. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceoutput__data_a950d70a052698f77988f39da1fddf632}{output\+\_\+data\+::temdiag\+\_\+nb\+\_\+part}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of particle temporal diagnostics. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceoutput__data_a6e3150da1e4314b418b4f40c56737551}{output\+\_\+data\+::temdiag\+\_\+nb\+\_\+field}
 \item 
 integer(idp) \hyperlink{namespaceoutput__data_a85fe1c4047057dc4292320e82cae2cda}{output\+\_\+data\+::temdiag\+\_\+totvalues}
@@ -422,13 +422,13 @@ integer(idp) \hyperlink{namespaceoutput__data_ab55f479db67f7b4af32d0a55e2ba6620}
 integer(idp) \hyperlink{namespaceoutput__data_a2f4ce5fdd4011f5db5c6b9de97cf133a}{output\+\_\+data\+::temdiag\+\_\+format}
 \item 
 real(num), dimension(\+:), allocatable \hyperlink{namespaceoutput__data_a034b19d2c3a5211b1fd96df24cd28dd1}{output\+\_\+data\+::temdiag\+\_\+array}
-\item 
+\begin{DoxyCompactList}\small\item\em Big array containing all the temporal diag at a given iteration. \end{DoxyCompactList}\item 
 logical \hyperlink{namespaceoutput__data_abc6cc1ed098892996b0f0dd858e410d1}{output\+\_\+data\+::dive\+\_\+computed}
 \item 
 integer(idp) \hyperlink{namespaceoutput__data_a4dbfde333a6a2225527c27d33472032e}{output\+\_\+data\+::npdumps}
 \item 
 type(particle\+\_\+dump), dimension(\+:), allocatable, target \hyperlink{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}{output\+\_\+data\+::particle\+\_\+dumps}
-\item 
+\begin{DoxyCompactList}\small\item\em Object for the particle dumping. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespacetiming_ae300cb5fe1ec6e74c106d185c36e1cfa}{timing\+::dep\+\_\+curr\+\_\+time} =0.\+\_\+num
 \item 
 integer(isp) \hyperlink{namespaceshared__data_abaa407d5754648a7f9982743e6f66cea}{shared\+\_\+data\+::errcode}
@@ -560,25 +560,25 @@ real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_a73076ccf0db
 real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_afbe25de83b836cecc5e144cdee8fbb3e}{shared\+\_\+data\+::zb\+\_\+offset\+\_\+global}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_ac04f4ac48d632f67068e3623d39b847d}{shared\+\_\+data\+::nx}
-\item 
+\begin{DoxyCompactList}\small\item\em local number of cells \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a93124935df137a6ba362bdc8dcba6d5f}{shared\+\_\+data\+::ny}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_ad701bfe58518b2efa7568d9d92d4d99a}{shared\+\_\+data\+::nz}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aa73479038f32b1c04369ee19f989a864}{shared\+\_\+data\+::nx\+\_\+grid}
-\item 
+\begin{DoxyCompactList}\small\item\em local number of grid points \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a27d84fa0143fefa733f5915a29ee2280}{shared\+\_\+data\+::ny\+\_\+grid}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_a316d1007b26804f619b2863d225113b4}{shared\+\_\+data\+::nz\+\_\+grid}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aacbd3bff423894ff20cec97f4286ba68}{shared\+\_\+data\+::nx\+\_\+global}
-\item 
+\begin{DoxyCompactList}\small\item\em global number of cells \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a09d6529711aae354967f6d5db76220c1}{shared\+\_\+data\+::ny\+\_\+global}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_a4d554ba2caa9b741974e24ab105829e7}{shared\+\_\+data\+::nz\+\_\+global}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_a57f53cc0b24ace5f77db7a6a1835f7fb}{shared\+\_\+data\+::nx\+\_\+global\+\_\+grid}
-\item 
+\begin{DoxyCompactList}\small\item\em global number of grid points \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_acbb834ec9e8d36f975728eb709cffebb}{shared\+\_\+data\+::ny\+\_\+global\+\_\+grid}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aa95da47815e254e9835494899a595174}{shared\+\_\+data\+::nz\+\_\+global\+\_\+grid}
@@ -620,23 +620,23 @@ real(num) \hyperlink{namespaceshared__data_a1fb130b65ef2a707c1a79f91089e7dc0}{sh
 real(num) \hyperlink{namespaceshared__data_a7931e0059b790ccef3cc00c59d806c7c}{shared\+\_\+data\+::z\+\_\+max\+\_\+local}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aa7be2be1e809cb95538e562e604c4f1e}{shared\+\_\+data\+::sorting\+\_\+activated}
-\item 
+\begin{DoxyCompactList}\small\item\em Activation of the sorting. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a3f406bc80cf450b11767a651d0ea651c}{shared\+\_\+data\+::sorting\+\_\+dx}
-\item 
+\begin{DoxyCompactList}\small\item\em Bin space steps. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a4fd74c6832df0957cd1b786cf2cc6810}{shared\+\_\+data\+::sorting\+\_\+dy}
 \item 
 real(num) \hyperlink{namespaceshared__data_aa30e6dbb24284ab1c4dae4ba5e219eb4}{shared\+\_\+data\+::sorting\+\_\+dz}
 \item 
 real(num) \hyperlink{namespaceshared__data_a7809127b7e85af886b2fd72b3bbdd065}{shared\+\_\+data\+::sorting\+\_\+shiftx}
-\item 
+\begin{DoxyCompactList}\small\item\em Shift of the sorting grid in respect of the origin. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a0f7304391a34d6a0216cab82d97ee037}{shared\+\_\+data\+::sorting\+\_\+shifty}
 \item 
 real(num) \hyperlink{namespaceshared__data_a6b24bb129ab0581a9b353bd1cb663422}{shared\+\_\+data\+::sorting\+\_\+shiftz}
 \item 
 logical \hyperlink{namespaceshared__data_a1e3cea0f116b338483676d0bd5126c75}{shared\+\_\+data\+::sorting\+\_\+verbose}
-\item 
+\begin{DoxyCompactList}\small\item\em verbose for the sorting (depreciated) \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a9dcd30bdab987f8957482cbd80ba40b3}{shared\+\_\+data\+::c\+\_\+dim} = 3
-\item 
+\begin{DoxyCompactList}\small\item\em Space dimension. \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_a5a1b9ce71c6bcfbe478783cc7a5e4d7d}{shared\+\_\+data\+::x}
 \item 
 real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_acdc008c8a2a09f5f45b09e3f93aa04cf}{shared\+\_\+data\+::y}
@@ -680,9 +680,9 @@ real(num) \hyperlink{namespaceshared__data_a09f7e7f94540648ce5317cf34331f893}{sh
 real(num) \hyperlink{namespaceshared__data_a456c52690b2fd4549464d70435bb3181}{shared\+\_\+data\+::z\+\_\+grid\+\_\+max\+\_\+local}
 \item 
 real(num), dimension(\+:,\+:,\+:), pointer \hyperlink{namespaceshared__data_a9cd7a07e41ca84210bf52e8480ac5d62}{shared\+\_\+data\+::rho}
-\item 
+\begin{DoxyCompactList}\small\item\em Total charge density. \end{DoxyCompactList}\item 
 real(num), dimension(\+:,\+:,\+:), pointer \hyperlink{namespaceshared__data_a548e3c8fc335921c106eada05587df31}{shared\+\_\+data\+::dive}
-\item 
+\begin{DoxyCompactList}\small\item\em Electric Field divergence. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a0a831038bb26f462cfcbb55ed577eca7}{shared\+\_\+data\+::mpitime\+\_\+per\+\_\+it}
 \item 
 real(num) \hyperlink{namespaceshared__data_ab3fad0c11b277d8e2932f2bb561174c0}{shared\+\_\+data\+::max\+\_\+time\+\_\+per\+\_\+it}
@@ -786,19 +786,19 @@ real(num) \hyperlink{namespacepython__pointers_a38ecc0e758a6b67f7aecb055e03927a1
 real(num) \hyperlink{namespacepython__pointers_a46b682b61a01fee0e8b0c9aa64e9a59b}{python\+\_\+pointers\+::zgtmax}
 \item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_a11c207d7f4fb2d96dad5a926172277df}{python\+\_\+pointers\+::partx}
-\item 
+\begin{DoxyCompactList}\small\item\em array for particle x position \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_a7ed293531cd47aefba8bd76e2692c30d}{python\+\_\+pointers\+::party}
-\item 
+\begin{DoxyCompactList}\small\item\em array for particle y position \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_a318b3d65ffe6c40b81bae433e093df16}{python\+\_\+pointers\+::partz}
-\item 
+\begin{DoxyCompactList}\small\item\em array for particle z position \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_a733cff77ba19e5a06a73224fe9f53542}{python\+\_\+pointers\+::partux}
-\item 
+\begin{DoxyCompactList}\small\item\em array for particle x momentum \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_a60b173a25b047377d55cd66dfb5fad04}{python\+\_\+pointers\+::partuy}
-\item 
+\begin{DoxyCompactList}\small\item\em array for particle y momentum \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_a98c8cf1649933f3239b068104d637d6c}{python\+\_\+pointers\+::partuz}
-\item 
+\begin{DoxyCompactList}\small\item\em array for particle z momentum \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_a072266fc5f086ac68bdb72332b296a07}{python\+\_\+pointers\+::partgaminv}
-\item 
+\begin{DoxyCompactList}\small\item\em array for the inverse of the particle gamma factor \end{DoxyCompactList}\item 
 real(num), dimension(\+:,\+:), pointer \hyperlink{namespacepython__pointers_a8a754456a1a3440c897f9a6249782713}{python\+\_\+pointers\+::pid}
 \item 
 real(num), dimension(\+:), pointer \hyperlink{namespacepython__pointers_ad4fc57017cff184e92ae60ff0006c62c}{python\+\_\+pointers\+::partex}

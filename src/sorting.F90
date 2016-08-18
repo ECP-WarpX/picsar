@@ -147,8 +147,8 @@ MODULE sorting
 				      IF ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
 
               
-                IF ((sorting_verbose).and.(rank.eq.0).and. &
-                    (iz.eq.1).and.(iy.eq.1).and.(ix.eq.1)) WRITE(0,*) 'Particle sorting, species',ispecies
+                !IF ((sorting_verbose).and.(rank.eq.0).and. &
+                !    (iz.eq.1).and.(iy.eq.1).and.(ix.eq.1)) WRITE(0,*) 'Particle sorting, species',ispecies
  
 					      ! - Get current tile properties
 					      ! - Init current tile variables				    
@@ -206,12 +206,12 @@ MODULE sorting
     !
     !> @param[in] np2 number of particles
     !> @param[inout] xp,yp,zp particle positions
-    !> @param[inout] uxp,uyp,uzp particle momenta
+    !> @param[inout] ux,uy,uz particle momenta
     !> @param[inout] gam particle gamma factor
     !> @param[inout] pid particle id
     !> @param[inout] wpid particle weight
-    !> @param[in] xmin,ymin,zmin minimum point position on the local grid 
-    !> @param[in] xmax,ymax,zmax maximum point position on the local grid           
+    !> @param[in] xmin2,ymin2,zmin2 minimum point position on the local grid 
+    !> @param[in] xmax2,ymax2,zmax2 maximum point position on the local grid           
     !> @param[in] dxf,dyf,dzf bin space steps
     ! ___________________________________________________________________________________
     USE constants

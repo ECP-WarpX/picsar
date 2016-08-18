@@ -206,9 +206,11 @@ buildtest: $(SRCDIR)/modules.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering.o \
 	Acceptance_testing/Gcov_tests/field_gathering_test.o \
-	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
+	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o \
+	Acceptance_testing/Gcov_tests/esirkepov_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/esirkepov_3d_test.o
 #	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o			
 
 test1:
@@ -229,4 +231,5 @@ test_physics:
 test_gcov:
 	./Acceptance_testing/Gcov_tests/field_gathering_3d_test
 	./Acceptance_testing/Gcov_tests/current_deposition_3d_test
+	./Acceptance_testing/Gcov_tests/esirkepov_3d_test
 

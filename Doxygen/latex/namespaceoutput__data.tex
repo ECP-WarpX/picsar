@@ -69,17 +69,17 @@ character(len=string\+\_\+length) \hyperlink{namespaceoutput__data_a655183a11c6b
 character(len=string\+\_\+length) \hyperlink{namespaceoutput__data_abd9468ccde074971628171196a7873f2}{filerho} =\textquotesingle{}rho\textquotesingle{}
 \item 
 integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a63d2f446c4aca8bf956973b6ff9bcfb0}{temdiag\+\_\+act\+\_\+list}
-\item 
+\begin{DoxyCompactList}\small\item\em Array of activation flags. \end{DoxyCompactList}\item 
 character(len=string\+\_\+length), dimension(10) \hyperlink{namespaceoutput__data_a891f4f8be197dbbfe91c01ee5260b4c2}{temdiag\+\_\+name\+\_\+list}
-\item 
+\begin{DoxyCompactList}\small\item\em Filename for the different temporal diags. \end{DoxyCompactList}\item 
 integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a272ff12d370f1ddd453ed84e0aea955b}{temdiag\+\_\+i\+\_\+list}
-\item 
+\begin{DoxyCompactList}\small\item\em Array of index to locate the value in the big array. \end{DoxyCompactList}\item 
 integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a2c62698838d0295802c6b2a6637c3827}{temdiag\+\_\+nb\+\_\+values}
-\item 
+\begin{DoxyCompactList}\small\item\em Array containing the number of values in the big array. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceoutput__data_a996655a7d030216dcce6367a59b22ae8}{temdiag\+\_\+nb}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of temoral diags. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceoutput__data_a950d70a052698f77988f39da1fddf632}{temdiag\+\_\+nb\+\_\+part}
-\item 
+\begin{DoxyCompactList}\small\item\em Number of particle temporal diagnostics. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceoutput__data_a6e3150da1e4314b418b4f40c56737551}{temdiag\+\_\+nb\+\_\+field}
 \item 
 integer(idp) \hyperlink{namespaceoutput__data_a85fe1c4047057dc4292320e82cae2cda}{temdiag\+\_\+totvalues}
@@ -89,13 +89,13 @@ integer(idp) \hyperlink{namespaceoutput__data_ab55f479db67f7b4af32d0a55e2ba6620}
 integer(idp) \hyperlink{namespaceoutput__data_a2f4ce5fdd4011f5db5c6b9de97cf133a}{temdiag\+\_\+format}
 \item 
 real(num), dimension(\+:), allocatable \hyperlink{namespaceoutput__data_a034b19d2c3a5211b1fd96df24cd28dd1}{temdiag\+\_\+array}
-\item 
+\begin{DoxyCompactList}\small\item\em Big array containing all the temporal diag at a given iteration. \end{DoxyCompactList}\item 
 logical \hyperlink{namespaceoutput__data_abc6cc1ed098892996b0f0dd858e410d1}{dive\+\_\+computed}
 \item 
 integer(idp) \hyperlink{namespaceoutput__data_a4dbfde333a6a2225527c27d33472032e}{npdumps}
 \item 
 type(\hyperlink{structoutput__data_1_1particle__dump}{particle\+\_\+dump}), dimension(\+:), allocatable, target \hyperlink{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}{particle\+\_\+dumps}
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Object for the particle dumping. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Variable Documentation}
@@ -186,6 +186,10 @@ type(\hyperlink{structoutput__data_1_1particle__dump}{particle\+\_\+dump}), dime
 \index{output\+\_\+data@{output\+\_\+data}!particle\+\_\+dumps@{particle\+\_\+dumps}}
 \index{particle\+\_\+dumps@{particle\+\_\+dumps}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{particle\+\_\+dumps}{particle_dumps}}]{\setlength{\rightskip}{0pt plus 5cm}type({\bf particle\+\_\+dump}), dimension(\+:), allocatable, target output\+\_\+data\+::particle\+\_\+dumps}\hypertarget{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}{}\label{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}
+
+
+Object for the particle dumping. 
+
 \index{output\+\_\+data@{output\+\_\+data}!pushtime@{pushtime}}
 \index{pushtime@{pushtime}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{pushtime}{pushtime}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) output\+\_\+data\+::pushtime}\hypertarget{namespaceoutput__data_a1616b369a6e32a80c9448bff6371d1cf}{}\label{namespaceoutput__data_a1616b369a6e32a80c9448bff6371d1cf}
@@ -198,9 +202,17 @@ type(\hyperlink{structoutput__data_1_1particle__dump}{particle\+\_\+dump}), dime
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+act\+\_\+list@{temdiag\+\_\+act\+\_\+list}}
 \index{temdiag\+\_\+act\+\_\+list@{temdiag\+\_\+act\+\_\+list}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+act\+\_\+list}{temdiag_act_list}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp), dimension(10) output\+\_\+data\+::temdiag\+\_\+act\+\_\+list}\hypertarget{namespaceoutput__data_a63d2f446c4aca8bf956973b6ff9bcfb0}{}\label{namespaceoutput__data_a63d2f446c4aca8bf956973b6ff9bcfb0}
+
+
+Array of activation flags. 
+
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+array@{temdiag\+\_\+array}}
 \index{temdiag\+\_\+array@{temdiag\+\_\+array}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+array}{temdiag_array}}]{\setlength{\rightskip}{0pt plus 5cm}real(num), dimension(\+:), allocatable output\+\_\+data\+::temdiag\+\_\+array}\hypertarget{namespaceoutput__data_a034b19d2c3a5211b1fd96df24cd28dd1}{}\label{namespaceoutput__data_a034b19d2c3a5211b1fd96df24cd28dd1}
+
+
+Big array containing all the temporal diag at a given iteration. 
+
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+format@{temdiag\+\_\+format}}
 \index{temdiag\+\_\+format@{temdiag\+\_\+format}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+format}{temdiag_format}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::temdiag\+\_\+format}\hypertarget{namespaceoutput__data_a2f4ce5fdd4011f5db5c6b9de97cf133a}{}\label{namespaceoutput__data_a2f4ce5fdd4011f5db5c6b9de97cf133a}
@@ -210,21 +222,41 @@ type(\hyperlink{structoutput__data_1_1particle__dump}{particle\+\_\+dump}), dime
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+i\+\_\+list@{temdiag\+\_\+i\+\_\+list}}
 \index{temdiag\+\_\+i\+\_\+list@{temdiag\+\_\+i\+\_\+list}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+i\+\_\+list}{temdiag_i_list}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp), dimension(10) output\+\_\+data\+::temdiag\+\_\+i\+\_\+list}\hypertarget{namespaceoutput__data_a272ff12d370f1ddd453ed84e0aea955b}{}\label{namespaceoutput__data_a272ff12d370f1ddd453ed84e0aea955b}
+
+
+Array of index to locate the value in the big array. 
+
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+name\+\_\+list@{temdiag\+\_\+name\+\_\+list}}
 \index{temdiag\+\_\+name\+\_\+list@{temdiag\+\_\+name\+\_\+list}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+name\+\_\+list}{temdiag_name_list}}]{\setlength{\rightskip}{0pt plus 5cm}character(len=string\+\_\+length), dimension(10) output\+\_\+data\+::temdiag\+\_\+name\+\_\+list}\hypertarget{namespaceoutput__data_a891f4f8be197dbbfe91c01ee5260b4c2}{}\label{namespaceoutput__data_a891f4f8be197dbbfe91c01ee5260b4c2}
+
+
+Filename for the different temporal diags. 
+
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+nb@{temdiag\+\_\+nb}}
 \index{temdiag\+\_\+nb@{temdiag\+\_\+nb}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+nb}{temdiag_nb}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::temdiag\+\_\+nb}\hypertarget{namespaceoutput__data_a996655a7d030216dcce6367a59b22ae8}{}\label{namespaceoutput__data_a996655a7d030216dcce6367a59b22ae8}
+
+
+Number of temoral diags. 
+
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+nb\+\_\+field@{temdiag\+\_\+nb\+\_\+field}}
 \index{temdiag\+\_\+nb\+\_\+field@{temdiag\+\_\+nb\+\_\+field}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+nb\+\_\+field}{temdiag_nb_field}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::temdiag\+\_\+nb\+\_\+field}\hypertarget{namespaceoutput__data_a6e3150da1e4314b418b4f40c56737551}{}\label{namespaceoutput__data_a6e3150da1e4314b418b4f40c56737551}
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+nb\+\_\+part@{temdiag\+\_\+nb\+\_\+part}}
 \index{temdiag\+\_\+nb\+\_\+part@{temdiag\+\_\+nb\+\_\+part}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+nb\+\_\+part}{temdiag_nb_part}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::temdiag\+\_\+nb\+\_\+part}\hypertarget{namespaceoutput__data_a950d70a052698f77988f39da1fddf632}{}\label{namespaceoutput__data_a950d70a052698f77988f39da1fddf632}
+
+
+Number of particle temporal diagnostics. 
+
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+nb\+\_\+values@{temdiag\+\_\+nb\+\_\+values}}
 \index{temdiag\+\_\+nb\+\_\+values@{temdiag\+\_\+nb\+\_\+values}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+nb\+\_\+values}{temdiag_nb_values}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp), dimension(10) output\+\_\+data\+::temdiag\+\_\+nb\+\_\+values}\hypertarget{namespaceoutput__data_a2c62698838d0295802c6b2a6637c3827}{}\label{namespaceoutput__data_a2c62698838d0295802c6b2a6637c3827}
+
+
+Array containing the number of values in the big array. 
+
 \index{output\+\_\+data@{output\+\_\+data}!temdiag\+\_\+totvalues@{temdiag\+\_\+totvalues}}
 \index{temdiag\+\_\+totvalues@{temdiag\+\_\+totvalues}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{temdiag\+\_\+totvalues}{temdiag_totvalues}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::temdiag\+\_\+totvalues}\hypertarget{namespaceoutput__data_a85fe1c4047057dc4292320e82cae2cda}{}\label{namespaceoutput__data_a85fe1c4047057dc4292320e82cae2cda}

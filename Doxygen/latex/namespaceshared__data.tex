@@ -1,5 +1,10 @@
 \hypertarget{namespaceshared__data}{}\section{shared\+\_\+data Module Reference}
 \label{namespaceshared__data}\index{shared\+\_\+data@{shared\+\_\+data}}
+
+
+Module for the data shared with Python.  
+
+
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
@@ -132,25 +137,25 @@ real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_a73076ccf0db
 real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_afbe25de83b836cecc5e144cdee8fbb3e}{zb\+\_\+offset\+\_\+global}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_ac04f4ac48d632f67068e3623d39b847d}{nx}
-\item 
+\begin{DoxyCompactList}\small\item\em local number of cells \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a93124935df137a6ba362bdc8dcba6d5f}{ny}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_ad701bfe58518b2efa7568d9d92d4d99a}{nz}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aa73479038f32b1c04369ee19f989a864}{nx\+\_\+grid}
-\item 
+\begin{DoxyCompactList}\small\item\em local number of grid points \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a27d84fa0143fefa733f5915a29ee2280}{ny\+\_\+grid}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_a316d1007b26804f619b2863d225113b4}{nz\+\_\+grid}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aacbd3bff423894ff20cec97f4286ba68}{nx\+\_\+global}
-\item 
+\begin{DoxyCompactList}\small\item\em global number of cells \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a09d6529711aae354967f6d5db76220c1}{ny\+\_\+global}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_a4d554ba2caa9b741974e24ab105829e7}{nz\+\_\+global}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_a57f53cc0b24ace5f77db7a6a1835f7fb}{nx\+\_\+global\+\_\+grid}
-\item 
+\begin{DoxyCompactList}\small\item\em global number of grid points \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_acbb834ec9e8d36f975728eb709cffebb}{ny\+\_\+global\+\_\+grid}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aa95da47815e254e9835494899a595174}{nz\+\_\+global\+\_\+grid}
@@ -192,23 +197,23 @@ real(num) \hyperlink{namespaceshared__data_a1fb130b65ef2a707c1a79f91089e7dc0}{z\
 real(num) \hyperlink{namespaceshared__data_a7931e0059b790ccef3cc00c59d806c7c}{z\+\_\+max\+\_\+local}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_aa7be2be1e809cb95538e562e604c4f1e}{sorting\+\_\+activated}
-\item 
+\begin{DoxyCompactList}\small\item\em Activation of the sorting. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a3f406bc80cf450b11767a651d0ea651c}{sorting\+\_\+dx}
-\item 
+\begin{DoxyCompactList}\small\item\em Bin space steps. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a4fd74c6832df0957cd1b786cf2cc6810}{sorting\+\_\+dy}
 \item 
 real(num) \hyperlink{namespaceshared__data_aa30e6dbb24284ab1c4dae4ba5e219eb4}{sorting\+\_\+dz}
 \item 
 real(num) \hyperlink{namespaceshared__data_a7809127b7e85af886b2fd72b3bbdd065}{sorting\+\_\+shiftx}
-\item 
+\begin{DoxyCompactList}\small\item\em Shift of the sorting grid in respect of the origin. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a0f7304391a34d6a0216cab82d97ee037}{sorting\+\_\+shifty}
 \item 
 real(num) \hyperlink{namespaceshared__data_a6b24bb129ab0581a9b353bd1cb663422}{sorting\+\_\+shiftz}
 \item 
 logical \hyperlink{namespaceshared__data_a1e3cea0f116b338483676d0bd5126c75}{sorting\+\_\+verbose}
-\item 
+\begin{DoxyCompactList}\small\item\em verbose for the sorting (depreciated) \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a9dcd30bdab987f8957482cbd80ba40b3}{c\+\_\+dim} = 3
-\item 
+\begin{DoxyCompactList}\small\item\em Space dimension. \end{DoxyCompactList}\item 
 real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_a5a1b9ce71c6bcfbe478783cc7a5e4d7d}{x}
 \item 
 real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_acdc008c8a2a09f5f45b09e3f93aa04cf}{y}
@@ -252,9 +257,9 @@ real(num) \hyperlink{namespaceshared__data_a09f7e7f94540648ce5317cf34331f893}{z\
 real(num) \hyperlink{namespaceshared__data_a456c52690b2fd4549464d70435bb3181}{z\+\_\+grid\+\_\+max\+\_\+local}
 \item 
 real(num), dimension(\+:,\+:,\+:), pointer \hyperlink{namespaceshared__data_a9cd7a07e41ca84210bf52e8480ac5d62}{rho}
-\item 
+\begin{DoxyCompactList}\small\item\em Total charge density. \end{DoxyCompactList}\item 
 real(num), dimension(\+:,\+:,\+:), pointer \hyperlink{namespaceshared__data_a548e3c8fc335921c106eada05587df31}{dive}
-\item 
+\begin{DoxyCompactList}\small\item\em Electric Field divergence. \end{DoxyCompactList}\item 
 real(num) \hyperlink{namespaceshared__data_a0a831038bb26f462cfcbb55ed577eca7}{mpitime\+\_\+per\+\_\+it}
 \item 
 real(num) \hyperlink{namespaceshared__data_ab3fad0c11b277d8e2932f2bb561174c0}{max\+\_\+time\+\_\+per\+\_\+it}
@@ -275,10 +280,17 @@ integer(idp) \hyperlink{namespaceshared__data_a630ce8e0e1ba68428eacff437d15f6cc}
 \end{DoxyCompactItemize}
 
 
+\subsection{Detailed Description}
+Module for the data shared with Python. 
+
 \subsection{Variable Documentation}
 \index{shared\+\_\+data@{shared\+\_\+data}!c\+\_\+dim@{c\+\_\+dim}}
 \index{c\+\_\+dim@{c\+\_\+dim}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{c\+\_\+dim}{c_dim}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::c\+\_\+dim = 3}\hypertarget{namespaceshared__data_a9dcd30bdab987f8957482cbd80ba40b3}{}\label{namespaceshared__data_a9dcd30bdab987f8957482cbd80ba40b3}
+
+
+Space dimension. 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!cell\+\_\+x\+\_\+max@{cell\+\_\+x\+\_\+max}}
 \index{cell\+\_\+x\+\_\+max@{cell\+\_\+x\+\_\+max}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{cell\+\_\+x\+\_\+max}{cell_x_max}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp), dimension(\+:), pointer shared\+\_\+data\+::cell\+\_\+x\+\_\+max}\hypertarget{namespaceshared__data_a560a198cff32066380eaf1263719724d}{}\label{namespaceshared__data_a560a198cff32066380eaf1263719724d}
@@ -306,6 +318,10 @@ integer(idp) \hyperlink{namespaceshared__data_a630ce8e0e1ba68428eacff437d15f6cc}
 \index{shared\+\_\+data@{shared\+\_\+data}!dive@{dive}}
 \index{dive@{dive}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{dive}{dive}}]{\setlength{\rightskip}{0pt plus 5cm}real(num), dimension(\+:,\+:,\+:), pointer shared\+\_\+data\+::dive}\hypertarget{namespaceshared__data_a548e3c8fc335921c106eada05587df31}{}\label{namespaceshared__data_a548e3c8fc335921c106eada05587df31}
+
+
+Electric Field divergence. 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!dx@{dx}}
 \index{dx@{dx}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{dx}{dx}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) shared\+\_\+data\+::dx}\hypertarget{namespaceshared__data_a0d718dcaae94920d7faaa4aa47011d5b}{}\label{namespaceshared__data_a0d718dcaae94920d7faaa4aa47011d5b}
@@ -396,15 +412,27 @@ integer(idp) \hyperlink{namespaceshared__data_a630ce8e0e1ba68428eacff437d15f6cc}
 \index{shared\+\_\+data@{shared\+\_\+data}!nx@{nx}}
 \index{nx@{nx}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{nx}{nx}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::nx}\hypertarget{namespaceshared__data_ac04f4ac48d632f67068e3623d39b847d}{}\label{namespaceshared__data_ac04f4ac48d632f67068e3623d39b847d}
+
+
+local number of cells 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!nx\+\_\+each\+\_\+rank@{nx\+\_\+each\+\_\+rank}}
 \index{nx\+\_\+each\+\_\+rank@{nx\+\_\+each\+\_\+rank}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{nx\+\_\+each\+\_\+rank}{nx_each_rank}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp), dimension(\+:), pointer shared\+\_\+data\+::nx\+\_\+each\+\_\+rank}\hypertarget{namespaceshared__data_a9ea44b080aed4db2eaa320878f266ace}{}\label{namespaceshared__data_a9ea44b080aed4db2eaa320878f266ace}
 \index{shared\+\_\+data@{shared\+\_\+data}!nx\+\_\+global@{nx\+\_\+global}}
 \index{nx\+\_\+global@{nx\+\_\+global}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{nx\+\_\+global}{nx_global}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::nx\+\_\+global}\hypertarget{namespaceshared__data_aacbd3bff423894ff20cec97f4286ba68}{}\label{namespaceshared__data_aacbd3bff423894ff20cec97f4286ba68}
+
+
+global number of cells 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!nx\+\_\+global\+\_\+grid@{nx\+\_\+global\+\_\+grid}}
 \index{nx\+\_\+global\+\_\+grid@{nx\+\_\+global\+\_\+grid}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{nx\+\_\+global\+\_\+grid}{nx_global_grid}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::nx\+\_\+global\+\_\+grid}\hypertarget{namespaceshared__data_a57f53cc0b24ace5f77db7a6a1835f7fb}{}\label{namespaceshared__data_a57f53cc0b24ace5f77db7a6a1835f7fb}
+
+
+global number of grid points 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!nx\+\_\+global\+\_\+grid\+\_\+max@{nx\+\_\+global\+\_\+grid\+\_\+max}}
 \index{nx\+\_\+global\+\_\+grid\+\_\+max@{nx\+\_\+global\+\_\+grid\+\_\+max}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{nx\+\_\+global\+\_\+grid\+\_\+max}{nx_global_grid_max}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::nx\+\_\+global\+\_\+grid\+\_\+max}\hypertarget{namespaceshared__data_a038972078d665e998a4c47bb38b27170}{}\label{namespaceshared__data_a038972078d665e998a4c47bb38b27170}
@@ -414,6 +442,10 @@ integer(idp) \hyperlink{namespaceshared__data_a630ce8e0e1ba68428eacff437d15f6cc}
 \index{shared\+\_\+data@{shared\+\_\+data}!nx\+\_\+grid@{nx\+\_\+grid}}
 \index{nx\+\_\+grid@{nx\+\_\+grid}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{nx\+\_\+grid}{nx_grid}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::nx\+\_\+grid}\hypertarget{namespaceshared__data_aa73479038f32b1c04369ee19f989a864}{}\label{namespaceshared__data_aa73479038f32b1c04369ee19f989a864}
+
+
+local number of grid points 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!ny@{ny}}
 \index{ny@{ny}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{ny}{ny}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::ny}\hypertarget{namespaceshared__data_a93124935df137a6ba362bdc8dcba6d5f}{}\label{namespaceshared__data_a93124935df137a6ba362bdc8dcba6d5f}
@@ -501,12 +533,24 @@ integer(idp) \hyperlink{namespaceshared__data_a630ce8e0e1ba68428eacff437d15f6cc}
 \index{shared\+\_\+data@{shared\+\_\+data}!rho@{rho}}
 \index{rho@{rho}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{rho}{rho}}]{\setlength{\rightskip}{0pt plus 5cm}real(num), dimension(\+:,\+:,\+:), pointer shared\+\_\+data\+::rho}\hypertarget{namespaceshared__data_a9cd7a07e41ca84210bf52e8480ac5d62}{}\label{namespaceshared__data_a9cd7a07e41ca84210bf52e8480ac5d62}
+
+
+Total charge density. 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!sorting\+\_\+activated@{sorting\+\_\+activated}}
 \index{sorting\+\_\+activated@{sorting\+\_\+activated}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{sorting\+\_\+activated}{sorting_activated}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) shared\+\_\+data\+::sorting\+\_\+activated}\hypertarget{namespaceshared__data_aa7be2be1e809cb95538e562e604c4f1e}{}\label{namespaceshared__data_aa7be2be1e809cb95538e562e604c4f1e}
+
+
+Activation of the sorting. 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!sorting\+\_\+dx@{sorting\+\_\+dx}}
 \index{sorting\+\_\+dx@{sorting\+\_\+dx}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{sorting\+\_\+dx}{sorting_dx}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) shared\+\_\+data\+::sorting\+\_\+dx}\hypertarget{namespaceshared__data_a3f406bc80cf450b11767a651d0ea651c}{}\label{namespaceshared__data_a3f406bc80cf450b11767a651d0ea651c}
+
+
+Bin space steps. 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!sorting\+\_\+dy@{sorting\+\_\+dy}}
 \index{sorting\+\_\+dy@{sorting\+\_\+dy}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{sorting\+\_\+dy}{sorting_dy}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) shared\+\_\+data\+::sorting\+\_\+dy}\hypertarget{namespaceshared__data_a4fd74c6832df0957cd1b786cf2cc6810}{}\label{namespaceshared__data_a4fd74c6832df0957cd1b786cf2cc6810}
@@ -516,6 +560,10 @@ integer(idp) \hyperlink{namespaceshared__data_a630ce8e0e1ba68428eacff437d15f6cc}
 \index{shared\+\_\+data@{shared\+\_\+data}!sorting\+\_\+shiftx@{sorting\+\_\+shiftx}}
 \index{sorting\+\_\+shiftx@{sorting\+\_\+shiftx}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{sorting\+\_\+shiftx}{sorting_shiftx}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) shared\+\_\+data\+::sorting\+\_\+shiftx}\hypertarget{namespaceshared__data_a7809127b7e85af886b2fd72b3bbdd065}{}\label{namespaceshared__data_a7809127b7e85af886b2fd72b3bbdd065}
+
+
+Shift of the sorting grid in respect of the origin. 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!sorting\+\_\+shifty@{sorting\+\_\+shifty}}
 \index{sorting\+\_\+shifty@{sorting\+\_\+shifty}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{sorting\+\_\+shifty}{sorting_shifty}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) shared\+\_\+data\+::sorting\+\_\+shifty}\hypertarget{namespaceshared__data_a0f7304391a34d6a0216cab82d97ee037}{}\label{namespaceshared__data_a0f7304391a34d6a0216cab82d97ee037}
@@ -525,6 +573,10 @@ integer(idp) \hyperlink{namespaceshared__data_a630ce8e0e1ba68428eacff437d15f6cc}
 \index{shared\+\_\+data@{shared\+\_\+data}!sorting\+\_\+verbose@{sorting\+\_\+verbose}}
 \index{sorting\+\_\+verbose@{sorting\+\_\+verbose}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{sorting\+\_\+verbose}{sorting_verbose}}]{\setlength{\rightskip}{0pt plus 5cm}logical shared\+\_\+data\+::sorting\+\_\+verbose}\hypertarget{namespaceshared__data_a1e3cea0f116b338483676d0bd5126c75}{}\label{namespaceshared__data_a1e3cea0f116b338483676d0bd5126c75}
+
+
+verbose for the sorting (depreciated) 
+
 \index{shared\+\_\+data@{shared\+\_\+data}!tag@{tag}}
 \index{tag@{tag}!shared\+\_\+data@{shared\+\_\+data}}
 \subsubsection[{\texorpdfstring{tag}{tag}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp) shared\+\_\+data\+::tag}\hypertarget{namespaceshared__data_a7877a929286571631efc41c30444e7cd}{}\label{namespaceshared__data_a7877a929286571631efc41c30444e7cd}

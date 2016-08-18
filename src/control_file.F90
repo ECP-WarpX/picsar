@@ -1,3 +1,16 @@
+! ________________________________________________________________________________________
+! CONTROL_FILE.F90
+!
+!>@author
+!>Henri Vincenti,
+!>Mathieu Lobet
+!
+! Brief description:
+!> Module containing routines for the default initialization, for reading the input file and the command line arguments
+!> @brief
+!
+!> @date 2015-2016
+! ________________________________________________________________________________________
 MODULE control_file
 
   USE shared_data
@@ -146,8 +159,9 @@ CONTAINS
 
     END SUBROUTINE default_init
 
-    ! Routine that reads command line arguments
-    ! Useful for parametric studies
+    !> Routine that reads command line arguments
+    !> @brief
+    !> Useful for parametric studies
     SUBROUTINE read_from_cl
         INTEGER :: i, ix
         DO i = 1, COMMAND_ARGUMENT_COUNT()-1,2

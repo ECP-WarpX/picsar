@@ -2504,14 +2504,20 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 
 ! ________________________________________________________________________________________
-SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
-           uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-! Order 1 3D vector current deposition routine (rho*v)
-! This versions have good performances on SIMD architectures
-! Providing that OpenMP 4.0 is available (Directive SIMD)
-! This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1 
-! without the reduction process at the end
+!> Order 1 3D vector current deposition routine (rho*v) with no reduction
+!> @brief
+!
+!> This versions have good performances on SIMD architectures
+!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!> This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1 
+!> without the reduction process at the end
+!> @details
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
 !
 ! Inputs:
 ! - jxcells, jycells, jzcells: transient current arrays
@@ -2531,9 +2537,13 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
 !
 ! Ouputs:
 ! - jxcells, jycells, jzcells updated
+SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
+           uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
+!
 ! ________________________________________________________________________________________
+    USE constants
 
-    USE precomputed
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                      :: np,nx,ny,nz
     INTEGER(idp), INTENT(IN)                      :: nxguard,nyguard,nzguard
@@ -2548,6 +2558,8 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
     INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip,NCELLS,ic
     INTEGER(isp)                                  :: n,nn,nv
     REAL(num)                                     :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+    REAL(num)                                     :: invvol,dxi,dyi,dzi
+    REAL(num)                                     :: dts2dx,dts2dy,dts2dz 
     INTEGER(isp), DIMENSION(LVECT,3)              :: ICELL
     REAL(num), DIMENSION(LVECT)                   :: sx, sy, sz
     REAL(num), DIMENSION(LVECT)                   :: sx0, sy0, sz0,wqx,wqy,wqz
@@ -2559,6 +2571,14 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
     ! _____________________________________________
     ! Computation of the parameters
     ncxy=ncx*ncy
+
+    dxi = 1.0_num/dx
+    dyi = 1.0_num/dy
+    dzi = 1.0_num/dz
+    invvol = dxi*dyi*dzi
+    dts2dx = 0.5_num*dt*dxi
+    dts2dy = 0.5_num*dt*dyi
+    dts2dz = 0.5_num*dt*dzi
     
     sx=0.0_num;sy=0.0_num;sz=0.0_num
     sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
@@ -2871,12 +2891,26 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
     RETURN
 END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 
-!!! --- Order 2 3D vector current deposition routine (rho*v)
-!!! This versions have good performances on SIMD architectures
-!!! Providing that OpenMP 4.0 is available (Directive SIMD)
-!!! Use with nox=3
+
+! ________________________________________________________________________________________
+! depose_jxjyjz_vecHVv2_2_2_2
+!
+!> Order 2 3D vector current deposition routine (rho*v)
+!> @brief
+!
+!> This versions have good performances on SIMD architectures
+!> providing that OpenMP 4.0 is available (Directive SIMD).
+!> To use this function, select nox=2, noy=2, noz=2.
+!> @details
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> 2015
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
     USE constants
     IMPLICIT NONE
     
@@ -2903,10 +2937,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     wwwy(LVEC,8),wwwz(LVEC,8), wq
     REAL(num)                :: sx0(LVEC),sx1(LVEC),sx2(LVEC)
     REAL(num)                :: sx00(LVEC),sx01(LVEC),sx02(LVEC)
-    REAL(num) :: sy0,sy1,sy2,sy00,sy01,sy02
-    REAL(num) :: sz0,sz1,sz2,sz00,sz01,sz02, syz
-    INTEGER(idp) :: igrid,orig, jorig, korig, lorig
-    INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
+    REAL(num)                :: sy0,sy1,sy2,sy00,sy01,sy02
+    REAL(num)                :: sz0,sz1,sz2,sz00,sz01,sz02, syz
+    INTEGER(idp)             :: igrid,orig, jorig, korig, lorig
+    INTEGER(idp)             :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
     ! ___ Parameter initialization _________________
 
@@ -3230,32 +3264,41 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 
 
 ! ________________________________________________________________________________________
+! depose_jxjyjz_vecHV_vnr_2_2_2
+!
+!> Order 2 3D vector current deposition routine (rho*v) with no reduction
+!> @brief
+!
+!> This versions have good performances on SIMD architectures
+!> providing that OpenMP 4.0 is available (Directive SIMD).
+!> This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1 
+!> without the reduction process at the end.
+!> @details
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
+!>
+!> @param[inout] jxcells,jycells,jzcells transient current arrays
+!> @param[in] np particle number
+!> @param[in] ncells number of cells in the tile
+!> @param[in] xp,yp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse Lorentz factor arrays
+!> @param[in] w particle wight arrays
+!> @param[in] q charge
+!> @param[in] xmin,ymin,zmin tile minimum positions
+!> @param[in] dt,dx,dy,dz time and space steps
+!> @param[in] nx,ny,nz tile cell numbers in each direction
+!> @param[in] nxguard,nyguard,nzguard guard cells
+!> @param[in] ncx,ncy,ncz tile cell extended number (depends on the order)
+!> @param[in] lvect vector length
 SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-! Order 2 3D vector current deposition routine (rho*v)
-! This versions have good performances on SIMD architectures
-! Providing that OpenMP 4.0 is available (Directive SIMD)
-! This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1 
-! without the reduction process at the end
-!
-! Inputs:
-! - jxcells, jycells, jzcells: transient current arrays
-! - np: particle number
-! - ncells: number of cells in the tile
-! - xp,yp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse Lorentz factor arrays
-! - w: particle wight arrays
-! - q: charge
-! - xmin,ymin,zmin: tile minimum positions
-! - dt,dx,dy,dz: time and space steps
-! - nx,ny,nz: tile cell numbers in each direction
-! - nxguard,nyguard,nzguard: guard cells
-! - ncx,ncy,ncz: tile cell extended number (depends on the order)
-!
-! Ouputs:
-! - jxcells, jycells, jzcells updated
+
 ! ________________________________________________________________________________________
     USE constants
     IMPLICIT NONE
@@ -5055,18 +5098,27 @@ DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
 RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 
-! ________________________________________________________________________________________ 
+! ________________________________________________________________________________________
+!> Esirkepov current deposition optimized at order 1
+!> @brief
+!
+!> This function gives slightly better performances with AVX512 vector registers.
+!> We can expect 30% speedup on KNL however performances are bad with small vector registers.
+!> @details
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date 2016
+!
+!> PROBLEM: CORRECTION REQUIRED
+!> DO NOT USE
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
-!
-!
-! Esirkepov current deposition optimized at order 1
-! This function gives slightly better performances with AVX512 vector registers
-! We can expect 30% speedup on KNL however performances are bad with small vector registers
 ! ________________________________________________________________________________________
 USE constants
-USE precomputed
+!USE precomputed
 IMPLICIT NONE
     INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard, nox, noy,noz
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -5083,7 +5135,7 @@ IMPLICIT NONE
     REAL(num)                :: ww, wwx, wwy, wwz
     REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num
     REAL(num), PARAMETER     :: twothird=2.0_num/3.0_num
-    REAL(num), PARAMETER     :: onethird = 1.0_num/3.0_num    
+    REAL(num), PARAMETER     :: onethird=1.0_num/3.0_num    
     INTEGER(isp)             :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
     INTEGER(isp)             :: nnx, nnxy,ngridx, ngridy, n,nn,nv
     INTEGER(isp)             :: moffjx(1:8), moffjy(1:8), moffjz(1:8)
@@ -5109,10 +5161,22 @@ IMPLICIT NONE
     REAL(num)                :: invdtdx,invdtdy,invdtdz
     REAL(num)                :: wqx,wqy,wqz
     REAL(num)                :: xold,yold,zold, oldsum
+    REAL(num)                :: dxi,dyi,dzi
+    REAL(num)                :: dtsdx0,dtsdy0,dtsdz0   
   
     ! ___________________________________________
     ! Computation of the parameters
 
+		dxi = 1.0_num/dx
+		dyi = 1.0_num/dy
+		dzi = 1.0_num/dz
+		dtsdx0 = dt*dxi
+		dtsdy0 = dt*dyi
+		dtsdz0 = dt*dzi
+    invdtdx = 1.0_num/(dt*dy*dz)
+    invdtdy = 1.0_num/(dt*dx*dz)
+    invdtdz = 1.0_num/(dt*dx*dy)
+  
     ngridx=nx+1+2*nxguard
     ngridy=ny+1+2*nyguard
     ncx=nx+1+2*nxguard
@@ -5144,10 +5208,6 @@ IMPLICIT NONE
 
     h1=(/1_num,0_num,1_num,0_num/); sgn=(/1_num,-1_num,1_num,-1_num/)
     h11=(/0_num,1_num,1_num,0_num/); h12=(/1_num,0_num,0_num,1_num/)
-    
-    invdtdx = 1.0_num/(dt*dy*dz)
-    invdtdy = 1.0_num/(dt*dx*dz)
-    invdtdz = 1.0_num/(dt*dx*dy)
     
     sx0 = 0._num
     sy0 = 0._num
@@ -5913,6 +5973,8 @@ IMPLICIT NONE
 
 END SUBROUTINE
 
+! __ Developer zone _________
+#if defined(DEV)
 ! _________________________________________________________________ 
 SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -5921,6 +5983,8 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uz
 !
 ! Esirkepov current deposition at order 1
 ! This function is a test of optimization but does not give good performance
+!
+! DO NOT USE
 ! _________________________________________________________________  
 USE constants
 USE precomputed
@@ -6560,13 +6624,9 @@ IMPLICIT NONE
         END DO
     END DO 
     
-
-
     RETURN
-
-
 END SUBROUTINE
-
+#endif
 
 !===========================================================================================
 ! Esirkepov current deposition algorithm at order 2 in x, y, z (nox=noy=noz=2)
@@ -6737,6 +6797,8 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
 ! Implementation is based on Vincenti's method used for the classical current deposition.
 ! Despite vectorization, this subroutine does not exhibit gain in performance
 ! with AVX512 architecture.
+!
+! PROBLEM: CORRECTION REQUIRED
 ! ________________________________________________________________________________________                                      
   USE omp_lib
   USE constants
@@ -6792,7 +6854,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
   invdtdy = 1.0_num/(dt*dx*dz)
   invdtdz = 1.0_num/(dt*dx*dy)
   clghtisq = 1.0_num/clight**2
-  dtsdz0 = dt*dzi
       
   ALLOCATE(sx(-2:2), sx0(-2:2), dsx(-2:2))
   ALLOCATE(sy(-2:2), sy0(-2:2), dsy(-2:2))

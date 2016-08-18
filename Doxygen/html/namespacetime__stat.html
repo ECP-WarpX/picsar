@@ -116,29 +116,42 @@ $(document).ready(function(){initNavTree('namespacetime__stat.html','');});
 <div class="title">time_stat Module Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Module for the time statistics.  
+<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a1945506276b001ce513b77a643537925"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#a1945506276b001ce513b77a643537925">timestat_activated</a></td></tr>
+<tr class="memdesc:a1945506276b001ce513b77a643537925"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activation of the outputs.  <a href="#a1945506276b001ce513b77a643537925">More...</a><br /></td></tr>
 <tr class="separator:a1945506276b001ce513b77a643537925"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab14608304df879ee0678f16685c5d61e"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#ab14608304df879ee0678f16685c5d61e">timestat_period</a></td></tr>
+<tr class="memdesc:ab14608304df879ee0678f16685c5d61e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Period for the outputs.  <a href="#ab14608304df879ee0678f16685c5d61e">More...</a><br /></td></tr>
 <tr class="separator:ab14608304df879ee0678f16685c5d61e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb480c360afa0c963ea37a4a3b0cbb88"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#acb480c360afa0c963ea37a4a3b0cbb88">timestat_itstart</a></td></tr>
+<tr class="memdesc:acb480c360afa0c963ea37a4a3b0cbb88"><td class="mdescLeft">&#160;</td><td class="mdescRight">First iteration for the time statistics.  <a href="#acb480c360afa0c963ea37a4a3b0cbb88">More...</a><br /></td></tr>
 <tr class="separator:acb480c360afa0c963ea37a4a3b0cbb88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad186476b25a6b961d4149313b0fc6657"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#ad186476b25a6b961d4149313b0fc6657">timestat_perit</a></td></tr>
+<tr class="memdesc:ad186476b25a6b961d4149313b0fc6657"><td class="mdescLeft">&#160;</td><td class="mdescRight">! Flag to activate the time statistics per iteration  <a href="#ad186476b25a6b961d4149313b0fc6657">More...</a><br /></td></tr>
 <tr class="separator:ad186476b25a6b961d4149313b0fc6657"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80c25f7e592de42aba002a7756c9976a"><td class="memItemLeft" align="right" valign="top">real(num), dimension(5)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#a80c25f7e592de42aba002a7756c9976a">init_localtimes</a></td></tr>
+<tr class="memdesc:a80c25f7e592de42aba002a7756c9976a"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI local times for the initialization.  <a href="#a80c25f7e592de42aba002a7756c9976a">More...</a><br /></td></tr>
 <tr class="separator:a80c25f7e592de42aba002a7756c9976a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a886a71aaf720ea3a044d9f0bcaf97eca"><td class="memItemLeft" align="right" valign="top">real(num), dimension(20)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#a886a71aaf720ea3a044d9f0bcaf97eca">localtimes</a></td></tr>
+<tr class="memdesc:a886a71aaf720ea3a044d9f0bcaf97eca"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI local times for the main loop.  <a href="#a886a71aaf720ea3a044d9f0bcaf97eca">More...</a><br /></td></tr>
 <tr class="separator:a886a71aaf720ea3a044d9f0bcaf97eca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70919afd7f3ed4f096d2ca67741fafd0"><td class="memItemLeft" align="right" valign="top">real(num), dimension(:,:), pointer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#a70919afd7f3ed4f096d2ca67741fafd0">buffer_timestat</a></td></tr>
+<tr class="memdesc:a70919afd7f3ed4f096d2ca67741fafd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Buffer for the output.  <a href="#a70919afd7f3ed4f096d2ca67741fafd0">More...</a><br /></td></tr>
 <tr class="separator:a70919afd7f3ed4f096d2ca67741fafd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae56826ec9ad1786db72cebc001ac6c8b"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#ae56826ec9ad1786db72cebc001ac6c8b">itimestat</a></td></tr>
 <tr class="separator:ae56826ec9ad1786db72cebc001ac6c8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59f96deeaa99d052a09d3f13fd832018"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetime__stat.html#a59f96deeaa99d052a09d3f13fd832018">nbuffertimestat</a></td></tr>
+<tr class="memdesc:a59f96deeaa99d052a09d3f13fd832018"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of entries in the buffer.  <a href="#a59f96deeaa99d052a09d3f13fd832018">More...</a><br /></td></tr>
 <tr class="separator:a59f96deeaa99d052a09d3f13fd832018"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Variable Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Module for the time statistics. </p>
+</div><h2 class="groupheader">Variable Documentation</h2>
 <a class="anchor" id="a70919afd7f3ed4f096d2ca67741fafd0"></a>
 <div class="memitem">
 <div class="memproto">
@@ -148,6 +161,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Buffer for the output. </p>
 
 </div>
 </div>
@@ -160,6 +175,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>MPI local times for the initialization. </p>
 
 </div>
 </div>
@@ -185,6 +202,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>MPI local times for the main loop. </p>
+
 </div>
 </div>
 <a class="anchor" id="a59f96deeaa99d052a09d3f13fd832018"></a>
@@ -196,6 +215,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Number of entries in the buffer. </p>
 
 </div>
 </div>
@@ -209,6 +230,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Activation of the outputs. </p>
+
 </div>
 </div>
 <a class="anchor" id="acb480c360afa0c963ea37a4a3b0cbb88"></a>
@@ -220,6 +243,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>First iteration for the time statistics. </p>
 
 </div>
 </div>
@@ -233,6 +258,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Period for the outputs. </p>
+
 </div>
 </div>
 <a class="anchor" id="ad186476b25a6b961d4149313b0fc6657"></a>
@@ -244,6 +271,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>! Flag to activate the time statistics per iteration </p>
 
 </div>
 </div>

@@ -154,24 +154,12 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_scalar_1_1_1'
-	CALL depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) 
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
-	
-  jx(:,:,:) = 0.
-  jy(:,:,:) = 0.
-  jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_vecHVv2_1_1_1'
-  CALL depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+  name(i) = 'depose_jxjyjz_esirkepov_1_1_1'
+  !print*,trim(adjustl(name(i))) 
+	CALL depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
+	                gaminv,w,q,xmin,ymin,zmin, &
+                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                  1,1,1,.TRUE.,.FALSE.)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
 	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -184,19 +172,12 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_vecHV_vnr_1_1_1'
-  ! Determine ncells
-  ncx=nx+3; ncy=ny+3; ncz=nz+3  
-  ncells = ncx*ncy*ncz
-  ALLOCATE(jxcells(8,ncells),jycells(8,ncells),jzcells(8,ncells))
-  jxcells = 0 ; jycells = 0; jzcells = 0
-	CALL depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
-           uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-	CALL current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
-	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*),'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
-  DEALLOCATE(jxcells,jycells,jzcells)
+  name(i) = 'depose_jxjyjz_esirkepov_vecHV_1_1_1'
+  !print*,trim(adjustl(name(i))) 
+	CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
+	                gaminv,w,q,xmin,ymin,zmin, &
+                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                  1,1,1,.TRUE._idp,.FALSE._idp)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
 	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -204,7 +185,7 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
 	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
 	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
 	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1	
+	i = i + 1
 
 	n = i-1
 	write(0,*)
@@ -232,25 +213,12 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_scalar_2_2_2'
-	CALL depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) ;
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
-	
-  jx(:,:,:) = 0.
-  jy(:,:,:) = 0.
-  jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_vecHVv2_2_2_2'
-  CALL depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+  name(i) = 'depose_jxjyjz_esirkepov_2_2_2'
+  !print*,trim(adjustl(name(i))) 
+	CALL depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
+	                gaminv,w,q,xmin,ymin,zmin, &
+                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                  2,2,2,.TRUE.,.FALSE.)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
 	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -263,21 +231,12 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_vecHV_vnr_2_2_2'
-  ! Determine ncells
-  ! Originally was ncx=nxc+4; ncy=nyc+4; ncz=nzc+4
-  ! But we need one more for the algorithm at order 2
-  ncx=nx+5; ncy=ny+5; ncz=nz+5  
-  ncells = ncx*ncy*ncz
-  ALLOCATE(jxcells(8,ncells),jycells(8,ncells),jzcells(8,ncells))
-  jxcells = 0 ; jycells = 0; jzcells = 0
-	CALL depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
-           uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-	CALL current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
-	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*),'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
-  DEALLOCATE(jxcells,jycells,jzcells)
+  name(i) = 'depose_jxjyjz_esirkepov_vecHV_2_2_2'
+  !print*,trim(adjustl(name(i))) 
+	CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
+	                gaminv,w,q,xmin,ymin,zmin, &
+                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                  2_idp,2_idp,2_idp,.TRUE._idp,.FALSE._idp)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
 	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -285,8 +244,8 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
 	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
 	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
 	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1	
-	
+	i = i + 1
+
 	n = i-1
 	write(0,*)
   write(0,'(" Current deposition order 1")')	
@@ -312,10 +271,12 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_scalar_3_3_3'
+  name(i) = 'depose_jxjyjz_esirkepov_3_3_3'
   !print*,trim(adjustl(name(i))) 
-	CALL depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+	CALL depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
+	                gaminv,w,q,xmin,ymin,zmin, &
+                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                  3,3,3,.TRUE.,.FALSE.)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
 	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -325,49 +286,6 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE
 	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
 	i = i + 1
 
-  jx(:,:,:) = 0.
-  jy(:,:,:) = 0.
-  jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_vecHVv3_3_3_3'
-  !print*,trim(adjustl(name(i))) 
-  CALL depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
-
-  jx(:,:,:) = 0.
-  jy(:,:,:) = 0.
-  jz(:,:,:) = 0.  
-  name(i) = 'depose_jxjyjz_vecHV_vnr_3_3_3'
-  !print*,trim(adjustl(name(i))) 
-  ! Determine ncells
-  ! Originally was ncx=nxc+4; ncy=nyc+4; ncz=nzc+4
-  ! But we need one more for the algorithm at order 2
-  ncx=nx+5; ncy=ny+4; ncz=nz+3
-  ncells = ncx*ncy*ncz
-  ALLOCATE(jxcells(8,ncells),jycells(8,ncells),jzcells(8,ncells))
-  jxcells = 0 ; jycells = 0; jzcells = 0
-	CALL depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
-           uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-	CALL current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
-	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*),'Sum jxcells:',sum(jxcells),'Sum jycells:',sum(jycells),'Sum jzcells',sum(jzcells)
-  DEALLOCATE(jxcells,jycells,jzcells)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1	
 
 	n = i-1
 	write(0,*)
@@ -384,11 +302,11 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE
   IF (passed) THEN
 		!write(0,'("\033[32m **** TEST PASSED **** \033[0m")')	
 		!CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
-		CALL system('printf "\e[32m ********** TEST CURRENT DEPOSITION 3D PASSED **********  \e[0m \n"')
+		CALL system('printf "\e[32m ********** TEST ESIRKEPOV 3D PASSED **********  \e[0m \n"')
   ELSE
 		!write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
 		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
-		CALL system('printf "\e[31m ********** TEST CURRENT DEPOSITION 3D FAILED **********  \e[0m \n"')
+		CALL system('printf "\e[31m ********** TEST ESIRKEPOV 3D FAILED **********  \e[0m \n"')
   ENDIF
   
   write(0,'(" ____________________________________________________________________________")')
