@@ -5,11 +5,11 @@
 MODULE constants
 !===============================================================================
 !>
-!> @num Float precision
+!> Float precision
 INTEGER, PARAMETER :: num = 8
-!> @isp Integer 4 byte precision
+!> Integer 4 byte precision
 INTEGER, PARAMETER :: isp = 4
-!> @idp integer double precision
+!> integer double precision
 INTEGER, PARAMETER :: idp = 8
 INTEGER, PARAMETER :: cpx = 8
 !> Electron mass
@@ -105,16 +105,16 @@ TYPE grid_tile
     !dir$ attributes align:64 :: rhotile                     
 #endif
 		! FastMEM attributes to manage where the data are allocated
-    !!DIR$ ATTRIBUTES FASTMEM  :: extile 					
-    !!DIR$ ATTRIBUTES FASTMEM  :: eytile
-    !!DIR$ ATTRIBUTES FASTMEM  :: eztile     	 
-    !!DIR$ ATTRIBUTES FASTMEM  :: bxtile 					
-    !!DIR$ ATTRIBUTES FASTMEM  :: bytile
-    !!DIR$ ATTRIBUTES FASTMEM  :: bztile        
-    !!DIR$ ATTRIBUTES FASTMEM  :: jxtile 					
-    !!DIR$ ATTRIBUTES FASTMEM  :: jytile
-    !!DIR$ ATTRIBUTES FASTMEM  :: jztile       
-    !!DIR$ ATTRIBUTES FASTMEM  :: rhotile      
+    !DIR ATTRIBUTES FASTMEM  :: extile 					
+    !DIR ATTRIBUTES FASTMEM  :: eytile
+    !DIR ATTRIBUTES FASTMEM  :: eztile     	 
+    !DIR ATTRIBUTES FASTMEM  :: bxtile 					
+    !DIR ATTRIBUTES FASTMEM  :: bytile
+    !DIR ATTRIBUTES FASTMEM  :: bztile        
+    !DIR ATTRIBUTES FASTMEM  :: jxtile 					
+    !DIR ATTRIBUTES FASTMEM  :: jytile
+    !DIR ATTRIBUTES FASTMEM  :: jztile       
+    !DIR ATTRIBUTES FASTMEM  :: rhotile      
       			
 END TYPE
 TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
@@ -144,33 +144,33 @@ TYPE particle_tile
     LOGICAL :: subdomain_bound = .FALSE.
     ! Particle arrays
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_x
+    !DIR ATTRIBUTES FASTMEM  :: part_x
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_y    
+    !DIR ATTRIBUTES FASTMEM  :: part_y    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_z
+    !DIR ATTRIBUTES FASTMEM  :: part_z
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_ux
+    !DIR ATTRIBUTES FASTMEM  :: part_ux
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_uy
+    !DIR ATTRIBUTES FASTMEM  :: part_uy
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_uz
+    !DIR ATTRIBUTES FASTMEM  :: part_uz
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+    !DIR ATTRIBUTES FASTMEM  :: part_gaminv
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_ex
+    !DIR ATTRIBUTES FASTMEM  :: part_ex
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_ey    
+    !DIR ATTRIBUTES FASTMEM  :: part_ey    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_ez
+    !DIR ATTRIBUTES FASTMEM  :: part_ez
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_bx    
+    !DIR ATTRIBUTES FASTMEM  :: part_bx    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_by    
+    !DIR ATTRIBUTES FASTMEM  :: part_by    
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
-    !!DIR$ ATTRIBUTES FASTMEM  :: part_bz    
+    !DIR ATTRIBUTES FASTMEM  :: part_bz    
     REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
-    !!DIR$ ATTRIBUTES FASTMEM  :: pid
+    !DIR ATTRIBUTES FASTMEM  :: pid
 #if defined __INTEL_COMPILER 
     !dir$ attributes align:64 :: part_x
     !dir$ attributes align:64 :: part_y
@@ -351,28 +351,28 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
   TYPE part_com_buffer
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
       !dir$ attributes align:64 :: part_x
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_x
+      !DIR ATTRIBUTES FASTMEM  :: part_x
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
       !dir$ attributes align:64 :: part_y
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_y    
+      !DIR ATTRIBUTES FASTMEM  :: part_y    
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
       !dir$ attributes align:64 :: part_z      
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_z
+      !DIR ATTRIBUTES FASTMEM  :: part_z
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
       !dir$ attributes align:64 :: part_ux
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_ux
+      !DIR ATTRIBUTES FASTMEM  :: part_ux
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
       !dir$ attributes align:64 :: part_y
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_uy
+      !DIR ATTRIBUTES FASTMEM  :: part_uy
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
       !dir$ attributes align:64 :: part_uz
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_uz
+      !DIR ATTRIBUTES FASTMEM  :: part_uz
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
       !dir$ attributes align:64 :: part_gaminv
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+      !DIR ATTRIBUTES FASTMEM  :: part_gaminv
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
       !dir$ attributes align:64 :: pid
-      !!DIR$ ATTRIBUTES FASTMEM :: pid
+      !DIR ATTRIBUTES FASTMEM :: pid
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: boundid
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_npart
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_pos
@@ -381,28 +381,28 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
   TYPE mpi_buffer
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_x
       !dir$ attributes align:64 :: part_x
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_x
+      !DIR ATTRIBUTES FASTMEM  :: part_x
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_y
       !dir$ attributes align:64 :: part_y
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_y    
+      !DIR ATTRIBUTES FASTMEM  :: part_y    
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_z
       !dir$ attributes align:64 :: part_z
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_z
+      !DIR ATTRIBUTES FASTMEM  :: part_z
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_ux
       !dir$ attributes align:64 :: part_ux
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_ux
+      !DIR ATTRIBUTES FASTMEM  :: part_ux
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uy
       !dir$ attributes align:64 :: part_uy
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_uy
+      !DIR ATTRIBUTES FASTMEM  :: part_uy
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uz
       !dir$ attributes align:64 :: part_uz
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_uz
+      !DIR ATTRIBUTES FASTMEM  :: part_uz
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_gaminv
       !dir$ attributes align:64 :: part_gaminv
-      !!DIR$ ATTRIBUTES FASTMEM  :: part_gaminv
+      !DIR ATTRIBUTES FASTMEM  :: part_gaminv
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
       !dir$ attributes align:64 :: pid
-      !!DIR$ ATTRIBUTES FASTMEM  :: pid
+      !DIR ATTRIBUTES FASTMEM  :: pid
       INTEGER(idp), dimension(27) :: npart
   END TYPE
 
@@ -666,52 +666,52 @@ MODULE python_pointers
   !> array for particle x position
 	REAL(num), DIMENSION(:), POINTER :: partx
 	!dir$ attributes align:64 :: partx
-	!!DIR$ ATTRIBUTES FASTMEM  :: partx
+	!DIR ATTRIBUTES FASTMEM  :: partx
   !> array for particle y position	
 	REAL(num), DIMENSION(:), POINTER :: party
 	!dir$ attributes align:64 :: party
-	!!DIR$ ATTRIBUTES FASTMEM  :: party
+	!DIR ATTRIBUTES FASTMEM  :: party
   !> array for particle z position	
 	REAL(num), DIMENSION(:), POINTER :: partz
 	!dir$ attributes align:64 :: partz
-	!!DIR$ ATTRIBUTES FASTMEM  :: partz
+	!DIR ATTRIBUTES FASTMEM  :: partz
   !> array for particle x momentum
 	REAL(num), DIMENSION(:), POINTER :: partux
 	!dir$ attributes align:64 :: partux
-	!!DIR$ ATTRIBUTES FASTMEM  :: partux
+	!DIR ATTRIBUTES FASTMEM  :: partux
   !> array for particle y momentum	
 	REAL(num), DIMENSION(:), POINTER :: partuy
 	!dir$ attributes align:64 :: partuy
-	!!DIR$ ATTRIBUTES FASTMEM  :: partuy
+	!DIR ATTRIBUTES FASTMEM  :: partuy
   !> array for particle z momentum	
 	REAL(num), DIMENSION(:), POINTER :: partuz
 	!dir$ attributes align:64 :: partuz
-	!!DIR$ ATTRIBUTES FASTMEM  :: partuz
+	!DIR ATTRIBUTES FASTMEM  :: partuz
   !> array for the inverse of the particle gamma factor
 	REAL(num), DIMENSION(:), POINTER :: partgaminv
 	!dir$ attributes align:64 :: partgaminv
-	!!DIR$ ATTRIBUTES FASTMEM  :: partgaminv
+	!DIR ATTRIBUTES FASTMEM  :: partgaminv
 	REAL(num), DIMENSION(:,:), POINTER :: pid
 	!dir$ attributes align:64 :: pid
-	!!DIR$ ATTRIBUTES FASTMEM  :: pid
+	!DIR ATTRIBUTES FASTMEM  :: pid
 	REAL(num), DIMENSION(:), POINTER :: partex
 	!dir$ attributes align:64 :: partex
-	!!DIR$ ATTRIBUTES FASTMEM  :: partex
+	!DIR ATTRIBUTES FASTMEM  :: partex
 	REAL(num), DIMENSION(:), POINTER :: partey
 	!dir$ attributes align:64 :: partey
-	!!DIR$ ATTRIBUTES FASTMEM  :: partey
+	!DIR ATTRIBUTES FASTMEM  :: partey
 	REAL(num), DIMENSION(:), POINTER :: partez
 	!dir$ attributes align:64 :: partez
-	!!DIR$ ATTRIBUTES FASTMEM  :: partez
+	!DIR ATTRIBUTES FASTMEM  :: partez
 	REAL(num), DIMENSION(:), POINTER :: partbx
 	!dir$ attributes align:64 :: partbx
-	!!DIR$ ATTRIBUTES FASTMEM  :: partbx
+	!DIR ATTRIBUTES FASTMEM  :: partbx
 	REAL(num), DIMENSION(:), POINTER :: partby
 	!dir$ attributes align:64 :: partby
-	!!DIR$ ATTRIBUTES FASTMEM  :: partby
+	!DIR ATTRIBUTES FASTMEM  :: partby
 	REAL(num), DIMENSION(:), POINTER :: partbz
 	!dir$ attributes align:64 :: partbz
-	!!DIR$ ATTRIBUTES FASTMEM  :: partbz
+	!DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers
 
 

@@ -1199,7 +1199,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
                 ic=ICELL(n)
                 !DIR$ ASSUME_ALIGNED rhocells:64
                 !DIR$ ASSUME_ALIGNED ww:64
-                !!DIR$ NOUNROLL
+                !DIR NOUNROLL
                 DO nv=1,8 !!! - VECTOR
                     rhocells(nv,ic)=rhocells(nv,ic)+ww(n,nv)
                 END DO
@@ -2741,7 +2741,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_v2
 			            !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			            !$DIR SIMD 
-                  !!DIR$ ASSUME_ALIGNED partgaminv:64			            
+                  !DIR ASSUME_ALIGNED partgaminv:64			            
 #endif 
                         DO n=1,MIN(LVEC2,np-ip+1)
             

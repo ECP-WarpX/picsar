@@ -20,7 +20,6 @@
 ! - particle_sorting_sub
 ! - pxr_particle_bin_sorting
 ! ________________________________________________________________________________________
-
 MODULE sorting
 
   IMPLICIT NONE

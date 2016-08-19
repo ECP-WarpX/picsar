@@ -12,9 +12,9 @@ subroutine \hyperlink{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{f
 subroutine \hyperlink{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}{particle\+\_\+pusher\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
 \item 
 subroutine \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{pxrpush\+\_\+particles\+\_\+part1}
-\item 
+\begin{DoxyCompactList}\small\item\em Field gathering+ (E \& B) Push half a time step. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-\item 
+\begin{DoxyCompactList}\small\item\em Perform the field gathering + (E \& B) Push half a time step. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{pxrpush\+\_\+particles\+\_\+part2}
 \item 
 subroutine \hyperlink{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}{pxr\+\_\+pushxyz} (np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
@@ -345,6 +345,10 @@ subroutine \hyperlink{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{f
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{}\label{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}
+
+
+Field gathering+ (E \& B) Push half a time step. 
+
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part1\+\_\+sub@{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub}}
 \index{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub@{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part1\+\_\+sub (
@@ -373,6 +377,13 @@ subroutine \hyperlink{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{f
 \item[{real(num), intent(in)}]{dtt}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}{}\label{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}
+
+
+Perform the field gathering + (E \& B) Push half a time step. 
+
+This subroutine is called in \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{pxrpush\+\_\+particles\+\_\+part1()} \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}}
 \index{pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part2}{pxrpush_particles_part2}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part2 (

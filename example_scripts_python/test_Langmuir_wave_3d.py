@@ -169,11 +169,14 @@ def test_langmuir_wave():
   # 2 - persistent (under development)
   mpicom_curr=0
   # Field gathering method
-  # 0 - Optimized functions (default)
-  # 1 - non-optimized functions  
-  fieldgave=0
+  # 0 - Most optimized functions (default)
+  # 1 - Optimized but E and B in separate subroutines
+  # 2 - Scalar subroutines
+  # 3 - General order subroutines
+  fieldgathe=0
   # Type of particle communication
   # 0 - optimized version
+  # 1 - MPI and OMP in separate subroutines
   partcom =0
 
   #-------------------------------------------------------------------------------
@@ -337,7 +340,7 @@ def test_langmuir_wave():
                    #nzguard=6,
                    currdepo=currdepo,   
                    mpicom_curr=mpicom_curr,
-                   fieldgave=fieldgave,
+                   fieldgathe=fieldgathe,
                    sorting=sort,
                    partcom=partcom,
                    l_verbose=l_verbose)

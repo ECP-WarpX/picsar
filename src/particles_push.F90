@@ -531,9 +531,9 @@ END SUBROUTINE particle_pusher_sub
 
 
 !===============================================================================
-!  Field gathering+ (E & B) Push half a time step 
-!===============================================================================
+!>  Field gathering+ (E & B) Push half a time step 
 SUBROUTINE pxrpush_particles_part1
+! ________________________________________________________________________________________
 USE fields
 USE shared_data
 USE params
@@ -543,32 +543,42 @@ CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
 END SUBROUTINE pxrpush_particles_part1
 
-
+! ________________________________________________________________________________________
+!> Perform the field gathering + (E & B) Push half a time step 
+!> @brief
+!
+!> This subroutine is called in pxrpush_particles_part1()
+!> @details
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
 SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-USE particles
-USE constants
-USE tiling
-USE timing
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-REAL(num), INTENT(IN) :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-REAL(num), INTENT(IN) :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-REAL(num), INTENT(IN) :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-REAL(num), INTENT(IN) :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-TYPE(grid_tile), POINTER :: currg
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-INTEGER(idp) :: nxjg,nyjg,nzjg
-LOGICAL(idp) :: isgathered=.FALSE.
+! ________________________________________________________________________________________
+	USE particles
+	USE constants
+	USE tiling
+	USE timing
+	IMPLICIT NONE
+	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
+	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+	REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN) :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN) :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN) :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN) :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+	INTEGER(idp) :: ispecies, ix, iy, iz, count
+	INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+	TYPE(particle_species), POINTER :: curr
+	TYPE(particle_tile), POINTER :: curr_tile
+	TYPE(grid_tile), POINTER :: currg
+	REAL(num) :: tdeb, tend
+	INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
+	INTEGER(idp) :: nxjg,nyjg,nzjg
+	LOGICAL(idp) :: isgathered=.FALSE.
 
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -623,6 +633,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 					curr_tile%part_bx(1:count)=0.0_num
 					curr_tile%part_by(1:count)=0.0_num
 					curr_tile%part_bz(1:count)=0.0_num
+					
 					!!! ---- Loop by blocks over particles in a tile (blocking)
 					SELECT CASE (c_dim)
 					CASE (2) ! 2D CASE 
@@ -770,7 +781,7 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif 
   DO ip=1,np
       xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
@@ -814,7 +825,7 @@ const = q*dt/m
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif  
 DO ip=1,np
     uxp(ip) = uxp(ip) + ex(ip)*const
@@ -858,7 +869,7 @@ const = q*dt*0.5_num/m
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif  
 DO ip=1,np
     tx = gaminv(ip)*bx(ip)*const
@@ -910,7 +921,7 @@ clghtisq = 1.0_num/clight**2
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif  
 DO ip=1,np
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
@@ -955,7 +966,7 @@ IF (which==0) THEN
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif      
     DO ip=1,np
 		! 		--- get gi
@@ -1002,7 +1013,7 @@ ELSE IF(which==1) THEN
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif    
     DO ip=1,np
 		! 		--- get gi
@@ -1030,7 +1041,7 @@ ELSE IF(which==2) THEN
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif      
     DO ip=1,np
 		!     --- get U'
@@ -1152,7 +1163,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
       !DIR$ SIMD VECREMAINDER 
 #elif _OPENMP && _OPENMP>=201307
       !$OMP SIMD         
@@ -1248,7 +1259,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64      
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1279,7 +1290,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64 
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64 
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1315,7 +1326,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64      
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1344,7 +1355,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1455,7 +1466,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
       !DIR$ SIMD VECREMAINDER 
 #elif _OPENMP && _OPENMP>=201307
       !$OMP SIMD         
@@ -1489,7 +1500,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64      
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1520,7 +1531,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64 
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64 
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1556,7 +1567,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64      
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1586,7 +1597,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -1694,7 +1705,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
       !DIR$ SIMD VECREMAINDER 
 #elif _OPENMP && _OPENMP>=201307
       !$OMP SIMD         
@@ -2052,7 +2063,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64      
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -2083,7 +2094,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64 
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64 
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -2119,7 +2130,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64      
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
@@ -2149,7 +2160,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
       !DIR$ ASSUME_ALIGNED gaminv:64
-      !!DIR$ VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
+      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 

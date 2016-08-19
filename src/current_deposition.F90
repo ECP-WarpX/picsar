@@ -866,9 +866,6 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), DIMENSION(:,:), ALLOCATABLE :: jxcells,jycells,jzcells
-  !!DIR$ ATTRIBUTES FASTMEM  :: jxcells				
-  !!DIR$ ATTRIBUTES FASTMEM  :: jycells
-  !!DIR$ ATTRIBUTES FASTMEM  :: jzcells   
   INTEGER(idp)                           :: ispecies, ix, iy, iz, np, ncells
   INTEGER(idp)                           :: jmin, jmax, kmin, kmax, lmin, lmax
   INTEGER(idp)                           :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
@@ -1198,9 +1195,6 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), DIMENSION(:,:), ALLOCATABLE :: jxcells,jycells,jzcells
-  !!DIR$ ATTRIBUTES FASTMEM  :: jxcells				
-  !!DIR$ ATTRIBUTES FASTMEM  :: jycells
-  !!DIR$ ATTRIBUTES FASTMEM  :: jzcells   
   INTEGER(idp)                           :: ispecies, ix, iy, iz, np, ncells
   INTEGER(idp)                           :: jmin, jmax, kmin, kmax, lmin, lmax
   INTEGER(idp)                           :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
@@ -2915,9 +2909,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     IMPLICIT NONE
     
     INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
-    REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jx
-    REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jy
-    REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jz
+    !REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jx
+    !REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jy
+    !REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)),INTENT(IN OUT) :: jz
+    REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+    REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+    REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num), DIMENSION(:,:), ALLOCATABLE :: jxcells,jycells,jzcells
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
     REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
@@ -2989,7 +2986,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+		!DIR$ SIMD 
 #endif 
         DO n=1,MIN(LVEC,np-ip+1)
             nn=ip+n-1
@@ -3130,7 +3127,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-			!$DIR SIMD 
+			!DIR$ SIMD 
 #endif 
             DO nv=1,8
                 ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
@@ -5222,11 +5219,11 @@ IMPLICIT NONE
 
 #if defined __INTEL_COMPILER 
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-        !!DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
+        !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
         !DIR$ ASSUME_ALIGNED ICELL:64
 #elif defined __IBMBGQ__
         !IBM* ALIGN(64, xp,yp,zp)
-        !!IBM* ALIGN(64,vx,vy,vz)
+        !IBM* ALIGN(64,uxp,uyp,uzp)
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307

@@ -51,10 +51,11 @@ class EM3DPXR(EM3DFFT):
                       'l_output_freq':1,
                       'currdepo':0,     # Current deposition method
                       'mpicom_curr':1,   # Com type Current deposition
-                      'fieldgave':0,     # Field gathering method
+                      'fieldgathe':0,     # Field gathering method
                       'partcom':0,       # Particle communication
                       'lvec_curr_depo':8,
-                      'lvec_charge_depo':64,                      
+                      'lvec_charge_depo':64, 
+                      'lvec_fieldgathe':512,                     
                       'sorting':None
                       }
 
@@ -304,7 +305,7 @@ class EM3DPXR(EM3DFFT):
         # Tye of MPI communication for the current
         pxr.mpicom_curr=self.mpicom_curr
         # Field gathering method
-        pxr.fieldgave=self.fieldgave
+        pxr.fieldgave=self.fieldgathe
         # Particle communication
         pxr.partcom=self.partcom
         
@@ -312,6 +313,14 @@ class EM3DPXR(EM3DFFT):
         pxr.lvec_curr_depo = self.lvec_curr_depo
         # lvec size for the charge deposition
         pxr.lvec_charge_depo = self.lvec_charge_depo
+        # lvec size for the field gathering
+        if (self.lvec_fieldgathe==0):
+          if ((pxr.nox==3)and(pxr.noy==2)and(pxr.noz==3)):
+            pxr.lvec_fieldgathe = 64
+          else:
+            pxr.lvec_fieldgathe = 512
+        else:
+          pxr.lvec_fieldgathe = self.lvec_fieldgathe
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
