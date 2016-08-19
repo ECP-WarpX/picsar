@@ -4,11 +4,11 @@
 \begin{DoxyCompactItemize}
 \item 
 subroutine \hyperlink{current__deposition__2d_8_f90_ad414bf8cb02772ebe516d5520ad22c95}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+2d}
-\item 
+\begin{DoxyCompactList}\small\item\em Main subroutine for the current deposition called in submain for the 2d. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition__2d_8_f90_a7384ad64cf4beca09ab1a45d8c323395}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp} (curr\+\_\+depo\+\_\+sub, jxg, jyg, jzg,                                                       nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with Esirkepov method in 2D. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition__2d_8_f90_a8b3dd693be6a41b342722e15aa4880de}{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+n} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin,                                                                                                                                                                                               dt, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                                                               nox, noz, l\+\_\+particles\+\_\+weight, l4symtry, l\+\_\+2drz, type\+\_\+rz\+\_\+depose)
-\item 
+\begin{DoxyCompactList}\small\item\em 2D Current deposition esirkepov n order (from 0 to 3) \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition__2d_8_f90_afe150c6f9a46d86a94382abd2ad2dee5}{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin,                                                                                                                                                                                               dt, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                                                               nox, noz, lvect, l\+\_\+particles\+\_\+weight, l4symtry, l\+\_\+2drz, type\+\_\+rz\+\_\+depose)
 \item 
 subroutine \hyperlink{current__deposition__2d_8_f90_a439e9054acf0ed39dd909d54226b1ba0}{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+2\+\_\+2} (jx, jy, jz, np, xp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin,                                                                                                                                                                                               dt, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                                                               nox, noz, lvect, l\+\_\+particles\+\_\+weight, l4symtry, l\+\_\+2drz, type\+\_\+rz\+\_\+depose)
@@ -158,7 +158,11 @@ subroutine \hyperlink{current__deposition__2d_8_f90_a0cbc0a93a581ce24a8bc0619589
 \item[{integer(idp)}]{type\+\_\+rz\+\_\+depose}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition__2d_8_f90_a8b3dd693be6a41b342722e15aa4880de}{}\label{current__deposition__2d_8_f90_a8b3dd693be6a41b342722e15aa4880de}
-\index{current\+\_\+deposition\+\_\+2d.\+F90@{current\+\_\+deposition\+\_\+2d.\+F90}!pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3@{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3}}
+
+
+2D Current deposition esirkepov n order (from 0 to 3) 
+
+This subroutine is adapted from the version of W\+A\+RP. This subroutine is called in \hyperlink{current__deposition__2d_8_f90_a7384ad64cf4beca09ab1a45d8c323395}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp()}. \index{current\+\_\+deposition\+\_\+2d.\+F90@{current\+\_\+deposition\+\_\+2d.\+F90}!pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3@{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3}}
 \index{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3@{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3}!current\+\_\+deposition\+\_\+2d.\+F90@{current\+\_\+deposition\+\_\+2d.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3(jx, jy, jz, np, xp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin,                                                                                                                                                                                               dt, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                                                               nox, noz, lvect, l\+\_\+particles\+\_\+weight, l4symtry, l\+\_\+2drz, type\+\_\+rz\+\_\+depose)}{pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx, jy, jz, np, xp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin,                                                                                                                                                                                               dt, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                                                               nox, noz, lvect, l_particles_weight, l4symtry, l_2drz, type_rz_depose)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+svec\+\_\+3\+\_\+3 (
 \begin{DoxyParamCaption}
@@ -233,6 +237,10 @@ subroutine \hyperlink{current__deposition__2d_8_f90_a0cbc0a93a581ce24a8bc0619589
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition__2d_8_f90_ad414bf8cb02772ebe516d5520ad22c95}{}\label{current__deposition__2d_8_f90_ad414bf8cb02772ebe516d5520ad22c95}
+
+
+Main subroutine for the current deposition called in submain for the 2d. 
+
 \index{current\+\_\+deposition\+\_\+2d.\+F90@{current\+\_\+deposition\+\_\+2d.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp}!current\+\_\+deposition\+\_\+2d.\+F90@{current\+\_\+deposition\+\_\+2d.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp(curr\+\_\+depo\+\_\+sub, jxg, jyg, jzg,                                                       nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}{pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_sub, jxg, jyg, jzg,                                                       nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov2d\+\_\+sub\+\_\+openmp (
@@ -257,3 +265,8 @@ subroutine \hyperlink{current__deposition__2d_8_f90_a0cbc0a93a581ce24a8bc0619589
 \item[{integer(idp), intent(in)}]{lvect}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition__2d_8_f90_a7384ad64cf4beca09ab1a45d8c323395}{}\label{current__deposition__2d_8_f90_a7384ad64cf4beca09ab1a45d8c323395}
+
+
+Deposit current in each tile with Esirkepov method in 2D. 
+
+This subroutine is called from Fortran main program and contains an interface argument Open\+MP version. Avoids conflict while reducing tile currents in the global current array. 

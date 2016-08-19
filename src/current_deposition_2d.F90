@@ -7,9 +7,9 @@
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
+!> Main subroutine for the current deposition called in submain for the 2d
+!> @brief
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
-! 
-! Main subroutine for the current deposition called in submain for the 2d
 ! ________________________________________________________________________________________
   USE fields
   USE shared_data
@@ -123,8 +123,13 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! __ Current deposition ________________________________________________________________
 
   ! _______________________________________________________
+  ! Esirkepov general order subroutine
+  IF (currdepo.EQ.2) THEN
+      CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	       nox,noy,noz,dx,dy,dz,dt)
+  ! _______________________________________________________
   ! Esirkepov OpenMP/tiling version non-vectorized but more optimized than the general order subroutine
-  IF (currdepo.EQ.1) THEN
+  ELSE IF (currdepo.EQ.1) THEN
 
     ! Order 1
     IF ((nox.eq.1).AND.(noz.eq.1)) THEN 
@@ -187,12 +192,15 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 
 
 ! ________________________________________________________________________________________
+!> Deposit current in each tile with Esirkepov method in 2D
+!> @brief
+!
+!> This subroutine is called from Fortran main program and contains an interface argument 
+!> OpenMP version. Avoids conflict while reducing tile currents in the global 
+!> current array. 
+!> @details
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_sub,jxg,jyg,jzg,&
                 nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvect)
-! Deposit current in each tile with Esirkepov method in 2D
-! This subroutine is called from Fortran main program and contains an interface argument 
-! OpenMP version. Avoids conflict while reducing tile currents in the global 
-! current array. 
 ! ________________________________________________________________________________________
   USE particles
   USE constants
@@ -461,12 +469,15 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp
 
 
 ! ________________________________________________________________________________________
+!> 2D Current deposition esirkepov n order (from 0 to 3)
+!> @brief
+!
+!> This subroutine is adapted from the version of WARP.
+!> This subroutine is called in pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp().
+!> @details
 subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
-! 2D Current deposition esirkepov n order (from 0 to 3)
-! This subroutine is adapted from the version of WARP
-!
 !
 ! Input parameters:
 ! - jx,jy,jz: current arrays
@@ -1764,13 +1775,13 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
           kc = ikxp0(n)+k
         
           ! --- Jx
-          jx(ic,kc) = jx(ic,kc) + sdx(n,i,k)              ! Deposition on the current
+          jx(ic,kc) = jx(ic,kc) + sdx(n,i,k)  ! Deposition on the current
         
           ! -- Jy (2D Esirkepov scheme)
           jy(ic,kc) = jy(ic,kc) + sdy(n,i,k)
         
           ! --- Jz
-          jz(ic,kc) = jz(ic,kc) + sdz(n,i,k)                  ! Deposition on the current
+          jz(ic,kc) = jz(ic,kc) + sdz(n,i,k)  ! Deposition on the current
         
         END DO
       END DO

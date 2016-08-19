@@ -120,10 +120,13 @@ $(document).ready(function(){initNavTree('current__deposition__2d_8_f90.html',''
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ad414bf8cb02772ebe516d5520ad22c95"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition__2d_8_f90.html#ad414bf8cb02772ebe516d5520ad22c95">pxrdepose_currents_on_grid_jxjyjz_2d</a></td></tr>
+<tr class="memdesc:ad414bf8cb02772ebe516d5520ad22c95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main subroutine for the current deposition called in submain for the 2d.  <a href="#ad414bf8cb02772ebe516d5520ad22c95">More...</a><br /></td></tr>
 <tr class="separator:ad414bf8cb02772ebe516d5520ad22c95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7384ad64cf4beca09ab1a45d8c323395"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition__2d_8_f90.html#a7384ad64cf4beca09ab1a45d8c323395">pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp</a> (curr_depo_sub, jxg, jyg, jzg,                                                       nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)</td></tr>
+<tr class="memdesc:a7384ad64cf4beca09ab1a45d8c323395"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with Esirkepov method in 2D.  <a href="#a7384ad64cf4beca09ab1a45d8c323395">More...</a><br /></td></tr>
 <tr class="separator:a7384ad64cf4beca09ab1a45d8c323395"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b3dd693be6a41b342722e15aa4880de"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition__2d_8_f90.html#a8b3dd693be6a41b342722e15aa4880de">pxr_depose_jxjyjz_esirkepov2d_n</a> (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin,                                                                                                                                                                                               dt, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                                                               nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_depose)</td></tr>
+<tr class="memdesc:a8b3dd693be6a41b342722e15aa4880de"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D Current deposition esirkepov n order (from 0 to 3)  <a href="#a8b3dd693be6a41b342722e15aa4880de">More...</a><br /></td></tr>
 <tr class="separator:a8b3dd693be6a41b342722e15aa4880de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe150c6f9a46d86a94382abd2ad2dee5"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition__2d_8_f90.html#afe150c6f9a46d86a94382abd2ad2dee5">pxr_depose_jxjyjz_esirkepov2d_1_1</a> (jx, jy, jz, np, xp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin,                                                                                                                                                                                               dt, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                                                               nox, noz, lvect, l_particles_weight, l4symtry, l_2drz, type_rz_depose)</td></tr>
 <tr class="separator:afe150c6f9a46d86a94382abd2ad2dee5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -863,6 +866,9 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>2D Current deposition esirkepov n order (from 0 to 3) </p>
+<p>This subroutine is adapted from the version of WARP. This subroutine is called in <a class="el" href="current__deposition__2d_8_f90.html#a7384ad64cf4beca09ab1a45d8c323395" title="Deposit current in each tile with Esirkepov method in 2D. ">pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp()</a>. </p>
+
 </div>
 </div>
 <a class="anchor" id="a215d16020f994b7043b8c1b0400faa48"></a>
@@ -1242,6 +1248,8 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Main subroutine for the current deposition called in submain for the 2d. </p>
+
 </div>
 </div>
 <a class="anchor" id="a7384ad64cf4beca09ab1a45d8c323395"></a>
@@ -1363,6 +1371,9 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Deposit current in each tile with Esirkepov method in 2D. </p>
+<p>This subroutine is called from Fortran main program and contains an interface argument OpenMP version. Avoids conflict while reducing tile currents in the global current array. </p>
 
 </div>
 </div>
