@@ -8,8 +8,8 @@
 
 PROGRAM current_deposition_3d_test
 
-  USE constants
   USE mpi
+  USE constants
   IMPLICIT NONE
   
   ! __________________________________________________________________
@@ -44,7 +44,7 @@ PROGRAM current_deposition_3d_test
   CHARACTER(len=512)                       :: line  
 
   write(0,'(" ____________________________________________________________________________")')
-  write(0,*) 'TEST: current deposition 3D'
+  write(0,*) 'TEST: field gathering 2d 2D'
 
   ! _________________________________________________________________
   ! Parameter initialization

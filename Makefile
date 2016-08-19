@@ -208,8 +208,10 @@ buildtest: $(SRCDIR)/modules.o \
 	Acceptance_testing/Gcov_tests/field_gathering_test.o \
 	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o \
 	Acceptance_testing/Gcov_tests/esirkepov_3d_test.o \
-	Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
+	Acceptance_testing/Gcov_tests/esirkepov_2d_test.o \
+	Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_2d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/esirkepov_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_2d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
@@ -231,12 +233,17 @@ test_physics:
 	test1 test2 test3
 	
 test_gcov:
+	./Acceptance_testing/Gcov_tests/field_gathering_2d_test
 	./Acceptance_testing/Gcov_tests/field_gathering_3d_test
 	./Acceptance_testing/Gcov_tests/current_deposition_3d_test
 	./Acceptance_testing/Gcov_tests/esirkepov_3d_test
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
 
-esirkepov_3d_test:	
-	./Acceptance_testing/Gcov_tests/esirkepov_3d_test	
+field_gathering_2d_test:
+	./Acceptance_testing/Gcov_tests/field_gathering_2d_test
+field_gathering_3d_test:
+	./Acceptance_testing/Gcov_tests/field_gathering_3d_test
 esirkepov_2d_test:	
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
+esirkepov_3d_test:	
+	./Acceptance_testing/Gcov_tests/esirkepov_3d_test	

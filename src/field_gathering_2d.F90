@@ -7,13 +7,22 @@
 !
 ! - pxr_gete2dxz_n_energy_conserving
 ! - pxr_getb2dxz_n_energy_conserving
+! - pxr_gete2dxz_energy_conserving_3_3
+! - pxr_getb2dxz_energy_conserving_3_3
 !_________________________________________________________________________________________
 
 
 !_________________________________________________________________________________________
+!> General subroutines for the 2D cartesian field gathering
+!> @brief
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
 SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                        nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,l4symtry,l_lower_order_in_v)
-! General subroutines for the 2D cartesian field gathering
 !_________________________________________________________________________________________
 
   USE constants
@@ -96,9 +105,9 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,z
 END SUBROUTINE geteb2dxz_energy_conserving
 
 !_________________________________________________________________________________________
+!> 2D electric field gathering routine 
 subroutine pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
                                        nox,noz,exg,eyg,ezg,l4symtry,l_2drz,l_lower_order_in_v)
-! 2D electric field gathering routine 
 !_________________________________________________________________________________________                                       
       use constants
       implicit none
@@ -349,11 +358,14 @@ subroutine pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz
  end subroutine pxr_gete2dxz_n_energy_conserving
 
 
-!! 2D magnetic field gathering routine 
+! ________________________________________________________________________________________
+!> 2D magnetic field gathering routine 
 subroutine pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
                                        nox,noz,bxg,byg,bzg,l4symtry,l_2drz,l_lower_order_in_v)
+! ________________________________________________________________________________________
       use constants
       implicit none
+      
       integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard
       real(num), dimension(np) :: xp,yp,zp,bx,by,bz
       logical(idp) :: l4symtry,l_2drz,l_lower_order_in_v
@@ -606,11 +618,14 @@ subroutine pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz
 
 
 !_________________________________________________________________________________________
+!> Field gathering cartesian in 2D for the electric field
+!> @brief
+!
+!> This function is vectorized
+!> @details
   subroutine pxr_gete2dxz_energy_conserving_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz, &
                             nxguard,nzguard,exg,eyg,ezg,l_lower_order_in_v)
 !                                       
-! Field gathering cartesian in 2D for the electric field
-! This function is vectorized
 !
 ! Inputs:
 ! - np: particle number
