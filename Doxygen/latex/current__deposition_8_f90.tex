@@ -4,15 +4,15 @@
 \begin{DoxyCompactItemize}
 \item 
 subroutine \hyperlink{current__deposition_8_f90_af9162fd522e5d0fe559fc65848991ee3}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz}
-\item 
+\begin{DoxyCompactList}\small\item\em Main subroutine for managing the current deposition. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a3a0c5fb2e4682380dda0f71bcbf132d4}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with the classical method. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a2624df4633b361373555666b08c92ca1}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2} (curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with the classical method version 2. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a05b540593f69d201b9ac6e74b0fea593}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3} (curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with the classical method version 3. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_ae617423f1f21cbacb686a291c6b0ad7b}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with Esirkepov method. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b80516}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp} (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
 \item 
 subroutine \hyperlink{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
@@ -800,6 +800,16 @@ Henri Vincenti
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_af9162fd522e5d0fe559fc65848991ee3}{}\label{current__deposition_8_f90_af9162fd522e5d0fe559fc65848991ee3}
+
+
+Main subroutine for managing the current deposition. 
+
+This subroutine is called in \hyperlink{submain_8_f90}{submain.\+F90} in \hyperlink{submain_8_f90_ae0a3ce7909f5d34b3684e226b780a075}{step()}. \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2015-\/2016 
+\end{DoxyDate}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp(func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp (
@@ -823,7 +833,11 @@ Henri Vincenti
 \item[{real(num), intent(in)}]{dtt}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a3a0c5fb2e4682380dda0f71bcbf132d4}{}\label{current__deposition_8_f90_a3a0c5fb2e4682380dda0f71bcbf132d4}
-\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2}}
+
+
+Deposit current in each tile with the classical method. 
+
+Open\+MP version. Avoids conflict while reducing tile currents in the global current array. \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2(curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2(curr_depo_sub, curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2 (
 \begin{DoxyParamCaption}
@@ -848,6 +862,33 @@ Henri Vincenti
 \item[{integer(idp), intent(in)}]{lvect}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a2624df4633b361373555666b08c92ca1}{}\label{current__deposition_8_f90_a2624df4633b361373555666b08c92ca1}
+
+
+Deposit current in each tile with the classical method version 2. 
+
+Open\+MP version. Avoids conflict while reducing tile currents in the global current array. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em func\+\_\+order} & represent the subroutine to be used for current deposition depending on the selected order \\
+\hline
+\mbox{\tt in}  & {\em jxg,jyg,jzg} & current arrays \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & cell number in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & guard cells \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & orders for current deposition \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz,dtt} & space and time steps \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size \\
+\hline
+\end{DoxyParams}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3(curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3(curr_depo_sub, curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3 (
@@ -873,6 +914,29 @@ Henri Vincenti
 \item[{integer(idp), intent(in)}]{lvect}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a05b540593f69d201b9ac6e74b0fea593}{}\label{current__deposition_8_f90_a05b540593f69d201b9ac6e74b0fea593}
+
+
+Deposit current in each tile with the classical method version 3. 
+
+Open\+MP version. Avoids conflict while reducing tile currents in the global current array. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species. The loop over the species is also firt loop and not inside the tile loops. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em func\+\_\+order} & represent the subroutine to be used for current deposition depending on the selected order \\
+\hline
+\mbox{\tt in}  & {\em curr\+\_\+reduc\+\_\+sub} & subroutine to be used for the reduction \\
+\hline
+\mbox{\tt in}  & {\em jxg,jyg,jzg} & current arrays \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & cell number in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & guard cells \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & orders for current deposition \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz,dtt} & space and time steps \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size \\
+\hline
+\end{DoxyParams}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq(func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq (
@@ -919,6 +983,16 @@ Henri Vincenti
 \item[{real(num), intent(in)}]{dtt}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_ae617423f1f21cbacb686a291c6b0ad7b}{}\label{current__deposition_8_f90_ae617423f1f21cbacb686a291c6b0ad7b}
+
+
+Deposit current in each tile with Esirkepov method. 
+
+This subroutine is called from Fortram main program and contains an interface argument Open\+MP version. Avoids conflict while reducing tile currents in the global current array. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq (

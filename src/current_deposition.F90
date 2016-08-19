@@ -52,11 +52,21 @@
 ! ________________________________________________________________________________________
 
 
-! _____________________________________________________________________
+! ________________________________________________________________________________________
+!> Main subroutine for managing the current deposition
+!> @brief
+!
+!> This subroutine is called in submain.F90 in step().
+!> @details
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> 2015-2016
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
-! 
-! Main subroutine called in submain
-! ___________________________________________________________________
+! ________________________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -532,13 +542,17 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
 
 
-!===============================================================================
-! Deposit current in each tile with the classical method
-! OpenMP version. Avoids conflict while reducing tile currents in the global 
-! current array. 
-!===============================================================================
+!=========================================================================================
+!> Deposit current in each tile with the classical method
+!> @brief
+!
+!> OpenMP version. Avoids conflict while reducing tile currents in the global 
+!> current array. 
+!> @details
+!
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+!=========================================================================================
   USE particles
   USE constants
   USE tiling
@@ -619,7 +633,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg
                   ENDIF 
                   ! Depose current in jtile
                   CALL func_order(currg%jxtile,currg%jytile,currg%jztile,count,&
-                  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
+                  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,           &
                   curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,  			   &
                   curr_tile%part_gaminv,  &
                   curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
@@ -797,25 +811,34 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 
 
-!===============================================================================
+!=========================================================================================
+!> Deposit current in each tile with the classical method version 2
+!> @brief
+!
+!> OpenMP version. Avoids conflict while reducing tile currents in the global 
+!> current array. 
+!> In this second version, the transient current arrays are reduced 
+!> after the current deposition for all species and not for each species.
+!> @details
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
+!
+!> @param[in] func_order represent the subroutine to be used for current deposition depending on the selected order
+!> @param[in] jxg,jyg,jzg current arrays
+!> @param[in] nxx,nyy,nzz cell number in each direction
+!> @param[in] nxjguard,nyjguard,nzjguard guard cells
+!> @param[in] noxx,noyy,nozz orders for current deposition
+!> @param[in] dxx,dyy,dzz,dtt space and time steps
+!> @param[in] lvect vector size
+!
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2(&
 curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvect)
-! Deposit current in each tile with the classical method
-! OpenMP version. Avoids conflict while reducing tile currents in the global 
-! current array. 
-! In this second version, the transient current arrays are reduced 
-! after the current deposition for all species and not for each species.
-!
-! Inputs: 
-! - func_order: represent the subroutine to be used for current deposition depending on the selected order
-! - jxg,jyg,jzg: current arrays
-! - nxx,nyy,nzz: cell number in each direction
-! - nxjguard,nyjguard,nzjguard: guard cells
-! - noxx,noyy,nozz: orders for current deposition
-! - dxx,dyy,dzz,dtt: space and time steps
-! - lvect: vector size
-!===============================================================================	
+!=========================================================================================
   USE particles
   USE constants
   USE tiling
@@ -1125,26 +1148,29 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
    
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 
-!===============================================================================
+!=========================================================================================
+!> Deposit current in each tile with the classical method version 3
+!> @brief
+!
+!> OpenMP version. Avoids conflict while reducing tile currents in the global 
+!> current array. 
+!> In this second version, the transient current arrays are reduced 
+!> after the current deposition for all species and not for each species.
+!> The loop over the species is also firt loop and not inside the tile loops.
+!
+!> @param[in] func_order represent the subroutine to be used for current deposition depending on the selected order
+!> @param[in] curr_reduc_sub subroutine to be used for the reduction
+!> @param[in] jxg,jyg,jzg current arrays
+!> @param[in] nxx,nyy,nzz cell number in each direction
+!> @param[in] nxjguard,nyjguard,nzjguard guard cells
+!> @param[in] noxx,noyy,nozz orders for current deposition
+!> @param[in] dxx,dyy,dzz,dtt space and time steps
+!> @param[in] lvect vector size
+!
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3(&
 curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvect)
-!!!! Boucle sur les especes a l'exterieur !!!! 
-!	
-! Deposit current in each tile with the classical method
-! OpenMP version. Avoids conflict while reducing tile currents in the global 
-! current array. 
-! In this second version, the transient current arrays are reduced 
-! after the current deposition for all species and not for each species.
-!
-! Inputs: 
-! - func_order: represent the subroutine to be used for current deposition depending on the selected order
-! - jxg,jyg,jzg: current arrays
-! - nxx,nyy,nzz: cell number in each direction
-! - nxjguard,nyjguard,nzjguard: guard cells
-! - noxx,noyy,nozz: orders for current deposition
-! - dxx,dyy,dzz,dtt: space and time steps
-!===============================================================================	
+!=========================================================================================
   USE particles
   USE constants
   USE tiling
@@ -1455,53 +1481,64 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
    
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3
 
-!===============================================================================
-! Deposit current in each tile with Esirkepov method
-! This subroutine is called from Fortram main program and contains an interface argument 
-! OpenMP version. Avoids conflict while reducing tile currents in the global 
-! current array. 
-!===============================================================================
+!=========================================================================================
+!> Deposit current in each tile with Esirkepov method
+!> @brief
+!
+!> This subroutine is called from Fortram main program and contains an interface argument 
+!> OpenMP version. Avoids conflict while reducing tile currents in the global 
+!> current array. 
+!> @details
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
+!
+!=========================================================================================
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-USE particles
-USE constants
-USE tiling
-USE omp_lib
-USE timing
-USE time_stat
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-TYPE(grid_tile), POINTER :: currg
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-LOGICAL(idp) :: isdeposited=.FALSE.
+	USE particles
+	USE constants
+	USE tiling
+	USE omp_lib
+	USE timing
+	USE time_stat
+	IMPLICIT NONE
+	
+	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+	REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+	REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	INTEGER(idp) :: ispecies, ix, iy, iz, count
+	INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+	INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+	TYPE(particle_species), POINTER :: curr
+	TYPE(particle_tile), POINTER :: curr_tile
+	TYPE(grid_tile), POINTER :: currg
+	REAL(num) :: tdeb, tend
+	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+	LOGICAL(idp) :: isdeposited=.FALSE.
 
-! For the func_order input function
-INTERFACE
-  SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, & !#do not parse
-           nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
+	! For the func_order input function
+	INTERFACE
+		SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
+						 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, & !#do not parse
+						 nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
 
-    USE constants
-    IMPLICIT NONE
-    INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-    REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-    REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
-    REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    LOGICAL(idp) :: l_particles_weight,l4symtry
-  END SUBROUTINE
+			USE constants
+			IMPLICIT NONE
+			INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+			REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+			REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+			REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+			LOGICAL(idp) :: l_particles_weight,l4symtry
+		END SUBROUTINE
 
-END INTERFACE
+	END INTERFACE
   
   
 tdeb=MPI_WTIME()
