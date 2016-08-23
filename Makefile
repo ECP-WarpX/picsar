@@ -182,7 +182,7 @@ FARGS+= $(LARCH)
 $(SRCDIR)/%.o $(SRCDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 
-all: clean echo createdir build
+all: echo createdir build
 test: test1 test2 test3
 
 build:$(SRCDIR)/modules.o \
