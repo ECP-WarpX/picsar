@@ -181,191 +181,191 @@ END SUBROUTINE step
 ! INIT PLASMA AND FIELD ARRAYS AT it=0
 SUBROUTINE initall
 !===============================================================================
-USE constants
-USE params
-USE fields
-USE particles
-USE shared_data
-USE tiling
-USE time_stat
-USE precomputed
+	USE constants
+	USE params
+	USE fields
+	USE particles
+	USE shared_data
+	USE tiling
+	USE time_stat
+	USE precomputed
 
-!use IFPORT ! uncomment if using the intel compiler (for rand)
-IMPLICIT NONE
-INTEGER(idp)                    :: i,ierror,j,k,l, ispecies, ipart, count
-INTEGER(idp)                    :: jmin, jmax, lmin, lmax, kmin, kmax
-INTEGER(idp)                    :: ix, iy, iz
-INTEGER(idp)                    :: npartemp, ncurr
-REAL(num)                       :: v, th, phi
-REAL(num)                       :: tdeb
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER    :: curr_tile
-!real(8) :: rand
+	!use IFPORT ! uncomment if using the intel compiler (for rand)
+	IMPLICIT NONE
+	INTEGER(idp)                    :: i,ierror,j,k,l, ispecies, ipart, count
+	INTEGER(idp)                    :: jmin, jmax, lmin, lmax, kmin, kmax
+	INTEGER(idp)                    :: ix, iy, iz
+	INTEGER(idp)                    :: npartemp, ncurr
+	REAL(num)                       :: v, th, phi
+	REAL(num)                       :: tdeb
+	TYPE(particle_species), POINTER :: curr
+	TYPE(particle_tile), POINTER    :: curr_tile
+	!real(8) :: rand
 
-! Time statistics
-init_localtimes(:) = 0
-localtimes(:)=0
+	! Time statistics
+	init_localtimes(:) = 0
+	localtimes(:)=0
 
-! Dimension parameter check
-IF (c_dim.eq.2) THEN
-  dy = 1.
-  ntiley = 1
-  ymin = 0
-  ymax = 0
-  ny = 1
-ENDIF
+	! Dimension parameter check
+	IF (c_dim.eq.2) THEN
+		dy = 1.
+		ntiley = 1
+		ymin = 0
+		ymax = 0
+		ny = 1
+	ENDIF
 
-! Few calculations and updates      
-nc    = nlab*g0          ! density (in the simulation frame)
-wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
-lambdalab = 2*pi*clight/wlab
-w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
-w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
-w0    = w0_l 
+	! Few calculations and updates      
+	nc    = nlab*g0          ! density (in the simulation frame)
+	wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
+	lambdalab = 2*pi*clight/wlab
+	w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
+	w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
+	w0    = w0_l 
 
-!!! --- Set time step/ it
-IF (c_dim.eq.3) THEN
-  dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
-ELSE IF (c_dim.eq.2) THEN
-  dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
-ENDIF
-it = 0
+	!!! --- Set time step/ it
+	IF (c_dim.eq.3) THEN
+		dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+	ELSE IF (c_dim.eq.2) THEN
+		dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
+	ENDIF
+	it = 0
 
-!!! --- set number of time steps or total time
-if (tmax.eq.0) then
-  tmax = nsteps*w0_l*dt
-else
-  nsteps = nint(tmax/(w0_l*dt))
-endif
+	!!! --- set number of time steps or total time
+	if (tmax.eq.0) then
+		tmax = nsteps*w0_l*dt
+	else
+		nsteps = nint(tmax/(w0_l*dt))
+	endif
 
-!!! --- Sorting
+	!!! --- Sorting
 
-sorting_dx = sorting_dx*dx
-sorting_dy = sorting_dy*dy
-sorting_dz = sorting_dz*dz
+	sorting_dx = sorting_dx*dx
+	sorting_dy = sorting_dy*dy
+	sorting_dz = sorting_dz*dz
 
-sorting_shiftx = sorting_shiftx*dx
-sorting_shifty = sorting_shifty*dy
-sorting_shiftz = sorting_shiftz*dz
+	sorting_shiftx = sorting_shiftx*dx
+	sorting_shifty = sorting_shifty*dy
+	sorting_shiftz = sorting_shiftz*dz
 
-!!! --- Precomputed parameters
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
-invvol = dxi*dyi*dzi
-dts2dx = 0.5_num*dt*dxi
-dts2dy = 0.5_num*dt*dyi
-dts2dz = 0.5_num*dt*dzi
-dtsdx0 = dt*dxi
-dtsdy0 = dt*dyi
-dtsdz0 = dt*dzi
-clightsq = 1.0_num/clight**2
-dxs2 = dx*0.5_num
-dys2 = dy*0.5_num
-dzs2 = dz*0.5_num
+	!!! --- Precomputed parameters
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
+	invvol = dxi*dyi*dzi
+	dts2dx = 0.5_num*dt*dxi
+	dts2dy = 0.5_num*dt*dyi
+	dts2dz = 0.5_num*dt*dzi
+	dtsdx0 = dt*dxi
+	dtsdy0 = dt*dyi
+	dtsdz0 = dt*dzi
+	clightsq = 1.0_num/clight**2
+	dxs2 = dx*0.5_num
+	dys2 = dy*0.5_num
+	dzs2 = dz*0.5_num
 
-!- Init stencil coefficients
-CALL init_stencil_coefficients()
+	!- Init stencil coefficients
+	CALL init_stencil_coefficients()
 
-! Summary
-IF (rank .EQ. 0) THEN
-  write(0,*) ''
-  write(0,*) 'SIMULATION PARAMETERS:'
-  write(0,*) 'Dimension:',c_dim  
-  write(0,*) 'dx, dy, dz:',dx,dy,dz
-  write(0,*) 'dt:',dt,'s',dt*1e15,'fs'
-  write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
-  write(0,*) 'Number of steps:',nsteps
-  write(0,*) 'Tiles:',ntilex,ntiley,ntilez
-  write(0,*) 'MPI com current:',mpicom_curr
-  write(0,*) 'Current deposition method:',currdepo
-  write(0,*) 'Charge deposition algo:',rhodepo
-  write(0,*) 'Field gathering method:',fieldgave
-  write(0,*) 'Field gathering plus particle pusher seperated:',fg_p_pp_seperated
-  write(0,*) 'Current/field gathering order:',nox,noy,noz
-  write(0,*) 'Part com type:',partcom
-  write(0,*) 'Maxwell derivative coeff:',xcoeffs
-  WRITE(0,*) ''
-  WRITE(0,*) 'Vector length current deposition',lvec_curr_depo
-  WRITE(0,*) 'Vector length charge deposition',lvec_charge_depo
-  WRITE(0,*) 'Vector length field gathering',lvec_fieldgathe  
-  write(0,*) ''
-  write(0,*) 'PLASMA PROPERTIES:'
-  write(0,*) 'Distribution:',pdistr
-  write(0,*) 'Density in the lab frame:',nlab,'m^-3'
-  write(0,*) 'Density in the simulation frame:',nc,'m^-3'
-  write(0,*) 'Cold plasma frequency in the lab frame:',wlab,'s^-1'
-  write(0,*) 'cold plasma wavelength:',lambdalab,'m',lambdalab*1e6,'um'
-  write(0,*) ''
-  
-  write(0,'(" MPI domain decomposition")')  
-  write(0,*) 'Topology:',topology
-  write(0,'(" Local number of cells:",I5,X,I5,X,I5)') nx,ny,nz
-  write(0,'(" Local number of grid point:",I5,X,I5,X,I5)') nx_grid,ny_grid,nz_grid  
-  write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
-  write(0,*) ''  
-    
-  IF (sorting_activated.gt.0) THEN 
-    write(0,*) 'Particle sorting activated'
-    write(0,*) 'dx:',sorting_dx
-    write(0,*) 'dy:',sorting_dy
-    write(0,*) 'dz:',sorting_dz 
-    write(0,*) 'shiftx:',sorting_shiftx
-    write(0,*) 'shifty:',sorting_shifty
-    write(0,*) 'shiftz:',sorting_shiftz    
-    write(0,*) ''    
-  ELSE
-    write(0,*) 'Particle sorting non-activated'
-    write(0,*) ''    
-  ENDIF
-  
-  ! Species properties
-  write(0,*)  'Number of species:',nspecies
-  DO ispecies=1,nspecies
-    curr => species_parray(ispecies)
-    write(0,*) trim(adjustl(curr%name))
-    write(0,*) 'Drift velocity:',curr%vdrift_x,curr%vdrift_y,curr%vdrift_z
-    write(0,*) 'Sorting period:',curr%sorting_period 
-    write(0,*) 'Sorting start:',curr%sorting_start     
-    write(0,*) ''
-  end do
-  
-  ! Diags
-  IF (timestat_activated.gt.0) THEN  
-    write(0,*) 'Output of time statistics activated'
-    write(0,*) 'Computation of the time statistics starts at',timestat_itstart
-    write(0,*) 'Buffer size:',nbuffertimestat
-  ELSE
-    write(0,*) 'Output of time statistics non-activated'
-    write(0,'(X,"Computation of the time statistics starts at iteration:",I5)') timestat_itstart    
-  ENDIF
-  write(0,*) 
-  
-end if
+	! Summary
+	IF (rank .EQ. 0) THEN
+		write(0,*) ''
+		write(0,*) 'SIMULATION PARAMETERS:'
+		write(0,*) 'Dimension:',c_dim  
+		write(0,*) 'dx, dy, dz:',dx,dy,dz
+		write(0,*) 'dt:',dt,'s',dt*1e15,'fs'
+		write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
+		write(0,*) 'Number of steps:',nsteps
+		write(0,*) 'Tiles:',ntilex,ntiley,ntilez
+		write(0,*) 'MPI com current:',mpicom_curr
+		write(0,*) 'Current deposition method:',currdepo
+		write(0,*) 'Charge deposition algo:',rhodepo
+		write(0,*) 'Field gathering method:',fieldgave
+		write(0,*) 'Field gathering plus particle pusher seperated:',fg_p_pp_seperated
+		write(0,*) 'Current/field gathering order:',nox,noy,noz
+		write(0,*) 'Part com type:',partcom
+		write(0,*) 'Maxwell derivative coeff:',xcoeffs
+		WRITE(0,*) ''
+		WRITE(0,*) 'Vector length current deposition',lvec_curr_depo
+		WRITE(0,*) 'Vector length charge deposition',lvec_charge_depo
+		WRITE(0,*) 'Vector length field gathering',lvec_fieldgathe  
+		write(0,*) ''
+		write(0,*) 'PLASMA PROPERTIES:'
+		write(0,*) 'Distribution:',pdistr
+		write(0,*) 'Density in the lab frame:',nlab,'m^-3'
+		write(0,*) 'Density in the simulation frame:',nc,'m^-3'
+		write(0,*) 'Cold plasma frequency in the lab frame:',wlab,'s^-1'
+		write(0,*) 'cold plasma wavelength:',lambdalab,'m',lambdalab*1e6,'um'
+		write(0,*) ''
+	
+		write(0,'(" MPI domain decomposition")')  
+		write(0,*) 'Topology:',topology
+		write(0,'(" Local number of cells:",I5,X,I5,X,I5)') nx,ny,nz
+		write(0,'(" Local number of grid point:",I5,X,I5,X,I5)') nx_grid,ny_grid,nz_grid  
+		write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
+		write(0,*) ''  
+		
+		IF (sorting_activated.gt.0) THEN 
+			write(0,*) 'Particle sorting activated'
+			write(0,*) 'dx:',sorting_dx
+			write(0,*) 'dy:',sorting_dy
+			write(0,*) 'dz:',sorting_dz 
+			write(0,*) 'shiftx:',sorting_shiftx
+			write(0,*) 'shifty:',sorting_shifty
+			write(0,*) 'shiftz:',sorting_shiftz    
+			write(0,*) ''    
+		ELSE
+			write(0,*) 'Particle sorting non-activated'
+			write(0,*) ''    
+		ENDIF
+	
+		! Species properties
+		write(0,*)  'Number of species:',nspecies
+		DO ispecies=1,nspecies
+			curr => species_parray(ispecies)
+			write(0,*) trim(adjustl(curr%name))
+			write(0,*) 'Drift velocity:',curr%vdrift_x,curr%vdrift_y,curr%vdrift_z
+			write(0,*) 'Sorting period:',curr%sorting_period 
+			write(0,*) 'Sorting start:',curr%sorting_start     
+			write(0,*) ''
+		end do
+	
+		! Diags
+		IF (timestat_activated.gt.0) THEN  
+			write(0,*) 'Output of time statistics activated'
+			write(0,*) 'Computation of the time statistics starts at',timestat_itstart
+			write(0,*) 'Buffer size:',nbuffertimestat
+		ELSE
+			write(0,*) 'Output of time statistics non-activated'
+			write(0,'(X,"Computation of the time statistics starts at iteration:",I5)') timestat_itstart    
+		ENDIF
+		write(0,*) 
+	
+	end if
 
-! ------ INIT PARTICLE DISTRIBUTIONS
+	! ------ INIT PARTICLE DISTRIBUTIONS
 
-tdeb=MPI_WTIME()
+	tdeb=MPI_WTIME()
 
-!!! --- Set tile split for particles
-CALL set_tile_split
+	!!! --- Set tile split for particles
+	CALL set_tile_split
 
-IF (rank .EQ. 0) PRINT *, "SET TILE SPLIT OK"
+	IF (rank .EQ. 0) write(0,*), "Set tile split: done"
 
-! - Allocate particle arrays for each tile of each species
-CALL init_tile_arrays
+	! - Allocate particle arrays for each tile of each species
+	CALL init_tile_arrays
 
-IF (rank .EQ. 0) PRINT *, "INIT TILES ARRAYS OK"
+	IF (rank .EQ. 0) write(0,*), "Initialization of the tile arrays: done"
 
-! - Load particle distribution on each tile
-CALL load_particles
+	! - Load particle distribution on each tile
+	CALL load_particles
 
-IF (rank .EQ. 0) PRINT *, "PARTICLES LOAD OK"
+	IF (rank .EQ. 0) write(0,*), "Creation of the particles: done"
 
-init_localtimes(1) = MPI_WTIME() - tdeb
+	init_localtimes(1) = MPI_WTIME() - tdeb
 
-! - Estimate tile size 
-CALL estimate_memory_consumption
+	! - Estimate tile size 
+	CALL estimate_memory_consumption
 
 ! ----- INIT FIELD ARRAYS
 !!! --- Initialize field/currents arrays

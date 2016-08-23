@@ -14,9 +14,9 @@ subroutine \hyperlink{current__deposition_8_f90_a05b540593f69d201b9ac6e74b0fea59
 subroutine \hyperlink{current__deposition_8_f90_ae617423f1f21cbacb686a291c6b0ad7b}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
 \begin{DoxyCompactList}\small\item\em Deposit current in each tile with Esirkepov method. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b80516}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp} (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with Esirkepov method. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile sequentially. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq} (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
 \item 
 subroutine \hyperlink{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
@@ -960,6 +960,10 @@ Open\+MP version. Avoids conflict while reducing tile currents in the global cur
 \item[{real(num), intent(in)}]{dtt}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}{}\label{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}
+
+
+Deposit current in each tile sequentially. 
+
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp(func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp (
@@ -1037,7 +1041,11 @@ Mathieu Lobet
 \item[{real(num), intent(in)}]{dtt}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b80516}{}\label{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b80516}
-\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n@{warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n}}
+
+
+Deposit current in each tile with Esirkepov method. 
+
+This subroutine is called from Python and does not have interface arguments Open\+MP version. Avoids conflict while reducing tile currents in the global current array. \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n@{warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n}}
 \index{warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n@{warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, w, q, xmin, ymin, zmin,                                                                                                                                                                                               dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                                               nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)}{warp_depose_jxjyjz_esirkepov_n(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, w, q, xmin, ymin, zmin,                                                                                                                                                                                               dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                                               nox, noy, noz, l_particles_weight, l4symtry)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine warp\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n (
 \begin{DoxyParamCaption}

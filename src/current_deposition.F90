@@ -482,24 +482,24 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     !     jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	  !     nox,noy,noz,dx,dy,dz,dt)
 
-      !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_1_1_1, &
-      !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	    !   nox,noy,noz,dx,dy,dz,dt)
-
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_1_1_1, &
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_1_1_1, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
+
+!       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_1_1_1, &
+!          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+! 	       nox,noy,noz,dx,dy,dz,dt)
 
     ! Order 2
     ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
 
-      !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_2_2_2, &
-      !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	    !   nox,noy,noz,dx,dy,dz,dt)
-
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_2_2_2, &
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_2_2_2, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
+
+!       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_2_2_2, &
+!          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+! 	       nox,noy,noz,dx,dy,dz,dt)
 	       
     ! Order 3
     ELSE IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN    
@@ -1762,14 +1762,17 @@ tend=MPI_WTIME()
 dep_curr_time=dep_curr_time+(tend-tdeb)  
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 
-!===============================================================================
+!=========================================================================================
+!> Deposit current in each tile with Esirkepov method
+!> @brief
+!
+!> This subroutine is called from Python and does not have interface arguments 
+!> OpenMP version. Avoids conflict while reducing tile currents in the global 
+!> current array. 
+!> @details
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-! Deposit current in each tile with Esirkepov method
-! This subroutine is called from Python and does not have interface arguments 
-! OpenMP version. Avoids conflict while reducing tile currents in the global 
-! current array. 
-!===============================================================================
+!=========================================================================================
 USE particles
 USE constants
 USE tiling
@@ -2026,8 +2029,13 @@ tend=MPI_WTIME()
 dep_curr_time=dep_curr_time+(tend-tdeb)  
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+! ________________________________________________________________________________________
+!> Deposit current in each tile sequentially
+!> @brief
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order,jxg,jyg,jzg,&
+nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+! ________________________________________________________________________________________
 USE particles
 USE constants
 USE tiling

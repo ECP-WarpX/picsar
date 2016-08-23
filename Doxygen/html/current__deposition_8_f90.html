@@ -135,8 +135,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:ae617423f1f21cbacb686a291c6b0ad7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with Esirkepov method.  <a href="#ae617423f1f21cbacb686a291c6b0ad7b">More...</a><br /></td></tr>
 <tr class="separator:ae617423f1f21cbacb686a291c6b0ad7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c88c5f1acf180c78f31dfdeb4b80516"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a7c88c5f1acf180c78f31dfdeb4b80516">pxrdepose_currents_on_grid_jxjyjz_sub_openmp</a> (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)</td></tr>
+<tr class="memdesc:a7c88c5f1acf180c78f31dfdeb4b80516"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with Esirkepov method.  <a href="#a7c88c5f1acf180c78f31dfdeb4b80516">More...</a><br /></td></tr>
 <tr class="separator:a7c88c5f1acf180c78f31dfdeb4b80516"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cba9f74ee775de5a5f60eb97ff619a4"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a9cba9f74ee775de5a5f60eb97ff619a4">pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq</a> (func_order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)</td></tr>
+<tr class="memdesc:a9cba9f74ee775de5a5f60eb97ff619a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile sequentially.  <a href="#a9cba9f74ee775de5a5f60eb97ff619a4">More...</a><br /></td></tr>
 <tr class="separator:a9cba9f74ee775de5a5f60eb97ff619a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4575c491c1cfe9d048c6cb1b6d5fbdb"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#ac4575c491c1cfe9d048c6cb1b6d5fbdb">pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq</a> (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)</td></tr>
 <tr class="separator:ac4575c491c1cfe9d048c6cb1b6d5fbdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -4270,6 +4272,8 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Deposit current in each tile sequentially. </p>
+
 </div>
 </div>
 <a class="anchor" id="ae617423f1f21cbacb686a291c6b0ad7b"></a>
@@ -4609,6 +4613,9 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Deposit current in each tile with Esirkepov method. </p>
+<p>This subroutine is called from Python and does not have interface arguments OpenMP version. Avoids conflict while reducing tile currents in the global current array. </p>
 
 </div>
 </div>

@@ -624,10 +624,14 @@ CONTAINS
     END SUBROUTINE init_tile_arrays_for_species
 
     ! _____________________________________________________________________
-    SUBROUTINE load_particles
     !
-    ! Initialize the particle properties (positions and velocities) according to 
-    ! the specified distribution
+    !> Initialize the particle properties (positions and velocities) according to 
+    !> the specified distribution.
+    !> @brief
+    !
+    !> 
+    !> @details
+    SUBROUTINE load_particles
     ! _____________________________________________________________________    
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr

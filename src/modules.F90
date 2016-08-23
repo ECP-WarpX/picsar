@@ -362,7 +362,7 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
       !dir$ attributes align:64 :: part_ux
       !DIR ATTRIBUTES FASTMEM  :: part_ux
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
-      !dir$ attributes align:64 :: part_y
+      !dir$ attributes align:64 :: part_uy
       !DIR ATTRIBUTES FASTMEM  :: part_uy
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
       !dir$ attributes align:64 :: part_uz
