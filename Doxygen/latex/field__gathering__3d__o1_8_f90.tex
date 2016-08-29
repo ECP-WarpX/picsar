@@ -189,3 +189,29 @@ Scalar version\+: gathering of electric field from Yee grid (\char`\"{}energy co
 Field gathering C\+IC (order 1) with gathering of E and B merged in a single loop. 
 
 This function is vectorized 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position \\
+\hline
+\mbox{\tt in,out}  & {\em ex,ey,ez} & particle electric field \\
+\hline
+\mbox{\tt in,out}  & {\em bx,by,bz} & particle magnetic field \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile minimum grid position \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space step \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of grid points in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grid \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grid \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \mbox{[}in\mbox{]} l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v decrease the interpolation order if True \\
+\hline
+\end{DoxyParams}

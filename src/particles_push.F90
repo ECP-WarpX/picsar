@@ -349,6 +349,23 @@ DO iz=1, ntilez ! LOOP ON TILES
                 currg%extile,currg%eytile,currg%eztile,&
                 currg%bxtile,currg%bytile,currg%bztile,&
                 curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
+
+          ELSE IF ((noxx.eq.2).and.(noyy.eq.2).and.(nozz.eq.2)) THEN
+
+					!!! ---- Loop by blocks over particles in a tile (blocking)
+           CALL field_gathering_plus_particle_pusher_2_2_2(count,   &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
+								curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
+								curr_tile%part_gaminv, &
+								curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
+								curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &								
+                curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min, &
+                dxx,dyy,dzz,dtt,&
+                curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
+                nxjg,nyjg,nzjg, &
+                currg%extile,currg%eytile,currg%eztile,&
+                currg%bxtile,currg%bytile,currg%bztile,&
+                curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
                 
           ELSE IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3)) THEN
 
@@ -1082,15 +1099,13 @@ END SUBROUTINE pxr_ebcancelpush3d
 
 
 ! ________________________________________________________________________________________
-SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
-                                      ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
+!> This function combined the field gathering and the particle pusher 
+!> in 3D for CIC (order 1) shape factor.
+!> The field gathering and the particle pusher are done in the same particle loop.
+!> @brief
 !
-! This function combined the field gathering and the particle pusher 
-! in 3D for CIC (order 1) shape factor.
-! The field gathering and the particle pusher are done in the same particle loop.
-! This function is vectorized.
+!> This function is vectorized.
+!> @detail
 ! 
 ! Input parameters:
 ! - np: number of particles
@@ -1108,12 +1123,17 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! - bxg,byg,bzg: magnetic field grid
 ! - lvect: vector size for cache blocking
 ! - l_lower_order_in_v: 
+SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
+                                      ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
 ! ________________________________________________________________________________________
 
   USE omp_lib
   USE constants
   USE params
   
+  ! ___ Parameter declaration ____________________________________
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp)                         :: lvect
@@ -1122,27 +1142,39 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   LOGICAL(isp)                         :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
-  INTEGER(isp)                         :: ip, j, k, l
+
+  INTEGER(isp), DIMENSION(lvect)       :: j, k, l
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: j,k,l
+#endif  
+  INTEGER(isp), DIMENSION(lvect)       :: j0, k0, l0
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: j0,k0,l0
+#endif    
+  INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
-  REAL(num)                            :: dxi, dyi, dzi, x, y, z
+  INTEGER(isp)                         :: jj, kk, ll
+  REAL(num)                            :: dxi, dyi, dzi
+  REAL(num)                            :: x,y,z  
   REAL(num)                            :: xint, yint, zint
   REAL(num)                            :: clghtisq,const1,const2,usq
   REAL(num)                            :: tx,ty,tz,tsqi
   REAL(num)                            :: wx,wy,wz    
   REAL(num)                            :: uxppr,uyppr,uzppr
-  REAL(num), DIMENSION(0:1)            :: sx, sx0
-  REAL(num), DIMENSION(0:1)            :: sy, sy0
-  REAL(num), DIMENSION(0:1)            :: sz, sz0
+  REAL(num), DIMENSION(lvect,0:1)      :: sx,sy,sz
+  REAL(num), DIMENSION(lvect,0:1)      :: sx0,sy0,sz0
+#if defined __INTEL_COMPILER   
+    !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
+#endif    
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
 
+  ! ___ Parameter initialization ____________________________________
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
 
   const1 = 0.5_num*q*dtt/m
-  
   clghtisq = 1.0_num/clight**2
 
   sx=0.0_num
@@ -1153,101 +1185,153 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   sz0=0.0_num
 
   ! ______________________________________________________________________________________
-  ! Loop on partciles 
+  ! Loop on block of particles of size lvect
   DO ip=1,np,lvect
   
     ! ____________________________________________________________________________________
     ! Field gathering  
   
 #if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
-      !DIR$ SIMD VECREMAINDER 
-#elif _OPENMP && _OPENMP>=201307
-      !$OMP SIMD         
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* SIMD_LEVEL      
-#endif 
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
 #endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-  
-      x = (xp(nn)-xmin)*dxi
-      y = (yp(nn)-ymin)*dyi
-      z = (zp(nn)-zmin)*dzi
-    
-      ! Compute index of particle
-    
-      j=floor(x)
-      j0=floor(x)
-      k=floor(y)
-      k0=floor(y)
-      l=floor(z)
-      l0=floor(z)
-    
-      xint=x-j
-      yint=y-k
-      zint=z-l
-    
-      ! Compute shape factors
-      sx( 0) = 1.0_num-xint
-      sx( 1) = xint
-      sy( 0) = 1.0_num-yint
-      sy( 1) = yint
-      sz( 0) = 1.0_num-zint
-      sz( 1) = zint
-    
-      xint=x-0.5_num-j0
-      yint=y-0.5_num-k0
-      zint=z-0.5_num-l0
-    
-      sx0( 0) = 1.0_num
-      sy0( 0) = 1.0_num
-      sz0( 0) = 1.0_num
-    
-      ! Compute Ex on particle
-      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(0)*exg(j0,k,l)
-      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(0)*exg(j0,k+1,l)
-      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(1)*exg(j0,k,l+1)
-      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(1)*exg(j0,k+1,l+1)
-    
-      ! Compute Ey on particle
-      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(0)*eyg(j,k0,l)
-      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(0)*eyg(j+1,k0,l)
-      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(1)*eyg(j,k0,l+1)
-      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(1)*eyg(j+1,k0,l+1)
-    
-      ! Compute Ez on particle
-      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(0)*ezg(j,k,l0)
-      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(0)*ezg(j+1,k,l0)
-      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(0)*ezg(j,k+1,l0)
-      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(0)*ezg(j+1,k+1,l0)
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1
+      
+			x = (xp(nn)-xmin)*dxi
+			y = (yp(nn)-ymin)*dyi
+			z = (zp(nn)-zmin)*dzi
+	
+			! Compute index of particle
+			j(n)=floor(x)
+			j0(n)=floor(x)
+			k(n)=floor(y)
+			k0(n)=floor(y)
+			l(n)=floor(z)
+			l0(n)=floor(z)
+	
+			xint=x-j(n)
+			yint=y-k(n)
+			zint=z-l(n)
+	
+			! Compute shape factors
+			sx(n,0) = 1.0_num-xint
+			sx(n,1) = xint
+			sy(n,0) = 1.0_num-yint
+			sy(n,1) = yint
+			sz(n,0) = 1.0_num-zint
+			sz(n,1) = zint
+	
+			xint=x-0.5_num-j0(n)
+			yint=y-0.5_num-k0(n)
+			zint=z-0.5_num-l0(n)
+	
+			sx0(n,0) = 1.0_num
+			sy0(n,0) = 1.0_num
+			sz0(n,0) = 1.0_num
+			
+		ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
 
 #if defined __INTEL_COMPILER 
-!DIR$ DISTRIBUTE POINT
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
 #endif
-    
-      ! Compute Bx on particle
-      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
-      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
-    
-      ! Compute By on particle
-      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
-      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
-    
-      ! Compute Bz on particle
-      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
-      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1) 
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1 
+      
+			! Compute Ex on particle
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0(n),k(n),l(n))
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,0)*exg(j0(n),k(n)+1,l(n))
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,1)*exg(j0(n),k(n),l(n)+1)
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,1)*exg(j0(n),k(n)+1,l(n)+1)
+
+			! Compute Ey on particle
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,0)*eyg(j(n),k0(n),l(n))
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,0)*eyg(j(n)+1,k0(n),l(n))
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,1)*eyg(j(n),k0(n),l(n)+1)
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,1)*eyg(j(n)+1,k0(n),l(n)+1)
+
+			! Compute Ez on particle
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,0)*sz0(n,0)*ezg(j(n),k(n),l0(n))
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,0)*ezg(j(n)+1,k(n),l0(n))
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,0)*ezg(j(n),k(n)+1,l0(n))
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,0)*ezg(j(n)+1,k(n)+1,l0(n))
 
     END DO
+#if  defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
 #if defined __INTEL_COMPILER 
-#elif defined _OPENMP && _OPENMP>=201307
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1    
+
+      ! Compute Bx on particle
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j(n),k0(n),l0(n))
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j(n)+1,k0(n),l0(n))
+    
+      ! Compute By on particle
+      by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0(n),k(n),l0(n))
+      by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0(n),k(n)+1,l0(n))
+    
+      ! Compute Bz on particle
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0(n),k0(n),l(n))
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1) 
+      
+    END DO
+#if  defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD 
 #endif
 
@@ -1385,10 +1469,6 @@ END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
 
 
 ! ________________________________________________________________________________________
-SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
-                                      ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
 !
 ! This function combined the field gathering and the particle pusher 
 ! in 3D for order 2 shape factor.
@@ -1411,6 +1491,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! - bxg,byg,bzg: magnetic field grid
 ! - lvect: vector size for cache blocking
 ! - l_lower_order_in_v: 
+SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
+                                      ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1425,9 +1509,17 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   LOGICAL(isp)                         :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
-  INTEGER(isp)                         :: ip, j, k, l
+  INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  INTEGER(isp)                         :: jj, kk, ll
+  INTEGER(isp), DIMENSION(lvect)       :: j, k, l
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: j,k,l
+#endif  
+  INTEGER(isp), DIMENSION(lvect)       :: j0, k0, l0
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: j0,k0,l0
+#endif
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
   REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
@@ -1435,9 +1527,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num)                            :: tx,ty,tz,tsqi
   REAL(num)                            :: wx,wy,wz    
   REAL(num)                            :: uxppr,uyppr,uzppr
-  REAL(num), DIMENSION(-1:2)           :: sx,sx0
-  REAL(num), DIMENSION(-1:2)           :: sy,sy0
-  REAL(num), DIMENSION(-1:2)           :: sz,sz0
+  REAL(num), DIMENSION(lvect,-1:1)     :: sx,sy,sz
+  REAL(num), DIMENSION(lvect,-1:1)     :: sx0,sy0,sz0
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
+#endif    
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
 
@@ -1460,35 +1554,338 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   DO ip=1,np,lvect
 
     ! ____________________________________________________________________________________
-    ! field gathering
-
+    ! Field gathering  
+  
 #if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
-      !DIR$ SIMD VECREMAINDER 
-#elif _OPENMP && _OPENMP>=201307
-      !$OMP SIMD         
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* SIMD_LEVEL      
-#endif 
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1
+      
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
+    
+			! Compute index of particle
+			j(n)=nint(x)
+			j0(n)=floor(x-0.5_num)
+			k(n)=nint(y)
+			k0(n)=floor(y-0.5_num)
+			l(n)=nint(z)
+			l0(n)=floor(z-0.5_num)
+    
+      xint=x-j(n)
+      yint=y-k(n)
+      zint=z-l(n)
+      
+			! Compute shape factors
+			xintsq = xint*xint
+			sx(n,-1) = 0.5_num*(0.5_num-xint)**2
+			sx(n, 0) = 0.75_num-xintsq
+			sx(n, 1) = 0.5_num*(0.5_num+xint)**2
+		
+			yintsq = yint*yint
+			sy(n,-1) = 0.5_num*(0.5_num-yint)**2
+			sy(n, 0) = 0.75_num-yintsq
+			sy(n, 1) = 0.5_num*(0.5_num+yint)**2
+		
+			zintsq = zint*zint
+			sz(n,-1) = 0.5_num*(0.5_num-zint)**2
+			sz(n, 0) = 0.75_num-zintsq
+			sz(n, 1) = 0.5_num*(0.5_num+zint)**2
+		
+			xint=x-0.5_num-j0(n)
+			yint=y-0.5_num-k0(n)
+			zint=z-0.5_num-l0(n)
+		
+			sx0(n, 0) = 1.0_num-xint
+			sx0(n, 1) = xint
+		
+			sy0(n, 0) = 1.0_num-yint
+			sy0(n, 1) = yint
+		
+			sz0(n, 0) = 1.0_num-zint
+			sz0(n, 1) = zint
+			
+		ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED ex:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1 
+      
+			! Compute Ex on particle
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,-1)*sz(n,-1)*exg(j0(n),k(n)-1,l(n)-1)
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,-1)*sz(n,-1)*exg(j0(n)+1,k(n)-1,l(n)-1)
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,-1)*exg(j0(n),k(n),l(n)-1)
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,-1)*exg(j0(n)+1,k(n),l(n)-1)
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,-1)*exg(j0(n),k(n)+1,l(n)-1)
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,-1)*exg(j0(n)+1,k(n)+1,l(n)-1)
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,-1)*sz(n,0)*exg(j0(n),k(n)-1,l(n))
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,-1)*sz(n,0)*exg(j0(n)+1,k(n)-1,l(n))
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0(n),k(n),l(n))
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,0)*exg(j0(n)+1,k(n),l(n))
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,0)*exg(j0(n),k(n)+1,l(n))
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,0)*exg(j0(n)+1,k(n)+1,l(n))
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,-1)*sz(n,1)*exg(j0(n),k(n)-1,l(n)+1)
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,-1)*sz(n,1)*exg(j0(n)+1,k(n)-1,l(n)+1)
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,1)*exg(j0(n),k(n),l(n)+1)
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,1)*exg(j0(n)+1,k(n),l(n)+1)
+			ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,1)*exg(j0(n),k(n)+1,l(n)+1)
+			ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,1)*exg(j0(n)+1,k(n)+1,l(n)+1)
+	ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+!$OMP END SIMD
+#endif
+	
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED ey:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1 
+    
+			! Compute Ey on particle
+			ey(nn) = ey(nn) + sx(n,-1)*sy0(n,0)*sz(n,-1)*eyg(j(n)-1,k0(n),l(n)-1)
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,-1)*eyg(j(n),k0(n),l(n)-1)
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,-1)*eyg(j(n)+1,k0(n),l(n)-1)
+			ey(nn) = ey(nn) + sx(n,-1)*sy0(n,1)*sz(n,-1)*eyg(j(n)-1,k0(n)+1,l(n)-1)
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,1)*sz(n,-1)*eyg(j(n),k0(n)+1,l(n)-1)
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,-1)*eyg(j(n)+1,k0(n)+1,l(n)-1)
+			ey(nn) = ey(nn) + sx(n,-1)*sy0(n,0)*sz(n,0)*eyg(j(n)-1,k0(n),l(n))
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,0)*eyg(j(n),k0(n),l(n))
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,0)*eyg(j(n)+1,k0(n),l(n))
+			ey(nn) = ey(nn) + sx(n,-1)*sy0(n,1)*sz(n,0)*eyg(j(n)-1,k0(n)+1,l(n))
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,1)*sz(n,0)*eyg(j(n),k0(n)+1,l(n))
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,0)*eyg(j(n)+1,k0(n)+1,l(n))
+			ey(nn) = ey(nn) + sx(n,-1)*sy0(n,0)*sz(n,1)*eyg(j(n)-1,k0(n),l(n)+1)
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,1)*eyg(j(n),k0(n),l(n)+1)
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,1)*eyg(j(n)+1,k0(n),l(n)+1)
+			ey(nn) = ey(nn) + sx(n,-1)*sy0(n,1)*sz(n,1)*eyg(j(n)-1,k0(n)+1,l(n)+1)
+			ey(nn) = ey(nn) + sx(n,0)*sy0(n,1)*sz(n,1)*eyg(j(n),k0(n)+1,l(n)+1)
+			ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,1)*eyg(j(n)+1,k0(n)+1,l(n)+1)
+	ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+!$OMP END SIMD
+#endif
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED ez:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1     
+			! Compute Ez on particle
+			ez(nn) = ez(nn) + sx(n,-1)*sy(n,-1)*sz0(n,0)*ezg(j(n)-1,k(n)-1,l0(n))
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,-1)*sz0(n,0)*ezg(j(n),k(n)-1,l0(n))
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,-1)*sz0(n,0)*ezg(j(n)+1,k(n)-1,l0(n))
+			ez(nn) = ez(nn) + sx(n,-1)*sy(n,0)*sz0(n,0)*ezg(j(n)-1,k(n),l0(n))
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,0)*sz0(n,0)*ezg(j(n),k(n),l0(n))
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,0)*ezg(j(n)+1,k(n),l0(n))
+			ez(nn) = ez(nn) + sx(n,-1)*sy(n,1)*sz0(n,0)*ezg(j(n)-1,k(n)+1,l0(n))
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,0)*ezg(j(n),k(n)+1,l0(n))
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,0)*ezg(j(n)+1,k(n)+1,l0(n))
+			ez(nn) = ez(nn) + sx(n,-1)*sy(n,-1)*sz0(n,1)*ezg(j(n)-1,k(n)-1,l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,-1)*sz0(n,1)*ezg(j(n),k(n)-1,l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,-1)*sz0(n,1)*ezg(j(n)+1,k(n)-1,l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,-1)*sy(n,0)*sz0(n,1)*ezg(j(n)-1,k(n),l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,0)*sz0(n,1)*ezg(j(n),k(n),l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,1)*ezg(j(n)+1,k(n),l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,-1)*sy(n,1)*sz0(n,1)*ezg(j(n)-1,k(n)+1,l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,1)*ezg(j(n),k(n)+1,l0(n)+1)
+			ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,1)*ezg(j(n)+1,k(n)+1,l0(n)+1)
 
     END DO
+#if  defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
 #if defined __INTEL_COMPILER 
-#elif defined _OPENMP && _OPENMP>=201307
+      !DIR$ ASSUME_ALIGNED bx:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1    
+
+			! Compute Bx on particle
+			bx(nn) = bx(nn) + sx(n,-1)*sy0(n,0)*sz0(n,0)*bxg(j(n)-1,k0(n),l0(n))
+			bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j(n),k0(n),l0(n))
+			bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j(n)+1,k0(n),l0(n))
+			bx(nn) = bx(nn) + sx(n,-1)*sy0(n,1)*sz0(n,0)*bxg(j(n)-1,k0(n)+1,l0(n))
+			bx(nn) = bx(nn) + sx(n,0)*sy0(n,1)*sz0(n,0)*bxg(j(n),k0(n)+1,l0(n))
+			bx(nn) = bx(nn) + sx(n,1)*sy0(n,1)*sz0(n,0)*bxg(j(n)+1,k0(n)+1,l0(n))
+			bx(nn) = bx(nn) + sx(n,-1)*sy0(n,0)*sz0(n,1)*bxg(j(n)-1,k0(n),l0(n)+1)
+			bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,1)*bxg(j(n),k0(n),l0(n)+1)
+			bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,1)*bxg(j(n)+1,k0(n),l0(n)+1)
+			bx(nn) = bx(nn) + sx(n,-1)*sy0(n,1)*sz0(n,1)*bxg(j(n)-1,k0(n)+1,l0(n)+1)
+			bx(nn) = bx(nn) + sx(n,0)*sy0(n,1)*sz0(n,1)*bxg(j(n),k0(n)+1,l0(n)+1)
+			bx(nn) = bx(nn) + sx(n,1)*sy0(n,1)*sz0(n,1)*bxg(j(n)+1,k0(n)+1,l0(n)+1)
+
+    END DO
+#if  defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED by:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1  
+    
+			! Compute By on particle
+			by(nn) = by(nn) + sx0(n,0)*sy(n,-1)*sz0(n,0)*byg(j0(n),k(n)-1,l0(n))
+			by(nn) = by(nn) + sx0(n,1)*sy(n,-1)*sz0(n,0)*byg(j0(n)+1,k(n)-1,l0(n))
+			by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0(n),k(n),l0(n))
+			by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,0)*byg(j0(n)+1,k(n),l0(n))
+			by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0(n),k(n)+1,l0(n))
+			by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,0)*byg(j0(n)+1,k(n)+1,l0(n))
+			by(nn) = by(nn) + sx0(n,0)*sy(n,-1)*sz0(n,1)*byg(j0(n),k(n)-1,l0(n)+1)
+			by(nn) = by(nn) + sx0(n,1)*sy(n,-1)*sz0(n,1)*byg(j0(n)+1,k(n)-1,l0(n)+1)
+			by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,1)*byg(j0(n),k(n),l0(n)+1)
+			by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,1)*byg(j0(n)+1,k(n),l0(n)+1)
+			by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,1)*byg(j0(n),k(n)+1,l0(n)+1)
+			by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,1)*byg(j0(n)+1,k(n)+1,l0(n)+1)
+	ENDDO
+#if  defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1  
+    
+			! Compute Bz on particle
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,-1)*bzg(j0(n),k0(n),l(n)-1)
+			bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,-1)*bzg(j0(n)+1,k0(n),l(n)-1)
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,-1)*bzg(j0(n),k0(n)+1,l(n)-1)
+			bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,-1)*bzg(j0(n)+1,k0(n)+1,l(n)-1)
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0(n),k0(n),l(n))
+			bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,0)*bzg(j0(n)+1,k0(n),l(n))
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,0)*bzg(j0(n),k0(n)+1,l(n))
+			bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,0)*bzg(j0(n)+1,k0(n)+1,l(n))
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1)
+			bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,1)*bzg(j0(n)+1,k0(n),l(n)+1)
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,1)*bzg(j0(n),k0(n)+1,l(n)+1)
+			bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,1)*bzg(j0(n)+1,k0(n)+1,l(n)+1)
+      
+    END DO
+#if  defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD 
 #endif
 
@@ -1628,15 +2025,13 @@ END SUBROUTINE field_gathering_plus_particle_pusher_2_2_2
 
 
 ! ________________________________________________________________________________________
-SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
-                                      ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
-!
-! This function combined the field gathering and the particle pusher 
-! in 3D for CIC (order 1) shape factor.
-! The field gathering and the particle pusher are done in the same particle loop.
-! This function is vectorized.
+!> This function combined the field gathering and the particle pusher 
+!> in 3D for CIC (order 1) shape factor.
+!> The field gathering and the particle pusher are done in the same particle loop.
+!> @brief
+! 
+!> This function is vectorized.
+!> @detail
 ! 
 ! Input parameters:
 ! - np: number of particles
@@ -1654,6 +2049,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! - bxg,byg,bzg: magnetic field grid
 ! - lvect: vector size for cache blocking
 ! - l_lower_order_in_v: 
+SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
+                                      ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1668,9 +2067,17 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   LOGICAL(isp)                         :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
-  INTEGER(isp)                         :: ip, j, k, l
+  INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  INTEGER(isp)                         :: jj, kk, ll
+  INTEGER(isp), DIMENSION(lvect)       :: j, k, l
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: j,k,l
+#endif  
+  INTEGER(isp), DIMENSION(lvect)       :: j0, k0, l0
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: j0,k0,l0
+#endif    
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
   REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
@@ -1678,9 +2085,15 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num)                            :: tx,ty,tz,tsqi
   REAL(num)                            :: wx,wy,wz    
   REAL(num)                            :: uxppr,uyppr,uzppr
-  REAL(num), DIMENSION(-1:2)           :: sx,sx0
-  REAL(num), DIMENSION(-1:2)           :: sy,sy0
-  REAL(num), DIMENSION(-1:2)           :: sz,sz0
+  REAL(num), DIMENSION(lvect,-1:2)     :: sx
+  REAL(num), DIMENSION(lvect,-1:2)     :: sy
+  REAL(num), DIMENSION(lvect,-1:2)     :: sz
+  REAL(num), DIMENSION(lvect,-1:1)     :: sx0
+  REAL(num), DIMENSION(lvect,-1:1)     :: sy0
+  REAL(num), DIMENSION(lvect,-1:1)     :: sz0
+#if defined __INTEL_COMPILER 
+    !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
+#endif  
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
 
@@ -1700,358 +2113,520 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   sz0=0.0_num
 
   ! ___ Loop on partciles _______________________
+
   DO ip=1,np,lvect
+
+    ! ____________________________________________________________________________________
+    ! Field gathering  
+  
 #if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz)       
-      !DIR$ SIMD VECREMAINDER 
-#elif _OPENMP && _OPENMP>=201307
-      !$OMP SIMD         
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* SIMD_LEVEL      
-#endif 
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1
+      
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-
-      ! Compute index of particle
-      j=floor(x)
-      j0=floor(x)
-      k=floor(y)
-      k0=floor(y)
-      l=floor(z)
-      l0=floor(z)
     
-      xint=x-j
-      yint=y-k
-      zint=z-l
+      ! Compute index of particle
+      j(n)=floor(x)
+      j0(n)=floor(x)
+      k(n)=floor(y)
+      k0(n)=floor(y)
+      l(n)=floor(z)
+      l0(n)=floor(z)
+    
+      xint=x-j(n)
+      yint=y-k(n)
+      zint=z-l(n)
     
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
       oxintsq = oxint*oxint
-      sx(-1) = onesixth*oxintsq*oxint
-      sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
-      sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
-      sx( 2) = onesixth*xintsq*xint
+      sx(n,-1) = onesixth*oxintsq*oxint
+      sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
+      sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
+      sx(n, 2) = onesixth*xintsq*xint
     
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
-      sy(-1) = onesixth*oyintsq*oyint
-      sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
-      sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
-      sy( 2) = onesixth*yintsq*yint
+      sy(n,-1) = onesixth*oyintsq*oyint
+      sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
+      sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
+      sy(n, 2) = onesixth*yintsq*yint
     
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
-      sz(-1) = onesixth*ozintsq*ozint
-      sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
-      sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
-      sz( 2) = onesixth*zintsq*zint
+      sz(n,-1) = onesixth*ozintsq*ozint
+      sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
+      sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
+      sz(n, 2) = onesixth*zintsq*zint
     
-      xint=x-0.5_num-j0
-      yint=y-0.5_num-k0
-      zint=z-0.5_num-l0
+      xint=x-0.5_num-j0(n)
+      yint=y-0.5_num-k0(n)
+      zint=z-0.5_num-l0(n)
     
       xintsq = xint*xint
-      sx0(-1) = 0.5_num*(0.5_num-xint)**2
-      sx0( 0) = 0.75_num-xintsq
-      sx0( 1) = 0.5_num*(0.5_num+xint)**2
+      sx0(n,-1) = 0.5_num*(0.5_num-xint)**2
+      sx0(n, 0) = 0.75_num-xintsq
+      sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
     
       yintsq = yint*yint
-      sy0(-1) = 0.5_num*(0.5_num-yint)**2
-      sy0( 0) = 0.75_num-yintsq
-      sy0( 1) = 0.5_num*(0.5_num+yint)**2
+      sy0(n,-1) = 0.5_num*(0.5_num-yint)**2
+      sy0(n, 0) = 0.75_num-yintsq
+      sy0(n, 1) = 0.5_num*(0.5_num+yint)**2
     
       zintsq = zint*zint
-      sz0(-1) = 0.5_num*(0.5_num-zint)**2
-      sz0( 0) = 0.75_num-zintsq
-      sz0( 1) = 0.5_num*(0.5_num+zint)**2
-
-      ! Compute Ex on particle
-      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(-1)*exg(j0-1,k-1,l-1)
-      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(-1)*exg(j0,k-1,l-1)
-      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(-1)*exg(j0+1,k-1,l-1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(-1)*exg(j0-1,k,l-1)
-      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(-1)*exg(j0,k,l-1)
-      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(-1)*exg(j0+1,k,l-1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(-1)*exg(j0-1,k+1,l-1)
-      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(-1)*exg(j0,k+1,l-1)
-      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(-1)*exg(j0+1,k+1,l-1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(-1)*exg(j0-1,k+2,l-1)
-      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(-1)*exg(j0,k+2,l-1)
-      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(-1)*exg(j0+1,k+2,l-1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(0)*exg(j0-1,k-1,l)
-      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(0)*exg(j0,k-1,l)
-      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(0)*exg(j0+1,k-1,l)
-      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(0)*exg(j0-1,k,l)
-      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(0)*exg(j0,k,l)
-      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(0)*exg(j0+1,k,l)
-      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(0)*exg(j0-1,k+1,l)
-      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(0)*exg(j0,k+1,l)
-      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(0)*exg(j0+1,k+1,l)
-      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(0)*exg(j0-1,k+2,l)
-      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(0)*exg(j0,k+2,l)
-      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(0)*exg(j0+1,k+2,l)
-      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(1)*exg(j0-1,k-1,l+1)
-      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(1)*exg(j0,k-1,l+1)
-      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(1)*exg(j0+1,k-1,l+1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(1)*exg(j0-1,k,l+1)
-      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(1)*exg(j0,k,l+1)
-      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(1)*exg(j0+1,k,l+1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(1)*exg(j0-1,k+1,l+1)
-      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(1)*exg(j0,k+1,l+1)
-      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(1)*exg(j0+1,k+1,l+1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(1)*exg(j0-1,k+2,l+1)
-      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(1)*exg(j0,k+2,l+1)
-      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(1)*exg(j0+1,k+2,l+1)
-      ex(nn) = ex(nn) + sx0(-1)*sy(-1)*sz(2)*exg(j0-1,k-1,l+2)
-      ex(nn) = ex(nn) + sx0(0)*sy(-1)*sz(2)*exg(j0,k-1,l+2)
-      ex(nn) = ex(nn) + sx0(1)*sy(-1)*sz(2)*exg(j0+1,k-1,l+2)
-      ex(nn) = ex(nn) + sx0(-1)*sy(0)*sz(2)*exg(j0-1,k,l+2)
-      ex(nn) = ex(nn) + sx0(0)*sy(0)*sz(2)*exg(j0,k,l+2)
-      ex(nn) = ex(nn) + sx0(1)*sy(0)*sz(2)*exg(j0+1,k,l+2)
-      ex(nn) = ex(nn) + sx0(-1)*sy(1)*sz(2)*exg(j0-1,k+1,l+2)
-      ex(nn) = ex(nn) + sx0(0)*sy(1)*sz(2)*exg(j0,k+1,l+2)
-      ex(nn) = ex(nn) + sx0(1)*sy(1)*sz(2)*exg(j0+1,k+1,l+2)
-      ex(nn) = ex(nn) + sx0(-1)*sy(2)*sz(2)*exg(j0-1,k+2,l+2)
-      ex(nn) = ex(nn) + sx0(0)*sy(2)*sz(2)*exg(j0,k+2,l+2)
-      ex(nn) = ex(nn) + sx0(1)*sy(2)*sz(2)*exg(j0+1,k+2,l+2)
-    
-      ! Compute Ey on particle
-      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(-1)*eyg(j-1,k0-1,l-1)
-      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(-1)*eyg(j,k0-1,l-1)
-      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(-1)*eyg(j+1,k0-1,l-1)
-      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(-1)*eyg(j+2,k0-1,l-1)
-      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(-1)*eyg(j-1,k0,l-1)
-      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(-1)*eyg(j,k0,l-1)
-      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(-1)*eyg(j+1,k0,l-1)
-      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(-1)*eyg(j+2,k0,l-1)
-      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(-1)*eyg(j-1,k0+1,l-1)
-      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(-1)*eyg(j,k0+1,l-1)
-      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(-1)*eyg(j+1,k0+1,l-1)
-      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(-1)*eyg(j+2,k0+1,l-1)
-      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(0)*eyg(j-1,k0-1,l)
-      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(0)*eyg(j,k0-1,l)
-      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(0)*eyg(j+1,k0-1,l)
-      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(0)*eyg(j+2,k0-1,l)
-      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(0)*eyg(j-1,k0,l)
-      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(0)*eyg(j,k0,l)
-      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(0)*eyg(j+1,k0,l)
-      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(0)*eyg(j+2,k0,l)
-      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(0)*eyg(j-1,k0+1,l)
-      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(0)*eyg(j,k0+1,l)
-      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(0)*eyg(j+1,k0+1,l)
-      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(0)*eyg(j+2,k0+1,l)
-      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(1)*eyg(j-1,k0-1,l+1)
-      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(1)*eyg(j,k0-1,l+1)
-      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(1)*eyg(j+1,k0-1,l+1)
-      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(1)*eyg(j+2,k0-1,l+1)
-      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(1)*eyg(j-1,k0,l+1)
-      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(1)*eyg(j,k0,l+1)
-      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(1)*eyg(j+1,k0,l+1)
-      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(1)*eyg(j+2,k0,l+1)
-      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(1)*eyg(j-1,k0+1,l+1)
-      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(1)*eyg(j,k0+1,l+1)
-      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(1)*eyg(j+1,k0+1,l+1)
-      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(1)*eyg(j+2,k0+1,l+1)
-      ey(nn) = ey(nn) + sx(-1)*sy0(-1)*sz(2)*eyg(j-1,k0-1,l+2)
-      ey(nn) = ey(nn) + sx(0)*sy0(-1)*sz(2)*eyg(j,k0-1,l+2)
-      ey(nn) = ey(nn) + sx(1)*sy0(-1)*sz(2)*eyg(j+1,k0-1,l+2)
-      ey(nn) = ey(nn) + sx(2)*sy0(-1)*sz(2)*eyg(j+2,k0-1,l+2)
-      ey(nn) = ey(nn) + sx(-1)*sy0(0)*sz(2)*eyg(j-1,k0,l+2)
-      ey(nn) = ey(nn) + sx(0)*sy0(0)*sz(2)*eyg(j,k0,l+2)
-      ey(nn) = ey(nn) + sx(1)*sy0(0)*sz(2)*eyg(j+1,k0,l+2)
-      ey(nn) = ey(nn) + sx(2)*sy0(0)*sz(2)*eyg(j+2,k0,l+2)
-      ey(nn) = ey(nn) + sx(-1)*sy0(1)*sz(2)*eyg(j-1,k0+1,l+2)
-      ey(nn) = ey(nn) + sx(0)*sy0(1)*sz(2)*eyg(j,k0+1,l+2)
-      ey(nn) = ey(nn) + sx(1)*sy0(1)*sz(2)*eyg(j+1,k0+1,l+2)
-      ey(nn) = ey(nn) + sx(2)*sy0(1)*sz(2)*eyg(j+2,k0+1,l+2)
-    
-      ! Compute Ez on particle
-      ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(-1)*ezg(j-1,k-1,l0-1)
-      ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(-1)*ezg(j,k-1,l0-1)
-      ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(-1)*ezg(j+1,k-1,l0-1)
-      ez(nn) = ez(nn) + sx(2)*sy(-1)*sz0(-1)*ezg(j+2,k-1,l0-1)
-      ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(-1)*ezg(j-1,k,l0-1)
-      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(-1)*ezg(j,k,l0-1)
-      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(-1)*ezg(j+1,k,l0-1)
-      ez(nn) = ez(nn) + sx(2)*sy(0)*sz0(-1)*ezg(j+2,k,l0-1)
-      ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(-1)*ezg(j-1,k+1,l0-1)
-      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(-1)*ezg(j,k+1,l0-1)
-      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(-1)*ezg(j+1,k+1,l0-1)
-      ez(nn) = ez(nn) + sx(2)*sy(1)*sz0(-1)*ezg(j+2,k+1,l0-1)
-      ez(nn) = ez(nn) + sx(-1)*sy(2)*sz0(-1)*ezg(j-1,k+2,l0-1)
-      ez(nn) = ez(nn) + sx(0)*sy(2)*sz0(-1)*ezg(j,k+2,l0-1)
-      ez(nn) = ez(nn) + sx(1)*sy(2)*sz0(-1)*ezg(j+1,k+2,l0-1)
-      ez(nn) = ez(nn) + sx(2)*sy(2)*sz0(-1)*ezg(j+2,k+2,l0-1)
-      ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(0)*ezg(j-1,k-1,l0)
-      ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(0)*ezg(j,k-1,l0)
-      ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(0)*ezg(j+1,k-1,l0)
-      ez(nn) = ez(nn) + sx(2)*sy(-1)*sz0(0)*ezg(j+2,k-1,l0)
-      ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(0)*ezg(j-1,k,l0)
-      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(0)*ezg(j,k,l0)
-      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(0)*ezg(j+1,k,l0)
-      ez(nn) = ez(nn) + sx(2)*sy(0)*sz0(0)*ezg(j+2,k,l0)
-      ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(0)*ezg(j-1,k+1,l0)
-      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(0)*ezg(j,k+1,l0)
-      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(0)*ezg(j+1,k+1,l0)
-      ez(nn) = ez(nn) + sx(2)*sy(1)*sz0(0)*ezg(j+2,k+1,l0)
-      ez(nn) = ez(nn) + sx(-1)*sy(2)*sz0(0)*ezg(j-1,k+2,l0)
-      ez(nn) = ez(nn) + sx(0)*sy(2)*sz0(0)*ezg(j,k+2,l0)
-      ez(nn) = ez(nn) + sx(1)*sy(2)*sz0(0)*ezg(j+1,k+2,l0)
-      ez(nn) = ez(nn) + sx(2)*sy(2)*sz0(0)*ezg(j+2,k+2,l0)
-      ez(nn) = ez(nn) + sx(-1)*sy(-1)*sz0(1)*ezg(j-1,k-1,l0+1)
-      ez(nn) = ez(nn) + sx(0)*sy(-1)*sz0(1)*ezg(j,k-1,l0+1)
-      ez(nn) = ez(nn) + sx(1)*sy(-1)*sz0(1)*ezg(j+1,k-1,l0+1)
-      ez(nn) = ez(nn) + sx(2)*sy(-1)*sz0(1)*ezg(j+2,k-1,l0+1)
-      ez(nn) = ez(nn) + sx(-1)*sy(0)*sz0(1)*ezg(j-1,k,l0+1)
-      ez(nn) = ez(nn) + sx(0)*sy(0)*sz0(1)*ezg(j,k,l0+1)
-      ez(nn) = ez(nn) + sx(1)*sy(0)*sz0(1)*ezg(j+1,k,l0+1)
-      ez(nn) = ez(nn) + sx(2)*sy(0)*sz0(1)*ezg(j+2,k,l0+1)
-      ez(nn) = ez(nn) + sx(-1)*sy(1)*sz0(1)*ezg(j-1,k+1,l0+1)
-      ez(nn) = ez(nn) + sx(0)*sy(1)*sz0(1)*ezg(j,k+1,l0+1)
-      ez(nn) = ez(nn) + sx(1)*sy(1)*sz0(1)*ezg(j+1,k+1,l0+1)
-      ez(nn) = ez(nn) + sx(2)*sy(1)*sz0(1)*ezg(j+2,k+1,l0+1)
-      ez(nn) = ez(nn) + sx(-1)*sy(2)*sz0(1)*ezg(j-1,k+2,l0+1)
-      ez(nn) = ez(nn) + sx(0)*sy(2)*sz0(1)*ezg(j,k+2,l0+1)
-      ez(nn) = ez(nn) + sx(1)*sy(2)*sz0(1)*ezg(j+1,k+2,l0+1)
-      ez(nn) = ez(nn) + sx(2)*sy(2)*sz0(1)*ezg(j+2,k+2,l0+1)
-
-#if defined __INTEL_COMPILER 
-!DIR$ DISTRIBUTE POINT
+      sz0(n,-1) = 0.5_num*(0.5_num-zint)**2
+      sz0(n, 0) = 0.75_num-zintsq
+      sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
+			
+		ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
 #endif
 
-      ! Compute Bx on particle
-      bx(nn) = bx(nn) + sx(-1)*sy0(-1)*sz0(-1)*bxg(j-1,k0-1,l0-1)
-      bx(nn) = bx(nn) + sx(0)*sy0(-1)*sz0(-1)*bxg(j,k0-1,l0-1)
-      bx(nn) = bx(nn) + sx(1)*sy0(-1)*sz0(-1)*bxg(j+1,k0-1,l0-1)
-      bx(nn) = bx(nn) + sx(2)*sy0(-1)*sz0(-1)*bxg(j+2,k0-1,l0-1)
-      bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(-1)*bxg(j-1,k0,l0-1)
-      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(-1)*bxg(j,k0,l0-1)
-      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(-1)*bxg(j+1,k0,l0-1)
-      bx(nn) = bx(nn) + sx(2)*sy0(0)*sz0(-1)*bxg(j+2,k0,l0-1)
-      bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(-1)*bxg(j-1,k0+1,l0-1)
-      bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(-1)*bxg(j,k0+1,l0-1)
-      bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(-1)*bxg(j+1,k0+1,l0-1)
-      bx(nn) = bx(nn) + sx(2)*sy0(1)*sz0(-1)*bxg(j+2,k0+1,l0-1)
-      bx(nn) = bx(nn) + sx(-1)*sy0(-1)*sz0(0)*bxg(j-1,k0-1,l0)
-      bx(nn) = bx(nn) + sx(0)*sy0(-1)*sz0(0)*bxg(j,k0-1,l0)
-      bx(nn) = bx(nn) + sx(1)*sy0(-1)*sz0(0)*bxg(j+1,k0-1,l0)
-      bx(nn) = bx(nn) + sx(2)*sy0(-1)*sz0(0)*bxg(j+2,k0-1,l0)
-      bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(0)*bxg(j-1,k0,l0)
-      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(0)*bxg(j,k0,l0)
-      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(0)*bxg(j+1,k0,l0)
-      bx(nn) = bx(nn) + sx(2)*sy0(0)*sz0(0)*bxg(j+2,k0,l0)
-      bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(0)*bxg(j-1,k0+1,l0)
-      bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(0)*bxg(j,k0+1,l0)
-      bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(0)*bxg(j+1,k0+1,l0)
-      bx(nn) = bx(nn) + sx(2)*sy0(1)*sz0(0)*bxg(j+2,k0+1,l0)
-      bx(nn) = bx(nn) + sx(-1)*sy0(-1)*sz0(1)*bxg(j-1,k0-1,l0+1)
-      bx(nn) = bx(nn) + sx(0)*sy0(-1)*sz0(1)*bxg(j,k0-1,l0+1)
-      bx(nn) = bx(nn) + sx(1)*sy0(-1)*sz0(1)*bxg(j+1,k0-1,l0+1)
-      bx(nn) = bx(nn) + sx(2)*sy0(-1)*sz0(1)*bxg(j+2,k0-1,l0+1)
-      bx(nn) = bx(nn) + sx(-1)*sy0(0)*sz0(1)*bxg(j-1,k0,l0+1)
-      bx(nn) = bx(nn) + sx(0)*sy0(0)*sz0(1)*bxg(j,k0,l0+1)
-      bx(nn) = bx(nn) + sx(1)*sy0(0)*sz0(1)*bxg(j+1,k0,l0+1)
-      bx(nn) = bx(nn) + sx(2)*sy0(0)*sz0(1)*bxg(j+2,k0,l0+1)
-      bx(nn) = bx(nn) + sx(-1)*sy0(1)*sz0(1)*bxg(j-1,k0+1,l0+1)
-      bx(nn) = bx(nn) + sx(0)*sy0(1)*sz0(1)*bxg(j,k0+1,l0+1)
-      bx(nn) = bx(nn) + sx(1)*sy0(1)*sz0(1)*bxg(j+1,k0+1,l0+1)
-      bx(nn) = bx(nn) + sx(2)*sy0(1)*sz0(1)*bxg(j+2,k0+1,l0+1)
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED ex:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1 
+      
+      ! Compute Ex on particle
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,-1)*sz(n,-1)*exg(j0(n)-1,k(n)-1,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,-1)*sz(n,-1)*exg(j0(n),k(n)-1,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,-1)*sz(n,-1)*exg(j0(n)+1,k(n)-1,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,0)*sz(n,-1)*exg(j0(n)-1,k(n),l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,-1)*exg(j0(n),k(n),l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,-1)*exg(j0(n)+1,k(n),l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,1)*sz(n,-1)*exg(j0(n)-1,k(n)+1,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,-1)*exg(j0(n),k(n)+1,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,-1)*exg(j0(n)+1,k(n)+1,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,2)*sz(n,-1)*exg(j0(n)-1,k(n)+2,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,2)*sz(n,-1)*exg(j0(n),k(n)+2,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,2)*sz(n,-1)*exg(j0(n)+1,k(n)+2,l(n)-1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,-1)*sz(n,0)*exg(j0(n)-1,k(n)-1,l(n))
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,-1)*sz(n,0)*exg(j0(n),k(n)-1,l(n))
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,-1)*sz(n,0)*exg(j0(n)+1,k(n)-1,l(n))
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,0)*sz(n,0)*exg(j0(n)-1,k(n),l(n))
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0(n),k(n),l(n))
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,0)*exg(j0(n)+1,k(n),l(n))
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,1)*sz(n,0)*exg(j0(n)-1,k(n)+1,l(n))
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,0)*exg(j0(n),k(n)+1,l(n))
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,0)*exg(j0(n)+1,k(n)+1,l(n))
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,2)*sz(n,0)*exg(j0(n)-1,k(n)+2,l(n))
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,2)*sz(n,0)*exg(j0(n),k(n)+2,l(n))
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,2)*sz(n,0)*exg(j0(n)+1,k(n)+2,l(n))
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,-1)*sz(n,1)*exg(j0(n)-1,k(n)-1,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,-1)*sz(n,1)*exg(j0(n),k(n)-1,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,-1)*sz(n,1)*exg(j0(n)+1,k(n)-1,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,0)*sz(n,1)*exg(j0(n)-1,k(n),l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,1)*exg(j0(n),k(n),l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,1)*exg(j0(n)+1,k(n),l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,1)*sz(n,1)*exg(j0(n)-1,k(n)+1,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,1)*exg(j0(n),k(n)+1,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,1)*exg(j0(n)+1,k(n)+1,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,2)*sz(n,1)*exg(j0(n)-1,k(n)+2,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,2)*sz(n,1)*exg(j0(n),k(n)+2,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,2)*sz(n,1)*exg(j0(n)+1,k(n)+2,l(n)+1)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,-1)*sz(n,2)*exg(j0(n)-1,k(n)-1,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,-1)*sz(n,2)*exg(j0(n),k(n)-1,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,-1)*sz(n,2)*exg(j0(n)+1,k(n)-1,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,0)*sz(n,2)*exg(j0(n)-1,k(n),l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,2)*exg(j0(n),k(n),l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,2)*exg(j0(n)+1,k(n),l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,1)*sz(n,2)*exg(j0(n)-1,k(n)+1,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,2)*exg(j0(n),k(n)+1,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,2)*exg(j0(n)+1,k(n)+1,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,-1)*sy(n,2)*sz(n,2)*exg(j0(n)-1,k(n)+2,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,0)*sy(n,2)*sz(n,2)*exg(j0(n),k(n)+2,l(n)+2)
+      ex(nn) = ex(nn) + sx0(n,1)*sy(n,2)*sz(n,2)*exg(j0(n)+1,k(n)+2,l(n)+2)
+      
+	ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+!$OMP END SIMD
+#endif
+	
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED ey:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1 
     
-      ! Compute By on particle
-      by(nn) = by(nn) + sx0(-1)*sy(-1)*sz0(-1)*byg(j0-1,k-1,l0-1)
-      by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(-1)*byg(j0,k-1,l0-1)
-      by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(-1)*byg(j0+1,k-1,l0-1)
-      by(nn) = by(nn) + sx0(-1)*sy(0)*sz0(-1)*byg(j0-1,k,l0-1)
-      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(-1)*byg(j0,k,l0-1)
-      by(nn) = by(nn) + sx0(1)*sy(0)*sz0(-1)*byg(j0+1,k,l0-1)
-      by(nn) = by(nn) + sx0(-1)*sy(1)*sz0(-1)*byg(j0-1,k+1,l0-1)
-      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(-1)*byg(j0,k+1,l0-1)
-      by(nn) = by(nn) + sx0(1)*sy(1)*sz0(-1)*byg(j0+1,k+1,l0-1)
-      by(nn) = by(nn) + sx0(-1)*sy(2)*sz0(-1)*byg(j0-1,k+2,l0-1)
-      by(nn) = by(nn) + sx0(0)*sy(2)*sz0(-1)*byg(j0,k+2,l0-1)
-      by(nn) = by(nn) + sx0(1)*sy(2)*sz0(-1)*byg(j0+1,k+2,l0-1)
-      by(nn) = by(nn) + sx0(-1)*sy(-1)*sz0(0)*byg(j0-1,k-1,l0)
-      by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(0)*byg(j0,k-1,l0)
-      by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(0)*byg(j0+1,k-1,l0)
-      by(nn) = by(nn) + sx0(-1)*sy(0)*sz0(0)*byg(j0-1,k,l0)
-      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(0)*byg(j0,k,l0)
-      by(nn) = by(nn) + sx0(1)*sy(0)*sz0(0)*byg(j0+1,k,l0)
-      by(nn) = by(nn) + sx0(-1)*sy(1)*sz0(0)*byg(j0-1,k+1,l0)
-      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(0)*byg(j0,k+1,l0)
-      by(nn) = by(nn) + sx0(1)*sy(1)*sz0(0)*byg(j0+1,k+1,l0)
-      by(nn) = by(nn) + sx0(-1)*sy(2)*sz0(0)*byg(j0-1,k+2,l0)
-      by(nn) = by(nn) + sx0(0)*sy(2)*sz0(0)*byg(j0,k+2,l0)
-      by(nn) = by(nn) + sx0(1)*sy(2)*sz0(0)*byg(j0+1,k+2,l0)
-      by(nn) = by(nn) + sx0(-1)*sy(-1)*sz0(1)*byg(j0-1,k-1,l0+1)
-      by(nn) = by(nn) + sx0(0)*sy(-1)*sz0(1)*byg(j0,k-1,l0+1)
-      by(nn) = by(nn) + sx0(1)*sy(-1)*sz0(1)*byg(j0+1,k-1,l0+1)
-      by(nn) = by(nn) + sx0(-1)*sy(0)*sz0(1)*byg(j0-1,k,l0+1)
-      by(nn) = by(nn) + sx0(0)*sy(0)*sz0(1)*byg(j0,k,l0+1)
-      by(nn) = by(nn) + sx0(1)*sy(0)*sz0(1)*byg(j0+1,k,l0+1)
-      by(nn) = by(nn) + sx0(-1)*sy(1)*sz0(1)*byg(j0-1,k+1,l0+1)
-      by(nn) = by(nn) + sx0(0)*sy(1)*sz0(1)*byg(j0,k+1,l0+1)
-      by(nn) = by(nn) + sx0(1)*sy(1)*sz0(1)*byg(j0+1,k+1,l0+1)
-      by(nn) = by(nn) + sx0(-1)*sy(2)*sz0(1)*byg(j0-1,k+2,l0+1)
-      by(nn) = by(nn) + sx0(0)*sy(2)*sz0(1)*byg(j0,k+2,l0+1)
-      by(nn) = by(nn) + sx0(1)*sy(2)*sz0(1)*byg(j0+1,k+2,l0+1)
-    
-      ! Compute Bz on particle
-      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(-1)*bzg(j0-1,k0-1,l-1)
-      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(-1)*bzg(j0,k0-1,l-1)
-      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(-1)*bzg(j0+1,k0-1,l-1)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(-1)*bzg(j0-1,k0,l-1)
-      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(-1)*bzg(j0,k0,l-1)
-      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(-1)*bzg(j0+1,k0,l-1)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(-1)*bzg(j0-1,k0+1,l-1)
-      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(-1)*bzg(j0,k0+1,l-1)
-      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(-1)*bzg(j0+1,k0+1,l-1)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(0)*bzg(j0-1,k0-1,l)
-      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(0)*bzg(j0,k0-1,l)
-      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(0)*bzg(j0+1,k0-1,l)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(0)*bzg(j0-1,k0,l)
-      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(0)*bzg(j0,k0,l)
-      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(0)*bzg(j0+1,k0,l)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(0)*bzg(j0-1,k0+1,l)
-      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(0)*bzg(j0,k0+1,l)
-      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(0)*bzg(j0+1,k0+1,l)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(1)*bzg(j0-1,k0-1,l+1)
-      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(1)*bzg(j0,k0-1,l+1)
-      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(1)*bzg(j0+1,k0-1,l+1)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(1)*bzg(j0-1,k0,l+1)
-      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(1)*bzg(j0,k0,l+1)
-      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(1)*bzg(j0+1,k0,l+1)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(1)*bzg(j0-1,k0+1,l+1)
-      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(1)*bzg(j0,k0+1,l+1)
-      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(-1)*sz(2)*bzg(j0-1,k0-1,l+2)
-      bz(nn) = bz(nn) + sx0(0)*sy0(-1)*sz(2)*bzg(j0,k0-1,l+2)
-      bz(nn) = bz(nn) + sx0(1)*sy0(-1)*sz(2)*bzg(j0+1,k0-1,l+2)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(0)*sz(2)*bzg(j0-1,k0,l+2)
-      bz(nn) = bz(nn) + sx0(0)*sy0(0)*sz(2)*bzg(j0,k0,l+2)
-      bz(nn) = bz(nn) + sx0(1)*sy0(0)*sz(2)*bzg(j0+1,k0,l+2)
-      bz(nn) = bz(nn) + sx0(-1)*sy0(1)*sz(2)*bzg(j0-1,k0+1,l+2)
-      bz(nn) = bz(nn) + sx0(0)*sy0(1)*sz(2)*bzg(j0,k0+1,l+2)
-      bz(nn) = bz(nn) + sx0(1)*sy0(1)*sz(2)*bzg(j0+1,k0+1,l+2)
+      ! Compute Ey on particle
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,-1)*sz(n,-1)*eyg(j(n)-1,k0(n)-1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,-1)*sz(n,-1)*eyg(j(n),k0(n)-1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,-1)*sz(n,-1)*eyg(j(n)+1,k0(n)-1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,-1)*sz(n,-1)*eyg(j(n)+2,k0(n)-1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,0)*sz(n,-1)*eyg(j(n)-1,k0(n),l(n)-1)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,-1)*eyg(j(n),k0(n),l(n)-1)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,-1)*eyg(j(n)+1,k0(n),l(n)-1)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,0)*sz(n,-1)*eyg(j(n)+2,k0(n),l(n)-1)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,1)*sz(n,-1)*eyg(j(n)-1,k0(n)+1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,1)*sz(n,-1)*eyg(j(n),k0(n)+1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,-1)*eyg(j(n)+1,k0(n)+1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,1)*sz(n,-1)*eyg(j(n)+2,k0(n)+1,l(n)-1)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,-1)*sz(n,0)*eyg(j(n)-1,k0(n)-1,l(n))
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,-1)*sz(n,0)*eyg(j(n),k0(n)-1,l(n))
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,-1)*sz(n,0)*eyg(j(n)+1,k0(n)-1,l(n))
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,-1)*sz(n,0)*eyg(j(n)+2,k0(n)-1,l(n))
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,0)*sz(n,0)*eyg(j(n)-1,k0(n),l(n))
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,0)*eyg(j(n),k0(n),l(n))
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,0)*eyg(j(n)+1,k0(n),l(n))
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,0)*sz(n,0)*eyg(j(n)+2,k0(n),l(n))
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,1)*sz(n,0)*eyg(j(n)-1,k0(n)+1,l(n))
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,1)*sz(n,0)*eyg(j(n),k0(n)+1,l(n))
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,0)*eyg(j(n)+1,k0(n)+1,l(n))
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,1)*sz(n,0)*eyg(j(n)+2,k0(n)+1,l(n))
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,-1)*sz(n,1)*eyg(j(n)-1,k0(n)-1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,-1)*sz(n,1)*eyg(j(n),k0(n)-1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,-1)*sz(n,1)*eyg(j(n)+1,k0(n)-1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,-1)*sz(n,1)*eyg(j(n)+2,k0(n)-1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,0)*sz(n,1)*eyg(j(n)-1,k0(n),l(n)+1)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,1)*eyg(j(n),k0(n),l(n)+1)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,1)*eyg(j(n)+1,k0(n),l(n)+1)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,0)*sz(n,1)*eyg(j(n)+2,k0(n),l(n)+1)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,1)*sz(n,1)*eyg(j(n)-1,k0(n)+1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,1)*sz(n,1)*eyg(j(n),k0(n)+1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,1)*eyg(j(n)+1,k0(n)+1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,1)*sz(n,1)*eyg(j(n)+2,k0(n)+1,l(n)+1)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,-1)*sz(n,2)*eyg(j(n)-1,k0(n)-1,l(n)+2)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,-1)*sz(n,2)*eyg(j(n),k0(n)-1,l(n)+2)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,-1)*sz(n,2)*eyg(j(n)+1,k0(n)-1,l(n)+2)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,-1)*sz(n,2)*eyg(j(n)+2,k0(n)-1,l(n)+2)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,0)*sz(n,2)*eyg(j(n)-1,k0(n),l(n)+2)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,2)*eyg(j(n),k0(n),l(n)+2)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,2)*eyg(j(n)+1,k0(n),l(n)+2)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,0)*sz(n,2)*eyg(j(n)+2,k0(n),l(n)+2)
+      ey(nn) = ey(nn) + sx(n,-1)*sy0(n,1)*sz(n,2)*eyg(j(n)-1,k0(n)+1,l(n)+2)
+      ey(nn) = ey(nn) + sx(n,0)*sy0(n,1)*sz(n,2)*eyg(j(n),k0(n)+1,l(n)+2)
+      ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,2)*eyg(j(n)+1,k0(n)+1,l(n)+2)
+      ey(nn) = ey(nn) + sx(n,2)*sy0(n,1)*sz(n,2)*eyg(j(n)+2,k0(n)+1,l(n)+2)
+      
+	ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+!$OMP END SIMD
+#endif
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1     
+      ! Compute Ez on particle
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,-1)*sz0(n,-1)*ezg(j(n)-1,k(n)-1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,-1)*sz0(n,-1)*ezg(j(n),k(n)-1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,-1)*sz0(n,-1)*ezg(j(n)+1,k(n)-1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,-1)*sz0(n,-1)*ezg(j(n)+2,k(n)-1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,0)*sz0(n,-1)*ezg(j(n)-1,k(n),l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,0)*sz0(n,-1)*ezg(j(n),k(n),l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,-1)*ezg(j(n)+1,k(n),l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,0)*sz0(n,-1)*ezg(j(n)+2,k(n),l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,1)*sz0(n,-1)*ezg(j(n)-1,k(n)+1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,-1)*ezg(j(n),k(n)+1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,-1)*ezg(j(n)+1,k(n)+1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,1)*sz0(n,-1)*ezg(j(n)+2,k(n)+1,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,2)*sz0(n,-1)*ezg(j(n)-1,k(n)+2,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,2)*sz0(n,-1)*ezg(j(n),k(n)+2,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,2)*sz0(n,-1)*ezg(j(n)+1,k(n)+2,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,2)*sz0(n,-1)*ezg(j(n)+2,k(n)+2,l0(n)-1)
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,-1)*sz0(n,0)*ezg(j(n)-1,k(n)-1,l0(n))
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,-1)*sz0(n,0)*ezg(j(n),k(n)-1,l0(n))
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,-1)*sz0(n,0)*ezg(j(n)+1,k(n)-1,l0(n))
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,-1)*sz0(n,0)*ezg(j(n)+2,k(n)-1,l0(n))
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,0)*sz0(n,0)*ezg(j(n)-1,k(n),l0(n))
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,0)*sz0(n,0)*ezg(j(n),k(n),l0(n))
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,0)*ezg(j(n)+1,k(n),l0(n))
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,0)*sz0(n,0)*ezg(j(n)+2,k(n),l0(n))
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,1)*sz0(n,0)*ezg(j(n)-1,k(n)+1,l0(n))
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,0)*ezg(j(n),k(n)+1,l0(n))
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,0)*ezg(j(n)+1,k(n)+1,l0(n))
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,1)*sz0(n,0)*ezg(j(n)+2,k(n)+1,l0(n))
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,2)*sz0(n,0)*ezg(j(n)-1,k(n)+2,l0(n))
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,2)*sz0(n,0)*ezg(j(n),k(n)+2,l0(n))
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,2)*sz0(n,0)*ezg(j(n)+1,k(n)+2,l0(n))
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,2)*sz0(n,0)*ezg(j(n)+2,k(n)+2,l0(n))
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,-1)*sz0(n,1)*ezg(j(n)-1,k(n)-1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,-1)*sz0(n,1)*ezg(j(n),k(n)-1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,-1)*sz0(n,1)*ezg(j(n)+1,k(n)-1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,-1)*sz0(n,1)*ezg(j(n)+2,k(n)-1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,0)*sz0(n,1)*ezg(j(n)-1,k(n),l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,0)*sz0(n,1)*ezg(j(n),k(n),l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,1)*ezg(j(n)+1,k(n),l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,0)*sz0(n,1)*ezg(j(n)+2,k(n),l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,1)*sz0(n,1)*ezg(j(n)-1,k(n)+1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,1)*ezg(j(n),k(n)+1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,1)*ezg(j(n)+1,k(n)+1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,1)*sz0(n,1)*ezg(j(n)+2,k(n)+1,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,-1)*sy(n,2)*sz0(n,1)*ezg(j(n)-1,k(n)+2,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,0)*sy(n,2)*sz0(n,1)*ezg(j(n),k(n)+2,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,1)*sy(n,2)*sz0(n,1)*ezg(j(n)+1,k(n)+2,l0(n)+1)
+      ez(nn) = ez(nn) + sx(n,2)*sy(n,2)*sz0(n,1)*ezg(j(n)+2,k(n)+2,l0(n)+1)
 
     END DO
+#if  defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
 #if defined __INTEL_COMPILER 
-#elif defined _OPENMP && _OPENMP>=201307
+      !DIR$ ASSUME_ALIGNED bx:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1    
+
+      ! Compute Bx on particle
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,-1)*sz0(n,-1)*bxg(j(n)-1,k0(n)-1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,-1)*sz0(n,-1)*bxg(j(n),k0(n)-1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,-1)*sz0(n,-1)*bxg(j(n)+1,k0(n)-1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,-1)*sz0(n,-1)*bxg(j(n)+2,k0(n)-1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,0)*sz0(n,-1)*bxg(j(n)-1,k0(n),l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,-1)*bxg(j(n),k0(n),l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,-1)*bxg(j(n)+1,k0(n),l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,0)*sz0(n,-1)*bxg(j(n)+2,k0(n),l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,1)*sz0(n,-1)*bxg(j(n)-1,k0(n)+1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,1)*sz0(n,-1)*bxg(j(n),k0(n)+1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,1)*sz0(n,-1)*bxg(j(n)+1,k0(n)+1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,1)*sz0(n,-1)*bxg(j(n)+2,k0(n)+1,l0(n)-1)
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,-1)*sz0(n,0)*bxg(j(n)-1,k0(n)-1,l0(n))
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,-1)*sz0(n,0)*bxg(j(n),k0(n)-1,l0(n))
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,-1)*sz0(n,0)*bxg(j(n)+1,k0(n)-1,l0(n))
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,-1)*sz0(n,0)*bxg(j(n)+2,k0(n)-1,l0(n))
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,0)*sz0(n,0)*bxg(j(n)-1,k0(n),l0(n))
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j(n),k0(n),l0(n))
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j(n)+1,k0(n),l0(n))
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,0)*sz0(n,0)*bxg(j(n)+2,k0(n),l0(n))
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,1)*sz0(n,0)*bxg(j(n)-1,k0(n)+1,l0(n))
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,1)*sz0(n,0)*bxg(j(n),k0(n)+1,l0(n))
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,1)*sz0(n,0)*bxg(j(n)+1,k0(n)+1,l0(n))
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,1)*sz0(n,0)*bxg(j(n)+2,k0(n)+1,l0(n))
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,-1)*sz0(n,1)*bxg(j(n)-1,k0(n)-1,l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,-1)*sz0(n,1)*bxg(j(n),k0(n)-1,l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,-1)*sz0(n,1)*bxg(j(n)+1,k0(n)-1,l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,-1)*sz0(n,1)*bxg(j(n)+2,k0(n)-1,l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,0)*sz0(n,1)*bxg(j(n)-1,k0(n),l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,1)*bxg(j(n),k0(n),l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,1)*bxg(j(n)+1,k0(n),l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,0)*sz0(n,1)*bxg(j(n)+2,k0(n),l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,-1)*sy0(n,1)*sz0(n,1)*bxg(j(n)-1,k0(n)+1,l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,0)*sy0(n,1)*sz0(n,1)*bxg(j(n),k0(n)+1,l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,1)*sy0(n,1)*sz0(n,1)*bxg(j(n)+1,k0(n)+1,l0(n)+1)
+      bx(nn) = bx(nn) + sx(n,2)*sy0(n,1)*sz0(n,1)*bxg(j(n)+2,k0(n)+1,l0(n)+1)
+
+    END DO
+#if  defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1  
+      ! Compute By on particle
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,-1)*sz0(n,-1)*byg(j0(n)-1,k(n)-1,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,-1)*sz0(n,-1)*byg(j0(n),k(n)-1,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,-1)*sz0(n,-1)*byg(j0(n)+1,k(n)-1,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,0)*sz0(n,-1)*byg(j0(n)-1,k(n),l0(n)-1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,-1)*byg(j0(n),k(n),l0(n)-1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,-1)*byg(j0(n)+1,k(n),l0(n)-1)
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,1)*sz0(n,-1)*byg(j0(n)-1,k(n)+1,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,-1)*byg(j0(n),k(n)+1,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,-1)*byg(j0(n)+1,k(n)+1,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,2)*sz0(n,-1)*byg(j0(n)-1,k(n)+2,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,2)*sz0(n,-1)*byg(j0(n),k(n)+2,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,2)*sz0(n,-1)*byg(j0(n)+1,k(n)+2,l0(n)-1)
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,-1)*sz0(n,0)*byg(j0(n)-1,k(n)-1,l0(n))
+      by(nn) = by(nn) + sx0(n,0)*sy(n,-1)*sz0(n,0)*byg(j0(n),k(n)-1,l0(n))
+      by(nn) = by(nn) + sx0(n,1)*sy(n,-1)*sz0(n,0)*byg(j0(n)+1,k(n)-1,l0(n))
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,0)*sz0(n,0)*byg(j0(n)-1,k(n),l0(n))
+      by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0(n),k(n),l0(n))
+      by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,0)*byg(j0(n)+1,k(n),l0(n))
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,1)*sz0(n,0)*byg(j0(n)-1,k(n)+1,l0(n))
+      by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0(n),k(n)+1,l0(n))
+      by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,0)*byg(j0(n)+1,k(n)+1,l0(n))
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,2)*sz0(n,0)*byg(j0(n)-1,k(n)+2,l0(n))
+      by(nn) = by(nn) + sx0(n,0)*sy(n,2)*sz0(n,0)*byg(j0(n),k(n)+2,l0(n))
+      by(nn) = by(nn) + sx0(n,1)*sy(n,2)*sz0(n,0)*byg(j0(n)+1,k(n)+2,l0(n))
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,-1)*sz0(n,1)*byg(j0(n)-1,k(n)-1,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,-1)*sz0(n,1)*byg(j0(n),k(n)-1,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,-1)*sz0(n,1)*byg(j0(n)+1,k(n)-1,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,0)*sz0(n,1)*byg(j0(n)-1,k(n),l0(n)+1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,1)*byg(j0(n),k(n),l0(n)+1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,1)*byg(j0(n)+1,k(n),l0(n)+1)
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,1)*sz0(n,1)*byg(j0(n)-1,k(n)+1,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,1)*byg(j0(n),k(n)+1,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,1)*byg(j0(n)+1,k(n)+1,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,-1)*sy(n,2)*sz0(n,1)*byg(j0(n)-1,k(n)+2,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,0)*sy(n,2)*sz0(n,1)*byg(j0(n),k(n)+2,l0(n)+1)
+      by(nn) = by(nn) + sx0(n,1)*sy(n,2)*sz0(n,1)*byg(j0(n)+1,k(n)+2,l0(n)+1)
+	ENDDO
+#if  defined _OPENMP && _OPENMP>=201307
+      !$OMP END SIMD 
+#endif
+
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+      !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+      !$OMP SIMD 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
+#endif
+    DO n=1,MIN(lvect,np-ip+1)
+      nn=ip+n-1  
+    
+      ! Compute Bz on particle
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,-1)*sz(n,-1)*bzg(j0(n)-1,k0(n)-1,l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,-1)*sz(n,-1)*bzg(j0(n),k0(n)-1,l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,-1)*sz(n,-1)*bzg(j0(n)+1,k0(n)-1,l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,0)*sz(n,-1)*bzg(j0(n)-1,k0(n),l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,-1)*bzg(j0(n),k0(n),l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,-1)*bzg(j0(n)+1,k0(n),l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,1)*sz(n,-1)*bzg(j0(n)-1,k0(n)+1,l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,-1)*bzg(j0(n),k0(n)+1,l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,-1)*bzg(j0(n)+1,k0(n)+1,l(n)-1)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,-1)*sz(n,0)*bzg(j0(n)-1,k0(n)-1,l(n))
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,-1)*sz(n,0)*bzg(j0(n),k0(n)-1,l(n))
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,-1)*sz(n,0)*bzg(j0(n)+1,k0(n)-1,l(n))
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,0)*sz(n,0)*bzg(j0(n)-1,k0(n),l(n))
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0(n),k0(n),l(n))
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,0)*bzg(j0(n)+1,k0(n),l(n))
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,1)*sz(n,0)*bzg(j0(n)-1,k0(n)+1,l(n))
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,0)*bzg(j0(n),k0(n)+1,l(n))
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,0)*bzg(j0(n)+1,k0(n)+1,l(n))
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,-1)*sz(n,1)*bzg(j0(n)-1,k0(n)-1,l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,-1)*sz(n,1)*bzg(j0(n),k0(n)-1,l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,-1)*sz(n,1)*bzg(j0(n)+1,k0(n)-1,l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,0)*sz(n,1)*bzg(j0(n)-1,k0(n),l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,1)*bzg(j0(n)+1,k0(n),l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,1)*sz(n,1)*bzg(j0(n)-1,k0(n)+1,l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,1)*bzg(j0(n),k0(n)+1,l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,1)*bzg(j0(n)+1,k0(n)+1,l(n)+1)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,-1)*sz(n,2)*bzg(j0(n)-1,k0(n)-1,l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,-1)*sz(n,2)*bzg(j0(n),k0(n)-1,l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,-1)*sz(n,2)*bzg(j0(n)+1,k0(n)-1,l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,0)*sz(n,2)*bzg(j0(n)-1,k0(n),l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,2)*bzg(j0(n),k0(n),l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,2)*bzg(j0(n)+1,k0(n),l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,-1)*sy0(n,1)*sz(n,2)*bzg(j0(n)-1,k0(n)+1,l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,2)*bzg(j0(n),k0(n)+1,l(n)+2)
+      bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,2)*bzg(j0(n)+1,k0(n)+1,l(n)+2)
+      
+    END DO
+#if  defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD 
 #endif
 

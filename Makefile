@@ -72,7 +72,7 @@ ifeq ($(SYS),cori1)
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
-		FARGS= -g -O3 -xCORE-AVX2 -qopenmp -qopt-report:5
+		FARGS= -g -O3 -xCORE-AVX2 -qopenmp -qopt-report:5 -debug inline-debug-info
 		LARCH=	
 	else ifeq ($(MODE),novec)
 		COMP=none
@@ -90,7 +90,7 @@ else ifeq ($(SYS),edison)
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
-		FARGS= -g -O3 -xAVX -qopenmp -qopt-report:5
+		FARGS= -g -O3 -xAVX -qopenmp -qopt-report:5 -debug inline-debug-info -traceback
 		LARCH=	
 	else ifeq ($(MODE),novec)
 		COMP=none
@@ -108,7 +108,7 @@ else ifeq ($(SYS),cori2)
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
-		FARGS= -g -qopenmp -qopt-report:5
+		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
 		LARCH=	
 	else ifeq ($(MODE),novec)
 		COMP=none
@@ -270,17 +270,54 @@ Acceptance_testing/Gcov_tests/%.o:Acceptance_testing/Gcov_tests/%.F90
 # Clean files related to the tests	
 cleantest:
 	rm -f Acceptance_testing/Fortran_tests/*/picsar
+	rm -rf Acceptance_testing/Fortran_tests/*/RESULTS	
 	rm -f Acceptance_testing/Python_tests/*/*.cgm
 	rm -f Acceptance_testing/Python_tests/*/*.cgmlog
 	rm -f Acceptance_testing/Gcov_tests/*.o
 	rm -f Acceptance_testing/Gcov_tests/*_test
 	rm -rf Acceptance_testing/Gcov_tests/*.dSYM
 
-# Compilation of all the tests	
-buildtest: $(SRCDIR)/modules.o \
+build_tile_field_gathering_3d_test: $(SRCDIR)/modules.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/field_gathering_2d.o \
+	$(SRCDIR)/field_gathering_3d_o1.o \
+	$(SRCDIR)/field_gathering_3d_o2.o \
+	$(SRCDIR)/field_gathering_3d_o3.o \
+	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/control_file.o \
+	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o 
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o	
+
+build_field_gathering_3d_test: $(SRCDIR)/modules.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/field_gathering_2d.o \
+	$(SRCDIR)/field_gathering_3d_o1.o \
+	$(SRCDIR)/field_gathering_3d_o2.o \
+	$(SRCDIR)/field_gathering_3d_o3.o \
+	$(SRCDIR)/field_gathering.o \
+	Acceptance_testing/Gcov_tests/field_gathering_test.o 
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o	
+
+build_field_gathering_2d_test: $(SRCDIR)/modules.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/field_gathering_2d.o \
+	$(SRCDIR)/field_gathering_3d_o1.o \
+	$(SRCDIR)/field_gathering_3d_o2.o \
+	$(SRCDIR)/field_gathering_3d_o3.o \
+	$(SRCDIR)/field_gathering.o \
+	Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_2d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
+
+build_current_deposition_3d_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
 	$(SRCDIR)/current_deposition_2d.o \
 	$(SRCDIR)/current_deposition.o \
+	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o 
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
+
+build_tile_particle_push_3d_test: $(SRCDIR)/modules.o \
+	$(SRCDIR)/tiling.o \
 	$(SRCDIR)/particles_push_2d.o \
 	$(SRCDIR)/particles_push.o \
 	$(SRCDIR)/field_gathering_2d.o \
@@ -290,17 +327,20 @@ buildtest: $(SRCDIR)/modules.o \
 	$(SRCDIR)/field_gathering.o \
 	$(SRCDIR)/mpi_routines.o \
 	$(SRCDIR)/control_file.o \
-	Acceptance_testing/Gcov_tests/field_gathering_test.o \
-	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o \
-	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o \
+	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o 
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
+	
+# Compilation of all the tests	
+buildtest: build_tile_field_gathering_3d_test \
+	build_field_gathering_3d_test \
+	build_field_gathering_2d_test \
+	build_current_deposition_3d_test \
+	build_tile_particle_push_3d_test \
+	$(SRCDIR)/particles_push_2d.o \
+	$(SRCDIR)/particles_push.o \
 	Acceptance_testing/Gcov_tests/esirkepov_3d_test.o \
 	Acceptance_testing/Gcov_tests/esirkepov_2d_test.o \
-	Acceptance_testing/Gcov_tests/field_gathering_2d_test.o \
-	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o
-	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
-	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_2d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
-	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o
-	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
+	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o 	
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/esirkepov_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_2d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o
@@ -324,21 +364,27 @@ test_pytest:
 
 # __ Gcov ____________________________________________________
 	
-test_gcov:
-	./Acceptance_testing/Gcov_tests/field_gathering_2d_test
-	./Acceptance_testing/Gcov_tests/field_gathering_3d_test
+test_gcov: field_gathering_2d_test \
+	field_gathering_3d_test \
+	tile_field_gathering_3d_test \
 	./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
 	./Acceptance_testing/Gcov_tests/current_deposition_3d_test
 	./Acceptance_testing/Gcov_tests/esirkepov_3d_test
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
-
+	./Acceptance_testing/Gcov_tests/tile_particle_push_3d_test
+	
 field_gathering_2d_test:
+	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/field_gathering_2d_test
+	
 field_gathering_3d_test:
+	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/field_gathering_3d_test
+	
 tile_field_gathering_3d_test:
 	export OMP_NUM_THREADS=4
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
+	
 esirkepov_2d_test:	
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
 esirkepov_3d_test:	

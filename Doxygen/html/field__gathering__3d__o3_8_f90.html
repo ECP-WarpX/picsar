@@ -136,6 +136,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:aa296f91b8369f8c698d2503f0fb6beb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering CIC (order 1) with gathering of E and B merged in a single loop.  <a href="#aa296f91b8369f8c698d2503f0fb6beb4">More...</a><br /></td></tr>
 <tr class="separator:aa296f91b8369f8c698d2503f0fb6beb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e3a3b1519fdd7090c55244b49a8d80f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__3d__o3_8_f90.html#a6e3a3b1519fdd7090c55244b49a8d80f">geteb3d_energy_conserving_vec_3_3_3_v2</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a6e3a3b1519fdd7090c55244b49a8d80f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering (order 3) with gathering of E and B merged in a single loop.  <a href="#a6e3a3b1519fdd7090c55244b49a8d80f">More...</a><br /></td></tr>
 <tr class="separator:a6e3a3b1519fdd7090c55244b49a8d80f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
@@ -1441,6 +1442,25 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Field gathering (order 3) with gathering of E and B merged in a single loop. </p>
+<p>This function is vectorized  </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>particle electric field </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>particle magnetic field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile minimum grid position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of grid points in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for cache blocking [in] l_lower_order_in_v decrease the interpolation order if True </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

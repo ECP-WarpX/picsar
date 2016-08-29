@@ -18,7 +18,7 @@ subroutine \hyperlink{field__gathering__3d__o3_8_f90_a14f7dada83129910dde71b2237
 subroutine \hyperlink{field__gathering__3d__o3_8_f90_aa296f91b8369f8c698d2503f0fb6beb4}{geteb3d\+\_\+energy\+\_\+conserving\+\_\+3\+\_\+3\+\_\+3} (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
 \begin{DoxyCompactList}\small\item\em Field gathering C\+IC (order 1) with gathering of E and B merged in a single loop. \end{DoxyCompactList}\item 
 subroutine \hyperlink{field__gathering__3d__o3_8_f90_a6e3a3b1519fdd7090c55244b49a8d80f}{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3\+\_\+v2} (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Field gathering (order 3) with gathering of E and B merged in a single loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Function/\+Subroutine Documentation}
@@ -276,3 +276,34 @@ This function is vectorized \index{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90@{f
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{field__gathering__3d__o3_8_f90_a6e3a3b1519fdd7090c55244b49a8d80f}{}\label{field__gathering__3d__o3_8_f90_a6e3a3b1519fdd7090c55244b49a8d80f}
+
+
+Field gathering (order 3) with gathering of E and B merged in a single loop. 
+
+This function is vectorized  
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position \\
+\hline
+\mbox{\tt in,out}  & {\em ex,ey,ez} & particle electric field \\
+\hline
+\mbox{\tt in,out}  & {\em bx,by,bz} & particle magnetic field \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile minimum grid position \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space step \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of grid points in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grid \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grid \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \mbox{[}in\mbox{]} l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v decrease the interpolation order if True \\
+\hline
+\end{DoxyParams}

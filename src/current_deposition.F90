@@ -543,15 +543,18 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
 
 !=========================================================================================
-!> Deposit current in each tile with the classical method
+!> Deposit current in each tile with the classical method using an external given function
 !> @brief
 !
 !> OpenMP version. Avoids conflict while reducing tile currents in the global 
 !> current array. 
+!> This subroutine uses an external function represented by the argument func_order 
+!> for the current deposition method.
 !> @details
 !
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,&
+  jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+  noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 !=========================================================================================
   USE particles
   USE constants
@@ -563,35 +566,35 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg
 
     ! Interfaces for func_order
     INTERFACE
-      SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
+      SUBROUTINE curr_depo_sub(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       	USE constants
       	IMPLICIT NONE
-      	INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
+      	INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
       	REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       	REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       	REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
-        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-      END SUBROUTINE func_order
+        REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
+      END SUBROUTINE curr_depo_sub
     END INTERFACE
   
   ! Parameters
-  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-  REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+  INTEGER(idp), INTENT(IN)  :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+  INTEGER(idp), INTENT(IN)  :: noxx,noyy,nozz
+  REAL(num), INTENT(IN)     :: dxx,dyy,dzz, dtt
   REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-  INTEGER(idp) :: ispecies, ix, iy, iz, count
-  INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-  INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+  INTEGER(idp)              :: ispecies, ix, iy, iz, count
+  INTEGER(idp)              :: jmin, jmax, kmin, kmax, lmin, lmax
+  INTEGER(idp)              :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
   TYPE(particle_species), POINTER :: curr
-  TYPE(particle_tile), POINTER :: curr_tile
-  TYPE(grid_tile), POINTER :: currg
-  REAL(num) :: tdeb, tend
-  INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-  LOGICAL(idp) :: isdeposited=.FALSE.
+  TYPE(particle_tile), POINTER    :: curr_tile
+  TYPE(grid_tile), POINTER        :: currg
+  REAL(num)                       :: tdeb, tend
+  INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+  LOGICAL(idp)                    :: isdeposited=.FALSE.
 
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
@@ -632,7 +635,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg
                   	isdeposited=.TRUE.
                   ENDIF 
                   ! Depose current in jtile
-                  CALL func_order(currg%jxtile,currg%jytile,currg%jztile,count,&
+                  CALL curr_depo_sub(currg%jxtile,currg%jytile,currg%jztile,count,&
                   curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,           &
                   curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,  			   &
                   curr_tile%part_gaminv,  &
@@ -812,13 +815,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 
 
 !=========================================================================================
-!> Deposit current in each tile with the classical method version 2
+!> Deposit current in each tile with the classical method with an external given function.
+!> In this second version, the transient current arrays are reduced 
+!> after the current deposition for all species and not for each species.
 !> @brief
 !
 !> OpenMP version. Avoids conflict while reducing tile currents in the global 
 !> current array. 
-!> In this second version, the transient current arrays are reduced 
-!> after the current deposition for all species and not for each species.
 !> @details
 !
 !> @author
@@ -2323,86 +2326,91 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 
 
 ! ________________________________________________________________________________________
+!> Order 1 3D vector current deposition routine (rho*v)
+!> @brief
+!
+!> This versions have good performances on SIMD architectures
+!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!> @detail
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-!!! --- Order 1 3D vector current deposition routine (rho*v)
-!!! This versions have good performances on SIMD architectures
-!!! Providing that OpenMP 4.0 is available (Directive SIMD)
 ! ________________________________________________________________________________________
-    USE constants
-    IMPLICIT NONE
-    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-    REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-    REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-    REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-    REAL(num), DIMENSION(:,:), ALLOCATABLE:: jxcells,jycells,jzcells
-    REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, gaminv, w
-    REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
-                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-    REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
-    REAL(num) :: clightsq
+	USE constants
+	IMPLICIT NONE
+	
+	! ___ Parameter declaration ______________________________________
+	INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
+	REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+	REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+	REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+	REAL(num), DIMENSION(:,:), ALLOCATABLE:: jxcells,jycells,jzcells
+	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, gaminv, w
+	REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	REAL(num)                :: dxi,dyi,dzi,xint,yint,zint, &
+								 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+	REAL(num)                :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
+	
+	REAL(num)                       :: clightsq
+	INTEGER(idp)                    :: j,k,l,j0,k0,l0,ip, NCELLS, ic
+	INTEGER(idp)                    :: nnx, nnxy, n,nn,nv
+	INTEGER(idp)                    :: moff(1:8)
+	REAL(num)                       :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
 
-    INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic
-    INTEGER(idp) :: nnx, nnxy, n,nn,nv
-    INTEGER(idp) :: moff(1:8)
-    REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+	INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
+	REAL(num), DIMENSION(LVEC)      :: sx, sy, sz, sx0, sy0, sz0,wqx,wqy,wqz
+	REAL(num)                       :: wwx,wwy,wwz, wq,vx,vy,vz, wx,wx0, wy,wy0, wz,wz0
+	INTEGER(idp)                    :: orig, jorig, korig, lorig, igrid
+	INTEGER(idp)                    :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
-    INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
-    REAL(num), DIMENSION(LVEC) :: sx, sy, sz, sx0, sy0, sz0,wqx,wqy,wqz
-    REAL(num) :: wwx,wwy,wwz, wq,vx,vy,vz, wx,wx0, wy,wy0, wz,wz0
-    INTEGER(idp) :: orig, jorig, korig, lorig, igrid
-    INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
-
-    dxi = 1.0_num/dx
-    dyi = 1.0_num/dy
-    dzi = 1.0_num/dz
-    invvol = dxi*dyi*dzi
-    dts2dx = 0.5_num*dt*dxi
-    dts2dy = 0.5_num*dt*dyi
-    dts2dz = 0.5_num*dt*dzi
-    sx=0.0_num;sy=0.0_num;sz=0.0_num
-    sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-    ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
-    ncx=nx+3;ncy=ny+3;ncz=nz+3
-    NCELLS=ncx*ncy*ncz
-    ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
-    jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
-    nnx = ngridx
-    nnxy = nnx*ngridy
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
+	invvol = dxi*dyi*dzi
+	dts2dx = 0.5_num*dt*dxi
+	dts2dy = 0.5_num*dt*dyi
+	dts2dz = 0.5_num*dt*dzi
+	sx=0.0_num;sy=0.0_num;sz=0.0_num
+	sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
+	ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
+	ncx=nx+3;ncy=ny+3;ncz=nz+3
+	NCELLS=ncx*ncy*ncz
+	ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
+	jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
+	nnx = ngridx
+	nnxy = nnx*ngridy
     
-    ! Relative position of the nodes in respect to the particle computed node
-    moff = (/0_idp,1_idp,nnx,nnx+1_idp,nnxy,nnxy+1_idp,nnxy+nnx,nnxy+nnx+1_idp/)
-    
-    mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
-    my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
-    mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
-    sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
-    jorig=-2; korig=-2;lorig=-2
-    orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-    ngx=(ngridx-ncx)
-    ngxy=(ngridx*ngridy-ncx*ncy)
-    ncxy=ncx*ncy
-    ! LOOP ON PARTICLES
-    DO ip=1,np, LVEC
+	! Relative position of the nodes in respect to the particle computed node
+	moff = (/0_idp,1_idp,nnx,nnx+1_idp,nnxy,nnxy+1_idp,nnxy+nnx,nnxy+nnx+1_idp/)
+
+	mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
+	my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
+	mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
+	sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
+	jorig=-2; korig=-2;lorig=-2
+	orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+	ngx=(ngridx-ncx)
+	ngxy=(ngridx*ngridy-ncx*ncy)
+	ncxy=ncx*ncy
+	
+	! LOOP ON PARTICLES
+	DO ip=1,np, LVEC
 #if defined __INTEL_COMPILER 
-        !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-        !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-        !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
-        !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
-        !DIR$ ASSUME_ALIGNED w:64, gaminv:64
-        !DIR$ ASSUME_ALIGNED ICELL:64
-#elif defined __IBMBGQ__
-        !IBM* ALIGN(64,xp,yp,zp)
-        !IBM* ALIGN(64,uxp,uyp,uzp)
-        !IBM* ALIGN(64,sx,sy,sz)
-        !IBM* ALIGN(64,sy0,sz0)
-        !IBM* ALIGN(64,w, gaminv)
-        !IBM* ALIGN(64,ICELL)
+		!DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+		!DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+		!DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
+		!DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
+		!DIR$ ASSUME_ALIGNED w:64, gaminv:64
+		!DIR$ ASSUME_ALIGNED ICELL:64
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+		!$OMP SIMD
 #elif defined __IBMBGQ__
+		!IBM* ALIGN(64,xp,yp,zp)
+		!IBM* ALIGN(64,uxp,uyp,uzp)
+		!IBM* ALIGN(64,sx,sy,sz)
+		!IBM* ALIGN(64,sy0,sz0)
+		!IBM* ALIGN(64,w, gaminv)
+		!IBM* ALIGN(64,ICELL)
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 		!$DIR SIMD 

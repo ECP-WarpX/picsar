@@ -67,8 +67,8 @@ PROGRAM tile_field_gathering_3d_test
 	ntilez = 6
 	
 	! --- Vector length field gathering
-	LVEC_fieldgathe = 256
-	
+  lvec_curr_depo = 8
+        
 	! --- Interpolation 
 	l_lower_order_in_v = .TRUE.
 
@@ -267,6 +267,13 @@ PROGRAM tile_field_gathering_3d_test
 	! __ Order 2 __________________     
 	write(0,*) ''
 
+  errjx = 0
+  errjy = 0
+  errjz = 0
+  tilesumjx = 0
+  tilesumjy = 0
+  tilesumjz = 0
+  
   i = 1
   name(i) = 'Esirkepov order n sequential version'
   currdepo = 2 ; nox=2 ; noy=2 ; noz=2
@@ -332,8 +339,16 @@ PROGRAM tile_field_gathering_3d_test
 	! __ Order 3 __________________     
 	write(0,*) ''
 
+  errjx = 0
+  errjy = 0
+  errjz = 0
+  tilesumjx = 0
+  tilesumjy = 0
+  tilesumjz = 0
+
   i = 1
   name(i) = 'Esirkepov order n sequential version'
+  write(0,*) 'Computation of ',name(i)
   currdepo = 2 ; nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
   CALL pxrdepose_currents_on_grid_jxjyjz
@@ -343,6 +358,7 @@ PROGRAM tile_field_gathering_3d_test
 
   i = i+1
   name(i) = 'Classical scalar order 3 sequential version'
+  write(0,*) 'Computation of ',name(i)
   currdepo = 5 ; nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
   CALL pxrdepose_currents_on_grid_jxjyjz
@@ -352,6 +368,7 @@ PROGRAM tile_field_gathering_3d_test
 
   i = i+1
   name(i) = 'Classical scalar order 3 openmp version'
+  write(0,*) 'Computation of ',name(i)
   currdepo = 4 ; nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
   CALL pxrdepose_currents_on_grid_jxjyjz
@@ -361,6 +378,7 @@ PROGRAM tile_field_gathering_3d_test
 
   i = i+1
   name(i) = 'Classical vectorized order 3 openmp version'
+  write(0,*) 'Computation of ',name(i)
   currdepo = 3 ; nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
   CALL pxrdepose_currents_on_grid_jxjyjz
@@ -370,6 +388,7 @@ PROGRAM tile_field_gathering_3d_test
 
   i = i+1
   name(i) = 'Esirkepov order 3 openmp version'
+  write(0,*) 'Computation of ',name(i)
   currdepo = 1 ;  nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
   CALL pxrdepose_currents_on_grid_jxjyjz

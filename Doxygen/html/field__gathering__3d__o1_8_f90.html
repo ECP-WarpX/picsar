@@ -946,7 +946,23 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Field gathering CIC (order 1) with gathering of E and B merged in a single loop. </p>
-<p>This function is vectorized </p>
+<p>This function is vectorized </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>particle electric field </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>particle magnetic field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile minimum grid position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of grid points in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for cache blocking [in] l_lower_order_in_v decrease the interpolation order if True </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

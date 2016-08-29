@@ -1,7 +1,7 @@
 ! ________________________________________________________________________________________
 !
-! TILE_FIELD_GATHERING_3D_TEST.F90
-! Test code for the field gathering with tiling in 3D
+! TILE_PARTICLE_PUSH_3D_TEST.F90
+! Test code for the field gathering + particle pusher with tiling in 3D
 !
 ! Mathieu Lobet, 2016.08
 ! ________________________________________________________________________________________
@@ -19,23 +19,31 @@ PROGRAM tile_field_gathering_3d_test
 	! ______________________________________________________________________________________
 	! Parameters
 	
-	TYPE(particle_species), POINTER :: curr
-	INTEGER(idp)                    :: jmin, jmax, kmin, kmax, lmin, lmax
-	REAL(num)                       :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-	REAL(num)                       :: phi, th, up, clightsq
+	TYPE(particle_species), POINTER          :: curr
+	TYPE(particle_species)                   :: curr0
+	INTEGER(idp)                             :: jmin, jmax, kmin, kmax, lmin, lmax
+	REAL(num)                                :: partx, party, partz
+	REAL(num)                                :: partux, partuy, partuz, partw, gaminv
+	REAL(num)                                :: phi, th, up, clightsq
 	REAL(num)                                :: Ef, Bf	
 	REAL(num), DIMENSION(6)                  :: rng=0_num
   REAL(num)                                :: epsilon
   REAL(num)                                :: t0
   LOGICAL                                  :: passed 
-  REAL(num), dimension(10)                 :: t
+  REAL(num), dimension(10)                 :: tfg,tpp
   CHARACTER(len=64), dimension(10)         :: name
 	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumex,tilesumey,tilesumez
 	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumbx,tilesumby,tilesumbz
+	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumx,tilesumy,tilesumz
+	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumpx,tilesumpy,tilesumpz
   REAL(num), dimension(10)                 :: sumex,sumey,sumez
-  REAL(num), dimension(10)                 :: sumbx,sumby,sumbz  
+  REAL(num), dimension(10)                 :: sumbx,sumby,sumbz
+  REAL(num), dimension(10)                 :: sumx,sumy,sumz
+  REAL(num), dimension(10)                 :: sumpx,sumpy,sumpz    
   REAL(num), dimension(10)                 :: errex,errey,errez
   REAL(num), dimension(10)                 :: errbx,errby,errbz  
+  REAL(num), dimension(10)                 :: errx,erry,errz
+  REAL(num), dimension(10)                 :: errpx,errpy,errpz  
   CHARACTER(len=64)                        :: title  
   
 	! ______________________________________________________________________________________
@@ -193,7 +201,12 @@ PROGRAM tile_field_gathering_3d_test
 	ALLOCATE(tilesumbx(ntilez,ntiley,ntilex))
 	ALLOCATE(tilesumby(ntilez,ntiley,ntilex))
 	ALLOCATE(tilesumbz(ntilez,ntiley,ntilex))
-	
+	ALLOCATE(tilesumx(ntilez,ntiley,ntilex))
+	ALLOCATE(tilesumy(ntilez,ntiley,ntilex))
+	ALLOCATE(tilesumz(ntilez,ntiley,ntilex))
+	ALLOCATE(tilesumpx(ntilez,ntiley,ntilex))
+	ALLOCATE(tilesumpy(ntilez,ntiley,ntilex))
+	ALLOCATE(tilesumpz(ntilez,ntiley,ntilex))
   ! --- Field init
 	CALL RANDOM_NUMBER(ex)   
 	CALL RANDOM_NUMBER(ey)  
@@ -215,6 +228,8 @@ PROGRAM tile_field_gathering_3d_test
 
 	write(0,*) 'dx',dx,'dy',dy,'dz',dz,'dt',dt
 	write(0,*) 'sum(ex)',sum(ex),'sum(ey)',sum(ey),'sum(ez)',sum(ez)
+	
+	curr0 = curr
 	! ______________________________________________________________________________________
 	! Test of the different subroutines with tiling
 
@@ -224,173 +239,310 @@ PROGRAM tile_field_gathering_3d_test
   errbx = 0
   errby = 0
   errbz = 0
-  sumex = 0
+  errx = 0
+  erry = 0
+  errz = 0
+  errpx = 0
+  errpy = 0
+  errpz = 0
+  tfg = 0
+  tpp = 0
   
   i = 1
-  name(i) = 'pxr_gete3d_n_energy_conserving'
+  name(i) = 'field_gathering_sub + particle_pusher_sub'
   write(0,*) 'Computation of ',name(i)
 	fieldgave = 2 ; nox=1 ; noy=1 ; noz=1
+	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  tfg(i) = MPI_WTIME() - t0
+  ! Particle pusher then
+	t0 = MPI_WTIME()  
+	CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
 	
-  i = i+1
-  name(i) = 'gete3d_energy_conserving_scalar_1_1_1'
-  write(0,*) 'Computation of ',name(i)
-	fieldgave = 1 ; nox=1 ; noy=1 ; noz=1
-	t0 = MPI_WTIME()
-	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
-	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
-	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	curr = curr0
 
-
-  i = i+1
-  name(i) = 'geteb3d_energy_conserving_vec_1_1_1'
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub'
 	write(0,*) 'Computation of ',name(i)
 	fieldgave = 0 ; nox=1 ; noy=1 ; noz=1
+	! field gathering first
 	t0 = MPI_WTIME()
-	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub'
+	write(0,*) 'Computation of ',name(i)
+	fieldgave = 0 ; nox=1 ; noy=1 ; noz=1
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
 
 	! Computation of the relative error
-	CALL compute_err(i,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,epsilon,passed)
+	CALL compute_err(i,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	epsilon,passed)
 
 	title = 'Results order 1'
-	CALL display_statistics(title,i,name,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,t)
+	CALL display_statistics(title,i,name,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	tfg,tpp)
 
 	! __ Order 2 __________________     
 	write(0,*) ''
 	
-	errex = 0
-	errey = 0
-	errez = 0
-	errbx = 0
-	errby = 0
-	errbz = 0
-	sumex = 0
+  errex = 0
+  errey = 0
+  errez = 0
+  errbx = 0
+  errby = 0
+  errbz = 0
+  errx = 0
+  erry = 0
+  errz = 0
+  errpx = 0
+  errpy = 0
+  errpz = 0
+  tfg = 0
+  tpp = 0
+	i = 0
+	curr = curr0
 
-	i = 1
-	name(i) = 'pxr_gete3d_n_energy_conserving'
+  i = 1
+  name(i) = 'field_gathering_sub + particle_pusher_sub'
   write(0,*) 'Computation of ',name(i)
 	fieldgave = 2 ; nox=2 ; noy=2 ; noz=2
+	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-	t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  tfg(i) = MPI_WTIME() - t0
+  ! Particle pusher then
+	t0 = MPI_WTIME()  
+	CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+	
+	curr = curr0
 
 	i = i+1
-	name(i) = 'gete3d_energy_conserving_scalar_2_2_2'
-  write(0,*) 'Computation of ',name(i)
-	fieldgave = 1 ; nox=2 ; noy=2 ; noz=2
-	t0 = MPI_WTIME()
-	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-	t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
-	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
-	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
-	
-  i = i+1
-  name(i) = 'geteb3d_energy_conserving_vec_2_2_2'
+	name(i) = 'field_gathering_plus_particle_pusher_sub'
 	write(0,*) 'Computation of ',name(i)
 	fieldgave = 0 ; nox=2 ; noy=2 ; noz=2
+	! field gathering first
 	t0 = MPI_WTIME()
-	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+	
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub'
+	write(0,*) 'Computation of ',name(i)
+	fieldgave = 0 ; nox=2 ; noy=2 ; noz=2
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
 
 	! Computation of the relative error
-	CALL compute_err(i,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,epsilon,passed)
+	CALL compute_err(i,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	epsilon,passed)
 
 	title = 'Results order 2'
-	CALL display_statistics(title,i,name,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,t)
+	CALL display_statistics(title,i,name,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	tfg,tpp)
 
 	! __ Order 3 __________________     
 	write(0,*) ''
 	
-	errex = 0
-	errey = 0
-	errez = 0
-	errbx = 0
-	errby = 0
-	errbz = 0
-	sumex = 0
+  errex = 0
+  errey = 0
+  errez = 0
+  errbx = 0
+  errby = 0
+  errbz = 0
+  errx = 0
+  erry = 0
+  errz = 0
+  errpx = 0
+  errpy = 0
+  errpz = 0
+	i = 0
+	curr = curr0
 
-	i = 1
-	name(i) = 'pxr_gete3d_n_energy_conserving'
+  i = 1
+  name(i) = 'field_gathering_sub + particle_pusher_sub'
   write(0,*) 'Computation of ',name(i)
 	fieldgave = 2 ; nox=3 ; noy=3 ; noz=3
+	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-	t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  tfg(i) = MPI_WTIME() - t0
+  ! Particle pusher then
+	t0 = MPI_WTIME()  
+	CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+	
+	curr = curr0
 
 	i = i+1
-	name(i) = 'gete3d_energy_conserving_scalar_3_3_3'
-  write(0,*) 'Computation of ',name(i)
+	name(i) = 'field_gathering_plus_particle_pusher_sub, scalar'
+	write(0,*) 'Computation of ',name(i)
 	fieldgave = 1 ; nox=3 ; noy=3 ; noz=3
+	! field gathering first
 	t0 = MPI_WTIME()
-	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-	t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
 
-  i = i+1
-  name(i) = 'geteb3d_energy_conserving_vec_3_3_3'
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub, vectorized'
 	write(0,*) 'Computation of ',name(i)
 	fieldgave = 0 ; nox=3 ; noy=3 ; noz=3
+	! field gathering first
 	t0 = MPI_WTIME()
-	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  t(i) = MPI_WTIME() - t0
-	CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_cacheblock_sub'
+	write(0,*) 'Computation of ',name(i)
+	fieldgave = 0 ; nox=3 ; noy=3 ; noz=3
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
 
 	! Computation of the relative error
-	CALL compute_err(i,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,epsilon,passed)
+	CALL compute_err(i,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	epsilon,passed)
 
 	title = 'Results order 3'
-	CALL display_statistics(title,i,name,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,t)
+	CALL display_statistics(title,i,name,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	tfg,tpp)
 
 	! ___ Final exam ____________________________________________
 	write(0,*)
   IF (passed) THEN
 		!write(0,'("\033[32m **** TEST PASSED **** \033[0m")')	
 		!CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
-		CALL system('printf "\e[32m ********** TEST TILING FIELD GATHERING 3D PASSED **********  \e[0m \n"')
+		CALL system('printf "\e[32m ********** TEST TILING FIELD GATHERING + PARTICLE PUSHER 3D PASSED **********  \e[0m \n"')
   ELSE
 		!write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
 		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
-		CALL system('printf "\e[31m ********** TEST TILING FIELD GATHERING 3D FAILED **********  \e[0m \n"')
+		CALL system('printf "\e[31m ********** TEST TILING FIELD GATHERING + PARTICLE PUSHER 3D FAILED **********  \e[0m \n"')
   ENDIF
   
   write(0,'(" ____________________________________________________________________________")')
@@ -403,7 +555,8 @@ END PROGRAM
 ! External subroutines
 
 
-SUBROUTINE check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+SUBROUTINE check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz, &
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
 	USE particles
 	USE constants
 	USE tiling                              
@@ -412,6 +565,8 @@ SUBROUTINE check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesum
 	! ___ Parameter declaration ________________________________________
 	REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumex,tilesumey,tilesumez
 	REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumbx,tilesumby,tilesumbz
+	REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumx,tilesumy,tilesumz
+	REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumpx,tilesumpy,tilesumpz
 	INTEGER(idp)             :: ispecies, ix, iy, iz, count
 	INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
 	TYPE(particle_species), POINTER :: curr
@@ -438,14 +593,25 @@ SUBROUTINE check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesum
 					tilesumby(iz,iy,ix)=SUM(curr_tile%part_by(1:count))
 					tilesumbz(iz,iy,ix)=SUM(curr_tile%part_bz(1:count))
 
+					tilesumx(iz,iy,ix)=SUM(curr_tile%part_x(1:count))
+					tilesumy(iz,iy,ix)=SUM(curr_tile%part_y(1:count))
+					tilesumz(iz,iy,ix)=SUM(curr_tile%part_z(1:count))
+					tilesumpx(iz,iy,ix)=SUM(curr_tile%part_ux(1:count))
+					tilesumpy(iz,iy,ix)=SUM(curr_tile%part_uy(1:count))
+					tilesumpz(iz,iy,ix)=SUM(curr_tile%part_uz(1:count))
+
 				END DO! END LOOP ON SPECIES
 			END DO
 		END DO
 	END DO! END LOOP ON TILES
 END SUBROUTINE
 
-SUBROUTINE compute_err(n,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,epsilon,passed)
+SUBROUTINE compute_err(n,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	epsilon,passed)
 	USE constants
 	IMPLICIT NONE
 	
@@ -455,8 +621,12 @@ SUBROUTINE compute_err(n,sumex,sumey,sumez,sumbx,sumby,sumbz, &
 	LOGICAL, INTENT(INOUT)                   :: passed
 	REAL(num), dimension(10)                 :: sumex,sumey,sumez
 	REAL(num), dimension(10)                 :: sumbx,sumby,sumbz
-	REAL(num), dimension(10), INTENT(INOUT)  :: errex,errey,errez
-	REAL(num), dimension(10), INTENT(INOUT)  :: errbx,errby,errbz
+	REAL(num), dimension(10)                 :: sumx,sumy,sumz
+	REAL(num), dimension(10)                 :: sumpx,sumpy,sumpz
+	REAL(num), dimension(10),INTENT(INOUT)   :: errex,errey,errez
+	REAL(num), dimension(10),INTENT(INOUT)   :: errbx,errby,errbz
+	REAL(num), dimension(10),INTENT(INOUT)   :: errx,erry,errz
+	REAL(num), dimension(10),INTENT(INOUT)   :: errpx,errpy,errpz  
 	
 	IF (n.gt.1) THEN
 		DO i = 2,n
@@ -466,6 +636,13 @@ SUBROUTINE compute_err(n,sumex,sumey,sumez,sumbx,sumby,sumbz, &
 			errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
 			errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
 			errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+
+			errx(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+			erry(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+			errz(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+			errpx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+			errpy(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+			errpz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
 		
 			IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
 			IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
@@ -474,6 +651,14 @@ SUBROUTINE compute_err(n,sumex,sumey,sumez,sumbx,sumby,sumbz, &
 			IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
 			IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
 			IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+
+			IF (errx(i) .gt. epsilon) passed = (passed.and.(.false.))
+			IF (erry(i) .gt. epsilon) passed = (passed.and.(.false.))
+			IF (errz(i) .gt. epsilon) passed = (passed.and.(.false.))
+			
+			IF (errpx(i) .gt. epsilon) passed = (passed.and.(.false.))
+			IF (errpy(i) .gt. epsilon) passed = (passed.and.(.false.))
+			IF (errpz(i) .gt. epsilon) passed = (passed.and.(.false.))
 			
 		ENDDO
 	ENDIF
@@ -481,33 +666,52 @@ SUBROUTINE compute_err(n,sumex,sumey,sumez,sumbx,sumby,sumbz, &
 END SUBROUTINE
 
 
-SUBROUTINE display_statistics(title,n,name,sumex,sumey,sumez,sumbx,sumby,sumbz, &
-           errex,errey,errez,errbx,errby,errbz,t)
+SUBROUTINE display_statistics(title,n,name,&
+	sumex,sumey,sumez,sumbx,sumby,sumbz, &
+	sumx,sumy,sumz,sumpx,sumpy,sumpz, &
+	errex,errey,errez,errbx,errby,errbz, &
+	errx,erry,errz,errpx,errpy,errpz, &
+	tfg,tpp)
 	USE constants
 	IMPLICIT NONE
 	
 	CHARACTER(len=64)                        :: title
 	INTEGER(isp)                             :: n
-	REAL(num), dimension(10)                 :: t
+	REAL(num), dimension(10)                 :: tfg,tpp
 	CHARACTER(len=64), dimension(10)         :: name
 	REAL(num), dimension(10)                 :: sumex,sumey,sumez
 	REAL(num), dimension(10)                 :: sumbx,sumby,sumbz
+	REAL(num), dimension(10)                 :: sumx,sumy,sumz
+	REAL(num), dimension(10)                 :: sumpx,sumpy,sumpz
 	REAL(num), dimension(10)                 :: errex,errey,errez
-	REAL(num), dimension(10)                 :: errbx,errby,errbz  
+	REAL(num), dimension(10)                 :: errbx,errby,errbz
+	REAL(num), dimension(10)                 :: errx,erry,errz
+	REAL(num), dimension(10)                 :: errpx,errpy,errpz  
 	INTEGER(isp)                             :: i
 	
 	write(0,*)
 	write(0,'(A40)') title	
-	write(0,'(A40)') 'Electric field'
-	write(0,'(A40, 7(A13))') "Subroutines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
+	write(0,'(A60)') 'Field gathering, electric field'
+	write(0,'(A60, 7(A13))') "Subroutines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
 	write(0,'(" _____________________________________________________")')
 	DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') name(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), t(i)
+		write(0,'(A40,7(X,E12.5))') name(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), tfg(i)
 	ENDDO
-	write(0,'(A40)') 'Magnetic field'
-	write(0,'(A40, 7(A13))') "Subroutines", "sum(bx)", "sum(by)", "sum(bz)", "err bx", "err by", "err bz", "time (s)"
+	
+	write(0,'(A40)') 'Field gathering, electric field, magnetic field'
+	write(0,'(A60, 7(A13))') "Subroutines", "sum(bx)", "sum(by)", "sum(bz)", "err bx", "err by", "err bz", "time (s)"
 	write(0,'(" _____________________________________________________")')
 	DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') name(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), t(i)
+	write(0,'(A60,7(X,E12.5))') name(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tfg(i)
 	ENDDO
+	
+	write(0,'(A40)') 'Particle pusher'
+	write(0,'(A60, 7(A13))') "Subroutines", "sum(x)", "sum(y)", "sum(z)", "err x", "err y", "err z", "time (s)"
+	write(0,'(A60, 7(A13))') "Subroutines", "sum(px)", "sum(py)", "sum(pz)", "err px", "err py", "err pz"
+	write(0,'(" _____________________________________________________")')
+	DO i = 1,n
+		write(0,'(A60,7(X,E12.5))') name(i), sumx(i), sumy(i), sumz(i), errpx(i), errpy(i), errpz(i), tpp(i)
+		write(0,'(A60,7(X,E12.5))') '', sumpx(i), sumpy(i), sumpz(i), errpx(i), errpy(i), errpz(i), tpp(i)
+	ENDDO
+
 END SUBROUTINE

@@ -122,11 +122,11 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:af9162fd522e5d0fe559fc65848991ee3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#af9162fd522e5d0fe559fc65848991ee3">pxrdepose_currents_on_grid_jxjyjz</a></td></tr>
 <tr class="memdesc:af9162fd522e5d0fe559fc65848991ee3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main subroutine for managing the current deposition.  <a href="#af9162fd522e5d0fe559fc65848991ee3">More...</a><br /></td></tr>
 <tr class="separator:af9162fd522e5d0fe559fc65848991ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a0c5fb2e4682380dda0f71bcbf132d4"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a3a0c5fb2e4682380dda0f71bcbf132d4">pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp</a> (func_order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)</td></tr>
-<tr class="memdesc:a3a0c5fb2e4682380dda0f71bcbf132d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with the classical method.  <a href="#a3a0c5fb2e4682380dda0f71bcbf132d4">More...</a><br /></td></tr>
-<tr class="separator:a3a0c5fb2e4682380dda0f71bcbf132d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a080efb61c81857c980b0bee1ec2473e9"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a080efb61c81857c980b0bee1ec2473e9">pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp</a> (curr_depo_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard,   noxx, noyy, nozz, dxx, dyy, dzz, dtt)</td></tr>
+<tr class="memdesc:a080efb61c81857c980b0bee1ec2473e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with the classical method using an external given function.  <a href="#a080efb61c81857c980b0bee1ec2473e9">More...</a><br /></td></tr>
+<tr class="separator:a080efb61c81857c980b0bee1ec2473e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2624df4633b361373555666b08c92ca1"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a2624df4633b361373555666b08c92ca1">pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2</a> (curr_depo_sub, curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)</td></tr>
-<tr class="memdesc:a2624df4633b361373555666b08c92ca1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with the classical method version 2.  <a href="#a2624df4633b361373555666b08c92ca1">More...</a><br /></td></tr>
+<tr class="memdesc:a2624df4633b361373555666b08c92ca1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with the classical method with an external given function. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species.  <a href="#a2624df4633b361373555666b08c92ca1">More...</a><br /></td></tr>
 <tr class="separator:a2624df4633b361373555666b08c92ca1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05b540593f69d201b9ac6e74b0fea593"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a05b540593f69d201b9ac6e74b0fea593">pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3</a> (curr_depo_sub, curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)</td></tr>
 <tr class="memdesc:a05b540593f69d201b9ac6e74b0fea593"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile with the classical method version 3.  <a href="#a05b540593f69d201b9ac6e74b0fea593">More...</a><br /></td></tr>
@@ -145,6 +145,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a7347c7791083dae1b946cdbdce60602f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a7347c7791083dae1b946cdbdce60602f">depose_jxjyjz_scalar_1_1_1</a> (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)</td></tr>
 <tr class="separator:a7347c7791083dae1b946cdbdce60602f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a084ed42e79187e34df1e5e49cb589e87"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a084ed42e79187e34df1e5e49cb589e87">depose_jxjyjz_vechvv2_1_1_1</a> (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)</td></tr>
+<tr class="memdesc:a084ed42e79187e34df1e5e49cb589e87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D vector current deposition routine (rho*v)  <a href="#a084ed42e79187e34df1e5e49cb589e87">More...</a><br /></td></tr>
 <tr class="separator:a084ed42e79187e34df1e5e49cb589e87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a640df01330ec2f2b5ffcb43938a71db5"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a640df01330ec2f2b5ffcb43938a71db5">depose_jxjyjz_vechv_vnr_1_1_1</a> (jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)</td></tr>
 <tr class="memdesc:a640df01330ec2f2b5ffcb43938a71db5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D vector current deposition routine (rho*v) with no reduction.  <a href="#a640df01330ec2f2b5ffcb43938a71db5">More...</a><br /></td></tr>
@@ -2829,6 +2830,9 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Order 1 3D vector current deposition routine (rho*v) </p>
+<p>This versions have good performances on SIMD architectures Providing that OpenMP 4.0 is available (Directive SIMD)  </p>
+
 </div>
 </div>
 <a class="anchor" id="a82878814b59bae3273786c1c0e92deb6"></a>
@@ -3752,7 +3756,7 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a3a0c5fb2e4682380dda0f71bcbf132d4"></a>
+<a class="anchor" id="a080efb61c81857c980b0bee1ec2473e9"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -3760,7 +3764,7 @@ Functions/Subroutines</h2></td></tr>
           <td class="memname">subroutine pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>func_order</em>, </td>
+          <td class="paramname"><em>curr_depo_sub</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -3866,8 +3870,8 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Deposit current in each tile with the classical method. </p>
-<p>OpenMP version. Avoids conflict while reducing tile currents in the global current array. </p>
+<p>Deposit current in each tile with the classical method using an external given function. </p>
+<p>OpenMP version. Avoids conflict while reducing tile currents in the global current array. This subroutine uses an external function represented by the argument func_order for the current deposition method. </p>
 
 </div>
 </div>
@@ -3997,8 +4001,8 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Deposit current in each tile with the classical method version 2. </p>
-<p>OpenMP version. Avoids conflict while reducing tile currents in the global current array. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species. </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<p>Deposit current in each tile with the classical method with an external given function. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species. </p>
+<p>OpenMP version. Avoids conflict while reducing tile currents in the global current array. </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

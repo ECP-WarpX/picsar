@@ -6,7 +6,8 @@
 !
 ! List of subroutines:
 !
-! 
+! - gete3d_energy_conserving_scalar_3_3_3
+! - getb3d_energy_conserving_scalar_3_3_3
 ! - gete3d_energy_conserving_3_3_3
 ! - getb3d_energy_conserving_3_3_3
 ! - gete3d_energy_conserving_linear_3_3_3
@@ -509,6 +510,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,
   
 RETURN
 END SUBROUTINE
+
 
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
@@ -1545,13 +1547,17 @@ RETURN
 END SUBROUTINE
 
 
+#if defined(DEV)
 !=================================================================================
+!> Gathering of electric field from Yee grid ("energy conserving") on particles
+!> at order 3.
+!> @brief
+!  
+!> This function is vectorized
+!> @detail
 SUBROUTINE gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,l_lower_order_in_v)
-! Gathering of electric field from Yee grid ("energy conserving") on particles
-! at order 3  
-! This function is vectorized   
 !=================================================================================                                 
   USE omp_lib
   USE constants
@@ -1589,24 +1595,23 @@ SUBROUTINE gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
   !write(0,*) 'sum(exg)',sum(exg), sum(eyg), sum(ezg)
 
 IF (l_lower_order_in_v ) THEN
-
+  
 #if defined __INTEL_COMPILER 
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
-#endif 
-#if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
-#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR IVDEP
-!DIR DISTRIBUTE POINT
+			!DIR$ IVDEP
+! !DIR DISTRIBUTE POINT
 #endif
 	DO ip=1,np
 
@@ -1840,20 +1845,19 @@ ELSE
 #if defined __INTEL_COMPILER 
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP SIMD
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
-#endif 
-#if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
-#elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR IVDEP
-!DIR DISTRIBUTE POINT
+			!DIR$ IVDEP
+! !DIR DISTRIBUTE POINT
 #endif
 DO ip=1,np
     
@@ -2131,7 +2135,9 @@ ENDIF
 
 RETURN
 END SUBROUTINE gete3d_energy_conserving_3_3_3
+#endif
 
+#if defined(DEV)
 !=================================================================================
 !> Gathering of magnetic field from Yee grid ("energy conserving") on particles
 !> at order 3                                      
@@ -2151,12 +2157,14 @@ SUBROUTINE getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: j0, k0, l0
   INTEGER(isp)                         :: jj, kk, ll
-  REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z
+  REAL(num)                            :: xint, yint, zint, &
               xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-  REAL(num), DIMENSION(-1:2) :: sx,sx0
-  REAL(num), DIMENSION(-1:2) :: sy,sy0
-  REAL(num), DIMENSION(-1:2) :: sz,sz0
-  REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+  REAL(num), DIMENSION(-1:2)           :: sx,sx0
+  REAL(num), DIMENSION(-1:2)           :: sy,sy0
+  REAL(num), DIMENSION(-1:2)           :: sz,sz0
+  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -2174,20 +2182,19 @@ IF (l_lower_order_in_v) THEN
 #if defined __INTEL_COMPILER 
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,bx,by,bz)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 			!$OMP SIMD 
 #elif defined __IBMBGQ__
+			!IBM* ALIGN(64,xp,yp,zp)
+			!IBM* ALIGN(64,bx,by,bz)
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR IVDEP
-!DIR DISTRIBUTE POINT
+			!DIR$ IVDEP
+! !DIR DISTRIBUTE POINT
 #endif  
   DO ip=1,np
 
@@ -2368,23 +2375,23 @@ IF (l_lower_order_in_v) THEN
 
 ELSE
 
+
 #if defined __INTEL_COMPILER 
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,bx,by,bz)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+			!$OMP SIMD
 #elif defined __IBMBGQ__
+			!IBM* ALIGN(64,xp,yp,zp)
+			!IBM* ALIGN(64,bx,by,bz)
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
 			!DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif  
   DO ip=1,np
     
@@ -2657,7 +2664,9 @@ ELSE
   ENDIF
   RETURN
 END SUBROUTINE getb3d_energy_conserving_3_3_3
+#endif
 
+#if defined(DEV)
 ! ________________________________________________________________________________________
 !
 !> Field gathering CIC (order 1) with gathering of E and B merged in a single loop
@@ -2712,36 +2721,35 @@ SUBROUTINE geteb3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
 
-  sx=0.0_num
-  sy=0.0_num
-  sz=0.0_num
-  sx0=0.0_num
-  sy0=0.0_num
-  sz0=0.0_num
+	sx=0.0_num
+	sy=0.0_num
+	sz=0.0_num
+	sx0=0.0_num
+	sy0=0.0_num
+	sz0=0.0_num
 
 IF (l_lower_order_in_v ) THEN
-
+  
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
 #if defined __INTEL_COMPILER 
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
       !DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR IVDEP
-!DIR DISTRIBUTE POINT
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
 #endif
     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
 
@@ -3082,22 +3090,21 @@ ELSE
 #if defined __INTEL_COMPILER 
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
       !DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR IVDEP
-!DIR DISTRIBUTE POINT
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
 #endif
     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
 
@@ -3573,29 +3580,33 @@ ENDIF
   
   RETURN 
 END SUBROUTINE
+#endif
 
 ! ________________________________________________________________________________________
-SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+!
+!> Field gathering (order 3) with gathering of E and B merged in a single loop
+!> @brief
+!
+!> This function is vectorized
+!> @detail
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] ex,ey,ez particle electric field
+!> @param[inout] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @paramn[in] l_lower_order_in_v decrease the interpolation order if True
+SUBROUTINE geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
-!
-! Field gathering (order 3) with gathering of E and B merged in a single loop
-! This function is vectorized
-! Input parameters:
-! - np: number of particles
-! - xp,yp,zp: particle position
-! - ex,ey,ez: particle electric field
-! - bx,by,bz: particle magnetic field
-! - xmin,ymin,zmin: tile minimum grid position
-! - dx,dy,dz: space step
-! - dt: time step
-! - nx,ny,nz: number of grid points in each direction
-! - nxguard, nyguard, nzguard: number of guard cells in each direction 
-! - exg,eyg,ezg: electric field grid
-! - bxg,byg,bzg: magnetic field grid
-! - lvect: vector size for cache blocking
-! - l_lower_order_in_v: 
 ! ________________________________________________________________________________________                                
   USE omp_lib
   USE constants
@@ -3654,19 +3665,18 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64                           
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
       !DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR IVDEP
-!DIR DISTRIBUTE POINT
+!DIR$ IVDEP
+!!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1
@@ -3741,20 +3751,19 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64             
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD 
 #elif defined __IBMBGQ__
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
       !DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1
@@ -3832,7 +3841,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1    
@@ -3909,7 +3918,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1    
@@ -3986,7 +3995,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1
@@ -4052,7 +4061,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1    
@@ -4116,7 +4125,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
 #endif
 #if defined __INTEL_COMPILER 
 !DIR$ IVDEP
-!DIR$ DISTRIBUTE POINT
+!!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1  
