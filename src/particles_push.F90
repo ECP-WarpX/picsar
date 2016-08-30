@@ -63,7 +63,7 @@ tdeb=MPI_WTIME()
 #endif                         
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
@@ -120,7 +120,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 						CALL pxr_gete2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
 											  curr_tile%part_z, curr_tile%part_ex,                                                       &
 											  curr_tile%part_ey,curr_tile%part_ez,                   									 &
-											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,      &
+											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, dxx,dzz,curr_tile%nx_cells_tile,&
 											  curr_tile%nz_cells_tile,nxjg,             				    							 &
 											  nzjg,noxx,nozz,currg%extile,currg%eytile, 												 &
 											  currg%eztile,.FALSE.,.FALSE.,.TRUE.)
@@ -128,21 +128,21 @@ DO iz=1, ntilez ! LOOP ON TILES
 						CALL pxr_getb2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
 										  curr_tile%part_z, curr_tile%part_bx,                    									     &
 										  curr_tile%part_by,curr_tile%part_bz,                    										 &
-										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,     	 &    
+										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min+zgrid, dxx,dzz,curr_tile%nx_cells_tile,   &    
 										  curr_tile%nz_cells_tile,nxjg,         		       					 						 &
 										  nzjg,noxx,nozz,currg%bxtile,currg%bytile,  	 												 &
 										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)			
 					CASE DEFAULT ! 3D CASE 
-						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
-											  curr_tile%part_z, curr_tile%part_ex,                            	&
-											  curr_tile%part_ey,curr_tile%part_ez,                   			&
-											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			&
-											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-											  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
-											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
-											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
-											  currg%eztile,                                          			&
-											  currg%bxtile,currg%bytile,currg%bztile                 			&
+						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     				&
+											  curr_tile%part_z, curr_tile%part_ex,                            		&
+											  curr_tile%part_ey,curr_tile%part_ez,                   				&
+											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 				&
+											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              	&
+											  curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
+											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        	&
+											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 						&
+											  currg%eztile,                                          				&
+											  currg%bxtile,currg%bytile,currg%bztile                 				&
 											  ,.FALSE.,.TRUE.)
 					END SELECT
 					!! --- Push velocity with E half step
@@ -226,7 +226,7 @@ LOGICAL(idp) :: isgathered=.FALSE.
 
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
@@ -284,7 +284,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 						CALL pxr_gete2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
 											  curr_tile%part_z, curr_tile%part_ex,                                                       &
 											  curr_tile%part_ey,curr_tile%part_ez,                   									 &
-											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,      &
+											  curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, dxx,dzz,curr_tile%nx_cells_tile,&
 											  curr_tile%nz_cells_tile,nxjg,             				    							 &
 											  nzjg,noxx,nozz,currg%extile,currg%eytile, 												 &
 											  currg%eztile,.FALSE.,.FALSE.,.TRUE.)
@@ -292,22 +292,22 @@ DO iz=1, ntilez ! LOOP ON TILES
 						CALL pxr_getb2dxz_n_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                                   &
 										  curr_tile%part_z, curr_tile%part_bx,                    									     &
 										  curr_tile%part_by,curr_tile%part_bz,                    										 &
-										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dxx,dzz,curr_tile%nx_cells_tile,     	 &    
+										  curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min+zgrid, dxx,dzz,curr_tile%nx_cells_tile,   &    
 										  curr_tile%nz_cells_tile,nxjg,         		       					 						 &
 										  nzjg,noxx,nozz,currg%bxtile,currg%bytile,  	 												 &
 										  currg%bztile,.FALSE.,.FALSE.,.TRUE.)
 					CASE DEFAULT ! 3D CASE 
 						!!! --- Gather electric and magnetic fields on particles
-						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     		   	&
-											  curr_tile%part_z, curr_tile%part_ex,                      	   	&
-											  curr_tile%part_ey,curr_tile%part_ez,                   		   	&
-											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,          	&
-											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,             	&
-											  curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,  	&
-											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,       	&
-											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 				   	&
-											  currg%eztile,                                          			&
-											  currg%bxtile,currg%bytile,currg%bztile                 			&
+						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     		   		&
+											  curr_tile%part_z, curr_tile%part_ex,                      	   		&
+											  curr_tile%part_ey,curr_tile%part_ez,                   		   		&
+											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,          		&
+											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,             		&
+											  curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
+											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,       		&
+											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 				   		&
+											  currg%eztile,                                          				&
+											  currg%bxtile,currg%bytile,currg%bztile                 				&
 											  ,.FALSE.,.TRUE.)	
 					END SELECT 				
 

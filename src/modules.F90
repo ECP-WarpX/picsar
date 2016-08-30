@@ -395,6 +395,9 @@ REAL(num) :: y_grid_min_local, y_grid_max_local
 REAL(num) :: z_grid_min, z_grid_max
 REAL(num) :: z_grid_min_local, z_grid_max_local
 
+! Moving window offset 
+REAL(num) :: zgrid =0.
+
 ! Total charge density
 REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 ! Electric Field divergence

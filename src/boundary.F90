@@ -1169,21 +1169,21 @@ END SUBROUTINE charge_bcs
                         partw=curr_tile%pid(i,wpid)
 
                         ! Case 1: if particle did not leave tile nothing to do
-                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
-                        .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    			   &
+                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  			   &
+                        .AND. ((partz .GE. curr_tile%z_tile_min+zgrid) .AND. (partz .LT. curr_tile%z_tile_max+zgrid))) &
                         CYCLE
 
                         ! Case 2: if particle left MPI domain nothing to do now
-                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-                        IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
-                        IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) 			CYCLE
+                        IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) 			CYCLE
+                        IF ((partz .LT. z_min_local+zgrid) .OR. (partz .GE. z_max_local+zgrid)) CYCLE
 
                         ! Case 3: particles changed tile. Tranfer particle to new tile
                         ! Get new indexes of particle in array of tiles
                         indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
                         indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
-                        indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+                        indz = MIN(FLOOR((partz-(z_min_local+zgrid)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
                         CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                         CALL add_particle_at_tile(curr, indx,indy,indz, &
                              partx, party, partz, partux, partuy, partuz, gaminv, partw)
@@ -1225,7 +1225,7 @@ END SUBROUTINE charge_bcs
 	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz, &
 	!$OMP partx,party,partz,partux,partuy,partuz,gaminv,partw,indx,indy,indz,nptile,curr_tile) &
 	!$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
-    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
+    !$OMP x_max_local,y_max_local,z_max_local,zgrid,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
         ! Get first tiles dimensions (may be different from last tile)
@@ -1236,7 +1236,7 @@ END SUBROUTINE charge_bcs
         	DO ipy=1,3
         		DO ipx=1,3
 					!$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
-					!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+					!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,zgrid)  &
 					!$OMP FIRSTPRIVATE(ipx,ipy,ipz) &
 					!$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
 					!$OMP indx,indy,indz) COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2) 
@@ -1258,19 +1258,19 @@ END SUBROUTINE charge_bcs
 									! Case 1: if particle did not leave tile nothing to do
 									IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
 									.AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
-									.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+									.AND. ((partz .GE. curr_tile%z_tile_min+zgrid) .AND. (partz .LT. curr_tile%z_tile_max+zgrid))) &
 									CYCLE
 
 									! Case 2: if particle left MPI domain nothing to do now
 									IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
 									IF ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) CYCLE
-									IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+									IF ((partz .LT. z_min_local+zgrid) .OR. (partz .GE. z_max_local+zgrid)) CYCLE
 
 									! Case 3: particles changed tile. Tranfer particle to new tile
 									! Get new indexes of particle in array of tiles
 									indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
 									indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
-									indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+									indz = MIN(FLOOR((partz-(z_min_local+zgrid)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 									CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 									CALL add_particle_at_tile(curr, indx,indy,indz, &
 										 partx, party, partz, partux, partuy, partuz, gaminv, partw)
@@ -1319,17 +1319,17 @@ END SUBROUTINE charge_bcs
 
 					! Case 1: if particle did not leave tile nothing to do
 					IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-					.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+					.AND. ((partz .GE. curr_tile%z_tile_min+zgrid) .AND. (partz .LT. curr_tile%z_tile_max+zgrid))) &
 					CYCLE
 
 					! Case 2: if particle left MPI domain nothing to do now
 					IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-					IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+					IF ((partz .LT. z_min_local+zgrid) .OR. (partz .GE. z_max_local+zgrid)) CYCLE
 
 					! Case 3: particles changed tile. Tranfer particle to new tile
 					! Get new indexes of particle in array of tiles
 					indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
-					indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+					indz = MIN(FLOOR((partz-(z_min_local+zgrid)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 					CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 					CALL add_particle_at_tile(curr, indx,iy,indz, &
 						 partx, party, partz, partux, partuy, partuz, gaminv, partw)
@@ -1370,7 +1370,7 @@ END SUBROUTINE charge_bcs
 	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipz, &
 	!$OMP partx,party,partz,partux,partuy,partuz,gaminv,partw,indx,indy,indz,curr_tile,nptile)    &
 	!$OMP SHARED(iy,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
-    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
+    !$OMP x_max_local,y_max_local,z_max_local,zgrid,dx,dy,dz) NUM_THREADS(nthreads_loop1) 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
         ! Get first tiles dimensions (may be different from last tile)
@@ -1380,7 +1380,7 @@ END SUBROUTINE charge_bcs
         DO ipz=1,3
         	DO ipx=1,3
 				!$OMP PARALLEL DO DEFAULT(NONE) SHARED(iy,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
-				!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+				!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,zgrid)  &
 				!$OMP FIRSTPRIVATE(ipx,ipz) &
 				!$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
 				!$OMP indx,indy,indz) COLLAPSE(2) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)  
@@ -1400,17 +1400,17 @@ END SUBROUTINE charge_bcs
 
 							! Case 1: if particle did not leave tile nothing to do
 							IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
-							.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+							.AND. ((partz .GE. curr_tile%z_tile_min+zgrid) .AND. (partz .LT. curr_tile%z_tile_max+zgrid))) &
 							CYCLE
 
 							! Case 2: if particle left MPI domain nothing to do now
 							IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) CYCLE
-							IF ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) CYCLE
+							IF ((partz .LT. z_min_local+zgrid) .OR. (partz .GE. z_max_local+zgrid)) CYCLE
 
 							! Case 3: particles changed tile. Tranfer particle to new tile
 							! Get new indexes of particle in array of tiles
 							indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
-							indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+							indz = MIN(FLOOR((partz-(z_min_local+zgrid)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 							CALL rm_particle_at_tile(curr,ix,iy,iz,i)
 							CALL add_particle_at_tile(curr, indx,iy,indz, &
 								 partx, party, partz, partux, partuy, partuz, gaminv, partw)
@@ -1490,6 +1490,10 @@ END SUBROUTINE charge_bcs
                             	CASE (1_idp) ! absorbing 
                             		mask(i)=.FALSE.
                             		CYCLE
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_x(i) = part_xyz + dx
+									curr%part_ux(i) = - curr%part_ux(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT 
@@ -1503,6 +1507,10 @@ END SUBROUTINE charge_bcs
                             	CASE (1_idp) ! absorbing
                             		mask(i)=.FALSE.
                             		CYCLE
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_x(i) = part_xyz - dx
+									curr%part_ux(i) = - curr%part_ux(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -1518,6 +1526,10 @@ END SUBROUTINE charge_bcs
                             	CASE (1_idp)
                             		mask(i)=.FALSE.
                             		CYCLE
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_y(i) = part_xyz + dy
+									curr%part_uy(i) = - curr%part_uy(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -1532,6 +1544,10 @@ END SUBROUTINE charge_bcs
                             	CASE (1_idp) ! absorbing 
                             		mask(i)=.FALSE. 
                             		CYCLE
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_y(i) = part_xyz - dy
+									curr%part_uy(i) = - curr%part_uy(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -1540,12 +1556,16 @@ END SUBROUTINE charge_bcs
 
                         part_xyz = curr%part_z(i)
                         ! Particle has left this processor
-                        IF (part_xyz .LT. z_min_local) THEN
+                        IF (part_xyz .LT. z_min_local+zgrid) THEN
                             zbd = -1
                             IF (z_min_boundary) THEN
 								SELECT CASE (pbound_z_min)
 								CASE (1_idp) ! absorbing 
 									mask(i)=.FALSE.
+									CYCLE
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_z(i) = part_xyz + dz
+									curr%part_uz(i) = - curr%part_uz(i)
 									CYCLE
 								CASE DEFAULT ! periodic 
 									curr%part_z(i) = part_xyz + length_z
@@ -1554,7 +1574,7 @@ END SUBROUTINE charge_bcs
                         ENDIF
 
                         ! Particle has left this processor
-                        IF (part_xyz .GE. z_max_local) THEN
+                        IF (part_xyz .GE. z_max_local+zgrid) THEN
                             zbd = 1
                             ! Particle has left the system
                             IF (z_max_boundary) THEN
@@ -1562,6 +1582,10 @@ END SUBROUTINE charge_bcs
                             	CASE (1_idp) ! absorbing 
                             		mask(i)=.FALSE.
                             		CYCLE
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_z(i) = part_xyz - dz
+									curr%part_uz(i) = - curr%part_uz(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
@@ -1715,6 +1739,10 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_x_min)
                             	CASE (1_idp) ! absorbing 
                             		remove_from_sim=.TRUE.
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_x(i) = part_xyz + dx
+									curr%part_ux(i) = - curr%part_ux(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT 
@@ -1727,6 +1755,10 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_x_max)
                             	CASE (1_idp) ! absorbing
                             		remove_from_sim=.TRUE.
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_x(i) = part_xyz - dx
+									curr%part_ux(i) = - curr%part_ux(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -1741,6 +1773,10 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_y_min)! absorbing 
                             	CASE (1_idp)
                             		remove_from_sim=.TRUE.
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_y(i) = part_xyz + dy
+									curr%part_uy(i) = - curr%part_uy(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -1754,6 +1790,10 @@ END SUBROUTINE charge_bcs
                             	SELECT CASE (pbound_y_max) 
                             	CASE (1_idp) ! absorbing 
                             		remove_from_sim=.TRUE.
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_y(i) = part_xyz - dy
+									curr%part_uy(i) = - curr%part_uy(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -1762,12 +1802,16 @@ END SUBROUTINE charge_bcs
 
                         part_xyz = curr%part_z(i)
                         ! Particle has left this processor
-                        IF (part_xyz .LT. z_min_local) THEN
+                        IF (part_xyz .LT. z_min_local+zgrid) THEN
                             zbd = -1
                             IF (z_min_boundary) THEN
 								SELECT CASE (pbound_z_min)
 								CASE (1_idp) ! absorbing 
 									remove_from_sim=.TRUE.
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_z(i) = part_xyz + dz
+									curr%part_uz(i) = - curr%part_uz(i)
+									CYCLE
 								CASE DEFAULT ! periodic 
 									curr%part_z(i) = part_xyz + length_z
 								END SELECT
@@ -1775,13 +1819,17 @@ END SUBROUTINE charge_bcs
                         ENDIF
 
                         ! Particle has left this processor
-                        IF (part_xyz .GE. z_max_local) THEN
+                        IF (part_xyz .GE. z_max_local+zgrid) THEN
                             zbd = 1
                             ! Particle has left the system
                             IF (z_max_boundary) THEN
                             	SELECT CASE (pbound_z_max)
                             	CASE (1_idp) ! absorbing 
                             		remove_from_sim=.TRUE.
+                            	CASE (2_idp) ! Reflecting 
+                            	    curr%part_z(i) = part_xyz - dz
+									curr%part_uz(i) = - curr%part_uz(i)
+									CYCLE
                             	CASE DEFAULT ! periodic 
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT

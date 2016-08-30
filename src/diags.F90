@@ -86,7 +86,7 @@ INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 LOGICAL(idp) :: isdeposited=.FALSE.
 
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,zgrid,        &
 !$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old)       &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
@@ -129,21 +129,21 @@ DO iz=1,ntilez
 						curr_tile%part_x,curr_tile%part_z,     							&
 						curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,     		&
 						curr_tile%part_gaminv,curr_tile%pid(1,wpid),curr%charge,  		&
-						curr_tile%x_grid_tile_min,  curr_tile%z_grid_tile_min,  		&
+						curr_tile%x_grid_tile_min,  curr_tile%z_grid_tile_min+zgrid,    &
 						dtt,dxx,dzz,nxc,nzc,                          					&
 						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp)
 					CASE DEFAULT  ! Rho at current time 
 						CALL pxr_depose_rho_n_2dxz(currg%rhotile(:,0,:),count,              &
-						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     			&
+						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z+zgrid,     	    &
 						curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     	&
-						curr_tile%z_grid_tile_min,dxx,dzz,nxc,nzc,                          &
+						curr_tile%z_grid_tile_min+zgrid,dxx,dzz,nxc,nzc,                          &
 						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
 					END SELECT 
 				CASE DEFAULT 
 					CALL pxr_depose_rho_n(currg%rhotile,count,                                                 &
 					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
 					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,                                         &
+					curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,                                         &
 					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.) 
 			    END SELECT 
             END DO! END LOOP ON SPECIES

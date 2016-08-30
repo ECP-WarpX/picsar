@@ -492,7 +492,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg
 
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-  !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles)                  &
+  !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,zgrid)                  &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
   !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
   !! Current deposition
@@ -534,7 +534,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order,jxg
                   curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,  			   &
                   curr_tile%part_gaminv,  &
                   curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-                  curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                     &
+                  curr_tile%z_grid_tile_min+zgrid,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                           &
                   nxjg,nyjg,nzjg) 
               END DO! END LOOP ON SPECIES
               IF (isdeposited) THEN
@@ -773,7 +773,7 @@ func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
   ! _______________________________________________________________________
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-  !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles)                  &
+  !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,zgrid)                  &
   !$OMP PRIVATE(ix,iy,iz,ispecies,ncells,curr,currg, curr_tile,np,jmin,jmax,kmin,kmax,lmin,  &
   !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited,  &
   !$OMP jxcells,jycells,jzcells,ncx,ncy,ncz)
@@ -834,7 +834,7 @@ func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
                   curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,  			   &
                   curr_tile%part_gaminv,  &
                   curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-                  curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                     &
+                  curr_tile%z_grid_tile_min+zgrid,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                               &
                   nxjg,nyjg,nzjg,ncx,ncy,ncz) 
                                                       
                   !print*,sum(jxcells), sum(jycells), sum(jzcells)                             
@@ -1067,7 +1067,7 @@ END INTERFACE
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-!$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim)            &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim,zgrid)            &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 !! Current deposition
@@ -1110,7 +1110,7 @@ DO iz=1,ntilez
                 curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
                 curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
                 curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                     &
+                curr_tile%z_grid_tile_min+zgrid,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                               &
                 nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp) 
                 
             END DO! END LOOP ON SPECIES
@@ -1321,7 +1321,7 @@ LOGICAL(idp) :: isdeposited=.FALSE.
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-!$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim)            &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim,zgrid)            &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 !! Current deposition
@@ -1365,7 +1365,7 @@ DO iz=1,ntilez
 					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
 					curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
 					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     						   &
-					curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,	                                           &
+					curr_tile%z_grid_tile_min+zgrid,dtt,dxx,dzz,nxc,nzc,	                                   &
 					nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp) 
 				CASE DEFAULT 
 					CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                              &
@@ -1373,7 +1373,7 @@ DO iz=1,ntilez
 					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						           &
 					curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
 					curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                     &
+					curr_tile%z_grid_tile_min+zgrid,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                               &
 					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp) 				
 			   END SELECT	
 
@@ -1618,8 +1618,8 @@ DO iz=1,ntilez
                 	isdeposited=.TRUE.
                 ENDIF 
                 ! Depose current in jtile
-                CALL func_order(currg%jxtile,currg%jytile,currg%jztile,count,   &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						                      &
+                CALL func_order(currg%jxtile,currg%jytile,currg%jztile,count,   							  &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z+zgrid,     						          &
                 curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			      &
                 curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,        &
                 curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                        &
@@ -1698,11 +1698,11 @@ DO iz=1,ntilez
                 ENDIF 
                 ! Depose current in jtile
                 CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                                 &
-                currg%jztile,count,                              									                        &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						                      &
+                currg%jztile,count,                              									          &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     						              &
                 curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			      &
                 curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,        &
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                        &
+                curr_tile%z_grid_tile_min+zgrid,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                  &
                 nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp) 
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN

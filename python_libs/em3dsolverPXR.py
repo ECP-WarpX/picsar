@@ -1,5 +1,7 @@
 """Class for 2D & 3D FFT-based electromagnetic solver """
 from warp.field_solvers.em3dsolverFFT import *
+from warp.particles.species import *
+
 try: 
     #import warp.field_solvers.GPSTD as gpstd
 	import GPSTDPXR as gpstd
@@ -153,11 +155,15 @@ class EM3DPXR(EM3DFFT):
         # Particle boundaries for PXR 
         if (top.pbound0 == absorb): 
         	pxr.pbound_z_min=1
+        elif(top.pbound0 == reflect):
+        	pxr.pbound_z_min=2
         else: # Default is periodic 
         	pxr.pbound_z_min=0
         	
         if (top.pboundnz == absorb): 
         	pxr.pbound_z_max=1
+        elif(top.pboundnz == reflect):
+        	pxr.pbound_z_max=2
         else: # Default is periodic 
         	pxr.pbound_z_max=0
         	
@@ -166,6 +172,11 @@ class EM3DPXR(EM3DFFT):
         	pxr.pbound_x_max=1
         	pxr.pbound_y_min=1
         	pxr.pbound_y_max=1
+        elif(top.pboundxy == reflect):
+        	pxr.pbound_x_min=2
+        	pxr.pbound_x_max=2
+        	pxr.pbound_y_min=2
+        	pxr.pbound_y_max=2
         else: # Default is periodic 
         	pxr.pbound_x_min=0
         	pxr.pbound_x_max=0
@@ -222,6 +233,7 @@ class EM3DPXR(EM3DFFT):
         pxr.y_grid_max_local=pxr.y_max_local
         pxr.z_grid_min_local=pxr.z_min_local
         pxr.z_grid_max_local=pxr.z_max_local
+        pxr.zgrid=top.zgrid 
         
         pxr.length_x = pxr.xmax-pxr.xmin
         pxr.length_y = pxr.ymax-pxr.ymin
@@ -1004,8 +1016,11 @@ class EM3DPXR(EM3DFFT):
 #        self.loadsource(pgroups=pgroups)
         #tdebpart=MPI.Wtime()
 
+        # Call user-defined injection routines 
+        if (self.l_pxr): 
+            pxr.zgrid=top.zgrid   
+        userinjection.callfuncsinlist() 
         self.loadrho(pgroups=pgroups)
-
         self.loadj(pgroups=pgroups)
 
         #tendpart=MPI.Wtime()
@@ -1072,11 +1087,10 @@ class EM3DPXR(EM3DFFT):
         # PXr custom outputs mpi-io
         if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)): 
         	self.output_pxr(top.it)
-
+        
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
-
-    	
+  	
     def load_balance_3d(self,imbalance): 
         if (l_pxr): 
             ## --- Compute time per part and per cell 
@@ -2234,5 +2248,3 @@ class Sorting:
     self.xshift = xshift
     self.yshift = yshift
     self.zshift = zshift
-
-
