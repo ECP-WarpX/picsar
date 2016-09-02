@@ -637,12 +637,12 @@ SUBROUTINE compute_err(n,&
 			errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
 			errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
 
-			errx(i) = abs((sumex(i) - sumex(1)))/sumex(1)
-			erry(i) = abs((sumey(i) - sumey(1)))/sumey(1)
-			errz(i) = abs((sumez(i) - sumez(1)))/sumez(1)
-			errpx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
-			errpy(i) = abs((sumby(i) - sumby(1)))/sumby(1)
-			errpz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+			errx(i) = abs((sumx(i) - sumx(1)))/sumx(1)
+			erry(i) = abs((sumy(i) - sumy(1)))/sumy(1)
+			errz(i) = abs((sumz(i) - sumz(1)))/sumz(1)
+			errpx(i) = abs((sumpx(i) - sumpx(1)))/sumpx(1)
+			errpy(i) = abs((sumpy(i) - sumpy(1)))/sumpy(1)
+			errpz(i) = abs((sumpz(i) - sumpz(1)))/sumpz(1)
 		
 			IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
 			IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
@@ -710,7 +710,7 @@ SUBROUTINE display_statistics(title,n,name,&
 	write(0,'(A60, 7(A13))') "Subroutines", "sum(px)", "sum(py)", "sum(pz)", "err px", "err py", "err pz"
 	write(0,'(" _____________________________________________________")')
 	DO i = 1,n
-		write(0,'(A60,7(X,E12.5))') name(i), sumx(i), sumy(i), sumz(i), errpx(i), errpy(i), errpz(i), tpp(i)
+		write(0,'(A60,7(X,E12.5))') name(i), sumx(i), sumy(i), sumz(i), errx(i), erry(i), errz(i), tpp(i)
 		write(0,'(A60,7(X,E12.5))') '', sumpx(i), sumpy(i), sumpz(i), errpx(i), errpy(i), errpz(i), tpp(i)
 	ENDDO
 

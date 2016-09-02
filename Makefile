@@ -97,11 +97,29 @@ else ifeq ($(SYS),edison)
 		FARGS= -g -O0 -no-simd -no-vec
 		LARCH=	
 	endif
-# Cori phase 2
+# Cori phase 2 at NERSC
 else ifeq ($(SYS),cori2)
 	FC=ftn
 	CC=cc
-	APPNAME=picsar_knl
+	APPNAME=picsar_cori2
+  ifeq ($(MODE),prod)
+		COMP=none
+		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		LARCH=
+	else ifeq ($(MODE),debug)
+		COMP=none
+		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
+		LARCH=	
+	else ifeq ($(MODE),novec)
+		COMP=none
+		FARGS= -g -O0 -no-simd -no-vec
+		LARCH=	
+	endif
+# Carl KNL whitebox at NERSC
+else ifeq ($(SYS),carl)
+	FC=mpiifort
+	CC=mpicc
+	APPNAME=picsar_carl
   ifeq ($(MODE),prod)
 		COMP=none
 		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
@@ -329,6 +347,22 @@ build_tile_particle_push_3d_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
+
+build_tile_mpi_part_com_test: $(SRCDIR)/modules.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/particles_push_2d.o \
+	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/field_gathering_2d.o \
+	$(SRCDIR)/field_gathering_3d_o1.o \
+	$(SRCDIR)/field_gathering_3d_o2.o \
+	$(SRCDIR)/field_gathering_3d_o3.o \
+	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/boundary.o \
+	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/control_file.o \
+	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o 
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 	
 # Compilation of all the tests	
 buildtest: build_tile_field_gathering_3d_test \

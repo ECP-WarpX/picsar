@@ -2639,7 +2639,8 @@ END SUBROUTINE charge_bcs
 	USE params
 	IMPLICIT NONE
 
-	INTEGER(idp)                    :: i, is, ix, iy, iz
+	INTEGER(idp)                    :: is, ix, iy, iz
+	INTEGER(idp)                    :: i,i2,i3
 	INTEGER(idp)                    :: indx, indy, indz, ipx, ipy, ipz
 	INTEGER(idp)                    :: xbd,ybd,zbd
 	INTEGER(idp)                    :: k,j,ib,ibs
@@ -2662,12 +2663,13 @@ END SUBROUTINE charge_bcs
 	REAL(num)                                         :: ny0_grid_tile_dy,nz0_grid_tile_dz
 	INTEGER(isp)                                      :: stats(2)
 	INTEGER(idp)                                      :: recvbuf_index(27)
+	INTEGER(idp)                                      :: lvect
 
+#if defined(PART_BCS_TIMER)
 	REAL(num), DIMENSION(0:20)                        :: tl,tt,tlt,tltmpi
 	REAL(num)                                         :: t0,t1,t2,t4
-
 	tltmpi = 0
-
+#endif
 	  ! _________________________________________________________
 	  ! Determine number of threads to be used for nested parallel region
 	
@@ -2686,6 +2688,8 @@ END SUBROUTINE charge_bcs
 		nthreads_loop1=1
 		nthreads_loop2=1
 	ENDIF 
+	
+	lvect = 64
 	
 	! ___________________________________________________________
 	! Part 1 - Determine the particle to be exchanged with other tiles or with other MPI domains
@@ -2728,21 +2732,25 @@ END SUBROUTINE charge_bcs
 			ENDDO
 		ENDDO
 	ENDDO  
-	
+
+#if defined(PART_BCS_TIMER)	
 	t1 = MPI_WTIME()
+#endif
 	
 	  !$OMP PARALLEL DO DEFAULT(NONE) &
 	  !$OMP PRIVATE(curr,is,ib,k,nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz,&
 	  !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,xbd,ybd,zbd,gaminv,&
 	  !$OMP partw,indx,indy,indz,partx,party,partz,curr_tile,nptile,partux,partuy,partuz,&
-	  !$OMP j,tlt) &
+	  !$OMP j) &
 	  !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, & 
 	  !$OMP length_x,length_y,length_z,dxs2,dys2,dzs2, &
 	  !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary,  &
 	  !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, &
-    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,mpi_npart,tilebuf,mpi_buf_size) &
+    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,mpi_npart,tilebuf,mpi_buf_size,lvect) &
+#if defined(PART_BCS_TIMER)	
 		!$OMP SHARED(tltmpi) &
-		!$OMP PRIVATE(t0,t2,t4) &
+		!$OMP PRIVATE(t0,t2,t4,tlt) &
+#endif
     !$OMP NUM_THREADS(nthreads_loop1) 
     ! LOOP ON SPECIES
     DO is=1, nspecies
@@ -2768,12 +2776,14 @@ END SUBROUTINE charge_bcs
 					!$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, &
 					!$OMP length_x,length_y,length_z,tilebuf,mpi_npart, &
 					!$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary, &
-					!$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size)  &
+					!$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect)  &
 					!$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
 					!$OMP PRIVATE(ix,iy,iz,i,ib,k,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
-					!$OMP indx,indy,indz,xbd,ybd,zbd,tlt)  &
+					!$OMP indx,indy,indz,xbd,ybd,zbd,i2,i3)  &
+#if defined(PART_BCS_TIMER)	
 					!$OMP SHARED(tltmpi) &
-					!$OMP PRIVATE(t0,t2,t4) &
+					!$OMP PRIVATE(t0,t2,t4,tlt) &
+#endif
 					!$OMP COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2) 
 					! LOOP ON TILES
 					DO iz=ipz, ntilez,3
@@ -2782,7 +2792,9 @@ END SUBROUTINE charge_bcs
 								curr_tile=>curr%array_of_tiles(ix,iy,iz)
 								nptile=curr_tile%np_tile(1)
 								
+#if defined(PART_BCS_TIMER)	
 								t0 = MPI_WTIME()
+#endif
 								
 								! Allocation of the buffer
 ! 								IF (curr_tile%subdomain_bound) THEN
@@ -2797,15 +2809,22 @@ END SUBROUTINE charge_bcs
 ! 								ENDIF
 ! 								tilebuf(ix,iy,iz,is)%npart(1:27) = 0
 								
-								
+#if defined(PART_BCS_TIMER)	
 								t4 = MPI_WTIME()
 								
 								tlt(3) = t4 - t0
+#endif
 								
 								! Loop on particles inside tiles
 								DO i=nptile, 1, -1
 								
+! 								DO i2=nptile, 1, -lvect
+! 									DO i3 = MIN(lvect,i2),1,-1
+! 								  i = i2 - i3 + 1 
+								
+#if defined(PART_BCS_TIMER)	
 								  t0 = MPI_WTIME()
+#endif
 								  
 									partx=curr_tile%part_x(i)
 									party=curr_tile%part_y(i)
@@ -2822,7 +2841,9 @@ END SUBROUTINE charge_bcs
 									.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
 									CYCLE
 
+#if defined(PART_BCS_TIMER)
 								  tlt(5) = MPI_WTIME() - t0
+#endif
 
 									! Case 2: if particle left MPI domain
 									IF (((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) .OR. &
@@ -2834,7 +2855,9 @@ END SUBROUTINE charge_bcs
                   ybd = 0
                   zbd = 0
 
+#if defined(PART_BCS_TIMER)
 								  t0 = MPI_WTIME()
+#endif
 
                    ! Particle has left this processor -x 
                    IF (partx .LT. x_min_local) THEN
@@ -2916,9 +2939,11 @@ END SUBROUTINE charge_bcs
                     ENDIF
 									ENDIF
 
+#if defined(PART_BCS_TIMER)
                   t2 = MPI_WTIME()
 
 								  tlt(0) = t2 - t0
+#endif
 
                   ! Particle has left processor, we put it in a local buffer
                   IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
@@ -2946,14 +2971,17 @@ END SUBROUTINE charge_bcs
 
 									ENDIF
 
+#if defined(PART_BCS_TIMER)
 								   tlt(1) = MPI_WTIME() - t2
-								  
+#endif
+								
 									  CYCLE
                     
                   ENDIF !end if particle left MPI domain
 
-								  
+#if defined(PART_BCS_TIMER)
 								  t0 = MPI_WTIME()
+#endif
 
 									! Case 3: particles changed tile. Tranfer particle to new tile
 									! Get new indexes of particle in array of tiles
@@ -2975,14 +3003,20 @@ END SUBROUTINE charge_bcs
 									
 									CALL add_particle_at_tile(curr, indx,indy,indz, &
 										 partx, party, partz, partux, partuy, partuz, gaminv, partw)
-										 
+
+#if defined(PART_BCS_TIMER)
 								  tlt(2) = MPI_WTIME() - t0
+#endif
+
+                  !ENDDO
 								!End loop on particles 
 								END DO
 
-								  t0 = MPI_WTIME()
+#if defined(PART_BCS_TIMER)
+								t0 = MPI_WTIME()
 								  
-								 tlt(6) = t0 - t4
+								tlt(6) = t0 - t4
+#endif
 
 								! Reduction of the total number of particle to be 
 								! exchanged in every direction for MPI
@@ -2997,12 +3031,14 @@ END SUBROUTINE charge_bcs
 								
 								ENDIF
 
-								  tlt(4) = MPI_WTIME() - t0
+#if defined(PART_BCS_TIMER)
+								tlt(4) = MPI_WTIME() - t0
 
 								!OMP CRITICAL
 								tltmpi(:) = tltmpi(:) + tlt(:)
 								!OMP END CRITICAL
-								
+#endif
+
 							END DO
 						END DO
 					END DO ! END LOOP ON TILES
@@ -3014,10 +3050,12 @@ END SUBROUTINE charge_bcs
     END DO ! END LOOP ON SPECIES
     !$OMP END PARALLEL DO
 
+#if defined(PART_BCS_TIMER)
 	  tl(0) = MPI_WTIME() - t1
 
 	  t1 = MPI_WTIME()
-    
+#endif
+
     ! ____________________________________________________________________________________
     ! Part 2 - Creation of the send buffer for the MPI communications
     !
@@ -3587,7 +3625,8 @@ END SUBROUTINE charge_bcs
       DEALLOCATE(recvbuf)
 
     ENDDO
- 
+
+#if defined(PART_BCS_TIMER) 
  	  tl(1) = MPI_WTIME() - t1
  	  
  	  tl(2) = tltmpi(0) !/(ntilex*ntiley*ntilez)
@@ -3615,6 +3654,7 @@ END SUBROUTINE charge_bcs
       write(0,*) 'Loop on particles in each tile',tt(8)          
       write(0,*) 'Total time',tt(20)
     ENDIF
+#endif
     
     DEALLOCATE(mpi_npart)
     DEALLOCATE(reqs)
