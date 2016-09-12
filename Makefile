@@ -420,6 +420,13 @@ tile_field_gathering_3d_test:
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
 	
 esirkepov_2d_test:	
+	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
-esirkepov_3d_test:	
+	
+esirkepov_3d_test:
+	export OMP_NUM_THREADS=1	
 	./Acceptance_testing/Gcov_tests/esirkepov_3d_test	
+	
+tile_mpi_part_com_test:
+	export OMP_NUM_THREADS=2
+	mpirun -n 4 ./Acceptance_testing/Gcov_tests/tile_mpi_part_com_test

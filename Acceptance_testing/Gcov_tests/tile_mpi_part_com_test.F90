@@ -111,7 +111,7 @@ PROGRAM tile_field_gathering_3d_test
 	curr => species_parray(1)
 	curr%charge = -echarge
 	curr%mass = emass
-	curr%nppcell = 40
+	curr%nppcell = 20
 	curr%x_min = xmin
 	curr%x_max = xmax
 	curr%y_min = ymin
@@ -132,7 +132,7 @@ PROGRAM tile_field_gathering_3d_test
 	curr => species_parray(2)
 	curr%charge = echarge
 	curr%mass = emass
-	curr%nppcell = 40
+	curr%nppcell = 20
 	curr%x_min = xmin
 	curr%x_max = xmax
 	curr%y_min = ymin
@@ -260,13 +260,13 @@ PROGRAM tile_field_gathering_3d_test
 		write(0,*) 'dx',dx,'dy',dy,'dz',dz,'dt',dt
 		write(0,*) 
 		write(0,*) 'Initial State'
-		write(0,'("sum(x**2): ",E12.5)') sumx(1)
-		write(0,'("sum(y**2): ",E12.5)') sumy(1)
-		write(0,'("sum(z**2): ",E12.5)') sumz(1)
-		write(0,'("sum(px**2): ",E12.5)') sumpx(1)
-		write(0,'("sum(py**2): ",E12.5)') sumpy(1)
-		write(0,'("sum(pz**2): ",E12.5)') sumpz(1)
-		write(0,'("sum(gamma**2): ",E12.5)') sumga(1)
+		write(0,'(X,"sum(x**2): ",E12.5)') sumx(1)
+		write(0,'(X,"sum(y**2): ",E12.5)') sumy(1)
+		write(0,'(X,"sum(z**2): ",E12.5)') sumz(1)
+		write(0,'(X,"sum(px**2): ",E12.5)') sumpx(1)
+		write(0,'(X,"sum(py**2): ",E12.5)') sumpy(1)
+		write(0,'(X,"sum(pz**2): ",E12.5)') sumpz(1)
+		write(0,'(X,"sum(gamma**2): ",E12.5)') sumga(1)
 		write(0,*) 
 	ENDIF
 	curr0 = curr
@@ -409,7 +409,7 @@ PROGRAM tile_field_gathering_3d_test
 	epsilon,passed)
 
 	! Display the results
-	CALL display_statistics(title,i,name,&
+	CALL display_statistics(i,name,&
 	sumex,sumey,sumez,sumbx,sumby,sumbz, &
 	sumx,sumy,sumz,sumpx,sumpy,sumpz,sumga, &
 	errex,errey,errez,errbx,errby,errbz, &
@@ -575,7 +575,7 @@ SUBROUTINE compute_err(n,&
 END SUBROUTINE
 
 
-SUBROUTINE display_statistics(title,n,name,&
+SUBROUTINE display_statistics(n,name,&
 	sumex,sumey,sumez,sumbx,sumby,sumbz, &
 	sumx,sumy,sumz,sumpx,sumpy,sumpz,sumga, &
 	errex,errey,errez,errbx,errby,errbz, &
@@ -585,7 +585,6 @@ SUBROUTINE display_statistics(title,n,name,&
 	USE shared_data
 	IMPLICIT NONE
 	
-	CHARACTER(len=64)                        :: title
 	INTEGER(isp)                             :: n
 	REAL(num), dimension(10)                 :: ttile,tmpi
 	CHARACTER(len=64), dimension(10)         :: name
@@ -597,18 +596,33 @@ SUBROUTINE display_statistics(title,n,name,&
 	REAL(num), dimension(10)                 :: errbx,errby,errbz
 	REAL(num), dimension(10)                 :: errx,erry,errz
 	REAL(num), dimension(10)                 :: errpx,errpy,errpz,errga  
+	REAL(num), dimension(10)                 :: ttileave,tmpiave
+	REAL(num), dimension(10)                 :: ttilemax,tmpimax
+	REAL(num), dimension(10)                 :: ttilemin,tmpimin
 	INTEGER(isp)                             :: i
 	
-	IF (rank.eq.0) THEN
+	CALL MPI_REDUCE(ttile(1),ttileave(1),n,mpidbl,MPI_SUM,0_isp,comm,errcode)
+	CALL MPI_REDUCE(tmpi(1),tmpiave(1),n,mpidbl,MPI_SUM,0_isp,comm,errcode)	
+	CALL MPI_REDUCE(ttile(1),ttilemax(1),n,mpidbl,MPI_MAX,0_isp,comm,errcode)
+	CALL MPI_REDUCE(tmpi(1),tmpimax(1),n,mpidbl,MPI_MAX,0_isp,comm,errcode)	
+	CALL MPI_REDUCE(ttile(1),ttilemin(1),n,mpidbl,MPI_MIN,0_isp,comm,errcode)
+	CALL MPI_REDUCE(tmpi(1),tmpimin(1),n,mpidbl,MPI_MIN,0_isp,comm,errcode)	
 	
+	IF (rank.eq.0) THEN
+
+		ttileave(:) = ttileave(:) / (nproc)
+		tmpiave(:) = tmpiave(:) / (nproc)
+
 		write(0,*)
 		write(0,'(A40)') 'tile and mpi particle communications'
 		write(0,'(" _________________________________________________________________________")')
 		DO i = 1,n
 			write(0,*)
 			write(0,'(X,A60)') name(i)
-			write(0,'(X,7(A13))')  "time tile (s)", "time mpi (s)"
-			write(0,'(2(X,E12.5))') ttile(i),tmpi(i)
+			write(0,'(X,7(A13))')   "min time tile (s)", " ave time tile (s)", " max time tile (s)"
+			write(0,'(6(X,E12.5))') ttilemin(i),ttileave(i),ttilemax(i)
+			write(0,'(X,7(A18))')   "min time mpi (s)", " ave time mpi (s)", " max time mpi (s)"
+			write(0,'(6(X,E12.5))') tmpimin(i),tmpiave(i),tmpimax(i)
 			write(0,'(7(A13))')  "sum(x)", "sum(y)", "sum(z)", "err x", "err y", "err z"
 			write(0,'(7(X,E12.5))') sumx(i), sumy(i), sumz(i), errx(i), erry(i), errz(i)
 			write(0,'(7(A13))') "sum(px)", "sum(py)", "sum(pz)", "err px", "err py", "err pz"
