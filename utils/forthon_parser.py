@@ -1073,7 +1073,10 @@ listfiles=["modules.F90", \
            "current_deposition.F90", \
            "field_gathering_2d.F90", \
            "field_gathering.F90", \
-           "mpi_derived_types.F90", \
+           "field_gathering_3d_o1.F90",\
+           "field_gathering_3d_o2.F90",\
+           "field_gathering_3d_o3.F90",\
+           "mpi_derived_types.F90",\
            "boundary.F90", \
            "simple_io.F90", \
            "diags.F90", \

@@ -1118,22 +1118,83 @@ SUBROUTINE charge_bcs
 END SUBROUTINE charge_bcs
 
 
-!!! Boundary condition routine on particles
+! ________________________________________________________________________________________
+!> Boundary condition routine on particles in 3d
+!> @brief
+!
+!> This subroutine is the main one to manage the particle boundary conditions 
+!> between MPI domains and between tiles.
+!> The different model of exchanges can be used via the variable partcom
+!> @details
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> last modified: 09/12/2016
   SUBROUTINE particle_bcs
-  	USE omp_lib
-    USE time_stat
-    IMPLICIT NONE
-	  REAL(num) :: tdeb, tend
-    REAL(num) :: tmptime
+! ________________________________________________________________________________________
+	USE omp_lib
+	USE time_stat
+	IMPLICIT NONE
+	
+	REAL(num) :: tdeb, tend
+	REAL(num) :: tmptime
     
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
-    tdeb=MPI_WTIME()
+	IF (it.ge.timestat_itstart) THEN
+		tmptime = MPI_WTIME()
+	ENDIF
+	tdeb=MPI_WTIME()
+
+	! ___________________________________________
+	! Tile and MPI exchanges are done separately without OpenMP
+	IF (partcom.eq.2) THEN
+
+#if defined(DEBUG)
+	WRITE(0,*) "particle_bcs_tiles: start"
+#endif
+
+	SELECT CASE (c_dim)
+	! __________________________
+	! 2D
+	CASE(2)
+		CALL particle_bcs_tiles_2d()
+	! __________________________
+	! 3D
+	CASE DEFAULT 
+		CALL particle_bcs_tiles()
+	END SELECT
+
+	IF (it.ge.timestat_itstart) THEN
+		localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
+		tmptime = MPI_WTIME()
+	ENDIF
+	tend = MPI_WTIME()
+	local_time_part=local_time_part+(tend-tdeb)
+
+#if defined(DEBUG)
+	WRITE(0,*) "particle_bcs_mpi: start"
+#endif
+
+	IF (mpicom_curr .EQ. 1) THEN
+		! Then exchange particle between MPI domains
+		CALL particle_bcs_mpi_blocking()
+	ELSE 
+		CALL particle_bcs_mpi_non_blocking()
+	ENDIF 
+    
+#if defined(DEBUG)
+	WRITE(0,*) "particle_bcs_mpi: stop"
+#endif
+
+	IF (it.ge.timestat_itstart) THEN
+		localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
+	ENDIF
     
     ! ___________________________________________
     ! OpenMP and MPI exchanges are done separately
-    IF (partcom.eq.1) THEN
+    ELSE IF (partcom.eq.1) THEN
     
     ! First exchange particles between tiles (NO MPI at that point)
 #if defined(DEBUG)

@@ -843,7 +843,7 @@ END SUBROUTINE getb3d_energy_conserving_1_1_1
 !> @brief
 !
 !> This function is vectorized but DOES NOT PROVIDE CORRECT RESULTS on KNL/Haswell
-!@details
+!> @details
 !
 !> @param[in] np number of particles
 !> @param[in] xp,yp,zp particle position

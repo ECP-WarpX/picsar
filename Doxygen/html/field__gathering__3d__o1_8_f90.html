@@ -125,171 +125,11 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a35b7fbf406b705b1a34472523046d1b1"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__3d__o1_8_f90.html#a35b7fbf406b705b1a34472523046d1b1">getb3d_energy_conserving_scalar_1_1_1</a> (np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l_lower_order_in_v)</td></tr>
 <tr class="memdesc:a35b7fbf406b705b1a34472523046d1b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles at order 1.  <a href="#a35b7fbf406b705b1a34472523046d1b1">More...</a><br /></td></tr>
 <tr class="separator:a35b7fbf406b705b1a34472523046d1b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a573c1601d8884aa699121b456d176757"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__3d__o1_8_f90.html#a573c1601d8884aa699121b456d176757">gete3d_energy_conserving_1_1_1</a> (np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:a573c1601d8884aa699121b456d176757"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gathering of electric field from Yee grid ("energy conserving") on particles at order 1.  <a href="#a573c1601d8884aa699121b456d176757">More...</a><br /></td></tr>
-<tr class="separator:a573c1601d8884aa699121b456d176757"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ba87c0bcb5818f003a2d33921b5e40d"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__3d__o1_8_f90.html#a7ba87c0bcb5818f003a2d33921b5e40d">getb3d_energy_conserving_1_1_1</a> (np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:a7ba87c0bcb5818f003a2d33921b5e40d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gathering of Magnetic field from Yee grid ("energy conserving") on particles at order 1.  <a href="#a7ba87c0bcb5818f003a2d33921b5e40d">More...</a><br /></td></tr>
-<tr class="separator:a7ba87c0bcb5818f003a2d33921b5e40d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad43c0d4f9417aa987d3ca7f033ef6e69"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__3d__o1_8_f90.html#ad43c0d4f9417aa987d3ca7f033ef6e69">geteb3d_energy_conserving_1_1_1</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:ad43c0d4f9417aa987d3ca7f033ef6e69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering CIC (order 1) with gathering of E and B merged in a single loop.  <a href="#ad43c0d4f9417aa987d3ca7f033ef6e69">More...</a><br /></td></tr>
-<tr class="separator:ad43c0d4f9417aa987d3ca7f033ef6e69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3788d4a011335c931d314bc69f969508"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__3d__o1_8_f90.html#a3788d4a011335c931d314bc69f969508">geteb3d_energy_conserving_vec_1_1_1</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a3788d4a011335c931d314bc69f969508"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering (order 1) with gathering of E and B merged in a single loop.  <a href="#a3788d4a011335c931d314bc69f969508">More...</a><br /></td></tr>
+<tr class="separator:a3788d4a011335c931d314bc69f969508"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a class="anchor" id="a7ba87c0bcb5818f003a2d33921b5e40d"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">subroutine getb3d_energy_conserving_1_1_1 </td>
-          <td>(</td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>np</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>xp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>yp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>zp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>bx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>by</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>bz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>xmin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>ymin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>zmin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>dx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>dy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>dz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>ny</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nxguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nyguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nzguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard)&#160;</td>
-          <td class="paramname"><em>bxg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard)&#160;</td>
-          <td class="paramname"><em>byg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard)&#160;</td>
-          <td class="paramname"><em>bzg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">logical&#160;</td>
-          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Gathering of Magnetic field from Yee grid ("energy conserving") on particles at order 1. </p>
-
-</div>
-</div>
 <a class="anchor" id="a35b7fbf406b705b1a34472523046d1b1"></a>
 <div class="memitem">
 <div class="memproto">
@@ -442,160 +282,6 @@ Functions/Subroutines</h2></td></tr>
 
 <p>Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles at order 1. </p>
 <p>This function is vectorized </p>
-
-</div>
-</div>
-<a class="anchor" id="a573c1601d8884aa699121b456d176757"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">subroutine gete3d_energy_conserving_1_1_1 </td>
-          <td>(</td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>np</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>xp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>yp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>zp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>ex</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>ey</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(np)&#160;</td>
-          <td class="paramname"><em>ez</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>xmin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>ymin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>zmin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>dx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>dy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num)&#160;</td>
-          <td class="paramname"><em>dz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>ny</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nxguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nyguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp)&#160;</td>
-          <td class="paramname"><em>nzguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard)&#160;</td>
-          <td class="paramname"><em>exg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard)&#160;</td>
-          <td class="paramname"><em>eyg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard)&#160;</td>
-          <td class="paramname"><em>ezg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">logical&#160;</td>
-          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Gathering of electric field from Yee grid ("energy conserving") on particles at order 1. </p>
 
 </div>
 </div>
@@ -753,12 +439,12 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ad43c0d4f9417aa987d3ca7f033ef6e69"></a>
+<a class="anchor" id="a3788d4a011335c931d314bc69f969508"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine geteb3d_energy_conserving_1_1_1 </td>
+          <td class="memname">subroutine geteb3d_energy_conserving_vec_1_1_1 </td>
           <td>(</td>
           <td class="paramtype">integer(idp)&#160;</td>
           <td class="paramname"><em>np</em>, </td>
@@ -945,8 +631,8 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Field gathering CIC (order 1) with gathering of E and B merged in a single loop. </p>
-<p>This function is vectorized </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Field gathering (order 1) with gathering of E and B merged in a single loop. </p>
+<p>This function is vectorized  </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position </td></tr>
@@ -959,7 +645,8 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grid </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grid </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for cache blocking [in] l_lower_order_in_v decrease the interpolation order if True </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for cache blocking </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>decrease the interpolation order if True </td></tr>
   </table>
   </dd>
 </dl>

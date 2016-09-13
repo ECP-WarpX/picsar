@@ -82,9 +82,9 @@ section::sorting
  dx=1.
  dy=1.
  dz=1.
- shiftx=-1.
- shifty=-1.
- shiftz=-1.
+ shiftx=-0.
+ shifty=-0.
+ shiftz=-0.
 end::sorting 
 
 section::plasma

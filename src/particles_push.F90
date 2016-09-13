@@ -348,7 +348,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 nxjg,nyjg,nzjg, &
                 currg%extile,currg%eytile,currg%eztile,&
                 currg%bxtile,currg%bytile,currg%bztile,&
-                curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
+                curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
 
           ELSE IF ((noxx.eq.2).and.(noyy.eq.2).and.(nozz.eq.2)) THEN
 
@@ -365,7 +365,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 nxjg,nyjg,nzjg, &
                 currg%extile,currg%eytile,currg%eztile,&
                 currg%bxtile,currg%bytile,currg%bztile,&
-                curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
+                curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
                 
           ELSE IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3)) THEN
 
@@ -382,7 +382,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 nxjg,nyjg,nzjg, &
                 currg%extile,currg%eytile,currg%eztile,&
                 currg%bxtile,currg%bytile,currg%bztile,&
-                curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
+                curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
           
           ENDIF
                     

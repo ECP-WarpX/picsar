@@ -33,7 +33,7 @@ subroutine \hyperlink{namespaceboundary_a2bd382bbf256b1208d4fd3721c37ad08}{curre
 subroutine \hyperlink{namespaceboundary_a0b6d77029b51dd2a0e853c265885ab6c}{charge\+\_\+bcs}
 \item 
 subroutine \hyperlink{namespaceboundary_a9e7ba00d025d595683607b3ccd95bcb3}{particle\+\_\+bcs}
-\item 
+\begin{DoxyCompactList}\small\item\em Boundary condition routine on particles in 3d. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_aad89819169dca0b0ae8cf04748a86fb1}{particle\+\_\+bcs\+\_\+2d}
 \item 
 subroutine \hyperlink{namespaceboundary_added6cf2ea0ffc7ab618c3d9af16fade}{particle\+\_\+bcs\+\_\+tiles}
@@ -51,7 +51,7 @@ subroutine \hyperlink{namespaceboundary_aac32f7f65f1998963706f9d5776d29d2}{parti
 subroutine \hyperlink{namespaceboundary_a3293856926030dfea9e8ca05c61e1a5a}{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d}
 \item 
 subroutine \hyperlink{namespaceboundary_ac117306978e83b787afba90c3ac038f4}{particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d}
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em This subroutine combined in a single routine the particle communications between tiles and between M\+PI domains for 3D. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
@@ -137,6 +137,16 @@ For the moment this module handles\+: periodic external boundary conditions for 
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_a9e7ba00d025d595683607b3ccd95bcb3}{}\label{namespaceboundary_a9e7ba00d025d595683607b3ccd95bcb3}
+
+
+Boundary condition routine on particles in 3d. 
+
+This subroutine is the main one to manage the particle boundary conditions between M\+PI domains and between tiles. The different model of exchanges can be used via the variable partcom \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+last modified\+: 09/12/2016 
+\end{DoxyDate}
 \index{boundary@{boundary}!particle\+\_\+bcs\+\_\+2d@{particle\+\_\+bcs\+\_\+2d}}
 \index{particle\+\_\+bcs\+\_\+2d@{particle\+\_\+bcs\+\_\+2d}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{particle\+\_\+bcs\+\_\+2d}{particle_bcs_2d}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::particle\+\_\+bcs\+\_\+2d (
@@ -193,6 +203,16 @@ For the moment this module handles\+: periodic external boundary conditions for 
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_ac117306978e83b787afba90c3ac038f4}{}\label{namespaceboundary_ac117306978e83b787afba90c3ac038f4}
+
+
+This subroutine combined in a single routine the particle communications between tiles and between M\+PI domains for 3D. 
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+May 2016 
+\end{DoxyDate}
 \index{boundary@{boundary}!particle\+\_\+bcs\+\_\+tiles\+\_\+openmp@{particle\+\_\+bcs\+\_\+tiles\+\_\+openmp}}
 \index{particle\+\_\+bcs\+\_\+tiles\+\_\+openmp@{particle\+\_\+bcs\+\_\+tiles\+\_\+openmp}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{particle\+\_\+bcs\+\_\+tiles\+\_\+openmp()}{particle_bcs_tiles_openmp()}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::particle\+\_\+bcs\+\_\+tiles\+\_\+openmp (

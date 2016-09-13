@@ -7,48 +7,11 @@ subroutine \hyperlink{field__gathering__3d__o1_8_f90_a13e24ff5639b3dcf1e9cd8e51a
 \begin{DoxyCompactList}\small\item\em Scalar version\+: gathering of electric field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. \end{DoxyCompactList}\item 
 subroutine \hyperlink{field__gathering__3d__o1_8_f90_a35b7fbf406b705b1a34472523046d1b1}{getb3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
 \begin{DoxyCompactList}\small\item\em Scalar version\+: Gathering of Magnetic field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. \end{DoxyCompactList}\item 
-subroutine \hyperlink{field__gathering__3d__o1_8_f90_a573c1601d8884aa699121b456d176757}{gete3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
-\begin{DoxyCompactList}\small\item\em Gathering of electric field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. \end{DoxyCompactList}\item 
-subroutine \hyperlink{field__gathering__3d__o1_8_f90_a7ba87c0bcb5818f003a2d33921b5e40d}{getb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
-\begin{DoxyCompactList}\small\item\em Gathering of Magnetic field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. \end{DoxyCompactList}\item 
-subroutine \hyperlink{field__gathering__3d__o1_8_f90_ad43c0d4f9417aa987d3ca7f033ef6e69}{geteb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
-\begin{DoxyCompactList}\small\item\em Field gathering C\+IC (order 1) with gathering of E and B merged in a single loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
+subroutine \hyperlink{field__gathering__3d__o1_8_f90_a3788d4a011335c931d314bc69f969508}{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\begin{DoxyCompactList}\small\item\em Field gathering (order 1) with gathering of E and B merged in a single loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Function/\+Subroutine Documentation}
-\index{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}!getb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1@{getb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1}}
-\index{getb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1@{getb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1}!field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}}
-\subsubsection[{\texorpdfstring{getb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{getb3d_energy_conserving_1_1_1(np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine getb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1 (
-\begin{DoxyParamCaption}
-\item[{integer(idp)}]{np, }
-\item[{real(num), dimension(np)}]{xp, }
-\item[{real(num), dimension(np)}]{yp, }
-\item[{real(num), dimension(np)}]{zp, }
-\item[{real(num), dimension(np)}]{bx, }
-\item[{real(num), dimension(np)}]{by, }
-\item[{real(num), dimension(np)}]{bz, }
-\item[{real(num)}]{xmin, }
-\item[{real(num)}]{ymin, }
-\item[{real(num)}]{zmin, }
-\item[{real(num)}]{dx, }
-\item[{real(num)}]{dy, }
-\item[{real(num)}]{dz, }
-\item[{integer(idp)}]{nx, }
-\item[{integer(idp)}]{ny, }
-\item[{integer(idp)}]{nz, }
-\item[{integer(idp)}]{nxguard, }
-\item[{integer(idp)}]{nyguard, }
-\item[{integer(idp)}]{nzguard, }
-\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
-\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
-\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
-\end{DoxyParamCaption}
-)}\hypertarget{field__gathering__3d__o1_8_f90_a7ba87c0bcb5818f003a2d33921b5e40d}{}\label{field__gathering__3d__o1_8_f90_a7ba87c0bcb5818f003a2d33921b5e40d}
-
-
-Gathering of Magnetic field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. 
-
 \index{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}!getb3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1@{getb3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1}}
 \index{getb3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1@{getb3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1}!field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}}
 \subsubsection[{\texorpdfstring{getb3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine getb3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1 (
@@ -82,40 +45,7 @@ Gathering of Magnetic field from Yee grid (\char`\"{}energy conserving\char`\"{}
 
 Scalar version\+: Gathering of Magnetic field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. 
 
-This function is vectorized \index{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}!gete3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1@{gete3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1}}
-\index{gete3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1@{gete3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1}!field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}}
-\subsubsection[{\texorpdfstring{gete3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{gete3d_energy_conserving_1_1_1(np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine gete3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1 (
-\begin{DoxyParamCaption}
-\item[{integer(idp)}]{np, }
-\item[{real(num), dimension(np)}]{xp, }
-\item[{real(num), dimension(np)}]{yp, }
-\item[{real(num), dimension(np)}]{zp, }
-\item[{real(num), dimension(np)}]{ex, }
-\item[{real(num), dimension(np)}]{ey, }
-\item[{real(num), dimension(np)}]{ez, }
-\item[{real(num)}]{xmin, }
-\item[{real(num)}]{ymin, }
-\item[{real(num)}]{zmin, }
-\item[{real(num)}]{dx, }
-\item[{real(num)}]{dy, }
-\item[{real(num)}]{dz, }
-\item[{integer(idp)}]{nx, }
-\item[{integer(idp)}]{ny, }
-\item[{integer(idp)}]{nz, }
-\item[{integer(idp)}]{nxguard, }
-\item[{integer(idp)}]{nyguard, }
-\item[{integer(idp)}]{nzguard, }
-\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
-\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
-\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
-\end{DoxyParamCaption}
-)}\hypertarget{field__gathering__3d__o1_8_f90_a573c1601d8884aa699121b456d176757}{}\label{field__gathering__3d__o1_8_f90_a573c1601d8884aa699121b456d176757}
-
-
-Gathering of electric field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. 
-
-\index{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}!gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1@{gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1}}
+This function is vectorized \index{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}!gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1@{gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1}}
 \index{gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1@{gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1}!field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}}
 \subsubsection[{\texorpdfstring{gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine gete3d\+\_\+energy\+\_\+conserving\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1 (
 \begin{DoxyParamCaption}
@@ -148,9 +78,9 @@ Gathering of electric field from Yee grid (\char`\"{}energy conserving\char`\"{}
 
 Scalar version\+: gathering of electric field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at order 1. 
 
-\index{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}!geteb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1}}
-\index{geteb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1}!field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}}
-\subsubsection[{\texorpdfstring{geteb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{geteb3d_energy_conserving_1_1_1(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb3d\+\_\+energy\+\_\+conserving\+\_\+1\+\_\+1\+\_\+1 (
+\index{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}!geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+1\+\_\+1\+\_\+1@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+1\+\_\+1\+\_\+1}}
+\index{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+1\+\_\+1\+\_\+1@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+1\+\_\+1\+\_\+1}!field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o1.\+F90}}
+\subsubsection[{\texorpdfstring{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{geteb3d_energy_conserving_vec_1_1_1(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+1\+\_\+1\+\_\+1 (
 \begin{DoxyParamCaption}
 \item[{integer(idp)}]{np, }
 \item[{real(num), dimension(np)}]{xp, }
@@ -183,12 +113,12 @@ Scalar version\+: gathering of electric field from Yee grid (\char`\"{}energy co
 \item[{integer(idp)}]{lvect, }
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
-)}\hypertarget{field__gathering__3d__o1_8_f90_ad43c0d4f9417aa987d3ca7f033ef6e69}{}\label{field__gathering__3d__o1_8_f90_ad43c0d4f9417aa987d3ca7f033ef6e69}
+)}\hypertarget{field__gathering__3d__o1_8_f90_a3788d4a011335c931d314bc69f969508}{}\label{field__gathering__3d__o1_8_f90_a3788d4a011335c931d314bc69f969508}
 
 
-Field gathering C\+IC (order 1) with gathering of E and B merged in a single loop. 
+Field gathering (order 1) with gathering of E and B merged in a single loop. 
 
-This function is vectorized 
+This function is vectorized  
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\tt in}  & {\em np} & number of particles \\
 \hline
@@ -212,6 +142,8 @@ This function is vectorized
 \hline
 \mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grid \\
 \hline
-\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \mbox{[}in\mbox{]} l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v decrease the interpolation order if True \\
+\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v} & decrease the interpolation order if True \\
 \hline
 \end{DoxyParams}

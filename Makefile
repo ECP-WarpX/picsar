@@ -274,8 +274,9 @@ help:
 	@echo
 	@echo ' SYS= System'		
 	@echo ' - edison: Edison NERSC'	
-	@echo ' - cori1: Cori phase 1 NERSC'	
-	@echo ' - cori2: Cori phase 2 NERSC'
+	@echo ' - carl:   NERSC KNL whitebox'
+	@echo ' - cori1:  Cori phase 1 NERSC'	
+	@echo ' - cori2:  Cori phase 2 NERSC'
 	@echo ' ______________________________________ '
 		
 # ________________________________________________________________________________________
@@ -380,7 +381,7 @@ buildtest: build_tile_field_gathering_3d_test \
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o
 #	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o			
 
-# __ Pytest ____________________________________________________
+# __ Execute Pytest ____________________________________________________
 test1:
 	cd Acceptance_testing/Fortran_tests/test_plasma_drift && \
 	py.test -s --ttest=1 --trun=1
@@ -396,16 +397,16 @@ test3:
 test_pytest:
 	test1 test2 test3
 
-# __ Gcov ____________________________________________________
+# __ Execute Gcov test ____________________________________________________
 	
 test_gcov: field_gathering_2d_test \
 	field_gathering_3d_test \
 	tile_field_gathering_3d_test \
+	tile_particle_push_3d_test \
 	./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
 	./Acceptance_testing/Gcov_tests/current_deposition_3d_test
 	./Acceptance_testing/Gcov_tests/esirkepov_3d_test
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
-	./Acceptance_testing/Gcov_tests/tile_particle_push_3d_test
 	
 field_gathering_2d_test:
 	export OMP_NUM_THREADS=1
@@ -415,10 +416,6 @@ field_gathering_3d_test:
 	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/field_gathering_3d_test
 	
-tile_field_gathering_3d_test:
-	export OMP_NUM_THREADS=4
-	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
-	
 esirkepov_2d_test:	
 	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
@@ -426,6 +423,14 @@ esirkepov_2d_test:
 esirkepov_3d_test:
 	export OMP_NUM_THREADS=1	
 	./Acceptance_testing/Gcov_tests/esirkepov_3d_test	
+
+tile_field_gathering_3d_test:
+	export OMP_NUM_THREADS=4
+	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
+
+tile_particle_push_3d_test:
+	export OMP_NUM_THREADS=4
+	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_particle_push_3d_test
 	
 tile_mpi_part_com_test:
 	export OMP_NUM_THREADS=2

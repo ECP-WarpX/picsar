@@ -1,0 +1,63 @@
+/** @page "Python installation instructions" 
+
+**INSTALLATION OF PYTHON MODULE PICSAR
+============================================================
+
+
+**1. Installing python and packages 
+--------------------------------------
+
+* Install python 2 or later. We recommend python from anaconda (`http://docs.continuum.io/anaconda/install`)
+* Install numpy (pip install numpy)
+* Install mpi4py (pip install mpi4py)
+
+
+**2. Installing Forthon 
+-------------------------
+
+Before creating the python module picsarpy for picsar, you must install the Forthon compiler. To do so: 
+
+* Copy the last stable version of Forthon by typing: `git clone https://github.com/dpgrote/Forthon.git`
+
+* Follow installation steps detailed in README 
+
+
+
+**3. Makefile_Forthon config
+------------------------------
+
+First edit the file Makefile_Forthon and indicate the following environment variables:
+
+- FCOMP: your fortran compiler (e.g gfortran),
+
+- FCOMPEXEC: your MPI Fortran wrapper (e.g mpif90),
+
+- FARGS: arguments of the $(FCOMP) compiler. To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least **OpenMP 4.0**.  
+
+- LIBDIR: your library folder containing MPI libraries (e.g /usr/local/Cellar/open-mpi/1.8.6/lib/ for an Homebrew install of open-mpi on MACOSX, /opt/local/lib/mpich-mp/ for a Macports install of mpich),
+
+- LIBS: required libraries for the install. With Open-MPI, the compilation of picsar requires the following libraries: -lmpi, -lmpi_usempi, -lmpi_mpifh, -lgomp. For open-mpi>1.8.x, you should use -lmpi_usempif08 instead of -lmpi_usempi. For a Macports install of mpich, you should use -lmpifort -lmpi -lpmpi.   
+
+
+**4. Compiling
+----------------------------
+
+To compile and test, invoke the rule "all": 
+
+- Make -f Makefile_Forthon all
+
+**5. Compiling
+----------------------------
+
+Testing the code after compilation is highly recommended.
+
+To test the compilation/execution, you can use the makefile (py.test is required):
+
+  For all test:
+  - Make -f Makefile_Forthon test
+
+  For each test one by one
+  - Simple running test:     make -f Makefile_Forthon test1
+  - Langmuir wave:           make -f Makefile_Forthon test2
+  
+*/

@@ -3,6 +3,8 @@ var NAVTREE =
   [ "Picsar Doxygen Project", "index.html", [
     [ "Picsar Documentation", "index.html", null ],
     [ "Input File Configuration", "Input File Configuration.html", null ],
+    [ "Fortran installation instructions", "Fortran installation instructions.html", null ],
+    [ "Python installation instructions", "Python installation instructions.html", null ],
     [ "Modules", null, [
       [ "Modules List", "namespaces.html", "namespaces" ],
       [ "Module Members", "namespacemembers.html", [
@@ -32,10 +34,10 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"Input File Configuration.html",
-"modules_8_f90.html#a040a1f8e7a331db1b9d025819a7e9453",
-"modules_8_f90.html#aaa71d4d9190708dfbc55e561c8fa1712",
-"sde__fortran_8_f90.html#a06cb12710fb767b9e600125c1a27b419"
+"Fortran installation instructions.html",
+"modules_8_f90.html#a08a746304a8f4b59076abee85eb82642",
+"modules_8_f90.html#aacbd3bff423894ff20cec97f4286ba68",
+"sde__fortran_8_f90.html#a8b044c69f0582c3001cbf91dd6d768ab"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

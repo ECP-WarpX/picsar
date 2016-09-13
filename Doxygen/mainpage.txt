@@ -94,8 +94,6 @@ The different diagnostics can be activated with their flags:
 Time statistics refer to the computation of the simulation times spend in each significant part of the code. A final time survey is automatically provided at the end of a simulation with the stand-alone code.
 The time statisctics function enables to outpout in files the time spend in the main subroutines for each iteration.
 It corresponds to the section named `timestat`.
-
-@page "Input File Configuration" input_file_config
-
-
 */
+
+

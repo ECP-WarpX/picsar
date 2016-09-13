@@ -104,7 +104,86 @@ $(document).ready(function(){initNavTree('Input File Configuration.html','');});
 </div>
 
 <div class="contents">
-<div class="textblock"><h2>Input file Configuration </h2>
+<div class="textblock"><h1>Input file Configuration </h1>
+<p>The input file is divided into sections. Sections start by <code>section::name</code> where <code>name</code> is the section name and end with <code>end::name</code>.</p>
+<h4>A. cpusplit section</h4>
+<p>This section enables to configure the MPI decomposition and other parameters:</p>
+<ul>
+<li><code>nprocx</code>, <code>nprocy</code>, <code>nprocz</code>: number of processors in each direction x, y, z</li>
+<li><code>topology</code>: the MPI topology, 0 corresponds to cartesian</li>
+</ul>
+<h4>B. main section</h4>
+<p>This section enables to configure the general simulation parameters:</p>
+<ul>
+<li><code>nx</code>, <code>ny</code>, <code>nz</code>: number of grid points (domain discretization) in each direction</li>
+<li><code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>, <code>zmin</code>, <code>zmax</code>: Origin of simulation axes</li>
+<li><code>t_max</code>: final time</li>
+<li><code>nsteps</code>: can be specified instead of the final time, else nsteps is determine from the final time and the CFL condition</li>
+<li><code>ntilex</code>, <code>ntiley</code>, <code>ntilez</code>: MPI sub-domain discetization into tiles</li>
+<li><code>nguardsx</code>, <code>nguardsy</code>, <code>nguardsz</code>: guard cells for the field arrays</li>
+<li><code>njguardsx</code>, <code>njguardsy</code>, <code>njguardsz</code>: guard cells for the current arrays</li>
+</ul>
+<h4>C. solver section</h4>
+<p>This section, <code>section::solver</code>, enables to controle the solver and algorithm parameters:</p>
+<ul>
+<li><code>norderx</code>, <code>nordery</code>, <code>norderz</code>: Maxwell solver orders</li>
+<li><code>nox</code>, <code>noy</code>, <code>noz</code>: shape factor (interpolation) orders, note that optimized subroutines only work when <code>nox=noy=noz</code></li>
+<li><code>currdepo</code>: current deposition algorithm<ul>
+<li><code>=0</code>: Esirkepov with tiling/OpenMP and optimized for AVX512. For the moment, in 3D, only <code>nox=noy=noz=1</code> provides better performances.</li>
+<li><code>=1</code>: Esirkepov with tiling/OpenMP and non-optimized. The functions provided for <code>nox=noy=noz</code> are much faster than using different orders (in this case, an arbitrary order subroutine with many if-statements is used).</li>
+<li><code>=2</code>: Esirkepov sequential</li>
+<li><code>=3</code>: Classical current deposition with Tiling/OpenMP and optimized/vectorized subroutines. This provides the best performance even with AVX architectures.</li>
+<li><code>=4</code>: Classical current deposition with Tiling/openMP and non-optimized subroutines.</li>
+<li><code>=5</code>: Classical current deposition sequential</li>
+</ul>
+</li>
+<li><code>fieldgave</code>: field gathering<ul>
+<li><code>=0</code>: vectorized subroutine when <code>nox=noy=noz</code></li>
+<li><code>=1</code>: non-optimized subroutines</li>
+</ul>
+</li>
+<li><code>rhodepo</code>: charge deposition<ul>
+<li><code>=0</code>: vectorized subroutines when <code>nox=noy=noz</code></li>
+<li><code>=1</code>: non-optimized subroutines</li>
+</ul>
+</li>
+<li><code>partcom</code>: particle communications<ul>
+<li><code>=0</code>: Communications between tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel</li>
+<li><code>=1</code>: Communications are done seperatly</li>
+</ul>
+</li>
+</ul>
+<h4>D. Plasma section</h4>
+<p>This section, <code>section::plasma</code>, enables to controle the plasma parameters:</p>
+<ul>
+<li><code>nlab</code>: density in the laboratory</li>
+<li><code>pdistr</code>: initial distribution<ul>
+<li><code>=1</code>: ordered space initialization</li>
+<li><code>=2</code>: random space initialization</li>
+</ul>
+</li>
+</ul>
+<h4>E. Species section</h4>
+<p>This section, <code>section::species</code>, enables to configure the species properties. It has to be repeated for each species.</p>
+<ul>
+<li><code>name</code>: species name</li>
+<li><code>mass</code>: species mass normalized to the electronic mass</li>
+<li><code>charge</code>: species charge normalized to the positron charge</li>
+<li><code>nppcell</code>: number of particles per cell</li>
+<li><code>x_min</code>, <code>x_max</code>, <code>y_min</code>, <code>y_max</code>, <code>z_min</code>, <code>z_max</code>: plasma expansion in each direction</li>
+<li><code>vdrift_x</code>, <code>vdrift_y</code>, <code>vdrift_z</code>: drift velocity in each direction</li>
+<li><code>vth_x</code>, <code>vth_y</code>, <code>vth_z</code>: thermal velocity in each direction</li>
+<li><code>sorting_period</code>: period of the sorting</li>
+<li><code>sorting_start</code>: beginning of the sorting</li>
+</ul>
+<h4>F. Sorting section</h4>
+<p>This section, <code>section::sorting</code>, enables to controle the particle cell sorting algorithm.</p>
+<ul>
+<li><code>activation</code>: activation of the sorting</li>
+<li><code>dx</code>, <code>dy</code>, <code>dz</code>: size of the sorting cells</li>
+<li><code>shiftx</code>, <code>shifty</code>, <code>shiftz</code>: shift of the sorting grid</li>
+</ul>
+<h2>Input file Configuration </h2>
 <p>The input file is divided into sections. Sections start by <code>section::name</code> where <code>name</code> is the section name and end with <code>end::name</code>.</p>
 <h4>A. cpusplit section</h4>
 <p>This section enables to configure the MPI decomposition and other parameters:</p>

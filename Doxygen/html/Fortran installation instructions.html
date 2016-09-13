@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Picsar Doxygen Project: Related Pages</title>
+<title>Picsar Doxygen Project: $title</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,7 +86,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('pages.html','');});
+$(document).ready(function(){initNavTree('Fortran installation instructions.html','');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -103,19 +103,42 @@ $(document).ready(function(){initNavTree('pages.html','');});
 </iframe>
 </div>
 
-<div class="header">
-  <div class="headertitle">
-<div class="title">Related Pages</div>  </div>
-</div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all related documentation pages:</div><div class="directory">
-<table class="directory">
-<tr id="row_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="Input File Configuration.html" target="_self">Input File Configuration</a></td><td class="desc"></td></tr>
-<tr id="row_1_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="Fortran installation instructions.html" target="_self">Fortran installation instructions</a></td><td class="desc"></td></tr>
-<tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="Python installation instructions.html" target="_self">Python installation instructions</a></td><td class="desc"></td></tr>
-</table>
-</div><!-- directory -->
-</div><!-- contents -->
+<div class="textblock"><h1>INSTALLING PICSAR IN FULL FORTRAN 90 </h1>
+<h2>Makefile config </h2>
+<p>First edit the file Makefile and indicate the following environment variables:</p>
+<p>FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),</p>
+<p>FARGS: your compiler arguments (optimization flags etc.). To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least <b>OpenMP 4.0</b>.</p>
+<h2>Compiling </h2>
+<p>To compile, invoke the rule "all":</p>
+<p>Make -f Makefile all</p>
+<p>Testing </p><hr/>
+<p>Testing the code after compilation is highly recommended.</p>
+<p>To test the compilation/execution, you can use the makefile (py.test is required):</p>
+<p>For all tests: </p><blockquote class="doxtable">
+<p>make -f Makefile test </p>
+</blockquote>
+<p>For each test one by one</p><ul>
+<li>Drifted plasma: make -f Makefile test1</li>
+<li>Homogeneous plasma: make -f Makefile test2</li>
+<li>Langmuir wave: make -f Makefile test3</li>
+</ul>
+<p>To test the compilation/execution, you can run test python scripts manually:</p>
+<p>Go the folder Acceptance_testing/Fortran_tests.</p>
+<p>You can perform each test one by one entering the different folders:</p><ul>
+<li>test_plasma_drift</li>
+<li>test_homogeneous_plasma</li>
+<li>test_Langmuir_wave</li>
+</ul>
+<p>You can run scripts using py.test: </p><blockquote class="doxtable">
+<p>py.test -s &ndash;trun=1 &ndash;ttest=1 </p>
+</blockquote>
+<p>&ndash;trun=0/1: this option enables/disables simulation run &ndash;ttest=0/1: this option enables/disables assert tests</p>
+<p>You can run scripts without py.test: </p><blockquote class="doxtable">
+<p>python &lt;pyhthon_script&gt; -r 1 -t 1 </p>
+</blockquote>
+<p>-r 0/1: this option enables/disables simulation run -t 0/1: this option enables/disables simulation assert tests </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

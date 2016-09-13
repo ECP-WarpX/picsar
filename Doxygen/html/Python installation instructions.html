@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Picsar Doxygen Project: Related Pages</title>
+<title>Picsar Doxygen Project: $title</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,7 +86,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('pages.html','');});
+$(document).ready(function(){initNavTree('Python installation instructions.html','');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -103,19 +103,39 @@ $(document).ready(function(){initNavTree('pages.html','');});
 </iframe>
 </div>
 
-<div class="header">
-  <div class="headertitle">
-<div class="title">Related Pages</div>  </div>
-</div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all related documentation pages:</div><div class="directory">
-<table class="directory">
-<tr id="row_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="Input File Configuration.html" target="_self">Input File Configuration</a></td><td class="desc"></td></tr>
-<tr id="row_1_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="Fortran installation instructions.html" target="_self">Fortran installation instructions</a></td><td class="desc"></td></tr>
-<tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="Python installation instructions.html" target="_self">Python installation instructions</a></td><td class="desc"></td></tr>
-</table>
-</div><!-- directory -->
-</div><!-- contents -->
+<div class="textblock"><h1>INSTALLATION OF PYTHON MODULE PICSAR </h1>
+<h2>1. Installing python and packages </h2>
+<p>Install python 2 or later. We recommend python from anaconda (<code><a href="http://docs.continuum.io/anaconda/install">http://docs.continuum.io/anaconda/install</a></code>) Install numpy (pip install numpy) Install mpi4py (pip install mpi4py)</p>
+<h2>2. Installing Forthon </h2>
+<p>Before creating the python module picsarpy for picsar, you must install the Forthon compiler. To do so:</p>
+<p>Copy the last stable version of Forthon by typing: <code>git clone <a href="https://github.com/dpgrote/Forthon.git">https://github.com/dpgrote/Forthon.git</a></code></p>
+<p>Follow installation steps detailed in README</p>
+<h2>3. Makefile_Forthon config </h2>
+<p>First edit the file Makefile_Forthon and indicate the following environment variables:</p>
+<ul>
+<li>FCOMP: your fortran compiler (e.g gfortran),</li>
+<li>FCOMPEXEC: your MPI Fortran wrapper (e.g mpif90),</li>
+<li>FARGS: arguments of the  compiler. To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least <b>OpenMP 4.0</b>.</li>
+<li>LIBDIR: your library folder containing MPI libraries (e.g /usr/local/Cellar/open-mpi/1.8.6/lib/ for an Homebrew install of open-mpi on MACOSX, /opt/local/lib/mpich-mp/ for a Macports install of mpich),</li>
+<li>LIBS: required libraries for the install. With Open-MPI, the compilation of picsar requires the following libraries: -lmpi, -lmpi_usempi, -lmpi_mpifh, -lgomp. For open-mpi&gt;1.8.x, you should use -lmpi_usempif08 instead of -lmpi_usempi. For a Macports install of mpich, you should use -lmpifort -lmpi -lpmpi.</li>
+</ul>
+<h2>4. Compiling </h2>
+<p>To compile and test, invoke the rule "all":</p>
+<ul>
+<li>Make -f Makefile_Forthon all</li>
+</ul>
+<h2>5. Compiling </h2>
+<p>Testing the code after compilation is highly recommended.</p>
+<p>To test the compilation/execution, you can use the makefile (py.test is required):</p>
+<p>For all test:</p><ul>
+<li>Make -f Makefile_Forthon test</li>
+</ul>
+<p>For each test one by one</p><ul>
+<li>Simple running test: make -f Makefile_Forthon test1</li>
+<li>Langmuir wave: make -f Makefile_Forthon test2 </li>
+</ul>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
