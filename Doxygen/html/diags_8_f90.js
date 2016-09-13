@@ -2,17 +2,6 @@ var diags_8_f90 =
 [
     [ "calc_diags", "diags_8_f90.html#ae7171376e1d30d3465491f0f75a39180", null ],
     [ "calc_field_div", "diags_8_f90.html#a28ade3a7daafd373b08dd7742315ed98", null ],
-    [ "depose_rho_scalar_1_1_1", "diags_8_f90.html#a8c121f68d09e968d4a5c74811759b0f5", null ],
-    [ "depose_rho_scalar_2_2_2", "diags_8_f90.html#aeb5c0a99b3e4cc7708ecaeb6326f21f6", null ],
-    [ "depose_rho_scalar_3_3_3", "diags_8_f90.html#a0767b1e1eb3f73ff84acdb523f574e25", null ],
-    [ "depose_rho_vechv_1_1_1", "diags_8_f90.html#aa80c907f0f5c0becf0810c995f00a21a", null ],
-    [ "depose_rho_vechvv2_1_1_1", "diags_8_f90.html#ac2886f000a8f1c1cb0b75ca5e3f3aba0", null ],
-    [ "depose_rho_vechvv2_2_2_2", "diags_8_f90.html#a00bf7b32c938f1d5e9f87830ee92d7e2", null ],
-    [ "depose_rho_vechvv2_3_3_3", "diags_8_f90.html#a5b450ee961087e014783a7c06fe8df25", null ],
-    [ "depose_rho_vechvv3_3_3_3", "diags_8_f90.html#a7087b6f9a6ee62563b51f77e799377f6", null ],
-    [ "depose_rho_vechvv4_3_3_3", "diags_8_f90.html#ae7646850feb6d4f841185fbfffc3d37c", null ],
-    [ "depose_rho_vecnoy_1_1_1", "diags_8_f90.html#a5c6c3ca3305fe114983561316d733fc6", null ],
-    [ "depose_rho_vecsh_1_1_1", "diags_8_f90.html#af2af5ba421e1e51c0bf4851aa5f4f387", null ],
     [ "get_field_energy", "diags_8_f90.html#ac039b5b8f68cf780a761ee735024fe56", null ],
     [ "get_field_energy_2d", "diags_8_f90.html#a35743d1121d2d5381a758ad94085362e", null ],
     [ "get_kinetic_energy", "diags_8_f90.html#ab51517b8d0751b8e43e0ab3c9338af41", null ],
@@ -25,12 +14,5 @@ var diags_8_f90 =
     [ "get_tot_number_of_particles_from_species", "diags_8_f90.html#a00e54b5beba626e955d8e3e946962f1d", null ],
     [ "init_diags", "diags_8_f90.html#a090bf3606a7c0c889195bd01b10adc5c", null ],
     [ "init_temp_diags", "diags_8_f90.html#a111912cfff0906f9e78449119c1a3e43", null ],
-    [ "init_time_stat_output", "diags_8_f90.html#a3ccd1d3efa537c9c73cbca0141184c32", null ],
-    [ "pxr_depose_rho_n", "diags_8_f90.html#a7d64ffee6339ffb7ca37adfe101c444d", null ],
-    [ "pxr_depose_rho_n_2dxz", "diags_8_f90.html#a480ed63b3c5511d2cae7bbe81dd07334", null ],
-    [ "pxr_depose_rhoold_n_2dxz", "diags_8_f90.html#ad46a700a868c3f7e10a2579130729a65", null ],
-    [ "pxrdepose_rho_on_grid", "diags_8_f90.html#a8d8c31da5108571fdd3224cd692cf61a", null ],
-    [ "pxrdepose_rho_on_grid_sub_openmp_2d", "diags_8_f90.html#a13a5047b07a130b8790d9240f55d5f50", null ],
-    [ "pxrdepose_rho_on_grid_sub_openmp_3d", "diags_8_f90.html#a71e49f591ad529271f68450170310c6a", null ],
-    [ "pxrdepose_rho_on_grid_sub_openmp_3d_v2", "diags_8_f90.html#ab9048ee1e174ef107883875a0f750305", null ]
+    [ "init_time_stat_output", "diags_8_f90.html#a3ccd1d3efa537c9c73cbca0141184c32", null ]
 ];

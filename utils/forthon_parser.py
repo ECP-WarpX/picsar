@@ -1079,6 +1079,7 @@ listfiles=["modules.F90", \
            "mpi_derived_types.F90",\
            "boundary.F90", \
            "simple_io.F90", \
+           "charge_deposition.F90", \
            "diags.F90", \
            "submain.F90", \
            "mpi_routines.F90",\

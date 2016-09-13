@@ -1,6 +1,7 @@
 var dir_ac6e020b6b32a70d908ee7b905aad867 =
 [
     [ "boundary.F90", "boundary_8_f90.html", "boundary_8_f90" ],
+    [ "charge_deposition.F90", "charge__deposition_8_f90.html", "charge__deposition_8_f90" ],
     [ "control_file.F90", "control__file_8_f90.html", "control__file_8_f90" ],
     [ "current_deposition.F90", "current__deposition_8_f90.html", "current__deposition_8_f90" ],
     [ "current_deposition_2d.F90", "current__deposition__2d_8_f90.html", "current__deposition__2d_8_f90" ],

@@ -218,6 +218,7 @@ build:$(SRCDIR)/modules.o \
 	$(SRCDIR)/field_gathering.o \
 	$(SRCDIR)/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
+	$(SRCDIR)/charge_deposition.o \
 	$(SRCDIR)/diags.o \
 	$(SRCDIR)/simple_io.o \
 	$(SRCDIR)/mpi_routines.o \

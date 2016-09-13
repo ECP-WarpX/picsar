@@ -73,7 +73,13 @@ section::solver
  # Type of particle communication
  # 0 - Combined MPI/Tile communications
  # 1 - Seperated MPI/Tile communications
- partcom = 0 
+ partcom = 0
+ 
+ # Charge deposition method
+ # 0 - Vectorized specific order subroutines
+ # 1 - Scalar specific order subroutines
+ # else - Non optimized general order subroutines
+ rhodepo = 1
  
 end::solver
 
