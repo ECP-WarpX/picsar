@@ -123,8 +123,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a35ce588d3192033ca711fc1e13ba35b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main subroutine for the charge deposition.  <a href="#a35ce588d3192033ca711fc1e13ba35b0">More...</a><br /></td></tr>
 <tr class="separator:a35ce588d3192033ca711fc1e13ba35b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa611a1848b404872ce900c3eb0573bc"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#afa611a1848b404872ce900c3eb0573bc">pxrdepose_rho_on_grid_sub_openmp_3d</a> (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)</td></tr>
+<tr class="memdesc:afa611a1848b404872ce900c3eb0573bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D.  <a href="#afa611a1848b404872ce900c3eb0573bc">More...</a><br /></td></tr>
 <tr class="separator:afa611a1848b404872ce900c3eb0573bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab4d6c7838c470fda0e5bbc3ea68b0917"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#ab4d6c7838c470fda0e5bbc3ea68b0917">pxrdepose_rho_on_grid_sub_openmp_2d</a> (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)</td></tr>
+<tr class="memdesc:ab4d6c7838c470fda0e5bbc3ea68b0917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 2D.  <a href="#ab4d6c7838c470fda0e5bbc3ea68b0917">More...</a><br /></td></tr>
 <tr class="separator:ab4d6c7838c470fda0e5bbc3ea68b0917"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e9f7c059faf5920428cdfec1181a9a8"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a7e9f7c059faf5920428cdfec1181a9a8">pxrdepose_rho_on_grid_sub_openmp_3d_v2</a> (func_order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c_rho_old)</td></tr>
 <tr class="memdesc:a7e9f7c059faf5920428cdfec1181a9a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D.  <a href="#a7e9f7c059faf5920428cdfec1181a9a8">More...</a><br /></td></tr>
@@ -2360,6 +2362,22 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Deposit rho in each tile in 2D. </p>
+<p>This subroutine perform the charge deposition among the tiles using OpenMP version in 2D. It avoids conflict while reducing tile charge in the global charge array. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">rhog</td><td>global array for the charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxx,nyy,nzz</td><td>number of cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxjguard,nyjguard,nzjguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">noxx,noyy,nozz</td><td>interpolation order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dxx,dyy,dzz</td><td>space discretization steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">c_rho_old</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a class="anchor" id="afa611a1848b404872ce900c3eb0573bc"></a>
@@ -2463,6 +2481,22 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Deposit rho in each tile in 3D. </p>
+<p>This subroutine perform the charge deposition among the tiles using OpenMP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the general order function <a class="el" href="charge__deposition_8_f90.html#a1ba91732b5b34c8c04f7570c8df67c26" title="General charge deposition routine (Warning: Highly unoptimized routine) ">pxr_depose_rho_n()</a>. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">rhog</td><td>global array for the charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxx,nyy,nzz</td><td>number of cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxjguard,nyjguard,nzjguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">noxx,noyy,nozz</td><td>interpolation order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dxx,dyy,dzz</td><td>space discretization steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">c_rho_old</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

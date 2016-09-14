@@ -1,7 +1,7 @@
 ! ________________________________________________________________________________________
 !
-! TILE_FIELD_GATHERING_3D_TEST.F90
-! Test code for the field gathering with tiling in 3D
+! TILE_CURR_DEPO_3D_TEST.F90
+! Test code for the current deposition with tiling in 3D
 !
 ! Mathieu Lobet, 2016.08
 ! ________________________________________________________________________________________

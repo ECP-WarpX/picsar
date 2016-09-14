@@ -365,6 +365,16 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
+
+build_tile_rho_depo_3d_test: $(SRCDIR)/modules.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/boundary.o \
+	$(SRCDIR)/charge_deposition.o \
+	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/control_file.o \
+	Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o 
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o
 	
 # Compilation of all the tests	
 buildtest: build_tile_field_gathering_3d_test \
@@ -372,6 +382,7 @@ buildtest: build_tile_field_gathering_3d_test \
 	build_field_gathering_2d_test \
 	build_current_deposition_3d_test \
 	build_tile_particle_push_3d_test \
+	build_tile_rho_depo_3d_test \
 	$(SRCDIR)/particles_push_2d.o \
 	$(SRCDIR)/particles_push.o \
 	Acceptance_testing/Gcov_tests/esirkepov_3d_test.o \
@@ -436,3 +447,7 @@ tile_particle_push_3d_test:
 tile_mpi_part_com_test:
 	export OMP_NUM_THREADS=2
 	mpirun -n 4 ./Acceptance_testing/Gcov_tests/tile_mpi_part_com_test
+	
+tile_rho_depo_3d_test:
+	export OMP_NUM_THREADS=4
+	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test

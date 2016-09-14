@@ -154,40 +154,38 @@ SUBROUTINE pxrdepose_rho_on_grid
   ! DEPOSIT Charge on the grid 
 
   SELECT CASE (c_dim) 
-  ! In 2D
+  ! ___ In 2D _________________________________________
 	CASE (2)
 
     CALL pxrdepose_rho_on_grid_sub_openmp_2d(rho,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	  nox,noy,noz,dx,dy,dz,dt,c_rho_old)
   
-  ! In 3D
+  ! ___ In 3D _________________________________________
   CASE DEFAULT 
 
-  ! ___ Optimized functions ______________________
-  IF (rhodepo.EQ.0) THEN
+		! ___ Optimized functions ______________________
+		IF (rhodepo.EQ.0) THEN
 
-	  ! Order 3
-  	IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN			  
+			! Order 3
+			IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN			  
 
-      CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv4_3_3_3,rho,nx,ny,nz, &
-	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
-				  
-	  ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
+				CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv4_3_3_3,rho,nx,ny,nz, &
+			nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
+				
+			ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
 
-      CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv2_2_2_2,rho,nx,ny,nz, &
-	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
-				  				  
-	  ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN			
- 
-      CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv2_1_1_1,rho,nx,ny,nz, &
-	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
-			
-	  ELSE
+				CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv2_2_2_2,rho,nx,ny,nz, &
+			nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
+									
+			ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN			
 
-      CALL pxrdepose_rho_on_grid_sub_openmp_3d(rho,nx,ny,nz, &
-	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,c_rho_old)
-	
-	  ENDIF		
+				CALL pxrdepose_rho_on_grid_sub_openmp_3d_v2(depose_rho_vecHVv2_1_1_1,rho,nx,ny,nz, &
+			nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
+		
+		ELSE
+				CALL pxrdepose_rho_on_grid_sub_openmp_3d(rho,nx,ny,nz, &
+			nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,c_rho_old)
+		ENDIF		
 
   ! ___ Scalar subroutines _______________________
   ELSE IF (rhodepo.EQ.1) THEN
@@ -208,10 +206,8 @@ SUBROUTINE pxrdepose_rho_on_grid
 	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LVEC_charge_depo,c_rho_old)
 			
 	  ELSE
-
       CALL pxrdepose_rho_on_grid_sub_openmp_3d(rho,nx,ny,nz, &
 	  nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,c_rho_old)
-	
 	  ENDIF		
   
 	! ___ Non-optimized general function ____________________
@@ -231,18 +227,39 @@ END SUBROUTINE pxrdepose_rho_on_grid
 
 
 
-!===============================================================================
-! Deposit rho in each tile in 3D
-! OpenMP version. Avoids conflict while reducing tile charge in the global 
-! charge array. 
-!===============================================================================
+
+
+! ________________________________________________________________________________________
+!> Deposit rho in each tile in 3D
+!> @brief
+!
+!> This subroutine perform the charge deposition among the tiles using OpenMP version in 3D.
+!> It avoids conflict while reducing tile charge in the global charge array.
+!> This subroutine uses only the general order function pxr_depose_rho_n(). 
+!>
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> 2016
+!
+!> @param[inout] rhog global array for the charge
+!> @param[in] nxx,nyy,nzz number of cells
+!> @param[in] nxjguard,nyjguard,nzjguard number of guard cells
+!> @param[in] noxx,noyy,nozz interpolation order
+!> @param[in] dxx,dyy,dzz space discretization steps
+!> @param[in] dtt time step
+!> @param[in] c_rho_old
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt,c_rho_old)
-USE particles
-USE constants
-USE tiling
-USE omp_lib
-IMPLICIT NONE
+! ________________________________________________________________________________________
+
+	USE particles
+	USE constants
+	USE tiling
+	USE omp_lib
+	IMPLICIT NONE
 
 ! _______________________________________________________________________
 ! Declarations
@@ -439,10 +456,26 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
 
 
 ! ________________________________________________________________________________________
-! Deposit rho in each tile in 2D
-! OpenMP version. Avoids conflict while reducing tile charge in the global 
-! charge array. 
+!> Deposit rho in each tile in 2D
+!> @brief
 !
+!> This subroutine perform the charge deposition among the tiles using OpenMP version in 2D.
+!> It avoids conflict while reducing tile charge in the global charge array. 
+!>
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> 2016
+!
+!> @param[inout] rhog global array for the charge
+!> @param[in] nxx,nyy,nzz number of cells
+!> @param[in] nxjguard,nyjguard,nzjguard number of guard cells
+!> @param[in] noxx,noyy,nozz interpolation order
+!> @param[in] dxx,dyy,dzz space discretization steps
+!> @param[in] dtt time step
+!> @param[in] c_rho_old
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt, c_rho_old)
 ! ________________________________________________________________________________________
