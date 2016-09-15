@@ -1,4 +1,4 @@
-/** @page "Input File Configuration" 
+/** @page "Input file configuration" 
 
 **Input file Configuration
 ===============================
@@ -18,8 +18,8 @@ This section enables to configure the general simulation parameters:
 
 - `nx`, `ny`, `nz`: number of grid points (domain discretization) in each direction
 - `xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax`: Origin of simulation axes
-- `t_max`: final time
-- `nsteps`: can be specified instead of the final time, else nsteps is determine from the final time and the CFL condition
+- `t_max`: final time (0 by default)
+- `nsteps`: can be specified instead of the final time, else nsteps is determine from the final time and the CFL condition (0 by default)
 - `ntilex`, `ntiley`, `ntilez`: MPI sub-domain discetization into tiles
 - `nguardsx`, `nguardsy`, `nguardsz`: guard cells for the field arrays
 - `njguardsx`, `njguardsy`, `njguardsz`: guard cells for the current arrays
@@ -38,14 +38,26 @@ This section, `section::solver`, enables to controle the solver and algorithm pa
    - `=4`: Classical current deposition with Tiling/openMP and non-optimized subroutines.
    - `=5`: Classical current deposition sequential
 - `fieldgave`: field gathering
-   - `=0`: vectorized subroutine when `nox=noy=noz`
-   - `=1`: non-optimized subroutines
+   - `=0`: specific order vectorized subroutine when `nox=noy=noz`
+   - `=1`: specific order scalar subroutines when `nox=noy=noz`
+   - `=2`: arbitrary order non-optimized subroutines  (WARP original) 
+- `fg_p_pp_seperated`: field gathering + particle pusher
+   - `=0`: field gathering + particle pusher in the same loop
+   - `=1`: field gathering + particle pusher in the same tile
+   - `=2`: field gathering + particle pusher separated
 - `rhodepo`: charge deposition
-  - `=0`: vectorized subroutines when `nox=noy=noz`
-  - `=1`: non-optimized subroutines
+  - `=0`: specific order vectorized subroutines when `nox=noy=noz`
+  - `=1`: specific order scalar subroutines when `nox=noy=noz`
+  - `=2`: arbitrary order non-optimized subroutines (WARP original)
 - `partcom`: particle communications
   - `=0`: Communications between tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
   - `=1`: Communications are done seperatly
+  
+- `lvec_curr_depo`: vector block length for the current deposition (8 by default)
+- `lvec_charge_depo`: vector block length for the charge deposition (64 by default)
+- `lvec_fieldgathe`: vector block length (field gathering cache blocking) for the field gathering (256 by default)
+
+- `mpi_buf_size`: size of the mpi buffers for the particle communications (2000 by default)
 
 ####D. Plasma section
 

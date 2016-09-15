@@ -73,7 +73,7 @@ section::solver
  # 0 - Vectorized specific order subroutines
  # 1 - Scalar specific order subroutines
  # else - Non optimized general order subroutines
- rhodepo = 1
+ rhodepo = 0
 
 end::solver
 

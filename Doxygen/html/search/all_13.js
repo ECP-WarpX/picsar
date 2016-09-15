@@ -3,7 +3,6 @@ var searchData=
   ['w0',['w0',['../namespaceparams.html#a5351cde6ada6e860eae678ba5e6453a5',1,'params']]],
   ['w0_5fl',['w0_l',['../namespaceparams.html#a099f9a730e6ea2a9410eb86769458372',1,'params']]],
   ['w0_5ft',['w0_t',['../namespaceparams.html#a7a94c587421680abbe506082d28ff8b6',1,'params']]],
-  ['warp_5fdepose_5fjxjyjz_5fesirkepov_5fn',['warp_depose_jxjyjz_esirkepov_n',['../current__deposition_8_f90.html#af8faa4a1c6a61774bcfddd4519751c41',1,'current_deposition.F90']]],
   ['wlab',['wlab',['../namespaceparams.html#a040901e6fd1ee6a06ba4f9a9829d0427',1,'params']]],
   ['wpid',['wpid',['../namespaceparticle__properties.html#a9661ac258a1ee308b3cad93e5da3c579',1,'particle_properties']]],
   ['write_5f3d_5ffield_5farray_5fto_5ffile',['write_3d_field_array_to_file',['../namespacesimple__io.html#a2100e8a4cfe3bc3c9e2dcc93988d6551',1,'simple_io']]],

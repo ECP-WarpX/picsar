@@ -1295,7 +1295,7 @@ SUBROUTINE depose_rho_scalar_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
 END SUBROUTINE depose_rho_scalar_3_3_3
 
 
-
+#if defined (DEV)
 !!! --- Order 1 3D vector charge deposition routine
 !!! --- Computes charge density on grid vectorized with Schwarzmeier and Hewitt scheme
 !!! --- This routine does vectorize on SIMD architecture but poor performances
@@ -1423,6 +1423,7 @@ SUBROUTINE depose_rho_vecSH_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx
 		DEALLOCATE(ww,ll)
 		RETURN
 END SUBROUTINE depose_rho_vecSH_1_1_1
+#endif
 
 !!! --- Order 1 3D vector charge deposition routine
 !!! --- Computes charge density on grid vectorized with Nishiguchi, Orii and Yabe scheme (NOY)
@@ -2026,7 +2027,7 @@ SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 		RETURN
 END SUBROUTINE depose_rho_vecHVv2_2_2_2
 
-
+#if defined (DEV)
 ! ________________________________________________________________________________________
 !> Order 3 3D vector charge deposition routine version 2
 !> @brief
@@ -2223,9 +2224,10 @@ SUBROUTINE depose_rho_vecHVv2_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
         END DO
         DEALLOCATE(rhocells)
         RETURN
-    END SUBROUTINE depose_rho_vecHVv2_3_3_3
+END SUBROUTINE depose_rho_vecHVv2_3_3_3
+#endif
 
-
+#if defined (DEV)
 ! ________________________________________________________________________________________
 !> Order 3 3D vector charge deposition routine
 !> @brief
@@ -2453,7 +2455,7 @@ SUBROUTINE depose_rho_vecHVv2_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 		DEALLOCATE(rhocells)
 		RETURN
 END SUBROUTINE depose_rho_vecHVv3_3_3_3
-
+#endif
 
 
 ! ________________________________________________________________________________________

@@ -2685,7 +2685,7 @@ END SUBROUTINE charge_bcs
 !> This subroutine combined in a single routine the particle communications between tiles
 !> and between MPI domains for 3D
 !> @brief
-! 
+!
 !> @author
 !> Mathieu Lobet
 !
@@ -2735,8 +2735,8 @@ END SUBROUTINE charge_bcs
 	  ! Determine number of threads to be used for nested parallel region
 	
 #ifdef _OPENMP
-	!nthreads_tot=OMP_GET_MAX_THREADS()
-	nthreads_tot=OMP_GET_NUM_THREADS()
+	nthreads_tot=OMP_GET_MAX_THREADS()
+	!nthreads_tot=OMP_GET_NUM_THREADS()
 	CALL OMP_SET_NESTED(.TRUE.)
 #else
 	nthreads_tot=1
@@ -2767,32 +2767,32 @@ END SUBROUTINE charge_bcs
 	ALLOCATE(mpi_npart(27,nspecies))
 	ALLOCATE(tilebuf(ntilex,ntiley,ntilez,nspecies))
 	
-	DO is=1, nspecies
-  	curr=> species_parray(is)
-		DO iz=1, ntilez
-			DO iy=1, ntiley
-				DO ix=1, ntilex
-				
-					curr_tile=>curr%array_of_tiles(ix,iy,iz)
-					nptile=curr_tile%np_tile(1)
-					
-					! Allocation of the buffer
-					IF (curr_tile%subdomain_bound) THEN
-						ALLOCATE(tilebuf(ix,iy,iz,is)%part_x(mpi_buf_size,27))
-						ALLOCATE(tilebuf(ix,iy,iz,is)%part_y(mpi_buf_size,27))
-						ALLOCATE(tilebuf(ix,iy,iz,is)%part_z(mpi_buf_size,27))
-						ALLOCATE(tilebuf(ix,iy,iz,is)%part_ux(mpi_buf_size,27))
-						ALLOCATE(tilebuf(ix,iy,iz,is)%part_uy(mpi_buf_size,27))
-						ALLOCATE(tilebuf(ix,iy,iz,is)%part_uz(mpi_buf_size,27))
-						ALLOCATE(tilebuf(ix,iy,iz,is)%part_gaminv(mpi_buf_size,27))
-						ALLOCATE(tilebuf(ix,iy,iz,is)%pid(mpi_buf_size,27))
-					ENDIF
-					tilebuf(ix,iy,iz,is)%npart(1:27) = 0
-								
-				ENDDO
-			ENDDO
-		ENDDO
-	ENDDO  
+! 	DO is=1, nspecies
+!   	curr=> species_parray(is)
+! 		DO iz=1, ntilez
+! 			DO iy=1, ntiley
+! 				DO ix=1, ntilex
+! 				
+! 					curr_tile=>curr%array_of_tiles(ix,iy,iz)
+! 					nptile=curr_tile%np_tile(1)
+! 					
+! 					! Allocation of the buffer
+! 					IF (curr_tile%subdomain_bound) THEN
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%part_x(mpi_buf_size,27))
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%part_y(mpi_buf_size,27))
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%part_z(mpi_buf_size,27))
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%part_ux(mpi_buf_size,27))
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%part_uy(mpi_buf_size,27))
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%part_uz(mpi_buf_size,27))
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%part_gaminv(mpi_buf_size,27))
+! 						ALLOCATE(tilebuf(ix,iy,iz,is)%pid(mpi_buf_size,27))
+! 					ENDIF
+! 					tilebuf(ix,iy,iz,is)%npart(1:27) = 0
+! 								
+! 				ENDDO
+! 			ENDDO
+! 		ENDDO
+! 	ENDDO  
 
 #if defined(PART_BCS_TIMER)	
 	t1 = MPI_WTIME()
@@ -2858,17 +2858,17 @@ END SUBROUTINE charge_bcs
 #endif
 								
 								! Allocation of the buffer
-! 								IF (curr_tile%subdomain_bound) THEN
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_x(mpi_buf_size,27))
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_y(mpi_buf_size,27))
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_z(mpi_buf_size,27))
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_ux(mpi_buf_size,27))
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_uy(mpi_buf_size,27))
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_uz(mpi_buf_size,27))
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_gaminv(mpi_buf_size,27))
-! 								  ALLOCATE(tilebuf(ix,iy,iz,is)%pid(mpi_buf_size,27))
-! 								ENDIF
-! 								tilebuf(ix,iy,iz,is)%npart(1:27) = 0
+								IF (curr_tile%subdomain_bound) THEN
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_x(mpi_buf_size,27))
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_y(mpi_buf_size,27))
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_z(mpi_buf_size,27))
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_ux(mpi_buf_size,27))
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_uy(mpi_buf_size,27))
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_uz(mpi_buf_size,27))
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%part_gaminv(mpi_buf_size,27))
+								  ALLOCATE(tilebuf(ix,iy,iz,is)%pid(mpi_buf_size,27))
+								ENDIF
+								tilebuf(ix,iy,iz,is)%npart(1:27) = 0
 								
 #if defined(PART_BCS_TIMER)	
 								t4 = MPI_WTIME()
@@ -3721,5 +3721,6 @@ END SUBROUTINE charge_bcs
     DEALLOCATE(reqs)
     
   END SUBROUTINE particle_bcs_tiles_and_mpi_3d
+
 
 END MODULE boundary

@@ -87,7 +87,7 @@ CONTAINS
         LVEC_fieldgathe = 256
         
         ! Size of the particle mpi buffer
-        mpi_buf_size = 10000
+        mpi_buf_size = 2000
         
         ! Sorting activation (not activated by default)       
         sorting_activated = 0
@@ -114,7 +114,7 @@ CONTAINS
         npass = 0
         alpha = 0.5_num
         ! --- sets max time in the simulation (in 1/w0)
-        tmax = 40.0_num
+        tmax = 0._num
         nsteps = 0
 
         !-------------------------------------------------------------------------------
@@ -325,6 +325,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'lvec_fieldgathe') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') lvec_fieldgathe
+            ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size
             ELSE IF (INDEX(buffer,'c_dim') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') c_dim
@@ -400,7 +403,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') rhodepo
              ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') partcom  
+                READ(buffer(ix+1:string_length), '(i10)') partcom
+            ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size 
             ELSE IF (INDEX(buffer,'fg_p_pp_seperated') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_seperated                                              

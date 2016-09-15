@@ -20,8 +20,8 @@ This section enables to configure the general simulation parameters\+:
 \begin{DoxyItemize}
 \item {\ttfamily nx}, {\ttfamily ny}, {\ttfamily nz}\+: number of grid points (domain discretization) in each direction
 \item {\ttfamily xmin}, {\ttfamily xmax}, {\ttfamily ymin}, {\ttfamily ymax}, {\ttfamily zmin}, {\ttfamily zmax}\+: Origin of simulation axes
-\item {\ttfamily t\+\_\+max}\+: final time
-\item {\ttfamily nsteps}\+: can be specified instead of the final time, else nsteps is determine from the final time and the C\+FL condition
+\item {\ttfamily t\+\_\+max}\+: final time (0 by default)
+\item {\ttfamily nsteps}\+: can be specified instead of the final time, else nsteps is determine from the final time and the C\+FL condition (0 by default)
 \item {\ttfamily ntilex}, {\ttfamily ntiley}, {\ttfamily ntilez}\+: M\+PI sub-\/domain discetization into tiles
 \item {\ttfamily nguardsx}, {\ttfamily nguardsy}, {\ttfamily nguardsz}\+: guard cells for the field arrays
 \item {\ttfamily njguardsx}, {\ttfamily njguardsy}, {\ttfamily njguardsz}\+: guard cells for the current arrays
@@ -46,124 +46,31 @@ This section, {\ttfamily section\+::solver}, enables to controle the solver and 
 \end{DoxyItemize}
 \item {\ttfamily fieldgave}\+: field gathering
 \begin{DoxyItemize}
-\item {\ttfamily =0}\+: vectorized subroutine when {\ttfamily nox=noy=noz}
-\item {\ttfamily =1}\+: non-\/optimized subroutines
+\item {\ttfamily =0}\+: specific order vectorized subroutine when {\ttfamily nox=noy=noz}
+\item {\ttfamily =1}\+: specific order scalar subroutines when {\ttfamily nox=noy=noz}
+\item {\ttfamily =2}\+: arbitrary order non-\/optimized subroutines (W\+A\+RP original)
+\end{DoxyItemize}
+\item {\ttfamily fg\+\_\+p\+\_\+pp\+\_\+seperated}\+: field gathering + particle pusher
+\begin{DoxyItemize}
+\item {\ttfamily =0}\+: field gathering + particle pusher in the same loop
+\item {\ttfamily =1}\+: field gathering + particle pusher in the same tile
+\item {\ttfamily =2}\+: field gathering + particle pusher separated
 \end{DoxyItemize}
 \item {\ttfamily rhodepo}\+: charge deposition
 \begin{DoxyItemize}
-\item {\ttfamily =0}\+: vectorized subroutines when {\ttfamily nox=noy=noz}
-\item {\ttfamily =1}\+: non-\/optimized subroutines
+\item {\ttfamily =0}\+: specific order vectorized subroutines when {\ttfamily nox=noy=noz}
+\item {\ttfamily =1}\+: specific order scalar subroutines when {\ttfamily nox=noy=noz}
+\item {\ttfamily =2}\+: arbitrary order non-\/optimized subroutines (W\+A\+RP original)
 \end{DoxyItemize}
 \item {\ttfamily partcom}\+: particle communications
 \begin{DoxyItemize}
 \item {\ttfamily =0}\+: Communications between tiles and between M\+PI domains is done in the same subroutine (overlapped computation) in parallel
 \item {\ttfamily =1}\+: Communications are done seperatly
 \end{DoxyItemize}
-\end{DoxyItemize}
-
-\paragraph*{D. Plasma section}
-
-This section, {\ttfamily section\+::plasma}, enables to controle the plasma parameters\+:
-
-
-\begin{DoxyItemize}
-\item {\ttfamily nlab}\+: density in the laboratory
-\item {\ttfamily pdistr}\+: initial distribution
-\begin{DoxyItemize}
-\item {\ttfamily =1}\+: ordered space initialization
-\item {\ttfamily =2}\+: random space initialization
-\end{DoxyItemize}
-\end{DoxyItemize}
-
-\paragraph*{E. Species section}
-
-This section, {\ttfamily section\+::species}, enables to configure the species properties. It has to be repeated for each species.
-
-
-\begin{DoxyItemize}
-\item {\ttfamily name}\+: species name
-\item {\ttfamily mass}\+: species mass normalized to the electronic mass
-\item {\ttfamily charge}\+: species charge normalized to the positron charge
-\item {\ttfamily nppcell}\+: number of particles per cell
-\item {\ttfamily x\+\_\+min}, {\ttfamily x\+\_\+max}, {\ttfamily y\+\_\+min}, {\ttfamily y\+\_\+max}, {\ttfamily z\+\_\+min}, {\ttfamily z\+\_\+max}\+: plasma expansion in each direction
-\item {\ttfamily vdrift\+\_\+x}, {\ttfamily vdrift\+\_\+y}, {\ttfamily vdrift\+\_\+z}\+: drift velocity in each direction
-\item {\ttfamily vth\+\_\+x}, {\ttfamily vth\+\_\+y}, {\ttfamily vth\+\_\+z}\+: thermal velocity in each direction
-\item {\ttfamily sorting\+\_\+period}\+: period of the sorting
-\item {\ttfamily sorting\+\_\+start}\+: beginning of the sorting
-\end{DoxyItemize}
-
-\paragraph*{F. Sorting section}
-
-This section, {\ttfamily section\+::sorting}, enables to controle the particle cell sorting algorithm.
-
-
-\begin{DoxyItemize}
-\item {\ttfamily activation}\+: activation of the sorting
-\item {\ttfamily dx}, {\ttfamily dy}, {\ttfamily dz}\+: size of the sorting cells
-\item {\ttfamily shiftx}, {\ttfamily shifty}, {\ttfamily shiftz}\+: shift of the sorting grid
-\end{DoxyItemize}
-
-\subsection*{Input file Configuration }
-
-The input file is divided into sections. Sections start by {\ttfamily section\+::name} where {\ttfamily name} is the section name and end with {\ttfamily end\+::name}.
-
-\paragraph*{A. cpusplit section}
-
-This section enables to configure the M\+PI decomposition and other parameters\+:
-
-
-\begin{DoxyItemize}
-\item {\ttfamily nprocx}, {\ttfamily nprocy}, {\ttfamily nprocz}\+: number of processors in each direction x, y, z
-\item {\ttfamily topology}\+: the M\+PI topology, 0 corresponds to cartesian
-\end{DoxyItemize}
-
-\paragraph*{B. main section}
-
-This section enables to configure the general simulation parameters\+:
-
-
-\begin{DoxyItemize}
-\item {\ttfamily nx}, {\ttfamily ny}, {\ttfamily nz}\+: number of grid points (domain discretization) in each direction
-\item {\ttfamily xmin}, {\ttfamily xmax}, {\ttfamily ymin}, {\ttfamily ymax}, {\ttfamily zmin}, {\ttfamily zmax}\+: Origin of simulation axes
-\item {\ttfamily t\+\_\+max}\+: final time
-\item {\ttfamily nsteps}\+: can be specified instead of the final time, else nsteps is determine from the final time and the C\+FL condition
-\item {\ttfamily ntilex}, {\ttfamily ntiley}, {\ttfamily ntilez}\+: M\+PI sub-\/domain discetization into tiles
-\item {\ttfamily nguardsx}, {\ttfamily nguardsy}, {\ttfamily nguardsz}\+: guard cells for the field arrays
-\item {\ttfamily njguardsx}, {\ttfamily njguardsy}, {\ttfamily njguardsz}\+: guard cells for the current arrays
-\end{DoxyItemize}
-
-\paragraph*{C. solver section}
-
-This section, {\ttfamily section\+::solver}, enables to controle the solver and algorithm parameters\+:
-
-
-\begin{DoxyItemize}
-\item {\ttfamily norderx}, {\ttfamily nordery}, {\ttfamily norderz}\+: Maxwell solver orders
-\item {\ttfamily nox}, {\ttfamily noy}, {\ttfamily noz}\+: shape factor (interpolation) orders, note that optimized subroutines only work when {\ttfamily nox=noy=noz}
-\item {\ttfamily currdepo}\+: current deposition algorithm
-\begin{DoxyItemize}
-\item {\ttfamily =0}\+: Esirkepov with tiling/\+Open\+MP and optimized for A\+V\+X512. For the moment, in 3D, only {\ttfamily nox=noy=noz=1} provides better performances.
-\item {\ttfamily =1}\+: Esirkepov with tiling/\+Open\+MP and non-\/optimized. The functions provided for {\ttfamily nox=noy=noz} are much faster than using different orders (in this case, an arbitrary order subroutine with many if-\/statements is used).
-\item {\ttfamily =2}\+: Esirkepov sequential
-\item {\ttfamily =3}\+: Classical current deposition with Tiling/\+Open\+MP and optimized/vectorized subroutines. This provides the best performance even with A\+VX architectures.
-\item {\ttfamily =4}\+: Classical current deposition with Tiling/open\+MP and non-\/optimized subroutines.
-\item {\ttfamily =5}\+: Classical current deposition sequential
-\end{DoxyItemize}
-\item {\ttfamily fieldgave}\+: field gathering
-\begin{DoxyItemize}
-\item {\ttfamily =0}\+: vectorized subroutine when {\ttfamily nox=noy=noz}
-\item {\ttfamily =1}\+: non-\/optimized subroutines
-\end{DoxyItemize}
-\item {\ttfamily rhodepo}\+: charge deposition
-\begin{DoxyItemize}
-\item {\ttfamily =0}\+: vectorized subroutines when {\ttfamily nox=noy=noz}
-\item {\ttfamily =1}\+: non-\/optimized subroutines
-\end{DoxyItemize}
-\item {\ttfamily partcom}\+: particle communications
-\begin{DoxyItemize}
-\item {\ttfamily =0}\+: Communications between tiles and between M\+PI domains is done in the same subroutine (overlapped computation) in parallel
-\item {\ttfamily =1}\+: Communications are done seperatly
-\end{DoxyItemize}
+\item {\ttfamily lvec\+\_\+curr\+\_\+depo}\+: vector block length for the current deposition (8 by default)
+\item {\ttfamily lvec\+\_\+charge\+\_\+depo}\+: vector block length for the charge deposition (64 by default)
+\item {\ttfamily lvec\+\_\+fieldgathe}\+: vector block length (field gathering cache blocking) for the field gathering (256 by default)
+\item {\ttfamily mpi\+\_\+buf\+\_\+size}\+: size of the mpi buffers for the particle communications (2000 by default)
 \end{DoxyItemize}
 
 \paragraph*{D. Plasma section}

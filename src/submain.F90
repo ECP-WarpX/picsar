@@ -285,6 +285,7 @@ SUBROUTINE initall
 		write(0,*) 'Current/field gathering order:',nox,noy,noz
 		write(0,*) 'Part com type:',partcom
 		write(0,*) 'Maxwell derivative coeff:',xcoeffs
+		write(0,*) 'MPI buffer size:',mpi_buf_size 
 		WRITE(0,*) ''
 		WRITE(0,*) 'Vector length current deposition',lvec_curr_depo
 		WRITE(0,*) 'Vector length charge deposition',lvec_charge_depo

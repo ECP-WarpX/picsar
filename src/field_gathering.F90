@@ -243,6 +243,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
                                  nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v) 
     ENDIF
 
+  ! ______________________________________________      
   ! Arbitrary order, non-optimized subroutines  
   ELSE IF (fieldgave.eq.2) THEN
 

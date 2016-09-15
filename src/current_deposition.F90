@@ -3943,12 +3943,15 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
     RETURN
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 
-!!! --- Order 3 3D vector current deposition routine (rho*v)
-!!! This versions have good performances on SIMD architectures
-!!! Providing that OpenMP 4.0 is available (Directive SIMD)
-!!! Use with nox=4
+#if defined (DEV)
+!  _______________________________________________________________________________________
+! --- Order 3 3D vector current deposition routine (rho*v)
+! This versions have good performances on SIMD architectures
+! Providing that OpenMP 4.0 is available (Directive SIMD)
+! Use with nox=4
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+!  _______________________________________________________________________________________
     USE constants
     IMPLICIT NONE
     INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -4266,6 +4269,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     DEALLOCATE(jxcells,jycells,jzcells)
     RETURN
 END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
+#endif
 
 
 !!! --- Order 3 3D vector current deposition routine (rho*v)
@@ -5148,6 +5152,7 @@ DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
 RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 
+#if defined (DEV)
 ! ________________________________________________________________________________________
 !> Esirkepov current deposition optimized at order 1
 !> @brief
@@ -6022,6 +6027,8 @@ IMPLICIT NONE
     RETURN
 
 END SUBROUTINE
+#endif
+
 
 ! __ Developer zone _________
 #if defined(DEV)
@@ -6837,6 +6844,7 @@ DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
 RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_2_2_2
 
+#if defined (DEV)
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -8103,6 +8111,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
     RETURN
   
 END SUBROUTINE
+#endif
 
 ! _________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
@@ -8285,13 +8294,22 @@ END SUBROUTINE depose_jxjyjz_esirkepov_3_3_3
 
 
 
-!===========================================================================================
-! ! Esirkepov current deposition algorithm for linear, quadratic or cubic splines
-! WARNING: Highly unoptimized routine ---> USE INLINED ROUTINE
+! ________________________________________________________________________________________
+!> Esirkepov current deposition algorithm for linear, quadratic or cubic splines
+!> @brief
+!
+!> This subroutine can be used for several orders
+!> WARNING: Highly unoptimized routine ---> USE INLINED ROUTINE
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> 2016
 SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
 nox,noy,noz,l_particles_weight,l4symtry)
-!===========================================================================================
+! ________________________________________________________________________________________
 
 	USE constants
 	IMPLICIT NONE
@@ -8633,15 +8651,15 @@ DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
 RETURN
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
 
-
-subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
-                                                 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                                 nox,noy,noz,l_particles_weight,l4symtry)
+#if defined (DEV)
 ! ===========================================
 ! warp_depose_jxjyjz_esirkepov_n
 ! 
 ! Warp fonction for esirkepov
 ! =========================================== 
+subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
+                                                 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                                 nox,noy,noz,l_particles_weight,l4symtry)
    use constants
    implicit none
    integer(8) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
@@ -8988,7 +9006,9 @@ subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,x
 
   return
 end subroutine warp_depose_jxjyjz_esirkepov_n
+#endif
 
+#if defined (DEV)
 ! ======================================================
 subroutine picsar_depose_jxjyjz_esirkepov_n(cj,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -9336,18 +9356,26 @@ subroutine picsar_depose_jxjyjz_esirkepov_n(cj,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
 
   return
 end subroutine picsar_depose_jxjyjz_esirkepov_n
-
+#endif
 
 
 
 ! ________________________________________________________________________________________
-SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz)
-! This subroutine performs the reduction of jxcellx, jycells and jzcells into jx,jy and jz.
-! This subroutine is called after the loop on particles where 
-! depose_jxjyjz_vecHV_vnr_1_1_1 is performed for each species
+!> This subroutine performs the reduction of jxcellx, jycells and jzcells into jx,jy and jz.
+!> @brief
+!
+!> This subroutine is called after the loop on particles where 
+!> depose_jxjyjz_vecHV_vnr_1_1_1() is performed for each species
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
 !
 ! Inputs:
-! - jx,jy,jz
+!
+!> param[inout] jx,jy,jz global current grids
 ! - jxcells,jycells,jzcells: transient current arrays
 ! - ncells: tile cell numbers
 ! - nx,ny,nz: tile cell numbers in each direction
@@ -9356,6 +9384,7 @@ SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
 !
 ! Outputs:
 ! - jx,jy,jz updated
+SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz)
 ! ________________________________________________________________________________________
     USE constants
     USE precomputed
