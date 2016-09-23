@@ -67,7 +67,7 @@ PROGRAM tile_field_gathering_3d_test
 	ntilez = 6
 	
 	! --- Vector length field gathering
-  lvec_curr_depo = 8
+  lvec_rho_depo = 64
         
 	! --- Interpolation 
 	l_lower_order_in_v = .TRUE.

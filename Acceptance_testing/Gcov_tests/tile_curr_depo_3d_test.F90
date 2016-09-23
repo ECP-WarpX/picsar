@@ -847,9 +847,9 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	    !   nox,noy,noz,dx,dy,dz,dt)
 
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_1_1_1, &
-         jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	       nox,noy,noz,dx,dy,dz,dt)
+      !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_1_1_1, &
+      !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	    !   nox,noy,noz,dx,dy,dz,dt)
 
     ! Order 2
     ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
@@ -858,9 +858,9 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	    !   nox,noy,noz,dx,dy,dz,dt)
 
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_2_2_2, &
-         jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	       nox,noy,noz,dx,dy,dz,dt)
+      !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_2_2_2, &
+      !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	    !   nox,noy,noz,dx,dy,dz,dt)
 	       
     ! Order 3
     ELSE IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN    

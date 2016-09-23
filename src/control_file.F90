@@ -124,7 +124,7 @@ CONTAINS
         ! --- quantities in plasma (or lab) frame
         !-------------------------------------------------------------------------------
         nlab  = 1.e23_num            ! plasma density in lab frame
-        g0    = 1.0_num          ! initial gamma
+        g0    = 1.0_num              ! initial gamma
         b0    = sqrt(1.0_num-1.0_num/g0**2)
         nc    = nlab*g0          ! density (in the simulation frame)
         wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
@@ -208,7 +208,7 @@ CONTAINS
             ELSE IF (INDEX(buffer,'nz') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) nz_global_grid   
-            ELSE IF (INDEX(buffer,'fieldgave') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) fieldgave   
             ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
@@ -397,7 +397,7 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') currdepo        
              ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fieldgave     
+                READ(buffer(ix+1:string_length), '(i10)') fieldgave      
              ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') rhodepo

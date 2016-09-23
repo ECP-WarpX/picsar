@@ -5,12 +5,16 @@
 \item 
 subroutine \hyperlink{charge__deposition_8_f90_a35ce588d3192033ca711fc1e13ba35b0}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid}
 \begin{DoxyCompactList}\small\item\em Main subroutine for the charge deposition. \end{DoxyCompactList}\item 
-subroutine \hyperlink{charge__deposition_8_f90_afa611a1848b404872ce900c3eb0573bc}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d} (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old)
-\begin{DoxyCompactList}\small\item\em Deposit rho in each tile in 3D. \end{DoxyCompactList}\item 
+subroutine \hyperlink{charge__deposition_8_f90_ad79ab4512aafff415ff9fadc5a16852f}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+n} (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old)
+\begin{DoxyCompactList}\small\item\em Deposit rho in each tile in 3D with the subroutine \hyperlink{charge__deposition_8_f90_a1ba91732b5b34c8c04f7570c8df67c26}{pxr\+\_\+depose\+\_\+rho\+\_\+n()} \end{DoxyCompactList}\item 
+subroutine \hyperlink{charge__deposition_8_f90_abe02007de55bba499c1fb48bd68842c4}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+scalar} (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old)
+\begin{DoxyCompactList}\small\item\em Deposit rho in each tile in 3D with the scalar subroutine. \end{DoxyCompactList}\item 
+subroutine \hyperlink{charge__deposition_8_f90_aabcff6131013134563070ad20efbe7a9}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+vecto} (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old, lvect)
+\begin{DoxyCompactList}\small\item\em Deposit rho in each tile in 3D with the vectorized subroutine. \end{DoxyCompactList}\item 
+subroutine \hyperlink{charge__deposition_8_f90_a4c7bbec5acca3a4743e65c308d59bdcf}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d} (func\+\_\+order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c\+\_\+rho\+\_\+old)
+\begin{DoxyCompactList}\small\item\em Deposit rho in each tile in 3D with the subroutine given in parameter. \end{DoxyCompactList}\item 
 subroutine \hyperlink{charge__deposition_8_f90_ab4d6c7838c470fda0e5bbc3ea68b0917}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+2d} (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old)
 \begin{DoxyCompactList}\small\item\em Deposit rho in each tile in 2D. \end{DoxyCompactList}\item 
-subroutine \hyperlink{charge__deposition_8_f90_a7e9f7c059faf5920428cdfec1181a9a8}{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+v2} (func\+\_\+order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c\+\_\+rho\+\_\+old)
-\begin{DoxyCompactList}\small\item\em Deposit rho in each tile in 3D. \end{DoxyCompactList}\item 
 subroutine \hyperlink{charge__deposition_8_f90_a448f1cab6e843064b45674d43a320022}{depose\+\_\+rho\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1} (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                               nxguard, nyguard, nzguard, lvect)
 \begin{DoxyCompactList}\small\item\em Order 1 3D scalar charge deposition routine. \end{DoxyCompactList}\item 
 subroutine \hyperlink{charge__deposition_8_f90_a38e265fb630353694edfd86592922c74}{depose\+\_\+rho\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2} (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                                   nxguard, nyguard, nzguard, lvect)
@@ -631,7 +635,63 @@ Henri Vincenti
 \end{DoxyParams}
 \index{charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}!pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d}}
 \index{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d}!charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}}
-\subsubsection[{\texorpdfstring{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old)}{pxrdepose_rho_on_grid_sub_openmp_3d(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d (
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d(func\+\_\+order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c\+\_\+rho\+\_\+old)}{pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c_rho_old)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d (
+\begin{DoxyParamCaption}
+\item[{}]{func\+\_\+order, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{rhog, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt, }
+\item[{integer(idp), intent(in)}]{lvectt, }
+\item[{integer(idp), intent(in)}]{c\+\_\+rho\+\_\+old}
+\end{DoxyParamCaption}
+)}\hypertarget{charge__deposition_8_f90_a4c7bbec5acca3a4743e65c308d59bdcf}{}\label{charge__deposition_8_f90_a4c7bbec5acca3a4743e65c308d59bdcf}
+
+
+Deposit rho in each tile in 3D with the subroutine given in parameter. 
+
+This subroutine perform the charge deposition among the tiles using Open\+MP version. It avoids conflict while reducing tile charge in the global charge array.
+
+This version uses arbitrary charge deposition subroutines specified as a parameter\+: func\+\_\+order. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em func\+\_\+order} & subroutine for the charge deposition \\
+\hline
+\mbox{\tt in}  & {\em rhog} & global array for the charge \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation order \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space discretization steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em lvectt} & vector length \\
+\hline
+\mbox{\tt in}  & {\em c\+\_\+rho\+\_\+old} & \\
+\hline
+\end{DoxyParams}
+\index{charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}!pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+n@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+n}}
+\index{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+n@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+n}!charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+n(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old)}{pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+n (
 \begin{DoxyParamCaption}
 \item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{rhog, }
 \item[{integer(idp), intent(in)}]{nxx, }
@@ -649,10 +709,10 @@ Henri Vincenti
 \item[{real(num), intent(in)}]{dtt, }
 \item[{integer(idp), intent(in)}]{c\+\_\+rho\+\_\+old}
 \end{DoxyParamCaption}
-)}\hypertarget{charge__deposition_8_f90_afa611a1848b404872ce900c3eb0573bc}{}\label{charge__deposition_8_f90_afa611a1848b404872ce900c3eb0573bc}
+)}\hypertarget{charge__deposition_8_f90_ad79ab4512aafff415ff9fadc5a16852f}{}\label{charge__deposition_8_f90_ad79ab4512aafff415ff9fadc5a16852f}
 
 
-Deposit rho in each tile in 3D. 
+Deposit rho in each tile in 3D with the subroutine \hyperlink{charge__deposition_8_f90_a1ba91732b5b34c8c04f7570c8df67c26}{pxr\+\_\+depose\+\_\+rho\+\_\+n()} 
 
 This subroutine perform the charge deposition among the tiles using Open\+MP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the general order function \hyperlink{charge__deposition_8_f90_a1ba91732b5b34c8c04f7570c8df67c26}{pxr\+\_\+depose\+\_\+rho\+\_\+n()}. \begin{DoxyAuthor}{Author}
 Henri Vincenti 
@@ -677,11 +737,10 @@ Henri Vincenti
 \mbox{\tt in}  & {\em c\+\_\+rho\+\_\+old} & \\
 \hline
 \end{DoxyParams}
-\index{charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}!pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+v2@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+v2}}
-\index{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+v2@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+v2}!charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}}
-\subsubsection[{\texorpdfstring{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+v2(func\+\_\+order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c\+\_\+rho\+\_\+old)}{pxrdepose_rho_on_grid_sub_openmp_3d_v2(func_order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c_rho_old)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+v2 (
+\index{charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}!pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+scalar@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+scalar}}
+\index{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+scalar@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+scalar}!charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+scalar(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old)}{pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+scalar (
 \begin{DoxyParamCaption}
-\item[{}]{func\+\_\+order, }
 \item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{rhog, }
 \item[{integer(idp), intent(in)}]{nxx, }
 \item[{integer(idp), intent(in)}]{nyy, }
@@ -696,27 +755,22 @@ Henri Vincenti
 \item[{real(num), intent(in)}]{dyy, }
 \item[{real(num), intent(in)}]{dzz, }
 \item[{real(num), intent(in)}]{dtt, }
-\item[{integer(idp), intent(in)}]{lvectt, }
 \item[{integer(idp), intent(in)}]{c\+\_\+rho\+\_\+old}
 \end{DoxyParamCaption}
-)}\hypertarget{charge__deposition_8_f90_a7e9f7c059faf5920428cdfec1181a9a8}{}\label{charge__deposition_8_f90_a7e9f7c059faf5920428cdfec1181a9a8}
+)}\hypertarget{charge__deposition_8_f90_abe02007de55bba499c1fb48bd68842c4}{}\label{charge__deposition_8_f90_abe02007de55bba499c1fb48bd68842c4}
 
 
-Deposit rho in each tile in 3D. 
+Deposit rho in each tile in 3D with the scalar subroutine. 
 
-This subroutine perform the charge deposition among the tiles using Open\+MP version. It avoids conflict while reducing tile charge in the global charge array.
-
-This version uses arbitrary charge deposition subroutines specified as a parameter\+: func\+\_\+order. This is the reason why this subroutine is called version 2 (v2). \begin{DoxyAuthor}{Author}
-Mathieu Lobet 
+This subroutine perform the charge deposition among the tiles using Open\+MP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the scalar subroutines \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
 \end{DoxyAuthor}
 \begin{DoxyDate}{Date}
 2016 
 \end{DoxyDate}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in}  & {\em func\+\_\+order} & subroutine for the charge deposition \\
-\hline
-\mbox{\tt in}  & {\em rhog} & global array for the charge \\
+\mbox{\tt in,out}  & {\em rhog} & global array for the charge \\
 \hline
 \mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells \\
 \hline
@@ -728,7 +782,54 @@ Mathieu Lobet
 \hline
 \mbox{\tt in}  & {\em dtt} & time step \\
 \hline
-\mbox{\tt in}  & {\em lvectt} & vector length \\
+\mbox{\tt in}  & {\em c\+\_\+rho\+\_\+old} & \\
+\hline
+\end{DoxyParams}
+\index{charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}!pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+vecto@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+vecto}}
+\index{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+vecto@{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+vecto}!charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+vecto(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c\+\_\+rho\+\_\+old, lvect)}{pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+rho\+\_\+on\+\_\+grid\+\_\+sub\+\_\+openmp\+\_\+3d\+\_\+vecto (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{rhog, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt, }
+\item[{integer(idp), intent(in)}]{c\+\_\+rho\+\_\+old, }
+\item[{integer(idp), intent(in)}]{lvect}
+\end{DoxyParamCaption}
+)}\hypertarget{charge__deposition_8_f90_aabcff6131013134563070ad20efbe7a9}{}\label{charge__deposition_8_f90_aabcff6131013134563070ad20efbe7a9}
+
+
+Deposit rho in each tile in 3D with the vectorized subroutine. 
+
+This subroutine perform the charge deposition among the tiles using Open\+MP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the vectorized subroutines \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em rhog} & global array for the charge \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation order \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space discretization steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
 \hline
 \mbox{\tt in}  & {\em c\+\_\+rho\+\_\+old} & \\
 \hline

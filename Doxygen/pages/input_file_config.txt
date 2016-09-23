@@ -37,7 +37,7 @@ This section, `section::solver`, enables to controle the solver and algorithm pa
    - `=3`: Classical current deposition with Tiling/OpenMP and optimized/vectorized subroutines. This provides the best performance even with AVX architectures.
    - `=4`: Classical current deposition with Tiling/openMP and non-optimized subroutines.
    - `=5`: Classical current deposition sequential
-- `fieldgave`: field gathering
+- `fieldgathe`: field gathering
    - `=0`: specific order vectorized subroutine when `nox=noy=noz`
    - `=1`: specific order scalar subroutines when `nox=noy=noz`
    - `=2`: arbitrary order non-optimized subroutines  (WARP original) 
@@ -51,7 +51,8 @@ This section, `section::solver`, enables to controle the solver and algorithm pa
   - `=2`: arbitrary order non-optimized subroutines (WARP original)
 - `partcom`: particle communications
   - `=0`: Communications between tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
-  - `=1`: Communications are done seperatly
+  - `=1`: Communications are done separately with OpenMP for the preprocessing loop
+  - `=2`: Communications are done separately without OpenMP
   
 - `lvec_curr_depo`: vector block length for the current deposition (8 by default)
 - `lvec_charge_depo`: vector block length for the charge deposition (64 by default)
@@ -89,5 +90,14 @@ This section, `section::sorting`, enables to controle the particle cell sorting 
 - `activation`: activation of the sorting
 - `dx`, `dy`, `dz`: size of the sorting cells
 - `shiftx`, `shifty`, `shiftz`: shift of the sorting grid
+
+####G. Time statistic section
+
+This section, `section::timestat`, enables to controle the time statistics information.
+All main subroutines have internal timers.
+The results of time spent in each part of the code can be displayed in the terminal or write in a file.
+By default, the time statistics are given at the end of the simulation in the terminal.
+
+####H. Temporal diagnostics section
 
 */

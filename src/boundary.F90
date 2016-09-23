@@ -1429,10 +1429,21 @@ END SUBROUTINE charge_bcs
     END DO ! END LOOP ON SPECIES
   END SUBROUTINE particle_bcs_tiles
 
-!!! Boundary condition on tiles - 3D version 
-!!! This version is efficient when the number of tiles is large 
-!!! compared to the number of threads 
+! ________________________________________________________________________________________
+!> Boundary condition on tiles - 3D version
+!> @brief
+!
+!> This version is efficient when the number of tiles is large 
+!> compared to the number of threads 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> 2016
   SUBROUTINE particle_bcs_tiles_openmp()
+! ________________________________________________________________________________________
+
     USE omp_lib 
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
@@ -1443,8 +1454,8 @@ END SUBROUTINE charge_bcs
     INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
 	
 #ifdef _OPENMP
-	!nthreads_tot=OMP_GET_MAX_THREADS()
-	nthreads_tot=OMP_GET_NUM_THREADS()
+	nthreads_tot=OMP_GET_MAX_THREADS()
+	!nthreads_tot=OMP_GET_NUM_THREADS()
 	CALL OMP_SET_NESTED(.TRUE.)
 #else
 	nthreads_tot=1

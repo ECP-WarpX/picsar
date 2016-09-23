@@ -794,7 +794,9 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
       !IBM* ALIGN(64,gaminv)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -807,7 +809,9 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
       
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
   RETURN
@@ -838,7 +842,9 @@ const = q*dt/m
       !IBM* ALIGN(64,ex,ey,ez)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -850,7 +856,9 @@ DO ip=1,np
     uzp(ip) = uzp(ip) + ez(ip)*const
 ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif  
 RETURN
 END SUBROUTINE pxr_epush_v
@@ -882,7 +890,9 @@ const = q*dt*0.5_num/m
     !IBM* ALIGN(64,gaminv)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD  
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -904,7 +914,9 @@ DO ip=1,np
     uzp(ip) = uzp(ip) + uxppr*sy - uyppr*sx
 ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif  
 
 RETURN
@@ -934,7 +946,9 @@ clghtisq = 1.0_num/clight**2
     !IBM* ALIGN(64,gaminv)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -945,7 +959,9 @@ DO ip=1,np
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
 END DO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif  
 
 RETURN
@@ -979,7 +995,9 @@ IF (which==0) THEN
     
     
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -1019,14 +1037,18 @@ IF (which==0) THEN
 		uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
     END DO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif  
     
 ELSE IF(which==1) THEN
 	!     --- first half push
     const = 0.5_num*q*dt/m
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -1044,7 +1066,9 @@ ELSE IF(which==1) THEN
 		uzp(ip) = uzp(ip) + const*( ezp(ip) + vx*byp(ip)-vy*bxp(ip) )
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif 
     
 ELSE IF(which==2) THEN
@@ -1054,7 +1078,9 @@ ELSE IF(which==2) THEN
     
     const = 0.5_num*q*dt/m
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -1091,7 +1117,9 @@ ELSE IF(which==2) THEN
 		uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif     
 ENDIF
 RETURN
@@ -1199,7 +1227,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
@@ -1247,7 +1277,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 			
 		ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 
@@ -1259,7 +1291,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -1293,7 +1327,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -1304,7 +1340,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -1332,7 +1370,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ____________________________________________________________________________________
@@ -1346,7 +1386,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)      
@@ -1366,7 +1408,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Push with B ___
@@ -1377,7 +1421,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,uxp,uyp,uzp)      
       !IBM* ALIGN(64,bx,by,bz)
@@ -1402,7 +1448,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Push with E + gamma ___
@@ -1413,7 +1461,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,uxp,uyp,uzp)      
       !IBM* ALIGN(64,ex,ey,ez)
@@ -1431,7 +1481,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Update position ___
@@ -1442,7 +1494,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)
@@ -1458,7 +1512,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
   ! End loop on particles    
@@ -1564,7 +1620,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
@@ -1625,7 +1683,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 			
 		ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 
@@ -1637,7 +1697,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -1672,7 +1734,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 			ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,1)*exg(j0(n)+1,k(n)+1,l(n)+1)
 	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif
 	
 #if defined __INTEL_COMPILER 
@@ -1683,7 +1747,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -1718,7 +1784,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 			ey(nn) = ey(nn) + sx(n,1)*sy0(n,1)*sz(n,1)*eyg(j(n)+1,k0(n)+1,l(n)+1)
 	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -1729,7 +1797,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -1764,7 +1834,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -1775,7 +1847,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -1805,7 +1879,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -1816,7 +1892,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -1845,7 +1923,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 			by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,1)*byg(j0(n)+1,k(n)+1,l0(n)+1)
 	ENDDO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -1856,7 +1936,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -1886,7 +1968,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ____________________________________________________________________________________
@@ -1900,7 +1984,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)      
@@ -1920,7 +2006,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Push with B ___
@@ -1931,7 +2019,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,uxp,uyp,uzp)      
       !IBM* ALIGN(64,bx,by,bz)
@@ -1956,7 +2046,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Push with E + gamma ___
@@ -1967,7 +2059,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)      
@@ -1986,7 +2080,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Update position ___
@@ -1997,7 +2093,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)
@@ -2013,7 +2111,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
   ! End loop on particles    
@@ -2127,7 +2227,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
@@ -2203,7 +2305,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 			
 		ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 
@@ -2215,7 +2319,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -2281,7 +2387,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       
 	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif
 	
 #if defined __INTEL_COMPILER 
@@ -2292,7 +2400,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -2358,18 +2468,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       
 	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif
 
 #if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64   
+      !DIR$ ASSUME_ALIGNED ez:64   
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -2434,7 +2548,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -2445,7 +2561,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -2499,18 +2617,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 #if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
+      !DIR$ ASSUME_ALIGNED by:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -2562,18 +2684,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       by(nn) = by(nn) + sx0(n,1)*sy(n,2)*sz0(n,1)*byg(j0(n)+1,k(n)+2,l0(n)+1)
 	ENDDO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 #if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
+      !DIR$ ASSUME_ALIGNED bz:64   
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -2627,7 +2753,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       
     END DO
 #if  defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ____________________________________________________________________________________
@@ -2641,7 +2769,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)      
@@ -2661,7 +2791,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Push with B ___
@@ -2672,7 +2804,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,uxp,uyp,uzp)      
       !IBM* ALIGN(64,bx,by,bz)
@@ -2697,7 +2831,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Push with E + gamma ___
@@ -2708,7 +2844,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)      
@@ -2727,7 +2865,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     ! ___ Update position ___
@@ -2738,7 +2878,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)       
       !DIR$ SIMD VECREMAINDER 
 #elif  defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,uxp,uyp,uzp)
@@ -2754,7 +2896,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     END DO
 #if defined __INTEL_COMPILER 
 #elif defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
   ! End loop on particles    

@@ -13,6 +13,8 @@ var charge__deposition_8_f90 =
     [ "pxr_depose_rhoold_n_2dxz", "charge__deposition_8_f90.html#a496878f2bdf85d8dec4a059d6bc40a0f", null ],
     [ "pxrdepose_rho_on_grid", "charge__deposition_8_f90.html#a35ce588d3192033ca711fc1e13ba35b0", null ],
     [ "pxrdepose_rho_on_grid_sub_openmp_2d", "charge__deposition_8_f90.html#ab4d6c7838c470fda0e5bbc3ea68b0917", null ],
-    [ "pxrdepose_rho_on_grid_sub_openmp_3d", "charge__deposition_8_f90.html#afa611a1848b404872ce900c3eb0573bc", null ],
-    [ "pxrdepose_rho_on_grid_sub_openmp_3d_v2", "charge__deposition_8_f90.html#a7e9f7c059faf5920428cdfec1181a9a8", null ]
+    [ "pxrdepose_rho_on_grid_sub_openmp_3d", "charge__deposition_8_f90.html#a4c7bbec5acca3a4743e65c308d59bdcf", null ],
+    [ "pxrdepose_rho_on_grid_sub_openmp_3d_n", "charge__deposition_8_f90.html#ad79ab4512aafff415ff9fadc5a16852f", null ],
+    [ "pxrdepose_rho_on_grid_sub_openmp_3d_scalar", "charge__deposition_8_f90.html#abe02007de55bba499c1fb48bd68842c4", null ],
+    [ "pxrdepose_rho_on_grid_sub_openmp_3d_vecto", "charge__deposition_8_f90.html#aabcff6131013134563070ad20efbe7a9", null ]
 ];

@@ -113,6 +113,8 @@ IF (l_lower_order_in_v) THEN
     
     do ll = izmin, izmax+1
       do kk = iymin, iymax+1
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
         end do
@@ -121,6 +123,7 @@ IF (l_lower_order_in_v) THEN
 
     do ll = izmin, izmax+1
       do kk = iymin0, iymax0
+      	!DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
         end do
@@ -129,6 +132,7 @@ IF (l_lower_order_in_v) THEN
 
     do ll = izmin0, izmax0
       do kk = iymin, iymax+1
+      	!DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
         end do
@@ -197,6 +201,8 @@ ELSE
     
     do ll = izmin, izmax+1
       do kk = iymin, iymax+1
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
         end do
@@ -205,6 +211,8 @@ ELSE
 
     do ll = izmin, izmax+1
       do kk = iymin0, iymax0
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
         end do
@@ -213,6 +221,8 @@ ELSE
 
     do ll = izmin0, izmax0
       do kk = iymin, iymax+1
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
         end do
@@ -321,6 +331,8 @@ IF (l_lower_order_in_v) THEN
     
     do ll = izmin0, izmax0
       do kk = iymin0, iymax0
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)
         end do
@@ -329,6 +341,8 @@ IF (l_lower_order_in_v) THEN
 
     do ll = izmin0, izmax0
       do kk = iymin, iymax+1
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)
         end do
@@ -337,6 +351,8 @@ IF (l_lower_order_in_v) THEN
 
     do ll = izmin, izmax+1
       do kk = iymin0, iymax0
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
         end do
@@ -392,6 +408,8 @@ ELSE
     
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
           do jj = ixmin, ixmax+1
             bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)
           end do
@@ -400,6 +418,8 @@ ELSE
 
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
           do jj = ixmin0, ixmax0
             by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)
           end do
@@ -408,6 +428,8 @@ ELSE
 
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
+      	! Prevent wrong vectorization from the compiler
+      	!DIR$ NOVECTOR
           do jj = ixmin0, ixmax0
             bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
           end do
@@ -467,7 +489,9 @@ SUBROUTINE gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* ALIGN(64,xp,yp,zp)
 		!IBM* ALIGN(64,ex,ey,ez)
@@ -533,7 +557,9 @@ SUBROUTINE gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
 
   END DO
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
 
 	! l_lower_order_in_v false    
@@ -544,7 +570,9 @@ SUBROUTINE gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
 		!DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
 		!IBM* ALIGN(64,xp,yp,zp)
 		!IBM* ALIGN(64,ex,ey,ez)
@@ -622,7 +650,9 @@ SUBROUTINE gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
       
   END DO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
 ENDIF
 
@@ -681,7 +711,9 @@ IF (l_lower_order_in_v) THEN
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,bx,by,bz)
@@ -741,7 +773,9 @@ IF (l_lower_order_in_v) THEN
   
   END DO
 #if defined _OPENMP && _OPENMP>=201307
-        !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
 
 ELSE
@@ -751,7 +785,9 @@ ELSE
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,bx,by,bz)
@@ -830,7 +866,9 @@ ELSE
       bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(1)*bzg(j0+1,k0+1,l+1)
   END DO
 #if defined _OPENMP && _OPENMP>=201307
-        !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
 ENDIF
 RETURN
@@ -908,7 +946,9 @@ IF (l_lower_order_in_v) THEN
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
@@ -988,7 +1028,9 @@ IF (l_lower_order_in_v) THEN
 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
   ENDDO
 
@@ -1003,7 +1045,9 @@ ELSE
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
@@ -1114,7 +1158,9 @@ ELSE
 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif 
 #endif
   ENDDO
 ENDIF
@@ -1206,7 +1252,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
@@ -1253,7 +1301,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 			sz0(n,0) = 1.0_num
 		ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -1264,7 +1314,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -1298,7 +1350,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
 
 #if defined __INTEL_COMPILER 
@@ -1309,7 +1363,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -1337,7 +1393,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif
 
 	ENDDO
@@ -1476,7 +1534,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64                           
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
@@ -1523,7 +1583,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
 		
 	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif  
 
 #if defined __INTEL_COMPILER 
@@ -1534,7 +1596,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
@@ -1567,7 +1631,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
       
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif  
 
 #if defined __INTEL_COMPILER 
@@ -1578,7 +1644,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
       !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64         
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif  
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
@@ -1605,7 +1673,9 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
 
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-      !$OMP END SIMD 
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif  
 #endif 
 
 END SUBROUTINE

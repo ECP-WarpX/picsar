@@ -2238,6 +2238,8 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
     sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
 
     ! LOOP ON PARTICLES
+    ! Prevent loop to vectorize (dependencies)
+    !DIR$ NOVECTOR
     DO ip=1,np
         ! --- computes position in  grid units at (n+1)
         x = (xp(ip)-xmin)*dxi
@@ -2403,7 +2405,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 		!DIR$ ASSUME_ALIGNED ICELL:64
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
 		!IBM* ALIGN(64,xp,yp,zp)
 		!IBM* ALIGN(64,uxp,uyp,uzp)
@@ -2460,7 +2464,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             sz0(n) = zmid-l0-0.5_num
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-        !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
 
@@ -2471,7 +2477,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         	!IBM* ALIGN(64,jxcells,jycells,jzcells,mx,my,mz)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -2496,7 +2504,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jzcells(nv,ICELL(n,3))=jzcells(nv,ICELL(n,3))+wwz
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-        !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -2504,7 +2514,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     DO iz=1, ncz
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -2542,7 +2554,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-        !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -2658,7 +2672,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
         !IBM* ALIGN(64,ICELL)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -2709,7 +2725,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
             sz0(n) = zmid-l0-0.5_num
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-        !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER
@@ -2720,7 +2738,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
             !IBM* ALIGN(32,mx,my,mz,sg)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -2745,7 +2765,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
                 jzcells(nv,ICELL(n,3))=jzcells(nv,ICELL(n,3))+wwz
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -3035,7 +3057,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -3167,7 +3191,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
@@ -3176,7 +3202,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -3212,7 +3240,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 		END DO
@@ -3223,7 +3253,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -3241,7 +3273,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jz(orig+IG(n,3)+nv-2)=jz(orig+IG(n,3)+nv-2)+ww0z(n,nv)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -3249,7 +3283,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     DO iz=1, ncz
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -3291,7 +3327,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -3432,7 +3470,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
         !IBM* ALIGN(64,ICELL)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -3555,7 +3595,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
             ww0z(n,3)=syz*sx2(n)
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
 #if defined __INTEL_COMPILER 
@@ -3564,7 +3606,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -3598,10 +3642,14 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
                 jzcells(nv,ICELL(n,3)+1) = jzcells(nv,ICELL(n,3)+1) +wwz*sx2(n)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -3616,7 +3664,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
                 jzcells(1,IG(n,3)+nv-2) = jzcells(1,IG(n,3)+nv-2) + ww0z(n,nv)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -4025,7 +4075,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         !IBM* ALIGN(64,ICELL:64)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4101,7 +4153,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             sy04(n)  = onesixth*yintsq*yint*wq
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         ! Compute weights
         DO n=1,MIN(LVEC2,np-ip+1)
@@ -4111,7 +4165,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             !IBM* ALIGN(64,w, wwwx,wwwy,wwwz)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4142,7 +4198,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 
             ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
 
@@ -4154,7 +4212,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4216,7 +4276,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jzcells(nv,ICELL(n,3)+ncx+2) = jzcells(nv,ICELL(n,3)+ncx+2) + wwwz(nv+8,n)*sx4(n)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -4224,7 +4286,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     DO iz=1, ncz
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4262,7 +4326,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	   !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -4350,7 +4416,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
         !IBM* ALIGN(64,ICELL)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4492,7 +4560,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             wwwz2(n,8)=sz04*sy4
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
         ! Add weights to nearest vertices
@@ -4503,7 +4573,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4568,7 +4640,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jzcells(nv,ICELL(n,3)+ncx+2) = jzcells(nv,ICELL(n,3)+ncx+2) + wz2*sx4(n)*vz(n)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       		!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -4576,7 +4650,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     DO iz=1, ncz
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4614,7 +4690,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
                 jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       		!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -4733,7 +4811,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
         !DIR$ ALIGN(64,ICELL)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4876,7 +4956,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
             wwwz2(n,8)=sz04*sy4
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
         ! Add weights to nearest vertices
@@ -4889,7 +4971,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -4954,7 +5038,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
                 jzcells(nv,ICELL(n,3)+ncx+2) = jzcells(nv,ICELL(n,3)+ncx+2) + wz2*sx4(n)*vz(n)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       		!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -5285,7 +5371,9 @@ IMPLICIT NONE
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -5825,7 +5913,9 @@ IMPLICIT NONE
         END DO
 
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
         ! Add weights to nearest vertices
@@ -5836,7 +5926,9 @@ IMPLICIT NONE
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -5931,7 +6023,9 @@ IMPLICIT NONE
 
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 !     print*,ip,n,'sum(sdx)',sum(sdx(n,:)),sum(sdy(n,:)),sum(sdz(n,:)) 
@@ -5954,7 +6048,9 @@ IMPLICIT NONE
     DO iz=1, ncz-2
         DO iy=1,ncy-2
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -5994,7 +6090,9 @@ IMPLICIT NONE
                 jz(igrid+moffjz(8))=jz(igrid+moffjz(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
 !             DO ix=1,ncx-2 !! VECTOR (take ncx multiple of vector length)
@@ -6140,7 +6238,9 @@ IMPLICIT NONE
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -6645,7 +6745,9 @@ IMPLICIT NONE
  
         END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
         ! Add weights to nearest vertices
@@ -6956,7 +7058,9 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 		!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -7945,7 +8049,9 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
       
     END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
 
     
@@ -7957,7 +8063,9 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -8052,7 +8160,9 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
                                                                 
                 ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
                 
               ENDDO
@@ -8063,7 +8173,9 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
     DO iz=1, ncz-3
         DO iy=1,ncy-3
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -8103,7 +8215,9 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
                 jz(igrid+moffjz(8))=jz(igrid+moffjz(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -9429,7 +9543,9 @@ SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
     DO iz=1, ncz
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -9467,7 +9583,9 @@ SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
                 jz(igrid+moff(8))=jz(igrid+moff(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-            !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO
@@ -9531,7 +9649,9 @@ SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
     DO iz=1, ncz
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -9569,7 +9689,9 @@ SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
                 jz(igrid+moff(8))=jz(igrid+moff(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-            !$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif 
         END DO
     END DO
@@ -9635,7 +9757,9 @@ SUBROUTINE current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,&
     DO iz=1, ncz
         DO iy=1,ncy
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
 #elif defined __IBMBGQ__
 			!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
@@ -9673,7 +9797,9 @@ SUBROUTINE current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,&
                 jz(igrid+moff(8))=jz(igrid+moff(8))+jzcells(8,ic)
             END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+#ifndef NOVEC
+	!$OMP END SIMD 
+#endif
 #endif
         END DO
     END DO

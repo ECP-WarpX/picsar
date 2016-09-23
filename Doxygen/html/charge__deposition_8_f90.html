@@ -122,15 +122,21 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a35ce588d3192033ca711fc1e13ba35b0"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a35ce588d3192033ca711fc1e13ba35b0">pxrdepose_rho_on_grid</a></td></tr>
 <tr class="memdesc:a35ce588d3192033ca711fc1e13ba35b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main subroutine for the charge deposition.  <a href="#a35ce588d3192033ca711fc1e13ba35b0">More...</a><br /></td></tr>
 <tr class="separator:a35ce588d3192033ca711fc1e13ba35b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa611a1848b404872ce900c3eb0573bc"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#afa611a1848b404872ce900c3eb0573bc">pxrdepose_rho_on_grid_sub_openmp_3d</a> (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)</td></tr>
-<tr class="memdesc:afa611a1848b404872ce900c3eb0573bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D.  <a href="#afa611a1848b404872ce900c3eb0573bc">More...</a><br /></td></tr>
-<tr class="separator:afa611a1848b404872ce900c3eb0573bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad79ab4512aafff415ff9fadc5a16852f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#ad79ab4512aafff415ff9fadc5a16852f">pxrdepose_rho_on_grid_sub_openmp_3d_n</a> (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)</td></tr>
+<tr class="memdesc:ad79ab4512aafff415ff9fadc5a16852f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D with the subroutine <a class="el" href="charge__deposition_8_f90.html#a1ba91732b5b34c8c04f7570c8df67c26" title="General charge deposition routine (Warning: Highly unoptimized routine) ">pxr_depose_rho_n()</a>  <a href="#ad79ab4512aafff415ff9fadc5a16852f">More...</a><br /></td></tr>
+<tr class="separator:ad79ab4512aafff415ff9fadc5a16852f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe02007de55bba499c1fb48bd68842c4"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#abe02007de55bba499c1fb48bd68842c4">pxrdepose_rho_on_grid_sub_openmp_3d_scalar</a> (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)</td></tr>
+<tr class="memdesc:abe02007de55bba499c1fb48bd68842c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D with the scalar subroutine.  <a href="#abe02007de55bba499c1fb48bd68842c4">More...</a><br /></td></tr>
+<tr class="separator:abe02007de55bba499c1fb48bd68842c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabcff6131013134563070ad20efbe7a9"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#aabcff6131013134563070ad20efbe7a9">pxrdepose_rho_on_grid_sub_openmp_3d_vecto</a> (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)</td></tr>
+<tr class="memdesc:aabcff6131013134563070ad20efbe7a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D with the vectorized subroutine.  <a href="#aabcff6131013134563070ad20efbe7a9">More...</a><br /></td></tr>
+<tr class="separator:aabcff6131013134563070ad20efbe7a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c7bbec5acca3a4743e65c308d59bdcf"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a4c7bbec5acca3a4743e65c308d59bdcf">pxrdepose_rho_on_grid_sub_openmp_3d</a> (func_order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c_rho_old)</td></tr>
+<tr class="memdesc:a4c7bbec5acca3a4743e65c308d59bdcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D with the subroutine given in parameter.  <a href="#a4c7bbec5acca3a4743e65c308d59bdcf">More...</a><br /></td></tr>
+<tr class="separator:a4c7bbec5acca3a4743e65c308d59bdcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab4d6c7838c470fda0e5bbc3ea68b0917"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#ab4d6c7838c470fda0e5bbc3ea68b0917">pxrdepose_rho_on_grid_sub_openmp_2d</a> (rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)</td></tr>
 <tr class="memdesc:ab4d6c7838c470fda0e5bbc3ea68b0917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 2D.  <a href="#ab4d6c7838c470fda0e5bbc3ea68b0917">More...</a><br /></td></tr>
 <tr class="separator:ab4d6c7838c470fda0e5bbc3ea68b0917"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e9f7c059faf5920428cdfec1181a9a8"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a7e9f7c059faf5920428cdfec1181a9a8">pxrdepose_rho_on_grid_sub_openmp_3d_v2</a> (func_order, rhog, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt, c_rho_old)</td></tr>
-<tr class="memdesc:a7e9f7c059faf5920428cdfec1181a9a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit rho in each tile in 3D.  <a href="#a7e9f7c059faf5920428cdfec1181a9a8">More...</a><br /></td></tr>
-<tr class="separator:a7e9f7c059faf5920428cdfec1181a9a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a448f1cab6e843064b45674d43a320022"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a448f1cab6e843064b45674d43a320022">depose_rho_scalar_1_1_1</a> (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                               nxguard, nyguard, nzguard, lvect)</td></tr>
 <tr class="memdesc:a448f1cab6e843064b45674d43a320022"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D scalar charge deposition routine.  <a href="#a448f1cab6e843064b45674d43a320022">More...</a><br /></td></tr>
 <tr class="separator:a448f1cab6e843064b45674d43a320022"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1952,132 +1958,12 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="afa611a1848b404872ce900c3eb0573bc"></a>
+<a class="anchor" id="a4c7bbec5acca3a4743e65c308d59bdcf"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">subroutine pxrdepose_rho_on_grid_sub_openmp_3d </td>
-          <td>(</td>
-          <td class="paramtype">real(num), dimension(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard), intent(inout)&#160;</td>
-          <td class="paramname"><em>rhog</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>nxx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>nyy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>nzz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>nxjguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>nyjguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>nzjguard</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>noxx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>noyy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>nozz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), intent(in)&#160;</td>
-          <td class="paramname"><em>dxx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), intent(in)&#160;</td>
-          <td class="paramname"><em>dyy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), intent(in)&#160;</td>
-          <td class="paramname"><em>dzz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(num), intent(in)&#160;</td>
-          <td class="paramname"><em>dtt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>c_rho_old</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Deposit rho in each tile in 3D. </p>
-<p>This subroutine perform the charge deposition among the tiles using OpenMP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the general order function <a class="el" href="charge__deposition_8_f90.html#a1ba91732b5b34c8c04f7570c8df67c26" title="General charge deposition routine (Warning: Highly unoptimized routine) ">pxr_depose_rho_n()</a>. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
-<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">rhog</td><td>global array for the charge </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nxx,nyy,nzz</td><td>number of cells </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nxjguard,nyjguard,nzjguard</td><td>number of guard cells </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">noxx,noyy,nozz</td><td>interpolation order </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dxx,dyy,dzz</td><td>space discretization steps </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">c_rho_old</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="a7e9f7c059faf5920428cdfec1181a9a8"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">subroutine pxrdepose_rho_on_grid_sub_openmp_3d_v2 </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>func_order</em>, </td>
@@ -2186,9 +2072,9 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Deposit rho in each tile in 3D. </p>
+<p>Deposit rho in each tile in 3D with the subroutine given in parameter. </p>
 <p>This subroutine perform the charge deposition among the tiles using OpenMP version. It avoids conflict while reducing tile charge in the global charge array.</p>
-<p>This version uses arbitrary charge deposition subroutines specified as a parameter: func_order. This is the reason why this subroutine is called version 2 (v2). </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<p>This version uses arbitrary charge deposition subroutines specified as a parameter: func_order. </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -2200,6 +2086,372 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dxx,dyy,dzz</td><td>space discretization steps </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lvectt</td><td>vector length </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">c_rho_old</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ad79ab4512aafff415ff9fadc5a16852f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxrdepose_rho_on_grid_sub_openmp_3d_n </td>
+          <td>(</td>
+          <td class="paramtype">real(num), dimension(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard), intent(inout)&#160;</td>
+          <td class="paramname"><em>rhog</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nzz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nxjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nyjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nzjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>noxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>noyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nozz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dzz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dtt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>c_rho_old</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deposit rho in each tile in 3D with the subroutine <a class="el" href="charge__deposition_8_f90.html#a1ba91732b5b34c8c04f7570c8df67c26" title="General charge deposition routine (Warning: Highly unoptimized routine) ">pxr_depose_rho_n()</a> </p>
+<p>This subroutine perform the charge deposition among the tiles using OpenMP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the general order function <a class="el" href="charge__deposition_8_f90.html#a1ba91732b5b34c8c04f7570c8df67c26" title="General charge deposition routine (Warning: Highly unoptimized routine) ">pxr_depose_rho_n()</a>. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">rhog</td><td>global array for the charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxx,nyy,nzz</td><td>number of cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxjguard,nyjguard,nzjguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">noxx,noyy,nozz</td><td>interpolation order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dxx,dyy,dzz</td><td>space discretization steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">c_rho_old</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="abe02007de55bba499c1fb48bd68842c4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxrdepose_rho_on_grid_sub_openmp_3d_scalar </td>
+          <td>(</td>
+          <td class="paramtype">real(num), dimension(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard), intent(inout)&#160;</td>
+          <td class="paramname"><em>rhog</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nzz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nxjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nyjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nzjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>noxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>noyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nozz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dzz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dtt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>c_rho_old</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deposit rho in each tile in 3D with the scalar subroutine. </p>
+<p>This subroutine perform the charge deposition among the tiles using OpenMP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the scalar subroutines </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">rhog</td><td>global array for the charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxx,nyy,nzz</td><td>number of cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxjguard,nyjguard,nzjguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">noxx,noyy,nozz</td><td>interpolation order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dxx,dyy,dzz</td><td>space discretization steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">c_rho_old</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="aabcff6131013134563070ad20efbe7a9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxrdepose_rho_on_grid_sub_openmp_3d_vecto </td>
+          <td>(</td>
+          <td class="paramtype">real(num), dimension(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard), intent(inout)&#160;</td>
+          <td class="paramname"><em>rhog</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nzz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nxjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nyjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nzjguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>noxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>noyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>nozz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dzz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dtt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>c_rho_old</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp), intent(in)&#160;</td>
+          <td class="paramname"><em>lvect</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deposit rho in each tile in 3D with the vectorized subroutine. </p>
+<p>This subroutine perform the charge deposition among the tiles using OpenMP version in 3D. It avoids conflict while reducing tile charge in the global charge array. This subroutine uses only the vectorized subroutines </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">rhog</td><td>global array for the charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxx,nyy,nzz</td><td>number of cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxjguard,nyjguard,nzjguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">noxx,noyy,nozz</td><td>interpolation order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dxx,dyy,dzz</td><td>space discretization steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">c_rho_old</td><td></td></tr>
   </table>
   </dd>

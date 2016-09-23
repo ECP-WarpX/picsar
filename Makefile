@@ -73,7 +73,14 @@ ifeq ($(SYS),cori1)
 	else ifeq ($(MODE),debug)
 		COMP=none
 		FARGS= -g -O3 -xCORE-AVX2 -qopenmp -qopt-report:5 -debug inline-debug-info
-		LARCH=	
+		LARCH=
+	else ifeq ($(MODE),vtune)
+		APPNAME=picsar_cori_vtune
+		COMP=none
+		FARGS= -D VTUNE=1 -O3 -g -dynamic -debug inline-debug-info -qopenmp -xCORE-AVX2 -align array64byte
+		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xCORE-AVX2 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
+		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
+		LARCH= 	
 	else ifeq ($(MODE),novec)
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
@@ -115,10 +122,10 @@ else ifeq ($(SYS),cori2)
 		FARGS= -g -O0 -no-simd -no-vec
 		LARCH=	
 	endif
-# Carl KNL whitebox at NERSC
+# ___ Carl KNL whitebox at NERSC _____________________
 else ifeq ($(SYS),carl)
 	FC=mpiifort
-	CC=mpicc
+	CC=icc
 	APPNAME=picsar_carl
   ifeq ($(MODE),prod)
 		COMP=none
@@ -127,11 +134,29 @@ else ifeq ($(SYS),carl)
 	else ifeq ($(MODE),debug)
 		COMP=none
 		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
+		LARCH=
+	else ifeq ($(MODE),vtune)
+		APPNAME=picsar_carl_vtune
+		COMP=none
+		FARGS= -D VTUNE=1	-g -dynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D VTUNE=1 -g -dynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
+		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
+		LARCH= 	
+	else ifeq ($(MODE),advisor)
+		APPNAME=picsar_carl_advisor
+		COMP=none
+		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -Bdynamic -debug inline-debug-info -align array64byte -qopt-streaming-stores auto
 		LARCH=	
 	else ifeq ($(MODE),novec)
+		APPNAME=picsar_carl_novec
 		COMP=none
-		FARGS= -g -O0 -no-simd -no-vec
-		LARCH=	
+		FARGS= -D NOVEC=0 -g -O3 -xMIC-AVX512 -qopenmp -no-simd -no-vec  -align array64byte -qopt-streaming-stores auto
+		LARCH=
+	else ifeq ($(MODE),nofma)		
+		APPNAME=picsar_carl_nofma
+		COMP=none
+		FARGS=  -g -O3 -xMIC-AVX512 -qopenmp -no-fma  -align array64byte -qopt-streaming-stores auto
+		LARCH=
 	endif
 endif
 
@@ -145,7 +170,10 @@ ifeq ($(COMP),gnu)
 	  #FARGS=-g
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize -ftree-vectorizer-verbose=2	
+	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize -ftree-vectorizer-verbose=2
+	else ifeq ($(MODE),novec)
+	  FC=mpif90
+	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules
 	endif
 	
 	# ___ Architecture ________
@@ -197,12 +225,73 @@ FARGS+= $(LARCH)
 #-include $(FDEPT)
 # ________________________________________________________
 
+
 $(SRCDIR)/%.o $(SRCDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
+
+$(SRCDIR)/%.o:$(SRCDIR)/%.c
+	$(CC) $(CARGS) -c -o $@ $<
 
 all: echo createdir build
 test: test1 test2 test3
 
+ifeq ($(MODE),vtune)
+build:$(SRCDIR)/modules.o \
+	$(SRCDIR)/api_fortran_itt.o \
+	$(SRCDIR)/itt_fortran.o \
+	$(SRCDIR)/maxwell.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/sorting.o \
+	$(SRCDIR)/particles_push_2d.o \
+	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/current_deposition_2d.o \
+	$(SRCDIR)/current_deposition.o \
+	$(SRCDIR)/field_gathering_2d.o \
+	$(SRCDIR)/field_gathering_3d_o1.o \
+	$(SRCDIR)/field_gathering_3d_o2.o \
+	$(SRCDIR)/field_gathering_3d_o3.o \
+	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/boundary.o \
+	$(SRCDIR)/charge_deposition.o \
+	$(SRCDIR)/diags.o \
+	$(SRCDIR)/simple_io.o \
+	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/submain.o \
+	$(SRCDIR)/control_file.o \
+	$(SRCDIR)/main.o 
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(LDFLAGS)
+	mkdir -p $(BINDIR)
+	mv $(APPNAME) $(BINDIR)
+else ifeq ($(MODE),sde)
+build:$(SRCDIR)/modules.o \
+	$(SRCDIR)/api_fortran_sde.o \
+	$(SRCDIR)/sde_fortran.o \
+	$(SRCDIR)/maxwell.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/sorting.o \
+	$(SRCDIR)/particles_push_2d.o \
+	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/current_deposition_2d.o \
+	$(SRCDIR)/current_deposition.o \
+	$(SRCDIR)/field_gathering_2d.o \
+	$(SRCDIR)/field_gathering_3d_o1.o \
+	$(SRCDIR)/field_gathering_3d_o2.o \
+	$(SRCDIR)/field_gathering_3d_o3.o \
+	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/boundary.o \
+	$(SRCDIR)/charge_deposition.o \
+	$(SRCDIR)/diags.o \
+	$(SRCDIR)/simple_io.o \
+	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/submain.o \
+	$(SRCDIR)/control_file.o \
+	$(SRCDIR)/main.o 
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(LDFLAGS)
+	mkdir -p $(BINDIR)
+	mv $(APPNAME) $(BINDIR)
+else
 build:$(SRCDIR)/modules.o \
 	$(SRCDIR)/maxwell.o \
 	$(SRCDIR)/tiling.o \
@@ -228,6 +317,7 @@ build:$(SRCDIR)/modules.o \
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
+endif
 	
 clean: cleantest
 	rm -rf $(SRCDIR)/*.o *.mod $(MODDIR)/*.mod
