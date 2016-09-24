@@ -104,14 +104,14 @@ SUBROUTINE pxrdepose_rho_on_grid
 	END SUBROUTINE
 
 	SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
-									 nxguard,nyguard,nzguard,lvect)  !#do not parse
+									 nxguard,nyguard,nzguard,lvect) !#do not parse
 			USE constants
 			IMPLICIT NONE
 			INTEGER(idp), INTENT (IN) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-			REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+			REAL(num),INTENT(IN OUT)  :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
 			INTEGER(idp), INTENT (IN) :: lvect
-			REAL(num), INTENT (IN) :: q,dx,dy,dz,xmin,ymin,zmin   
-			REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)             
+			REAL(num), INTENT (IN)    :: q,dx,dy,dz,xmin,ymin,zmin   
+			REAL(num), INTENT (IN)    :: xp(np), yp(np), zp(np), w(np)             
 		
 	END SUBROUTINE
 
@@ -2034,13 +2034,39 @@ SUBROUTINE depose_rho_vecNOY_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
 		RETURN
 END SUBROUTINE depose_rho_vecNOY_1_1_1
     
-    
-!!! --- Order 1 3D vector charge deposition routine
-!!! --- Computes charge density on grid vectorized (HV-SCHEME v2)
-!!! --- This routine does vectorize on SIMD architecture but poor performances
+
+
+! ________________________________________________________________________________________
+!> Order 1 3D vector charge deposition routine
+!> @brief
+!
+!> Computes charge density on grid vectorized at order 1 (HV-SCHEME v1)
+!> This routine does vectorize on SIMD architecture but poor performance
+!> Speedup>2 on AVX 256 bits
+!> lvect, the vector length was originally at 64                                
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
+!
+!> @param[inout] rho charge array
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position arrays
+!> @param[in] w particle weight arrays
+!> @param[in] q particle species charge
+!> @param[in] xmin,ymin,zmin tile grid minimum position
+!> @param[in] dx,dy,dz space discretization steps
+!> @param[in] nx,ny,nz number of cells
+!> @param[in] nxguard,nyguard,nzguard number of guard cells
+!
 SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
 		USE constants
 		IMPLICIT NONE
+		
 		INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
 		REAL(num),INTENT(IN OUT) :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
 		REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
@@ -2174,8 +2200,7 @@ END SUBROUTINE depose_rho_vecHV_1_1_1
 !> @param[in] lvect vector length
 !
 SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
-           nxguard,nyguard,nzguard,lvect)
-!bind(C,name="depose_rho_vecHVv2_1_1_1")
+           nxguard,nyguard,nzguard,lvect) !bind(C,name="depose_rho_vecHVv2_1_1_1")
 ! ________________________________________________________________________________________
 
 	USE constants
@@ -2189,18 +2214,19 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 					
 	INTEGER(idp), DIMENSION(lvect) :: ICELL
 	REAL(num)                 :: ww
-	INTEGER(idp) :: NCELLS
-	REAL(num) :: dxi,dyi,dzi
-	REAL(num) :: xint,yint,zint
-	REAL(num) :: x,y,z,invvol
-	REAL(num) :: sx(lvect), sy(lvect), sz(lvect), wq(lvect)
-	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-	INTEGER(idp) :: nnx, nnxy
-	INTEGER(idp) :: moff(1:8)
-	REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
-	INTEGER(idp) :: orig, jorig, korig, lorig
-	INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
+	INTEGER(idp)              :: NCELLS
+	REAL(num)                 :: dxi,dyi,dzi
+	REAL(num)                 :: xint,yint,zint
+	REAL(num)                 :: x,y,z,invvol
+	REAL(num)                 :: sx(lvect), sy(lvect), sz(lvect), wq(lvect)
+	REAL(num), PARAMETER      :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+	INTEGER(idp)              :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+	INTEGER(idp)              :: nnx, nnxy
+	INTEGER(idp)              :: moff(1:8)
+	REAL(num)                 :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
+	INTEGER(idp)              :: orig, jorig, korig, lorig
+	INTEGER(idp)              :: ncx, ncy, ncxy, ncz
+	INTEGER(idp)              :: ix,iy,iz, ngridx, ngridy, ngx, ngxy
 	REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
 	!dir$ attributes align:64 :: rhocells
         
@@ -2378,24 +2404,26 @@ SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 	USE constants
 	IMPLICIT NONE
 	
-	INTEGER(idp), INTENT (IN)    :: np,nx,ny,nz,nxguard,nyguard,nzguard
-	INTEGER(idp), INTENT (IN)    :: lvect
-	REAL(num),INTENT(IN OUT)     :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-	REAL(num), INTENT (IN)       :: xp(np), yp(np), zp(np), w(np)
-	REAL(num), INTENT (IN)       :: q,dx,dy,dz,xmin,ymin,zmin        
+	INTEGER(idp), INTENT (IN)      :: np,nx,ny,nz,nxguard,nyguard,nzguard
+	INTEGER(idp), INTENT (IN)      :: lvect
+	REAL(num),INTENT(IN OUT)       :: rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+	REAL(num), INTENT (IN)         :: xp(np), yp(np), zp(np), w(np)
+	REAL(num), INTENT (IN)         :: q,dx,dy,dz,xmin,ymin,zmin        
 	
 	REAL(num), DIMENSION(:,:), ALLOCATABLE :: rhocells
 	INTEGER(idp), DIMENSION(lvect) :: ICELL, IG
 	REAL(num)                      :: ww, wwx,wwy,wwz
-	INTEGER(idp) :: NCELLS
-	REAL(num) :: dxi,dyi,dzi
-	REAL(num) :: xint,yint,zint,xintsq,yintsq,zintsq
-	REAL(num) :: x,y,z,invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
-	REAL(num) :: sx0(lvect), sx1(lvect), sx2(lvect)
-	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-	INTEGER(idp) :: nnx, nnxy, off0, ind0
-	INTEGER(idp) :: moff(1:8)
+	INTEGER(idp)                   :: NCELLS
+	REAL(num)                      :: dxi,dyi,dzi
+	REAL(num)                      :: xint,yint,zint,xintsq,yintsq,zintsq
+	REAL(num)                      :: x,y,z
+	REAL(num)                      :: invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
+	REAL(num)                      :: sx0(lvect), sx1(lvect), sx2(lvect)
+	REAL(num), PARAMETER           :: onesixth=1.0_num/6.0_num
+	REAL(num), PARAMETER           :: twothird=2.0_num/3.0_num
+	INTEGER(idp)                   :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+	INTEGER(idp)                   :: nnx, nnxy, off0, ind0
+	INTEGER(idp)                   :: moff(1:8)
 	REAL(num):: ww0(1:lvect,1:8),www(1:lvect,1:8)
 	INTEGER(idp) :: orig, jorig, korig, lorig
 	INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
