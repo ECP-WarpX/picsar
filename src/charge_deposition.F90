@@ -2247,7 +2247,7 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 	my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
 	mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
 	sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
-	jorig=-1; korig=-1;lorig=-1
+	jorig=-1;korig=-1;lorig=-1
 	orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
 	ngx=(ngridx-ncx)
 	ngxy=(ngridx*ngridy-ncx*ncy)
@@ -3298,7 +3298,7 @@ END SUBROUTINE depose_rho_vecHVv4_3_3_3
 !> General charge deposition routine (Warning: Highly unoptimized routine)
 !> @brief
 !
-!> Computes charge density on grid at arbitrary orders nox, noy and noz                               
+!> Computes charge density on grid at arbitrary orders nox, noy and noz.
 !
 !> @author
 !> Henri Vincenti
@@ -3331,16 +3331,16 @@ SUBROUTINE pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz
 	INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 	INTEGER(idp) :: lvect ! Useless here, for the common interface
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: rho
-	REAL(num) :: xp(np), yp(np), zp(np), w(np)
-	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-	LOGICAL :: l_particles_weight, l4symtry
+	REAL(num)    :: xp(np), yp(np), zp(np), w(np)
+	REAL(num)    :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	LOGICAL      :: l_particles_weight, l4symtry
 
-	REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
+	REAL(num)    :: dxi,dyi,dzi,xint,yint,zint, &
 						 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-	REAL(num) :: x,y,z,wq,invvol
-	REAL(num) :: sx(-int(nox/2):int((nox+1)/2)), &
-							 sy(-int(noy/2):int((noy+1)/2)), &
-							 sz(-int(noz/2):int((noz+1)/2))
+	REAL(num)    :: x,y,z,wq,invvol
+	REAL(num)    :: sx(-int(nox/2):int((nox+1)/2))
+	REAL(num)    :: sy(-int(noy/2):int((noy+1)/2))
+	REAL(num)    :: sz(-int(noz/2):int((noz+1)/2))
 	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
 	INTEGER(idp) :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
 

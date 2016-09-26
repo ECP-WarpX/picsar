@@ -456,6 +456,12 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 
+build_rho_deposition_3d_test: $(SRCDIR)/modules.o \
+	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/charge_deposition.o \
+	Acceptance_testing/Gcov_tests/rho_deposition_3d_test.o 
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/rho_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/rho_deposition_3d_test.o
+	
 build_tile_rho_depo_3d_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
 	$(SRCDIR)/mpi_derived_types.o \
@@ -537,6 +543,10 @@ esirkepov_2d_test:
 esirkepov_3d_test:
 	export OMP_NUM_THREADS=1	
 	./Acceptance_testing/Gcov_tests/esirkepov_3d_test	
+
+rho_deposition_3d_test:
+	export OMP_NUM_THREADS=1
+	mpirun -n 1 ./Acceptance_testing/Gcov_tests/rho_deposition_3d_test
 
 tile_field_gathering_3d_test:
 	export OMP_NUM_THREADS=4
