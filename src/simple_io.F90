@@ -11,114 +11,155 @@ CONTAINS
         USE shared_data
         USE params
         USE time_stat
+        USE diagnostics
         IMPLICIT NONE
         CHARACTER(LEN=string_length) :: strtemp
         INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
         INTEGER(KIND=4) :: err=0
-        REAL(num) :: tmptime
+        REAL(num) :: tmptime,tmptime2
 
 #if defined(DEBUG)
         WRITE(0,*) "Output_routines: start"
 #endif
-        
-        WRITE(strtemp,'(I5)') it
-        PRINT *, it, "I AM HERE", output_frequency, output_step_min, output_step_max
-        IF (output_frequency .GE. 1) THEN
+
+        IF (it.ge.timestat_itstart) THEN
         tmptime = MPI_WTIME()
+        ENDIF
+
+        WRITE(strtemp,'(I5)') it
+
+        IF (output_frequency .GE. 1) THEN
+        tmptime2 = MPI_WTIME()
         IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
             (MOD(it-output_step_min,output_frequency) .EQ. 0)) THEN
             !!! --- Write output to disk
             !! -- Write grid quantities
-            PRINT *, it, "HELLO THERE"
             IF (c_output_ex .EQ. 1) THEN
                 ! - Write current density ex
-#if (DEBUG==9)
-                WRITE(0,*) "Write current density ex"
-#endif                
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', ex, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+
+                !CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))// &
+                !TRIM(ADJUSTL(strtemp))//'.pxr', ex, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+                
+                IF (rank.eq.0) WRITE(0,*) "Write electric field ex"
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', ex,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
+                
             ENDIF
             IF (c_output_ey .EQ. 1) THEN
                 ! - Write current density ey
-#if (DEBUG==9)
-                WRITE(0,*) "Write current density ey"
-#endif                
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileey))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', ey, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+                IF (rank.eq.0) WRITE(0,*) "Write electric field ey"
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileey))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', ey,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF               
             IF (c_output_ez .EQ. 1) THEN
                 ! - Write current density ez
-#if (DEBUG==9)
-                WRITE(0,*) "Write current density ez"
-#endif                 
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileez))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', ez, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+                IF (rank.eq.0) WRITE(0,*) "Write electric field ez"
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileez))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', ez,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_bx .EQ. 1) THEN
                 ! - Write magnetic field bx
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebx))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', bx, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+                IF (rank.eq.0) WRITE(0,*) "Write magnetic field bx"
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebx))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', bx,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_by .EQ. 1) THEN
-                ! - Write current density jx
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileby))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', by, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+                ! - Write current density by
+                IF (rank.eq.0) WRITE(0,*) "Write magnetic field by"
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileby))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', by,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_bz .EQ. 1) THEN
-                ! - Write current density jx
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebz))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', bz, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+                ! - Write current density bz
+                IF (rank.eq.0) WRITE(0,*) "Write magnetic field bz"                
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebz))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', bz,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_jx .EQ. 1) THEN
                 ! - Write current density jx
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejx))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', jx, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
+                IF (rank.eq.0) WRITE(0,*) "Write current density jx"                                
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejx))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', jx,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_jy .EQ. 1) THEN
-                ! - Write current density jx
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejy))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', jy, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
+                ! - Write current density jy
+                IF (rank.eq.0) WRITE(0,*) "Write current density jy"                                
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejy))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', jy,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_jz .EQ. 1) THEN
-                ! - Write current density jx
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejz))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', jz, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
+                ! - Write current density jz
+                IF (rank.eq.0) WRITE(0,*) "Write current density jz"                                
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejz))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', jz,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_dive .EQ. 1) THEN
+            
+                ! Computation if not already done
+                IF (.not.(divE_computed))  then
+                  CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+                  divE_computed = .true.
+                ENDIF
+            
                 ! - Write electric field divergence div E
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filedive))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', dive, nxguards, nyguards, nzguards, nx,ny,nz, offset, err)
+                IF (rank.eq.0) WRITE(0,*) "Write electric field divergence div E" 
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filedive))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', dive,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)
             ENDIF
             IF (c_output_rho .EQ. 1) THEN
                 ! - Write total charge density rho
-                CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filerho))// &
-                TRIM(ADJUSTL(strtemp))//'.pxr', rho, nxjguards, nyjguards, nzjguards, nx,ny,nz, offset, err)
+                IF (rank.eq.0) WRITE(0,*) "Write total charge density rho" 
+                CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filerho))// &
+                TRIM(ADJUSTL(strtemp))//'.pxr', rho,     &
+                xmin, xmax, ymin, ymax, zmin, zmax, nxguards, nyguards, nzguards, nx, &
+                ny, nz, nx_global, ny_global, nz_global)                
             ENDIF
             
             ENDIF
-          localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime) 
-          tmptime = MPI_WTIME() - tmptime
-          IF (rank .EQ. 0) PRINT *, "Fields dump in ", tmptime, " (s)"
+          tmptime2 = MPI_WTIME() - tmptime2
+          IF (rank .EQ. 0) PRINT *, "Fields dump in ", tmptime2, " (s)"
         ENDIF
         
         !!! --- Write particle diags
-        tmptime=MPI_WTIME()
-        CALL write_particles_to_file(strtemp, it)
-        tmptime=MPI_WTIME()-tmptime
-        IF (rank .EQ. 0) PRINT *, "Part dump in ", tmptime, "(s) "
+        !tmptime=MPI_WTIME()
+        !CALL write_particles_to_file(strtemp, it)
+        !tmptime=MPI_WTIME()-tmptime
+        !IF (rank .EQ. 0) PRINT *, "Part dump in ", tmptime, "(s) "
         
-        !!! --- Output temproral diagnostics
+        !!! --- Output temporal diagnostics
         CALL output_temporal_diagnostics
         
         !!! --- Output time statistics
         CALL output_time_statistics
 
+        IF (it.ge.timestat_itstart) THEN
+        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime) 
+        ENDIF
 #if defined(DEBUG)
         WRITE(0,*) "Output_routines: stop"
 #endif        
         
     END SUBROUTINE output_routines
-
 
     ! --------------------------------------------------------------------------
     ! Output temporal diagnostics
@@ -263,31 +304,66 @@ CONTAINS
         
     END SUBROUTINE
 
+
+  ! ______________________________________________________________________________________
+  SUBROUTINE write_3d_field_array_to_file(filename, array,     &
+             xmin2, xmax2, ymin2, ymax2, zmin2, zmax2, nxg, nyg, nzg, nx_local, &
+             ny_local, nz_local, nx_global2, ny_global2, nz_global2)
+  !
+  ! This subroutine writes the field arrays (e.g EM fields, Currents)
+  ! to disk using MPI-IO (H. VINCENTI, M. LOBET)
+  ! The files have a header with the main parameters
+  ! ______________________________________________________________________________________
+
+    IMPLICIT NONE
+
+    CHARACTER(LEN=*), INTENT(IN)              :: filename
+    INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN)                  :: nx_local, ny_local, nz_local
+    INTEGER(idp), INTENT(IN)                  :: nx_global2, ny_global2, nz_global2    
+    REAL(num), INTENT(IN)                     :: xmin2,xmax2,ymin2,ymax2,zmin2,zmax2
+    REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(IN OUT) :: array
+    INTEGER(KIND=MPI_OFFSET_KIND)             :: offset
+    INTEGER(isp)                              :: err
+    INTEGER(isp)                              :: subt, suba, fh, i
+    
+    ! Creation of the header by the processor 0
+    IF (rank.eq.0) THEN
+      open(unit=42,file=filename,FORM="unformatted",ACCESS='stream')
+      write(42) xmin, xmax, INT(nx_global,isp)
+      write(42) ymin, ymax, INT(ny_global,isp)
+      write(42) zmin, zmax, INT(nz_global,isp)   
+      close(42)
+    ENDIF
+    
+    ! Size of the header in bytes
+    offset = 8*6 + 4*3
+    
+    CALL MPI_BARRIER(comm,errcode)
+    
+    ! Core of the file
+    CALL write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, &
+                                    ny_local, nz_local, offset, err)
+
+  END SUBROUTINE write_3d_field_array_to_file
+
   !----------------------------------------------------------------------------
   ! This subroutine writes a grid quantity (e.g EM fields, Currents)
   ! to disk using MPI-IO (H. VINCENTI)
   !----------------------------------------------------------------------------
   SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, ny_local, nz_local, offset, err)
 
-    CHARACTER(LEN=*), INTENT(IN) :: filename
-    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
-    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    CHARACTER(LEN=*), INTENT(IN)              :: filename
+    INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN)                  :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(IN OUT) :: array
     INTEGER(KIND=MPI_OFFSET_KIND), INTENT(IN) :: offset
-    INTEGER(isp), INTENT(INOUT) :: err
-    INTEGER(isp) :: subt, suba, fh, i
-
-#if DEBUG==9
-   WRITE(0,*) SIZE(array)
-#endif
-
+    INTEGER(isp), INTENT(INOUT)               :: err
+    INTEGER(isp)                              :: subt, suba, fh, i
 
     CALL MPI_FILE_OPEN(comm, TRIM(filename), MPI_MODE_CREATE + MPI_MODE_WRONLY, &
         MPI_INFO_NULL, fh, errcode)
 
-#if DEBUG==9
-   WRITE(0,*) "File opened"
-#endif
 
     IF (errcode .NE. 0) THEN
       IF (rank .EQ. 0) PRINT *, 'file ', TRIM(filename), 'could not be created - Check disk space'
@@ -298,23 +374,13 @@ CONTAINS
     subt = create_current_grid_derived_type()
     suba = create_current_grid_subarray(nxg, nyg, nzg)
     
-#if DEBUG==9
-   WRITE(0,*) "Subarrays created"
-#endif
-
    
     CALL MPI_FILE_SET_VIEW(fh, offset, MPI_BYTE, subt, 'native', &
         MPI_INFO_NULL, errcode)
 
-#if DEBUG==9
-   WRITE(0,*) "MPI_FILE_SET_VIEW"
-#endif
 
     CALL MPI_FILE_WRITE_ALL(fh, array, 1_isp, suba, MPI_STATUS_IGNORE, errcode)
 
-#if DEBUG==9
-   WRITE(0,*) " MPI_FILE_WRITE_ALL"
-#endif
 
      CALL MPI_FILE_CLOSE(fh, errcode)
      CALL MPI_TYPE_FREE(subt, errcode)
@@ -582,22 +648,22 @@ CONTAINS
     IF ((timestat_period.gt.0).and.(MOD(it,timestat_period).eq.0)) then
     
     
-      localtimes(20) = sum(localtimes(1:11))
+      localtimes(20) = sum(localtimes(1:13))
       localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
-                       localtimes(8) + localtimes(11)
+                       localtimes(8) + localtimes(11) + localtimes(13)
     
       ! Average
       CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
       avetimes = avetimes / nproc
     
-      buffer_timestat(1:11,itimestat) = avetimes(1:11)
+      buffer_timestat(1:13,itimestat) = avetimes(1:13)
       itimestat = itimestat + 1
     
       ! Flush entire buffer when full   
       IF (itimestat.gt.nbuffertimestat) THEN
     
         IF (rank.eq.0) THEN
-          write(41) buffer_timestat(1:11,1:nbuffertimestat)
+          write(41) buffer_timestat(1:13,1:nbuffertimestat)
         end if
         
         itimestat=1
@@ -625,7 +691,7 @@ CONTAINS
     
     IF (timestat_activated.gt.0) THEN
     
-      write(41) buffer_timestat(1:11,1:itimestat)
+      write(41) buffer_timestat(1:13,1:itimestat)
       
     END IF
 

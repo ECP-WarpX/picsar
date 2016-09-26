@@ -1,0 +1,137 @@
+\hypertarget{namespacesimple__io}{}\section{simple\+\_\+io Module Reference}
+\label{namespacesimple__io}\index{simple\+\_\+io@{simple\+\_\+io}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{namespacesimple__io_afa460efbda992ca175d786f86ab09ee9}{output\+\_\+routines} ()
+\item 
+subroutine \hyperlink{namespacesimple__io_acb0fc119c4f9a03b88d4129ec0036e1c}{output\+\_\+temporal\+\_\+diagnostics}
+\item 
+subroutine \hyperlink{namespacesimple__io_a2100e8a4cfe3bc3c9e2dcc93988d6551}{write\+\_\+3d\+\_\+field\+\_\+array\+\_\+to\+\_\+file} (filename, array,                                                               xmin2, xmax2, ymin2, ymax2, zmin2, zmax2, nxg, nyg, nzg, nx\+\_\+local,                                               ny\+\_\+local, nz\+\_\+local, nx\+\_\+global2, ny\+\_\+global2, nz\+\_\+global2)
+\item 
+subroutine \hyperlink{namespacesimple__io_a506cc0f775048e27bb5ccd9e936592d3}{write\+\_\+single\+\_\+array\+\_\+to\+\_\+file} (filename, array, nxg, nyg, nzg, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local, offset, err)
+\item 
+subroutine \hyperlink{namespacesimple__io_a02b043d1424f1b2d25e47a55e697a5aa}{write\+\_\+particles\+\_\+to\+\_\+file} (it, \hyperlink{submain_8_f90_ae0a3ce7909f5d34b3684e226b780a075}{step})
+\item 
+subroutine \hyperlink{namespacesimple__io_abb3c1220ac70ea28fcbce1cd9c03b294}{get\+\_\+particles\+\_\+to\+\_\+dump} (idump, mask, narr, ndump)
+\item 
+subroutine \hyperlink{namespacesimple__io_a97c3b871fecd4b1341301fa6cf00a8fa}{concatenate\+\_\+particle\+\_\+variable} (idump, var, arr, narr, mask, nmask)
+\item 
+subroutine \hyperlink{namespacesimple__io_aad8ee8298c20d69fabcd6eb5a8b7b620}{write\+\_\+particle\+\_\+variable} (fh, array, narr, mpitype, err, offset)
+\item 
+subroutine \hyperlink{namespacesimple__io_a87d8855ebcd3134e3cfaeb7f6c548249}{output\+\_\+time\+\_\+statistics}
+\item 
+subroutine \hyperlink{namespacesimple__io_a4f7eec6a6854f8127e7bfdfa307d7bb9}{final\+\_\+output\+\_\+time\+\_\+statistics}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\index{simple\+\_\+io@{simple\+\_\+io}!concatenate\+\_\+particle\+\_\+variable@{concatenate\+\_\+particle\+\_\+variable}}
+\index{concatenate\+\_\+particle\+\_\+variable@{concatenate\+\_\+particle\+\_\+variable}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{concatenate\+\_\+particle\+\_\+variable(idump, var, arr, narr, mask, nmask)}{concatenate_particle_variable(idump, var, arr, narr, mask, nmask)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::concatenate\+\_\+particle\+\_\+variable (
+\begin{DoxyParamCaption}
+\item[{integer(idp), intent(in)}]{idump, }
+\item[{integer(idp), intent(in)}]{var, }
+\item[{real(num), dimension(narr), intent(inout)}]{arr, }
+\item[{integer(idp), intent(in)}]{narr, }
+\item[{logical(isp), dimension(nmask), intent(in)}]{mask, }
+\item[{integer(idp), intent(in)}]{nmask}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_a97c3b871fecd4b1341301fa6cf00a8fa}{}\label{namespacesimple__io_a97c3b871fecd4b1341301fa6cf00a8fa}
+\index{simple\+\_\+io@{simple\+\_\+io}!final\+\_\+output\+\_\+time\+\_\+statistics@{final\+\_\+output\+\_\+time\+\_\+statistics}}
+\index{final\+\_\+output\+\_\+time\+\_\+statistics@{final\+\_\+output\+\_\+time\+\_\+statistics}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{final\+\_\+output\+\_\+time\+\_\+statistics}{final_output_time_statistics}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::final\+\_\+output\+\_\+time\+\_\+statistics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_a4f7eec6a6854f8127e7bfdfa307d7bb9}{}\label{namespacesimple__io_a4f7eec6a6854f8127e7bfdfa307d7bb9}
+\index{simple\+\_\+io@{simple\+\_\+io}!get\+\_\+particles\+\_\+to\+\_\+dump@{get\+\_\+particles\+\_\+to\+\_\+dump}}
+\index{get\+\_\+particles\+\_\+to\+\_\+dump@{get\+\_\+particles\+\_\+to\+\_\+dump}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{get\+\_\+particles\+\_\+to\+\_\+dump(idump, mask, narr, ndump)}{get_particles_to_dump(idump, mask, narr, ndump)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::get\+\_\+particles\+\_\+to\+\_\+dump (
+\begin{DoxyParamCaption}
+\item[{integer(idp), intent(in)}]{idump, }
+\item[{logical(isp), dimension(narr), intent(inout)}]{mask, }
+\item[{integer(idp), intent(in)}]{narr, }
+\item[{integer(idp), intent(inout)}]{ndump}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_abb3c1220ac70ea28fcbce1cd9c03b294}{}\label{namespacesimple__io_abb3c1220ac70ea28fcbce1cd9c03b294}
+\index{simple\+\_\+io@{simple\+\_\+io}!output\+\_\+routines@{output\+\_\+routines}}
+\index{output\+\_\+routines@{output\+\_\+routines}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{output\+\_\+routines()}{output_routines()}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::output\+\_\+routines (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_afa460efbda992ca175d786f86ab09ee9}{}\label{namespacesimple__io_afa460efbda992ca175d786f86ab09ee9}
+\index{simple\+\_\+io@{simple\+\_\+io}!output\+\_\+temporal\+\_\+diagnostics@{output\+\_\+temporal\+\_\+diagnostics}}
+\index{output\+\_\+temporal\+\_\+diagnostics@{output\+\_\+temporal\+\_\+diagnostics}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{output\+\_\+temporal\+\_\+diagnostics}{output_temporal_diagnostics}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::output\+\_\+temporal\+\_\+diagnostics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_acb0fc119c4f9a03b88d4129ec0036e1c}{}\label{namespacesimple__io_acb0fc119c4f9a03b88d4129ec0036e1c}
+\index{simple\+\_\+io@{simple\+\_\+io}!output\+\_\+time\+\_\+statistics@{output\+\_\+time\+\_\+statistics}}
+\index{output\+\_\+time\+\_\+statistics@{output\+\_\+time\+\_\+statistics}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{output\+\_\+time\+\_\+statistics}{output_time_statistics}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::output\+\_\+time\+\_\+statistics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_a87d8855ebcd3134e3cfaeb7f6c548249}{}\label{namespacesimple__io_a87d8855ebcd3134e3cfaeb7f6c548249}
+\index{simple\+\_\+io@{simple\+\_\+io}!write\+\_\+3d\+\_\+field\+\_\+array\+\_\+to\+\_\+file@{write\+\_\+3d\+\_\+field\+\_\+array\+\_\+to\+\_\+file}}
+\index{write\+\_\+3d\+\_\+field\+\_\+array\+\_\+to\+\_\+file@{write\+\_\+3d\+\_\+field\+\_\+array\+\_\+to\+\_\+file}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{write\+\_\+3d\+\_\+field\+\_\+array\+\_\+to\+\_\+file(filename, array,                                                               xmin2, xmax2, ymin2, ymax2, zmin2, zmax2, nxg, nyg, nzg, nx\+\_\+local,                                               ny\+\_\+local, nz\+\_\+local, nx\+\_\+global2, ny\+\_\+global2, nz\+\_\+global2)}{write_3d_field_array_to_file(filename, array,                                                               xmin2, xmax2, ymin2, ymax2, zmin2, zmax2, nxg, nyg, nzg, nx_local,                                               ny_local, nz_local, nx_global2, ny_global2, nz_global2)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::write\+\_\+3d\+\_\+field\+\_\+array\+\_\+to\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{character(len=$\ast$), intent(in)}]{filename, }
+\item[{real(num), dimension(-\/nxg\+:nx\+\_\+local+nxg,-\/nyg\+:ny\+\_\+local+nyg,-\/nzg\+:nz\+\_\+local+nzg), intent(inout)}]{array, }
+\item[{real(num), intent(in)}]{xmin2, }
+\item[{real(num), intent(in)}]{xmax2, }
+\item[{real(num), intent(in)}]{ymin2, }
+\item[{real(num), intent(in)}]{ymax2, }
+\item[{real(num), intent(in)}]{zmin2, }
+\item[{real(num), intent(in)}]{zmax2, }
+\item[{integer(idp), intent(in)}]{nxg, }
+\item[{integer(idp), intent(in)}]{nyg, }
+\item[{integer(idp), intent(in)}]{nzg, }
+\item[{integer(idp), intent(in)}]{nx\+\_\+local, }
+\item[{integer(idp), intent(in)}]{ny\+\_\+local, }
+\item[{integer(idp), intent(in)}]{nz\+\_\+local, }
+\item[{integer(idp), intent(in)}]{nx\+\_\+global2, }
+\item[{integer(idp), intent(in)}]{ny\+\_\+global2, }
+\item[{integer(idp), intent(in)}]{nz\+\_\+global2}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_a2100e8a4cfe3bc3c9e2dcc93988d6551}{}\label{namespacesimple__io_a2100e8a4cfe3bc3c9e2dcc93988d6551}
+\index{simple\+\_\+io@{simple\+\_\+io}!write\+\_\+particle\+\_\+variable@{write\+\_\+particle\+\_\+variable}}
+\index{write\+\_\+particle\+\_\+variable@{write\+\_\+particle\+\_\+variable}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{write\+\_\+particle\+\_\+variable(fh, array, narr, mpitype, err, offset)}{write_particle_variable(fh, array, narr, mpitype, err, offset)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::write\+\_\+particle\+\_\+variable (
+\begin{DoxyParamCaption}
+\item[{integer(isp), intent(in)}]{fh, }
+\item[{real(num), dimension(narr), intent(in)}]{array, }
+\item[{integer(idp), intent(in)}]{narr, }
+\item[{integer(isp), intent(in)}]{mpitype, }
+\item[{integer(isp), intent(inout)}]{err, }
+\item[{integer(idp), intent(in)}]{offset}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_aad8ee8298c20d69fabcd6eb5a8b7b620}{}\label{namespacesimple__io_aad8ee8298c20d69fabcd6eb5a8b7b620}
+\index{simple\+\_\+io@{simple\+\_\+io}!write\+\_\+particles\+\_\+to\+\_\+file@{write\+\_\+particles\+\_\+to\+\_\+file}}
+\index{write\+\_\+particles\+\_\+to\+\_\+file@{write\+\_\+particles\+\_\+to\+\_\+file}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{write\+\_\+particles\+\_\+to\+\_\+file(it, step)}{write_particles_to_file(it, step)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::write\+\_\+particles\+\_\+to\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{character(len=$\ast$), intent(in)}]{it, }
+\item[{integer(idp), intent(in)}]{step}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_a02b043d1424f1b2d25e47a55e697a5aa}{}\label{namespacesimple__io_a02b043d1424f1b2d25e47a55e697a5aa}
+\index{simple\+\_\+io@{simple\+\_\+io}!write\+\_\+single\+\_\+array\+\_\+to\+\_\+file@{write\+\_\+single\+\_\+array\+\_\+to\+\_\+file}}
+\index{write\+\_\+single\+\_\+array\+\_\+to\+\_\+file@{write\+\_\+single\+\_\+array\+\_\+to\+\_\+file}!simple\+\_\+io@{simple\+\_\+io}}
+\subsubsection[{\texorpdfstring{write\+\_\+single\+\_\+array\+\_\+to\+\_\+file(filename, array, nxg, nyg, nzg, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local, offset, err)}{write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, ny_local, nz_local, offset, err)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine simple\+\_\+io\+::write\+\_\+single\+\_\+array\+\_\+to\+\_\+file (
+\begin{DoxyParamCaption}
+\item[{character(len=$\ast$), intent(in)}]{filename, }
+\item[{real(num), dimension(-\/nxg\+:nx\+\_\+local+nxg,-\/nyg\+:ny\+\_\+local+nyg,-\/nzg\+:nz\+\_\+local+nzg), intent(inout)}]{array, }
+\item[{integer(idp), intent(in)}]{nxg, }
+\item[{integer(idp), intent(in)}]{nyg, }
+\item[{integer(idp), intent(in)}]{nzg, }
+\item[{integer(idp), intent(in)}]{nx\+\_\+local, }
+\item[{integer(idp), intent(in)}]{ny\+\_\+local, }
+\item[{integer(idp), intent(in)}]{nz\+\_\+local, }
+\item[{integer(kind=mpi\+\_\+offset\+\_\+kind), intent(in)}]{offset, }
+\item[{integer(isp), intent(inout)}]{err}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacesimple__io_a506cc0f775048e27bb5ccd9e936592d3}{}\label{namespacesimple__io_a506cc0f775048e27bb5ccd9e936592d3}

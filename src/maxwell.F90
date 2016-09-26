@@ -1,3 +1,10 @@
+! ________________________________________________________________________________________
+!
+! MAXWELL.F90
+!
+!
+! ________________________________________________________________________________________
+
 !===============================================================================
 ! PUSH B field half a time step
 !==============================================================================
@@ -10,17 +17,75 @@ USE time_stat
 IMPLICIT NONE
 
 REAL(num) :: tmptime
-tmptime = MPI_WTIME()
 
-CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
-    0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-    nx,ny,nz, norderx,nordery,norderz,                                  &
-    nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-    l_nodalgrid)
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 
-localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+  ! Yee scheme at order 2
+  IF ((norderx.eq.2).AND.(nordery.eq.2)) then
+    CALL pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
+              0.5_num*dt/dx,0.5_num*dt/dy,0.5_num*dt/dz,&
+              nx,ny,nz,nxguards,nyguards,nzguards,nxs,nys,nzs, &
+              l_nodalgrid)
+  ! Yee scheme arbitrary order
+  ELSE
+    CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
+        0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
+        nx,ny,nz, norderx,nordery,norderz,                                  &
+        nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
+        l_nodalgrid)
+  ENDIF
+
+IF (it.ge.timestat_itstart) THEN  
+  localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+ENDIF
 
 END SUBROUTINE push_bfield
+
+
+! ________________________________________________________________________________________
+SUBROUTINE push_bfield_2d
+!
+! PUSH B field half a time step in 2D
+! ________________________________________________________________________________________
+
+  USE constants
+  USE params
+  USE fields
+  USE shared_data
+  USE time_stat
+  IMPLICIT NONE
+
+  REAL(num) :: tmptime
+  IF (it.ge.timestat_itstart) THEN  
+  tmptime = MPI_WTIME()
+  ENDIF
+
+  ! Yee scheme at order 2
+  IF ((norderx.eq.2).AND.(nordery.eq.2)) then
+
+    CALL pxrpush_em2d_bvec(ex,ey,ez,bx,by,bz,                  &
+                           0.5_num*dt/dx,0._num,0.5_num*dt/dz,nx,0_idp,nz,          &
+                           nxguards,0_idp,nzguards,nxs,0_idp,nzs, &
+                           l_nodalgrid)
+
+  ! Yee scheme arbitrary order
+  ELSE
+
+    CALL pxrpush_em2d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
+      0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
+      nx,ny,nz, norderx,nordery,norderz,                                  &
+      nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
+      l_nodalgrid)
+
+  ENDIF
+
+  IF (it.ge.timestat_itstart) THEN  
+    localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END SUBROUTINE push_bfield_2d
 
 
 !===============================================================================
@@ -35,7 +100,9 @@ USE time_stat
 IMPLICIT NONE
 
 REAL(num) :: tmptime
-tmptime = MPI_WTIME()
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 
 CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
     clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
@@ -44,8 +111,9 @@ CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,      
     nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
     l_nodalgrid)
 
-localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
-
+IF (it.ge.timestat_itstart) THEN
+  localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+ENDIF
 END SUBROUTINE push_efield
 
 
@@ -316,11 +384,11 @@ subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
 !===============================================================================
 use constants
 use omp_lib
-integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
+integer(idp)          :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
-integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+integer(idp)          :: i,j,k,l,ist
+logical               :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0
@@ -458,14 +526,14 @@ else
 ist = 1
 end if
 
-k = 0
+k = 0_idp
 
 ! advance Bx
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
 !$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
-                Bx(j,k,l) = Bx(j,k,l) + dtsdz * (Ey(j,k,  l+1) - Ey(j,k,l-1+ist))
+                Bx(j,0,l) = Bx(j,0,l) + dtsdz * (Ey(j,0,l+1) - Ey(j,0,l-1+ist))
         end do
 end do
 !$OMP END DO
@@ -473,8 +541,8 @@ end do
 !$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
-                By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k,l  ) - Ez(j-1+ist,k,l))
-                By(j,k,l) = By(j,k,l) - dtsdz * (Ex(j  ,k,l+1) - Ex(j,k,l-1+ist))
+                By(j,0,l) = By(j,0,l) + dtsdx * (Ez(j+1,0,l  ) - Ez(j-1+ist,0,l))
+                By(j,0,l) = By(j,0,l) - dtsdz * (Ex(j  ,0,l+1) - Ex(j,0,l-1+ist))
         end do
 end do
 !$OMP END DO
@@ -482,7 +550,7 @@ end do
 !$OMP DO COLLAPSE(2)
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
-                Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k,l) - Ey(j-1+ist,k,l))
+                Bz(j,0,l) = Bz(j,0,l) - dtsdx * (Ey(j+1,0,l) - Ey(j-1+ist,0,l))
         end do
 end do
 !$OMP END DO

@@ -545,16 +545,14 @@ print '\nInitialization complete\n'
 
 # if this is a test, then stop, else execute main loop
 if l_test:
-<<<<<<< HEAD
-  print '<<< To execute n steps, type "step(n)" at the prompt >>>'
-=======
+
   print '<<< To execute n steps, type "em.step(n,a,b)" at the prompt >>>'
   print '<<< n being the iteration number to perform, a the terminal output period, b the graphic output period>>>'
   #tdeb=MPI.Wtime()
   #em.step(700,1,1)
   #tend=MPI.Wtime()
   #print("Final runtime (s): "+str(tend-tdeb))
->>>>>>> picsar_mpi_com_opt
+
 #  raise('')
 else:
   tdeb=MPI.Wtime()

@@ -1,23 +1,45 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 ! 
 ! SORTING.F90
-! Contains sorting algorithms for the particles
-! 
+!
+!
+!> Module for the particle sorting
+!> @brief
+!>
+!> This module contains sorting algorithms for the particles
+!> @details
+!>
+!> @author
+!> Mathieu Lobet
+!>
+!> @date
+!> 04/2016
+!
 ! List of subroutines:
 ! - pxr_particle_sorting
 ! - particle_sorting_sub
-
+! - pxr_particle_bin_sorting
+! ________________________________________________________________________________________
 MODULE sorting
 
   IMPLICIT NONE
 
   CONTAINS
 
+    ! ____________________________________________________________________________________
+    !> Main subroutine called to sort the particles in the Fortran PIC loop
   SUBROUTINE pxr_particle_sorting
-    ! __________________________________________________________________________________
     ! 
-    ! Main subroutine called to sort the particles in the Fortran PIC loop
-    ! __________________________________________________________________________________
+    !> @author
+    !> Mathieu Lobet
+    !   
+    !> @details
+    !> This subroutine is called in the main loop of the Fortran kernel.
+    !> This subroutine calls particle_sorting_sub() and times it.
+    ! 
+    !> @date
+    !> 2016
+    ! ____________________________________________________________________________________
     USE tiling
     USE shared_data
     USE constants
@@ -30,23 +52,39 @@ MODULE sorting
     REAL(num) :: tdeb, tend
     
     IF ((sorting_activated.gt.0)) THEN
-    
+
+      IF (it.ge.timestat_itstart) THEN       
       tdeb=MPI_WTIME()
+      ENDIF
     
       CALL particle_sorting_sub
-        
+
+      IF (it.ge.timestat_itstart) THEN          
       tend=MPI_WTIME()
       localtimes(10) = localtimes(10) + (tend-tdeb)    
+      ENDIF
   
     ENDIF
   
   END SUBROUTINE
 
+  ! ______________________________________________________________________________________!
+  ! particle_sorting_sub
+  !
+  !> General subroutine for the particle sorting, used in Python PIC loop
+  !> @brief
+  !>
+  !> This subroutine is called in pxr_particle_sorting() used in the main loop
+  !> @details
+  !> 
+  !> @author
+  !> Mathieu Lobet
+  !
+  !> @date 2016  
   SUBROUTINE particle_sorting_sub
-    ! __________________________________________________________________________________
-    ! 
-    ! General subroutine for the particle sorting, used in Python PIC loop
-    ! __________________________________________________________________________________
+  ! 
+  ! 
+  ! ______________________________________________________________________________________
     USE tiling
     USE shared_data
     USE constants
@@ -66,7 +104,6 @@ MODULE sorting
     LOGICAL(idp) :: verbose=.TRUE.
     REAL(num) :: sxmin,symin,szmin
     REAL(num) :: tdeb, tend
-    
     
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank, &
@@ -104,13 +141,13 @@ MODULE sorting
 				    DO ispecies=1, nspecies
 
 					    curr=>species_parray(ispecies)
-
 				      
 				      ! If the sorting period > 0 and the current iteration corresponds to a multiple of the period
 				      IF ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
 
-                IF ((sorting_verbose).and.(rank.eq.0).and. &
-                    (iz.eq.1).and.(iy.eq.1).and.(ix.eq.1)) WRITE(0,*) 'Particle sorting, species',ispecies
+              
+                !IF ((sorting_verbose).and.(rank.eq.0).and. &
+                !    (iz.eq.1).and.(iy.eq.1).and.(ix.eq.1)) WRITE(0,*) 'Particle sorting, species',ispecies
  
 					      ! - Get current tile properties
 					      ! - Init current tile variables				    
@@ -147,18 +184,34 @@ MODULE sorting
   END SUBROUTINE particle_sorting_sub
 
 
-  SUBROUTINE pxr_particle_bin_sorting(np2,xp,yp,zp,ux,uy,uz,gam,pid,wpid,xmin2,ymin2,zmin2,xmax2,ymax2,zmax2,dxf,dyf,dzf)
-    ! __________________________________________________________________________________
-    ! 
-    ! Particle bin sorting algorithm
-    ! This subroutine uses a bin sorting algorithm to sort particles (including their property arrays)
-    ! 
-    ! np: number of particles
-    ! xp,yp,zp: particle positions
-    ! xp,yp,zp: particle momenta
-    ! xmin,ymin,zmin: minimum point position on the local grid 
-    ! xmax,ymax,zmax: maximum point position on the local grid           
-    ! dxf,dyf,dzf: bin space steps
+    ! ____________________________________________________________________________________
+    ! pxr_particle_bin_sorting
+    !
+    !>
+    !> @brief
+    !> Particle cell sorting subroutine using the bin sorting algorithm
+    !> @details
+    !> This subroutine uses a bin sorting algorithm to sort particles (including their property arrays).
+    !> Here, the bins corresponds to the cells of a cartesian array.
+    !> The cell size is specified by the user.
+    !>
+    !> @author
+    !> Mathieu Lobet
+    
+    !> @date 2016
+    !
+  SUBROUTINE pxr_particle_bin_sorting(np2,xp,yp,zp,ux,uy,uz,gam,pid,wpid,&
+            xmin2,ymin2,zmin2,xmax2,ymax2,zmax2,dxf,dyf,dzf)
+    !
+    !> @param[in] np2 number of particles
+    !> @param[inout] xp,yp,zp particle positions
+    !> @param[inout] ux,uy,uz particle momenta
+    !> @param[inout] gam particle gamma factor
+    !> @param[inout] pid particle id
+    !> @param[inout] wpid particle weight
+    !> @param[in] xmin2,ymin2,zmin2 minimum point position on the local grid 
+    !> @param[in] xmax2,ymax2,zmax2 maximum point position on the local grid           
+    !> @param[in] dxf,dyf,dzf bin space steps
     ! ___________________________________________________________________________________
     USE constants
     implicit none
@@ -171,26 +224,26 @@ MODULE sorting
     
     integer(idp) :: wpid
     
-    real(num) :: dxi,dyi,dzi
-    real(num) :: dxf,dyf,dzf           
-    real(num) :: x2,y2,z2
-    real(num) :: xmin2,ymin2,zmin2
-    real(num) :: xmax2,ymax2,zmax2
+    real(num)    :: dxi,dyi,dzi
+    real(num)    :: dxf,dyf,dzf           
+    real(num)    :: x2,y2,z2
+    real(num)    :: xmin2,ymin2,zmin2
+    real(num)    :: xmax2,ymax2,zmax2
             
     real(num), dimension(np2), intent(inout)      :: xp,yp,zp
     real(num), dimension(np2), intent(inout)      :: ux,uy,uz
     real(num), dimension(np2), intent(inout)      :: gam
         
-    REAL(num), DIMENSION(np2,1), intent(inout)      :: pid
+    REAL(num), DIMENSION(np2,1), intent(inout)    :: pid
         
-    real(num), dimension(np2)      :: xps,yps,zps     
-    real(num), dimension(np2)      :: uxs,uys,uzs 
-    real(num), dimension(np2)      :: gams 
-    real(num), dimension(np2,wpid)      :: pids
+    real(num), dimension(np2)                     :: xps,yps,zps     
+    real(num), dimension(np2)                     :: uxs,uys,uzs 
+    real(num), dimension(np2)                     :: gams 
+    real(num), dimension(np2,wpid)                :: pids
             
-    integer(idp), dimension(np2)               :: hcnb        ! Cell number
-    integer(idp), dimension(:),allocatable    :: piihc       ! Particle indexes in the grid
-    integer(idp), dimension(:),allocatable    :: nbppc       ! Number of particles per cells
+    integer(idp), dimension(np2)                  :: hcnb        ! Cell number
+    integer(idp), dimension(:),allocatable        :: piihc       ! Particle indexes in the grid
+    integer(idp), dimension(:),allocatable        :: nbppc       ! Number of particles per cells
 
     ! Bin sizes
     dxi = 1./dxf
@@ -229,14 +282,16 @@ MODULE sorting
       
       ! Bin id
       hcnb(ip) = iz*nx3*ny3 + iy*nx3 + ix+1
-      !IF (hcnb(ip) > nbhc) THEN
-      !  if (rank.eq.0) print*, 'Bin id',hcnb(ip),nbhc
-      !  if (rank.eq.0) print*, 'Particle ix,iy,iz',ix,iy,iz
-      !  if (rank.eq.0) print*, 'Particle x,y,z',xp(ip),yp(ip),zp(ip)
-      !  if (rank.eq.0) print*, 'Particle x2,y2,z2',x2,y2,z2
-      !  if (rank.eq.0) print*, 'Particle dx,dy,dz',dx,dy,dz  
-      !  if (rank.eq.0) print*, 'Particle nx,ny,nz',nx3,ny3,nz3          
-      !ENDIF
+      IF ((hcnb(ip) > nbhc).OR.(hcnb(ip)<1)) THEN
+        print*, 'Bin id',ip,hcnb(ip),nbhc
+        print*, 'Particle ix,iy,iz',ix,iy,iz
+        print*, 'Particle x,y,z',xp(ip),yp(ip),zp(ip)
+        print*, 'Particle x2,y2,z2',x2,y2,z2
+        print*, 'xmin,ymin,zmin',xmin2,ymin2,zmin2
+        print*, 'Particle dx,dy,dz',dxi,dyi,dzi  
+        print*, 'Particle nx,ny,nz',nx3,ny3,nz3  
+        stop        
+      ENDIF
 
       ! We count the number of particles in each bin
       nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1  

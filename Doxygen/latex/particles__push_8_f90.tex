@@ -1,0 +1,401 @@
+\hypertarget{particles__push_8_f90}{}\section{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/particles\+\_\+push.F90 File Reference}
+\label{particles__push_8_f90}\index{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/particles\+\_\+push.\+F90@{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/particles\+\_\+push.\+F90}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{particles__push_8_f90_aba6f2e1d26c95eebe4a184e026c0a3f6}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher}
+\item 
+subroutine \hyperlink{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
+\item 
+subroutine \hyperlink{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
+\item 
+subroutine \hyperlink{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}{particle\+\_\+pusher\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
+\item 
+subroutine \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{pxrpush\+\_\+particles\+\_\+part1}
+\begin{DoxyCompactList}\small\item\em Field gathering+ (E \& B) Push half a time step. \end{DoxyCompactList}\item 
+subroutine \hyperlink{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+\begin{DoxyCompactList}\small\item\em Perform the field gathering + (E \& B) Push half a time step. \end{DoxyCompactList}\item 
+subroutine \hyperlink{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{pxrpush\+\_\+particles\+\_\+part2}
+\item 
+subroutine \hyperlink{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}{pxr\+\_\+pushxyz} (np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
+\item 
+subroutine \hyperlink{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}{pxr\+\_\+epush\+\_\+v} (np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
+\item 
+subroutine \hyperlink{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}{pxr\+\_\+bpush\+\_\+v} (np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
+\item 
+subroutine \hyperlink{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}{pxr\+\_\+set\+\_\+gamma} (np, uxp, uyp, uzp, gaminv)
+\item 
+subroutine \hyperlink{particles__push_8_f90_a33af2f46aea122dab559b97c7de2f5f5}{pxr\+\_\+ebcancelpush3d} (np, uxp, uyp, uzp, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)
+\item 
+subroutine \hyperlink{particles__push_8_f90_af9cba768132f6e7e5d6a39108c2c4118}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\begin{DoxyCompactList}\small\item\em This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. \end{DoxyCompactList}\item 
+subroutine \hyperlink{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2} (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\item 
+subroutine \hyperlink{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3} (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\begin{DoxyCompactList}\small\item\em This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher}}
+\index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher}{field_gathering_plus_particle_pusher}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_aba6f2e1d26c95eebe4a184e026c0a3f6}{}\label{particles__push_8_f90_aba6f2e1d26c95eebe4a184e026c0a3f6}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1}}
+\index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{field_gathering_plus_particle_pusher_1_1_1(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1 (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{real(num)}]{dtt, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{m, }
+\item[{integer(idp)}]{lvect, }
+\item[{logical(isp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_af9cba768132f6e7e5d6a39108c2c4118}{}\label{particles__push_8_f90_af9cba768132f6e7e5d6a39108c2c4118}
+
+
+This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. 
+
+This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}}
+\index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2 (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{real(num)}]{dtt, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{m, }
+\item[{integer(idp)}]{lvect, }
+\item[{logical(isp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}{}\label{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3}}
+\index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{real(num)}]{dtt, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{m, }
+\item[{integer(idp)}]{lvect, }
+\item[{logical(isp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{}\label{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}
+
+
+This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. 
+
+This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub}}
+\index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt, }
+\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{}\label{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub}}
+\index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt, }
+\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{}\label{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!particle\+\_\+pusher\+\_\+sub@{particle\+\_\+pusher\+\_\+sub}}
+\index{particle\+\_\+pusher\+\_\+sub@{particle\+\_\+pusher\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{particle\+\_\+pusher\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine particle\+\_\+pusher\+\_\+sub (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt, }
+\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}{}\label{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+bpush\+\_\+v@{pxr\+\_\+bpush\+\_\+v}}
+\index{pxr\+\_\+bpush\+\_\+v@{pxr\+\_\+bpush\+\_\+v}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+bpush\+\_\+v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)}{pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+bpush\+\_\+v (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{m, }
+\item[{real(num)}]{dt}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}{}\label{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+ebcancelpush3d@{pxr\+\_\+ebcancelpush3d}}
+\index{pxr\+\_\+ebcancelpush3d@{pxr\+\_\+ebcancelpush3d}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+ebcancelpush3d(np, uxp, uyp, uzp, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}{pxr_ebcancelpush3d(np, uxp, uyp, uzp, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+ebcancelpush3d (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{exp, }
+\item[{real(num), dimension(np)}]{eyp, }
+\item[{real(num), dimension(np)}]{ezp, }
+\item[{real(num), dimension(np)}]{bxp, }
+\item[{real(num), dimension(np)}]{byp, }
+\item[{real(num), dimension(np)}]{bzp, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{m, }
+\item[{real(num)}]{dt, }
+\item[{integer(idp)}]{which}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_a33af2f46aea122dab559b97c7de2f5f5}{}\label{particles__push_8_f90_a33af2f46aea122dab559b97c7de2f5f5}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+epush\+\_\+v@{pxr\+\_\+epush\+\_\+v}}
+\index{pxr\+\_\+epush\+\_\+v@{pxr\+\_\+epush\+\_\+v}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+epush\+\_\+v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)}{pxr_epush_v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+epush\+\_\+v (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{m, }
+\item[{real(num)}]{dt}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}{}\label{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+pushxyz@{pxr\+\_\+pushxyz}}
+\index{pxr\+\_\+pushxyz@{pxr\+\_\+pushxyz}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)}{pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+pushxyz (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num)}]{dt}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}{}\label{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+set\+\_\+gamma@{pxr\+\_\+set\+\_\+gamma}}
+\index{pxr\+\_\+set\+\_\+gamma@{pxr\+\_\+set\+\_\+gamma}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+set\+\_\+gamma(np, uxp, uyp, uzp, gaminv)}{pxr_set_gamma(np, uxp, uyp, uzp, gaminv)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+set\+\_\+gamma (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}{}\label{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part1@{pxrpush\+\_\+particles\+\_\+part1}}
+\index{pxrpush\+\_\+particles\+\_\+part1@{pxrpush\+\_\+particles\+\_\+part1}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part1}{pxrpush_particles_part1}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part1 (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{}\label{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}
+
+
+Field gathering+ (E \& B) Push half a time step. 
+
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part1\+\_\+sub@{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub}}
+\index{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub@{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part1\+\_\+sub (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{bzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}{}\label{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}
+
+
+Perform the field gathering + (E \& B) Push half a time step. 
+
+This subroutine is called in \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{pxrpush\+\_\+particles\+\_\+part1()} \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}}
+\index{pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
+\subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part2}{pxrpush_particles_part2}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part2 (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{}\label{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}

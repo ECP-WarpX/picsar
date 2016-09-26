@@ -1,3 +1,16 @@
+! ________________________________________________________________________________________
+! CONTROL_FILE.F90
+!
+!>@author
+!>Henri Vincenti,
+!>Mathieu Lobet
+!
+! Brief description:
+!> Module containing routines for the default initialization, for reading the input file and the command line arguments
+!> @brief
+!
+!> @date 2015-2016
+! ________________________________________________________________________________________
 MODULE control_file
 
   USE shared_data
@@ -17,6 +30,10 @@ MODULE control_file
 CONTAINS
     ! Routine that proceeds to default init
     SUBROUTINE default_init
+    
+        ! --- Dimension
+        c_dim = 3
+    
         ! --- Init particle tiling split
         ntilex = 1
         ntiley = 1
@@ -48,8 +65,29 @@ CONTAINS
         ! Current deposition algorithm
         currdepo = 0
         
+        ! Charge deposition algorithm
+        rhodepo = 0
+        
         ! Field gathering algorithm 
         fieldgave = 0
+        
+        ! Particle communication routine
+        partcom = 0
+        
+        ! Field gathering + part. pusher
+        fg_p_pp_seperated = 0
+        
+        ! Vector length current deposition
+        lvec_curr_depo = 8
+
+        ! Vector length charge deposition        
+        LVEC_charge_depo = 64
+        
+        ! Vector length field gathering
+        LVEC_fieldgathe = 256
+        
+        ! Size of the particle mpi buffer
+        mpi_buf_size = 2000
         
         ! Sorting activation (not activated by default)       
         sorting_activated = 0
@@ -64,9 +102,11 @@ CONTAINS
         ! Time stats output activation 
         timestat_activated = 0
         timestat_period = 0
+        timestat_itstart = 0
+        timestat_perit = 0
         nbuffertimestat = 1
         
-        l_lower_order_in_v = .FALSE.
+        l_lower_order_in_v = .TRUE.
 
         ! --- sets coefficient multiplying Courant time step
         dtcoef = 0.7_num
@@ -74,7 +114,8 @@ CONTAINS
         npass = 0
         alpha = 0.5_num
         ! --- sets max time in the simulation (in 1/w0)
-        tmax = 40.0_num
+        tmax = 0._num
+        nsteps = 0
 
         !-------------------------------------------------------------------------------
         ! plasma parameters (cold plasma)
@@ -83,7 +124,7 @@ CONTAINS
         ! --- quantities in plasma (or lab) frame
         !-------------------------------------------------------------------------------
         nlab  = 1.e23_num            ! plasma density in lab frame
-        g0    = 1.0_num          ! initial gamma
+        g0    = 1.0_num              ! initial gamma
         b0    = sqrt(1.0_num-1.0_num/g0**2)
         nc    = nlab*g0          ! density (in the simulation frame)
         wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
@@ -118,8 +159,9 @@ CONTAINS
 
     END SUBROUTINE default_init
 
-    ! Routine that reads command line arguments
-    ! Useful for parametric studies
+    !> Routine that reads command line arguments
+    !> @brief
+    !> Useful for parametric studies
     SUBROUTINE read_from_cl
         INTEGER :: i, ix
         DO i = 1, COMMAND_ARGUMENT_COUNT()-1,2
@@ -166,18 +208,39 @@ CONTAINS
             ELSE IF (INDEX(buffer,'nz') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) nz_global_grid   
-            ELSE IF (INDEX(buffer,'fieldgave') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) fieldgave   
             ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) currdepo 
+            ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) rhodepo                 
+            ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) partcom
             ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) sorting_activated       
+                READ(buffer, *) sorting_activated     
+            ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) lvec_curr_depo      
+            ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) lvec_charge_depo
+            ELSE IF (INDEX(buffer,'lvec_fieldgathe') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) lvec_fieldgathe   
             ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) mpicom_curr                                                                                                                           
+                READ(buffer, *) mpicom_curr     
+            ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) mpi_buf_size
+            ELSE IF (INDEX(buffer,'c_dim') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) c_dim                  
             END IF
         END DO
         RETURN
@@ -247,6 +310,27 @@ CONTAINS
             ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') mpicom_curr
+            ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') partcom
+            ELSE IF (INDEX(buffer,'fg_p_pp_seperated') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_seperated
+            ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo 
+            ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') lvec_charge_depo
+            ELSE IF (INDEX(buffer,'lvec_fieldgathe') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') lvec_fieldgathe
+            ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size
+            ELSE IF (INDEX(buffer,'c_dim') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_dim
             ELSE IF (INDEX(buffer,'end::cpusplit') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -307,13 +391,25 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') noy
             ELSE IF (INDEX(buffer,'noz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') noz                                                             
+                READ(buffer(ix+1:string_length), '(i10)') noz
              ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') currdepo        
-             ELSE IF (INDEX(buffer,'fieldgave') .GT. 0) THEN
+             ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fieldgave                                                 
+                READ(buffer(ix+1:string_length), '(i10)') fieldgave      
+             ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') rhodepo
+             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') partcom
+            ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size 
+            ELSE IF (INDEX(buffer,'fg_p_pp_seperated') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_seperated                                              
             ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -378,6 +474,12 @@ CONTAINS
             ELSE IF (INDEX(buffer,'period') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') timestat_period
+            ELSE IF (INDEX(buffer,'it_start') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') timestat_itstart
+            ELSE IF (INDEX(buffer,'per_it') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') timestat_perit 
             ELSE IF (INDEX(buffer,'buffersize') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat                                        
@@ -397,8 +499,11 @@ CONTAINS
             !WRITE(0,*),TRIM(ADJUSTL(buffer))
             IF (INDEX(buffer,'#') .GT. 0) THEN
                CYCLE
-            ENDIF 
-            IF (INDEX(buffer,'nx') .GT. 0) THEN
+            ENDIF
+            IF (INDEX(buffer,'c_dim') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') c_dim
+            ELSE IF (INDEX(buffer,'nx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nx_global_grid
                 nx_global=nx_global_grid-1
@@ -449,6 +554,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'t_max') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) tmax
+            ELSE IF (INDEX(buffer,'nsteps') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) nsteps                
             ELSE IF (INDEX(buffer,'nguardsx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nxguards
@@ -632,7 +740,8 @@ CONTAINS
                     ENDIF 
                 END DO
                 IF (dp%ispecies .EQ. -1) THEN 
-                    PRINT *, "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
+                    WRITE(0,*) "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
+
                 ENDIF
             ELSE IF (INDEX(buffer,'dump_y_min') .GT. 0) THEN
                 ix = INDEX(buffer, "=")

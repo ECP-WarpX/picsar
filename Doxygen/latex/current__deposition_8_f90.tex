@@ -1,0 +1,911 @@
+\hypertarget{current__deposition_8_f90}{}\section{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/current\+\_\+deposition.F90 File Reference}
+\label{current__deposition_8_f90}\index{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/current\+\_\+deposition.\+F90@{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/current\+\_\+deposition.\+F90}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{current__deposition_8_f90_af9162fd522e5d0fe559fc65848991ee3}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz}
+\begin{DoxyCompactList}\small\item\em Main subroutine for managing the current deposition. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a080efb61c81857c980b0bee1ec2473e9}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp} (curr\+\_\+depo\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard,   noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with the classical method using an external given function. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a2624df4633b361373555666b08c92ca1}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2} (curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with the classical method with an external given function. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a05b540593f69d201b9ac6e74b0fea593}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3} (curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with the classical method version 3. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_ae617423f1f21cbacb686a291c6b0ad7b}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with Esirkepov method. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b80516}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp} (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile with Esirkepov method. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile sequentially. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq} (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a084ed42e79187e34df1e5e49cb589e87}{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
+\begin{DoxyCompactList}\small\item\em Order 1 3D vector current deposition routine (rho$\ast$v) \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a640df01330ec2f2b5ffcb43938a71db5}{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1} (jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+\begin{DoxyCompactList}\small\item\em Order 1 3D vector current deposition routine (rho$\ast$v) with no reduction. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a3b2c43f71118a3d22ad1d1fea9494fa4}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a82878814b59bae3273786c1c0e92deb6}{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
+\begin{DoxyCompactList}\small\item\em Order 2 3D vector current deposition routine (rho$\ast$v) \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a110bf577b181354401374e000770acbf}{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2} (jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+\begin{DoxyCompactList}\small\item\em Order 2 3D vector current deposition routine (rho$\ast$v) with no reduction. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a9b0dd01b38cde503f1aac44bb2bd1ca8}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a4b4bb06ef5eb6ca6e28d2c24472fb216}{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a95bde392441e1836c282cd5b53c6e5c1}{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+3\+\_\+3\+\_\+3} (jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_ad43ded0ebf597e9d3cb47ff84ec04413}{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a1b0279f68e8d25ed75dea74ec525c04b}{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+2\+\_\+2\+\_\+2} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a764fd99e306237a96ae8675235ca96bb}{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+3\+\_\+3\+\_\+3} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_addb36b5ec8b753baa5098db4d6de7820}{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)
+\begin{DoxyCompactList}\small\item\em Esirkepov current deposition algorithm for linear, quadratic or cubic splines. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a7fc8e2e07f2c45b26fa3388a9e519c4e}{current\+\_\+reduction\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
+\begin{DoxyCompactList}\small\item\em This subroutine performs the reduction of jxcellx, jycells and jzcells into jx,jy and jz. \end{DoxyCompactList}\item 
+subroutine \hyperlink{current__deposition_8_f90_a4a6549c8cf282fb4e1818da1e6696fe1}{current\+\_\+reduction\+\_\+2\+\_\+2\+\_\+2} (jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
+\item 
+subroutine \hyperlink{current__deposition_8_f90_a1c3d937e970b554b85e71cb31e708636}{current\+\_\+reduction\+\_\+3\+\_\+3\+\_\+3} (jx, jy, jz, jxcells, jycells, jzcells, ncells,                                                                                                                                   nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!current\+\_\+reduction\+\_\+1\+\_\+1\+\_\+1@{current\+\_\+reduction\+\_\+1\+\_\+1\+\_\+1}}
+\index{current\+\_\+reduction\+\_\+1\+\_\+1\+\_\+1@{current\+\_\+reduction\+\_\+1\+\_\+1\+\_\+1}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{current\+\_\+reduction\+\_\+1\+\_\+1\+\_\+1(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)}{current_reduction_1_1_1(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine current\+\_\+reduction\+\_\+1\+\_\+1\+\_\+1 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jx, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jy, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jz, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jxcells, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jycells, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jzcells, }
+\item[{integer(idp), intent(in)}]{ncells, }
+\item[{integer(idp), intent(in)}]{nx, }
+\item[{integer(idp), intent(in)}]{ny, }
+\item[{integer(idp), intent(in)}]{nz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{ncx, }
+\item[{integer(idp), intent(in)}]{ncy, }
+\item[{integer(idp), intent(in)}]{ncz}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a7fc8e2e07f2c45b26fa3388a9e519c4e}{}\label{current__deposition_8_f90_a7fc8e2e07f2c45b26fa3388a9e519c4e}
+
+
+This subroutine performs the reduction of jxcellx, jycells and jzcells into jx,jy and jz. 
+
+This subroutine is called after the loop on particles where depose\+\_\+jxjyjz\+\_\+vec\+H\+V\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1() is performed for each species \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 param\mbox{[}inout\mbox{]} jx,jy,jz global current grids 
+\end{DoxyDate}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!current\+\_\+reduction\+\_\+2\+\_\+2\+\_\+2@{current\+\_\+reduction\+\_\+2\+\_\+2\+\_\+2}}
+\index{current\+\_\+reduction\+\_\+2\+\_\+2\+\_\+2@{current\+\_\+reduction\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{current\+\_\+reduction\+\_\+2\+\_\+2\+\_\+2(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)}{current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine current\+\_\+reduction\+\_\+2\+\_\+2\+\_\+2 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jx, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jy, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jz, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jxcells, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jycells, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jzcells, }
+\item[{integer(idp), intent(in)}]{ncells, }
+\item[{integer(idp), intent(in)}]{nx, }
+\item[{integer(idp), intent(in)}]{ny, }
+\item[{integer(idp), intent(in)}]{nz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{ncx, }
+\item[{integer(idp), intent(in)}]{ncy, }
+\item[{integer(idp), intent(in)}]{ncz}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a4a6549c8cf282fb4e1818da1e6696fe1}{}\label{current__deposition_8_f90_a4a6549c8cf282fb4e1818da1e6696fe1}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!current\+\_\+reduction\+\_\+3\+\_\+3\+\_\+3@{current\+\_\+reduction\+\_\+3\+\_\+3\+\_\+3}}
+\index{current\+\_\+reduction\+\_\+3\+\_\+3\+\_\+3@{current\+\_\+reduction\+\_\+3\+\_\+3\+\_\+3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{current\+\_\+reduction\+\_\+3\+\_\+3\+\_\+3(jx, jy, jz, jxcells, jycells, jzcells, ncells,                                                                                                                                   nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)}{current_reduction_3_3_3(jx, jy, jz, jxcells, jycells, jzcells, ncells,                                                                                                                                   nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine current\+\_\+reduction\+\_\+3\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jx, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jy, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jz, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jxcells, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jycells, }
+\item[{real(num), dimension(8,ncells), intent(in)}]{jzcells, }
+\item[{integer(idp), intent(in)}]{ncells, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{integer(idp)}]{ncx, }
+\item[{integer(idp)}]{ncy, }
+\item[{integer(idp)}]{ncz}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a1c3d937e970b554b85e71cb31e708636}{}\label{current__deposition_8_f90_a1c3d937e970b554b85e71cb31e708636}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+1\+\_\+1\+\_\+1}}
+\index{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+1\+\_\+1\+\_\+1}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+1\+\_\+1\+\_\+1(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)}{depose_jxjyjz_esirkepov_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l_particles_weight, l4symtry)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+1\+\_\+1\+\_\+1 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jx, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jy, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{integer(idp)}]{nox, }
+\item[{integer(idp)}]{noy, }
+\item[{integer(idp)}]{noz, }
+\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(idp)}]{l4symtry}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_ad43ded0ebf597e9d3cb47ff84ec04413}{}\label{current__deposition_8_f90_ad43ded0ebf597e9d3cb47ff84ec04413}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+2\+\_\+2\+\_\+2}}
+\index{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+2\+\_\+2\+\_\+2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)}{depose_jxjyjz_esirkepov_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l_particles_weight, l4symtry)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+2\+\_\+2\+\_\+2 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jx, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jy, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jz, }
+\item[{integer}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer}]{nx, }
+\item[{integer}]{ny, }
+\item[{integer}]{nz, }
+\item[{integer}]{nxguard, }
+\item[{integer}]{nyguard, }
+\item[{integer}]{nzguard, }
+\item[{integer}]{nox, }
+\item[{integer}]{noy, }
+\item[{integer}]{noz, }
+\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(idp)}]{l4symtry}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a1b0279f68e8d25ed75dea74ec525c04b}{}\label{current__deposition_8_f90_a1b0279f68e8d25ed75dea74ec525c04b}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+3\+\_\+3\+\_\+3}}
+\index{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+3\+\_\+3\+\_\+3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+3\+\_\+3\+\_\+3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)}{depose_jxjyjz_esirkepov_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                                                                                                                                   dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, l_particles_weight, l4symtry)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+3\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jx, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jy, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jz, }
+\item[{integer}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer}]{nx, }
+\item[{integer}]{ny, }
+\item[{integer}]{nz, }
+\item[{integer}]{nxguard, }
+\item[{integer}]{nyguard, }
+\item[{integer}]{nzguard, }
+\item[{integer}]{nox, }
+\item[{integer}]{noy, }
+\item[{integer}]{noz, }
+\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(idp)}]{l4symtry}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a764fd99e306237a96ae8675235ca96bb}{}\label{current__deposition_8_f90_a764fd99e306237a96ae8675235ca96bb}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1}}
+\index{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_scalar_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jx, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jy, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}{}\label{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2}}
+\index{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_scalar_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jx, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jy, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a3b2c43f71118a3d22ad1d1fea9494fa4}{}\label{current__deposition_8_f90_a3b2c43f71118a3d22ad1d1fea9494fa4}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3}}
+\index{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_scalar_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jx, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jy, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a9b0dd01b38cde503f1aac44bb2bd1ca8}{}\label{current__deposition_8_f90_a9b0dd01b38cde503f1aac44bb2bd1ca8}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1}}
+\index{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1(jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)}{depose_jxjyjz_vechv_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jxcells, }
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jycells, }
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jzcells, }
+\item[{integer(idp), intent(in)}]{np, }
+\item[{integer(isp)}]{ncells, }
+\item[{real(num), dimension(np), intent(in)}]{xp, }
+\item[{real(num), dimension(np), intent(in)}]{yp, }
+\item[{real(num), dimension(np), intent(in)}]{zp, }
+\item[{real(num), dimension(np), intent(in)}]{uxp, }
+\item[{real(num), dimension(np), intent(in)}]{uyp, }
+\item[{real(num), dimension(np), intent(in)}]{uzp, }
+\item[{real(num), dimension(np), intent(in)}]{gaminv, }
+\item[{real(num), dimension(np), intent(in)}]{w, }
+\item[{real(num), intent(in)}]{q, }
+\item[{real(num), intent(in)}]{xmin, }
+\item[{real(num), intent(in)}]{ymin, }
+\item[{real(num), intent(in)}]{zmin, }
+\item[{real(num), intent(in)}]{dt, }
+\item[{real(num), intent(in)}]{dx, }
+\item[{real(num), intent(in)}]{dy, }
+\item[{real(num), intent(in)}]{dz, }
+\item[{integer(idp), intent(in)}]{nx, }
+\item[{integer(idp), intent(in)}]{ny, }
+\item[{integer(idp), intent(in)}]{nz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(isp)}]{ncx, }
+\item[{integer(isp)}]{ncy, }
+\item[{integer(isp)}]{ncz, }
+\item[{integer(idp), intent(in)}]{lvect}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a640df01330ec2f2b5ffcb43938a71db5}{}\label{current__deposition_8_f90_a640df01330ec2f2b5ffcb43938a71db5}
+
+
+Order 1 3D vector current deposition routine (rho$\ast$v) with no reduction. 
+
+This versions have good performances on S\+I\+MD architectures Providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD) This subroutine is similar to depose\+\_\+jxjyjz\+\_\+vec\+H\+Vv2\+\_\+1\+\_\+1\+\_\+1 without the reduction process at the end \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2}}
+\index{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2(jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)}{depose_jxjyjz_vechv_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jxcells, }
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jycells, }
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jzcells, }
+\item[{integer(idp), intent(in)}]{np, }
+\item[{integer(idp), intent(in)}]{ncells, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp), intent(in)}]{nx, }
+\item[{integer(idp), intent(in)}]{ny, }
+\item[{integer(idp), intent(in)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{ncx, }
+\item[{integer(idp), intent(in)}]{ncy, }
+\item[{integer(idp), intent(in)}]{ncz, }
+\item[{integer(idp), intent(in)}]{lvect}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a110bf577b181354401374e000770acbf}{}\label{current__deposition_8_f90_a110bf577b181354401374e000770acbf}
+
+
+Order 2 3D vector current deposition routine (rho$\ast$v) with no reduction. 
+
+This versions have good performances on S\+I\+MD architectures providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD). This subroutine is similar to depose\+\_\+jxjyjz\+\_\+vec\+H\+Vv2\+\_\+1\+\_\+1\+\_\+1 without the reduction process at the end. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em jxcells,jycells,jzcells} & transient current arrays \\
+\hline
+\mbox{\tt in}  & {\em np} & particle number \\
+\hline
+\mbox{\tt in}  & {\em ncells} & number of cells in the tile \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position arrays \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & particle momentum arrays \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & inverse Lorentz factor arrays \\
+\hline
+\mbox{\tt in}  & {\em w} & particle wight arrays \\
+\hline
+\mbox{\tt in}  & {\em q} & charge \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile minimum positions \\
+\hline
+\mbox{\tt in}  & {\em dt,dx,dy,dz} & time and space steps \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & tile cell numbers in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & guard cells \\
+\hline
+\mbox{\tt in}  & {\em ncx,ncy,ncz} & tile cell extended number (depends on the order) \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector length \\
+\hline
+\end{DoxyParams}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+3\+\_\+3\+\_\+3}}
+\index{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+3\+\_\+3\+\_\+3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+3\+\_\+3\+\_\+3(jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)}{depose_jxjyjz_vechv_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+3\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jxcells, }
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jycells, }
+\item[{real(num), dimension(8,ncells), intent(inout)}]{jzcells, }
+\item[{integer(idp), intent(in)}]{np, }
+\item[{integer(isp)}]{ncells, }
+\item[{real(num), dimension(np), intent(in)}]{xp, }
+\item[{real(num), dimension(np), intent(in)}]{yp, }
+\item[{real(num), dimension(np), intent(in)}]{zp, }
+\item[{real(num), dimension(np), intent(in)}]{uxp, }
+\item[{real(num), dimension(np), intent(in)}]{uyp, }
+\item[{real(num), dimension(np), intent(in)}]{uzp, }
+\item[{real(num), dimension(np), intent(in)}]{gaminv, }
+\item[{real(num), dimension(np), intent(in)}]{w, }
+\item[{real(num), intent(in)}]{q, }
+\item[{real(num), intent(in)}]{xmin, }
+\item[{real(num), intent(in)}]{ymin, }
+\item[{real(num), intent(in)}]{zmin, }
+\item[{real(num), intent(in)}]{dt, }
+\item[{real(num), intent(in)}]{dx, }
+\item[{real(num), intent(in)}]{dy, }
+\item[{real(num), intent(in)}]{dz, }
+\item[{integer(idp), intent(in)}]{nx, }
+\item[{integer(idp), intent(in)}]{ny, }
+\item[{integer(idp), intent(in)}]{nz, }
+\item[{integer(idp), intent(in)}]{nxguard, }
+\item[{integer(idp), intent(in)}]{nyguard, }
+\item[{integer(idp), intent(in)}]{nzguard, }
+\item[{integer(idp), intent(in)}]{ncx, }
+\item[{integer(idp), intent(in)}]{ncy, }
+\item[{integer(idp), intent(in)}]{ncz, }
+\item[{integer(idp), intent(in)}]{lvect}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a95bde392441e1836c282cd5b53c6e5c1}{}\label{current__deposition_8_f90_a95bde392441e1836c282cd5b53c6e5c1}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1}}
+\index{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_vechvv2_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jx, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jy, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a084ed42e79187e34df1e5e49cb589e87}{}\label{current__deposition_8_f90_a084ed42e79187e34df1e5e49cb589e87}
+
+
+Order 1 3D vector current deposition routine (rho$\ast$v) 
+
+This versions have good performances on S\+I\+MD architectures Providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD)  \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2}}
+\index{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_vechvv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jx, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jy, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a82878814b59bae3273786c1c0e92deb6}{}\label{current__deposition_8_f90_a82878814b59bae3273786c1c0e92deb6}
+
+
+Order 2 3D vector current deposition routine (rho$\ast$v) 
+
+This versions have good performances on S\+I\+MD architectures providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD). To use this function, select nox=2, noy=2, noz=2. \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2015 
+\end{DoxyDate}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3}}
+\index{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_vechvv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jx, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jy, }
+\item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a4b4bb06ef5eb6ca6e28d2c24472fb216}{}\label{current__deposition_8_f90_a4b4bb06ef5eb6ca6e28d2c24472fb216}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n@{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n}}
+\index{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n@{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l\+\_\+particles\+\_\+weight, l4symtry)}{pxr_depose_jxjyjz_esirkepov_n(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+depose\+\_\+jxjyjz\+\_\+esirkepov\+\_\+n (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jx, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jy, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard), intent(inout)}]{jz, }
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{uxp, }
+\item[{real(num), dimension(np)}]{uyp, }
+\item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gaminv, }
+\item[{real(num), dimension(np)}]{w, }
+\item[{real(num)}]{q, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dt, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{integer(idp)}]{nox, }
+\item[{integer(idp)}]{noy, }
+\item[{integer(idp)}]{noz, }
+\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(idp)}]{l4symtry}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_addb36b5ec8b753baa5098db4d6de7820}{}\label{current__deposition_8_f90_addb36b5ec8b753baa5098db4d6de7820}
+
+
+Esirkepov current deposition algorithm for linear, quadratic or cubic splines. 
+
+This subroutine can be used for several orders W\+A\+R\+N\+I\+NG\+: Highly unoptimized routine ---$>$ U\+SE I\+N\+L\+I\+N\+ED R\+O\+U\+T\+I\+NE \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz}{pxrdepose_currents_on_grid_jxjyjz}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_af9162fd522e5d0fe559fc65848991ee3}{}\label{current__deposition_8_f90_af9162fd522e5d0fe559fc65848991ee3}
+
+
+Main subroutine for managing the current deposition. 
+
+This subroutine is called in \hyperlink{submain_8_f90}{submain.\+F90} in \hyperlink{submain_8_f90_ae0a3ce7909f5d34b3684e226b780a075}{step()}. \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2015-\/2016 
+\end{DoxyDate}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp(curr\+\_\+depo\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard,   noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard,   noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp (
+\begin{DoxyParamCaption}
+\item[{}]{curr\+\_\+depo\+\_\+sub, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jxg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jyg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a080efb61c81857c980b0bee1ec2473e9}{}\label{current__deposition_8_f90_a080efb61c81857c980b0bee1ec2473e9}
+
+
+Deposit current in each tile with the classical method using an external given function. 
+
+Open\+MP version. Avoids conflict while reducing tile currents in the global current array. This subroutine uses an external function represented by the argument func\+\_\+order for the current deposition method. \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2(curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2(curr_depo_sub, curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v2 (
+\begin{DoxyParamCaption}
+\item[{}]{curr\+\_\+depo\+\_\+sub, }
+\item[{}]{curr\+\_\+reduc\+\_\+sub, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jxg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jyg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt, }
+\item[{integer(idp), intent(in)}]{lvect}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a2624df4633b361373555666b08c92ca1}{}\label{current__deposition_8_f90_a2624df4633b361373555666b08c92ca1}
+
+
+Deposit current in each tile with the classical method with an external given function. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species. 
+
+Open\+MP version. Avoids conflict while reducing tile currents in the global current array. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em func\+\_\+order} & represent the subroutine to be used for current deposition depending on the selected order \\
+\hline
+\mbox{\tt in}  & {\em jxg,jyg,jzg} & current arrays \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & cell number in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & guard cells \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & orders for current deposition \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz,dtt} & space and time steps \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size \\
+\hline
+\end{DoxyParams}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3(curr\+\_\+depo\+\_\+sub, curr\+\_\+reduc\+\_\+sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3(curr_depo_sub, curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+openmp\+\_\+v3 (
+\begin{DoxyParamCaption}
+\item[{}]{curr\+\_\+depo\+\_\+sub, }
+\item[{}]{curr\+\_\+reduc\+\_\+sub, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jxg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jyg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt, }
+\item[{integer(idp), intent(in)}]{lvect}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a05b540593f69d201b9ac6e74b0fea593}{}\label{current__deposition_8_f90_a05b540593f69d201b9ac6e74b0fea593}
+
+
+Deposit current in each tile with the classical method version 3. 
+
+Open\+MP version. Avoids conflict while reducing tile currents in the global current array. In this second version, the transient current arrays are reduced after the current deposition for all species and not for each species. The loop over the species is also firt loop and not inside the tile loops. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em func\+\_\+order} & represent the subroutine to be used for current deposition depending on the selected order \\
+\hline
+\mbox{\tt in}  & {\em curr\+\_\+reduc\+\_\+sub} & subroutine to be used for the reduction \\
+\hline
+\mbox{\tt in}  & {\em jxg,jyg,jzg} & current arrays \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & cell number in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & guard cells \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & orders for current deposition \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz,dtt} & space and time steps \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size \\
+\hline
+\end{DoxyParams}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq(func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq (
+\begin{DoxyParamCaption}
+\item[{}]{func\+\_\+order, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jxg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jyg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}{}\label{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}
+
+
+Deposit current in each tile sequentially. 
+
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp(func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+openmp (
+\begin{DoxyParamCaption}
+\item[{}]{func\+\_\+order, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jxg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jyg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_ae617423f1f21cbacb686a291c6b0ad7b}{}\label{current__deposition_8_f90_ae617423f1f21cbacb686a291c6b0ad7b}
+
+
+Deposit current in each tile with Esirkepov method. 
+
+This subroutine is called from Fortram main program and contains an interface argument Open\+MP version. Avoids conflict while reducing tile currents in the global current array. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jxg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jyg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}{}\label{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}
+\index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp}}
+\index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
+\subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jxg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jyg, }
+\item[{real(num), dimension(-\/nxjguard\+:nxx+nxjguard,-\/nyjguard\+:nyy+nyjguard,-\/nzjguard\+:nzz+nzjguard), intent(inout)}]{jzg, }
+\item[{integer(idp), intent(in)}]{nxx, }
+\item[{integer(idp), intent(in)}]{nyy, }
+\item[{integer(idp), intent(in)}]{nzz, }
+\item[{integer(idp), intent(in)}]{nxjguard, }
+\item[{integer(idp), intent(in)}]{nyjguard, }
+\item[{integer(idp), intent(in)}]{nzjguard, }
+\item[{integer(idp), intent(in)}]{noxx, }
+\item[{integer(idp), intent(in)}]{noyy, }
+\item[{integer(idp), intent(in)}]{nozz, }
+\item[{real(num), intent(in)}]{dxx, }
+\item[{real(num), intent(in)}]{dyy, }
+\item[{real(num), intent(in)}]{dzz, }
+\item[{real(num), intent(in)}]{dtt}
+\end{DoxyParamCaption}
+)}\hypertarget{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b80516}{}\label{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b80516}
+
+
+Deposit current in each tile with Esirkepov method. 
+
+This subroutine is called from Python and does not have interface arguments Open\+MP version. Avoids conflict while reducing tile currents in the global current array. 

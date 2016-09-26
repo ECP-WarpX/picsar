@@ -1,0 +1,58 @@
+\hypertarget{load__balancing_8_f90}{}\section{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/load\+\_\+balancing.F90 File Reference}
+\label{load__balancing_8_f90}\index{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/load\+\_\+balancing.\+F90@{Users/mlobet/\+Google Drive/\+Codes/\+Picsar/picsar\+\_\+mpi\+\_\+com\+\_\+opt/src/load\+\_\+balancing.\+F90}}
+\subsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+module \hyperlink{namespaceload__balance}{load\+\_\+balance}
+\end{DoxyCompactItemize}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{namespaceload__balance_a01de34e5200e19001ef6a0819fc73ab9}{load\+\_\+balance\+::compute\+\_\+currproc\+\_\+array\+\_\+dimensions} (nnew, ncmin, ncmax, np, mpi\+\_\+rank)
+\item 
+subroutine \hyperlink{namespaceload__balance_a23f2ec36e02070edb8645281e4de7a11}{load\+\_\+balance\+::get\+\_\+1darray\+\_\+proclimits} (ix1, ix2, iy1, iy2, iz1, iz2, cxmin, cymin, czmin,                                                                                                                                           cxmax, cymax, czmax, npx, npy, npz, np, l\+\_\+cart\+\_\+comm)
+\item 
+subroutine \hyperlink{namespaceload__balance_a956f41bdb759ed748f8e75fd86a18d59}{load\+\_\+balance\+::pxr\+\_\+convertindtoproc} (mpi\+\_\+comm\+\_\+in, ix, iy, iz, npx, npy, npz, curr\+\_\+rank, l\+\_\+cart\+\_\+comm)
+\item 
+subroutine \hyperlink{namespaceload__balance_ae5489890ffdc28631b9c4f895a84396c}{load\+\_\+balance\+::mpi\+\_\+remap\+\_\+2d\+\_\+field\+\_\+component} (field\+\_\+new, nx\+\_\+new, nz\+\_\+new,                                                                                                                                                                                       field\+\_\+old, nx\+\_\+old, nz\+\_\+old,                                                                                                                                                                                       nxg, nzg,                                                                                                                                                                                                                                                       ix1old, ix2old, iz1old, iz2old,                                                                                                                                                           ix1new, ix2new, iz1new, iz2new,                                                                                                                                                           iproc, np)
+\item 
+subroutine \hyperlink{namespaceload__balance_a39e48009fed76be1c45b695d0c18579f}{load\+\_\+balance\+::mpi\+\_\+remap\+\_\+3d\+\_\+field\+\_\+component} (field\+\_\+new, nx\+\_\+new, ny\+\_\+new, nz\+\_\+new,                                                                                                                                                                                                                           field\+\_\+old, nx\+\_\+old, ny\+\_\+old, nz\+\_\+old,                                                                                                                                                                                                                           nxg, nyg, nzg,                                                                                                                                                                                                                                                                                                       ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,                                                                                                                                                           ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,                                                                                                                                                           iproc, np)
+\item 
+subroutine \hyperlink{namespaceload__balance_a87910b5d990f9577ace6192cae34adee}{load\+\_\+balance\+::remap\+\_\+em\+\_\+3dfields} (emfield\+\_\+old, nxold, nyold, nzold,                                                                                                                                                               ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,                                                                                                                       emfield\+\_\+new, nxnew, nynew, nznew, nxg, nyg, nzg,                                                                                                                       ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,                                                                                                                       iproc, nprocs, communicator, ierrcode)
+\item 
+subroutine \hyperlink{namespaceload__balance_a63d87c1dde6113bc22318b1869514c59}{load\+\_\+balance\+::remap\+\_\+em\+\_\+2dfields} (emfield\+\_\+old, nxold, nzold,                                                                                                                                                               ix1old, ix2old, iz1old, iz2old,                                                                                                                                                       emfield\+\_\+new, nxnew, nznew, nxg, nzg,                                                                                                                                       ix1new, ix2new, iz1new, iz2new,                                                                                                                                                       iproc, nprocs, communicator, ierrcode)
+\item 
+subroutine \hyperlink{namespaceload__balance_a1f27f85178bb29cf23ba30a4fe0dcca4}{load\+\_\+balance\+::get\+\_\+3dintersection} (ix1min, ix1max, iy1min, iy1max, iz1min, iz1max,                                                                                                                   ix2min, ix2max, iy2min, iy2max, iz2min, iz2max,                                                                                                                   ix3min, ix3max, iy3min, iy3max, iz3min, iz3max,                                                                                                                   l\+\_\+is\+\_\+intersection)
+\item 
+subroutine \hyperlink{namespaceload__balance_a9ba95ccb4742ad1d892ab5ef620c7ab6}{load\+\_\+balance\+::get\+\_\+2dintersection} (ix1min, ix1max, iz1min, iz1max,                                                                                                                   ix2min, ix2max, iz2min, iz2max,                                                                                                                   ix3min, ix3max, iz3min, iz3max,                                                                                                                   l\+\_\+is\+\_\+intersection)
+\item 
+subroutine \hyperlink{namespaceload__balance_a5c1a9ea3d255e4e91938d5e39c1619c8}{load\+\_\+balance\+::compute\+\_\+time\+\_\+per\+\_\+part} ()
+\item 
+subroutine \hyperlink{namespaceload__balance_a3372ef5bc3ae8ebdef0d90933fd19319}{load\+\_\+balance\+::compute\+\_\+time\+\_\+per\+\_\+cell} ()
+\item 
+subroutine \hyperlink{namespaceload__balance_a80526c03cd9a3f83bc80462c7202ed45}{load\+\_\+balance\+::get\+\_\+max\+\_\+time\+\_\+per\+\_\+it} ()
+\item 
+subroutine \hyperlink{namespaceload__balance_a0103fd1c4bbf143a08380b8784fbeb44}{load\+\_\+balance\+::get\+\_\+min\+\_\+time\+\_\+per\+\_\+it} ()
+\item 
+subroutine \hyperlink{namespaceload__balance_a18e85039b792c196efea78b39cc3f1d1}{load\+\_\+balance\+::compute\+\_\+new\+\_\+split\+\_\+2d} (tppart, tpcell, nx\+\_\+glob, nz\+\_\+glob,                                       ncxmin, ncxmax, nczmin, nczmax, npx, npz)
+\item 
+subroutine \hyperlink{namespaceload__balance_aa1f87b6d753beef11f28f62755f25e01}{load\+\_\+balance\+::compute\+\_\+new\+\_\+split} (tppart, tpcell, nx\+\_\+glob, ny\+\_\+glob, nz\+\_\+glob,                                       ncxmin, ncxmax, ncymin, ncymax, nczmin, nczmax, npx, npy, npz)
+\item 
+subroutine \hyperlink{namespaceload__balance_ad4c6fb0e9afcfb791d37effad4fce7b0}{load\+\_\+balance\+::balance\+\_\+in\+\_\+dir} (load\+\_\+in\+\_\+dir, ncellmaxdir, nproc\+\_\+in\+\_\+dir, idirmin, idirmax)
+\item 
+subroutine \hyperlink{namespaceload__balance_aa6300dc3f17e242019b61dd4a5b24837}{load\+\_\+balance\+::get\+\_\+projected\+\_\+load\+\_\+on\+\_\+x} (nxg, load\+\_\+on\+\_\+x, time\+\_\+per\+\_\+part, time\+\_\+per\+\_\+cell)
+\item 
+subroutine \hyperlink{namespaceload__balance_ab142c37dc5124945701b728ff7447959}{load\+\_\+balance\+::get\+\_\+projected\+\_\+load\+\_\+on\+\_\+y} (nyg, load\+\_\+on\+\_\+y, time\+\_\+per\+\_\+part, time\+\_\+per\+\_\+cell)
+\item 
+subroutine \hyperlink{namespaceload__balance_a7808443cfc827402ff6fdc18042a7325}{load\+\_\+balance\+::get\+\_\+projected\+\_\+load\+\_\+on\+\_\+z} (nzg, load\+\_\+on\+\_\+z, time\+\_\+per\+\_\+part, time\+\_\+per\+\_\+cell)
+\item 
+subroutine \hyperlink{namespaceload__balance_a1b48248474342795414464922bd12126}{load\+\_\+balance\+::create\+\_\+new\+\_\+tile\+\_\+split} ()
+\item 
+subroutine \hyperlink{namespaceload__balance_a763d93918d09c31698f45ba8eb6d0112}{load\+\_\+balance\+::remap\+\_\+particles} (ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,                                                                                                                       ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,                                                                                                                       ncxmin, ncxmax, ncymin, ncymax, nczmin, nczmax,                                                                                                                       iproc, ncpus, npx, npy, npz, l\+\_\+cart\+\_\+comm)
+\item 
+subroutine \hyperlink{namespaceload__balance_a6c1308b9aa42cf5737f4e2b86f0f14c7}{load\+\_\+balance\+::remap\+\_\+particles\+\_\+2d} (ix1old, ix2old, iz1old, iz2old,                                                                                                                       ix1new, ix2new, iz1new, iz2new,                                                                                                                       ncxmin, ncxmax, nczmin, nczmax,                                                                                                                       iproc, ncpus, npx, npz, l\+\_\+cart\+\_\+comm)
+\item 
+subroutine \hyperlink{namespaceload__balance_a087dd46e7ee1525b5d13fd38e60ec939}{load\+\_\+balance\+::get\+\_\+proc\+\_\+interval} (iproc, ic, ncmin, ncmax, ncpus)
+\item 
+subroutine \hyperlink{namespaceload__balance_ac4f4010ec67a5d146b5c288511b4f98a}{load\+\_\+balance\+::binary\+\_\+search} (isend, crank, arr, narr)
+\end{DoxyCompactItemize}

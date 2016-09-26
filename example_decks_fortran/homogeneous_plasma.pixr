@@ -30,12 +30,12 @@ section::main
  ntilez = 5
  
  # Guard cells
- nguardsx = 4
- nguardsy = 4
- nguardsz = 4
- njguardsx = 4
- njguardsy = 4
- njguardsz = 4
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
  
 end::main
 
@@ -56,13 +56,24 @@ section::solver
  # 3 - Classical vectorized
  # 4 - Classical tiling/non-optimized
  # 5 - Classical sequential/non-optimized
- currdepo = 0
+ currdepo = 1
  
  # Field gathering method
  # 0 - Optimized functions (default)
  # 1 - non-optimized functions
  fieldgave = 0
- 
+
+ # Type of particle communication
+ # 0 - Combined MPI/Tile communications
+ # 1 - Seperated MPI/Tile communications
+ partcom = 0
+
+ # Charge deposition method
+ # 0 - Vectorized specific order subroutines
+ # 1 - Scalar specific order subroutines
+ # else - Non optimized general order subroutines
+ rhodepo = 0
+
 end::solver
 
 section::sorting
@@ -101,8 +112,8 @@ section::species
  vth_x = 0.1
  vth_y = 0.1
  vth_z = 0.1
- sorting_period=5  
- sorting_start=5
+ sorting_period=10  
+ sorting_start=0
 end::species
 
 section::species
@@ -124,8 +135,8 @@ section::species
  vth_x = 0.001
  vth_y = 0.001
  vth_z = 0.001
- sorting_period=5  
- sorting_start=5
+ sorting_period=10  
+ sorting_start=0
 end::species
 
 section::output

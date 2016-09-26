@@ -169,9 +169,15 @@ def test_langmuir_wave():
   # 2 - persistent (under development)
   mpicom_curr=0
   # Field gathering method
-  # 0 - Optimized functions (default)
-  # 1 - non-optimized functions  
-  fieldgave=0
+  # 0 - Most optimized functions (default)
+  # 1 - Optimized but E and B in separate subroutines
+  # 2 - Scalar subroutines
+  # 3 - General order subroutines
+  fieldgathe=0
+  # Type of particle communication
+  # 0 - optimized version
+  # 1 - MPI and OMP in separate subroutines
+  partcom =0
 
   #-------------------------------------------------------------------------------
   # grid dimensions, nb cells and BC
@@ -226,7 +232,7 @@ def test_langmuir_wave():
   ions_C = Species(type=Proton,weight=weight_C,name='ions')
 
   # --- Init the sorting
-  sort = Sorting(periods=[10,10],starts=[0,0],dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
+  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
 
   top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
   top.efetch[...] = top.efetch[0] # same for field gathering
@@ -305,9 +311,9 @@ def test_langmuir_wave():
   # initializes main field solver block
   #-------------------------------------------------------------------------------
   if l_pxr:
-      ntilex =  4#max(1,w3d.nxlocal/10)
-      ntiley = 4#max(1,w3d.nylocal/10)
-      ntilez =4 #max(1,w3d.nzlocal/10)
+      ntilex = max(1,w3d.nxlocal/10)
+      ntiley = max(1,w3d.nylocal/10)
+      ntilez = max(1,w3d.nzlocal/10)
   #    pg.sw=0.
       print ' em=EM3DPXR'
       em = EM3DPXR(laser_func=laser_func,
@@ -321,7 +327,7 @@ def test_langmuir_wave():
                    l_2dxz=dim=="2d",
                    l_1dz=dim=="1d",
                    dtcoef=dtcoef,
-                   l_getrho=0,
+                   l_getrho=1,
                    spectral=0,
                    current_cor=0,
                    listofallspecies=listofallspecies,
@@ -334,8 +340,9 @@ def test_langmuir_wave():
                    #nzguard=6,
                    currdepo=currdepo,   
                    mpicom_curr=mpicom_curr,
-                   fieldgave=fieldgave,
+                   fieldgathe=fieldgathe,
                    sorting=sort,
+                   partcom=partcom,
                    l_verbose=l_verbose)
       step = em.step
   else:

@@ -1,0 +1,70 @@
+\hypertarget{namespacempi__derived__types}{}\section{mpi\+\_\+derived\+\_\+types Module Reference}
+\label{namespacempi__derived__types}\index{mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+integer(isp) function \hyperlink{namespacempi__derived__types_a4e591316977c3fa41e3cc0702f6adcf4}{create\+\_\+current\+\_\+grid\+\_\+derived\+\_\+type} ()
+\item 
+integer(isp) function \hyperlink{namespacempi__derived__types_a7c5a0ff3b29c3edc9345259a18039046}{create\+\_\+current\+\_\+grid\+\_\+subarray} (ngx, ngy, ngz)
+\item 
+integer(isp) function \hyperlink{namespacempi__derived__types_add427b42c00be9acdf56944f2d55e6e2}{create\+\_\+grid\+\_\+derived\+\_\+type} (mpitype, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local,                   cell\+\_\+start\+\_\+x\+\_\+local, cell\+\_\+start\+\_\+y\+\_\+local, cell\+\_\+start\+\_\+z\+\_\+local)
+\item 
+function \hyperlink{namespacempi__derived__types_a4c632b371019f467fc3544ee8a93ff10}{create\+\_\+3d\+\_\+array\+\_\+derived\+\_\+type} (mpitype, n\+\_\+local, n\+\_\+global, start)
+\item 
+integer(isp) function \hyperlink{namespacempi__derived__types_aff1cd1875ad7e3e496b073d20fe156d7}{create\+\_\+grid\+\_\+subarray} (mpitype, ng1, ng2, ng3, n1, n2, n3)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\index{mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}!create\+\_\+3d\+\_\+array\+\_\+derived\+\_\+type@{create\+\_\+3d\+\_\+array\+\_\+derived\+\_\+type}}
+\index{create\+\_\+3d\+\_\+array\+\_\+derived\+\_\+type@{create\+\_\+3d\+\_\+array\+\_\+derived\+\_\+type}!mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}}
+\subsubsection[{\texorpdfstring{create\+\_\+3d\+\_\+array\+\_\+derived\+\_\+type(mpitype, n\+\_\+local, n\+\_\+global, start)}{create_3d_array_derived_type(mpitype, n_local, n_global, start)}}]{\setlength{\rightskip}{0pt plus 5cm}function mpi\+\_\+derived\+\_\+types\+::create\+\_\+3d\+\_\+array\+\_\+derived\+\_\+type (
+\begin{DoxyParamCaption}
+\item[{integer(isp), intent(in)}]{mpitype, }
+\item[{integer(idp), dimension(c\+\_\+ndims), intent(in)}]{n\+\_\+local, }
+\item[{integer(idp), dimension(c\+\_\+ndims), intent(in)}]{n\+\_\+global, }
+\item[{integer(idp), dimension(c\+\_\+ndims), intent(in)}]{start}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacempi__derived__types_a4c632b371019f467fc3544ee8a93ff10}{}\label{namespacempi__derived__types_a4c632b371019f467fc3544ee8a93ff10}
+\index{mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}!create\+\_\+current\+\_\+grid\+\_\+derived\+\_\+type@{create\+\_\+current\+\_\+grid\+\_\+derived\+\_\+type}}
+\index{create\+\_\+current\+\_\+grid\+\_\+derived\+\_\+type@{create\+\_\+current\+\_\+grid\+\_\+derived\+\_\+type}!mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}}
+\subsubsection[{\texorpdfstring{create\+\_\+current\+\_\+grid\+\_\+derived\+\_\+type()}{create_current_grid_derived_type()}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp) function mpi\+\_\+derived\+\_\+types\+::create\+\_\+current\+\_\+grid\+\_\+derived\+\_\+type (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacempi__derived__types_a4e591316977c3fa41e3cc0702f6adcf4}{}\label{namespacempi__derived__types_a4e591316977c3fa41e3cc0702f6adcf4}
+\index{mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}!create\+\_\+current\+\_\+grid\+\_\+subarray@{create\+\_\+current\+\_\+grid\+\_\+subarray}}
+\index{create\+\_\+current\+\_\+grid\+\_\+subarray@{create\+\_\+current\+\_\+grid\+\_\+subarray}!mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}}
+\subsubsection[{\texorpdfstring{create\+\_\+current\+\_\+grid\+\_\+subarray(ngx, ngy, ngz)}{create_current_grid_subarray(ngx, ngy, ngz)}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp) function mpi\+\_\+derived\+\_\+types\+::create\+\_\+current\+\_\+grid\+\_\+subarray (
+\begin{DoxyParamCaption}
+\item[{integer(idp), intent(in)}]{ngx, }
+\item[{integer(idp), intent(in)}]{ngy, }
+\item[{integer(idp), intent(in)}]{ngz}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacempi__derived__types_a7c5a0ff3b29c3edc9345259a18039046}{}\label{namespacempi__derived__types_a7c5a0ff3b29c3edc9345259a18039046}
+\index{mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}!create\+\_\+grid\+\_\+derived\+\_\+type@{create\+\_\+grid\+\_\+derived\+\_\+type}}
+\index{create\+\_\+grid\+\_\+derived\+\_\+type@{create\+\_\+grid\+\_\+derived\+\_\+type}!mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}}
+\subsubsection[{\texorpdfstring{create\+\_\+grid\+\_\+derived\+\_\+type(mpitype, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local,                   cell\+\_\+start\+\_\+x\+\_\+local, cell\+\_\+start\+\_\+y\+\_\+local, cell\+\_\+start\+\_\+z\+\_\+local)}{create_grid_derived_type(mpitype, nx_local, ny_local, nz_local,                   cell_start_x_local, cell_start_y_local, cell_start_z_local)}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp) function mpi\+\_\+derived\+\_\+types\+::create\+\_\+grid\+\_\+derived\+\_\+type (
+\begin{DoxyParamCaption}
+\item[{integer(isp), intent(in)}]{mpitype, }
+\item[{integer(idp), intent(in)}]{nx\+\_\+local, }
+\item[{integer(idp), intent(in)}]{ny\+\_\+local, }
+\item[{integer(idp), intent(in)}]{nz\+\_\+local, }
+\item[{integer(idp), intent(in)}]{cell\+\_\+start\+\_\+x\+\_\+local, }
+\item[{integer(idp), intent(in)}]{cell\+\_\+start\+\_\+y\+\_\+local, }
+\item[{integer(idp), intent(in)}]{cell\+\_\+start\+\_\+z\+\_\+local}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacempi__derived__types_add427b42c00be9acdf56944f2d55e6e2}{}\label{namespacempi__derived__types_add427b42c00be9acdf56944f2d55e6e2}
+\index{mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}!create\+\_\+grid\+\_\+subarray@{create\+\_\+grid\+\_\+subarray}}
+\index{create\+\_\+grid\+\_\+subarray@{create\+\_\+grid\+\_\+subarray}!mpi\+\_\+derived\+\_\+types@{mpi\+\_\+derived\+\_\+types}}
+\subsubsection[{\texorpdfstring{create\+\_\+grid\+\_\+subarray(mpitype, ng1, ng2, ng3, n1, n2, n3)}{create_grid_subarray(mpitype, ng1, ng2, ng3, n1, n2, n3)}}]{\setlength{\rightskip}{0pt plus 5cm}integer(isp) function mpi\+\_\+derived\+\_\+types\+::create\+\_\+grid\+\_\+subarray (
+\begin{DoxyParamCaption}
+\item[{integer(isp), intent(in)}]{mpitype, }
+\item[{integer(idp), intent(in)}]{ng1, }
+\item[{integer(idp), intent(in)}]{ng2, }
+\item[{integer(idp), intent(in)}]{ng3, }
+\item[{integer(idp), intent(in)}]{n1, }
+\item[{integer(idp), intent(in)}]{n2, }
+\item[{integer(idp), intent(in)}]{n3}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacempi__derived__types_aff1cd1875ad7e3e496b073d20fe156d7}{}\label{namespacempi__derived__types_aff1cd1875ad7e3e496b073d20fe156d7}
