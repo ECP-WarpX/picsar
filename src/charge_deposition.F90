@@ -1672,28 +1672,31 @@ END SUBROUTINE depose_rho_scalar_2_2_2
 !> @param[in] nx,ny,nz number of cells
 !> @param[in] nxguard,nyguard,nzguard number of guard cells
 !> @param[in] lvect: vector length (useless here, just for interface compatibility)
+!
 SUBROUTINE depose_rho_scalar_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz, &
            nxguard,nyguard,nzguard,lvect)
 ! ________________________________________________________________________________________
 	USE constants
 	IMPLICIT NONE
 	
-	INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
-	REAL(num) :: xp(np), yp(np), zp(np), w(np)
-	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	INTEGER(idp)              :: np,nx,ny,nz,nxguard,nyguard,nzguard
+	REAL(num)                 :: xp(np), yp(np), zp(np), w(np)
+	REAL(num)                 :: q,dt,dx,dy,dz,xmin,ymin,zmin
 	INTEGER(idp), INTENT (IN) :: lvect
+	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
 	
-	REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
+	REAL(num)                 :: dxi,dyi,dzi,xint,yint,zint, &
 						 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-	REAL(num) :: x,y,z,wq,invvol,sx1,sx2,sx3,sx4,sx5,sx6,sx7,sx8,sx9
-	REAL(num) :: sx(-1:2), sy(-1:2), sz(-1:2)
-	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+	REAL(num)                 :: x,y,z,wq,invvol,sx1,sx2,sx3,sx4,sx5,sx6,sx7,sx8,sx9
+	REAL(num)                 :: sx(-1:2), sy(-1:2), sz(-1:2)
+	REAL(num), PARAMETER      :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+	INTEGER(idp)              :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+	
 	dxi = 1.0_num/dx
 	dyi = 1.0_num/dy
 	dzi = 1.0_num/dz
 	invvol = dxi*dyi*dzi
+	
 	!DIR$ NOVECTOR
 	DO ip=1,np
 			! --- computes current position in grid units
