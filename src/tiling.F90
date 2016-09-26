@@ -12,10 +12,12 @@ CONTAINS
 
 	SUBROUTINE set_tile_split()
 	IMPLICIT NONE
+
 	
 		! Set tile split for species arrays
 		CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
-		x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+		     x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+
 
 		! ALLOCATE grid tile arrays
 		ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
@@ -28,13 +30,13 @@ CONTAINS
 			       xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
 
 		IMPLICIT NONE
-		INTEGER(idp), INTENT(IN)     :: nspec, nxgrid, nygrid, nzgrid
-		INTEGER(idp), INTENT(IN OUT) ::  ntx, nty, ntz
-		REAL(num), INTENT(IN)        :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
+		INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
+		INTEGER(idp), INTENT(IN OUT)    ::  ntx, nty, ntz
+		REAL(num), INTENT(IN)           :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
 		TYPE(particle_species), INTENT(IN OUT), TARGET, DIMENSION(nspec) :: species_array
-		INTEGER(idp)                 :: ix, iy, iz, ispecies
-		INTEGER(idp)                 :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-		INTEGER(idp)                 :: nx0_last_tile, ny0_last_tile, nz0_last_tile
+		INTEGER(idp)                    :: ix, iy, iz, ispecies
+		INTEGER(idp)                    :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+		INTEGER(idp)                    :: nx0_last_tile, ny0_last_tile, nz0_last_tile
 		TYPE(particle_species), POINTER :: curr_sp
 		TYPE(particle_tile), POINTER    :: curr
 
@@ -210,7 +212,7 @@ CONTAINS
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
-        
+
         CALL add_particle_at_tile_2d(currsp,ixtile,iztile, partx, partz, &
                 partux, partuy, partuz, gaminv, partw)
 
@@ -235,13 +237,14 @@ CONTAINS
         nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
 
         ! Get particle index in array of tile
-	    	ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+		    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
 		    iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
-		    iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+		    iztile = MIN(FLOOR((partz-(z_min_local+zgrid)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
-        
+
         CALL add_particle_at_tile(currsp,ixtile,iytile,iztile, partx, party, partz, &
                 partux, partuy, partuz, gaminv, partw)
 
@@ -252,18 +255,18 @@ CONTAINS
     ! ____________________________________________________________________________________
     SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, &
                 partux, partuy, partuz, gaminv, partw)
-    ! 
-    ! In 2D, add a particle with its properties to the list of particles 
+    !
+    ! In 2D, add a particle with its properties to the list of particles
     ! inside the tile
-    ! ____________________________________________________________________________________            
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
-        
+
         ! ___ Arguments _________________________________________________________
         INTEGER(idp) :: count, nmax, ixt, izt
         REAL(num)    :: partx, partz, partux, partuy, partuz, gaminv, partw
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER                    :: curr
-        
+
         curr=>currsp%array_of_tiles(ixt,1,izt)
         ! If no particles in tile, allocate particle arrays
         IF (.NOT. curr%l_arrays_allocated) THEN
@@ -299,15 +302,15 @@ CONTAINS
     ! __________________________________________________________________________
     SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
                 partux, partuy, partuz, gaminv, partw)
-    ! 
-    ! Add a particle with its properties to the list of particles inside the tile            
-    ! __________________________________________________________________________            
+    !
+    ! Add a particle with its properties to the list of particles inside the tile
+    ! __________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt
         REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
-        
+
         curr=>currsp%array_of_tiles(ixt,iyt,izt)
         ! If no particles in tile, allocate particle arrays
         IF (.NOT. curr%l_arrays_allocated) THEN
@@ -343,15 +346,15 @@ CONTAINS
     ! __________________________________________________________________________
     SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, partx, party, &
             partz, partux, partuy, partuz, gaminv, partw)
-    ! 
-    ! Add a particle with its properties to the list of particles inside the tile            
-    ! __________________________________________________________________________            
+    !
+    ! Add a particle with its properties to the list of particles inside the tile
+    ! __________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew
         REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
-        
+
         curr=>currsp%array_of_tiles(ixt,iyt,izt)
         ! If no particles in tile, allocate particle arrays
         IF (.NOT. curr%l_arrays_allocated) THEN
@@ -400,23 +403,23 @@ CONTAINS
             IF (.NOT. mask(i)) THEN
                 CALL rm_particle_at_tile(currsp,ixt,iyt,izt,i)
                 currsp%species_npart=currsp%species_npart-1
-            ENDIF  
+            ENDIF
         ENDDO
     END SUBROUTINE rm_particles_from_species_with_mask
 
     SUBROUTINE rm_particles_from_species_2d(currsp, ixt, izt, ipart)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         INTEGER(idp), INTENT(IN) :: ipart, ixt, izt
-        
+
         CALL rm_particle_at_tile_2d(currsp,ixt, izt, ipart)
         currsp%species_npart=currsp%species_npart-1
-    END SUBROUTINE rm_particles_from_species_2d    
-    
+    END SUBROUTINE rm_particles_from_species_2d
+
     !!! --- Remove a particle in a given tile from species currsp
     SUBROUTINE rm_particles_from_species(currsp, ixt, iyt, izt, ipart)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         INTEGER(idp), INTENT(IN) :: ipart, ixt, iyt, izt
-        
+
         CALL rm_particle_at_tile(currsp,ixt, iyt, izt, ipart)
         currsp%species_npart=currsp%species_npart-1
     END SUBROUTINE rm_particles_from_species
@@ -427,7 +430,7 @@ CONTAINS
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER                    :: curr
         curr=>currsp%array_of_tiles(ixt,1,izt)
-        
+
         IF (index .EQ. curr%np_tile(1)) THEN
             ! If particle i is last element
             ! Simply decreases particle number
@@ -444,25 +447,25 @@ CONTAINS
             curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
             curr%np_tile=curr%np_tile(1)-1
         END IF
-        
-        ! Avoid memory leaks 
-        ! Reduce array size if # of particles in array lower than 
-        ! 30% of array size 
-        IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN 
-        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN 
+
+        ! Avoid memory leaks
+        ! Reduce array size if # of particles in array lower than
+        ! 30% of array size
+        IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN
+        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
         		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
         		currsp%are_tiles_reallocated(ixt,1,izt)=1
-        	ENDIF 
-        ENDIF 
-    END SUBROUTINE rm_particle_at_tile_2d    
-    
+        	ENDIF
+        ENDIF
+    END SUBROUTINE rm_particle_at_tile_2d
+
     SUBROUTINE rm_particle_at_tile(currsp,ixt,iyt,izt, index)
         IMPLICIT NONE
         INTEGER(idp) :: index, ixt, iyt, izt
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
         curr=>currsp%array_of_tiles(ixt,iyt,izt)
-        
+
         IF (index .EQ. curr%np_tile(1)) THEN
             ! If particle i is last element
             ! Simply decreases particle number
@@ -480,16 +483,16 @@ CONTAINS
             curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
             curr%np_tile=curr%np_tile(1)-1
         END IF
-        
-        ! Avoid memory leaks 
-        ! Reduce array size if # of particles in array lower than 
-        ! 30% of array size 
-        IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN 
-        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN 
+
+        ! Avoid memory leaks
+        ! Reduce array size if # of particles in array lower than
+        ! 30% of array size
+        IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN
+        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
         		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
         		currsp%are_tiles_reallocated(ixt,iyt,izt)=1
-        	ENDIF 
-        ENDIF 
+        	ENDIF
+        ENDIF
     END SUBROUTINE rm_particle_at_tile
 
 
@@ -511,10 +514,10 @@ CONTAINS
     END SUBROUTINE allocate_tile_arrays
 
 	SUBROUTINE init_tile_arrays()
-	IMPLICIT NONE 
-	
+	IMPLICIT NONE
+
 		CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
-	
+
 	END SUBROUTINE init_tile_arrays
 
 
@@ -541,8 +544,8 @@ CONTAINS
         INTEGER(idp)                    :: n1, n2, n3, ng1, ng2, ng3
         TYPE(particle_tile), POINTER    :: curr_tile
         TYPE(particle_species), POINTER :: curr
-        
-        ! Allocate particle tile arrays 
+
+        ! Allocate particle tile arrays
         DO ispecies=1,nspec2 ! LOOP ON SPECIES
             curr=>species_array(ispecies)
             curr%species_npart=0
@@ -556,7 +559,7 @@ CONTAINS
                         n3=curr_tile%nz_cells_tile
                         curr_tile%npmax_tile=MAX(n1*n2*n3*curr%nppcell,1_idp)
                         curr_tile%np_tile(1)=0
-                        ! Set number of guard cells for each tile 
+                        ! Set number of guard cells for each tile
                         IF ((ix .GT. 1) .AND. (ix .LT. ntx2)) THEN
                         	curr_tile%nxg_tile=MAX(nox+1,2_idp)
                         ELSE
@@ -571,14 +574,14 @@ CONTAINS
                         	curr_tile%nzg_tile=MAX(noz+1,2_idp)
                         ELSE
                         	curr_tile%nzg_tile=nzjguards
-                        END IF                        
+                        END IF
                         ! - Allocate arrays of current tile
                        CALL allocate_tile_arrays(curr_tile)
                     END DO
                 END DO
             END DO
         END DO
-        
+
         ! Init partile tile arrays in parallel - first touch policy
         ! - Init array of current tile
         ! - For some reason, don't set all values to zero?????
@@ -643,14 +646,14 @@ CONTAINS
 
     ! _____________________________________________________________________
     !
-    !> Initialize the particle properties (positions and velocities) according to 
+    !> Initialize the particle properties (positions and velocities) according to
     !> the specified distribution.
     !> @brief
     !
-    !> 
+    !>
     !> @details
     SUBROUTINE load_particles
-    ! _____________________________________________________________________    
+    ! _____________________________________________________________________
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER(idp) :: ispecies, l, k, j, ipart
@@ -658,7 +661,7 @@ CONTAINS
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
         REAL(num) :: phi, th, v, usq, clightsq,partvx,partvy,partvz
         INTEGER(idp) :: npart
-        INTEGER(isp) :: err 
+        INTEGER(isp) :: err
         REAL(num), DIMENSION(6) :: rng=0_num
 		    clightsq=1/clight**2
         !!! --- Sets-up particle space distribution (homogeneous case, uniform space distribution - default)
@@ -686,16 +689,16 @@ CONTAINS
                                   v=MAX(1e-10_num,rng(1))
                                   th=2*pi*rng(2)
                                   phi=2*pi*rng(3)
-                                  
+
                                   partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
                                   partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                   partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                                
-                                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)                                
+
+                                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                                   partux = partvx /gaminv
                                   partuy = partvy /gaminv
                                   partuz = partvz /gaminv
-                                                                
+
                                   ! Adds particle to array of tiles of current species
                                   CALL add_particle_to_species(curr, partx, party, partz, &
                                   partux, partuy, partuz, gaminv, partw)
@@ -703,7 +706,7 @@ CONTAINS
                           END DO
                       END DO
                   END DO
-                
+
                 ELSE IF (c_dim.eq.2) THEN
 
                   jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
@@ -722,23 +725,23 @@ CONTAINS
                                   v=MAX(1e-10_num,rng(1))
                                   th=2*pi*rng(2)
                                   phi=2*pi*rng(3)
-                                  
+
                                   partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
                                   partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                   partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                                
-                                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)                                
+
+                                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                                   partux = partvx /gaminv
                                   partuy = partvy /gaminv
                                   partuz = partvz /gaminv
-                                                                
+
                                   ! Adds particle to array of tiles of current species
                                   CALL add_particle_to_species_2d(curr, partx, partz, &
                                   partux, partuy, partuz, gaminv, partw)
                               END DO
                       END DO
                   END DO
-                  
+
                 ENDIF
             END DO ! END LOOP ON SPECIES
         ENDIF
@@ -766,16 +769,16 @@ CONTAINS
                                 v=MAX(1e-10_num,rng(4))
                                 th=2*pi*rng(5)
                                 phi=2*pi*rng(6)
-                                
+
                                 partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
                                 partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                                 partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
-                                
-                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)                                
+
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                                 partux = partvx /gaminv
                                 partuy = partvy /gaminv
                                 partuz = partvz /gaminv
-                                
+
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
                                 partux, partuy, partuz, gaminv, partw)
@@ -832,17 +835,17 @@ CONTAINS
 
         ALLOCATE(temp(1:new_size))
         ! reshape array
-        IF (new_size .GT. old_size) THEN 
+        IF (new_size .GT. old_size) THEN
         	temp(1:old_size)=arr(1:old_size)
         ELSE
-        	temp(1:new_size)=arr(1:new_size)      	 
+        	temp(1:new_size)=arr(1:new_size)
         ENDIF
         DEALLOCATE(arr)
         ALLOCATE(arr(1:new_size))
 		arr=temp
         DEALLOCATE(temp)
     END SUBROUTINE resize_1D_array_real
-    
+
     SUBROUTINE resize_2D_array_real(arr, nx_old,nx_new,ny_old,ny_new)
         IMPLICIT NONE
         REAL(num), DIMENSION(:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
@@ -851,19 +854,19 @@ CONTAINS
 
         ALLOCATE(temp(1:nx_new,1:ny_new))
         ! reshape array
-        IF (nx_new .GT. nx_old) THEN 
-        	IF (ny_new .GT. ny_old) THEN 
+        IF (nx_new .GT. nx_old) THEN
+        	IF (ny_new .GT. ny_old) THEN
        		   temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
-        	ELSE 
+        	ELSE
         		temp(1:nx_old,1:ny_new) = arr(1:nx_old,1:ny_new)
         	ENDIF
         ELSE
-        	IF (ny_new .GT. ny_old) THEN 
+        	IF (ny_new .GT. ny_old) THEN
         		temp(1:nx_new,1:ny_old) = arr(1:nx_new,1:ny_old)
-        	ELSE 
+        	ELSE
         		temp(1:nx_new,1:ny_new) = arr(1:nx_new,1:ny_new)
-        	ENDIF        
-        ENDIF 
+        	ENDIF
+        ENDIF
         DEALLOCATE(arr)
         ALLOCATE(arr(1:nx_new,1:ny_new))
 		arr=temp
@@ -874,7 +877,7 @@ CONTAINS
     	INTEGER(idp), INTENT(IN OUT) :: npart
     	INTEGER(idp) :: ispecies
     	TYPE(particle_species), POINTER :: curr
-    	
+
     	npart=0
 		DO ispecies=1, nspecies ! LOOP ON SPECIES
 			curr=> species_parray(ispecies)
@@ -883,8 +886,8 @@ CONTAINS
 
     END SUBROUTINE get_local_number_of_part
     ! ----- SUBROUTINES DEDICATED FOR PYTHON INTERFACE
-    
-    !This subroutine returns pointer arrays on a given tile 
+
+    !This subroutine returns pointer arrays on a given tile
     ! of a given species (USED mainly by python interface)
     SUBROUTINE point_to_tile(ispecies, ix, iy, iz)
         USE python_pointers
@@ -978,14 +981,14 @@ CONTAINS
 		currsp%name=sname
 		currsp%sorting_period=sorting_period
 		currsp%sorting_start=sorting_start
-		IF (rank .EQ. 0) THEN 
+		IF (rank .EQ. 0) THEN
 			PRINT *, "species name: ", trim(adjustl(sname))
 			PRINT *, "species mass: ", mss
 			PRINT *, "species charge: ", chrg
 			PRINT *, "sorting period: ", currsp%sorting_period
 			PRINT *, "sorting start: ", currsp%sorting_start
 			PRINT *, ""
-		ENDIF 
+		ENDIF
     END SUBROUTINE set_particle_species_properties
 
     !!! --- Add particle to array of tiles
@@ -1003,7 +1006,7 @@ CONTAINS
                 partux(i), partuy(i), partuz(i), gaminv(i), partw(i))
         END DO
     END SUBROUTINE py_add_particles_to_species
-        
+
     !!! --- Get logical array are_tiles_reallocated for a given species
     SUBROUTINE get_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
         IMPLICIT NONE
@@ -1013,9 +1016,9 @@ CONTAINS
         currsp=>species_parray(nsp)
 
         atrealloc=currsp%are_tiles_reallocated
-        
+
     END SUBROUTINE get_are_tiles_reallocated
-    
+
      !!! --- Set logical array are_tiles_reallocated for a given species
     SUBROUTINE set_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
         IMPLICIT NONE
@@ -1025,22 +1028,22 @@ CONTAINS
         currsp=>species_parray(nsp)
 
         currsp%are_tiles_reallocated=atrealloc
-        
+
     END SUBROUTINE set_are_tiles_reallocated
 
 ! ________________________________________________________________________________________
     SUBROUTINE estimate_memory_consumption
 !
 ! Estimate the memory that will be used in the simulation
-!    
-! ________________________________________________________________________________________    
+!
+! ________________________________________________________________________________________
       USE shared_data
       USE constants
       USE particles
       USE time_stat
-      USE params    
+      USE params
       USE fields
-      IMPLICIT NONE    
+      IMPLICIT NONE
 
       TYPE(particle_species), POINTER :: curr
       TYPE(particle_tile), POINTER    :: curr_tile
@@ -1051,15 +1054,15 @@ CONTAINS
       REAL(num)                       :: mpipartsize
       REAL(num)                       :: tilepartsize
       REAL(num)                       :: tilefieldsize
-      REAL(num)                       :: mpifieldsize      
-      REAL(num)                       :: tilefieldcurrent 
+      REAL(num)                       :: mpifieldsize
+      REAL(num)                       :: tilefieldcurrent
       CHARACTER(len=2)                :: unity
 
       ! _________________________________________
       ! Memory used for particles
-      
+
       IF (c_dim.eq.3) THEN
-      
+
         !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
         !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
         !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp,nxc,nyc,nzc) &
@@ -1072,13 +1075,13 @@ CONTAINS
               DO ispecies=1, nspecies
 
                  curr=>species_parray(ispecies)
-                        
+
                  curr_tile=>curr%array_of_tiles(ix,iy,iz)
                  nbp=curr_tile%npmax_tile  ! size of the arrays
                  nxc=curr_tile%nx_cells_tile
                  nyc=curr_tile%ny_cells_tile
-                 nzc=curr_tile%nz_cells_tile 
-               
+                 nzc=curr_tile%nz_cells_tile
+
                  mpipartsize = mpipartsize + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
                  ncloc = ncloc + nxc*nyc*nzc
 
@@ -1101,12 +1104,12 @@ CONTAINS
               DO ispecies=1, nspecies
 
                  curr=>species_parray(ispecies)
-                        
+
                  curr_tile=>curr%array_of_tiles(ix,1,iz)
                  nbp=curr_tile%npmax_tile  ! size of the arrays
                  nxc=curr_tile%nx_cells_tile
-                 nzc=curr_tile%nz_cells_tile    
-               
+                 nzc=curr_tile%nz_cells_tile
+
                  mpipartsize = mpipartsize + nbp*8*13 ! 8 for double, 13 for x,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
                  ncloc = ncloc + nxc*nzc
 
@@ -1115,7 +1118,7 @@ CONTAINS
         END DO! END LOOP ON TILES
         !$OMP END PARALLEL DO
       END IF
-      
+
       IF (c_dim.eq.3) THEN
         tilepartsize = mpipartsize/(ntilex*ntiley*ntilez)
         ncloc = ncloc / (ntilex*ntiley*ntilez)
@@ -1123,7 +1126,7 @@ CONTAINS
         tilepartsize = mpipartsize/(ntilex*ntilez)
         ncloc = ncloc / (ntilex*ntilez)
       ENDIF
-      
+
       ! _________________________________________
       ! Memory used for fields
 
@@ -1132,7 +1135,7 @@ CONTAINS
         tilefieldsize = mpifieldsize/(ntilex*ntiley*ntilez)
       ELSE IF (c_dim.eq.2) THEN
         mpifieldsize = (nx+2*nxguards+1)*(nz+2*nzguards+1)*8.*6.
-        tilefieldsize = mpifieldsize/(ntilex*ntilez)      
+        tilefieldsize = mpifieldsize/(ntilex*ntilez)
       ENDIF
 
       ! _________________________________________
@@ -1140,14 +1143,14 @@ CONTAINS
       IF (c_dim.eq.3) THEN
         tilefieldcurrent = (nx+2*nxjguards+1)*(ny+2*nyjguards+1)*(nz+2*nzjguards+1)*8.*3./(ntilex*ntiley*ntilez)
       ELSE IF (c_dim.eq.2) THEN
-        tilefieldcurrent = (nx+2*nxjguards+1)*(nz+2*nzjguards+1)*8.*3./(ntilex*ntilez)      
+        tilefieldcurrent = (nx+2*nxjguards+1)*(nz+2*nzjguards+1)*8.*3./(ntilex*ntilez)
       ENDIF
       ! _________________________________________
       ! Outputs
-      
+
       IF (rank.eq.0) WRITE(0,*)
       IF (rank.eq.0) WRITE(0,*) 'Memory balance:'
-      
+
        if (mpipartsize > 1024.) then
         mpipartsize = mpipartsize/1024.
         unity = 'Ko'
@@ -1155,8 +1158,8 @@ CONTAINS
       if (mpipartsize > 1024.) then
         mpipartsize = mpipartsize/1024.
         unity = 'Mo'
-      endif     
-      
+      endif
+
       IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the particles',mpipartsize,unity
 
       if (tilepartsize > 1024.) then
@@ -1167,7 +1170,7 @@ CONTAINS
         tilepartsize = tilepartsize/1024.
         unity = 'Mo'
       endif
-      
+
       IF (rank.eq.0) WRITE(0,*) 'Average tile size for particles',tilepartsize,unity
 
 
@@ -1179,9 +1182,9 @@ CONTAINS
         mpifieldsize = mpifieldsize/1024.
         unity = 'Mo'
       endif
-  
+
       IF (rank.eq.0) WRITE(0,*) 'Average number of cells per tiles',ncloc
-      
+
       !IF (rank.eq.0) WRITE(0,*)
       IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the fields',mpifieldsize,unity
 
@@ -1189,7 +1192,7 @@ CONTAINS
         tilefieldsize = tilefieldsize/1024.
         unity = 'Ko'
       endif
-      
+
       IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity
 
       if (tilefieldcurrent > 1024.) then
@@ -1197,7 +1200,7 @@ CONTAINS
         unity = 'Ko'
       endif
 
-      IF (rank.eq.0) WRITE(0,*) 'Average tile size for currents',tilefieldcurrent,unity   
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for currents',tilefieldcurrent,unity
       IF (rank.eq.0) WRITE(0,*)
 
     END SUBROUTINE estimate_memory_consumption

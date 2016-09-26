@@ -84,45 +84,45 @@ END MODULE fields
 
 ! ________________________________________________________________________________________
 !> Module containing the field tile data structure
-MODULE grid_tilemodule !#do not parse 
+MODULE grid_tilemodule !#do not parse
 !
-! 
+!
 ! ________________________________________________________________________________________
-USE constants 
+USE constants
 TYPE grid_tile
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile, &
  								bxtile, bytile, bztile,  jxtile, jytile, jztile,rhotile
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: extile
     !dir$ attributes align:64 :: eytile
     !dir$ attributes align:64 :: eztile
-    !dir$ attributes align:64 :: bxtile  
+    !dir$ attributes align:64 :: bxtile
     !dir$ attributes align:64 :: bytile
     !dir$ attributes align:64 :: bztile
     !dir$ attributes align:64 :: jxtile
-    !dir$ attributes align:64 :: jytile  
+    !dir$ attributes align:64 :: jytile
     !dir$ attributes align:64 :: jztile
-    !dir$ attributes align:64 :: rhotile                     
+    !dir$ attributes align:64 :: rhotile
 #endif
 		! FastMEM attributes to manage where the data are allocated
-    !DIR ATTRIBUTES FASTMEM  :: extile 					
+    !DIR ATTRIBUTES FASTMEM  :: extile
     !DIR ATTRIBUTES FASTMEM  :: eytile
-    !DIR ATTRIBUTES FASTMEM  :: eztile     	 
-    !DIR ATTRIBUTES FASTMEM  :: bxtile 					
+    !DIR ATTRIBUTES FASTMEM  :: eztile
+    !DIR ATTRIBUTES FASTMEM  :: bxtile
     !DIR ATTRIBUTES FASTMEM  :: bytile
-    !DIR ATTRIBUTES FASTMEM  :: bztile        
-    !DIR ATTRIBUTES FASTMEM  :: jxtile 					
+    !DIR ATTRIBUTES FASTMEM  :: bztile
+    !DIR ATTRIBUTES FASTMEM  :: jxtile
     !DIR ATTRIBUTES FASTMEM  :: jytile
-    !DIR ATTRIBUTES FASTMEM  :: jztile       
-    !DIR ATTRIBUTES FASTMEM  :: rhotile      
-      			
+    !DIR ATTRIBUTES FASTMEM  :: jztile
+    !DIR ATTRIBUTES FASTMEM  :: rhotile
+
 END TYPE
 TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
 END MODULE grid_tilemodule
 
 !===============================================================================
 !> Module containing the Fortran object descriptor representing a particle tile
-MODULE particle_tilemodule !#do not parse 
+MODULE particle_tilemodule !#do not parse
 !===============================================================================
 USE constants
 TYPE particle_tile
@@ -146,7 +146,7 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
     !DIR ATTRIBUTES FASTMEM  :: part_x
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
-    !DIR ATTRIBUTES FASTMEM  :: part_y    
+    !DIR ATTRIBUTES FASTMEM  :: part_y
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
     !DIR ATTRIBUTES FASTMEM  :: part_z
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
@@ -160,39 +160,39 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ex
     !DIR ATTRIBUTES FASTMEM  :: part_ex
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ey
-    !DIR ATTRIBUTES FASTMEM  :: part_ey    
+    !DIR ATTRIBUTES FASTMEM  :: part_ey
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ez
     !DIR ATTRIBUTES FASTMEM  :: part_ez
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bx
-    !DIR ATTRIBUTES FASTMEM  :: part_bx    
+    !DIR ATTRIBUTES FASTMEM  :: part_bx
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_by
-    !DIR ATTRIBUTES FASTMEM  :: part_by    
+    !DIR ATTRIBUTES FASTMEM  :: part_by
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
-    !DIR ATTRIBUTES FASTMEM  :: part_bz    
+    !DIR ATTRIBUTES FASTMEM  :: part_bz
     REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
     !DIR ATTRIBUTES FASTMEM  :: pid
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_x
     !dir$ attributes align:64 :: part_y
     !dir$ attributes align:64 :: part_z
-    !dir$ attributes align:64 :: part_ux  
+    !dir$ attributes align:64 :: part_ux
     !dir$ attributes align:64 :: part_uy
     !dir$ attributes align:64 :: part_uz
     !dir$ attributes align:64 :: part_gaminv
-    !dir$ attributes align:64 :: part_ex  
+    !dir$ attributes align:64 :: part_ex
     !dir$ attributes align:64 :: part_ey
     !dir$ attributes align:64 :: part_ez
     !dir$ attributes align:64 :: part_bx
     !dir$ attributes align:64 :: part_by
     !dir$ attributes align:64 :: part_bz
-    !dir$ attributes align:64 :: pid                         
+    !dir$ attributes align:64 :: pid
 #endif
 END TYPE
 END MODULE particle_tilemodule
 
 !===============================================================================
 !> Module containing the Fortran object descriptor representing a particle species
-MODULE particle_speciesmodule !#do not parse 
+MODULE particle_speciesmodule !#do not parse
 !===============================================================================
 use particle_tilemodule
 use constants
@@ -234,7 +234,7 @@ END MODULE particle_speciesmodule
 MODULE tile_params
 !===============================================================================
 ! # of particle tiles in each dimension
-USE constants 
+USE constants
 !> Number of tile in the x direction
 INTEGER(idp) :: ntilex
 !> Number of tile in the y direction
@@ -292,7 +292,7 @@ USE constants
 
 	!> iteration number
 	INTEGER(idp)         :: it
-	!> Total number of steps 
+	!> Total number of steps
 	INTEGER(idp)         :: nsteps
 	REAL(num)            :: g0,b0,dt,w0,dtcoef,tmax
 	REAL(num)            :: theta,nlab,wlab,nc,w0_l,w0_t,lambdalab
@@ -305,20 +305,20 @@ USE constants
 	INTEGER(isp) :: seed
 	!> Current deposition method
 	INTEGER(idp) :: currdepo
-	!> Charge deposition method 
+	!> Charge deposition method
 	INTEGER(idp) :: rhodepo
-	!> Field gathering method	
+	!> Field gathering method
 	INTEGER(idp) :: fieldgave
-	!> Type of comm routine to use for particles	
-	INTEGER(idp) :: partcom 
-	!> Field gathering + part. pusher seperated flag	
+	!> Type of comm routine to use for particles
+	INTEGER(idp) :: partcom
+	!> Field gathering + part. pusher seperated flag
 	INTEGER(idp) :: fg_p_pp_seperated
 	!> Vector size for the current deposition
-	INTEGER(idp) :: LVEC_curr_depo 
-	!> Vector size for the charge deposition	
+	INTEGER(idp) :: LVEC_curr_depo
+	!> Vector size for the charge deposition
 	INTEGER(idp) :: LVEC_charge_depo
 	!> Vector size for the field gathering
-	INTEGER(idp) :: LVEC_fieldgathe 
+	INTEGER(idp) :: LVEC_fieldgathe
 	!> MPI buffer size
 	INTEGER(isp) :: mpi_buf_size
 
@@ -336,12 +336,12 @@ INTEGER(isp) :: status(MPI_STATUS_SIZE)
 INTEGER(isp) :: derived_type_grid
 INTEGER(isp) :: derived_subarray_grid
 INTEGER(isp), DIMENSION(100) :: mpi_dtypes
-LOGICAL(isp), DIMENSION(100) :: is_dtype_init = .TRUE. 
+LOGICAL(isp), DIMENSION(100) :: is_dtype_init = .TRUE.
 END MODULE mpi_type_constants
 
 !===============================================================================
 !> Module for the communications
-MODULE communications  !#do not parse 
+MODULE communications  !#do not parse
 !===============================================================================
 use constants
 INTEGER(isp) :: reqperjxx(4),reqperjxy(4),reqperjxz(4)
@@ -354,9 +354,9 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
       !DIR ATTRIBUTES FASTMEM  :: part_x
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
       !dir$ attributes align:64 :: part_y
-      !DIR ATTRIBUTES FASTMEM  :: part_y    
+      !DIR ATTRIBUTES FASTMEM  :: part_y
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
-      !dir$ attributes align:64 :: part_z      
+      !dir$ attributes align:64 :: part_z
       !DIR ATTRIBUTES FASTMEM  :: part_z
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
       !dir$ attributes align:64 :: part_ux
@@ -376,7 +376,7 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: boundid
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_npart
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_pos
-  END TYPE    
+  END TYPE
 
   TYPE mpi_buffer
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_x
@@ -384,7 +384,7 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
       !DIR ATTRIBUTES FASTMEM  :: part_x
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_y
       !dir$ attributes align:64 :: part_y
-      !DIR ATTRIBUTES FASTMEM  :: part_y    
+      !DIR ATTRIBUTES FASTMEM  :: part_y
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_z
       !dir$ attributes align:64 :: part_z
       !DIR ATTRIBUTES FASTMEM  :: part_z
@@ -418,16 +418,16 @@ use constants
 	!> Activation of the outputs
 	INTEGER(idp)                           :: timestat_activated
 	!> Period for the outputs
-	INTEGER(idp)                           :: timestat_period  
+	INTEGER(idp)                           :: timestat_period
 	!> First iteration for the time statistics
 	INTEGER(idp)                           :: timestat_itstart
-	!> ! Flag to activate the time statistics per iteration 
-	INTEGER(idp)                           :: timestat_perit  
+	!> ! Flag to activate the time statistics per iteration
+	INTEGER(idp)                           :: timestat_perit
 	!> MPI local times for the initialization
-	REAL(num), dimension(5)                :: init_localtimes 
+	REAL(num), dimension(5)                :: init_localtimes
 
 	!> MPI local times for the main loop
-	REAL(num), dimension(20)               :: localtimes 
+	REAL(num), dimension(20)               :: localtimes
 	!> Buffer for the output
 	REAL(num), DIMENSION(:,:), POINTER     :: buffer_timestat
 	INTEGER(idp)                           :: itimestat
@@ -483,11 +483,11 @@ MODULE output_data !#do not parse
 	!> Array of activation flags
 	INTEGER(isp), dimension(10) :: temdiag_act_list
 	!> Filename for the different temporal diags
-	CHARACTER(len=string_length), dimension(10) :: temdiag_name_list 
+	CHARACTER(len=string_length), dimension(10) :: temdiag_name_list
 	!> Array of index to locate the value in the big array
-	INTEGER(isp), dimension(10) :: temdiag_i_list 
+	INTEGER(isp), dimension(10) :: temdiag_i_list
 	!> Array containing the number of values in the big array
-	INTEGER(isp), dimension(10) :: temdiag_nb_values                 
+	INTEGER(isp), dimension(10) :: temdiag_nb_values
 
   !> Number of temoral diags
 	INTEGER(idp) :: temdiag_nb
@@ -498,7 +498,7 @@ MODULE output_data !#do not parse
 	INTEGER(idp) :: temdiag_frequency
 	INTEGER(idp) :: temdiag_format
 	!> Big array containing all the temporal diag at a given iteration
-	REAL(num), dimension(:),allocatable :: temdiag_array             
+	REAL(num), dimension(:),allocatable :: temdiag_array
 
 	! Computation flags
 	LOGICAL      :: divE_computed
@@ -523,7 +523,7 @@ END MODULE output_data
 !> Module for the timing. This module should be merged with the time statistics
 MODULE timing
 !===============================================================================
-	use constants 
+	use constants
 	REAL(num) :: dep_curr_time=0._num
 
 END MODULE timing
@@ -540,7 +540,7 @@ MODULE shared_data
 	!----------------------------------------------------------------------------
 	INTEGER(isp) :: errcode, provided, comm, tag
 	INTEGER(idp) :: rank
-	INTEGER(isp) :: coordinates(3) 
+	INTEGER(isp) :: coordinates(3)
 	INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
 	INTEGER(idp) :: x_coords, proc_x_min, proc_x_max
 	INTEGER(idp):: y_coords, proc_y_min, proc_y_max
@@ -566,7 +566,7 @@ MODULE shared_data
 	INTEGER(idp)                        :: nx_global_grid_min, nx_global_grid_max
 	INTEGER(idp)                        :: ny_global_grid_min, ny_global_grid_max
 	INTEGER(idp)                        :: nz_global_grid_min, nz_global_grid_max
-	! Domain axis 
+	! Domain axis
 	LOGICAL(idp)                        :: l_axis_allocated=.FALSE.
 	REAL(num), DIMENSION(:), POINTER    :: x_global, y_global, z_global
 	REAL(num), DIMENSION(:), POINTER    :: xb_global, yb_global, zb_global
@@ -591,7 +591,7 @@ MODULE shared_data
 
 	! Sorting
 	!> Activation of the sorting
-	INTEGER(idp) :: sorting_activated 
+	INTEGER(idp) :: sorting_activated
 	!> Bin space steps
 	REAL(NUM)    :: sorting_dx, sorting_dy, sorting_dz
 	!> Shift of the sorting grid in respect of the origin
@@ -613,24 +613,26 @@ MODULE shared_data
 	REAL(num) :: z_grid_min, z_grid_max
 	REAL(num) :: z_grid_min_local, z_grid_max_local
 
+  !> Moving window offset z-position
+  REAL(num) :: zgrid =0.
+
 	!> Total charge density
 	REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 	!> Electric Field divergence
 	REAL(num), POINTER, DIMENSION(:,:,:) :: dive
 
-	! Values used for load balancing 
-	REAL(num) :: mpitime_per_it, max_time_per_it, min_time_per_it 
-	REAL(num) :: global_time_per_cell, global_time_per_part 
+	! Values used for load balancing
+	REAL(num) :: mpitime_per_it, max_time_per_it, min_time_per_it
+	REAL(num) :: global_time_per_cell, global_time_per_part
 	REAL(num) :: local_time_cell, local_time_part
 	INTEGER(idp) :: npart_local, npart_global
-
 END MODULE shared_data
 
 !===============================================================================
-!> Module for the Maxwell Solver coefficients 
+!> Module for the Maxwell Solver coefficients
 MODULE kyee_em3d
 !===============================================================================
-	USE constants 
+	USE constants
 	REAL(num) :: alphax = 0.58333333333333337  ! 7./12.
 	REAL(num) :: betaxy = 0.083333333333333329 ! 1./12.
 	REAL(num) :: betaxz = 0.083333333333333329 ! 1./12.
@@ -668,11 +670,11 @@ MODULE python_pointers
 	REAL(num), DIMENSION(:), POINTER :: partx
 	!dir$ attributes align:64 :: partx
 	!DIR ATTRIBUTES FASTMEM  :: partx
-  !> array for particle y position	
+  !> array for particle y position
 	REAL(num), DIMENSION(:), POINTER :: party
 	!dir$ attributes align:64 :: party
 	!DIR ATTRIBUTES FASTMEM  :: party
-  !> array for particle z position	
+  !> array for particle z position
 	REAL(num), DIMENSION(:), POINTER :: partz
 	!dir$ attributes align:64 :: partz
 	!DIR ATTRIBUTES FASTMEM  :: partz
@@ -680,11 +682,11 @@ MODULE python_pointers
 	REAL(num), DIMENSION(:), POINTER :: partux
 	!dir$ attributes align:64 :: partux
 	!DIR ATTRIBUTES FASTMEM  :: partux
-  !> array for particle y momentum	
+  !> array for particle y momentum
 	REAL(num), DIMENSION(:), POINTER :: partuy
 	!dir$ attributes align:64 :: partuy
 	!DIR ATTRIBUTES FASTMEM  :: partuy
-  !> array for particle z momentum	
+  !> array for particle z momentum
 	REAL(num), DIMENSION(:), POINTER :: partuz
 	!dir$ attributes align:64 :: partuz
 	!DIR ATTRIBUTES FASTMEM  :: partuz
@@ -714,7 +716,3 @@ MODULE python_pointers
 	!dir$ attributes align:64 :: partbz
 	!DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers
-
-
-
-

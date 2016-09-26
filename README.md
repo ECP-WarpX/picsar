@@ -26,6 +26,7 @@ generation of exascale computers.
 * MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
 * OpenMP parallelization for intranode parallelism,
 * MPI-IO for fast parallel outputs.
+* Vectorized subroutines (field gathering, classical current deposition)
 
 ####C.  Python glue: 
 
@@ -36,20 +37,140 @@ generation of exascale computers.
 **2. Compiling**
 -------------
 
-* Python installation: in order to install picsar in the form of a Python module, read detailed instructions in the file `INSTALL_PYTHON.md`
+####A.  Python installation 
 
+In order to install picsar in the form of a Python module, read detailed instructions in the file `INSTALL_PYTHON.md`
 
-* Fortran installation: To build the code in full Fotran 90 read instructions from the file  `INSTALL_FORTRAN.md` 
+####B.  Fortran installation 
+
+To build the code in full Fotran 90 read instructions from the file  `INSTALL_FORTRAN.md` 
 
 **3. Running simulations**
 -----------------------
 
-* Python mode: an example of python script `test.py` is provided in `example_scripts_python`. To run this script in parallel, simply type : mpirun -np NMPI python test.py with NMPI the number of MPI processes. 
+####A.  Python mode
 
-* Fortran mode: PICSAR input parameters must be provided in an input file named "input_file.pxr" in the folder where the code is ran. An example (`test.pxr`) of input file is provided in `example_decks_fortran/`. To run the executable on n MPI processes: "mpirun -np n ./picsar". Notice that if nprocx, nprocy and nprocz are provided in the input file as part of the "cpusplit" section, then n must be equal to nprocx x nprocy x nprocz with nprocx, nprocy, nprocz the number of processors along x,y,z directions. Otherwise, if nprocx, nprocy and nprocz are not defined, the code performs automatic CPU split in each direction. User can specify some arguments in the command line. For the moments this feature supports only the number of tiles in each dimension and the init of particle distribution. Ex: mpirun -np 1 ./picsar -ntilex ntx -ntiley nty -ntilez ntz -distr 1 with ntx, nty and ntz the number of tiles in each dimension (default is one) and distr the type of particle init ("1" for init on the x-axis of the grid and "2" for Random).
+An example of python script `test.py` is provided in `example_scripts_python`. To run this script in parallel, simply type :
+```
+mpirun -np NMPI python test.py 
+```
+with NMPI the number of MPI processes. 
 
-* If the code (Fortran or python version) was compiled with OpenMP, you can set "x" OpenMP threads per MPI task by defining "export OMP_NUM_THREADS=x" before starting the simulation (default varies with the OS). OpenMP scheduling for balancing loads between tiles can be adjusted at runtime by setting the environment variable OMP_SCHEDULE to either static, guided or dynamic. To ensure that threads have enough memory space on the stack, set OMP_STACKSIZE to high enough value. In practice, export OMP_STACKSIZE=32M should be sufficient for most of test cases.   
+####B.  Fortran mode
+
+PICSAR input parameters must be provided in an input file named `input_file.pxr` in the folder where the code is ran. An example (`test.pxr`) of input file is provided in `example_decks_fortran/`. To run the executable on n MPI processes:
+```
+mpirun -np n ./picsar
+```
+Notice that if `nprocx`, `nprocy` and `nprocz` are provided in the input file as part of the `cpusplit` section, then n must be equal to `nprocx x nprocy x nprocz` with `nprocx`, `nprocy`, `nprocz` the number of processors along x,y,z directions. Otherwise, if `nprocx`, `nprocy` and `nprocz` are not defined, the code performs automatic CPU split in each direction. User can specify some arguments in the command line. For the moments this feature supports only the number of tiles in each dimension and the init of particle distribution. Ex: `mpirun -np 1 ./picsar -ntilex ntx -ntiley nty -ntilez ntz -distr 1` with `ntx`, `nty` and `ntz` the number of tiles in each dimension (default is one) and distr the type of particle init ("1" for init on the x-axis of the grid and "2" for Random).
+
+####C.  OpenMP
+
+If the code (Fortran or python version) was compiled with OpenMP, you can set "x" OpenMP threads per MPI task by defining `export OMP_NUM_THREADS=x` before starting the simulation (default varies with the OS). OpenMP scheduling for balancing loads between tiles can be adjusted at runtime by setting the environment variable `OMP_SCHEDULE` to either `static`, `guided` or `dynamic`. To ensure that threads have enough memory space on the stack, set `OMP_STACKSIZE` to high enough value. In practice, `export OMP_STACKSIZE=32M` should be sufficient for most of test cases.   
 
 **4. Outputs**
 -----------------------
-For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`. In the Fotran version, the output frequency is controlled by setting the flag output_frequency in the output section of the input_file.pixr. Use output_frequency=-1 to disable outputs. The code places output files in a "RESULTS" directory where the code is ran. This directory has to be created before running the code in your submission script. 
+
+####A.  Field diagnostics
+
+For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`. In the Fortran version, the output frequency is controlled by setting the flag `output_frequency` in the output section of the `input_file.pixr`. Use `output_frequency=-1` to disable outputs. The code places output files in a `RESULTS` directory where the code is ran. This directory has to be created before running the code in your submission script. 
+
+####B.  Temporal diagnostics
+
+Temporal diagnosctics enable to outpout the time evolution of several physical quantities such as the species kinetic energies, the field energies and the L2 norm of divergence of the field minus the charge. Temporal diagnostics can be configurated using the section `temporal`. Output format can be controled using the keyword `format`.
+Temporal output files can be binary files (`format=1`) or ascii files (`format=1`).
+The output frequency can be controled via the keyword `frequency`.
+The different diagnostics can be activated with their flags:
+
+* `kinE=1` for the kinetic energies
+* `exE=1`, `eyE=1`, `ezE=1`: electric field energies
+* `bxE=1`, `byE=1`, `bzE=1`: magnetic field energies
+* `divE-rho=1`: the L2 norm of divergence of the field minus the charge
+
+####C.  Time statistics
+
+Time statistics refer to the computation of the simulation times spend in each significant part of the code. A final time survey is automatically provided at the end of a simulation with the stand-alone code.
+The time statisctics function enables to outpout in files the time spend in the main subroutines for each iteration.
+It corresponds to the section named `timestat`.
+
+**5. Configuration of the input file**
+-----------------------
+
+The input file is divided into sections. Sections start by `section::name` where `name` is the section name and end with `end::name`.
+
+####A. cpusplit section
+
+This section enables to configure the MPI decomposition and other parameters:
+
+* `nprocx`, `nprocy`, `nprocz`: number of processors in each direction x, y, z
+* `topology`: the MPI topology, 0 corresponds to cartesian
+
+####B. main section
+
+This section enables to configure the general simulation parameters:
+
+* `nx`, `ny`, `nz`: number of grid points (domain discretization) in each direction
+* `xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax`: Origin of simulation axes
+* `t_max`: final time
+* `nsteps`: can be specified instead of the final time, else nsteps is determine from the final time and the CFL condition
+* `ntilex`, `ntiley`, `ntilez`: MPI sub-domain discetization into tiles
+* `nguardsx`, `nguardsy`, `nguardsz`: guard cells for the field arrays
+* `njguardsx`, `njguardsy`, `njguardsz`: guard cells for the current arrays
+
+####C. solver section
+
+This section, `section::solver`, enables to controle the solver and algorithm parameters:
+
+* `norderx`, `nordery`, `norderz`: Maxwell solver orders
+* `nox`, `noy`, `noz`: shape factor (interpolation) orders, note that optimized subroutines only work when `nox=noy=noz`
+* `currdepo`: current deposition algorithm
+   * `=0`: Esirkepov with tiling/OpenMP and optimized for AVX512. For the moment, in 3D, only `nox=noy=noz=1` provides better performances.
+   * `=1`: Esirkepov with tiling/OpenMP and non-optimized. The functions provided for `nox=noy=noz` are much faster than using different orders (in this case, an arbitrary order subroutine with many if-statements is used).
+   * `=2`: Esirkepov sequential
+   * `=3`: Classical current deposition with Tiling/OpenMP and optimized/vectorized subroutines. This provides the best performance even with AVX architectures.
+   * `=4`: Classical current deposition with Tiling/openMP and non-optimized subroutines.
+   * `=5`: Classical current deposition sequential
+   
+* `fieldgave`: field gathering
+   * `=0`: vectorized subroutine when `nox=noy=noz`
+   * `=1`: non-optimized subroutines
+   
+* `rhodepo`: charge deposition
+  * `=0`: vectorized subroutines when `nox=noy=noz`
+  * `=1`: non-optimized subroutines
+   
+- `partcom`: particle communications
+  - `=0`: Communications between tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
+  - `=1`: Communications are done seperatly
+
+####D. Plasma section
+
+This section, `section::plasma`, enables to controle the plasma parameters:
+
+* `nlab`: density in the laboratory
+
+* `pdistr`: initial distribution
+  * `=1`: ordered space initialization
+  * `=2`: random space initialization
+  
+####E. Species section 
+
+This section, `section::species`, enables to configure the species properties. It has to be repeated for each species. 
+
+* `name`: species name
+* `mass`: species mass normalized to the electronic mass
+* `charge`: species charge normalized to the positron charge
+* `nppcell`: number of particles per cell
+* `x_min`, `x_max`, `y_min`, `y_max`, `z_min`, `z_max`: plasma expansion in each direction
+* `vdrift_x`, `vdrift_y`, `vdrift_z`: drift velocity in each direction
+* `vth_x`, `vth_y`, `vth_z`: thermal velocity in each direction
+* `sorting_period`: period of the sorting
+* `sorting_start`: beginning of the sorting
+
+####F. Sorting section
+
+This section, `section::sorting`, enables to controle the particle cell sorting algorithm.
+
+* `activation`: activation of the sorting
+* `dx`, `dy`, `dz`: size of the sorting cells
+* `shiftx`, `shifty`, `shiftz`: shift of the sorting grid

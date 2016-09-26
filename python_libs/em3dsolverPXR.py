@@ -1,9 +1,11 @@
 """Class for 2D & 3D FFT-based electromagnetic solver """
 from warp.field_solvers.em3dsolverFFT import *
-try: 
+from warp.particles.species import *
+
+try:
     #import warp.field_solvers.GPSTD as gpstd
 	import GPSTDPXR as gpstd
-except: 
+except:
 	#import GPSTDPXR as gpstd
     import warp.field_solvers.GPSTD as gpstd
 try:
@@ -12,14 +14,14 @@ try:
     l_pxr=True
 except:
     l_pxr=False
-try: 
-    from mpi4py import MPI 
-except: 
-    print 'Error cannot import mpi4py'  
-try: 
+try:
+    from mpi4py import MPI
+except:
+    print 'Error cannot import mpi4py'
+try:
     import os as os
-except: 
-    print 'Error cannot import os'  
+except:
+    print 'Error cannot import os'
 try:
     # Try to import fortran wrapper of FFTW
     # import pyfftw
@@ -54,8 +56,8 @@ class EM3DPXR(EM3DFFT):
                       'fieldgathe':0,     # Field gathering method
                       'partcom':0,       # Particle communication
                       'lvec_curr_depo':8,
-                      'lvec_charge_depo':64, 
-                      'lvec_fieldgathe':512,                     
+                      'lvec_charge_depo':64,
+                      'lvec_fieldgathe':512,
                       'sorting':None
                       }
 
@@ -69,10 +71,10 @@ class EM3DPXR(EM3DFFT):
 
         self.processdefaultsfromdict(EM3DPXR.__flaginputs__,kw)
         EM3DFFT.__init__(self,kwdict=kw)
-        
+
         self.l_pxr = l_pxr
         self.l_fftw = l_fftw
-        
+
         # If sorting undefined
         if self.sorting==None:
           self.sorting = Sorting([],[],activated=0,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0)
@@ -83,9 +85,9 @@ class EM3DPXR(EM3DFFT):
         	EM3D.finalize(self)
         	self.allocatefieldarraysFFT()
         	self.allocatefieldarraysPXR()
-        else: 
+        else:
 			EM3DFFT.finalize(self)
-			
+
     def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
       ixt = ix
       iyt = iy
@@ -101,14 +103,14 @@ class EM3DPXR(EM3DFFT):
       convertindextoproc = ixt + iyt*nx + izt*nx*ny
 
       return convertindextoproc
-    
+
 
     def allocatefieldarraysPXR(self):
-    
-    	# Set up case dimensionality 
-    	if (self.l_2dxz): 
+
+    	# Set up case dimensionality
+    	if (self.l_2dxz):
     		pxr.c_dim=2
-    	else: 
+    	else:
     		pxr.c_dim=3
         # Set up PXR MPI Data
         pxr.nprocx=top.fsdecomp.nxprocs
@@ -119,10 +121,10 @@ class EM3DPXR(EM3DFFT):
         izcpu=top.fsdecomp.izproc
         for iz in range(-1,2):
             for iy in range(-1,2):
-                for ix in range(-1,2): 
+                for ix in range(-1,2):
                     indtoproc=self.convertindtoproc(ixcpu+ix,iycpu+iy,izcpu+iz,pxr.nprocx,pxr.nprocy,pxr.nprocz)
                     pxr.neighbour[ix+1,iy+1,iz+1]=indtoproc
-                    
+
         if (ixcpu==0):
             pxr.x_min_boundary=1
         if (ixcpu==pxr.nprocx-1):
@@ -135,12 +137,12 @@ class EM3DPXR(EM3DFFT):
             pxr.z_min_boundary=1
         if (izcpu==pxr.nprocz-1):
             pxr.z_max_boundary=1
-            
+
         pxr.x_coords=ixcpu
         pxr.y_coords=iycpu
         pxr.z_coords=izcpu
-        
-        # MPI boundaries index in global array 
+
+        # MPI boundaries index in global array
         pxr.cell_x_min=top.fsdecomp.ix
         pxr.cell_y_min=top.fsdecomp.iy
         pxr.cell_z_min=top.fsdecomp.iz
@@ -153,29 +155,38 @@ class EM3DPXR(EM3DFFT):
         pxr.y_grid_maxs=top.fsdecomp.ymax
         pxr.z_grid_mins=top.fsdecomp.zmin
         pxr.z_grid_maxs=top.fsdecomp.zmax
-        
-        # Particle boundaries for PXR 
-        if (top.pbound0 == absorb): 
+
+        # Particle boundaries for PXR
+        if (top.pbound0 == absorb):
         	pxr.pbound_z_min=1
-        else: # Default is periodic 
+        elif(top.pbound0 == reflect):
+        	pxr.pbound_z_min=2
+        else: # Default is periodic
         	pxr.pbound_z_min=0
-        	
-        if (top.pboundnz == absorb): 
+
+        if (top.pboundnz == absorb):
         	pxr.pbound_z_max=1
-        else: # Default is periodic 
+        elif(top.pboundnz == reflect):
+        	pxr.pbound_z_max=2
+        else: # Default is periodic
         	pxr.pbound_z_max=0
-        	
-        if (top.pboundxy == absorb): 
+
+        if (top.pboundxy == absorb):
         	pxr.pbound_x_min=1
         	pxr.pbound_x_max=1
         	pxr.pbound_y_min=1
         	pxr.pbound_y_max=1
-        else: # Default is periodic 
+        elif(top.pboundxy == reflect):
+        	pxr.pbound_x_min=2
+        	pxr.pbound_x_max=2
+        	pxr.pbound_y_min=2
+        	pxr.pbound_y_max=2
+        else: # Default is periodic
         	pxr.pbound_x_min=0
         	pxr.pbound_x_max=0
         	pxr.pbound_y_min=0
         	pxr.pbound_y_max=0
-        
+
         # --- number of grid cells
         pxr.nx_global = w3d.nx
         pxr.ny_global = w3d.ny
@@ -183,15 +194,15 @@ class EM3DPXR(EM3DFFT):
         pxr.nx_global_grid = pxr.nx_global+1
         pxr.ny_global_grid = pxr.ny_global+1
         pxr.nz_global_grid = pxr.nz_global+1
-        
+
         pxr.nx = self.nxlocal
         pxr.ny = self.nylocal
         pxr.nz = self.nzlocal
         pxr.nx_grid=pxr.nx+1
         pxr.ny_grid=pxr.ny+1
         pxr.nz_grid=pxr.nz+1
-        
-        
+
+
         # --- number of guard cells
         pxr.nxguards = self.nxguard
         pxr.nyguards = self.nyguard
@@ -213,7 +224,7 @@ class EM3DPXR(EM3DFFT):
         pxr.y_grid_max=pxr.ymax
         pxr.z_grid_min=pxr.zmin
         pxr.z_grid_max=pxr.zmax
-        
+
         pxr.x_min_local = self.fields.xmin
         pxr.x_max_local = self.fields.xmax
         pxr.y_min_local = self.fields.ymin
@@ -226,20 +237,21 @@ class EM3DPXR(EM3DFFT):
         pxr.y_grid_max_local=pxr.y_max_local
         pxr.z_grid_min_local=pxr.z_min_local
         pxr.z_grid_max_local=pxr.z_max_local
-        
+        pxr.zgrid=top.zgrid
+
         pxr.length_x = pxr.xmax-pxr.xmin
         pxr.length_y = pxr.ymax-pxr.ymin
         pxr.length_z = pxr.zmax-pxr.zmin
-        
+
 		# INIT MPI_DATA FOR PICSAR
-        # Init communicator variable in picsar 
+        # Init communicator variable in picsar
         pxr.mpi_minimal_init_python(top.fsdecomp.mpi_comm)
-        
-        # allocate grid quantities 
+
+        # allocate grid quantities
         pxr.allocate_grid_quantities()
         pxr.compute_simulation_axis()
-        
-        # set time step 
+
+        # set time step
         pxr.dt = top.dt
 
         # --- Resolution
@@ -254,20 +266,20 @@ class EM3DPXR(EM3DFFT):
         pxr.dts2dy = 0.5*pxr.dt*pxr.dyi
         pxr.dts2dz = 0.5*pxr.dt*pxr.dzi
         pxr.clightsq = 1.0/pxr.clight**2
-        
+
         # --- Maxwell solver
         pxr.norderx = self.norderx
         pxr.nordery = self.nordery
         pxr.norderz = self.norderz
-        
+
         pxr.xcoeffs = self.fields.xcoefs
         pxr.ycoeffs = self.fields.ycoefs
         pxr.zcoeffs = self.fields.zcoefs
-        
+
         # Set coefficient for Maxwell solver
         pxr.alphax = em3d.alphax
         pxr.alphay = em3d.alphay
-        pxr.alphaz = em3d.alphaz        
+        pxr.alphaz = em3d.alphaz
         pxr.betaxy = em3d.betaxy
         pxr.betayx = em3d.betayx
         pxr.betaxz = em3d.betaxz
@@ -278,7 +290,7 @@ class EM3DPXR(EM3DFFT):
         pxr.gammay = em3d.gammay
         pxr.gammaz = em3d.gammaz
         pxr.deltaz = em3d.deltaz
-  
+
         pxr.ex = self.fields.Ex
         pxr.ey = self.fields.Ey
         pxr.ez = self.fields.Ez
@@ -288,9 +300,9 @@ class EM3DPXR(EM3DFFT):
         pxr.jx = self.fields.Jx
         pxr.jy = self.fields.Jy
         pxr.jz = self.fields.Jz
-        
+
         pxr.l_nodalgrid = self.l_nodalgrid
-        
+
         pxr.nxs = 0
         pxr.nys = 0
         pxr.nzs = 0
@@ -308,7 +320,7 @@ class EM3DPXR(EM3DFFT):
         pxr.fieldgave=self.fieldgathe
         # Particle communication
         pxr.partcom=self.partcom
-        
+
         # lvec size for the current deposition
         pxr.lvec_curr_depo = self.lvec_curr_depo
         # lvec size for the charge deposition
@@ -331,45 +343,45 @@ class EM3DPXR(EM3DFFT):
         pxr.sorting_dx = self.sorting.dx*pxr.dx
         pxr.sorting_dy = self.sorting.dy*pxr.dy
         pxr.sorting_dz = self.sorting.dz*pxr.dz
-        pxr.sorting_shiftx = self.sorting.xshift      
-        pxr.sorting_shifty = self.sorting.yshift  
-        pxr.sorting_shiftz = self.sorting.zshift  
+        pxr.sorting_shiftx = self.sorting.xshift
+        pxr.sorting_shifty = self.sorting.yshift
+        pxr.sorting_shiftz = self.sorting.zshift
         pxr.sorting_verbose = self.sorting.verbose
-                        
+
         # --- time statistics
         self.time_stat_loc_array = zeros([20])
-                        
+
         # --- species section
         pxr.nspecies_max=top.pgroup.ns
-        
+
             # --- allocates array of species
-        pxr.init_species_section() 
-        
+        pxr.init_species_section()
+
         for i,s in enumerate(self.listofallspecies):
             # Check for sorting
             if (i >= len(self.sorting.periods)):
               self.sorting.periods.append(0)
               self.sorting.starts.append(0)
-            # initialize species in pxr  
+            # initialize species in pxr
             pxr.set_particle_species_properties(i+1,s.name,s.mass,s.charge,0, \
                                                 0.,0.,0.,0.,0.,0., \
                                                 0.,0.,0.,0.,0.,0., \
                                                 self.sorting.periods[i],self.sorting.starts[i])
             pxr.nspecies+=1
-      
+
         pxr.set_tile_split()
         pxr.init_tile_arrays()
 
         for i,s in enumerate(self.listofallspecies):
-            pxr.py_add_particles_to_species(i+1, s.nps, 
-                                            s.getx(bcast=0,gather=0), 
-                                            s.gety(bcast=0,gather=0), 
-                                            s.getz(bcast=0,gather=0), 
-                                            s.getux(bcast=0,gather=0), 
-                                            s.getuy(bcast=0,gather=0), 
+            pxr.py_add_particles_to_species(i+1, s.nps,
+                                            s.getx(bcast=0,gather=0),
+                                            s.gety(bcast=0,gather=0),
+                                            s.getz(bcast=0,gather=0),
+                                            s.getux(bcast=0,gather=0),
+                                            s.getuy(bcast=0,gather=0),
                                             s.getuz(bcast=0,gather=0),
-                                            s.getgaminv(bcast=0,gather=0), 
-                                            s.getweights(bcast=0,gather=0)  )      
+                                            s.getgaminv(bcast=0,gather=0),
+                                            s.getweights(bcast=0,gather=0)  )
 
         top.pgroup.npmax=0
         top.pgroup.ns=1
@@ -424,12 +436,12 @@ class EM3DPXR(EM3DFFT):
 #            def ppzx(self,**kw):
 #                for pg in self.pgroups:
 #                   self._callppfunc(ppzx,pgroup=pg,**kw)
-        
+
 #            s.ppzx = ppzx
     def aliasparticlearrays(self):
         # --- Detect if tile arrays have been reallocated in PXR
-        # --- and make proper aliasing in WARP 
-        
+        # --- and make proper aliasing in WARP
+
         isrealloc=zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8'))
         for i,s in enumerate(self.listofallspecies):
             pxr.get_are_tiles_reallocated(i+1, self.ntilex, self.ntiley, self.ntilez,isrealloc)
@@ -516,27 +528,27 @@ class EM3DPXR(EM3DFFT):
                     self.fields.Ex_inz*=-1.
                     self.fields.Ey_inz*=-1.
             if self.l_verbose:print 'push_e',self,dt,top.it,self.icycle
-            
+
             if self.l_pxr:
                 f=self.fields
                 l_pushe=False
                 tdebcell=MPI.Wtime()
                 if self.l_2dxz:
-                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2): 
+                    if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
                         pxr.pxrpush_em2d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                                   f.Jx,f.Jy,f.Jz,
-                                                  clight**2*mu0*dt,        
+                                                  clight**2*mu0*dt,
                                                   clight**2*dt/f.dx*f.xcoefs[0],
                                                   clight**2*dt/f.dy*f.ycoefs[0],
                                                   clight**2*dt/f.dz*f.zcoefs[0],
                                                   f.nx,f.ny,f.nz,
                                                   f.nxguard,f.nyguard,f.nzguard,
-                                                  0,0,0,f.l_nodalgrid)                   
-                    
+                                                  0,0,0,f.l_nodalgrid)
+
                     else:
                         pxr.pxrpush_em2d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                                   f.Jx,f.Jy,f.Jz,
-                                                  clight**2*mu0*dt,        
+                                                  clight**2*mu0*dt,
                                                   clight**2*dt/f.dx*f.xcoefs,
                                                   clight**2*dt/f.dy*f.ycoefs,
                                                   clight**2*dt/f.dz*f.zcoefs,
@@ -548,17 +560,17 @@ class EM3DPXR(EM3DFFT):
                     if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
                         pxr.pxrpush_em3d_evec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               f.Jx,f.Jy,f.Jz,
-                                              clight**2*mu0*dt,        
+                                              clight**2*mu0*dt,
                                               clight**2*dt/f.dx*f.xcoefs[0],
                                               clight**2*dt/f.dy*f.ycoefs[0],
                                               clight**2*dt/f.dz*f.zcoefs[0],
                                               f.nx,f.ny,f.nz,
                                               f.nxguard,f.nyguard,f.nzguard,
-                                              0,0,0,f.l_nodalgrid)                    
+                                              0,0,0,f.l_nodalgrid)
                     else:
                         pxr.pxrpush_em3d_evec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
                                               f.Jx,f.Jy,f.Jz,
-                                              clight**2*mu0*dt,        
+                                              clight**2*mu0*dt,
                                               clight**2*dt/f.dx*f.xcoefs,
                                               clight**2*dt/f.dy*f.ycoefs,
                                               clight**2*dt/f.dz*f.zcoefs,
@@ -597,7 +609,7 @@ class EM3DPXR(EM3DFFT):
 				l_pushb=False
 				if self.l_2dxz:
 					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-						if (f.stencil==0): # Yee solver 
+						if (f.stencil==0): # Yee solver
 							pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx*f.xcoefs[0],
 												  0.5*dt/f.dy*f.ycoefs[0],
@@ -605,14 +617,14 @@ class EM3DPXR(EM3DFFT):
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver  
+						elif (f.stencil==1): # Karkainnen solver
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx,
 												  0.5*dt/f.dy,
 												  0.5*dt/f.dz,
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
-												  f.l_2dxz)						
+												  f.l_2dxz)
 					else: #nth order solver >  2
 						pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 											  0.5*dt/f.dx*f.xcoefs,
@@ -621,10 +633,10 @@ class EM3DPXR(EM3DFFT):
 											  f.nx,f.ny,f.nz,
 											  f.norderx,f.nordery,f.norderz,
 											  f.nxguard,f.nyguard,f.nzguard,
-											  0,0,0,f.l_nodalgrid)                        
+											  0,0,0,f.l_nodalgrid)
 				else:
-					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2): 
-						if (f.stencil==0): # Yee solver 
+					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+						if (f.stencil==0): # Yee solver
 							pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx*f.xcoefs[0],
 												  0.5*dt/f.dy*f.ycoefs[0],
@@ -632,7 +644,7 @@ class EM3DPXR(EM3DFFT):
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver  
+						elif (f.stencil==1): # Karkainnen solver
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx,
 												  0.5*dt/f.dy,
@@ -658,7 +670,7 @@ class EM3DPXR(EM3DFFT):
 			self.__class__.__bases__[1].push_b_part_1(self.field_coarse,dir)
 
     def push_b_part_2(self):
-		if top.efetch[0] != 4 and (self.refinement is None):self.node2yee3d() 
+		if top.efetch[0] != 4 and (self.refinement is None):self.node2yee3d()
 		dt = top.dt/self.ntsub
 		if self.ntsub<1.:
 			self.novercycle = nint(1./self.ntsub)
@@ -674,7 +686,7 @@ class EM3DPXR(EM3DFFT):
 				tdebcell=MPI.Wtime()
 				if self.l_2dxz:
 					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-						if (f.stencil==0): # Yee solver 
+						if (f.stencil==0): # Yee solver
 							pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx*f.xcoefs[0],
 												  0.5*dt/f.dy*f.ycoefs[0],
@@ -682,14 +694,14 @@ class EM3DPXR(EM3DFFT):
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver  
+						elif (f.stencil==1): # Karkainnen solver
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx,
 												  0.5*dt/f.dy,
 												  0.5*dt/f.dz,
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
-												  f.l_2dxz)	
+												  f.l_2dxz)
 					else: #nth order solver >  2
 						pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 											  0.5*dt/f.dx*f.xcoefs,
@@ -698,10 +710,10 @@ class EM3DPXR(EM3DFFT):
 											  f.nx,f.ny,f.nz,
 											  f.norderx,f.nordery,f.norderz,
 											  f.nxguard,f.nyguard,f.nzguard,
-											  0,0,0,f.l_nodalgrid)                        
+											  0,0,0,f.l_nodalgrid)
 				else:
 					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-						if (f.stencil==0): # Yee solver 
+						if (f.stencil==0): # Yee solver
 							pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx*f.xcoefs[0],
 												  0.5*dt/f.dy*f.ycoefs[0],
@@ -709,7 +721,7 @@ class EM3DPXR(EM3DFFT):
 												  f.nx,f.ny,f.nz,
 												  f.nxguard,f.nyguard,f.nzguard,
 												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver  
+						elif (f.stencil==1): # Karkainnen solver
 							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
 												  0.5*dt/f.dx,
 												  0.5*dt/f.dy,
@@ -819,11 +831,11 @@ class EM3DPXR(EM3DFFT):
 
 		fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
 
-		if emK.planj_rfftn is None: 
+		if emK.planj_rfftn is None:
 			emK.planj_rfftn= emK.create_plan_rfftn(np.asarray(fields_shape))
-		if emK.planj_irfftn is None: 
+		if emK.planj_irfftn is None:
 			emK.planj_irfftn= emK.create_plan_irfftn(np.asarray(fields_shape))
-	
+
 		self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
 
 
@@ -885,7 +897,7 @@ class EM3DPXR(EM3DFFT):
 		if self.l_pxr:
 			tendcell=MPI.Wtime()
 			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
-        
+
     def exchange_e(self,dir=1.):
         if self.novercycle==1:
             if dir>0.:
@@ -926,13 +938,13 @@ class EM3DPXR(EM3DFFT):
                 em3d_exchange_b(self.block)
         if self.refinement is not None:
             self.__class__.__bases__[1].exchange_b(self.field_coarse,dir)
-         
+
 
     def step(self,n=1,freq_print=10,lallspecl=0):
     	stdout_stat=10
     	tdeb=MPI.Wtime()
         for i in range(n):
-            if(me==0): 
+            if(me==0):
                 if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
             if lallspecl:
                 l_first=l_last=1
@@ -950,8 +962,8 @@ class EM3DPXR(EM3DFFT):
             	tend=MPI.Wtime()
             	mpi_time_per_stat=(tend-tdeb)
             	tdeb=MPI.Wtime()
-                print("time/stdout_stat (s)",mpi_time_per_stat) 
-            	       
+                print("time/stdout_stat (s)",mpi_time_per_stat)
+
 
 
     def onestep(self,l_first,l_last):
@@ -977,7 +989,7 @@ class EM3DPXR(EM3DFFT):
             tdeb=MPI.Wtime()
             pxr.local_time_part=0.
             pxr.local_time_cell=0.
-        # --- push 
+        # --- push
         if l_first:
             if l_pxr:
                 # Particle pusher
@@ -986,11 +998,11 @@ class EM3DPXR(EM3DFFT):
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
                 self.time_stat_loc_array[0] += (tendpart-tdebpart)
-                
+
                 pxr.particle_bcs_2d()
-                
+
                 #pxr.particle_bcs()
-                
+
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1002,9 +1014,9 @@ class EM3DPXR(EM3DFFT):
                         self.push_velocity_second_half(0,pg)
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
-        else:        
+        else:
             if l_pxr:
-                
+
                 # Particle pusher
                 tdebpart=MPI.Wtime()
                 #pxr.push_particles()
@@ -1012,11 +1024,11 @@ class EM3DPXR(EM3DFFT):
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
                 self.time_stat_loc_array[0] += (tendpart-tdebpart)
-                
+
                 # Particle boundary conditions
                 pxr.particle_bcs()
-                
-                
+
+
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1030,9 +1042,9 @@ class EM3DPXR(EM3DFFT):
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
         # --- Particle sorting
-        if l_pxr: 
-          if ((self.sorting.activated)and(top.it>=0)):   
-            pxr.particle_sorting_sub() 
+        if l_pxr:
+          if ((self.sorting.activated)and(top.it>=0)):
+            pxr.particle_sorting_sub()
 
         # --- call beforeloadrho functions
         beforeloadrho.callfuncsinlist()
@@ -1043,8 +1055,11 @@ class EM3DPXR(EM3DFFT):
 #        self.loadsource(pgroups=pgroups)
         #tdebpart=MPI.Wtime()
 
+        # Call user-defined injection routines
+        if (self.l_pxr):
+            pxr.zgrid=top.zgrid
+        userinjection.callfuncsinlist()
         self.loadrho(pgroups=pgroups)
-
         self.loadj(pgroups=pgroups)
 
         #tendpart=MPI.Wtime()
@@ -1059,7 +1074,7 @@ class EM3DPXR(EM3DFFT):
 
         #tendcell=MPI.Wtime()
         #pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
-    
+
         if l_pxr:
             if l_last:
                 tdebpart=MPI.Wtime()
@@ -1073,69 +1088,68 @@ class EM3DPXR(EM3DFFT):
                     self.fetcheb(0,pg)
                     if l_last:
                         self.push_velocity_first_half(0,pg)
- 
+
         # --- update time, time counter
         top.time+=top.dt
         if top.it%top.nhist==0:
 #           zmmnt()
            minidiag(top.it,top.time,top.lspecial)
         top.it+=1
-       
+
         # Load balance every dlb_freq time step
         if (l_pxr & (self.dload_balancing & (top.it%self.dlb_freq==0))):
             pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
-            pxr.get_max_time_per_it() 
+            pxr.get_max_time_per_it()
             pxr.get_min_time_per_it()
-            ## --- Compute time per part and per cell 
+            ## --- Compute time per part and per cell
             pxr.compute_time_per_part()
             pxr.compute_time_per_cell()
-            imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100. 
-            if (imbalance>self.dlb_threshold): 
-            	if (self.l_2dxz): 
+            imbalance=(pxr.max_time_per_it-pxr.min_time_per_it)/pxr.min_time_per_it*100.
+            if (imbalance>self.dlb_threshold):
+            	if (self.l_2dxz):
                 	self.load_balance_2d(str(imbalance)+"%")
-                else: 
+                else:
                     self.load_balance_3d(str(imbalance)+"%")
-        # Try to Load balance at init 
-        if ((top.it==self.it_dlb_init) & self.dlb_at_init & self.dload_balancing): 
+        # Try to Load balance at init
+        if ((top.it==self.it_dlb_init) & self.dlb_at_init & self.dload_balancing):
 			pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
-			pxr.get_max_time_per_it() 
+			pxr.get_max_time_per_it()
 			pxr.get_min_time_per_it()
-			## --- Compute time per part and per cell 
+			## --- Compute time per part and per cell
 			pxr.compute_time_per_part()
 			pxr.compute_time_per_cell()
-			if (self.l_2dxz): 
+			if (self.l_2dxz):
 			    self.load_balance_2d('Init')
-			else: 
+			else:
 				self.load_balance_3d('Init')
-       
+
         # PXr custom outputs mpi-io
-        if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)): 
+        if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)):
         	self.output_pxr(top.it)
 
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
 
-    	
-    def load_balance_3d(self,imbalance): 
-        if (l_pxr): 
-            ## --- Compute time per part and per cell 
+    def load_balance_3d(self,imbalance):
+        if (l_pxr):
+            ## --- Compute time per part and per cell
             pxr.compute_time_per_part()
             pxr.compute_time_per_cell()
-            
-            ## --- Compute new split along each dimension 
-            pxr.compute_new_split(pxr.global_time_per_part,pxr.global_time_per_cell,pxr.nx_global,pxr.ny_global,pxr.nz_global, 
+
+            ## --- Compute new split along each dimension
+            pxr.compute_new_split(pxr.global_time_per_part,pxr.global_time_per_cell,pxr.nx_global,pxr.ny_global,pxr.nz_global,
                               pxr.new_cell_x_min,pxr.new_cell_x_max,pxr.new_cell_y_min,pxr.new_cell_y_max,
                               pxr.new_cell_z_min,pxr.new_cell_z_max,pxr.nprocx,pxr.nprocy,pxr.nprocz)
             isnewsplit=sum(pxr.cell_x_min-pxr.new_cell_x_min)+sum(pxr.cell_x_max-pxr.new_cell_x_max)+ \
                 	   sum(pxr.cell_y_min-pxr.new_cell_y_min)+sum(pxr.cell_y_max-pxr.new_cell_y_max)+ \
                 	   sum(pxr.cell_z_min-pxr.new_cell_z_min)+sum(pxr.cell_z_max-pxr.new_cell_z_max)
-            if (isnewsplit==0): 
-            	if(pxr.rank==0): 
+            if (isnewsplit==0):
+            	if(pxr.rank==0):
                 	print("Optimal load balancing already achieved by current implementation")
-            else: 
+            else:
             	if(pxr.rank==0):
                 	print("trying to load balance the simulation, imbalance=", imbalance)
-                ## --- Compute limits for all procs 
+                ## --- Compute limits for all procs
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
                 iy1old=np.zeros(pxr.nproc,dtype="i8"); iy2old=np.zeros(pxr.nproc,dtype="i8")
                 iz1old=np.zeros(pxr.nproc,dtype="i8"); iz2old=np.zeros(pxr.nproc,dtype="i8")
@@ -1143,97 +1157,97 @@ class EM3DPXR(EM3DFFT):
                 iy1new=np.zeros(pxr.nproc,dtype="i8"); iy2new=np.zeros(pxr.nproc,dtype="i8")
                 iz1new=np.zeros(pxr.nproc,dtype="i8"); iz2new=np.zeros(pxr.nproc,dtype="i8")
 
-                pxr.get_1darray_proclimits(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old, 
-                                        pxr.cell_x_min,pxr.cell_y_min,pxr.cell_z_min,             
-                                        pxr.cell_x_max,pxr.cell_y_max,pxr.cell_z_max,           
+                pxr.get_1darray_proclimits(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,
+                                        pxr.cell_x_min,pxr.cell_y_min,pxr.cell_z_min,
+                                        pxr.cell_x_max,pxr.cell_y_max,pxr.cell_z_max,
                                         pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,
                                         top.lcomm_cartesian)
-                pxr.get_1darray_proclimits(ix1new,ix2new,iy1new,iy2new,iz1new,iz2new, 
-                                        pxr.new_cell_x_min,pxr.new_cell_y_min,pxr.new_cell_z_min,             
-                                        pxr.new_cell_x_max,pxr.new_cell_y_max,pxr.new_cell_z_max,           
+                pxr.get_1darray_proclimits(ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,
+                                        pxr.new_cell_x_min,pxr.new_cell_y_min,pxr.new_cell_z_min,
+                                        pxr.new_cell_x_max,pxr.new_cell_y_max,pxr.new_cell_z_max,
                                         pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,top.lcomm_cartesian)
-                ## --- Compute new sizes for grid arrays 
+                ## --- Compute new sizes for grid arrays
                 nx_new=pxr.new_cell_x_max[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords]+1
                 ny_new=pxr.new_cell_y_max[pxr.y_coords]-pxr.new_cell_y_min[pxr.y_coords]+1
                 nz_new=pxr.new_cell_z_max[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords]+1
-            
-                ## --- Remap field arrays 
+
+                ## --- Remap field arrays
                 # -- Ex
                 ex_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_3d_field_component(ex_new,nx_new,ny_new,nz_new,               
-                                        	pxr.ex,pxr.nx,pxr.ny,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
+                pxr.mpi_remap_3d_field_component(ex_new,nx_new,ny_new,nz_new,
+                                        	pxr.ex,pxr.nx,pxr.ny,pxr.nz,
+                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,
+                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
                 pxr.ex=ex_new
                 # -- Ey
                 ey_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_3d_field_component(ey_new,nx_new,ny_new,nz_new,               
-                                        	pxr.ey,pxr.nx,pxr.ny,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
+                pxr.mpi_remap_3d_field_component(ey_new,nx_new,ny_new,nz_new,
+                                        	pxr.ey,pxr.nx,pxr.ny,pxr.nz,
+                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,
+                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
-                pxr.ey=ey_new            
+                pxr.ey=ey_new
                 # -- Ez
                 ez_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_3d_field_component(ez_new,nx_new,ny_new,nz_new,               
-                                        	pxr.ez,pxr.nx,pxr.ny,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
+                pxr.mpi_remap_3d_field_component(ez_new,nx_new,ny_new,nz_new,
+                                        	pxr.ez,pxr.nx,pxr.ny,pxr.nz,
+                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,
+                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
                 pxr.ez=ez_new
                 # -- Bx
                 bx_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_3d_field_component(bx_new,nx_new,ny_new,nz_new,               
-                                        	pxr.bx,pxr.nx,pxr.ny,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
+                pxr.mpi_remap_3d_field_component(bx_new,nx_new,ny_new,nz_new,
+                                        	pxr.bx,pxr.nx,pxr.ny,pxr.nz,
+                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,
+                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
-                pxr.bx=bx_new 
+                pxr.bx=bx_new
                 # -- By
                 by_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_3d_field_component(by_new,nx_new,ny_new,nz_new,               
-                                        	pxr.by,pxr.nx,pxr.ny,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
+                pxr.mpi_remap_3d_field_component(by_new,nx_new,ny_new,nz_new,
+                                        	pxr.by,pxr.nx,pxr.ny,pxr.nz,
+                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,
+                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
-                pxr.by=by_new 
+                pxr.by=by_new
                 # -- Bz
                 bz_new=zeros((nx_new+2*pxr.nxguards+1,ny_new+2*pxr.nyguards+1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_3d_field_component(bz_new,nx_new,ny_new,nz_new,               
-                                        	pxr.bz,pxr.nx,pxr.ny,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, 
+                pxr.mpi_remap_3d_field_component(bz_new,nx_new,ny_new,nz_new,
+                                        	pxr.bz,pxr.nx,pxr.ny,pxr.nz,
+                                        	pxr.nxguards,pxr.nyguards,pxr.nzguards,
+                                        	ix1old, ix2old, iy1old, iy2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iy1new, iy2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
                 pxr.bz=bz_new
-                ## -- Reallocate current arrays 
+                ## -- Reallocate current arrays
                 # Currents are recomputed each iteration so no need to exchange them
                 jx_new=zeros((nx_new+2*pxr.nxjguards+1,ny_new+2*pxr.nyjguards+1,nz_new+2*pxr.nzjguards+1),order='F')
                 jy_new=zeros((nx_new+2*pxr.nxjguards+1,ny_new+2*pxr.nyjguards+1,nz_new+2*pxr.nzjguards+1),order='F')
                 jz_new=zeros((nx_new+2*pxr.nxjguards+1,ny_new+2*pxr.nyjguards+1,nz_new+2*pxr.nzjguards+1),order='F')
                 pxr.jx=jx_new
                 pxr.jy=jy_new
-                pxr.jz=jz_new 
-            
-                # Update pxr new array dimensions 
+                pxr.jz=jz_new
+
+                # Update pxr new array dimensions
                 pxr.nx=nx_new
                 pxr.ny=ny_new
                 pxr.nz=nz_new
                 pxr.nx_grid=pxr.nx+1
                 pxr.ny_grid=pxr.ny+1
                 pxr.nz_grid=pxr.nz+1
-                
-                # Test if domain has been resized - used for particle remaping 
+
+                # Test if domain has been resized - used for particle remaping
                 isnewdom=pxr.cell_x_min[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords]+pxr.cell_x_max[pxr.x_coords]-pxr.new_cell_x_max[pxr.x_coords]+ \
                 pxr.cell_y_min[pxr.y_coords]-pxr.new_cell_y_min[pxr.y_coords]+pxr.cell_y_max[pxr.y_coords]-pxr.new_cell_y_max[pxr.y_coords]+ \
-                pxr.cell_z_min[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords]+pxr.cell_z_max[pxr.z_coords]-pxr.new_cell_z_max[pxr.z_coords] 
-                
+                pxr.cell_z_min[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords]+pxr.cell_z_max[pxr.z_coords]-pxr.new_cell_z_max[pxr.z_coords]
+
                 # Update new subdomain index arrays
                 pxr.cell_x_min=pxr.new_cell_x_min
                 pxr.cell_x_max=pxr.new_cell_x_max
@@ -1247,12 +1261,12 @@ class EM3DPXR(EM3DFFT):
                 pxr.ny_global_grid_max = pxr.cell_y_max[pxr.y_coords]+1
                 pxr.nz_global_grid_min = pxr.cell_z_min[pxr.z_coords]
                 pxr.nz_global_grid_max = pxr.cell_z_max[pxr.z_coords]+1
-            
-            
-                # Update global simulation axis  
+
+
+                # Update global simulation axis
                 pxr.compute_simulation_axis()
-                
-                # Set new min and max for local domain 
+
+                # Set new min and max for local domain
                 pxr.x_min_local = pxr.x_grid_mins[pxr.x_coords]
                 pxr.x_max_local = pxr.x_grid_maxs[pxr.x_coords]
                 pxr.y_min_local = pxr.y_grid_mins[pxr.y_coords]
@@ -1265,8 +1279,8 @@ class EM3DPXR(EM3DFFT):
                 pxr.y_grid_max_local=pxr.y_max_local
                 pxr.z_grid_min_local=pxr.z_min_local
                 pxr.z_grid_max_local=pxr.z_max_local
-    
-                ##--- Alias WARP grid arrays on pxr new arrays 
+
+                ##--- Alias WARP grid arrays on pxr new arrays
                 self.nxlocal=pxr.nx
                 self.nylocal=pxr.ny
                 self.nzlocal=pxr.nz
@@ -1278,8 +1292,8 @@ class EM3DPXR(EM3DFFT):
                 self.fields.ymin = pxr.y_min_local
                 self.fields.ymax = pxr.y_max_local
                 self.fields.zmin = pxr.z_min_local
-                self.fields.zmax = pxr.z_max_local            	
-           		# Udpate domain decomposition in WARP 
+                self.fields.zmax = pxr.z_max_local
+           		# Udpate domain decomposition in WARP
             	top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
             	top.fsdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
             	top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
@@ -1305,9 +1319,9 @@ class EM3DPXR(EM3DFFT):
             	top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
             	top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
 
-                # Reallocate warp arrays 
+                # Reallocate warp arrays
                 self.allocatefieldarrays()
-                # Alias newly allocated arrays on WARP structure 
+                # Alias newly allocated arrays on WARP structure
                 self.fields.Ex=pxr.ex
                 self.fields.Ey=pxr.ey
                 self.fields.Ez=pxr.ez
@@ -1324,20 +1338,20 @@ class EM3DPXR(EM3DFFT):
                 self.fields.Jy=pxr.jy
                 self.fields.Jz=pxr.jz
 
-             	
+
                 em3d_exchange_e(self.block)
                 em3d_exchange_b(self.block)
 
-                # If domain has been resized, do a new tile split and exchange particles 
-                if 1:#((isnewdom != 0)): 
-					# Now exchanging particles 
+                # If domain has been resized, do a new tile split and exchange particles
+                if 1:#((isnewdom != 0)):
+					# Now exchanging particles
                     pxr.create_new_tile_split()
-					
-                    self.ntilex = pxr.ntilex 
-                    self.ntiley = pxr.ntiley 
-                    self.ntilez = pxr.ntilez 
-                    
-					# Alias PXR tiles to WARP pgroups 
+
+                    self.ntilex = pxr.ntilex
+                    self.ntiley = pxr.ntiley
+                    self.ntilez = pxr.ntilez
+
+					# Alias PXR tiles to WARP pgroups
                     for i,s in enumerate(self.listofallspecies):
 						s.pgroups = []
 						s.jslist = [0]
@@ -1381,32 +1395,32 @@ class EM3DPXR(EM3DFFT):
 							s.pgroups.append(xygroup)
 						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
 #                pxr.particle_bcs_mpi_blocking()
-                pxr.remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,    
-                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     
+                pxr.remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,
+                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,
                             pxr.cell_x_min,pxr.cell_x_max,pxr.cell_y_min,pxr.cell_y_max,
-                            pxr.cell_z_min,pxr.cell_z_max,    
+                            pxr.cell_z_min,pxr.cell_z_max,
                             pxr.rank, pxr.nproc, pxr.nprocx, pxr.nprocy,pxr.nprocz,top.lcomm_cartesian)
-                            
-    def load_balance_2d(self,imbalance): 
-        if (l_pxr): 
-            ## --- Compute time per part and per cell 
+
+    def load_balance_2d(self,imbalance):
+        if (l_pxr):
+            ## --- Compute time per part and per cell
             pxr.compute_time_per_part()
             pxr.compute_time_per_cell()
-            
-            ## --- Compute new split along each dimension 
-            pxr.compute_new_split_2d(pxr.global_time_per_part,pxr.global_time_per_cell,pxr.nx_global,pxr.nz_global, 
+
+            ## --- Compute new split along each dimension
+            pxr.compute_new_split_2d(pxr.global_time_per_part,pxr.global_time_per_cell,pxr.nx_global,pxr.nz_global,
                               pxr.new_cell_x_min,pxr.new_cell_x_max,
                               pxr.new_cell_z_min,pxr.new_cell_z_max,pxr.nprocx,pxr.nprocz)
             isnewsplit=sum(pxr.cell_x_min-pxr.new_cell_x_min)+sum(pxr.cell_x_max-pxr.new_cell_x_max)+ \
                 	   sum(pxr.cell_z_min-pxr.new_cell_z_min)+sum(pxr.cell_z_max-pxr.new_cell_z_max)
-            if (isnewsplit==0): 
-            	if(pxr.rank==0): 
+            if (isnewsplit==0):
+            	if(pxr.rank==0):
                 	print("Optimal load balancing already achieved by current implementation")
-            else: 
+            else:
             	if(pxr.rank==0):
                 	print("trying to load balance the simulation, imbalance=", imbalance)
 
-                ## --- Compute limits for all procs 
+                ## --- Compute limits for all procs
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
                 iy1old=np.zeros(pxr.nproc,dtype="i8"); iy2old=np.zeros(pxr.nproc,dtype="i8")
                 iz1old=np.zeros(pxr.nproc,dtype="i8"); iz2old=np.zeros(pxr.nproc,dtype="i8")
@@ -1414,93 +1428,93 @@ class EM3DPXR(EM3DFFT):
                 iy1new=np.zeros(pxr.nproc,dtype="i8"); iy2new=np.zeros(pxr.nproc,dtype="i8")
                 iz1new=np.zeros(pxr.nproc,dtype="i8"); iz2new=np.zeros(pxr.nproc,dtype="i8")
 
-                pxr.get_1darray_proclimits(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old, 
-                                        pxr.cell_x_min,pxr.cell_y_min,pxr.cell_z_min,             
-                                        pxr.cell_x_max,pxr.cell_y_max,pxr.cell_z_max,           
+                pxr.get_1darray_proclimits(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,
+                                        pxr.cell_x_min,pxr.cell_y_min,pxr.cell_z_min,
+                                        pxr.cell_x_max,pxr.cell_y_max,pxr.cell_z_max,
                                         pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,
                                         top.lcomm_cartesian)
-                pxr.get_1darray_proclimits(ix1new,ix2new,iy1new,iy2new,iz1new,iz2new, 
-                                        pxr.new_cell_x_min,pxr.new_cell_y_min,pxr.new_cell_z_min,             
-                                        pxr.new_cell_x_max,pxr.new_cell_y_max,pxr.new_cell_z_max,           
+                pxr.get_1darray_proclimits(ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,
+                                        pxr.new_cell_x_min,pxr.new_cell_y_min,pxr.new_cell_z_min,
+                                        pxr.new_cell_x_max,pxr.new_cell_y_max,pxr.new_cell_z_max,
                                         pxr.nprocx, pxr.nprocy, pxr.nprocz, pxr.nproc,top.lcomm_cartesian)
-                ## --- Compute new sizes for grid arrays 
+                ## --- Compute new sizes for grid arrays
                 nx_new=pxr.new_cell_x_max[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords]+1
                 nz_new=pxr.new_cell_z_max[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords]+1
-            
-                ## --- Remap field arrays 
+
+                ## --- Remap field arrays
                 # -- Ex
                 ex_new=zeros((nx_new+2*pxr.nxguards+1,1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_2d_field_component(ex_new,nx_new,nz_new,               
-                                        	pxr.ex,pxr.nx,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iz1new, iz2new, 
+                pxr.mpi_remap_2d_field_component(ex_new,nx_new,nz_new,
+                                        	pxr.ex,pxr.nx,pxr.nz,
+                                        	pxr.nxguards,pxr.nzguards,
+                                        	ix1old, ix2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
                 pxr.ex=ex_new
                 # -- Ey
                 ey_new=zeros((nx_new+2*pxr.nxguards+1,1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_2d_field_component(ey_new,nx_new,nz_new,               
-                                        	pxr.ey,pxr.nx,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iz1new, iz2new, 
+                pxr.mpi_remap_2d_field_component(ey_new,nx_new,nz_new,
+                                        	pxr.ey,pxr.nx,pxr.nz,
+                                        	pxr.nxguards,pxr.nzguards,
+                                        	ix1old, ix2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
-                pxr.ey=ey_new            
+                pxr.ey=ey_new
                 # -- Ez
                 ez_new=zeros((nx_new+2*pxr.nxguards+1,1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_2d_field_component(ez_new,nx_new,nz_new,               
-                                        	pxr.ez,pxr.nx,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iz1new, iz2new, 
+                pxr.mpi_remap_2d_field_component(ez_new,nx_new,nz_new,
+                                        	pxr.ez,pxr.nx,pxr.nz,
+                                        	pxr.nxguards,pxr.nzguards,
+                                        	ix1old, ix2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
                 pxr.ez=ez_new
                 # -- Bx
                 bx_new=zeros((nx_new+2*pxr.nxguards+1,1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_2d_field_component(bx_new,nx_new,nz_new,               
-                                        	pxr.bx,pxr.nx,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iz1new, iz2new, 
+                pxr.mpi_remap_2d_field_component(bx_new,nx_new,nz_new,
+                                        	pxr.bx,pxr.nx,pxr.nz,
+                                        	pxr.nxguards,pxr.nzguards,
+                                        	ix1old, ix2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
-                pxr.bx=bx_new 
+                pxr.bx=bx_new
                 # -- By
                 by_new=zeros((nx_new+2*pxr.nxguards+1,1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_2d_field_component(by_new,nx_new,nz_new,               
-                                        	pxr.by,pxr.nx,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iz1new, iz2new, 
+                pxr.mpi_remap_2d_field_component(by_new,nx_new,nz_new,
+                                        	pxr.by,pxr.nx,pxr.nz,
+                                        	pxr.nxguards,pxr.nzguards,
+                                        	ix1old, ix2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
-                pxr.by=by_new 
+                pxr.by=by_new
                 # -- Bz
                 bz_new=zeros((nx_new+2*pxr.nxguards+1,1,nz_new+2*pxr.nzguards+1),order='F')
-                pxr.mpi_remap_2d_field_component(bz_new,nx_new,nz_new,               
-                                        	pxr.bz,pxr.nx,pxr.nz,                    
-                                        	pxr.nxguards,pxr.nzguards,         
-                                        	ix1old, ix2old, iz1old, iz2old, 
-                                        	ix1new, ix2new, iz1new, iz2new, 
+                pxr.mpi_remap_2d_field_component(bz_new,nx_new,nz_new,
+                                        	pxr.bz,pxr.nx,pxr.nz,
+                                        	pxr.nxguards,pxr.nzguards,
+                                        	ix1old, ix2old, iz1old, iz2old,
+                                        	ix1new, ix2new, iz1new, iz2new,
                                         	pxr.rank, pxr.nproc)
                 pxr.bz=bz_new
-                ## -- Reallocate current arrays 
+                ## -- Reallocate current arrays
                 # Currents are recomputed each iteration so no need to exchange them
                 jx_new=zeros((nx_new+2*pxr.nxjguards+1,1,nz_new+2*pxr.nzjguards+1),order='F')
                 jy_new=zeros((nx_new+2*pxr.nxjguards+1,1,nz_new+2*pxr.nzjguards+1),order='F')
                 jz_new=zeros((nx_new+2*pxr.nxjguards+1,1,nz_new+2*pxr.nzjguards+1),order='F')
                 pxr.jx=jx_new
                 pxr.jy=jy_new
-                pxr.jz=jz_new 
-            
-                # Update pxr new array dimensions 
+                pxr.jz=jz_new
+
+                # Update pxr new array dimensions
                 pxr.nx=nx_new
                 pxr.nz=nz_new
                 pxr.nx_grid=pxr.nx+1
                 pxr.nz_grid=pxr.nz+1
-                
-                # Test if domain has been resized - used for particle remaping 
+
+                # Test if domain has been resized - used for particle remaping
                 isnewdom=pxr.cell_x_min[pxr.x_coords]-pxr.new_cell_x_min[pxr.x_coords]+pxr.cell_x_max[pxr.x_coords]-pxr.new_cell_x_max[pxr.x_coords]+ \
-                pxr.cell_z_min[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords]+pxr.cell_z_max[pxr.z_coords]-pxr.new_cell_z_max[pxr.z_coords] 
-                
+                pxr.cell_z_min[pxr.z_coords]-pxr.new_cell_z_min[pxr.z_coords]+pxr.cell_z_max[pxr.z_coords]-pxr.new_cell_z_max[pxr.z_coords]
+
                 # Update new subdomain index arrays
                 pxr.cell_x_min=pxr.new_cell_x_min
                 pxr.cell_x_max=pxr.new_cell_x_max
@@ -1510,12 +1524,12 @@ class EM3DPXR(EM3DFFT):
                 pxr.nx_global_grid_max = pxr.cell_x_max[pxr.x_coords]+1
                 pxr.nz_global_grid_min = pxr.cell_z_min[pxr.z_coords]
                 pxr.nz_global_grid_max = pxr.cell_z_max[pxr.z_coords]+1
-            
-            
-                # Update global simulation axis  
+
+
+                # Update global simulation axis
                 pxr.compute_simulation_axis()
-                
-                # Set new min and max for local domain 
+
+                # Set new min and max for local domain
                 pxr.x_min_local = pxr.x_grid_mins[pxr.x_coords]
                 pxr.x_max_local = pxr.x_grid_maxs[pxr.x_coords]
                 pxr.z_min_local = pxr.z_grid_mins[pxr.z_coords]
@@ -1524,8 +1538,8 @@ class EM3DPXR(EM3DFFT):
                 pxr.x_grid_max_local=pxr.x_max_local
                 pxr.z_grid_min_local=pxr.z_min_local
                 pxr.z_grid_max_local=pxr.z_max_local
-    
-                ##--- Alias WARP grid arrays on pxr new arrays 
+
+                ##--- Alias WARP grid arrays on pxr new arrays
                 self.nxlocal=pxr.nx
                 self.nzlocal=pxr.nz
              	self.xmminlocal = pxr.x_min_local
@@ -1533,8 +1547,8 @@ class EM3DPXR(EM3DFFT):
                 self.fields.xmin = pxr.x_min_local
                 self.fields.xmax = pxr.x_max_local
                 self.fields.zmin = pxr.z_min_local
-                self.fields.zmax = pxr.z_max_local            	
-           		# Udpate domain decomposition in WARP 
+                self.fields.zmax = pxr.z_max_local
+           		# Udpate domain decomposition in WARP
             	top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
             	top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
             	top.fsdecomp.ix=pxr.cell_x_min
@@ -1552,11 +1566,11 @@ class EM3DPXR(EM3DFFT):
             	top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
             	top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
 
-                # Reallocate warp arrays 
+                # Reallocate warp arrays
                 self.allocatefieldarrays()
-                if (self.spectral==1): 
+                if (self.spectral==1):
 					self.allocatefieldarraysFFT()
-                # Alias newly allocated arrays on WARP structure 
+                # Alias newly allocated arrays on WARP structure
                 self.fields.Ex=pxr.ex
                 self.fields.Ey=pxr.ey
                 self.fields.Ez=pxr.ez
@@ -1573,22 +1587,22 @@ class EM3DPXR(EM3DFFT):
                 self.fields.Jy=pxr.jy
                 self.fields.Jz=pxr.jz
 
-             	
+
                 em3d_exchange_e(self.block)
                 em3d_exchange_b(self.block)
-                #If domain has been resized, do a new tile split and exchange particles 
-                if 1:#((isnewdom != 0)): 
+                #If domain has been resized, do a new tile split and exchange particles
+                if 1:#((isnewdom != 0)):
 					# Now exchanging particles
                     pxr.create_new_tile_split()
-                    pxr.remap_particles_2d(ix1old,ix2old,iz1old,iz2old,    
-								ix1new,ix2new,iz1new,iz2new,     
+                    pxr.remap_particles_2d(ix1old,ix2old,iz1old,iz2old,
+								ix1new,ix2new,iz1new,iz2new,
 								pxr.cell_x_min,pxr.cell_x_max,
-								pxr.cell_z_min,pxr.cell_z_max,    
-								pxr.rank, pxr.nproc, pxr.nprocx,pxr.nprocz,top.lcomm_cartesian)                    
-                    self.ntilex = pxr.ntilex 
-                    self.ntilez = pxr.ntilez 
-                    
-					# Alias PXR tiles to WARP pgroups 
+								pxr.cell_z_min,pxr.cell_z_max,
+								pxr.rank, pxr.nproc, pxr.nprocx,pxr.nprocz,top.lcomm_cartesian)
+                    self.ntilex = pxr.ntilex
+                    self.ntilez = pxr.ntilez
+
+					# Alias PXR tiles to WARP pgroups
                     for i,s in enumerate(self.listofallspecies):
 						s.pgroups = []
 						s.jslist = [0]
@@ -1633,10 +1647,10 @@ class EM3DPXR(EM3DFFT):
 						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
 
 
-    def output_pxr(self,iter): 
+    def output_pxr(self,iter):
     	pxr.py_mpi_output_grid_quantity('ez',pxr.ez,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,iter)
-    
-    
+
+
     def fetcheb(self,js,pg=None):
         if self.l_verbose:print me,'enter fetcheb'
         if pg is None:
@@ -1672,23 +1686,23 @@ class EM3DPXR(EM3DFFT):
         else:
           # --- push velocity from electric field (half step)
           epush3d(np,pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],
-                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu], 
+                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu],
                      pg.sq[js],pg.sm[js],0.5*top.dt)
           # --- update gamma
           self.set_gamma(js,pg)
           # --- push velocity from magnetic field
           bpush3d (np,pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],pg.gaminv[il:iu],
-                      pg.bx[il:iu], pg.by[il:iu], pg.bz[il:iu], 
+                      pg.bx[il:iu], pg.by[il:iu], pg.bz[il:iu],
                       pg.sq[js],pg.sm[js],top.dt, top.ibpush)
           # --- push velocity from electric field (half step)
           epush3d(np,pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],
-                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu], 
+                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu],
                      pg.sq[js],pg.sm[js],0.5*top.dt)
           # --- update gamma
           self.set_gamma(js,pg)
 
         if self.l_verbose:print me,'exit push_ions_velocity_first_half'
-    
+
     def push_velocity_first_half(self,js,pg=None):
         if self.l_verbose:print me,'enter push_ions_velocity_first_half'
         if pg is None:
@@ -1705,13 +1719,13 @@ class EM3DPXR(EM3DFFT):
         else:
           # --- push velocity from electric field (half step)
           epush3d(np,pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],
-                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu], 
+                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu],
                      pg.sq[js],pg.sm[js],0.5*top.dt)
           # --- update gamma
           self.set_gamma(js,pg)
           # --- push velocity from magnetic field
           bpush3d (np,pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],pg.gaminv[il:iu],
-                      pg.bx[il:iu], pg.by[il:iu], pg.bz[il:iu], 
+                      pg.bx[il:iu], pg.by[il:iu], pg.bz[il:iu],
                       pg.sq[js],pg.sm[js],0.5*top.dt, top.ibpush)
 
         if self.l_verbose:print me,'exit push_ions_velocity_first_half'
@@ -1732,17 +1746,17 @@ class EM3DPXR(EM3DFFT):
         else:
           # --- push velocity from magnetic field
           bpush3d (np,pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],pg.gaminv[il:iu],
-                      pg.bx[il:iu], pg.by[il:iu], pg.bz[il:iu], 
+                      pg.bx[il:iu], pg.by[il:iu], pg.bz[il:iu],
                       pg.sq[js],pg.sm[js],0.5*top.dt, top.ibpush)
           # --- push velocity from electric field (half step)
           epush3d(np,pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],
-                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu], 
+                     pg.ex[il:iu], pg.ey[il:iu], pg.ez[il:iu],
                      pg.sq[js],pg.sm[js],0.5*top.dt)
         # --- update gamma
         self.set_gamma(js,pg)
 
         if self.l_verbose:print me,'exit push_ions_velocity_second_half'
-    
+
     def set_gamma(self,js,pg=None):
         if self.l_verbose:print me,'enter set_gamma'
         if pg is None:
@@ -1756,7 +1770,7 @@ class EM3DPXR(EM3DFFT):
                  top.gamadv,top.lrelativ)
 
         if self.l_verbose:print me,'exit push_ions_velocity_second_half'
-    
+
     def push_positions(self,js,pg=None):
         if self.l_verbose:print me,'enter push_ions_positions'
         if pg is None:
@@ -1767,10 +1781,10 @@ class EM3DPXR(EM3DFFT):
         iu = il+pg.nps[js]
         xpush3d(np,pg.xp[il:iu],pg.yp[il:iu],pg.zp[il:iu],
                        pg.uxp[il:iu],pg.uyp[il:iu],pg.uzp[il:iu],
-                       pg.gaminv[il:iu],top.dt)      
+                       pg.gaminv[il:iu],top.dt)
 
         if self.l_verbose:print me,'exit push_ions_positions'
-        
+
     def loadsource(self,lzero=None,lfinalize_rho=None,pgroups=None,**kw):
         '''Current and charge deposition, uses particles from top directly
            - jslist: option list of species to load'''
@@ -1838,7 +1852,7 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-			# Depose currents in PXR 
+			# Depose currents in PXR
 
              pxr.jx = self.fields.Jx
              pxr.jy = self.fields.Jy
@@ -1847,27 +1861,27 @@ class EM3DPXR(EM3DFFT):
              if pxr.c_dim == 2:
 
                pxr.pxrdepose_currents_on_grid_jxjyjz_2d()
-           
+
                #pxr.pxrdepose_currents_on_grid_jxjyjz_sub_openmp(f.Jx,f.Jy,f.Jz,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,
-               #pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)  
-             
+               #pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt)
+
              elif pxr.c_dim ==3:
-			
+
                pxr.pxrdepose_currents_on_grid_jxjyjz()
-             
-			# Depose charge density in PXR if required 
-             if self.l_getrho : # Depose Rho in PXR 
+
+			# Depose charge density in PXR if required
+             if self.l_getrho : # Depose Rho in PXR
                if pxr.c_dim == 2:
-               
-				         pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)	
-               
+
+				         pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
+
                elif pxr.c_dim ==3:
-               
+
                  pxr.rho = self.fields.Rho
                  pxr.pxrdepose_rho_on_grid()
-               
+
 				         #pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
-             if self.current_cor: # Depose Rhoold_local in PXR 
+             if self.current_cor: # Depose Rhoold_local in PXR
                  pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rhoold_local,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,1)
              tend=MPI.Wtime()
         else:
@@ -1923,7 +1937,7 @@ class EM3DPXR(EM3DFFT):
         # --- call to loadsource should be a complete operation.
         self.sourcepfinalized = False
         if lzero and lfinalize_rho: self.finalizesourcep()
-        
+
 
     def apply_bndconditions(self,js,pg=None):
         if self.l_verbose:print me,'enter apply_ions_bndconditions'
@@ -1933,7 +1947,7 @@ class EM3DPXR(EM3DFFT):
         if pg.nps[js]==0:return
         self.apply_bnd_conditions(js,pg)
         if self.l_verbose:print me,'exit apply_ions_bndconditions'
-    
+
     def apply_bnd_conditions(self,js,pg=None):
         if self.l_verbose:print me,'enter apply_bnd_conditions'
         if pg is None:
@@ -1964,11 +1978,11 @@ class EM3DPXR(EM3DFFT):
         if self.scraper is not None:self.scraper.scrape(js)
         processlostpart(pg,js+1,top.clearlostpart,top.time+top.dt*pg.ndts[js],top.zbeam)
         if self.l_verbose:print me,'enter apply_bnd_conditions'
-        
+
     def get_kinetic_energy(self,sp,**kw):
         """
         Get the total kinetic energy of the species sp using PICSAR fortran subroutines
-        
+
         input:
         - sp: species number
         """
@@ -1977,17 +1991,17 @@ class EM3DPXR(EM3DFFT):
         pxr.get_kinetic_energy(sp,total_kinetic_energy)
         #print total_kinetic_energy,sp
         return total_kinetic_energy[0]
-        
+
     def get_field_energy(self,field,**kw):
         """
-        Get the total field energy for the given component. 
+        Get the total field energy for the given component.
         The field energy is calculated in parallel with a picsar fortran subroutine.
-        
+
         input:
         - field: field component
         """
         field_energy = zeros(1)
-        
+
         if pxr.c_dim==2:
 
 					if field=='ex':
@@ -1995,80 +2009,80 @@ class EM3DPXR(EM3DFFT):
 					elif field=='ey':
 						pxr.get_field_energy_2d(self.fields.Ey,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
 					elif field=='ez':
-						pxr.get_field_energy_2d(self.fields.Ez,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy) 
+						pxr.get_field_energy_2d(self.fields.Ez,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
 					elif field=='bx':
 						pxr.get_field_energy_2d(self.fields.Bx,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
 					elif field=='by':
-						pxr.get_field_energy_2d(self.fields.By,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)   
+						pxr.get_field_energy_2d(self.fields.By,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
 					elif field=='bz':
-						pxr.get_field_energy_2d(self.fields.Bz,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)                        
+						pxr.get_field_energy_2d(self.fields.Bz,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
 					return field_energy[0]
-        
+
         else:
-        
+
 					if field=='ex':
 						pxr.get_field_energy(self.fields.Ex,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
 					elif field=='ey':
 						pxr.get_field_energy(self.fields.Ey,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
 					elif field=='ez':
-						pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy) 
+						pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
 					elif field=='bx':
 						pxr.get_field_energy(self.fields.Bx,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
 					elif field=='by':
-						pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)   
+						pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
 					elif field=='bz':
-						pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)                        
+						pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
 					return field_energy[0]
-        
+
     def get_normL2_divEeps0_rho(self):
         """
         Compute the L2 norm of divE*eps0 - rho
         Computation of rho has to be activated
-        
+
         """
         div = zeros(1)
-        
+
         pxr.calc_field_div(pxr.dive,pxr.ex, pxr.ey, pxr.ez, pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,pxr.dx,pxr.dy,pxr.dz)
-        
+
         pxr.get_norm_diverho(pxr.dive,pxr.rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,div)
-        
+
         return div[0]
 
     def display_picsar_time_statistics(self):
         """
-        Display the Picsar time statistics 
+        Display the Picsar time statistics
         """
         pxr.time_statistics()
-        
+
     def display_time_statistics(self):
         """
-        Display the time statistics 
+        Display the time statistics
         """
         self.time_stat_ave_array = zeros([20])
         self.time_stat_min_array = zeros([20])
-        self.time_stat_max_array = zeros([20])                
+        self.time_stat_max_array = zeros([20])
         nproc = pxr.nprocx*pxr.nprocy*pxr.nprocz
-        
+
         MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_ave_array,MPI.DOUBLE], op=MPI.SUM, root=0)
         MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_min_array,MPI.DOUBLE], op=MPI.MIN, root=0)
-        MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_max_array,MPI.DOUBLE], op=MPI.MAX, root=0)  
-                      
+        MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_max_array,MPI.DOUBLE], op=MPI.MAX, root=0)
+
         self.time_stat_ave_array[:] /= nproc
-        self.time_stat_min_array[:] /= nproc  
-        self.time_stat_max_array[:] /= nproc 
-                      
+        self.time_stat_min_array[:] /= nproc
+        self.time_stat_max_array[:] /= nproc
+
         if me==0:
-        
+
 					print ' ________________________________________________'
 					print
 					print '  Time statisctics'
-					print ' ________________________________________________'        
-				
+					print ' ________________________________________________'
+
 					print ' Part                               {:^7} {:^7}'.format('min', 'ave', 'max')
 					print ' Particle pusher + field gathering: {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
 					print
-        
-                    
+
+
     def allocatefieldarraysFFT(self):
         def fc(x,norder):
             fact1 = 1
@@ -2098,7 +2112,7 @@ class EM3DPXR(EM3DFFT):
             f.gchange()
 
         if self.spectral:
-            
+
             kwGPSTD = {'l_staggered':s.l_spectral_staggered,\
                      'l_staggered_a_la_brendan':s.l_staggered_a_la_brendan, \
                      'spectral':s.spectral,\
@@ -2177,7 +2191,7 @@ class EM3DPXR(EM3DFFT):
                 denom = 2*sinkdto2*sinkzvzdto2 \
                       * (self.GPSTDMaxwell.kz*sinkzvzdto2*coskdto2-k*coskzvzdto2*sinkdto2)
                 denomno0 = where(denom==0.,0.0001,self.denom)
-                
+
                 raise Exception("What is the 3-D version of Brendan's correction?")
 
                 ktest=where((pi/2-kxvzdto2**2/(2*pi))>0,(pi/2-kxvzdto2**2/(2*pi)),0)
@@ -2186,7 +2200,7 @@ class EM3DPXR(EM3DFFT):
 
                 self.Jmultiplier[0,:]=self.Jmultiplier[1,:]
                 self.Jmultiplier[:,0]=self.Jmultiplier[:,1]
- 
+
         # --- set Ex,By multipliers (ebcor=0,1,2)
         if self.l_correct_num_Cherenkov and self.spectral:
               emK = self.FSpace
@@ -2200,7 +2214,7 @@ class EM3DPXR(EM3DFFT):
               self.ebcor = 2
 
               if 0:
- 
+
               # --- old coefs
                   # --- set Ex,By multipliers (ebcor=0,1,2)
                   if self.ebcor==2:
@@ -2269,7 +2283,7 @@ class EM3DPXR(EM3DFFT):
                           self.Exmultiplier = self.ntsub*self.sinkzvzdto2*self.coskzvzdto2*sin(self.thetadto2)**2/ \
                            (self.kzvzdto2*(self.ntsub*sin(self.thetadto2)**2-self.sinkzvzdto2**2* \
                            (self.ntsub-sin(2*self.thetadto2)/sin(2*self.thetadto2/self.ntsub))))
-           
+
 
         if 0:#self.spectral:
                   emK = self.FSpace
@@ -2281,7 +2295,7 @@ class EM3DPXR(EM3DFFT):
                   emK.add_Sfilter('jx',self.k_source_filter)
                   emK.add_Sfilter('jy',self.k_source_filter)
                   emK.add_Sfilter('jz',self.k_source_filter)
-              
+
         if self.spectral:
             kwPML = kwGPSTD
 
@@ -2289,7 +2303,7 @@ class EM3DPXR(EM3DFFT):
                 GPSTD_PML = gpstd.PSATD_Maxwell_PML
             else:
                 GPSTD_PML = gpstd.GPSTD_Maxwell_PML
-                
+
             # --- sides
             if b.xlbnd==openbc: s.xlPML = GPSTD_PML(syf=b.sidexl.syf,**kwPML)
             if b.xrbnd==openbc: s.xrPML = GPSTD_PML(syf=b.sidexr.syf,**kwPML)
@@ -2324,17 +2338,17 @@ class EM3DPXR(EM3DFFT):
 
 
 class Sorting:
-  """ 
+  """
     Class Sorting
-    
+
     Used to setup the sorting with picsars
-    
+
     activated: >0 sorting is activated
     periods: list containing the sorting periods for each species
     starts: first iteration before the start of the sorting
     dx, dy, dz: the bin size normalized to the cell size
     xshift,yshift,zshift: shift of the sorting grid
-  
+
   """
   def __init__(self,periods,starts,activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0,verbose=False):
     self.activated = activated
@@ -2342,10 +2356,8 @@ class Sorting:
     self.starts = starts
     self.dx = dx
     self.dy = dy
-    self.dz = dz 
+    self.dz = dz
     self.xshift = xshift
     self.yshift = yshift
     self.zshift = zshift
     self.verbose = verbose
-
-
