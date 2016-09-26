@@ -27,7 +27,7 @@ PICSAR can be run in two modes:
 For more details on how to run the code with these two modes, see the
 sections *Compiling* and *Running simulations* below. 
 
-![warp_and_pxr](images/warp_and_pxr.png)
+![warp_and_pxr](images/warp_and_pxr.png =100px)
 
 ####A.  Here are some of the specific algorithmic features of the PICSAR code :  
 
