@@ -13,6 +13,10 @@ Since WARP is a very large code written in a mix of FORTRAN95, C and Python
 PICSAR will be essential for studying multi-level parallelization on the next
 generation of exascale computers. 
 
+
+
+![warp_and_pxr](images/warp_and_pxr.png)
+
 ####A.  Here are some of the specific algorithmic features of the PICSAR code :  
 
 * The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered), 
