@@ -49,37 +49,50 @@ PROGRAM current_deposition_3d_test
 	! _________________________________________________________________
 	! Parameter initialization
 
+	! Number of particles
 	np = 50000
 
+	! Number of cells
 	nx = 100
 	ny = 100
 	nz = 100
 
+	! Charge
 	q = -1.
+	
+	! Mass
 	m = 1.
 
-	nxguard = 1
-	nyguard = 1
-	nzguard = 1
+	! Guard cell number
+	nxguard = 3
+	nyguard = 3
+	nzguard = 3
 
+	! Origin of the domain
 	xmin = 0.
 	ymin = 0.
 	zmin = 0.
 
+	! Space steps
 	dx = 1.E-6
 	dy = 1.E-6
 	dz = 1.E-6
 
+	! Time step computed with the CFL
 	dt = 0.5_num * 1._num / ((clight *sqrt(1._num / dx**2 + 1._num / dy**2 + 1._num / dz**2 )))
 
+	! Max relative error required to pass the tests
 	epsilon = 1E-3
 
+	! Variable that becomes FALSE in case of error
 	passed = .TRUE.
 
+	! Domain max 
 	xmax = xmin + (nx)*dx
 	ymax = ymin + (ny)*dy  
 	zmax = zmin + (nz)*dz  
 
+	! Vector length for vectorized subroutines
 	lvect = 8
 
 	write(0,'(" xmax:",F12.5," ymax:",F12.5," zmax",F12.5 )') xmax,ymax,zmax
