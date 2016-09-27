@@ -525,6 +525,8 @@ CONTAINS
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
+        IF (nspec2 .EQ. 0) RETURN
+
         ! Allocate particle tile arrays
         DO ispecies=1,nspec2 ! LOOP ON SPECIES
             curr=>species_array(ispecies)
@@ -598,7 +600,7 @@ CONTAINS
         !$OMP END PARALLEL DO
         ! Allocate grid tile arrays
         curr=>species_array(1)
-		DO iz=1, ntz2 ! LOOP ON TILES
+		    DO iz=1, ntz2 ! LOOP ON TILES
             DO iy=1, nty2
                 DO ix=1, ntx2
                    		curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -620,7 +622,7 @@ CONTAINS
                         ALLOCATE(aofgtiles(ix,iy,iz)%jztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
                         ALLOCATE(aofgtiles(ix,iy,iz)%rhotile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
                 END DO
-            END DO
+           END DO
         END DO! END LOOP ON TILES
     END SUBROUTINE init_tile_arrays_for_species
 
