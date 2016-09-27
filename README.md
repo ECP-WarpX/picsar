@@ -100,7 +100,7 @@ It corresponds to the section named `timestat`.
 ------------------------------------------
 
 Input files are read by PICSAR at the beginning of a run and contain all the required simulation information.
-They should be in the same repository and rename `input_file.pixr`.
+They should be in the same repository and renamed `input_file.pixr`.
 
 Examples of input files can be found in the directory `example_decks_fortran`.
 
