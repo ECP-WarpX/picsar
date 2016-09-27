@@ -999,10 +999,9 @@ class EM3DPXR(EM3DFFT):
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
                 self.time_stat_loc_array[0] += (tendpart-tdebpart)
 
-                pxr.particle_bcs_2d()
-
-                #pxr.particle_bcs()
-
+                #pxr.particle_bcs_2d()
+                pxr.particle_bcs()
+                
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1045,7 +1044,7 @@ class EM3DPXR(EM3DFFT):
         if l_pxr:
           if ((self.sorting.activated)and(top.it>=0)):
             pxr.particle_sorting_sub()
-
+            
         # --- call beforeloadrho functions
         beforeloadrho.callfuncsinlist()
         pgroups = []
