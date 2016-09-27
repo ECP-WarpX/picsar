@@ -96,8 +96,8 @@ Time statistics refer to the computation of the simulation times spend in each s
 The time statisctics function enables to outpout in files the time spend in the main subroutines for each iteration.
 It corresponds to the section named `timestat`.
 
-**5. Configuration of the input file
------------------------
+**5. Configuration of the input file**
+------------------------------------------
 
 Input files are read by PICSAR at the beginning of a run and contain all the required simulation information.
 They should be in the same repository and rename `input_file.pixr`.
