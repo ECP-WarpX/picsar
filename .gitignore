@@ -54,4 +54,5 @@ modules.d
 .cache
 .DS_Store
 Acceptance_testing/Fortran_tests/test_Langmuir_wave/fort.41
+Doxygen/*.tmp
 
