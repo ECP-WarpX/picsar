@@ -15,13 +15,14 @@ SUBROUTINE field_gathering_plus_particle_pusher
   USE fields
   USE shared_data
   USE params
+  USE particles
   USE time_stat
   IMPLICIT NONE
 
 #if defined(DEBUG)
   WRITE(0,*) "Field gathering + Push_particles: start"
 #endif
-
+  IF (nspecies .EQ. 0_idp) RETURN
   SELECT CASE (c_dim)
     CASE (2) ! 2D CASE X Z
 
@@ -104,6 +105,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   CALL start_collection()
 #endif
 
+IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
@@ -277,7 +279,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 #if VTUNE==3
   CALL start_vtune_collection()
 #endif
-
+IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
@@ -442,6 +444,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   INTEGER(idp)             :: nxjg,nyjg,nzjg
   LOGICAL(idp)             :: isgathered=.FALSE.
 
+  IF (nspecies .EQ. 0_idp) RETURN
 
   tdeb=MPI_WTIME()
 
@@ -596,7 +599,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	INTEGER(idp) :: nxjg,nyjg,nzjg
 	LOGICAL(idp) :: isgathered=.FALSE.
 
-
+  IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
@@ -720,6 +723,7 @@ TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 
+IF (nspecies .EQ. 0_idp) RETURN
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &

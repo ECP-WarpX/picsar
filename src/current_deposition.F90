@@ -68,6 +68,7 @@
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 ! ________________________________________________________________________________________
   USE fields
+  USE particles
   USE shared_data
   USE params
   USE time_stat
@@ -359,6 +360,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   CALL start_vtune_collection()
 #endif
 
+
+  IF (nspecies .EQ. 0_idp) RETURN
   jx = 0.0_num
   jy = 0.0_num
   jz = 0.0_num
@@ -596,6 +599,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
   INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(idp)                    :: isdeposited=.FALSE.
 
+  IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
   !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,zgrid)                  &
@@ -902,6 +906,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   INTEGER(idp)                           :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(idp)                           :: isdeposited=.FALSE.
 
+  IF (nspecies .EQ. 0_idp) RETURN
   ! _______________________________________________________________________
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
@@ -910,7 +915,6 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   !$OMP PRIVATE(ix,iy,iz,ispecies,ncells,curr,currg, curr_tile,np,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited,&
   !$OMP jxcells,jycells,jzcells,ncx,ncy,ncz)
-
   !! Current deposition
   ! Loop on the tiles
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
@@ -1234,6 +1238,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   INTEGER(idp)                           :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(idp)                           :: isdeposited=.FALSE.
 
+  IF (nspecies .EQ. 0_idp) RETURN
   ! _______________________________________________________________________
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
@@ -1542,6 +1547,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,jxg
 
 	END INTERFACE
 
+IF (nspecies .EQ. 0_idp) RETURN
 
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
@@ -1799,7 +1805,7 @@ REAL(num)                       :: tdeb, tend
 INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 LOGICAL(idp)                    :: isdeposited=.FALSE.
 
-
+IF (nspecies .EQ. 0_idp) RETURN
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
@@ -2074,6 +2080,7 @@ INTERFACE
   END SUBROUTINE
 END INTERFACE
 
+IF (nspecies .EQ. 0_idp) RETURN
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
@@ -2153,6 +2160,7 @@ REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 LOGICAL(idp) :: isdeposited=.FALSE.
 
+IF (nspecies .EQ. 0_idp) RETURN
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
