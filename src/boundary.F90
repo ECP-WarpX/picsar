@@ -3544,7 +3544,7 @@ END SUBROUTINE charge_bcs
            CALL MPI_Irecv(recvbuf(recvbuf_index(ib),1),1_isp, typebuffer,src, &
            INT(ib,isp),comm,reqs(1),errcode)
 
-           CALL MPI_Isend(bufsend(1:k,1:8,ib,is),8_isp*k,mpidbl,dest,INT(ib,isp), &
+           CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
            comm, reqs(2), errcode)
 
            CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
@@ -3636,7 +3636,7 @@ END SUBROUTINE charge_bcs
             ! Exchange
             CALL MPI_Irecv(recvbuf(npos,1),1_isp, typebuffer,src, &
             INT(ib,isp),comm,reqs(1),errcode)
-            CALL MPI_Isend(bufsend(1:k,1:8,ib,is),8_isp*k,mpidbl,dest,INT(ib,isp), &
+            CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
             comm, reqs(2), errcode)
             CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
 
