@@ -25,18 +25,18 @@ def test_homogeneous_plasma(trun,ttest,tpath):
   
   """
 
-  print ' _________________________________________'
-  print ''
-  print ' Test homogeneous plasma'  
-  print ' _________________________________________'
+  print (' _________________________________________')
+  print ('')
+  print (' Test homogeneous plasma')
+  print (' _________________________________________')
 
   trun=int(trun)
   ttest = int(ttest)
 
   print
-  print ' Running simulation:',trun
-  print ' Using assert:',ttest
-  print ' Run in path:',tpath
+  print (' Running simulation:',trun)
+  print (' Using assert:',ttest)
+  print (' Run in path:',tpath)
   print
 
   # ____________________________________________________________________
@@ -54,8 +54,8 @@ def test_homogeneous_plasma(trun,ttest,tpath):
     if 'test_langmuir_wave.py' in arg:
       file_path = os.path.dirname(os.path.realpath(arg))
   
-  print ' Current directory:',current_path
-  print ' Script directory:',file_path
+  print (' Current directory:',current_path)
+  print (' Script directory:',file_path)
   print 
 
   if (trun):
@@ -88,14 +88,14 @@ def test_homogeneous_plasma(trun,ttest,tpath):
   gamma = 1./sqrt(1.-v**2)
   wplasma = echarge*sqrt(n/(emass*eps0))
   Tplasma = 2.*pi*sqrt(gamma)/wplasma
-  print ' Gamma:',gamma 
-  print ' Plasma frequency:',wplasma
-  print ' Plasma period:',Tplasma,'s'
+  print (' Gamma:',gamma )
+  print (' Plasma frequency:',wplasma)
+  print (' Plasma period:',Tplasma,'s')
   
   # Opening of the temporal files
   print
-  print ' _________________________________________'
-  print ' Checking energy balance'
+  print (' _________________________________________')
+  print (' Checking energy balance')
   # Kinetic energy
   t,kinE = read_picsar_temporal_diags('RESULTS/kinE')
 
@@ -122,7 +122,7 @@ def test_homogeneous_plasma(trun,ttest,tpath):
   min_totalE = min(total_energy)
   max_totalE = max(total_energy)
   diffrel = (max_totalE - min_totalE)/max_totalE
-  print ' Relative error on the total energy:',diffrel
+  print (' Relative error on the total energy:',diffrel)
   if ttest: assert diffrel < 1e-2
       
   # Plotting      
@@ -149,8 +149,8 @@ def test_homogeneous_plasma(trun,ttest,tpath):
   ax.legend(loc='upper center',ncol=3,borderaxespad=-3)
   
   # Test divergence
-  print ' ________________________________________ '
-  print ' Check DivE = rho/eps0'
+  print (' ________________________________________ ')
+  print (' Check DivE = rho/eps0')
   
   # Opening of divE-rho
   t,diverho = read_picsar_temporal_diags('RESULTS/divE-rho')
@@ -164,8 +164,8 @@ def test_homogeneous_plasma(trun,ttest,tpath):
   
   ax1.set_xlabel('t (s)')
   
-  print ' _________________________________ '
-  print ' Check DivE = rho/eps0'
+  print (' _________________________________ ')
+  print (' Check DivE = rho/eps0')
   if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
       for it in range(0,50,10):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
@@ -173,9 +173,9 @@ def test_homogeneous_plasma(trun,ttest,tpath):
         norm = LA.norm((dive.f*eps0-rho.f)) 
         print
         print(" Differences norme L2 ||rho-divE|| iteration it = " + str(it))
-        print " Norm(dive.f*eps0-rho.f):",norm
-        print " Total charge:",np.sum(rho.f)
-        print " Total divergence:",np.sum(dive.f*eps0)
+        print (" Norm(dive.f*eps0-rho.f):",norm)
+        print (" Total charge:",np.sum(rho.f))
+        print (" Total divergence:",np.sum(dive.f*eps0))
         if ttest: assert (norm < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
 
   if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
@@ -184,10 +184,10 @@ def test_homogeneous_plasma(trun,ttest,tpath):
   # Advice
   
   print
-  print ' _______________________________________'
-  print ' Advice for users:' 
-  print ' - Check that the energy is constant with time'
-  print ' - Check that divE = rho/eps0 for each tests'
+  print (' _______________________________________')
+  print (' Advice for users:' )
+  print (' - Check that the energy is constant with time')
+  print (' - Check that divE = rho/eps0 for each tests')
   print
   
   plt.show()

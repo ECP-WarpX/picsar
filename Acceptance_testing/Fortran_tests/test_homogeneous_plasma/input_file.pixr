@@ -7,6 +7,16 @@ section::cpusplit
  
  # MPI com type
  mpicom_curr = 0
+ 
+ # LVEC size for the current deposition
+ lvec_curr_depo = 8
+ 
+ # LVEC size for the charge deposition
+ lvec_charge_depo = 64
+
+ # LVEC size for the charge deposition
+ lvec_fieldgathe = 256
+ 
 end::cpusplit
 
 section::main
@@ -40,7 +50,7 @@ section::main
 end::main
 
 section::solver
- # Maxwell solver
+ # Maxwell solver order
  norderx = 2
  nordery = 2
  norderz = 2
@@ -50,29 +60,19 @@ section::solver
  noz = 1
 
  # Current deposition method
- # 0 - Esirkepov tiling/optimized
- # 1 - Esirkepov tiling/non-optimized
- # 2 - Esirkepov sequential
- # 3 - Classical vectorized
- # 4 - Classical tiling/non-optimized
- # 5 - Classical sequential/non-optimized
- currdepo = 1
+ currdepo = 0
  
  # Field gathering method
- # 0 - Optimized functions (default)
- # 1 - non-optimized functions
- fieldgave = 0
-
+ fieldgathe = 0 
+ 
  # Type of particle communication
- # 0 - Combined MPI/Tile communications
- # 1 - Seperated MPI/Tile communications
  partcom = 0
-
+ 
  # Charge deposition method
- # 0 - Vectorized specific order subroutines
- # 1 - Scalar specific order subroutines
- # else - Non optimized general order subroutines
  rhodepo = 0
+ 
+ # Particle pusher and field gathering seperated
+ fg_p_pp_seperated = 0
 
 end::solver
 
@@ -87,10 +87,13 @@ section::sorting
 end::sorting 
 
 section::plasma
- # Maxwell solver
+
  nlab=1e25
  gamma0=1.
+ 
+ # Initialization type
  pdistr=1
+ 
 end::plasma
 
 section::species

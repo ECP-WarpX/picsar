@@ -570,11 +570,11 @@ def gen_forthon_dtypef90(modname,modinv):
     isinmod=True
     i=0
     while(isinmod):
-    	newmod_post.append(newmod_pre[i])
-        i=i+1
-        if (newmod_pre[i].find("END MODULE")>=0):
-        	newmod_post.append(newmod_pre[i])
-        	isinmod=False
+      newmod_post.append(newmod_pre[i])
+      i=i+1
+      if (newmod_pre[i].find("END MODULE")>=0):
+        newmod_post.append(newmod_pre[i])
+        isinmod=False
     
     fnewmod.close()
     os.system("rm -rf build/")
