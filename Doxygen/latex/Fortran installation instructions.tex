@@ -2,21 +2,24 @@
 
 \subsection*{Makefile config }
 
-First edit the file Makefile and indicate the following environment variables\+:
+P\+I\+C\+S\+AR uses a simple makefile. However, this makefile is already prepared to compile on many architectures. Here are the list of available options\+:
 
-FC\+: your M\+PI Fortran compiler wrapper (e.\+g mpif90, mpiifort, ftn etc.),
 
-F\+A\+R\+GS\+: your compiler arguments (optimization flags etc.). To get Open\+MP version of P\+I\+C\+S\+AR use the flag -\/fopenmp (with gfortran) and -\/openmp (Cray, Intel). NB\+: this version of P\+I\+C\+S\+AR requires at least {\bfseries Open\+MP 4.\+0}.
+\begin{DoxyItemize}
+\item FC\+: your M\+PI Fortran compiler wrapper (e.\+g mpif90, mpiifort, ftn etc.),
+\item CC\+: you M\+PI C compiler
+\item F\+A\+R\+GS\+: your compiler arguments (optimization flags etc.). To get Open\+MP version of P\+I\+C\+S\+AR use the flag -\/fopenmp (with gfortran) and -\/openmp (Cray, Intel). NB\+: this version of P\+I\+C\+S\+AR requires at least {\bfseries Open\+MP 4.\+0}.
+\end{DoxyItemize}
 
 \subsection*{Compiling }
 
 To compile, invoke the rule \char`\"{}all\char`\"{}\+:
 
-Make -\/f Makefile all
+\begin{quote}
+make all \end{quote}
 
-Testing 
 
-
+\subsection*{Testing }
 
 Testing the code after compilation is highly recommended.
 
@@ -35,23 +38,27 @@ For each test one by one
 
 To test the compilation/execution, you can run test python scripts manually\+:
 
-Go the folder Acceptance\+\_\+testing/\+Fortran\+\_\+tests.
 
-You can perform each test one by one entering the different folders\+:
+\begin{DoxyItemize}
+\item Go to the folder Acceptance\+\_\+testing/\+Fortran\+\_\+tests.
+\item You can perform each test one by one entering the different folders\+:
 \begin{DoxyItemize}
 \item test\+\_\+plasma\+\_\+drift
 \item test\+\_\+homogeneous\+\_\+plasma
 \item test\+\_\+\+Langmuir\+\_\+wave
 \end{DoxyItemize}
-
-You can run scripts using py.\+test\+: \begin{quote}
+\item You can run scripts using py.\+test\+: \begin{quote}
 py.\+test -\/s --trun=1 --ttest=1 \end{quote}
 
-
---trun=0/1\+: this option enables/disables simulation run --ttest=0/1\+: this option enables/disables assert tests
-
-You can run scripts without py.\+test\+: \begin{quote}
+\begin{DoxyItemize}
+\item {\ttfamily -\/-\/trun=0/1}\+: this option enables/disables simulation run
+\item {\ttfamily -\/-\/ttest=0/1}\+: this option enables/disables assert tests
+\end{DoxyItemize}
+\item You can also run the scripts without py.\+test\+: \begin{quote}
 python $<$pyhthon\+\_\+script$>$ -\/r 1 -\/t 1 \end{quote}
 
-
--\/r 0/1\+: this option enables/disables simulation run -\/t 0/1\+: this option enables/disables simulation assert tests 
+\begin{DoxyItemize}
+\item {\ttfamily -\/r 0/1}\+: this option enables/disables simulation run
+\item {\ttfamily -\/t 0/1}\+: this option enables/disables simulation assert tests 
+\end{DoxyItemize}
+\end{DoxyItemize}

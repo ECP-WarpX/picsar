@@ -2179,14 +2179,17 @@ END SUBROUTINE depose_rho_vecHV_1_1_1
 !> Order 1 3D vector charge deposition routine
 !> @brief
 !
+!> @details
 !> Computes charge density on grid vectorized at order 1 (HV-SCHEME v2)
 !> This routine does vectorize on SIMD architecture with good performances
 !> Speedup>2 on AVX 256 bits
 !> lvect, the vector length was originally at 64                                
 !
+!> @image html charge_deposition_grid.jpg "Description of the data structure and variables for Rho"
+!
+!>
 !> @author
-!> Henri Vincenti
-!> Mathieu Lobet
+!> Henri Vincenti, Mathieu Lobet
 !
 !> @date
 !> 2016

@@ -484,7 +484,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules.o \
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o	
 	
 # Compilation of all the tests	
-buildtest: build_tile_field_gathering_3d_test \
+build_test: build_tile_field_gathering_3d_test \
 	build_field_gathering_3d_test \
 	build_field_gathering_2d_test \
 	build_current_deposition_3d_test \

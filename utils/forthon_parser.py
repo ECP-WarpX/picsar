@@ -1083,7 +1083,8 @@ listfiles=["modules.F90", \
            "diags.F90", \
            "submain.F90", \
            "mpi_routines.F90",\
-           "control_file.F90", "load_balancing.F90"]
+           "control_file.F90", \
+           "load_balancing.F90"]
 
 
 # Pre-parse all application files in two .F90 files

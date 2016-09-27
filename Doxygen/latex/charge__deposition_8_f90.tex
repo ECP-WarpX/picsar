@@ -24,8 +24,8 @@ subroutine \hyperlink{charge__deposition_8_f90_a7bc83de646747d60d464cd7bff59db9f
 subroutine \hyperlink{charge__deposition_8_f90_a570a05e74c2ed2a6fb9f9bf851e68390}{depose\+\_\+rho\+\_\+vecnoy\+\_\+1\+\_\+1\+\_\+1} (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
 \item 
 subroutine \hyperlink{charge__deposition_8_f90_a9c1d09d89c39bd299a3b894dd419a9c6}{depose\+\_\+rho\+\_\+vechv\+\_\+1\+\_\+1\+\_\+1} (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-\item 
-subroutine \hyperlink{charge__deposition_8_f90_a8cd073a8fdaca9986ced5d11280777f6}{depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1} (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
+\begin{DoxyCompactList}\small\item\em Order 1 3D vector charge deposition routine. \end{DoxyCompactList}\item 
+subroutine \hyperlink{charge__deposition_8_f90_a66c87ccc669ef28ae7e636d8b39e050a}{depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1} (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                                   nxguard, nyguard, nzguard, lvect)
 \begin{DoxyCompactList}\small\item\em Order 1 3D vector charge deposition routine. \end{DoxyCompactList}\item 
 subroutine \hyperlink{charge__deposition_8_f90_a618d3787267c54578f40d084c4d915e3}{depose\+\_\+rho\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2} (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
 \begin{DoxyCompactList}\small\item\em Order 2 3D vector charge deposition routine. \end{DoxyCompactList}\item 
@@ -242,9 +242,40 @@ Henri Vincenti Mathieu Lobet
 \item[{integer(idp)}]{nzguard}
 \end{DoxyParamCaption}
 )}\hypertarget{charge__deposition_8_f90_a9c1d09d89c39bd299a3b894dd419a9c6}{}\label{charge__deposition_8_f90_a9c1d09d89c39bd299a3b894dd419a9c6}
+
+
+Order 1 3D vector charge deposition routine. 
+
+Computes charge density on grid vectorized at order 1 (H\+V-\/\+S\+C\+H\+E\+ME v1) This routine does vectorize on S\+I\+MD architecture but poor performance Speedup$>$2 on A\+VX 256 bits lvect, the vector length was originally at 64 \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in,out}  & {\em rho} & charge array \\
+\hline
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position arrays \\
+\hline
+\mbox{\tt in}  & {\em w} & particle weight arrays \\
+\hline
+\mbox{\tt in}  & {\em q} & particle species charge \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile grid minimum position \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space discretization steps \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of cells \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells \\
+\hline
+\end{DoxyParams}
 \index{charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}!depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1}}
 \index{depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1@{depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1}!charge\+\_\+deposition.\+F90@{charge\+\_\+deposition.\+F90}}
-\subsubsection[{\texorpdfstring{depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)}{depose_rho_vechvv2_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1 (
+\subsubsection[{\texorpdfstring{depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                                   nxguard, nyguard, nzguard, lvect)}{depose_rho_vechvv2_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                                   nxguard, nyguard, nzguard, lvect)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+rho\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1 (
 \begin{DoxyParamCaption}
 \item[{real(num), dimension(1\+:(1+nx+2$\ast$nxguard)$\ast$(1+ny+2$\ast$nyguard)$\ast$(1+nz+2$\ast$nzguard)), intent(inout)}]{rho, }
 \item[{integer(idp), intent(in)}]{np, }
@@ -267,13 +298,13 @@ Henri Vincenti Mathieu Lobet
 \item[{integer(idp), intent(in)}]{nzguard, }
 \item[{integer(idp), intent(in)}]{lvect}
 \end{DoxyParamCaption}
-)}\hypertarget{charge__deposition_8_f90_a8cd073a8fdaca9986ced5d11280777f6}{}\label{charge__deposition_8_f90_a8cd073a8fdaca9986ced5d11280777f6}
+)}\hypertarget{charge__deposition_8_f90_a66c87ccc669ef28ae7e636d8b39e050a}{}\label{charge__deposition_8_f90_a66c87ccc669ef28ae7e636d8b39e050a}
 
 
 Order 1 3D vector charge deposition routine. 
 
-Computes charge density on grid vectorized at order 1 (H\+V-\/\+S\+C\+H\+E\+ME v2) This routine does vectorize on S\+I\+MD architecture with good performances Speedup$>$2 on A\+VX 256 bits lvect, the vector length was originally at 64 \begin{DoxyAuthor}{Author}
-Henri Vincenti Mathieu Lobet 
+Computes charge density on grid vectorized at order 1 (H\+V-\/\+S\+C\+H\+E\+ME v2) This routine does vectorize on S\+I\+MD architecture with good performances Speedup$>$2 on A\+VX 256 bits lvect, the vector length was originally at 64  \begin{DoxyAuthor}{Author}
+Henri Vincenti, Mathieu Lobet 
 \end{DoxyAuthor}
 \begin{DoxyDate}{Date}
 2016 
@@ -479,7 +510,7 @@ Henri Vincenti Mathieu Lobet
 
 General charge deposition routine (Warning\+: Highly unoptimized routine) 
 
-Computes charge density on grid at arbitrary orders nox, noy and noz \begin{DoxyAuthor}{Author}
+Computes charge density on grid at arbitrary orders nox, noy and noz. \begin{DoxyAuthor}{Author}
 Henri Vincenti Mathieu Lobet 
 \end{DoxyAuthor}
 \begin{DoxyDate}{Date}

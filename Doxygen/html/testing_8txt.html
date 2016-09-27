@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Picsar Doxygen Project: $title</title>
+<title>Picsar Doxygen Project: Users/mlobet/Google Drive/Codes/Picsar/picsar_mpi_com_opt/Doxygen/pages/testing.txt File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -52,10 +52,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Modules</span></a></li>
       <li><a href="annotated.html"><span>Data&#160;Types&#160;List</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
+      <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -74,6 +74,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
+    </ul>
+  </div>
 </div><!-- top -->
 <div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
@@ -86,7 +92,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('Fortran installation instructions.html','');});
+$(document).ready(function(){initNavTree('testing_8txt.html','');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -103,62 +109,17 @@ $(document).ready(function(){initNavTree('Fortran installation instructions.html
 </iframe>
 </div>
 
+<div class="header">
+  <div class="headertitle">
+<div class="title">Users/mlobet/Google Drive/Codes/Picsar/picsar_mpi_com_opt/Doxygen/pages/testing.txt File Reference</div>  </div>
+</div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>INSTALLING PICSAR IN FULL FORTRAN 90 </h1>
-<h2>Makefile config </h2>
-<p>PICSAR uses a simple makefile. However, this makefile is already prepared to compile on many architectures. Here are the list of available options:</p>
-<ul>
-<li>FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),</li>
-<li>CC: you MPI C compiler</li>
-<li>FARGS: your compiler arguments (optimization flags etc.). To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least <b>OpenMP 4.0</b>.</li>
-</ul>
-<h2>Compiling </h2>
-<p>To compile, invoke the rule "all":</p>
-<blockquote class="doxtable">
-<p>make all </p>
-</blockquote>
-<h2>Testing </h2>
-<p>Testing the code after compilation is highly recommended.</p>
-<p>To test the compilation/execution, you can use the makefile (py.test is required):</p>
-<p>For all tests: </p><blockquote class="doxtable">
-<p>make -f Makefile test </p>
-</blockquote>
-<p>For each test one by one</p><ul>
-<li>Drifted plasma: make -f Makefile test1</li>
-<li>Homogeneous plasma: make -f Makefile test2</li>
-<li>Langmuir wave: make -f Makefile test3</li>
-</ul>
-<p>To test the compilation/execution, you can run test python scripts manually:</p>
-<ul>
-<li>Go to the folder Acceptance_testing/Fortran_tests.</li>
-<li>You can perform each test one by one entering the different folders:<ul>
-<li>test_plasma_drift</li>
-<li>test_homogeneous_plasma</li>
-<li>test_Langmuir_wave</li>
-</ul>
-</li>
-<li>You can run scripts using py.test: <blockquote class="doxtable">
-<p>py.test -s &ndash;trun=1 &ndash;ttest=1 </p>
-</blockquote>
-<ul>
-<li><code>--trun=0/1</code>: this option enables/disables simulation run</li>
-<li><code>--ttest=0/1</code>: this option enables/disables assert tests</li>
-</ul>
-</li>
-<li>You can also run the scripts without py.test: <blockquote class="doxtable">
-<p>python &lt;pyhthon_script&gt; -r 1 -t 1 </p>
-</blockquote>
-<ul>
-<li><code>-r 0/1</code>: this option enables/disables simulation run</li>
-<li><code>-t 0/1</code>: this option enables/disables simulation assert tests </li>
-</ul>
-</li>
-</ul>
-</div></div><!-- contents -->
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a class="el" href="testing_8txt.html">testing.txt</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>

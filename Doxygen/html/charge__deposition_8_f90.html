@@ -149,10 +149,11 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a570a05e74c2ed2a6fb9f9bf851e68390"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a570a05e74c2ed2a6fb9f9bf851e68390">depose_rho_vecnoy_1_1_1</a> (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)</td></tr>
 <tr class="separator:a570a05e74c2ed2a6fb9f9bf851e68390"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c1d09d89c39bd299a3b894dd419a9c6"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a9c1d09d89c39bd299a3b894dd419a9c6">depose_rho_vechv_1_1_1</a> (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)</td></tr>
+<tr class="memdesc:a9c1d09d89c39bd299a3b894dd419a9c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D vector charge deposition routine.  <a href="#a9c1d09d89c39bd299a3b894dd419a9c6">More...</a><br /></td></tr>
 <tr class="separator:a9c1d09d89c39bd299a3b894dd419a9c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8cd073a8fdaca9986ced5d11280777f6"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a8cd073a8fdaca9986ced5d11280777f6">depose_rho_vechvv2_1_1_1</a> (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)</td></tr>
-<tr class="memdesc:a8cd073a8fdaca9986ced5d11280777f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D vector charge deposition routine.  <a href="#a8cd073a8fdaca9986ced5d11280777f6">More...</a><br /></td></tr>
-<tr class="separator:a8cd073a8fdaca9986ced5d11280777f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66c87ccc669ef28ae7e636d8b39e050a"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a66c87ccc669ef28ae7e636d8b39e050a">depose_rho_vechvv2_1_1_1</a> (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                                   nxguard, nyguard, nzguard, lvect)</td></tr>
+<tr class="memdesc:a66c87ccc669ef28ae7e636d8b39e050a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D vector charge deposition routine.  <a href="#a66c87ccc669ef28ae7e636d8b39e050a">More...</a><br /></td></tr>
+<tr class="separator:a66c87ccc669ef28ae7e636d8b39e050a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a618d3787267c54578f40d084c4d915e3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="charge__deposition_8_f90.html#a618d3787267c54578f40d084c4d915e3">depose_rho_vechvv2_2_2_2</a> (rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)</td></tr>
 <tr class="memdesc:a618d3787267c54578f40d084c4d915e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 2 3D vector charge deposition routine.  <a href="#a618d3787267c54578f40d084c4d915e3">More...</a><br /></td></tr>
 <tr class="separator:a618d3787267c54578f40d084c4d915e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -753,9 +754,27 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Order 1 3D vector charge deposition routine. </p>
+<p>Computes charge density on grid vectorized at order 1 (HV-SCHEME v1) This routine does vectorize on SIMD architecture but poor performance Speedup&gt;2 on AVX 256 bits lvect, the vector length was originally at 64 </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">rho</td><td>charge array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">w</td><td>particle weight arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>particle species charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile grid minimum position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space discretization steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
-<a class="anchor" id="a8cd073a8fdaca9986ced5d11280777f6"></a>
+<a class="anchor" id="a66c87ccc669ef28ae7e636d8b39e050a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -888,7 +907,11 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Order 1 3D vector charge deposition routine. </p>
-<p>Computes charge density on grid vectorized at order 1 (HV-SCHEME v2) This routine does vectorize on SIMD architecture with good performances Speedup&gt;2 on AVX 256 bits lvect, the vector length was originally at 64 </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<p>Computes charge density on grid vectorized at order 1 (HV-SCHEME v2) This routine does vectorize on SIMD architecture with good performances Speedup&gt;2 on AVX 256 bits lvect, the vector length was originally at 64 </p><div class="image">
+<img src="charge_deposition_grid.jpg" alt="charge_deposition_grid.jpg"/>
+<div class="caption">
+Description of the data structure and variables for Rho</div></div>
+ <dl class="section author"><dt>Author</dt><dd>Henri Vincenti, Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1505,7 +1528,7 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>General charge deposition routine (Warning: Highly unoptimized routine) </p>
-<p>Computes charge density on grid at arbitrary orders nox, noy and noz </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<p>Computes charge density on grid at arbitrary orders nox, noy and noz. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

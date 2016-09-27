@@ -86,7 +86,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('Fortran installation instructions.html','');});
+$(document).ready(function(){initNavTree('Testing.html','');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -104,31 +104,36 @@ $(document).ready(function(){initNavTree('Fortran installation instructions.html
 </div>
 
 <div class="contents">
-<div class="textblock"><h1>INSTALLING PICSAR IN FULL FORTRAN 90 </h1>
-<h2>Makefile config </h2>
-<p>PICSAR uses a simple makefile. However, this makefile is already prepared to compile on many architectures. Here are the list of available options:</p>
+<div class="textblock"><h1>HOW TO TEST PICSAR </h1>
+<p>PICSAR includes several types of tests in order to check that the implementation is correct and that the code is correctly installed.</p>
+<p>PICSAR currently have 3 types of tests:</p>
 <ul>
-<li>FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),</li>
-<li>CC: you MPI C compiler</li>
-<li>FARGS: your compiler arguments (optimization flags etc.). To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least <b>OpenMP 4.0</b>.</li>
+<li>Tests that run the entire Fortran code</li>
+<li>Tests that run WARP + PICSAR</li>
+<li>Tests that run specific parts of the code to check the implementation</li>
 </ul>
-<h2>Compiling </h2>
-<p>To compile, invoke the rule "all":</p>
+<p>All the tests are located in the folder <code>Acceptance_testing</code>.</p>
+<h2>Testing the Fortran implementation </h2>
+<p>The tests for the Fortran code will be run in <code>Acceptance_testing/Fortran_tests</code>.</p>
+<p>Input_files for these tests are localized in the directory <code>example_decks_fortran</code> and are accessible as case examples.</p>
+<p>There are currently 3 tests:</p>
+<ul>
+<li>Drifted plasma: beams of electron-positron are generated at the center of the domain and propagates in each direction (x, y, z). This test enables to check that the boundary conditions are working properly.</li>
+<li>Homogeneous plasma: In this case, a thermalized homogeneous plasma is initialized in the whole domain. This test checks that the global energy keeps constant as well as divE=rho/esp0.</li>
+<li>Langmuir wave: In this case, a neutral plasma is initialized and the electrons receive a kick in a given direction that generates a plasma wave (Langmuir wave). This test checks that the energy keeps constant and that the plasma period is in agreement with the theory. DivE=rho0/eps0 is also checked.</li>
+</ul>
+<p>These tests can be launched using the makefile. In this case py.test have to be installed because it will be used to supervise the simulation and check the results.</p>
+<p>You can execute all the tests by typing:</p>
 <blockquote class="doxtable">
-<p>make all </p>
-</blockquote>
-<h2>Testing </h2>
-<p>Testing the code after compilation is highly recommended.</p>
-<p>To test the compilation/execution, you can use the makefile (py.test is required):</p>
-<p>For all tests: </p><blockquote class="doxtable">
 <p>make -f Makefile test </p>
 </blockquote>
-<p>For each test one by one</p><ul>
-<li>Drifted plasma: make -f Makefile test1</li>
-<li>Homogeneous plasma: make -f Makefile test2</li>
-<li>Langmuir wave: make -f Makefile test3</li>
+<p>Or you can execute them one by one:</p>
+<ul>
+<li>Drifted plasma: <code>make -f Makefile test1</code></li>
+<li>Homogeneous plasma: <code>make -f Makefile test2</code></li>
+<li>Langmuir wave: <code>make -f Makefile test3</code></li>
 </ul>
-<p>To test the compilation/execution, you can run test python scripts manually:</p>
+<p>You can run test the python scripts manually, for this aim:</p>
 <ul>
 <li>Go to the folder Acceptance_testing/Fortran_tests.</li>
 <li>You can perform each test one by one entering the different folders:<ul>
@@ -150,10 +155,24 @@ $(document).ready(function(){initNavTree('Fortran installation instructions.html
 </blockquote>
 <ul>
 <li><code>-r 0/1</code>: this option enables/disables simulation run</li>
-<li><code>-t 0/1</code>: this option enables/disables simulation assert tests </li>
+<li><code>-t 0/1</code>: this option enables/disables simulation assert tests</li>
 </ul>
 </li>
 </ul>
+<h2>Testing the Python implementation </h2>
+<p>The tests for the Python code (WARP + PICSAR) will be run in <code>Acceptance_testing/Python_tests</code>.</p>
+<p>You can use the makefile (py.test is required) to launch the test scripts.</p>
+<p>For all test, just type:</p>
+<blockquote class="doxtable">
+<p>Make -f Makefile_Forthon test </p>
+</blockquote>
+<p>For each test one by one</p><ul>
+<li>Simple running test (does not work for the moment): <code>make -f Makefile_Forthon test1</code></li>
+<li>Langmuir wave: <code>make -f Makefile_Forthon test2</code></li>
+</ul>
+<h2>Unit tests </h2>
+<p>Unit tests enable to check that specific parts of the code are working properly and that several different algorithms are well giving the same results from the same initialization.</p>
+<p>Unit tests are independant Fortran program that used the subroutines of PICSAR. They can be found in the directory <code>Gcov_tests/Python_tests</code>. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
