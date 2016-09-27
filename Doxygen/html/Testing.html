@@ -105,6 +105,12 @@ $(document).ready(function(){initNavTree('Testing.html','');});
 
 <div class="contents">
 <div class="textblock"><h1>HOW TO TEST PICSAR </h1>
+<h2>Content </h2>
+<p><a href="#intro">Introduction</a></p>
+<p><a href="#fortran">Testing the Fortran implementation</a></p>
+<p><a href="#python">Testing the Python implementation</a></p>
+<p><a href="#unit">Unit tests</a></p>
+<h2>Introduction  </h2>
 <p>PICSAR includes several types of tests in order to check that the implementation is correct and that the code is correctly installed.</p>
 <p>PICSAR currently have 3 types of tests:</p>
 <ul>
@@ -113,8 +119,8 @@ $(document).ready(function(){initNavTree('Testing.html','');});
 <li>Tests that run specific parts of the code to check the implementation</li>
 </ul>
 <p>All the tests are located in the folder <code>Acceptance_testing</code>.</p>
-<h2>Testing the Fortran implementation </h2>
-<p>The tests for the Fortran code will be run in <code>Acceptance_testing/Fortran_tests</code>.</p>
+<h2>Testing the Fortran implementation  </h2>
+<p>The tests for the Fortran code will be run in <code>Acceptance_testing/Fortran_tests</code>. The code is in Fortran but the tests will be supervised via python scripts localized in the directories of <code>Acceptance_testing/Fortran_tests</code>. These scripts can be launch with py.test.</p>
 <p>Input_files for these tests are localized in the directory <code>example_decks_fortran</code> and are accessible as case examples.</p>
 <p>There are currently 3 tests:</p>
 <ul>
@@ -133,7 +139,7 @@ $(document).ready(function(){initNavTree('Testing.html','');});
 <li>Homogeneous plasma: <code>make -f Makefile test2</code></li>
 <li>Langmuir wave: <code>make -f Makefile test3</code></li>
 </ul>
-<p>You can run test the python scripts manually, for this aim:</p>
+<p>You can also run the python test scripts manually, for this aim:</p>
 <ul>
 <li>Go to the folder Acceptance_testing/Fortran_tests.</li>
 <li>You can perform each test one by one entering the different folders:<ul>
@@ -159,7 +165,7 @@ $(document).ready(function(){initNavTree('Testing.html','');});
 </ul>
 </li>
 </ul>
-<h2>Testing the Python implementation </h2>
+<h2>Testing the Python implementation  </h2>
 <p>The tests for the Python code (WARP + PICSAR) will be run in <code>Acceptance_testing/Python_tests</code>.</p>
 <p>You can use the makefile (py.test is required) to launch the test scripts.</p>
 <p>For all test, just type:</p>
@@ -170,9 +176,43 @@ $(document).ready(function(){initNavTree('Testing.html','');});
 <li>Simple running test (does not work for the moment): <code>make -f Makefile_Forthon test1</code></li>
 <li>Langmuir wave: <code>make -f Makefile_Forthon test2</code></li>
 </ul>
-<h2>Unit tests </h2>
+<h2>Unit tests  </h2>
 <p>Unit tests enable to check that specific parts of the code are working properly and that several different algorithms are well giving the same results from the same initialization.</p>
-<p>Unit tests are independant Fortran program that used the subroutines of PICSAR. They can be found in the directory <code>Gcov_tests/Python_tests</code>. </p>
+<p>Unit tests are independant Fortran program that use the subroutines of PICSAR. They can be found in the directory <code>Acceptance_testing/Gcov_tests</code>.</p>
+<p>All the tests can be compiled using the makefile by doing</p>
+<blockquote class="doxtable">
+<p>make build_test </p>
+</blockquote>
+<p>And they can all be run by doing</p>
+<blockquote class="doxtable">
+<p>make test_gcov </p>
+</blockquote>
+<p>However, they can also be compiled and run separately. Here is the list of available tests:</p>
+<table class="doxtable">
+<tr>
+<th>test name </th><th>description </th><th>make </th><th>run  </th></tr>
+<tr>
+<td>field_gathering_2d_test </td><td>Test the field gathering functions in 2d </td><td>make build_field_gathering_2d_test </td><td>make field_gathering_2d_test </td></tr>
+<tr>
+<td>field_gathering_3d_test </td><td>Test the field gathering functions in 3d </td><td>make build_field_gathering_3d_test </td><td>make field_gathering_3d_test </td></tr>
+<tr>
+<td>esirkepov_2d_test </td><td>Test Esirkepov current deposition subroutines in 2d </td><td>make build_esirkepov_2d_test </td><td>make esirkepov_2d_test </td></tr>
+<tr>
+<td>esirkepov_3d_test </td><td>Test Esirkepov current deposition subroutines in 3d </td><td>make build_esirkepov_3d_test </td><td>make esirkepov_3d_test </td></tr>
+<tr>
+<td>rho_deposition_3d_test </td><td>Test the charge deposition in 3d </td><td>make build_rho_deposition_3d_test </td><td>make rho_deposition_3d_test </td></tr>
+<tr>
+<td>tile_field_gathering_3d_test </td><td>Test the field gathering in 3d with tiles </td><td>make build_tile_field_gathering_3d_test </td><td>make tile_field_gathering_3d_test </td></tr>
+<tr>
+<td>tile_particle_push_3d_test </td><td>Test the particle psher + field gathering in 3d with tiles </td><td>make build_tile_particle_push_3d_test </td><td>make tile_particle_push_3d_test </td></tr>
+<tr>
+<td>tile_mpi_part_com_test </td><td>Test MPI and particle communication between tiles </td><td>make build_tile_mpi_part_com_test </td><td>make tile_mpi_part_com_test </td></tr>
+<tr>
+<td>tile_curr_depo_3d_test </td><td>Test current deposition with tiles </td><td>make build_tile_curr_depo_3d_test </td><td>make tile_curr_depo_3d_test </td></tr>
+<tr>
+<td>tile_rho_depo_3d_test </td><td>Test the charge deposition with tiles </td><td>make build_tile_rho_depo_3d_test </td><td>make tile_rho_depo_3d_test </td></tr>
+</table>
+<p>These tests are very useful to check that new subroutines are giving correct results. They can also be used to compare efficiency and performance of a set of subroutines outside the main code. For this aim, timers are present in many of these tests. It is highly recommended that you implement you own tests when new subroutines or algorithms are added in the code. Feel also free to use to modify these codes for your own purposes. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

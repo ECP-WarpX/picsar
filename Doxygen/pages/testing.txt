@@ -3,6 +3,20 @@
 **HOW TO TEST PICSAR
 ============================================================
 
+** Content 
+--------------------------------------
+
+[Introduction](#intro)
+
+[Testing the Fortran implementation](#fortran)
+
+[Testing the Python implementation](#python)
+
+[Unit tests](#unit)
+
+** Introduction <a id="intro"></a>
+--------------------------------------
+
 PICSAR includes several types of tests in order to check that the implementation is correct 
 and that the code is correctly installed.
 
@@ -14,10 +28,12 @@ PICSAR currently have 3 types of tests:
 
 All the tests are located in the folder `Acceptance_testing`.
 
-**Testing the Fortran implementation
+**Testing the Fortran implementation <a id="fortran"></a>
 --------------------------------------
 
 The tests for the Fortran code will be run in `Acceptance_testing/Fortran_tests`.
+The code is in Fortran but the tests will be supervised via python scripts localized in the directories of `Acceptance_testing/Fortran_tests`.
+These scripts can be launch with py.test.
 
 Input_files for these tests are localized in the directory `example_decks_fortran` and are accessible as case examples.
 
@@ -43,7 +59,7 @@ Or you can execute them one by one:
 - Homogeneous plasma: `make -f Makefile test2`
 - Langmuir wave:      `make -f Makefile test3`   
 
-You can run test the python scripts manually, for this aim:
+You can also run the python test scripts manually, for this aim:
 
 - Go to the folder Acceptance_testing/Fortran_tests.
 
@@ -64,7 +80,7 @@ You can run test the python scripts manually, for this aim:
   - `-r 0/1`: this option enables/disables simulation run
   - `-t 0/1`: this option enables/disables simulation assert tests 
 
-**Testing the Python implementation
+**Testing the Python implementation <a id="python"></a>
 --------------------------------------
 
 The tests for the Python code (WARP + PICSAR) will be run in `Acceptance_testing/Python_tests`.
@@ -79,14 +95,43 @@ For each test one by one
   - Simple running test (does not work for the moment): `make -f Makefile_Forthon test1`
   - Langmuir wave: `make -f Makefile_Forthon test2`
 
-**Unit tests
+**Unit tests <a id="unit"></a>
 --------------------------------------
 
-Unit tests enable to check that specific parts of the code are working properly and that several different algorithms are well giving the same results from the same initialization.
+Unit tests enable to check that specific parts of the code are working properly and
+that several different algorithms are well giving the same results from the same initialization.
 
-Unit tests are independant Fortran program that used the subroutines of PICSAR.
-They can be found in the directory `Gcov_tests/Python_tests`.
+Unit tests are independant Fortran program that use the subroutines of PICSAR.
+They can be found in the directory `Acceptance_testing/Gcov_tests`.
 
+All the tests can be compiled using the makefile by doing
 
+> make build_test
+
+And they can all be run by doing
+
+> make test_gcov
+
+However, they can also be compiled and run separately.
+Here is the list of available tests:
+
+| test name               | description                                         | make                               | run                          |
+|-------------------------|-----------------------------------------------------|------------------------------------|------------------------------|
+| field_gathering_2d_test | Test the field gathering functions in 2d            | make build_field_gathering_2d_test | make field_gathering_2d_test |
+| field_gathering_3d_test | Test the field gathering functions in 3d            | make build_field_gathering_3d_test | make field_gathering_3d_test |
+| esirkepov_2d_test       | Test Esirkepov current deposition subroutines in 2d | make build_esirkepov_2d_test | make esirkepov_2d_test |
+| esirkepov_3d_test       | Test Esirkepov current deposition subroutines in 3d | make build_esirkepov_3d_test | make esirkepov_3d_test |
+| rho_deposition_3d_test  | Test the charge deposition in 3d                    | make build_rho_deposition_3d_test | make rho_deposition_3d_test |
+| tile_field_gathering_3d_test | Test the field gathering in 3d with tiles      | make build_tile_field_gathering_3d_test | make tile_field_gathering_3d_test |
+| tile_particle_push_3d_test | Test the particle psher + field gathering in 3d with tiles | make build_tile_particle_push_3d_test | make tile_particle_push_3d_test |
+| tile_mpi_part_com_test  | Test MPI and particle communication between tiles   | make build_tile_mpi_part_com_test | make tile_mpi_part_com_test |
+| tile_curr_depo_3d_test  | Test current deposition with tiles                  | make build_tile_curr_depo_3d_test | make tile_curr_depo_3d_test |
+| tile_rho_depo_3d_test   | Test the charge deposition with tiles               | make build_tile_rho_depo_3d_test  | make tile_rho_depo_3d_test  |
+
+These tests are very useful to check that new subroutines are giving correct results.
+They can also be used to compare efficiency and performance of a set of subroutines outside the main code.
+For this aim, timers are present in many of these tests.
+It is highly recommended that you implement you own tests when new subroutines or algorithms are added in the code.
+Feel also free to use to modify these codes for your own purposes.
 
 */

@@ -48,6 +48,8 @@ python_libs/*.pyc
 python_libs/em3dsolverPXR.py.old
 utils/depose_jxjyjz_esirkepov_1_1.F90
 utils/depose_jxjyjz_esirkepov_2_2.F90
+utils/depose_jxjyjz_esirkepov_3_3.F90
+utils/gathering_routines_3_3_3.F90
 modules.d
 .cache
 .DS_Store
