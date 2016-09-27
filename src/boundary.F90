@@ -2801,6 +2801,8 @@ END SUBROUTINE charge_bcs
 	nthreads_tot=1
 #endif
 
+    IF (nspecies .EQ. 0) RETURN 
+
 	IF (nthreads_tot .GT. 1) THEN
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
 		nthreads_loop2=MAX(1_idp,nthreads_tot/nthreads_loop1)
