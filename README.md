@@ -30,7 +30,7 @@ PICSAR can be run in two modes:
 For more details on how to run the code with these two modes, see the
 sections *Compiling* and *Running simulations* below. 
 
-![warp_and_pxr](images/warp_and_pxr.png =100px)
+![warp_and_pxr](Doxygen/images/warp_and_picsar.png)
 
 ####A.  Here are some of the specific algorithmic features of the PICSAR code :  
 
@@ -125,9 +125,3 @@ Sections start by `section::name` where `name` is the section name and end with 
 Then these sections contain keywords and values to be specified according to what you want.
 In order to learn how to create your own input file and what are the available sections, use the Doxygen documentation.
 A page called input file configuration describes the sections and the keywords to set up a correct input file.
-
-
-
-* `activation`: activation of the sorting
-* `dx`, `dy`, `dz`: size of the sorting cells
-* `shiftx`, `shifty`, `shiftz`: shift of the sorting grid
