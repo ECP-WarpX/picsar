@@ -2116,7 +2116,7 @@ DO iz=1,ntilez
                 curr_tile%part_x,curr_tile%part_y,curr_tile%part_z+zgrid,     						          &
                 curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			      &
                 curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,        &
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                        &
+                curr_tile%z_grid_tile_min+zgrid,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                        &
                 nxjg,nyjg,nzjg)
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
