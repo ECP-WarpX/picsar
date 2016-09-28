@@ -31,18 +31,18 @@ def test_plasma_drift(trun,ttest,tpath):
   
   """
 
-  print ' _________________________________________'
-  print ''
-  print ' Test plasma drift'  
-  print ' _________________________________________'
+  print (' _________________________________________')
+  print ('')
+  print (' Test plasma drift')
+  print (' _________________________________________')
 
   trun=int(trun)
   ttest = int(ttest)
 
   print
-  print ' Running simulation:',trun
-  print ' Using assert:',ttest
-  print ' Run in path:',tpath
+  print (' Running simulation:',trun)
+  print (' Using assert:',ttest)
+  print (' Run in path:',tpath)
   print
 
   # ____________________________________________________________________
@@ -60,8 +60,8 @@ def test_plasma_drift(trun,ttest,tpath):
     if 'test_langmuir_wave.py' in arg:
       file_path = os.path.dirname(os.path.realpath(arg))
   
-  print ' Current directory:',current_path
-  print ' Script directory:',file_path
+  print(' Current directory:',current_path)
+  print(' Script directory:',file_path)
   print
   
   if (trun):
@@ -101,15 +101,15 @@ def test_plasma_drift(trun,ttest,tpath):
   wplasma = echarge*sqrt(n/(emass*eps0))
   Tplasma = 2.*pi*sqrt(gamma)/wplasma
   
-  print ' Gamma:',gamma 
-  print ' Plasma frequency:',wplasma
-  print ' Plasma period:',Tplasma,'s'
+  print(' Gamma:',gamma)
+  print(' Plasma frequency:',wplasma)
+  print(' Plasma period:',Tplasma,'s')
   
   # Test energy
   # Opening of the temporal files
   print
-  print ' _________________________________________'
-  print ' Checking energy balance'
+  print (' _________________________________________')
+  print (' Checking energy balance')
   # Kinetic energy
   t,kinE = read_picsar_temporal_diags('RESULTS/kinE')
 
@@ -137,7 +137,7 @@ def test_plasma_drift(trun,ttest,tpath):
   max_totalE = max(total_energy)
   diffrel = (max_totalE - min_totalE)/max_totalE
   print
-  print ' Relative error on the total energy:',diffrel
+  print(' Relative error on the total energy:',diffrel)
   if ttest: assert diffrel < 1e-2
       
   # Plotting      
@@ -167,8 +167,8 @@ def test_plasma_drift(trun,ttest,tpath):
   ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
  
   # Test divergence
-  print ' ________________________________________ '
-  print ' Check DivE = rho/eps0'
+  print (' ________________________________________ ')
+  print (' Check DivE = rho/eps0')
   
   # Opening of divE-rho
   t,diverho = read_picsar_temporal_diags('RESULTS/divE-rho')
@@ -183,8 +183,8 @@ def test_plasma_drift(trun,ttest,tpath):
   ax1.set_xlabel('t (s)')
   
   print
-  print ' _______________________________________ '
-  print ' Check DivE = rho/eps0'
+  print (' _______________________________________ ')
+  print (' Check DivE = rho/eps0')
   if 1:
       for it in range(0,200,20):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
@@ -192,9 +192,9 @@ def test_plasma_drift(trun,ttest,tpath):
         norm = LA.norm((dive.f*eps0-rho.f)) 
         print
         print(" Differences norme L2 ||rho-divE|| iteration it = " + str(it))
-        print " Norm(dive.f*eps0-rho.f):",norm
-        print " Total charge:",np.sum(rho.f)
-        print " Total divergence:",np.sum(dive.f*eps0)
+        print(" Norm(dive.f*eps0-rho.f):",norm)
+        print(" Total charge:",np.sum(rho.f))
+        print(" Total divergence:",np.sum(dive.f*eps0))
         if ttest: assert norm < 1E-5
 
   if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
@@ -203,10 +203,10 @@ def test_plasma_drift(trun,ttest,tpath):
   # Advice
   
   print
-  print ' _______________________________________'
-  print ' Advice for users:' 
-  print ' - Check that the energy keeps constant with time'
-  print ' - Check that divE = rho/eps0 for each tests'
+  print (' _______________________________________')
+  print (' Advice for users:' )
+  print (' - Check that the energy keeps constant with time')
+  print (' - Check that divE = rho/eps0 for each tests')
   print
   
   plt.show()

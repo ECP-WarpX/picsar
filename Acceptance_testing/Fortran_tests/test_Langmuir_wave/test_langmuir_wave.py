@@ -24,10 +24,10 @@ import pytest
 from Field import *
 
 def help():
-    print ' Help:'
-    print ' -t --test: if 1 use assert'
-    print ' -r --run: if 1 run the code before analysis'
-    print ' -f --folder: path to the test folder'
+    print (' Help:')
+    print (' -t --test: if 1 use assert')
+    print (' -r --run: if 1 run the code before analysis')
+    print (' -f --folder: path to the test folder')
 
 
 def test_langmuir_wave(trun,ttest,tpath):
@@ -36,18 +36,18 @@ def test_langmuir_wave(trun,ttest,tpath):
   """
   
   print
-  print ' _________________________________________'
-  print ''
-  print ' Test Langmuir Wave'  
-  print ' _________________________________________'
+  print (' _________________________________________')
+  print ('')
+  print (' Test Langmuir Wave')
+  print (' _________________________________________')
 
   trun=int(trun)
   ttest = int(ttest)
 
   print
-  print ' Running simulation:',trun
-  print ' Using assert:',ttest
-  print ' Run in path:',tpath
+  print (' Running simulation:',trun)
+  print (' Using assert:',ttest)
+  print (' Run in path:',tpath)
   print
 
   # ____________________________________________________________________
@@ -66,8 +66,8 @@ def test_langmuir_wave(trun,ttest,tpath):
     if 'test_langmuir_wave.py' in arg:
       file_path = os.path.dirname(os.path.realpath(arg))
   
-  print ' Current directory:',current_path
-  print ' Script directory:',file_path
+  print (' Current directory:',current_path)
+  print (' Script directory:',file_path)
   print
 
   if (trun):
@@ -103,14 +103,14 @@ def test_langmuir_wave(trun,ttest,tpath):
   gamma = 1./sqrt(1.-v**2)
   wplasma = echarge*sqrt(n/(emass*eps0))
   Tplasma = 2.*pi*sqrt(gamma)/wplasma
-  print ' Gamma:',gamma 
-  print ' Plasma frequency:',wplasma
-  print ' Plasma period:',Tplasma,'s'
+  print (' Gamma:',gamma)
+  print (' Plasma frequency:',wplasma)
+  print (' Plasma period:',Tplasma,'s')
   
   # Opening of the temporal files
   print
-  print ' _________________________________________'
-  print ' Checking energy balance'  
+  print (' _________________________________________')
+  print (' Checking energy balance')
   # Kinetic energy
   t,kinE = read_picsar_temporal_diags('RESULTS/kinE')
   kinE = kinE[:,1:]
@@ -144,7 +144,7 @@ def test_langmuir_wave(trun,ttest,tpath):
   min_totalE = min(total_energy)
   max_totalE = max(total_energy)
   diffrel = (max_totalE - min_totalE)/max_totalE
-  print ' Relative error on the total energy:',diffrel
+  print (' Relative error on the total energy:',diffrel)
   if ttest: assert diffrel < 1e-2
       
   # Plotting      
@@ -184,12 +184,12 @@ def test_langmuir_wave(trun,ttest,tpath):
   # Test oscillations
   diffth = abs(kinE[0,:] - ekinth)
   print
-  print ' Maximum difference between theory and simulation:',max(diffth)
+  print (' Maximum difference between theory and simulation:',max(diffth))
   if ttest: assert (max(diffth) < 1E-1*max(kinE[0,:]))," The difference between simulation and theory is too high (> %g)"%(1E-1*max(kinE[0,:]))
   
   # Test divergence
-  print ' ________________________________________ '
-  print ' Check DivE = rho/eps0'
+  print (' ________________________________________ ')
+  print (' Check DivE = rho/eps0')
   
   # Opening of divE-rho
   t,diverho = read_picsar_temporal_diags('RESULTS/divE-rho')
@@ -210,22 +210,22 @@ def test_langmuir_wave(trun,ttest,tpath):
         norm = LA.norm((dive.f*eps0-rho.f)) 
         print
         print(" Differences L2 norm ||rho-divE|| iteration it = " + str(it))
-        print "",LA.norm((dive.f*eps0-rho.f))
-        print " Total charge "
-        print "",np.sum(rho.f)
-        print " Total divergence"
-        print "",np.sum(dive.f*eps0)
+        print("",LA.norm((dive.f*eps0-rho.f)))
+        print(" Total charge ")
+        print("",np.sum(rho.f))
+        print(" Total divergence")
+        print("",np.sum(dive.f*eps0))
   if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
 
   # ____________________________________________________
   # Advice
   
   print
-  print ' _______________________________________'
-  print ' Advice for users:' 
-  print ' - Check that the energy is constant with time'
-  print ' - Check that divE = rho/eps0 for each tests'
-  print ' - Check the energy oscillating behavior'
+  print (' _______________________________________')
+  print (' Advice for users:' )
+  print (' - Check that the energy is constant with time')
+  print (' - Check that divE = rho/eps0 for each tests')
+  print (' - Check the energy oscillating behavior')
   print
   
   plt.show()

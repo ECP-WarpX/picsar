@@ -181,11 +181,12 @@ PROGRAM tile_field_gathering_3d_test
 							END DO
 					END DO
 			END DO
-	END DO ! END LOOP ON SPECIES
+	END DO ! end loop on speciess
 
   ! Allocate array to check the results
 	ALLOCATE(tilesumrho(ntilez,ntiley,ntilex))
 	
+	! Time step using the CFL
 	dtcoef = 0.5
 	dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 
@@ -193,11 +194,12 @@ PROGRAM tile_field_gathering_3d_test
 	! ______________________________________________________________________________________
 	! Test of the different subroutines with tiling
 
-	! __ Order 1 __________________     
+	! __ Order 1 __________________
 	write(0,*) ''
 
 	errrho = 0
-  
+	
+	! Reference
 	i = 1
 	name(i) = 'Charge deposition order n'
 	rhodepo = 2 ; nox=1 ; noy=1 ; noz=1
@@ -224,7 +226,6 @@ PROGRAM tile_field_gathering_3d_test
 	t(i) = MPI_WTIME() - t0
 	CALL check(tilesumrho)
 	sumrho(i) = SUM(tilesumrho) 
-
 
 	! Computation of the relative error
 	CALL compute_err(i,sumrho, &

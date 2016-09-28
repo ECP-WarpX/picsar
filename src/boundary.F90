@@ -2046,8 +2046,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz + dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT
@@ -2064,8 +2064,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz - dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -2083,8 +2083,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz + dy
-									curr%part_uy(i) = - curr%part_uy(i)
-									CYCLE
+									                curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
                             	CASE DEFAULT ! periodic
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -2102,7 +2102,7 @@ END SUBROUTINE charge_bcs
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz - dy
 									                curr%part_uy(i) = - curr%part_uy(i)
-									              CYCLE
+									                ybd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -2121,7 +2121,7 @@ END SUBROUTINE charge_bcs
                               CASE (2_idp) ! Reflecting
                             	  curr%part_z(i) = part_xyz + dz
 									              curr%part_uz(i) = - curr%part_uz(i)
-									              CYCLE
+									              zbd=0
 								              CASE DEFAULT ! periodic
 									              curr%part_z(i) = part_xyz + length_z
 								              END SELECT
@@ -2139,8 +2139,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_z(i) = part_xyz - dz
-									curr%part_uz(i) = - curr%part_uz(i)
-									CYCLE
+									                curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
@@ -2296,8 +2296,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz + dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT
@@ -2312,8 +2312,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz - dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -2330,8 +2330,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz + dy
-									curr%part_uy(i) = - curr%part_uy(i)
-									CYCLE
+									                curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
                             	CASE DEFAULT ! periodic
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -2347,8 +2347,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz - dy
-									curr%part_uy(i) = - curr%part_uy(i)
-									CYCLE
+									                curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -2360,16 +2360,16 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. z_min_local+zgrid) THEN
                             zbd = -1
                             IF (z_min_boundary) THEN
-								SELECT CASE (pbound_z_min)
-								CASE (1_idp) ! absorbing
-									remove_from_sim=.TRUE.
-                            	CASE (2_idp) ! Reflecting
+								                SELECT CASE (pbound_z_min)
+								                CASE (1_idp) ! absorbing
+									                remove_from_sim=.TRUE.
+                              	CASE (2_idp) ! Reflecting
                             	    curr%part_z(i) = part_xyz + dz
-									curr%part_uz(i) = - curr%part_uz(i)
-									CYCLE
-								CASE DEFAULT ! periodic
-									curr%part_z(i) = part_xyz + length_z
-								END SELECT
+									                curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
+								                CASE DEFAULT ! periodic
+									                curr%part_z(i) = part_xyz + length_z
+								                END SELECT
                             ENDIF
                         ENDIF
 
@@ -2383,8 +2383,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_z(i) = part_xyz - dz
-									curr%part_uz(i) = - curr%part_uz(i)
-									CYCLE
+									                curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
@@ -2394,20 +2394,20 @@ END SUBROUTINE charge_bcs
                         IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
                         ! Particle has left processor, send it to its neighbour
                         	IF (.NOT. remove_from_sim) THEN
-								ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
-								sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
-								sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
-								sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
-								sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
-								sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
-								sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
-								sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
-								sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
-								npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
-								nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
-								! Remove particle of current species from current tile
-							ENDIF
-							CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
+								                    ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
+								                    sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
+								                    sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
+								                    sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
+								                    sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
+								                    sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
+								                    sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
+								                    sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
+								                    sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
+								                    npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
+								                    nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
+								                    ! Remove particle of current species from current tile
+							            ENDIF
+							            CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
                   ENDDO
@@ -2866,7 +2866,7 @@ END SUBROUTINE charge_bcs
 	  !$OMP length_x,length_y,length_z,dxs2,dys2,dzs2, &
 	  !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary,  &
 	  !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, &
-    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,mpi_npart,tilebuf,mpi_buf_size,lvect) &
+    !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,mpi_npart,tilebuf,mpi_buf_size,lvect,zgrid) &
 #if defined(PART_BCS_TIMER)
 		!$OMP SHARED(tltmpi) &
 		!$OMP PRIVATE(t0,t2,t4,tlt) &
@@ -2896,7 +2896,7 @@ END SUBROUTINE charge_bcs
 					!$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, &
 					!$OMP length_x,length_y,length_z,tilebuf,mpi_npart, &
 					!$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary, &
-					!$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect)  &
+					!$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect,zgrid)  &
 					!$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
 					!$OMP PRIVATE(ix,iy,iz,i,ib,k,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
 					!$OMP indx,indy,indz,xbd,ybd,zbd,i2,i3)  &
@@ -2958,7 +2958,7 @@ END SUBROUTINE charge_bcs
 									! Case 1: if particle did not leave tile nothing to do
 									IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
 									.AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
-									.AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
+									.AND. ((partz .GE. curr_tile%z_tile_min+zgrid) .AND. (partz .LT. curr_tile%z_tile_max+zgrid))) &
 									CYCLE
 
 #if defined(PART_BCS_TIMER)
@@ -2968,7 +2968,7 @@ END SUBROUTINE charge_bcs
 									! Case 2: if particle left MPI domain
 									IF (((partx .LT. x_min_local) .OR. (partx .GE. x_max_local)) .OR. &
 									 ((party .LT. y_min_local) .OR. (party .GE. y_max_local)) .OR. &
-									 ((partz .LT. z_min_local) .OR. (partz .GE. z_max_local))) THEN
+									 ((partz .LT. z_min_local+zgrid) .OR. (partz .GE. z_max_local+zgrid))) THEN
 
 									! Then we determine in which domain this particle is going
 									xbd = 0
@@ -3033,7 +3033,7 @@ END SUBROUTINE charge_bcs
                     ENDIF
 
                     ! Particle has left this processor -z
-                    IF (partz .LT. z_min_local) THEN
+                    IF (partz .LT. z_min_local+zgrid) THEN
                       zbd = -1
                       IF (z_min_boundary) THEN
                         SELECT CASE (pbound_z_min)
@@ -3045,7 +3045,7 @@ END SUBROUTINE charge_bcs
                           END SELECT
                       ENDIF
                         ! Particle has left this processor +z
-                    ELSE IF (partz .GE. z_max_local) THEN
+                    ELSE IF (partz .GE. z_max_local+zgrid) THEN
                             zbd = 1
                             ! Particle has left the system
                             IF (z_max_boundary) THEN
@@ -3107,7 +3107,7 @@ END SUBROUTINE charge_bcs
 									! Get new indexes of particle in array of tiles
 									indx = MIN(FLOOR((partx-x_min_local+dxs2)*(nx0_grid_tile_dx),idp)+1,ntilex)
 									indy = MIN(FLOOR((party-y_min_local+dys2)*(ny0_grid_tile_dy),idp)+1,ntiley)
-									indz = MIN(FLOOR((partz-z_min_local+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
+									indz = MIN(FLOOR((partz-(z_min_local+zgrid)+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
 									!if ((indx.le.0).or.(indy.le.0).or.(indz.le.0)) THEN
                    !print*,'xmin',x_min_local,'xmax',x_max_local,'x',partx,xbd
                    !print*,'ymin',y_min_local,'ymax',y_max_local,'y',party,ybd
@@ -3670,7 +3670,7 @@ END SUBROUTINE charge_bcs
       !$OMP PARALLEL DO DEFAULT(NONE) &
       !$OMP SHARED(is,ntilez,ntiley,ntilex,nrecv_buf_tot,recvbuf,curr,dxs2,dys2,dzs2, &
       !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz, &
-      !$OMP x_min_local,y_min_local,z_min_local) &
+      !$OMP x_min_local,y_min_local,z_min_local,zgrid) &
       !$OMP PRIVATE(ix,iy,iz,i,k,indx,indy,indz,curr_tile,nptile) &
       !$OMP COLLAPSE(3) SCHEDULE(runtime)
       DO iz=1, ntilez! LOOP ON TILES
@@ -3689,7 +3689,7 @@ END SUBROUTINE charge_bcs
         ! Get particle index in array of tile
 		    indx = MIN(FLOOR((recvbuf(i,1)-x_min_local+dxs2)*(nx0_grid_tile_dx),idp)+1,ntilex)
 		    indy = MIN(FLOOR((recvbuf(i,2)-y_min_local+dys2)*(ny0_grid_tile_dy),idp)+1,ntiley)
-		    indz = MIN(FLOOR((recvbuf(i,3)-z_min_local+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
+		    indz = MIN(FLOOR((recvbuf(i,3)-(z_min_local+zgrid)+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
 
 ! 				IF (((recvbuf(i,1) .LT. x_min_local) .OR. (recvbuf(i,1) .GE. x_max_local)) .OR. &
 ! 					 ((recvbuf(i,2) .LT. y_min_local) .OR. (recvbuf(i,2) .GE. y_max_local)) .OR. &

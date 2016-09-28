@@ -26,14 +26,14 @@ def read_picsar_temporal_diags(filename):
   l = 0
   nc = struct.unpack("i", fileContent[l:l+4])[0]; l+=4
   dt = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
-  nl = (len(fileContent)-12)/nc/8
+  nl = int((len(fileContent)-12)/nc/8)
   
   print
-  print ' Reading',filename
-  print ' Total number of bytes',len(fileContent)
-  print ' Number of columns:',nc
-  print ' Number of iterations:',nl
-  print ' Time step:',dt,'s'
+  print (' Reading',filename)
+  print (' Total number of bytes',len(fileContent))
+  print (' Number of columns:',nc)
+  print (' Number of iterations:',nl)
+  print (' Time step:',dt,'s')
   
   if nc > 1:
     array = zeros([nc,nl])

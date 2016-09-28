@@ -198,7 +198,31 @@ $(document).ready(function(){initNavTree('Input file configuration.html','');});
 </ul>
 <h4>G. Time statistic section</h4>
 <p>This section, <code>section::timestat</code>, enables to controle the time statistics information. All main subroutines have internal timers. The results of time spent in each part of the code can be displayed in the terminal or write in a file. By default, the time statistics are given at the end of the simulation in the terminal.</p>
+<ul>
+<li><code>activation</code> (<code>=0/1</code>): this flag activates output of the time statistics as a function of the iteration number in a file</li>
+<li><code>period</code>: this is the period of the output in number of iterations</li>
+<li><code>it_start</code>: iteration start for the time statistics</li>
+<li><code>per_ir</code>: print in the terminal the time statistics after each iteration</li>
+<li><code>buffersize</code>: size of the buffer before writing in files (1 mean that the times are output every time steps, more mean that the results are stored in an array before being output)</li>
+</ul>
 <h4>H. Temporal diagnostics section</h4>
+<p>This section, <code>section::temporal</code>, enables to use the temporal diagnostics. Temporal diagnostics refers to the time evolution of integrated quantities such as the kinetic energy, the field energy, the total charge, the divergence of E...</p>
+<ul>
+<li><code>frequency</code>: output period</li>
+<li><code>format</code>: output format, this can be:<ul>
+<li><code>=0</code>: for finary</li>
+<li><code>=1</code>: for ascii</li>
+</ul>
+</li>
+<li><code>kinE</code>: kinetic energy for each species</li>
+<li><code>exE</code>: Energy of the x electric field component</li>
+<li><code>eyE</code>: Energy of the y electric field component</li>
+<li><code>ezE</code>: Energy of the z electric field component</li>
+<li><code>bxE</code>: Energy of the x magnetic field component</li>
+<li><code>byE</code>: Energy of the y magnetic field component</li>
+<li><code>bzE</code>: Energy of the z magnetic field component</li>
+<li><code>divE-rho</code>: Evolution of the norm(divE - rho) </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -32,10 +32,10 @@ class Field:
     self.zmax = struct.unpack("d", fileContent[l:l+8])[0]; l+=8  
     self.nz = struct.unpack("i", fileContent[l:l+4])[0]; l+=4  
     
-    print 'Openning of ',filename
-    print 'xmin: %f, xmax: %f, nx: %d'%(self.xmin,self.xmax,self.nx)
-    print 'ymin: %f, ymax: %f, ny: %d'%(self.ymin,self.ymax,self.ny)
-    print 'zmin: %f, zmax: %f, nz: %d'%(self.zmin,self.zmax,self.nz)
+    print ('Openning of ',filename)
+    print ('xmin: %f, xmax: %f, nx: %d'%(self.xmin,self.xmax,self.nx))
+    print ('ymin: %f, ymax: %f, ny: %d'%(self.ymin,self.ymax,self.ny))
+    print ('zmin: %f, zmax: %f, nz: %d'%(self.zmin,self.zmax,self.nz))
             
     self.x = np.linspace(self.xmin,self.xmax,self.nx)
     self.y = np.linspace(self.ymin,self.ymax,self.ny)    
@@ -48,8 +48,8 @@ class Field:
     self.f = np.zeros([self.nz,self.ny,self.nx])  
     
     ncells = self.nx*self.ny*self.nz
-    print 'Total number of cells:',ncells
-    print 'Size of file:',len(fileContent)
+    print ('Total number of cells:',ncells)
+    print ('Size of file:',len(fileContent))
     
     for iz in range(self.nz):
       for iy in range(self.ny):      
@@ -94,7 +94,7 @@ class Field:
       if slice=='z':
         index = int((slice_pos-self.zmin)/self.dz)
     
-      print 'index:',index
+      print ('index:',index)
     
     if slice=='x':
 

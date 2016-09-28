@@ -1,6 +1,9 @@
 **Particle-In-Cell Scalable Application Resource (PICSAR)**
 ============================================================
 
+__A full documentation based on Doxygen is available in the repository.
+Use your favorite web browser to open Documentation.html.__
+
 **1. Overview**
 ------------
 
@@ -110,82 +113,20 @@ The time statisctics function enables to outpout in files the time spend in the 
 It corresponds to the section named `timestat`.
 
 **5. Configuration of the input file**
------------------------
+------------------------------------------
 
-The input file is divided into sections. Sections start by `section::name` where `name` is the section name and end with `end::name`.
+Input files are read by PICSAR at the beginning of a run and contain all the required simulation information.
+They should be in the same repository and renamed `input_file.pixr`.
 
-####A. cpusplit section
+Examples of input files can be found in the directory `example_decks_fortran`.
 
-This section enables to configure the MPI decomposition and other parameters:
+The structure of an input file is a division into sections.
+Sections start by `section::name` where `name` is the section name and end with `end::name`.
+Then these sections contain keywords and values to be specified according to what you want.
+In order to learn how to create your own input file and what are the available sections, use the Doxygen documentation.
+A page called input file configuration describes the sections and the keywords to set up a correct input file.
 
-* `nprocx`, `nprocy`, `nprocz`: number of processors in each direction x, y, z
-* `topology`: the MPI topology, 0 corresponds to cartesian
 
-####B. main section
-
-This section enables to configure the general simulation parameters:
-
-* `nx`, `ny`, `nz`: number of grid points (domain discretization) in each direction
-* `xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax`: Origin of simulation axes
-* `t_max`: final time
-* `nsteps`: can be specified instead of the final time, else nsteps is determine from the final time and the CFL condition
-* `ntilex`, `ntiley`, `ntilez`: MPI sub-domain discetization into tiles
-* `nguardsx`, `nguardsy`, `nguardsz`: guard cells for the field arrays
-* `njguardsx`, `njguardsy`, `njguardsz`: guard cells for the current arrays
-
-####C. solver section
-
-This section, `section::solver`, enables to controle the solver and algorithm parameters:
-
-* `norderx`, `nordery`, `norderz`: Maxwell solver orders
-* `nox`, `noy`, `noz`: shape factor (interpolation) orders, note that optimized subroutines only work when `nox=noy=noz`
-* `currdepo`: current deposition algorithm
-   * `=0`: Esirkepov with tiling/OpenMP and optimized for AVX512. For the moment, in 3D, only `nox=noy=noz=1` provides better performances.
-   * `=1`: Esirkepov with tiling/OpenMP and non-optimized. The functions provided for `nox=noy=noz` are much faster than using different orders (in this case, an arbitrary order subroutine with many if-statements is used).
-   * `=2`: Esirkepov sequential
-   * `=3`: Classical current deposition with Tiling/OpenMP and optimized/vectorized subroutines. This provides the best performance even with AVX architectures.
-   * `=4`: Classical current deposition with Tiling/openMP and non-optimized subroutines.
-   * `=5`: Classical current deposition sequential
-   
-* `fieldgave`: field gathering
-   * `=0`: vectorized subroutine when `nox=noy=noz`
-   * `=1`: non-optimized subroutines
-   
-* `rhodepo`: charge deposition
-  * `=0`: vectorized subroutines when `nox=noy=noz`
-  * `=1`: non-optimized subroutines
-   
-- `partcom`: particle communications
-  - `=0`: Communications between tiles and between MPI domains is done in the same subroutine (overlapped computation) in parallel
-  - `=1`: Communications are done seperatly
-
-####D. Plasma section
-
-This section, `section::plasma`, enables to controle the plasma parameters:
-
-* `nlab`: density in the laboratory
-
-* `pdistr`: initial distribution
-  * `=1`: ordered space initialization
-  * `=2`: random space initialization
-  
-####E. Species section 
-
-This section, `section::species`, enables to configure the species properties. It has to be repeated for each species. 
-
-* `name`: species name
-* `mass`: species mass normalized to the electronic mass
-* `charge`: species charge normalized to the positron charge
-* `nppcell`: number of particles per cell
-* `x_min`, `x_max`, `y_min`, `y_max`, `z_min`, `z_max`: plasma expansion in each direction
-* `vdrift_x`, `vdrift_y`, `vdrift_z`: drift velocity in each direction
-* `vth_x`, `vth_y`, `vth_z`: thermal velocity in each direction
-* `sorting_period`: period of the sorting
-* `sorting_start`: beginning of the sorting
-
-####F. Sorting section
-
-This section, `section::sorting`, enables to controle the particle cell sorting algorithm.
 
 * `activation`: activation of the sorting
 * `dx`, `dy`, `dz`: size of the sorting cells
