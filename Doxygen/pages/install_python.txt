@@ -46,7 +46,7 @@ To compile and test, invoke the rule "all":
 
 - Make -f Makefile_Forthon all
 
-**5. Compiling
+**5. Testing
 ----------------------------
 
 Testing the code after compilation is highly recommended.
@@ -57,7 +57,7 @@ To test the compilation/execution, you can use the makefile (py.test is required
   - Make -f Makefile_Forthon test
 
   For each test one by one
-  - Simple running test:     make -f Makefile_Forthon test1
+  - Simple running test (does not work for the moment):     make -f Makefile_Forthon test1
   - Langmuir wave:           make -f Makefile_Forthon test2
   
 */

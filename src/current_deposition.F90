@@ -2341,6 +2341,9 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 !> This versions have good performances on SIMD architectures
 !> Providing that OpenMP 4.0 is available (Directive SIMD)
 !> @detail
+!
+!> @author
+!> Henri Vincenti
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________

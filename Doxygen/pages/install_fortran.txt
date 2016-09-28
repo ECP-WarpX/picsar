@@ -7,21 +7,22 @@
 **Makefile config
 -------------------------
 
-First edit the file Makefile and indicate the following environment variables:
+PICSAR uses a simple makefile. However, this makefile is already prepared to compile on many architectures.
+Here are the list of available options:
 
-* FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),
-
-* FARGS: your compiler arguments (optimization flags etc.). To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least **OpenMP 4.0**. 
+- FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),
+- CC: you MPI C compiler
+- FARGS: your compiler arguments (optimization flags etc.). To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least **OpenMP 4.0**. 
 
 **Compiling
 -------------------------
 
 To compile, invoke the rule "all": 
 
-* Make -f Makefile all
+> make all
 
 **Testing
-_________________________
+-------------------------
 
 Testing the code after compilation is highly recommended.
 
@@ -37,23 +38,23 @@ To test the compilation/execution, you can use the makefile (py.test is required
 
 To test the compilation/execution, you can run test python scripts manually:
 
-* Go the folder Acceptance_testing/Fortran_tests.
+- Go to the folder Acceptance_testing/Fortran_tests.
 
-* You can perform each test one by one entering the different folders:
+- You can perform each test one by one entering the different folders:
   - test_plasma_drift
   - test_homogeneous_plasma
   - test_Langmuir_wave
     
-* You can run scripts using py.test: 
+- You can run scripts using py.test: 
   > py.test -s --trun=1 --ttest=1
   
-  --trun=0/1: this option enables/disables simulation run
-  --ttest=0/1: this option enables/disables assert tests
+  - `--trun=0/1`: this option enables/disables simulation run
+  - `--ttest=0/1`: this option enables/disables assert tests
   
-* You can run scripts without py.test:
+- You can also run the scripts without py.test:
   > python <pyhthon_script> -r 1 -t 1
   
-  -r 0/1: this option enables/disables simulation run
-  -t 0/1: this option enables/disables simulation assert tests 
+  - `-r 0/1`: this option enables/disables simulation run
+  - `-t 0/1`: this option enables/disables simulation assert tests 
   
 */

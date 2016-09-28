@@ -98,6 +98,28 @@ All main subroutines have internal timers.
 The results of time spent in each part of the code can be displayed in the terminal or write in a file.
 By default, the time statistics are given at the end of the simulation in the terminal.
 
+- `activation` (`=0/1`): this flag activates output of the time statistics as a function of the iteration number in a file
+- `period`: this is the period of the output in number of iterations
+- `it_start`: iteration start for the time statistics
+- `per_ir`: print in the terminal the time statistics after each iteration
+- `buffersize`: size of the buffer before writing in files (1 mean that the times are output every time steps, more mean that the results are stored in an array before being output)
+
 ####H. Temporal diagnostics section
+
+This section, `section::temporal`, enables to use the temporal diagnostics.
+Temporal diagnostics refers to the time evolution of integrated quantities such as the kinetic energy, the field energy, the total charge, the divergence of E...
+
+- `frequency`: output period
+- `format`: output format, this can be:
+	- `=0`: for finary
+	- `=1`: for ascii
+- `kinE`: kinetic energy for each species
+- `exE`: Energy of the x electric field component
+- `eyE`: Energy of the y electric field component
+- `ezE`: Energy of the z electric field component
+- `bxE`: Energy of the x magnetic field component
+- `byE`: Energy of the y magnetic field component
+- `bzE`: Energy of the z magnetic field component
+- `divE-rho`: Evolution of the norm(divE - rho)
 
 */

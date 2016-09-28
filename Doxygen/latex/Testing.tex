@@ -1,0 +1,146 @@
+\section*{H\+OW TO T\+E\+ST P\+I\+C\+S\+AR }
+
+\subsection*{Content }
+
+\href{#intro}{\tt Introduction}
+
+\href{#fortran}{\tt Testing the Fortran implementation}
+
+\href{#python}{\tt Testing the Python implementation}
+
+\href{#unit}{\tt Unit tests}
+
+\subsection*{Introduction  }
+
+P\+I\+C\+S\+AR includes several types of tests in order to check that the implementation is correct and that the code is correctly installed.
+
+P\+I\+C\+S\+AR currently have 3 types of tests\+:
+
+
+\begin{DoxyItemize}
+\item Tests that run the entire Fortran code
+\item Tests that run W\+A\+RP + P\+I\+C\+S\+AR
+\item Tests that run specific parts of the code to check the implementation
+\end{DoxyItemize}
+
+All the tests are located in the folder {\ttfamily Acceptance\+\_\+testing}.
+
+\subsection*{Testing the Fortran implementation  }
+
+The tests for the Fortran code will be run in {\ttfamily Acceptance\+\_\+testing/\+Fortran\+\_\+tests}. The code is in Fortran but the tests will be supervised via python scripts localized in the directories of {\ttfamily Acceptance\+\_\+testing/\+Fortran\+\_\+tests}. These scripts can be launch with py.\+test.
+
+Input\+\_\+files for these tests are localized in the directory {\ttfamily example\+\_\+decks\+\_\+fortran} and are accessible as case examples.
+
+There are currently 3 tests\+:
+
+
+\begin{DoxyItemize}
+\item Drifted plasma\+: beams of electron-\/positron are generated at the center of the domain and propagates in each direction (x, y, z). This test enables to check that the boundary conditions are working properly.
+\item Homogeneous plasma\+: In this case, a thermalized homogeneous plasma is initialized in the whole domain. This test checks that the global energy keeps constant as well as divE=rho/esp0.
+\item Langmuir wave\+: In this case, a neutral plasma is initialized and the electrons receive a kick in a given direction that generates a plasma wave (Langmuir wave). This test checks that the energy keeps constant and that the plasma period is in agreement with the theory. DivE=rho0/eps0 is also checked.
+\end{DoxyItemize}
+
+These tests can be launched using the makefile. In this case py.\+test have to be installed because it will be used to supervise the simulation and check the results.
+
+You can execute all the tests by typing\+:
+
+\begin{quote}
+make -\/f Makefile test \end{quote}
+
+
+Or you can execute them one by one\+:
+
+
+\begin{DoxyItemize}
+\item Drifted plasma\+: {\ttfamily make -\/f Makefile test1}
+\item Homogeneous plasma\+: {\ttfamily make -\/f Makefile test2}
+\item Langmuir wave\+: {\ttfamily make -\/f Makefile test3}
+\end{DoxyItemize}
+
+You can also run the python test scripts manually, for this aim\+:
+
+
+\begin{DoxyItemize}
+\item Go to the folder Acceptance\+\_\+testing/\+Fortran\+\_\+tests.
+\item You can perform each test one by one entering the different folders\+:
+\begin{DoxyItemize}
+\item test\+\_\+plasma\+\_\+drift
+\item test\+\_\+homogeneous\+\_\+plasma
+\item test\+\_\+\+Langmuir\+\_\+wave
+\end{DoxyItemize}
+\item You can run scripts using py.\+test\+: \begin{quote}
+py.\+test -\/s --trun=1 --ttest=1 \end{quote}
+
+\begin{DoxyItemize}
+\item {\ttfamily -\/-\/trun=0/1}\+: this option enables/disables simulation run
+\item {\ttfamily -\/-\/ttest=0/1}\+: this option enables/disables assert tests
+\end{DoxyItemize}
+\item You can also run the scripts without py.\+test\+: \begin{quote}
+python $<$pyhthon\+\_\+script$>$ -\/r 1 -\/t 1 \end{quote}
+
+\begin{DoxyItemize}
+\item {\ttfamily -\/r 0/1}\+: this option enables/disables simulation run
+\item {\ttfamily -\/t 0/1}\+: this option enables/disables simulation assert tests
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsection*{Testing the Python implementation  }
+
+The tests for the Python code (W\+A\+RP + P\+I\+C\+S\+AR) will be run in {\ttfamily Acceptance\+\_\+testing/\+Python\+\_\+tests}.
+
+You can use the makefile (py.\+test is required) to launch the test scripts.
+
+For all test, just type\+:
+
+\begin{quote}
+Make -\/f Makefile\+\_\+\+Forthon test \end{quote}
+
+
+For each test one by one
+\begin{DoxyItemize}
+\item Simple running test (does not work for the moment)\+: {\ttfamily make -\/f Makefile\+\_\+\+Forthon test1}
+\item Langmuir wave\+: {\ttfamily make -\/f Makefile\+\_\+\+Forthon test2}
+\end{DoxyItemize}
+
+\subsection*{Unit tests  }
+
+Unit tests enable to check that specific parts of the code are working properly and that several different algorithms are well giving the same results from the same initialization.
+
+Unit tests are independant Fortran program that use the subroutines of P\+I\+C\+S\+AR. They can be found in the directory {\ttfamily Acceptance\+\_\+testing/\+Gcov\+\_\+tests}.
+
+All the tests can be compiled using the makefile by doing
+
+\begin{quote}
+make build\+\_\+test \end{quote}
+
+
+And they can all be run by doing
+
+\begin{quote}
+make test\+\_\+gcov \end{quote}
+
+
+However, they can also be compiled and run separately. Here is the list of available tests\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*4{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}{\bf test name }&{\bf description }&{\bf make }&{\bf run  }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}{\bf test name }&{\bf description }&{\bf make }&{\bf run  }\\\cline{1-4}
+\endhead
+field\+\_\+gathering\+\_\+2d\+\_\+test &Test the field gathering functions in 2d &make build\+\_\+field\+\_\+gathering\+\_\+2d\+\_\+test &make field\+\_\+gathering\+\_\+2d\+\_\+test \\\cline{1-4}
+field\+\_\+gathering\+\_\+3d\+\_\+test &Test the field gathering functions in 3d &make build\+\_\+field\+\_\+gathering\+\_\+3d\+\_\+test &make field\+\_\+gathering\+\_\+3d\+\_\+test \\\cline{1-4}
+esirkepov\+\_\+2d\+\_\+test &Test Esirkepov current deposition subroutines in 2d &make build\+\_\+esirkepov\+\_\+2d\+\_\+test &make esirkepov\+\_\+2d\+\_\+test \\\cline{1-4}
+esirkepov\+\_\+3d\+\_\+test &Test Esirkepov current deposition subroutines in 3d &make build\+\_\+esirkepov\+\_\+3d\+\_\+test &make esirkepov\+\_\+3d\+\_\+test \\\cline{1-4}
+rho\+\_\+deposition\+\_\+3d\+\_\+test &Test the charge deposition in 3d &make build\+\_\+rho\+\_\+deposition\+\_\+3d\+\_\+test &make rho\+\_\+deposition\+\_\+3d\+\_\+test \\\cline{1-4}
+tile\+\_\+field\+\_\+gathering\+\_\+3d\+\_\+test &Test the field gathering in 3d with tiles &make build\+\_\+tile\+\_\+field\+\_\+gathering\+\_\+3d\+\_\+test &make tile\+\_\+field\+\_\+gathering\+\_\+3d\+\_\+test \\\cline{1-4}
+tile\+\_\+particle\+\_\+push\+\_\+3d\+\_\+test &Test the particle psher + field gathering in 3d with tiles &make build\+\_\+tile\+\_\+particle\+\_\+push\+\_\+3d\+\_\+test &make tile\+\_\+particle\+\_\+push\+\_\+3d\+\_\+test \\\cline{1-4}
+tile\+\_\+mpi\+\_\+part\+\_\+com\+\_\+test &Test M\+PI and particle communication between tiles &make build\+\_\+tile\+\_\+mpi\+\_\+part\+\_\+com\+\_\+test &make tile\+\_\+mpi\+\_\+part\+\_\+com\+\_\+test \\\cline{1-4}
+tile\+\_\+curr\+\_\+depo\+\_\+3d\+\_\+test &Test current deposition with tiles &make build\+\_\+tile\+\_\+curr\+\_\+depo\+\_\+3d\+\_\+test &make tile\+\_\+curr\+\_\+depo\+\_\+3d\+\_\+test \\\cline{1-4}
+tile\+\_\+rho\+\_\+depo\+\_\+3d\+\_\+test &Test the charge deposition with tiles &make build\+\_\+tile\+\_\+rho\+\_\+depo\+\_\+3d\+\_\+test &make tile\+\_\+rho\+\_\+depo\+\_\+3d\+\_\+test \\\cline{1-4}
+\end{longtabu}
+These tests are very useful to check that new subroutines are giving correct results. They can also be used to compare efficiency and performance of a set of subroutines outside the main code. For this aim, timers are present in many of these tests. It is highly recommended that you implement you own tests when new subroutines or algorithms are added in the code. Feel also free to use to modify these codes for your own purposes. 

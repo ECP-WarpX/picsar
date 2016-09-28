@@ -5,6 +5,7 @@ var NAVTREE =
     [ "Input file configuration", "Input file configuration.html", null ],
     [ "Fortran installation instructions", "Fortran installation instructions.html", null ],
     [ "Python installation instructions", "Python installation instructions.html", null ],
+    [ "Testing", "Testing.html", null ],
     [ "Modules", null, [
       [ "Modules List", "namespaces.html", "namespaces" ],
       [ "Module Members", "namespacemembers.html", [
@@ -35,9 +36,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "Fortran installation instructions.html",
-"modules_8_f90.html#a0a831038bb26f462cfcbb55ed577eca7",
-"modules_8_f90.html#aaf6c9fb8697f29ccff6e1d82ee7f477a",
-"simple__io_8_f90.html#a2100e8a4cfe3bc3c9e2dcc93988d6551"
+"modules_8_f90.html#a0a1131129b323f405033e0157a2cff2f",
+"modules_8_f90.html#aaf0c4459b6c5caf1375fef4b33801e86",
+"simple__io_8_f90.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -1,64 +1,70 @@
 MODULE tiling
-!!!! --- This module contains useful diagnostics to test code correctness
-    USE constants
-    USE particles
-    USE shared_data
-    USE fields
-    USE params
-    IMPLICIT NONE
+
+	!!!! --- This module contains useful diagnostics to test code correctness
+	USE constants
+	USE particles
+	USE shared_data
+	USE fields
+	USE params
+	IMPLICIT NONE
 
 CONTAINS
 
 	SUBROUTINE set_tile_split()
 	IMPLICIT NONE
+
+	
 		! Set tile split for species arrays
 		CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
-    									  x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+		     x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+
 
 		! ALLOCATE grid tile arrays
 		ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
+		
 	END SUBROUTINE set_tile_split
 
 
-    !!! --- Set particle tile split in space
-    SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
-    									  xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
-        IMPLICIT NONE
-        INTEGER(idp), INTENT(IN) :: nspec, nxgrid, nygrid, nzgrid
-        INTEGER(idp), INTENT(IN OUT) ::  ntx, nty, ntz
-        REAL(num), INTENT(IN) :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
-        TYPE(particle_species), INTENT(IN OUT), TARGET, DIMENSION(nspec) :: species_array
-        INTEGER(idp) :: ix, iy, iz, ispecies
-        INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-        INTEGER(idp) :: nx0_last_tile, ny0_last_tile, nz0_last_tile
-        TYPE(particle_species), POINTER :: curr_sp
-        TYPE(particle_tile), POINTER :: curr
+	!!! --- Set particle tile split in space
+	SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
+			       xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
 
-        ! Tile-split
-        nx0_grid_tile = nxgrid / ntx
-        ny0_grid_tile = nygrid / nty
-        nz0_grid_tile = nzgrid / ntz
+		IMPLICIT NONE
+		INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
+		INTEGER(idp), INTENT(IN OUT)    ::  ntx, nty, ntz
+		REAL(num), INTENT(IN)           :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
+		TYPE(particle_species), INTENT(IN OUT), TARGET, DIMENSION(nspec) :: species_array
+		INTEGER(idp)                    :: ix, iy, iz, ispecies
+		INTEGER(idp)                    :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+		INTEGER(idp)                    :: nx0_last_tile, ny0_last_tile, nz0_last_tile
+		TYPE(particle_species), POINTER :: curr_sp
+		TYPE(particle_tile), POINTER    :: curr
 
-        ! Some sanity check
-        IF (nx0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in X is too high, settting back to default value 1"
-            ntx=1
-        END IF
-        IF (ny0_grid_tile .LT. 4) THEN
-        	IF(c_dim .EQ. 3) THEN
-            	IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
-            ENDIF
-            nty=1
-        END IF
-        IF (nz0_grid_tile .LT. 4) THEN
-            IF (rank .EQ. 0) PRINT *, "number of tiles in Z is too high, setting back to default value 1"
-            ntz=1
-        END IF
-        !-- N.B: If the number of grid points cannot be equally divided between
-        !-- tiles then give remaining points to last tile in each dimension
-        nx0_last_tile= nx0_grid_tile+(nxgrid-nx0_grid_tile*ntx)
-        ny0_last_tile= ny0_grid_tile+(nygrid-ny0_grid_tile*nty)
-        nz0_last_tile= nz0_grid_tile+(nzgrid-nz0_grid_tile*ntz)
+		! Tile-split
+		nx0_grid_tile = nxgrid / ntx
+		ny0_grid_tile = nygrid / nty
+		nz0_grid_tile = nzgrid / ntz
+
+		! Some sanity check
+		IF (nx0_grid_tile .LT. 4) THEN
+				IF (rank .EQ. 0) PRINT *, "number of tiles in X is too high, settting back to default value 1"
+				ntx=1
+		END IF
+		IF (ny0_grid_tile .LT. 4) THEN
+			IF(c_dim .EQ. 3) THEN 
+					IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
+				ENDIF
+				nty=1
+		END IF
+		IF (nz0_grid_tile .LT. 4) THEN
+				IF (rank .EQ. 0) PRINT *, "number of tiles in Z is too high, setting back to default value 1"
+				ntz=1
+		END IF
+		!-- N.B: If the number of grid points cannot be equally divided between
+		!-- tiles then give remaining points to last tile in each dimension
+		nx0_last_tile= nx0_grid_tile+(nxgrid-nx0_grid_tile*ntx)
+		ny0_last_tile= ny0_grid_tile+(nygrid-ny0_grid_tile*nty)
+		nz0_last_tile= nz0_grid_tile+(nzgrid-nz0_grid_tile*ntz)
 
         !- Allocate object array of tiles for particles
         DO ispecies =1, nspecies
@@ -515,14 +521,28 @@ CONTAINS
 	END SUBROUTINE init_tile_arrays
 
 
+    ! ____________________________________________________________________________________
+    !
+    !> This subroutine allocates and initialize (first touch) the particle property arrays
+    !> for each tile.
+    !> @brief
+    !
+    !> @details
+    !> This subroutine also allocates the local field arrays contained in aofgrid_tiles for each tile.
+    !
+    !> @author
+    !> Henri Vincenti
     SUBROUTINE init_tile_arrays_for_species(nspec2,species_array,aofgtiles,ntx2,nty2,ntz2)
+    ! ____________________________________________________________________________________
+    
         IMPLICIT NONE
-        INTEGER(idp), INTENT(IN) :: nspec2, ntx2, nty2, ntz2
+        INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
         TYPE(grid_tile), DIMENSION(ntx2,nty2,ntz2), INTENT(IN OUT) :: aofgtiles
         TYPE(particle_species), DIMENSION(nspec2), TARGET, INTENT(IN OUT) :: species_array
-        INTEGER(idp) :: ispecies, ix, iy, iz
-        INTEGER(idp) :: n1, n2, n3, ng1, ng2, ng3
-        TYPE(particle_tile), POINTER :: curr_tile
+        
+        INTEGER(idp)                    :: ispecies, ix, iy, iz
+        INTEGER(idp)                    :: n1, n2, n3, ng1, ng2, ng3
+        TYPE(particle_tile), POINTER    :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
         IF (nspec2 .EQ. 0) RETURN
