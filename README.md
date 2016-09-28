@@ -16,6 +16,22 @@ Since WARP is a very large code written in a mix of FORTRAN95, C and Python
 PICSAR will be essential for studying multi-level parallelization on the next
 generation of exascale computers. 
 
+PICSAR can be run in two modes:
+
+- In **Python mode**: in this case, PICSAR is used **through Warp**, and
+  **accelerates** the Warp simulations by rerouting the calls to the **low-level
+  kernels** (current deposition, field advance, particle pusher). More
+  precisely, in this case, instead of calling Warp's regular kernels, the
+  simulation will call PICSAR's highly-optimized kernels.
+
+- In **pure-Fortran mode**: in this case, the code is run as a
+  stand-alone application.
+
+For more details on how to run the code with these two modes, see the
+sections *Compiling* and *Running simulations* below. 
+
+![warp_and_pxr](Doxygen/images/warp_and_picsar.png)
+
 ####A.  Here are some of the specific algorithmic features of the PICSAR code :  
 
 * The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered), 
@@ -109,6 +125,3 @@ Sections start by `section::name` where `name` is the section name and end with 
 Then these sections contain keywords and values to be specified according to what you want.
 In order to learn how to create your own input file and what are the available sections, use the Doxygen documentation.
 A page called input file configuration describes the sections and the keywords to set up a correct input file.
-
-
-
