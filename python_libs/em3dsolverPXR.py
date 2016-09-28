@@ -51,10 +51,11 @@ class EM3DPXR(EM3DFFT):
                       'it_dlb_init':11,
                       'l_output_grid':0,
                       'l_output_freq':1,
+					  'rhodepo':0,      # Charge deposition method
                       'currdepo':0,     # Current deposition method
-                      'mpicom_curr':1,   # Com type Current deposition
-                      'fieldgathe':0,     # Field gathering method
-                      'partcom':0,       # Particle communication
+                      'mpicom_curr':1,  # Com type Current deposition
+                      'fieldgathe':0,   # Field gathering method
+                      'partcom':0,      # Particle communication
                       'lvec_curr_depo':8,
                       'lvec_charge_depo':64,
                       'lvec_fieldgathe':512,
@@ -312,6 +313,8 @@ class EM3DPXR(EM3DFFT):
         pxr.noy = top.depos_order[1][0]
         pxr.noz = top.depos_order[2][0]
 
+        # Charge deposition algorithm
+        pxr.rhodepo=self.rhodepo
         # Current deposition algorithm
         pxr.currdepo=self.currdepo
         # Tye of MPI communication for the current
@@ -1001,7 +1004,7 @@ class EM3DPXR(EM3DFFT):
 
                 #pxr.particle_bcs_2d()
                 pxr.particle_bcs()
-                
+
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1044,7 +1047,7 @@ class EM3DPXR(EM3DFFT):
         if l_pxr:
           if ((self.sorting.activated)and(top.it>=0)):
             pxr.particle_sorting_sub()
-            
+
         # --- call beforeloadrho functions
         beforeloadrho.callfuncsinlist()
         pgroups = []
