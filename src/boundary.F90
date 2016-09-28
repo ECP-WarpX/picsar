@@ -2046,8 +2046,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz + dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT
@@ -2064,8 +2064,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz - dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -2083,8 +2083,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz + dy
-									curr%part_uy(i) = - curr%part_uy(i)
-									CYCLE
+									                curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
                             	CASE DEFAULT ! periodic
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -2102,7 +2102,7 @@ END SUBROUTINE charge_bcs
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz - dy
 									                curr%part_uy(i) = - curr%part_uy(i)
-									              CYCLE
+									                ybd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -2121,7 +2121,7 @@ END SUBROUTINE charge_bcs
                               CASE (2_idp) ! Reflecting
                             	  curr%part_z(i) = part_xyz + dz
 									              curr%part_uz(i) = - curr%part_uz(i)
-									              CYCLE
+									              zbd=0
 								              CASE DEFAULT ! periodic
 									              curr%part_z(i) = part_xyz + length_z
 								              END SELECT
@@ -2139,8 +2139,8 @@ END SUBROUTINE charge_bcs
                             		CYCLE
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_z(i) = part_xyz - dz
-									curr%part_uz(i) = - curr%part_uz(i)
-									CYCLE
+									                curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
@@ -2296,8 +2296,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz + dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz + length_x
                                 END SELECT
@@ -2312,8 +2312,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_x(i) = part_xyz - dx
-									curr%part_ux(i) = - curr%part_ux(i)
-									CYCLE
+									                curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -2330,8 +2330,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz + dy
-									curr%part_uy(i) = - curr%part_uy(i)
-									CYCLE
+									                curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
                             	CASE DEFAULT ! periodic
                                		curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -2347,8 +2347,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_y(i) = part_xyz - dy
-									curr%part_uy(i) = - curr%part_uy(i)
-									CYCLE
+									                curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_y(i) = part_xyz - length_y
                                 END SELECT
@@ -2360,16 +2360,16 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. z_min_local+zgrid) THEN
                             zbd = -1
                             IF (z_min_boundary) THEN
-								SELECT CASE (pbound_z_min)
-								CASE (1_idp) ! absorbing
-									remove_from_sim=.TRUE.
-                            	CASE (2_idp) ! Reflecting
+								                SELECT CASE (pbound_z_min)
+								                CASE (1_idp) ! absorbing
+									                remove_from_sim=.TRUE.
+                              	CASE (2_idp) ! Reflecting
                             	    curr%part_z(i) = part_xyz + dz
-									curr%part_uz(i) = - curr%part_uz(i)
-									CYCLE
-								CASE DEFAULT ! periodic
-									curr%part_z(i) = part_xyz + length_z
-								END SELECT
+									                curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
+								                CASE DEFAULT ! periodic
+									                curr%part_z(i) = part_xyz + length_z
+								                END SELECT
                             ENDIF
                         ENDIF
 
@@ -2383,8 +2383,8 @@ END SUBROUTINE charge_bcs
                             		remove_from_sim=.TRUE.
                             	CASE (2_idp) ! Reflecting
                             	    curr%part_z(i) = part_xyz - dz
-									curr%part_uz(i) = - curr%part_uz(i)
-									CYCLE
+									                curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
                             	CASE DEFAULT ! periodic
                                 	curr%part_z(i) = part_xyz - length_z
                                 END SELECT
@@ -2394,20 +2394,20 @@ END SUBROUTINE charge_bcs
                         IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
                         ! Particle has left processor, send it to its neighbour
                         	IF (.NOT. remove_from_sim) THEN
-								ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
-								sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
-								sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
-								sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
-								sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
-								sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
-								sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
-								sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
-								sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
-								npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
-								nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
-								! Remove particle of current species from current tile
-							ENDIF
-							CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
+								                    ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
+								                    sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
+								                    sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
+								                    sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
+								                    sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
+								                    sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
+								                    sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
+								                    sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
+								                    sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
+								                    npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
+								                    nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
+								                    ! Remove particle of current species from current tile
+							            ENDIF
+							            CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
                   ENDDO
@@ -2800,8 +2800,6 @@ END SUBROUTINE charge_bcs
 #else
 	nthreads_tot=1
 #endif
-
-    IF (nspecies .EQ. 0) RETURN 
 
 	IF (nthreads_tot .GT. 1) THEN
 		nthreads_loop1=MIN(nspecies,nthreads_tot)
@@ -3546,7 +3544,7 @@ END SUBROUTINE charge_bcs
            CALL MPI_Irecv(recvbuf(recvbuf_index(ib),1),1_isp, typebuffer,src, &
            INT(ib,isp),comm,reqs(1),errcode)
 
-           CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
+           CALL MPI_Isend(bufsend(1:k,1:8,ib,is),8_isp*k,mpidbl,dest,INT(ib,isp), &
            comm, reqs(2), errcode)
 
            CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
@@ -3638,7 +3636,7 @@ END SUBROUTINE charge_bcs
             ! Exchange
             CALL MPI_Irecv(recvbuf(npos,1),1_isp, typebuffer,src, &
             INT(ib,isp),comm,reqs(1),errcode)
-            CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
+            CALL MPI_Isend(bufsend(1:k,1:8,ib,is),8_isp*k,mpidbl,dest,INT(ib,isp), &
             comm, reqs(2), errcode)
             CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
 
