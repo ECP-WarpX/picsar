@@ -27,12 +27,13 @@ def help():
     print (' Help:')
     print (' -t --test: if 1 use assert')
     print (' -r --run: if 1 run the code before analysis')
+    print (' -w --show: if 1 show the results with Matplotlib')
     print (' -f --folder: path to the test folder')
 
 
-def test_langmuir_wave(trun,ttest,tpath):
+def test_langmuir_wave(tpath,trun,ttest,tshow=1):
   """
-  
+  Function to launch and analyse the Langmuir Wave test case
   """
   
   print
@@ -43,11 +44,13 @@ def test_langmuir_wave(trun,ttest,tpath):
 
   trun=int(trun)
   ttest = int(ttest)
+  tshow=int(tshow)
 
   print
   print (' Running simulation:',trun)
   print (' Using assert:',ttest)
   print (' Run in path:',tpath)
+  print (' Show results with Matplotlib:',tshow)
   print
 
   # ____________________________________________________________________
@@ -228,7 +231,7 @@ def test_langmuir_wave(trun,ttest,tpath):
   print (' - Check the energy oscillating behavior')
   print
   
-  plt.show()
+  if tshow: plt.show()
   
 
 if __name__ == "__main__":
@@ -236,10 +239,11 @@ if __name__ == "__main__":
   argv = sys.argv[1:]
   run = 1
   test = 1
+  show = 1
   path = ''
 
   try:
-    opts, args = getopt.getopt(argv,"hr:t:p:",["test=","run=",'path='])
+    opts, args = getopt.getopt(argv,"hr:t:p:w:",["test=","run=",'path=','show='])
   except getopt.GetoptError:
     help()
     sys.exit(2)
@@ -254,5 +258,7 @@ if __name__ == "__main__":
       run = int(arg)
     elif opt in ("-p", "--path"):
       path = arg
-  test_langmuir_wave(run,test,path)  
+    elif opt in ("-w", "--show"):
+      show = int(arg)
+  test_langmuir_wave(path,run,test,show)  
 
