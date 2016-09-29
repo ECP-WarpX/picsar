@@ -731,12 +731,12 @@ CONTAINS
         norm = 0
 
         !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
-        !$OMP DO COLLAPSE(3) REDUCTION(+:norm_loc)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:norm)
         do l = 1, nz2
             do k = 1, ny2
                 do j = 1, nx2
 
-                    norm = norm + (divee2(j,k,l)*eps0 - rho2(j,k,l))**2
+                    norm = norm + (divee2(j,k,l) - rho2(j,k,l))**2
 
                 end do
             end do
@@ -769,7 +769,7 @@ CONTAINS
         norm = 0
 
         !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
-        !$OMP DO COLLAPSE(3) REDUCTION(+:norm_loc)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:norm)
         do l = 1, nz2
             do k = 1, ny2
                 do j = 1, nx2

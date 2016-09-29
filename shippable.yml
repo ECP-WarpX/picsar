@@ -17,7 +17,7 @@ build:
     - export PYTHONPATH="/home/warp_user/run/postproc_python_script/:$PYTHONPATH"
     # Run the tests for Picsar Fortran
     - cd Acceptance_testing/Fortran_tests/test_Langmuir_wave
-    - py.test -s --ttest=0 --trun=1 --tshow=0
+    - py.test -s --ttest=1 --trun=1 --tshow=0
     # Compile Picsar for Python
     - make -f Makefile_Forthon
 
