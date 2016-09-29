@@ -31,7 +31,7 @@ def help():
     print (' -f --folder: path to the test folder')
 
 
-def test_langmuir_wave(tpath,trun,ttest,tshow=1):
+def test_langmuir_wave(tpath,trun,ttest,tshow):
   """
   Function to launch and analyse the Langmuir Wave test case
   """

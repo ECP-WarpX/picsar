@@ -4,18 +4,21 @@ build:
     docker build -no-cache -t warp:tip .
 
   pre_ci_boot:
-    image_name: warp
+    image_name: picsar
     image_tag: tip
     pull: false
 
   ci:
-    # Run the standard warp tests
-    - cd /home/warp_user/warp/warp_test/
-    - python runalltests.py
-    # Check that the example scripts run (with MPI and restart)
-    - cd /home/warp_user/run/
-    - cp ../warp/scripts/examples/plasma_acceleration/* ./
-    - mpirun -np 4 python lpa_script.py -p 2 1 2
-    - mpirun -np 4 python restart_after_lpa_script.py -p 2 1 2
-    - rm -rf ./diags
-    - mpirun -np 2 python lpa_boostedframe_script.py
+    # Compile the unit tests
+    - make build_test
+    # Run the unit test
+    - make test_gcov
+    # Compile the Fortran kernel of Picsar
+    - make clean
+    - make
+    # Run the tests for Picsar Fortran
+    - cd Acceptance_testing/Fortran_tests/test_Langmuir_wave
+    - py.test -s --ttest=0 --trun=1 --tshow=0
+    # Compile Picsar for Python
+    - make -f Makefile_Forthon
+
