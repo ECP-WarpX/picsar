@@ -6,7 +6,7 @@
 ! Mathieu Lobet, 2016.08
 ! ________________________________________________________________________________________
 
-PROGRAM tile_field_gathering_3d_test
+PROGRAM tile_rho_depo_3d_test
 	USE constants
 	USE fields
 	USE particles
@@ -334,7 +334,7 @@ PROGRAM tile_field_gathering_3d_test
 		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
 		CALL system('printf "\e[31m ********** TEST TILING CHARGE DEPOSITION 3D FAILED **********  \e[0m \n"')
 		! Failure exit
-		CALL EXIT(0)
+		CALL EXIT(9)
 	ENDIF
   
   write(0,'(" ____________________________________________________________________________")')

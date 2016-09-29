@@ -423,7 +423,7 @@ PROGRAM tile_curr_depo_3d_test
 		!write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
 		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
 		CALL system('printf "\e[31m ********** TEST TILING CURRENT DEPOSITION 3D FAILED **********  \e[0m \n"')
-		EXIT(9)
+		CALL EXIT(9)
   ENDIF
   
   write(0,'(" ____________________________________________________________________________")')

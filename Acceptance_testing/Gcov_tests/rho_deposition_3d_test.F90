@@ -7,7 +7,7 @@
 ! Mathieu Lobet, 2016.08
 ! ________________________________________________________________________________________
 
-PROGRAM current_deposition_3d_test
+PROGRAM rho_deposition_3d_test
 
 	USE constants
 	IMPLICIT NONE
@@ -275,6 +275,7 @@ PROGRAM current_deposition_3d_test
 		!write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
 		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
 		CALL system('printf "\e[31m ********** TEST CHARGE DEPOSITION 3D FAILED **********  \e[0m \n"')
+		CALL EXIT(9)
   ENDIF
   
   write(0,'(" ____________________________________________________________________________")')
