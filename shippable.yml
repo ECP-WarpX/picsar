@@ -1,0 +1,21 @@
+build:
+
+  pre_ci:
+    docker build -no-cache -t warp:tip .
+
+  pre_ci_boot:
+    image_name: warp
+    image_tag: tip
+    pull: false
+
+  ci:
+    # Run the standard warp tests
+    - cd /home/warp_user/warp/warp_test/
+    - python runalltests.py
+    # Check that the example scripts run (with MPI and restart)
+    - cd /home/warp_user/run/
+    - cp ../warp/scripts/examples/plasma_acceleration/* ./
+    - mpirun -np 4 python lpa_script.py -p 2 1 2
+    - mpirun -np 4 python restart_after_lpa_script.py -p 2 1 2
+    - rm -rf ./diags
+    - mpirun -np 2 python lpa_boostedframe_script.py
