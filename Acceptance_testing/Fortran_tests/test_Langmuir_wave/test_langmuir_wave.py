@@ -210,10 +210,10 @@ def test_langmuir_wave(tpath,trun,ttest,tshow):
       for it in range(0,70,10):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
         rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
-        norm = LA.norm((dive.f*eps0-rho.f)) 
+        norm = LA.norm((dive.f[rho.f<>0]*eps0-rho.f[rho.f<>0])/(rho.f[rho.f<>0])) 
         print
         print(" Differences L2 norm ||rho-divE|| iteration it = " + str(it))
-        print("",LA.norm((dive.f*eps0-rho.f)))
+        print("",norm)
         print(" Total charge ")
         print("",np.sum(rho.f))
         print(" Total divergence")
