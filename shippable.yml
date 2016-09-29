@@ -1,12 +1,9 @@
 build:
 
-  pre_ci:
-    docker build -no-cache -t warp:tip .
-
   pre_ci_boot:
-    image_name: picsar
-    image_tag: tip
-    pull: false
+    image_name: rlehe/warp
+    image_tag: latest
+    pull: true
 
   ci:
     # Compile the unit tests
