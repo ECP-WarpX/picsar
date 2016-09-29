@@ -236,18 +236,48 @@ CONTAINS
             local_values(temdiag_i_list(7)) = local_values(temdiag_i_list(7))*imu0
           end if
 
-          ! DivE*eps0 - rho
-          if (temdiag_act_list(8).gt.0) then  
+          ! ||DivE*eps0 - rho||
+          if (temdiag_act_list(8).gt.0) then
+            ! Computation oif divE if not already done
+            IF (.not.(divE_computed))  then
+              CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+              divE_computed = .true.
+            ENDIF
             CALL get_loc_norm_divErho(dive,rho,nx, ny, nz, nxguards, nyguards, nzguards,local_values(temdiag_i_list(8)))  
             local_values(temdiag_i_list(8)) = local_values(temdiag_i_list(8))
           end if
-                    
+          
+          ! ||rho||
+          if (temdiag_act_list(9).gt.0) then  
+            CALL get_loc_norm_2(rho,nx, ny, nz, nxguards, nyguards, nzguards,local_values(temdiag_i_list(9)))  
+            local_values(temdiag_i_list(9)) = local_values(temdiag_i_list(9))
+          end if
+
+          ! ||divE||
+          if (temdiag_act_list(10).gt.0) then  
+            ! Computation oif divE if not already done
+            IF (.not.(divE_computed))  then
+              CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
+              divE_computed = .true.
+            ENDIF
+            CALL get_loc_norm_2(dive,nx, ny, nz, nxguards, nyguards, nzguards,local_values(temdiag_i_list(10)))  
+            local_values(temdiag_i_list(10)) = local_values(temdiag_i_list(10))
+          end if
+
           ! MPI all reduction
           call MPI_ALLREDUCE(local_values(1),global_values(1),INT(temdiag_totvalues,isp),mpidbl,MPI_SUM,comm,errcode)
           
           ! sqrt for DivE*eps0 - rho
           if (temdiag_act_list(8).gt.0) then 
             global_values(temdiag_i_list(8)) = sqrt(global_values(temdiag_i_list(8)))
+          end if
+          ! sqrt for ||rho||**2
+          if (temdiag_act_list(9).gt.0) then 
+            global_values(temdiag_i_list(9)) = sqrt(global_values(temdiag_i_list(9)))
+          end if
+          ! sqrt for ||rho||**2
+          if (temdiag_act_list(10).gt.0) then 
+            global_values(temdiag_i_list(10)) = sqrt(global_values(temdiag_i_list(10)))
           end if
           
           ! _____________
