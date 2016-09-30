@@ -15,6 +15,8 @@ build:
     - make
     # Add path to pythonpath
     - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar:$PYTHONPATH"
+    - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/postproc_python_script:$PYTHONPATH"
+    - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/python_libs:$PYTHONPATH"
     # Run the tests for Picsar Fortran
     - cd Acceptance_testing/Fortran_tests/test_plasma_drift
     - py.test -s --ttest=1 --trun=1 --tshow=0
@@ -23,5 +25,10 @@ build:
     - cd ../test_Langmuir_wave
     - py.test -s --ttest=1 --trun=1 --tshow=0
     # Compile Picsar for Python
+    - cd ../../..
     - make -f Makefile_Forthon
-    - make -f Makefile_Forthon test2
+    # Run tests for python
+    - cd Acceptance_testing/Python_tests/test_Langmuir_wave
+    - cp -p ../../../example_scripts_python/test_Langmuir_wave_3d.py .
+    - export OMP_NUM_THREADS=2
+    - mpirun -np 4 python test_Langmuir_wave_3d.py -show=0
