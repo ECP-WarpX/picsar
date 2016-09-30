@@ -561,7 +561,7 @@ USE params
 IMPLICIT NONE
 
 CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry,l_lower_order_in_v)
 END SUBROUTINE pxrpush_particles_part1
 
 ! ________________________________________________________________________________________
@@ -575,7 +575,8 @@ END SUBROUTINE pxrpush_particles_part1
 !> Henri Vincenti
 !> Mathieu Lobet
 SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy, &
+			dzz,dtt,l4symtry_in, l_lower_order_in_v_in)
 ! ________________________________________________________________________________________
 	USE particles
 	USE constants
@@ -584,6 +585,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	IMPLICIT NONE
 	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+	LOGICAL(idp), INTENT(IN) :: l4symtry_in, l_lower_order_in_v_in
 	REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN) :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -601,10 +603,12 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	INTEGER(idp) :: nxjg,nyjg,nzjg
 	LOGICAL(idp) :: isgathered=.FALSE.
 
+
   IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
-!$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
+!$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy, &
+!$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -659,7 +663,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 					SELECT CASE (c_dim)
 					CASE (2) ! 2D CASE
 						!!! --- Gather electric and magnetic fields on particles
-            CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
+            			CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
 											  curr_tile%part_z, curr_tile%part_ex,                            	&
 											  curr_tile%part_ey,curr_tile%part_ez,                   			&
 											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			&
@@ -669,7 +673,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
 											  currg%eztile,                                          			&
 											  currg%bxtile,currg%bytile,currg%bztile                 			&
-											  ,.FALSE.,.TRUE.)
+											  ,l4symtry_in,l_lower_order_in_v_in)
 					CASE DEFAULT ! 3D CASE
 						!!! --- Gather electric and magnetic fields on particles
 						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     		   		&
@@ -682,7 +686,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 				   		&
 											  currg%eztile,                                          				&
 											  currg%bxtile,currg%bytile,currg%bztile                 				&
-											  ,.FALSE.,.TRUE.)
+											  ,l4symtry_in,l_lower_order_in_v_in)
 					END SELECT
 
 					!! --- Push velocity with E half step

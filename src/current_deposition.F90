@@ -476,7 +476,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 	  ENDIF
   ! _______________________________________________________
 	! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
-  ELSE
+  ELSE IF (currdepo .EQ. 0) THEN
 
     ! Order 1
     IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
@@ -510,14 +510,14 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_3_3_3, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
 	       nox,noy,noz,dx,dy,dz,dt)
+	ENDIF
 
     ! Arbitrary order
-    ELSE
+  ELSE 
 
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
+    CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	       nox,noy,noz,dx,dy,dz,dt)
-	  END IF
+	     nox,noy,noz,dx,dy,dz,dt)
 
   ENDIF
 

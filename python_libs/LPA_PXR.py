@@ -140,9 +140,9 @@ class PlasmaInjectorPXR(PlasmaInjector):
                                             x0, 
                                             y0, 
                                             z0, 
-                                            ux*np.ones(nps0), 
-                                            uy*np.ones(nps0), 
-                                            uz*np.ones(nps0),
+                                            ux*np.ones(nps0)*c, 
+                                            uy*np.ones(nps0)*c, 
+                                            uz*np.ones(nps0)*c,
                                             gamma_inv*np.ones(nps0), 
                                             w)     
         if self.ions is not None:
