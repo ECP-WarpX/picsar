@@ -38,11 +38,13 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
 
   trun=int(trun)
   ttest = int(ttest)
+  tshow= int(tshow)
 
   print
   print (' Running simulation:',trun)
   print (' Using assert:',ttest)
   print (' Run in path:',tpath)
+  print (' Show the results in figures:',tshow)
   print
 
   # ____________________________________________________________________
