@@ -336,6 +336,12 @@ class EM3DPXR(EM3DFFT):
             pxr.lvec_fieldgathe = 512
         else:
           pxr.lvec_fieldgathe = self.lvec_fieldgathe
+          
+        
+        #Type of field gathering 
+        pxr.l4symtry=w3d.l4symtry  
+        pxr.l_lower_order_in_v=self.l_lower_order_in_v
+        
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
@@ -973,6 +979,10 @@ class EM3DPXR(EM3DFFT):
 
         # --- Iteration number
         pxr.it = top.it
+        
+        # Advance window 
+        if (self.l_pxr):
+            pxr.zgrid=top.zgrid
 
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
@@ -1058,8 +1068,6 @@ class EM3DPXR(EM3DFFT):
         #tdebpart=MPI.Wtime()
 
         # Call user-defined injection routines
-        if (self.l_pxr):
-            pxr.zgrid=top.zgrid
         userinjection.callfuncsinlist()
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
