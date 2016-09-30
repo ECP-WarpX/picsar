@@ -140,31 +140,32 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
   print(' Relative error on the total energy:',diffrel)
   if ttest: assert diffrel < 1e-2
       
-  # Plotting      
-  fig = plt.figure(figsize=(12,8))
-  gs = gridspec.GridSpec(2, 2)
-  ax = plt.subplot(gs[:, :])
+  # Plotting 
+  if tshow:     
+    fig = plt.figure(figsize=(12,8))
+    gs = gridspec.GridSpec(2, 2)
+    ax = plt.subplot(gs[:, :])
   
-  for sp in range(len(kinE)):
-    ax.plot(t,kinE[sp,:],label='Species %d'%sp)
+    for sp in range(len(kinE)):
+      ax.plot(t,kinE[sp,:],label='Species %d'%sp)
     
-  ax.plot(t,ezE,label='Ez energy')
-  ax.plot(t,eyE,label='Ey energy')  
-  ax.plot(t,exE,label='Ex energy')
-  ax.plot(t,bzE,label='Bz energy')
-  ax.plot(t,byE,label='By energy',color='brown')  
-  ax.plot(t,bxE,label='Bx energy',color='orange')  
-  ax.plot(t,total_energy,label='tot',color='k',ls=':')
-  ax.plot([Tplasma,Tplasma],[0.,max(total_energy)],ls='--',color='k')
+    ax.plot(t,ezE,label='Ez energy')
+    ax.plot(t,eyE,label='Ey energy')  
+    ax.plot(t,exE,label='Ex energy')
+    ax.plot(t,bzE,label='Bz energy')
+    ax.plot(t,byE,label='By energy',color='brown')  
+    ax.plot(t,bxE,label='Bx energy',color='orange')  
+    ax.plot(t,total_energy,label='tot',color='k',ls=':')
+    ax.plot([Tplasma,Tplasma],[0.,max(total_energy)],ls='--',color='k')
   
-  ax.set_ylim([0,max(total_energy)*1.1])
+    ax.set_ylim([0,max(total_energy)*1.1])
   
-  ax.set_xlabel('t (s)')
-  ax.set_ylabel('Energy (J)')
+    ax.set_xlabel('t (s)')
+    ax.set_ylabel('Energy (J)')
   
-  plt.annotate('', xy=(0, kinE[0,0]*0.5), xycoords='data',xytext=(Tplasma, kinE[0,0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
+    plt.annotate('', xy=(0, kinE[0,0]*0.5), xycoords='data',xytext=(Tplasma, kinE[0,0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
   
-  ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
+    ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
  
   # Test divergence
   print (' ________________________________________ ')
@@ -182,19 +183,20 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
   print ('min(||divE||(t)):',min(dive)) 
   print()
   
-  fig1 = plt.figure(figsize=(12,8))
-  gs1 = gridspec.GridSpec(7, 4)
-  ax1 = plt.subplot(gs1[0:3, :])
-  ax2 = plt.subplot(gs1[4:7, :])
+  if tshow:
+    fig1 = plt.figure(figsize=(12,8))
+    gs1 = gridspec.GridSpec(7, 4)
+    ax1 = plt.subplot(gs1[0:3, :])
+    ax2 = plt.subplot(gs1[4:7, :])
   
-  ax1.plot(t,diverho,label=r'$||\nabla E \times \varepsilon_0 - \rho||$',lw=2) 
-  ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
-  ax1.set_xlabel('t (s)')
+    ax1.plot(t,diverho,label=r'$||\nabla E \times \varepsilon_0 - \rho||$',lw=2) 
+    ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+    ax1.set_xlabel('t (s)')
 
-  ax2.plot(t,dive,label=r'$|| \nabla E \times \varepsilon_0 ||$',lw=2) 
-  ax2.plot(t,rho,label=r'$|| \rho ||$',color='r',lw=2,ls='--')
-  ax2.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
-  ax2.set_xlabel('t (s)')
+    ax2.plot(t,dive,label=r'$|| \nabla E \times \varepsilon_0 ||$',lw=2) 
+    ax2.plot(t,rho,label=r'$|| \rho ||$',color='r',lw=2,ls='--')
+    ax2.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+    ax2.set_xlabel('t (s)')
   
   # Analyse of the files
   if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
