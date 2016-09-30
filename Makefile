@@ -228,7 +228,7 @@ FARGS+= $(LARCH)
 # ________________________________________________________
 
 
-$(SRCDIR)/%.o $(SRCDIR)/%.mod:$(SRCDIR)/%.F90
+$(SRCDIR)/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 
 $(SRCDIR)/%.o:$(SRCDIR)/%.c
@@ -321,7 +321,7 @@ build:$(SRCDIR)/modules.o \
 	mv $(APPNAME) $(BINDIR)
 endif
 	
-clean: cleantest
+clean: clean_test
 	rm -rf $(SRCDIR)/*.o *.mod $(MODDIR)/*.mod
 	rm -f $(BINDIR)/$(APPNAME)
 	rm -rf RESULTS
@@ -500,7 +500,7 @@ build_esirkepov_2d_test: $(SRCDIR)/modules.o \
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_2d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
 		
 # Compilation of all the tests	
-build_test: mkdir -p Modules \
+build_test: createdir \
 	build_tile_field_gathering_3d_test \
 	build_field_gathering_3d_test \
 	build_field_gathering_2d_test \
