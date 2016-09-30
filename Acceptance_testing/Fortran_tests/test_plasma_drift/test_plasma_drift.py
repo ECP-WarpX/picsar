@@ -179,10 +179,11 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
   t,dive= read_picsar_temporal_diags('RESULTS/divE')
   
   print()
+  print ('max(||diverho||):',max(diverho))
   print ('max(||rho||(t)):',max(rho))
   print ('min(||rho||(t)):',min(rho)) 
-  print ('max(||divE||(t)):',max(dive))
-  print ('min(||divE||(t)):',min(dive)) 
+  print ('max(||divE||(t)):',max(dive)*eps0)
+  print ('min(||divE||(t)):',min(dive)*eps0)
   print()
   
   if tshow:
@@ -195,17 +196,19 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
     ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
     ax1.set_xlabel('t (s)')
 
-    ax2.plot(t,dive,label=r'$|| \nabla E \times \varepsilon_0 ||$',lw=2) 
+    ax2.plot(t,dive*eps0,label=r'$|| \nabla E \times \varepsilon_0 ||$',lw=2) 
     ax2.plot(t,rho,label=r'$|| \rho ||$',color='r',lw=2,ls='--')
     ax2.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
     ax2.set_xlabel('t (s)')
-  
+
+  if ttest: assert (max(diverho) < 1E-3),"L2 norm||DivE - rho/eps0|| too high"
+
   # Analyse of the files
   if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
       for it in range(0,200,20):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
         rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
-        F = ((dive.f-rho.f)) 
+        F = ((dive.f*eps0-rho.f)) 
         min_F = amin(abs(F))
         max_F = amax(abs(F))
         ave_F = average(abs(F))
@@ -217,8 +220,8 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
         print(" min(divE*eps0-rho)):",min_F)
         print(" max(divE*eps0-rho)):",max_F)
         print(" ave(divE*eps0-rho)):",ave_F)
-
-  if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
+        
+        if ttest: assert (max_F < 1E-3),"L2 norm||DivE*eps0 - rho|| too high"
 
   # ____________________________________________________
   # Advice

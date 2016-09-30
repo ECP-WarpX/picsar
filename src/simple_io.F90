@@ -275,7 +275,7 @@ CONTAINS
           if (temdiag_act_list(9).gt.0) then 
             global_values(temdiag_i_list(9)) = sqrt(global_values(temdiag_i_list(9)))
           end if
-          ! sqrt for ||rho||**2
+          ! sqrt for ||divE||**2
           if (temdiag_act_list(10).gt.0) then 
             global_values(temdiag_i_list(10)) = sqrt(global_values(temdiag_i_list(10)))
           end if

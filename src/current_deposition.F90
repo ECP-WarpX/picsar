@@ -2132,33 +2132,35 @@ END DO!END LOOP ON TILES
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
 
 
-!===============================================================================
-! Deposit current in each tile
-! Sequential version
-!===============================================================================
+! ________________________________________________________________________________________
+!> Deposit current in each tile
+!> Sequential version
+!> @brief
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-USE particles
-USE constants
-USE tiling
-USE timing
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-TYPE(grid_tile), POINTER :: currg
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-LOGICAL(idp) :: isdeposited=.FALSE.
+! ________________________________________________________________________________________
+	
+	USE particles
+	USE constants
+	USE tiling
+	USE timing
+	IMPLICIT NONE
+	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+	REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+	REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
+	INTEGER(idp) :: ispecies, ix, iy, iz, count
+	INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+	INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+	TYPE(particle_species), POINTER :: curr
+	TYPE(particle_tile), POINTER :: curr_tile
+	TYPE(grid_tile), POINTER :: currg
+	REAL(num) :: tdeb, tend
+	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+	LOGICAL(idp) :: isdeposited=.FALSE.
 
 IF (nspecies .EQ. 0_idp) RETURN
 DO iz=1,ntilez
@@ -2208,128 +2210,135 @@ DO iz=1,ntilez
         END DO
     END DO
 END DO!END LOOP ON TILES
-
-
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq
 
 
 
-!!! ---------  CURRENT DEPOSITION ROUTINES
-
-!!! --- Order 1 3D scalar current deposition routine (rho*v)
-!!! This version does not vectorize on SIMD architectures
+! ________________________________________________________________________________________
+!
+!> Order 1 3D scalar current deposition routine (rho*v)
+!> This version does not vectorize on SIMD architectures
+!
+!> @author
+!> Henri Vincenti
 SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-    USE constants
-    IMPLICIT NONE
-    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-    REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-    REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
-    REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
-                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-    REAL(num) :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz
-    REAL(num) :: wq, wqx, wqy, wqz, clightsq
-    REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
-    REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER(idp) :: j,k,l,j0,k0,l0,ip
-    dxi = 1.0_num/dx
-    dyi = 1.0_num/dy
-    dzi = 1.0_num/dz
-    invvol = dxi*dyi*dzi
-    dts2dx = 0.5_num*dt*dxi
-    dts2dy = 0.5_num*dt*dyi
-    dts2dz = 0.5_num*dt*dzi
-    clightsq = 1.0_num/clight**2
-    sx=0.0_num;sy=0.0_num;sz=0.0_num;
-    sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
+! ________________________________________________________________________________________
 
-    ! LOOP ON PARTICLES
-    ! Prevent loop to vectorize (dependencies)
-    !DIR$ NOVECTOR
-    DO ip=1,np
-        ! --- computes position in  grid units at (n+1)
-        x = (xp(ip)-xmin)*dxi
-        y = (yp(ip)-ymin)*dyi
-        z = (zp(ip)-zmin)*dzi
+	USE constants
+	IMPLICIT NONE
+    
+	INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
+	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+	REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	REAL(num)                :: dxi,dyi,dzi,xint,yint,zint, &
+								 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+	REAL(num)                :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz
+	REAL(num)                :: wq, wqx, wqy, wqz, clightsq
+	REAL(num), DIMENSION(2)  :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
+	REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+	INTEGER(idp)             :: j,k,l,j0,k0,l0,ip
+    
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
+	invvol = dxi*dyi*dzi
+	dts2dx = 0.5_num*dt*dxi
+	dts2dy = 0.5_num*dt*dyi
+	dts2dz = 0.5_num*dt*dzi
+	clightsq = 1.0_num/clight**2
+	sx=0.0_num;sy=0.0_num;sz=0.0_num;
+	sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
 
-        ! Computes velocity
-        vx = uxp(ip)*gaminv(ip)
-        vy = uyp(ip)*gaminv(ip)
-        vz = uzp(ip)*gaminv(ip)
+	! LOOP ON PARTICLES
+	! Prevent loop to vectorize (dependencies)
+	!DIR$ NOVECTOR
+	DO ip=1,np
+	
+		! --- computes position in  grid units at (n+1)
+		x = (xp(ip)-xmin)*dxi
+		y = (yp(ip)-ymin)*dyi
+		z = (zp(ip)-zmin)*dzi
 
-        ! --- computes particles weights
-        wq=q*w(ip)
-        wqx=wq*invvol*vx
-        wqy=wq*invvol*vy
-        wqz=wq*invvol*vz
+		! Computes velocity
+		vx = uxp(ip)*gaminv(ip)
+		vy = uyp(ip)*gaminv(ip)
+		vz = uzp(ip)*gaminv(ip)
 
-        ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
-        xmid=x-dts2dx*vx
-        ymid=y-dts2dy*vy
-        zmid=z-dts2dz*vz
+		! --- computes particles weights
+		wq=q*w(ip)
+		wqx=wq*invvol*vx
+		wqy=wq*invvol*vy
+		wqz=wq*invvol*vz
 
-        ! --- finds node of cell containing particles for current positions
-        j=floor(xmid)
-        k=floor(ymid)
-        l=floor(zmid)
-        j0=floor(xmid-0.5_num)
-        k0=floor(ymid-0.5_num)
-        l0=floor(zmid-0.5_num)
-        ! --- computes set of coefficients for node centered quantities
-        xint = xmid-j
-        yint = ymid-k
-        zint = zmid-l
-        sx( 0) = 1.0_num-xint
-        sx( 1) = xint
-        sy( 0) = 1.0_num-yint
-        sy( 1) = yint
-        sz( 0) = 1.0_num-zint
-        sz( 1) = zint
+		! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
+		xmid=x-dts2dx*vx
+		ymid=y-dts2dy*vy
+		zmid=z-dts2dz*vz
 
-        ! --- computes set of coefficients for staggered quantities
-        xint = xmid-j0-0.5_num
-        yint = ymid-k0-0.5_num
-        zint = zmid-l0-0.5_num
-        sx0( 0) = 1.0_num-xint
-        sx0( 1) = xint
-        sy0( 0) = 1.0_num-yint
-        sy0( 1) = yint
-        sz0( 0) = 1.0_num-zint
-        sz0( 1) = zint
+		! --- finds node of cell containing particles for current positions
+		j=floor(xmid)
+		k=floor(ymid)
+		l=floor(zmid)
+		j0=floor(xmid-0.5_num)
+		k0=floor(ymid-0.5_num)
+		l0=floor(zmid-0.5_num)
+		
+		! --- computes set of coefficients for node centered quantities
+		xint = xmid-j
+		yint = ymid-k
+		zint = zmid-l
+		sx( 0) = 1.0_num-xint
+		sx( 1) = xint
+		sy( 0) = 1.0_num-yint
+		sy( 1) = yint
+		sz( 0) = 1.0_num-zint
+		sz( 1) = zint
 
-        ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
-        ! - JX
-        jx(j0  ,k  ,l  )    = jx(j0  ,k  ,l  )  +   sx0(0)*sy(0)*sz(0)*wqx
-        jx(j0+1,k  ,l  )    = jx(j0+1,k  ,l  )  +   sx0(1)*sy(0)*sz(0)*wqx
-        jx(j0  ,k+1,l  )    = jx(j0  ,k+1,l  )  +   sx0(0)*sy(1)*sz(0)*wqx
-        jx(j0+1,k+1,l  )    = jx(j0+1,k+1,l  )  +   sx0(1)*sy(1)*sz(0)*wqx
-        jx(j0  ,k  ,l+1)    = jx(j0  ,k  ,l+1)  +   sx0(0)*sy(0)*sz(1)*wqx
-        jx(j0+1,k  ,l+1)    = jx(j0+1,k  ,l+1)  +   sx0(1)*sy(0)*sz(1)*wqx
-        jx(j0  ,k+1,l+1)    = jx(j0  ,k+1,l+1)  +   sx0(0)*sy(1)*sz(1)*wqx
-        jx(j0+1,k+1,l+1)    = jx(j0+1,k+1,l+1)  +   sx0(1)*sy(1)*sz(1)*wqx
+		! --- computes set of coefficients for staggered quantities
+		xint = xmid-j0-0.5_num
+		yint = ymid-k0-0.5_num
+		zint = zmid-l0-0.5_num
+		sx0( 0) = 1.0_num-xint
+		sx0( 1) = xint
+		sy0( 0) = 1.0_num-yint
+		sy0( 1) = yint
+		sz0( 0) = 1.0_num-zint
+		sz0( 1) = zint
 
-        ! - JY
-        jy(j  ,k0  ,l  )    = jy(j  ,k0  ,l  )  +   sx(0)*sy0(0)*sz(0)*wqy
-        jy(j+1,k0  ,l  )    = jy(j+1,k0  ,l  )  +   sx(1)*sy0(0)*sz(0)*wqy
-        jy(j  ,k0+1,l  )    = jy(j  ,k0+1,l  )  +   sx(0)*sy0(1)*sz(0)*wqy
-        jy(j+1,k0+1,l  )    = jy(j+1,k0+1,l  )  +   sx(1)*sy0(1)*sz(0)*wqy
-        jy(j  ,k0  ,l+1)    = jy(j  ,k0  ,l+1)  +   sx(0)*sy0(0)*sz(1)*wqy
-        jy(j+1,k0  ,l+1)    = jy(j+1,k0  ,l+1)  +   sx(1)*sy0(0)*sz(1)*wqy
-        jy(j  ,k0+1,l+1)    = jy(j  ,k0+1,l+1)  +   sx(0)*sy0(1)*sz(1)*wqy
-        jy(j+1,k0+1,l+1)    = jy(j+1,k0+1,l+1)  +   sx(1)*sy0(1)*sz(1)*wqy
+		! --- add current contributions in the form rho(n+1/2)v(n+1/2)
+		! - JX
+		jx(j0  ,k  ,l  )    = jx(j0  ,k  ,l  )  +   sx0(0)*sy(0)*sz(0)*wqx
+		jx(j0+1,k  ,l  )    = jx(j0+1,k  ,l  )  +   sx0(1)*sy(0)*sz(0)*wqx
+		jx(j0  ,k+1,l  )    = jx(j0  ,k+1,l  )  +   sx0(0)*sy(1)*sz(0)*wqx
+		jx(j0+1,k+1,l  )    = jx(j0+1,k+1,l  )  +   sx0(1)*sy(1)*sz(0)*wqx
+		jx(j0  ,k  ,l+1)    = jx(j0  ,k  ,l+1)  +   sx0(0)*sy(0)*sz(1)*wqx
+		jx(j0+1,k  ,l+1)    = jx(j0+1,k  ,l+1)  +   sx0(1)*sy(0)*sz(1)*wqx
+		jx(j0  ,k+1,l+1)    = jx(j0  ,k+1,l+1)  +   sx0(0)*sy(1)*sz(1)*wqx
+		jx(j0+1,k+1,l+1)    = jx(j0+1,k+1,l+1)  +   sx0(1)*sy(1)*sz(1)*wqx
 
-        ! - JZ
-        jz(j  ,k  ,l0  )    = jz(j  ,k  ,l0  )  +   sx(0)*sy(0)*sz0(0)*wqz
-        jz(j+1,k  ,l0  )    = jz(j+1,k  ,l0  )  +   sx(1)*sy(0)*sz0(0)*wqz
-        jz(j  ,k+1,l0  )    = jz(j  ,k+1,l0  )  +   sx(0)*sy(1)*sz0(0)*wqz
-        jz(j+1,k+1,l0  )    = jz(j+1,k+1,l0  )  +   sx(1)*sy(1)*sz0(0)*wqz
-        jz(j  ,k  ,l0+1)    = jz(j  ,k  ,l0+1)  +   sx(0)*sy(0)*sz0(1)*wqz
-        jz(j+1,k  ,l0+1)    = jz(j+1,k  ,l0+1)  +   sx(1)*sy(0)*sz0(1)*wqz
-        jz(j  ,k+1,l0+1)    = jz(j  ,k+1,l0+1)  +   sx(0)*sy(1)*sz0(1)*wqz
-        jz(j+1,k+1,l0+1)    = jz(j+1,k+1,l0+1)  +   sx(1)*sy(1)*sz0(1)*wqz
-    END DO
-    RETURN
+		! - JY
+		jy(j  ,k0  ,l  )    = jy(j  ,k0  ,l  )  +   sx(0)*sy0(0)*sz(0)*wqy
+		jy(j+1,k0  ,l  )    = jy(j+1,k0  ,l  )  +   sx(1)*sy0(0)*sz(0)*wqy
+		jy(j  ,k0+1,l  )    = jy(j  ,k0+1,l  )  +   sx(0)*sy0(1)*sz(0)*wqy
+		jy(j+1,k0+1,l  )    = jy(j+1,k0+1,l  )  +   sx(1)*sy0(1)*sz(0)*wqy
+		jy(j  ,k0  ,l+1)    = jy(j  ,k0  ,l+1)  +   sx(0)*sy0(0)*sz(1)*wqy
+		jy(j+1,k0  ,l+1)    = jy(j+1,k0  ,l+1)  +   sx(1)*sy0(0)*sz(1)*wqy
+		jy(j  ,k0+1,l+1)    = jy(j  ,k0+1,l+1)  +   sx(0)*sy0(1)*sz(1)*wqy
+		jy(j+1,k0+1,l+1)    = jy(j+1,k0+1,l+1)  +   sx(1)*sy0(1)*sz(1)*wqy
+
+		! - JZ
+		jz(j  ,k  ,l0  )    = jz(j  ,k  ,l0  )  +   sx(0)*sy(0)*sz0(0)*wqz
+		jz(j+1,k  ,l0  )    = jz(j+1,k  ,l0  )  +   sx(1)*sy(0)*sz0(0)*wqz
+		jz(j  ,k+1,l0  )    = jz(j  ,k+1,l0  )  +   sx(0)*sy(1)*sz0(0)*wqz
+		jz(j+1,k+1,l0  )    = jz(j+1,k+1,l0  )  +   sx(1)*sy(1)*sz0(0)*wqz
+		jz(j  ,k  ,l0+1)    = jz(j  ,k  ,l0+1)  +   sx(0)*sy(0)*sz0(1)*wqz
+		jz(j+1,k  ,l0+1)    = jz(j+1,k  ,l0+1)  +   sx(1)*sy(0)*sz0(1)*wqz
+		jz(j  ,k+1,l0+1)    = jz(j  ,k+1,l0+1)  +   sx(0)*sy(1)*sz0(1)*wqz
+		jz(j+1,k+1,l0+1)    = jz(j+1,k+1,l0+1)  +   sx(1)*sy(1)*sz0(1)*wqz
+	END DO
+	RETURN
 END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 
 
@@ -8431,8 +8440,8 @@ END SUBROUTINE depose_jxjyjz_esirkepov_3_3_3
 !> @date
 !> 2016
 SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-nox,noy,noz,l_particles_weight,l4symtry)
+	dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+	nox,noy,noz,l_particles_weight,l4symtry)
 ! ________________________________________________________________________________________
 
 	USE constants
@@ -8459,29 +8468,29 @@ nox,noy,noz,l_particles_weight,l4symtry)
 	LOGICAL(idp) :: l_particles_weight,l4symtry
 
 ! PARAMETER INIT
-ndtodx = int(clight*dt/dx)
-ndtody = int(clight*dt/dy)
-ndtodz = int(clight*dt/dz)
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
-dtsdx0 = dt*dxi
-dtsdy0 = dt*dyi
-dtsdz0 = dt*dzi
-dts2dx0 = 0.5_num*dtsdx0
-dts2dy0 = 0.5_num*dtsdy0
-dts2dz0 = 0.5_num*dtsdz0
-invvol = 1.0_num/(dx*dy*dz)
-invdtdx = 1.0_num/(dt*dy*dz)
-invdtdy = 1.0_num/(dt*dx*dz)
-invdtdz = 1.0_num/(dt*dx*dy)
+	ndtodx = int(clight*dt/dx)
+	ndtody = int(clight*dt/dy)
+	ndtodz = int(clight*dt/dz)
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
+	dtsdx0 = dt*dxi
+	dtsdy0 = dt*dyi
+	dtsdz0 = dt*dzi
+	dts2dx0 = 0.5_num*dtsdx0
+	dts2dy0 = 0.5_num*dtsdy0
+	dts2dz0 = 0.5_num*dtsdz0
+	invvol = 1.0_num/(dx*dy*dz)
+	invdtdx = 1.0_num/(dt*dy*dz)
+	invdtdy = 1.0_num/(dt*dx*dz)
+	invdtdz = 1.0_num/(dt*dx*dy)
 
-xl = -int(nox/2)-1-ndtodx
-xu = int((nox+1)/2)+1+ndtodx
-yl = -int(noy/2)-1-ndtody
-yu = int((noy+1)/2)+1+ndtody
-zl = -int(noz/2)-1-ndtodz
-zu = int((noz+1)/2)+1+ndtodz
+	xl = -int(nox/2)-1-ndtodx
+	xu = int((nox+1)/2)+1+ndtodx
+	yl = -int(noy/2)-1-ndtody
+	yu = int((noy+1)/2)+1+ndtody
+	zl = -int(noz/2)-1-ndtodz
+	zu = int((noz+1)/2)+1+ndtodz
 
 ALLOCATE(sdx(xl:xu,yl:yu,zl:zu),sdy(xl:xu,yl:yu,zl:zu),sdz(xl:xu,yl:yu,zl:zu))
 ALLOCATE(sx(xl:xu), sx0(xl:xu), dsx(xl:xu))

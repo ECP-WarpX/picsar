@@ -125,28 +125,29 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
   print (' Relative error on the total energy:',diffrel)
   if ttest: assert diffrel < 1e-2
       
-  # Plotting      
-  fig = plt.figure(figsize=(12,8))
-  gs = gridspec.GridSpec(2, 2)
-  ax = plt.subplot(gs[:, :])
+  # Plotting 
+  if tshow:
+    fig = plt.figure(figsize=(12,8))
+    gs = gridspec.GridSpec(2, 2)
+    ax = plt.subplot(gs[:, :])
   
-  ax.plot(t,kinE[0,:],label='Electron kinetic energy')
-  ax.plot(t,kinE[1,:],label='Proton kinetic energy')
-  ax.plot(t,ezE,label='Ez energy')
-  ax.plot(t,eyE,label='Ey energy')  
-  ax.plot(t,exE,label='Ex energy')
-  ax.plot(t,bzE,label='Bz energy')
-  ax.plot(t,byE,label='By energy',color='brown')  
-  ax.plot(t,bxE,label='Bx energy',color='orange')  
-  ax.plot(t,total_energy,label='tot',color='k',ls=':')
-  ax.plot([Tplasma,Tplasma],[0.,max(total_energy)],ls='--',color='k')
+    ax.plot(t,kinE[0,:],label='Electron kinetic energy')
+    ax.plot(t,kinE[1,:],label='Proton kinetic energy')
+    ax.plot(t,ezE,label='Ez energy')
+    ax.plot(t,eyE,label='Ey energy')  
+    ax.plot(t,exE,label='Ex energy')
+    ax.plot(t,bzE,label='Bz energy')
+    ax.plot(t,byE,label='By energy',color='brown')  
+    ax.plot(t,bxE,label='Bx energy',color='orange')  
+    ax.plot(t,total_energy,label='tot',color='k',ls=':')
+    ax.plot([Tplasma,Tplasma],[0.,max(total_energy)],ls='--',color='k')
   
-  ax.set_xlabel('t (s)')
-  ax.set_ylabel('Energy (J)')
+    ax.set_xlabel('t (s)')
+    ax.set_ylabel('Energy (J)')
   
-  plt.annotate('', xy=(0, kinE[0,0]*0.5), xycoords='data',xytext=(Tplasma, kinE[0,0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
+    plt.annotate('', xy=(0, kinE[0,0]*0.5), xycoords='data',xytext=(Tplasma, kinE[0,0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
   
-  ax.legend(loc='upper center',ncol=3,borderaxespad=-3)
+    ax.legend(loc='upper center',ncol=3,borderaxespad=-3)
   
   # Test divergence
   print (' ________________________________________ ')
@@ -158,32 +159,37 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
   t,dive= read_picsar_temporal_diags('RESULTS/divE')
   
   print()
+  print ('max(||diverho||(t)):',max(diverho))
+  print ('max(||diverho||/||rho||):',max(diverho/rho))
   print ('max(||rho||(t)):',max(rho))
   print ('min(||rho||(t)):',min(rho)) 
-  print ('max(||divE||(t)):',max(dive))
-  print ('min(||divE||(t)):',min(dive)) 
+  print ('max(||divE||(t)):',max(dive*eps0))
+  print ('min(||divE||(t)):',min(dive*eps0)) 
   print()
-  
-  fig1 = plt.figure(figsize=(12,8))
-  gs1 = gridspec.GridSpec(7, 4)
-  ax1 = plt.subplot(gs1[0:3, :])
-  ax2 = plt.subplot(gs1[4:7, :])
-  
-  ax1.plot(t,diverho,label=r'$||\nabla E \times \varepsilon_0 - \rho||$',lw=2) 
-  ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
-  ax1.set_xlabel('t (s)')
 
-  ax2.plot(t,dive,label=r'$|| \nabla E \times \varepsilon_0 ||$',lw=2) 
-  ax2.plot(t,rho,label=r'$|| \rho ||$',color='r',lw=2,ls='--')
-  ax2.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
-  ax2.set_xlabel('t (s)')
+  if ttest: assert (max(diverho/rho) < 1E-3),"L2 norm||DivE*eps0 - rho||/||rho|| too high"
+  
+  if tshow:
+    fig1 = plt.figure(figsize=(12,8))
+    gs1 = gridspec.GridSpec(7, 4)
+    ax1 = plt.subplot(gs1[0:3, :])
+    ax2 = plt.subplot(gs1[4:7, :])
+  
+    ax1.plot(t,diverho/rho,label=r'$||\nabla E \times \varepsilon_0 - \rho||/||rho||$',lw=2) 
+    ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+    ax1.set_xlabel('t (s)')
+
+    ax2.plot(t,dive*eps0,label=r'$|| \nabla E \times \varepsilon_0 ||$',lw=2) 
+    ax2.plot(t,rho,label=r'$|| \rho ||$',color='r',lw=2,ls='--')
+    ax2.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+    ax2.set_xlabel('t (s)')
   
   # Analyse of the files
   if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
       for it in range(0,50,10):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
         rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
-        F = ((dive.f-rho.f)) 
+        F = ((dive.f*eps0-rho.f)) 
         min_F = amin(abs(F))
         max_F = amax(abs(F))
         ave_F = average(abs(F))
@@ -195,8 +201,6 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
         print(" min(divE*eps0-rho)):",min_F)
         print(" max(divE*eps0-rho)):",max_F)
         print(" ave(divE*eps0-rho)):",ave_F)
-
-  if ttest: assert (max(diverho) < 1E-3),"L2 norm||DivE - rho/eps0|| too high"
 
   # ____________________________________________________
   # Advice
