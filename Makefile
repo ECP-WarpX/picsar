@@ -68,7 +68,8 @@ ifeq ($(SYS),cori1)
 	APPNAME=picsar_cori
   ifeq ($(MODE),prod)
 		COMP=none
-		FARGS= -O3 -xCORE-AVX2 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		FARGS= -O3 -xCORE-AVX2 -qopenmp -align array64byte -qopt-streaming-stores auto
+		# -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
@@ -93,7 +94,8 @@ else ifeq ($(SYS),edison)
 	APPNAME=picsar_edison
   ifeq ($(MODE),prod)
 		COMP=none
-		FARGS= -O3 -xAVX -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		FARGS= -O3 -xAVX -qopenmp -align array64byte -qopt-streaming-stores auto
+		# -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
@@ -165,12 +167,12 @@ ifeq ($(COMP),gnu)
 
   ifeq ($(MODE),prod)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize -ftree-vectorizer-verbose=2
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize 
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize -ftree-vectorizer-verbose=2
+	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
 	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules
@@ -378,7 +380,7 @@ Acceptance_testing/Gcov_tests/%.o:Acceptance_testing/Gcov_tests/%.F90
 	$(FC) -c $(FARGS) -o $@ $<
 
 # Clean files related to the tests	
-cleantest:
+clean_test:
 	rm -f Acceptance_testing/Fortran_tests/*/picsar
 	rm -rf Acceptance_testing/Fortran_tests/*/RESULTS	
 	rm -f Acceptance_testing/Python_tests/*/*.cgm

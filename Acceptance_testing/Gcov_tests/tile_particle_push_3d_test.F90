@@ -60,9 +60,9 @@ PROGRAM tile_particle_push_3d_test
 	nprocz=1
 	
 	! --- Domain size
-	nx_global_grid=50
-	ny_global_grid=50
-	nz_global_grid=50
+	nx_global_grid=25
+	ny_global_grid=25
+	nz_global_grid=25
 	
 	! --- Domain extension
 	xmin=0
