@@ -980,10 +980,6 @@ class EM3DPXR(EM3DFFT):
         # --- Iteration number
         pxr.it = top.it
         
-        # Moving window 
-        if (self.l_pxr):
-            pxr.zgrid=top.zgrid
-
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
         top.zgrid+=top.vbeamfrm*top.dt
@@ -1069,8 +1065,11 @@ class EM3DPXR(EM3DFFT):
 
         # Call user-defined injection routines
         userinjection.callfuncsinlist()
+        if (self.l_pxr):
+            pxr.zgrid=self.zgrid
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
+        # Moving window 
 
         #tendpart=MPI.Wtime()
         #pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
