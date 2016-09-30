@@ -15,7 +15,10 @@ import matplotlib as mpl
 from numpy import linalg as LA
 home=os.getenv('HOME')
 
-def test_langmuir_wave():
+def test_langmuir_wave(fshow=1):
+	"""
+	fshow: flag to show or not matplotlib figures
+	"""
 
   # Picsar flag: 0 warp routines, 1 picsar routines
   l_pxr=1
@@ -591,7 +594,9 @@ def test_langmuir_wave():
     print ' - Check the energy oscillating behavior'
     print    
     
-    plt.show()
+    if fshow: plt.show()
   
 if __name__ == "__main__":
-   test_langmuir_wave()   
+
+	# Launch the test
+  test_langmuir_wave(fshow=0) 
