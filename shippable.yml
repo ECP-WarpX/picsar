@@ -24,4 +24,4 @@ build:
     - py.test -s --ttest=1 --trun=1 --tshow=0
     # Compile Picsar for Python
     - make -f Makefile_Forthon
-
+    - make -f Makefile_Forthon test2
