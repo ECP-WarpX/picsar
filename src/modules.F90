@@ -71,7 +71,7 @@ END MODULE precomputed
 MODULE fields
 !=========================================================================================
 USE constants
-LOGICAL:: l_lower_order_in_v, l_nodalgrid
+LOGICAL:: l_lower_order_in_v, l_nodalgrid, l4symtry
 INTEGER(idp):: nxs=0, nys=0, nzs=0
 INTEGER(idp):: norderx, nordery, norderz
 INTEGER(idp):: nxguards,nyguards, nzguards, nox, noy, noz, npass(3)
@@ -253,7 +253,6 @@ MODULE particle_properties
 	INTEGER(idp), PARAMETER :: wpid=1
 	LOGICAL :: l_initongrid = .FALSE.
 	LOGICAL :: l_particles_weight = .FALSE.
-	LOGICAL :: l4symtry = .FALSE.
 	!> Particle initial distribution
 	INTEGER(idp) :: pdistr
 	!> Number of species
