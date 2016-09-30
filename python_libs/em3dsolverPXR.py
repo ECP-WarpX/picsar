@@ -980,7 +980,7 @@ class EM3DPXR(EM3DFFT):
         # --- Iteration number
         pxr.it = top.it
         
-        # Advance window 
+        # Moving window 
         if (self.l_pxr):
             pxr.zgrid=top.zgrid
 
