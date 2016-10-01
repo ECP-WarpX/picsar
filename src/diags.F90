@@ -253,10 +253,11 @@ CONTAINS
             if (temdiag_act_list(rank+1).gt.0) then
               write(0,'(" Rank ",I3,", creation of the file ",A30)') rank,"./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1)))
               if (temdiag_format.eq.1) then
-                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),ACTION='write')
+                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),ACTION='write',STATUS='new')
                 write(42,*) temdiag_nb_values(rank+1), temdiag_frequency*dt
               else
-                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),FORM="unformatted",ACCESS='stream')
+                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),&
+                FORM="unformatted",ACCESS='stream',STATUS='new')
                 write(42) temdiag_nb_values(rank+1), temdiag_frequency*dt
               end if
 
@@ -269,10 +270,11 @@ CONTAINS
               if (temdiag_act_list(i) .gt.0) then
                 write(0,'(" Creation of the file ",A30)') "./RESULTS/"//trim(adjustl(temdiag_name_list(i)))
                 IF (temdiag_format.eq.1) THEN
-                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),ACTION='write')
+                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),ACTION='write',STATUS='new')
                   write(42+i,*) temdiag_nb_values(i),temdiag_frequency*dt
                 else
-                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),FORM="unformatted",ACCESS='stream')
+                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),FORM="unformatted",&
+                  ACCESS='stream',STATUS='NEW')
                   write(42+i) temdiag_nb_values(i),temdiag_frequency*dt
                 end if
               end if
