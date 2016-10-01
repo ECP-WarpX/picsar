@@ -32,11 +32,13 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
 
   trun=int(trun)
   ttest = int(ttest)
+  tshow = int(tshow)
 
   print
   print (' Running simulation:',trun)
   print (' Using assert:',ttest)
   print (' Run in path:',tpath)
+  print (' Show results with Matplotlib:',tshow)
   print
 
   # ____________________________________________________________________
@@ -240,6 +242,7 @@ if __name__ == "__main__":
       path = arg
     elif opt in ("-w", "--show"):
       show = int(arg)
+      
   test_langmuir_wave(path,run,test,show)  
 
 
