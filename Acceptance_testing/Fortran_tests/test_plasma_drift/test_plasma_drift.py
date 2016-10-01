@@ -84,6 +84,7 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
     #call(["export", "OMP_NUM_THREADS=2"]) 
     os.putenv('OMP_NUM_THREADS','2')
     call(["rm","RESULTS/*"])
+    call(["mkdir","-p","RESULTS"])
     call(["mpirun","-n","4","./picsar"])
     #call(["sh","launcher"])
     # Run picsar
