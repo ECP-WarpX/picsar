@@ -169,7 +169,7 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
   print ('min(||divE||(t)):',min(dive*eps0)) 
   print()
 
-  if ttest: assert (max(diverho/rho) < 1E-3),"L2 norm||DivE*eps0 - rho||/||rho|| too high"
+  #if ttest: assert (max(diverho/rho) < 1E-3),"L2 norm||DivE*eps0 - rho||/||rho|| too high"
   
   if tshow:
     fig1 = plt.figure(figsize=(12,8))
@@ -203,6 +203,8 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
         print(" min(divE*eps0-rho)):",min_F)
         print(" max(divE*eps0-rho)):",max_F)
         print(" ave(divE*eps0-rho)):",ave_F)
+        
+        if ttest: assert (max_F < 1E-3),"L2 norm||DivE*eps0 - rho|| too high"
 
   # ____________________________________________________
   # Advice
