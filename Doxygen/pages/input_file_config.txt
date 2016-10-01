@@ -101,7 +101,7 @@ By default, the time statistics are given at the end of the simulation in the te
 - `activation` (`=0/1`): this flag activates output of the time statistics as a function of the iteration number in a file
 - `period`: this is the period of the output in number of iterations
 - `it_start`: iteration start for the time statistics
-- `per_ir`: print in the terminal the time statistics after each iteration
+- `per_it`: print in the terminal the time statistics after each iteration
 - `buffersize`: size of the buffer before writing in files (1 mean that the times are output every time steps, more mean that the results are stored in an array before being output)
 
 ####H. Temporal diagnostics section

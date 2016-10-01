@@ -560,8 +560,9 @@ USE shared_data
 USE params
 IMPLICIT NONE
 
-CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry,l_lower_order_in_v)
+	CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LOGICAL(l4symtry,idp),LOGICAL(l_lower_order_in_v,idp))
+	
 END SUBROUTINE pxrpush_particles_part1
 
 ! ________________________________________________________________________________________

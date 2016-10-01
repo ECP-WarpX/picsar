@@ -145,16 +145,17 @@ CONTAINS
         !CALL write_particles_to_file(strtemp, it)
         !tmptime=MPI_WTIME()-tmptime
         !IF (rank .EQ. 0) PRINT *, "Part dump in ", tmptime, "(s) "
-        
+
+        IF (it.ge.timestat_itstart) THEN
+        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime) 
+        ENDIF
+
         !!! --- Output temporal diagnostics
         CALL output_temporal_diagnostics
         
         !!! --- Output time statistics
         CALL output_time_statistics
 
-        IF (it.ge.timestat_itstart) THEN
-        localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime) 
-        ENDIF
 #if defined(DEBUG)
         WRITE(0,*) "Output_routines: stop"
 #endif        
