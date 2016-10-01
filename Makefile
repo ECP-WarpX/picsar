@@ -322,9 +322,11 @@ build:$(SRCDIR)/modules.o \
 endif
 	
 clean: clean_test
-	rm -rf $(SRCDIR)/*.o *.mod $(MODDIR)/*.mod
+	rm -rf $(SRCDIR)/*.o
+	rm -f *.mod
 	rm -f $(BINDIR)/$(APPNAME)
 	rm -rf RESULTS
+	rm -r $(MODDIR)
 	rm -f $(SRCDIR)/*.mod
 	rm -rf *.dSYM
 	rm -f Doxygen/*.tmp

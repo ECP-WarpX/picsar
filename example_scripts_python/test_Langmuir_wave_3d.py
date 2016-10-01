@@ -15,10 +15,10 @@ import matplotlib as mpl
 from numpy import linalg as LA
 home=os.getenv('HOME')
 
-def test_langmuir_wave(fshow=1):
-	"""
-	fshow: flag to show or not matplotlib figures
-	"""
+def test_langmuir_wave():
+  """
+  fshow: flag to show or not matplotlib figures
+  """
 
   # Picsar flag: 0 warp routines, 1 picsar routines
   l_pxr=1
@@ -42,7 +42,7 @@ def test_langmuir_wave(fshow=1):
   #-------------------------------------------------------------------------------
 
   # 
-  Nsteps = 30
+  Nsteps = 5
 
   #Mesh: normalized at the plasma frequency
   dx=0.04
@@ -76,6 +76,7 @@ def test_langmuir_wave(fshow=1):
   l_test             = 1      # Will open output window on screen
                               # and stop before entering main loop.
   l_gist             = 0      # Turns gist plotting on/off
+  l_matplotlib       = 1
   l_restart          = false  # To restart simulation from an old run (works?)
   restart_dump       = ""     # dump file to restart from (works?)
   l_moving_window    = 1      # on/off (Galilean) moving window
@@ -445,6 +446,7 @@ def test_langmuir_wave(fshow=1):
         bzE = 0.5*sum(em.fields.Bz[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
         bxE = 0.5*sum(em.fields.Bx[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
         byE = 0.5*sum(em.fields.By[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
+        div = 0
         print ' Electric energy (J):',ezE,eyE,exE
         print ' Magnetic energy (J):',bzE,byE,bxE
       # using picsar fortran subroutine
@@ -535,51 +537,54 @@ def test_langmuir_wave(fshow=1):
 
     print ' Plasma period:',Tplasma
 
-    # Plotting      
-    fig = plt.figure(figsize=(12,8))
-    gs = gridspec.GridSpec(2, 2)
-    ax = plt.subplot(gs[:, :])
+    # Plotting    
+    if l_matplotlib:  
+      fig = plt.figure(figsize=(12,8))
+      gs = gridspec.GridSpec(2, 2)
+      ax = plt.subplot(gs[:, :])
 
-    ax.plot(t_array,ekinE_array,label='Elec. kin. energy')
-    ax.plot(t_array,ezE_array,label='Ez energy')
-    ax.plot(t_array,eyE_array,label='Ey energy')
-    ax.plot(t_array,exE_array,label='Ex energy')
-    ax.plot(t_array,bzE_array,label='Bz energy')
-    ax.plot(t_array,byE_array,label='By energy')
-    ax.plot(t_array,bxE_array,label='Bx energy')
-    ax.plot(t_array,etot_array,label='Total energy',color='k',ls=':')
+      ax.plot(t_array,ekinE_array,label='Elec. kin. energy')
+      ax.plot(t_array,ezE_array,label='Ez energy')
+      ax.plot(t_array,eyE_array,label='Ey energy')
+      ax.plot(t_array,exE_array,label='Ex energy')
+      ax.plot(t_array,bzE_array,label='Bz energy')
+      ax.plot(t_array,byE_array,label='By energy')
+      ax.plot(t_array,bxE_array,label='Bx energy')
+      ax.plot(t_array,etot_array,label='Total energy',color='k',ls=':')
 
-    ax.set_ylim([0,max(etot_array)*1.1])
+      ax.set_ylim([0,max(etot_array)*1.1])
 
-    ax.set_xlabel('t (s)')
-    ax.set_ylabel('Energy (J)')
+      ax.set_xlabel('t (s)')
+      ax.set_ylabel('Energy (J)')
 
-    plt.annotate('', xy=(0, ekinE_array[0]*0.5), xycoords='data',xytext=(Tplasma, ekinE_array[0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
+      plt.annotate('', xy=(0, ekinE_array[0]*0.5), xycoords='data',xytext=(Tplasma, ekinE_array[0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
 
     # Theoretical oscillations
     ekinth = zeros(len(ekinE_array))
     A = 0.5 * max(ekinE_array)
     ekinth = A + A*cos(2*pi*t_array/(Tplasma*0.5))
-    ax.plot(t_array,ekinth,ls='--',label='Th. Elec. kin. energy',color='b')
-
-    ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
+    
+    if l_matplotlib:     
+      ax.plot(t_array,ekinth,ls='--',label='Th. Elec. kin. energy',color='b')
+      ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
 
     # Test oscillations
     diffth = abs(ekinE_array - ekinth)
     print
-    print ' Maximum difference between theory and simulation:',max(diffth)
+    print ' Maximum difference between theory and simulation:',max(diffth),1E-3*max(ekinE_array)
     if l_pytest: assert max(diffth) < 1E-3*max(ekinE_array)
     
     # _____________________________________________________________________
     # DivE*eps0 - rho
-    fig1 = plt.figure(figsize=(12,8))
-    gs1 = gridspec.GridSpec(2, 2)
-    ax1 = plt.subplot(gs[:, :])    
+    if l_matplotlib:
+      fig1 = plt.figure(figsize=(12,8))
+      gs1 = gridspec.GridSpec(2, 2)
+      ax1 = plt.subplot(gs[:, :])    
 
-    ax1.plot(t_array,div_array,label=r'$\nabla E \times \varepsilon_0 - \rho$',lw=2) 
-    ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+      ax1.plot(t_array,div_array,label=r'$\nabla E \times \varepsilon_0 - \rho$',lw=2) 
+      ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
     
-    ax1.set_xlabel('t (s)')
+      ax1.set_xlabel('t (s)')
     
     if l_pytest: assert (max(div_array) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
     
@@ -594,9 +599,9 @@ def test_langmuir_wave(fshow=1):
     print ' - Check the energy oscillating behavior'
     print    
     
-    if fshow: plt.show()
+    if l_matplotlib: plt.show()
   
 if __name__ == "__main__":
 
 	# Launch the test
-  test_langmuir_wave(fshow=0) 
+  test_langmuir_wave() 

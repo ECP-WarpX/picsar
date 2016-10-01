@@ -51,7 +51,7 @@ class EM3DPXR(EM3DFFT):
                       'it_dlb_init':11,
                       'l_output_grid':0,
                       'l_output_freq':1,
-					  'rhodepo':0,      # Charge deposition method
+                      'rhodepo':0,      # Charge deposition method
                       'currdepo':0,     # Current deposition method
                       'mpicom_curr':1,  # Com type Current deposition
                       'fieldgathe':0,   # Field gathering method

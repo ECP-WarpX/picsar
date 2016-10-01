@@ -80,7 +80,7 @@ CONTAINS
         INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in) :: eex,eey,eez
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: divee
-        REAL(num) :: dx, dy, dz, invdx, invdy, invdz
+        REAL(num)    :: dx, dy, dz, invdx, invdy, invdz
 
         invdx=1.0_num/dx
         invdy=1.0_num/dy
