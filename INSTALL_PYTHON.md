@@ -40,7 +40,18 @@ Simply type `pip install Forthon --user`
 **3. Makefile_Forthon config**
 ------------------------------
 
-First edit the file Makefile_Forthon and indicate the following environment variables:
+In order to automatically configure the installation, type
+```
+./configure
+```
+
+Then type
+```
+make -f Makefile_Forthon
+```
+
+**If the configure step failed:**   
+You will need to edit the file `Makefile_Forthon` and indicate the following environment variables:
 
 - FCOMP: your fortran compiler (e.g gfortran),
 
@@ -52,7 +63,7 @@ First edit the file Makefile_Forthon and indicate the following environment vari
 
 - LIBS: required libraries for the install. With Open-MPI, the compilation of picsar requires the following libraries: -lmpi, -lmpi_usempi, -lmpi_mpifh, -lgomp. For open-mpi>1.8.x, you should use -lmpi_usempif08 instead of -lmpi_usempi. For a Macports install of mpich, you should use -lmpifort -lmpi -lpmpi.   
 
-NB: **On the cluster Edison at NERSC**:  
+**On the cluster Edison at NERSC**:  
 Clone `picsar` in your `$HOME` folder. Then modify the `Makefile_Forthon` to use the following configuration
 ```
 SRCDIR= src
