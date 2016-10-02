@@ -24,7 +24,7 @@ except OSError:
     libs = ''
 else:
     # Find the library path, using regular expressions
-    path_list = re.findall('-L(\S+)\s', info)
+    path_list = re.findall('\s-L(\S+)', info)
     if path_list == []:
         print('** Failed to detect MPI library location on your system.')
         parsed_mpi = False
@@ -34,7 +34,7 @@ else:
         print('MPI library: %s' %libdir)
 
     # Find the proper flags, using regular expressions
-    flag_list = re.findall('-l(\S+)\s', info)
+    flag_list = re.findall('\s-l(\S+)', info)
     if flag_list == []:
         print('** Failed to detect MPI flags on your system.')
         parsed_mpi = False
@@ -58,11 +58,11 @@ with open('Makefile_Forthon', 'w') as f:
 
 # Print messages if the configure failed
 if parsed_mpi == False:
-    print('** Configure failed.')
-    print('\nModify the Makefile_Forthon by hand, to set LIBDIR and LIBS\n')
+    print('\n** Configure failed.')
+    print('Modify the Makefile_Forthon by hand, to set LIBDIR and LIBS\n')
     sys.exit(1)
 else:
-    print('Configure succeeded.\n')
+    print('\nConfigure succeeded.')
     print('To compile PICSAR in Python mode, type `make -f Makefile_Forthon`\n')
     sys.exit(0)
     
