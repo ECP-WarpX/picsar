@@ -27,7 +27,7 @@ build:
     #- py.test -s --ttest=1 --trun=1 --tshow=0
     # Compile Picsar for Python
     - cd ../../..
-    - ./configure
+    - python configure
     - make -f Makefile_Forthon
     # Run tests for python
     - cd Acceptance_testing/Python_tests/test_Langmuir_wave
