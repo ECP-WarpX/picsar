@@ -34,13 +34,13 @@ else:
         print('MPI library: %s' %libdir)
 
     # Find the proper flags, using regular expressions
-    flag_list = re.findall('-lm(\S+)\s', info)
+    flag_list = re.findall('-l(\S+)\s', info)
     if flag_list == []:
         print('** Failed to detect MPI flags on your system.')
         parsed_mpi = False
         libs = ''
     else:
-        libs = ' '.join([ '-lm%s' %flag for flag in flag_list ])
+        libs = ' '.join([ '-l%s' %flag for flag in flag_list ])
         libs += ' -lgomp'
         print('MPI flags: %s' %libs)
 
