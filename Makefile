@@ -140,10 +140,16 @@ else ifeq ($(SYS),carl)
 	else ifeq ($(MODE),vtune)
 		APPNAME=picsar_carl_vtune
 		COMP=none
-		FARGS= -D VTUNE=1	-g -dynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
-		CARGS= -D VTUNE=1 -g -dynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
+		FARGS= -D VTUNE=1	-g -Bdynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D VTUNE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
 		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
 		LARCH= 	
+	else ifeq ($(MODE),sde)
+		APPNAME=picsar_carl_sde
+		COMP=none
+		FARGS= -D SDE=1	-g -Bdynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D SDE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 
+		LARCH= 				
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_carl_advisor
 		COMP=none

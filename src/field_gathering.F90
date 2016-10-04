@@ -96,7 +96,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
-  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,zgrid) &
+  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,zgrid,fieldgave) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -159,7 +159,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					               &
 											  currg%eztile,                                          			           &
 											  currg%bxtile,currg%bytile,currg%bztile                 			           &
-											  ,.FALSE.,l_lower_order_in_v_in)
+											  ,.FALSE.,l_lower_order_in_v_in,fieldgave)
 
                 END DO! END LOOP ON SPECIES
             ENDIF
@@ -188,7 +188,7 @@ END SUBROUTINE field_gathering_sub
 !> @brief
 !
 !> This subroutine controls the different algorithms for the field gathering
-!> as a function of the user variable fieldgave.
+!> Choice of an algorithm is done using the argument field_gathe_algo.
 !> This subroutine is called in the subroutine field_gathering_sub().
 !> @details
 !
@@ -199,14 +199,23 @@ END SUBROUTINE field_gathering_sub
 !> @date
 !> 2015-2016
 !
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle positions
+!> @param[in] ex,ey,ez particle electric field
+!> @param[in] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile origin
+!> @param[in] dx,dy,dz space discretization
+!> @param[in] nx,ny,nz number of cells in each direction
+!> @param[in] field_gathe_algo gathering algorithm
 SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                       nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
+                                       nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,ll4symtry,l_lower_order_in_v,field_gathe_algo)
 
   USE constants
   USE particles
   USE params
   implicit none
 
+	integer(idp)             :: field_gathe_algo
   integer(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
   logical, intent(in)      :: ll4symtry,l_lower_order_in_v
   real(num), dimension(np) :: xp,yp,zp,ex,ey,ez,bx,by,bz
@@ -214,9 +223,11 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 
-  IF (nspecies .EQ. 0_idp) RETURN
+  IF (np .EQ. 0_idp) RETURN
 
-  IF (fieldgave.eq.3) THEN
+  SELECT CASE(field_gathe_algo)
+  
+  	CASE(3)
 
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
       !!! --- Gather electric field on particles
@@ -249,7 +260,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 
   ! ______________________________________________
   ! Arbitrary order, non-optimized subroutines
-  ELSE IF (fieldgave.eq.2) THEN
+  CASE(2)
 
     !!! --- Gather electric field on particles
     CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
@@ -263,7 +274,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
   ! ______________________________________________
   ! Non-optimized scalar subroutines
 
-  ELSE IF (fieldgave.eq.1) THEN
+  CASE(1)
 
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
       !!! --- Gather electric field on particles
@@ -297,7 +308,8 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 
   ! ________________________________________
   ! Optimized subroutines, E and B in the same vectorized loop, default
-  ELSE
+  CASE DEFAULT
+  
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
 			CALL geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 			                xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -321,7 +333,8 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
                                    dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                    nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
     ENDIF
-  ENDIF
+  END SELECT
+  
 END SUBROUTINE
 
 
