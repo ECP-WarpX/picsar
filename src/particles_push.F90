@@ -109,7 +109,7 @@ IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
-!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in) &
+!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in, particle_pusher) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -193,30 +193,41 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  ,.FALSE.,l_lower_order_in_v_in)
 					END SELECT
 
-					!! --- Push velocity with E half step
-					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,      &
-					curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					&
-					curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-					!! --- Set gamma of particles
-					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,    &
-					curr_tile%part_uz, curr_tile%part_gaminv)
-					!! --- Push velocity with B half step
-					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,        &
-          curr_tile%part_by,                                                 &
-					curr_tile%part_bz, curr%charge,curr%mass,dtt)
-          !!! --- Push velocity with E half step
-          CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-          curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
-          curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-          !! --- Set gamma of particles
-					CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
-					curr_tile%part_uz, curr_tile%part_gaminv)
-          !!!! --- push particle species positions a time step
-          CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,          &
-          curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,             &
-          curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+          SELECT CASE (particle_pusher)
+          !! Vay pusher -- Full push
+          CASE (1)
+            CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
+            curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
+            curr_tile%part_ey, 					                                       &
+            curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
+            curr_tile%part_bz,curr%charge,curr%mass,dtt,0_idp)
+          !! Boris pusher -- Full push
+          CASE DEFAULT
+      			!! --- Push velocity with E half step
+      			CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,      &
+      			curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					&
+      			curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+      			!! --- Set gamma of particles
+      			CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,    &
+      			curr_tile%part_uz, curr_tile%part_gaminv)
+      			!! --- Push velocity with B half step
+      			CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
+      			curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,        &
+            curr_tile%part_by,                                                 &
+      			curr_tile%part_bz, curr%charge,curr%mass,dtt)
+            !!! --- Push velocity with E half step
+            CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
+            curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
+            curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+            !! --- Set gamma of particles
+      			CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
+      			curr_tile%part_uz, curr_tile%part_gaminv)
 
+            !!!! --- push particle species positions a time step
+            CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,          &
+            curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,             &
+            curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+          END SELECT
                 END DO! END LOOP ON SPECIES
             ENDIF
         END DO
@@ -984,14 +995,14 @@ END SUBROUTINE pxr_set_gamma
 ! This offers better cancellation of E+VxB than the Boris velocity push.
 ! Question: should we recompute gamma from the new u, in order to prevent roundoff errors
 ! to create mismatched values of u and gamma?
-SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,which)
+SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,which)
 USE constants
 INTEGER(idp) :: np,which
-REAL(num)    :: uxp(np),uyp(np),uzp(np)
+REAL(num)    :: uxp(np),uyp(np),uzp(np),gi(np)
 REAL(num)    :: exp(np),eyp(np),ezp(np),bxp(np),byp(np),bzp(np)
 REAL(num)    :: q,m,dt
 INTEGER(idp) :: ip
-REAL(num)    :: const,bconst,s,gi,gisq,invclight,invclightsq,gprsq
+REAL(num)    :: const,bconst,s,gisq,invclight,invclightsq,gprsq
 REAL(num)    :: tx,ty,tz,tu,uxpr,uypr,uzpr,bg,vx,vy,vz
 REAL(num)    :: taux,tauy,tauz,tausq,ust,sigma
 
@@ -1014,27 +1025,24 @@ IF (which==0) THEN
 		!DIR$ SIMD
 #endif
     DO ip=1,np
-		! 		--- get gi
-		gi = 1_num/sqrt(1_num+(uxp(ip)*uxp(ip)+uyp(ip)*uyp(ip)+uzp(ip)*uzp(ip))*invclightsq)
-
 		!       --- get tau
 		taux = bconst*bxp(ip)
 		tauy = bconst*byp(ip)
 		tauz = bconst*bzp(ip)
 		tausq = taux*taux+tauy*tauy+tauz*tauz
 		!       --- get U',gamma'^2
-		uxpr = uxp(ip) + const*exp(ip) + (uyp(ip)*tauz-uzp(ip)*tauy)*gi
-		uypr = uyp(ip) + const*eyp(ip) + (uzp(ip)*taux-uxp(ip)*tauz)*gi
-		uzpr = uzp(ip) + const*ezp(ip) + (uxp(ip)*tauy-uyp(ip)*taux)*gi
+		uxpr = uxp(ip) + const*exp(ip) + (uyp(ip)*tauz-uzp(ip)*tauy)*gi(ip)
+		uypr = uyp(ip) + const*eyp(ip) + (uzp(ip)*taux-uxp(ip)*tauz)*gi(ip)
+		uzpr = uzp(ip) + const*ezp(ip) + (uxp(ip)*tauy-uyp(ip)*taux)*gi(ip)
 		gprsq = (1_num+(uxpr*uxpr+uypr*uypr+uzpr*uzpr)*invclightsq)
 		!       --- get u*
 		ust = (uxpr*taux+uypr*tauy+uzpr*tauz)*invclight
 		!       --- get new gamma
 		sigma = gprsq-tausq
 		gisq = 2_num/(sigma+sqrt(sigma*sigma+4_num*(tausq+ust*ust)))
-		gi = sqrt(gisq)
+		gi(ip) = sqrt(gisq)
 		!       --- get t,s
-		bg = bconst*gi
+		bg = bconst*gi(ip)
 		tx = bg*bxp(ip)
 		ty = bg*byp(ip)
 		tz = bg*bzp(ip)
@@ -1065,12 +1073,10 @@ ELSE IF(which==1) THEN
 		!DIR$ SIMD
 #endif
     DO ip=1,np
-		! 		--- get gi
-		gi = 1_num/sqrt(1_num+(uxp(ip)*uxp(ip)+uyp(ip)*uyp(ip)+uzp(ip)*uzp(ip))*invclightsq)
 		!     --- get new U
-		vx = uxp(ip)*gi
-		vy = uyp(ip)*gi
-		vz = uzp(ip)*gi
+		vx = uxp(ip)*gi(ip)
+		vy = uyp(ip)*gi(ip)
+		vz = uzp(ip)*gi(ip)
 		uxp(ip) = uxp(ip) + const*( exp(ip) + vy*bzp(ip)-vz*byp(ip) )
 		uyp(ip) = uyp(ip) + const*( eyp(ip) + vz*bxp(ip)-vx*bzp(ip) )
 		uzp(ip) = uzp(ip) + const*( ezp(ip) + vx*byp(ip)-vy*bxp(ip) )
@@ -1112,9 +1118,9 @@ ELSE IF(which==2) THEN
 		!       --- get new gamma
 		sigma = gprsq-tausq
 		gisq = 2_num/(sigma+sqrt(sigma*sigma+4_num*(tausq+ust*ust)))
-		gi = sqrt(gisq)
+		gi(ip) = sqrt(gisq)
 		!       --- get t,s
-		bg = bconst*gi
+		bg = bconst*gi(ip)
 		tx = bg*bxp(ip)
 		ty = bg*byp(ip)
 		tz = bg*bzp(ip)
