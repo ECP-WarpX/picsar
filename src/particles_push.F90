@@ -68,38 +68,39 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 			     nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
 ! Particle pusher in 3D called by the main function push_particle
 ! ________________________________________________________________________________________
-  USE particles
-  USE constants
-  USE tiling
-  USE time_stat
+
+	USE particles
+	USE constants
+	USE tiling
+	USE time_stat
 ! Vtune/SDE profiling
 #if defined(PROFILING) && PROFILING==3
   USE ITT_SDE_FORTRAN
 #endif
-  IMPLICIT NONE
+	IMPLICIT NONE
 
-  ! ___ Parameter declaration __________________________________________
-  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
-  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-  LOGICAL                  :: l_lower_order_in_v_in
-  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
-  INTEGER(idp)             :: ispecies, ix, iy, iz, count
-  INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
-  TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
-  TYPE(particle_tile), POINTER    :: curr_tile
-  REAL(num)                :: tdeb, tend
-  INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
-  INTEGER(idp)             :: nxjg,nyjg,nzjg
-  LOGICAL(idp)             :: isgathered=.FALSE.
+	! ___ Parameter declaration __________________________________________
+	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
+	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+	LOGICAL                  :: l_lower_order_in_v_in
+	REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+	INTEGER(idp)             :: ispecies, ix, iy, iz, count
+	INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
+	TYPE(particle_species), POINTER :: curr
+	TYPE(grid_tile), POINTER        :: currg
+	TYPE(particle_tile), POINTER    :: curr_tile
+	REAL(num)                :: tdeb, tend
+	INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
+	INTEGER(idp)             :: nxjg,nyjg,nzjg
+	LOGICAL(idp)             :: isgathered=.FALSE.
 
-    tdeb=MPI_WTIME()
+	tdeb=MPI_WTIME()
 
 #if PROFILING==3
   CALL start_collection()
@@ -109,12 +110,13 @@ IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
-!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in, particle_pusher) &
+!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,&
+!$OMP particle_pusher,fieldgave) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
-    DO iy=1, ntiley
-        DO ix=1, ntilex
+	DO iy=1, ntiley
+		DO ix=1, ntilex
 			curr=>species_parray(1)
 			curr_tile=>curr%array_of_tiles(ix,iy,iz)
 			nxjg=curr_tile%nxg_tile
@@ -190,7 +192,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					              &
 											  currg%eztile,                                          			          &
 											  currg%bxtile,currg%bytile,currg%bztile                 			          &
-											  ,.FALSE.,l_lower_order_in_v_in)
+											  ,.FALSE.,l_lower_order_in_v_in,fieldgave)
 					END SELECT
 
           SELECT CASE (particle_pusher)
@@ -620,7 +622,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy, &
-!$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim) &
+!$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgave) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -698,7 +700,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 				   		&
 											  currg%eztile,                                          				&
 											  currg%bxtile,currg%bytile,currg%bztile                 				&
-											  ,l4symtry_in,l_lower_order_in_v_in)
+											  ,l4symtry_in,l_lower_order_in_v_in,fieldgave)
 					END SELECT
 
 					!! --- Push velocity with E half step
