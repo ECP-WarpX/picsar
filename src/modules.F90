@@ -253,6 +253,8 @@ MODULE particle_properties
 	INTEGER(idp), PARAMETER :: wpid=1
 	LOGICAL :: l_initongrid = .FALSE.
 	LOGICAL :: l_particles_weight = .FALSE.
+  !> Particle pusher type (0: Boris, 1: Vay, Default: 0)
+  INTEGER(idp) :: particle_pusher = 0
 	!> Particle initial distribution
 	INTEGER(idp) :: pdistr
 	!> Number of species
