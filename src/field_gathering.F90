@@ -183,7 +183,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 END SUBROUTINE field_gathering_sub
 
 
-!=================================================================================
+! ________________________________________________________________________________________
 !> General subroutines for the 3D field gathering
 !> @brief
 !
@@ -201,14 +201,21 @@ END SUBROUTINE field_gathering_sub
 !
 !> @param[in] np number of particles
 !> @param[in] xp,yp,zp particle positions
-!> @param[in] ex,ey,ez particle electric field
-!> @param[in] bx,by,bz particle magnetic field
+!> @param[out] ex,ey,ez particle electric field
+!> @param[out] bx,by,bz particle magnetic field
 !> @param[in] xmin,ymin,zmin tile origin
 !> @param[in] dx,dy,dz space discretization
 !> @param[in] nx,ny,nz number of cells in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
+!> @param[in] nox,noy,noz shape factor order
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] ll4symtry
+!> @param[in] l_lower_order_in_v
 !> @param[in] field_gathe_algo gathering algorithm
 SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                        nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,ll4symtry,l_lower_order_in_v,field_gathe_algo)
+! ________________________________________________________________________________________
 
   USE constants
   USE particles
