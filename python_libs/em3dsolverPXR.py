@@ -59,7 +59,7 @@ class EM3DPXR(EM3DFFT):
                       'lvec_curr_depo':8,
                       'lvec_charge_depo':64,
                       'lvec_fieldgathe':512,
-                      'sorting':None
+                      'sorting':None,
                       }
 
     def __init__(self,**kw):
@@ -323,7 +323,8 @@ class EM3DPXR(EM3DFFT):
         pxr.fieldgave=self.fieldgathe
         # Particle communication
         pxr.partcom=self.partcom
-
+		# Particle pusher type
+        pxr.particle_pusher = top.pgroup.lebcancel_pusher
         # lvec size for the current deposition
         pxr.lvec_curr_depo = self.lvec_curr_depo
         # lvec size for the charge deposition
@@ -336,12 +337,12 @@ class EM3DPXR(EM3DFFT):
             pxr.lvec_fieldgathe = 512
         else:
           pxr.lvec_fieldgathe = self.lvec_fieldgathe
-          
-        
-        #Type of field gathering 
-        pxr.l4symtry=w3d.l4symtry  
+
+
+        #Type of field gathering
+        pxr.l4symtry=w3d.l4symtry
         pxr.l_lower_order_in_v=self.l_lower_order_in_v
-        
+
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
@@ -979,7 +980,7 @@ class EM3DPXR(EM3DFFT):
 
         # --- Iteration number
         pxr.it = top.it
-        
+
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
         top.zgrid+=top.vbeamfrm*top.dt
@@ -1069,7 +1070,7 @@ class EM3DPXR(EM3DFFT):
             pxr.zgrid=self.zgrid
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
-        # Moving window 
+        # Moving window
 
         #tendpart=MPI.Wtime()
         #pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
