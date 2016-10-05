@@ -26,7 +26,7 @@ from Field import *
 # _______________________________________________________________________
 # Functions
 
-def test_plasma_drift(trun,ttest,tpath):
+def test_plasma_drift(tpath,trun,ttest,tshow):
   """
   
   """
@@ -38,11 +38,13 @@ def test_plasma_drift(trun,ttest,tpath):
 
   trun=int(trun)
   ttest = int(ttest)
+  tshow= int(tshow)
 
   print
   print (' Running simulation:',trun)
   print (' Using assert:',ttest)
   print (' Run in path:',tpath)
+  print (' Show the results in figures:',tshow)
   print
 
   # ____________________________________________________________________
@@ -82,6 +84,7 @@ def test_plasma_drift(trun,ttest,tpath):
     #call(["export", "OMP_NUM_THREADS=2"]) 
     os.putenv('OMP_NUM_THREADS','2')
     call(["rm","RESULTS/*"])
+    call(["mkdir","-p","RESULTS"])
     call(["mpirun","-n","4","./picsar"])
     #call(["sh","launcher"])
     # Run picsar
@@ -140,31 +143,32 @@ def test_plasma_drift(trun,ttest,tpath):
   print(' Relative error on the total energy:',diffrel)
   if ttest: assert diffrel < 1e-2
       
-  # Plotting      
-  fig = plt.figure(figsize=(12,8))
-  gs = gridspec.GridSpec(2, 2)
-  ax = plt.subplot(gs[:, :])
+  # Plotting 
+  if tshow:     
+    fig = plt.figure(figsize=(12,8))
+    gs = gridspec.GridSpec(2, 2)
+    ax = plt.subplot(gs[:, :])
   
-  for sp in range(len(kinE)):
-    ax.plot(t,kinE[sp,:],label='Species %d'%sp)
+    for sp in range(len(kinE)):
+      ax.plot(t,kinE[sp,:],label='Species %d'%sp)
     
-  ax.plot(t,ezE,label='Ez energy')
-  ax.plot(t,eyE,label='Ey energy')  
-  ax.plot(t,exE,label='Ex energy')
-  ax.plot(t,bzE,label='Bz energy')
-  ax.plot(t,byE,label='By energy',color='brown')  
-  ax.plot(t,bxE,label='Bx energy',color='orange')  
-  ax.plot(t,total_energy,label='tot',color='k',ls=':')
-  ax.plot([Tplasma,Tplasma],[0.,max(total_energy)],ls='--',color='k')
+    ax.plot(t,ezE,label='Ez energy')
+    ax.plot(t,eyE,label='Ey energy')  
+    ax.plot(t,exE,label='Ex energy')
+    ax.plot(t,bzE,label='Bz energy')
+    ax.plot(t,byE,label='By energy',color='brown')  
+    ax.plot(t,bxE,label='Bx energy',color='orange')  
+    ax.plot(t,total_energy,label='tot',color='k',ls=':')
+    ax.plot([Tplasma,Tplasma],[0.,max(total_energy)],ls='--',color='k')
   
-  ax.set_ylim([0,max(total_energy)*1.1])
+    ax.set_ylim([0,max(total_energy)*1.1])
   
-  ax.set_xlabel('t (s)')
-  ax.set_ylabel('Energy (J)')
+    ax.set_xlabel('t (s)')
+    ax.set_ylabel('Energy (J)')
   
-  plt.annotate('', xy=(0, kinE[0,0]*0.5), xycoords='data',xytext=(Tplasma, kinE[0,0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
+    plt.annotate('', xy=(0, kinE[0,0]*0.5), xycoords='data',xytext=(Tplasma, kinE[0,0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
   
-  ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
+    ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
  
   # Test divergence
   print (' ________________________________________ ')
@@ -172,32 +176,53 @@ def test_plasma_drift(trun,ttest,tpath):
   
   # Opening of divE-rho
   t,diverho = read_picsar_temporal_diags('RESULTS/divE-rho')
+  t,rho = read_picsar_temporal_diags('RESULTS/rho')
+  t,dive= read_picsar_temporal_diags('RESULTS/divE')
+  
+  print()
+  print ('max(||diverho||):',max(diverho))
+  print ('max(||rho||(t)):',max(rho))
+  print ('min(||rho||(t)):',min(rho)) 
+  print ('max(||divE||(t)):',max(dive)*eps0)
+  print ('min(||divE||(t)):',min(dive)*eps0)
+  print()
+  
+  if tshow:
+    fig1 = plt.figure(figsize=(12,8))
+    gs1 = gridspec.GridSpec(7, 4)
+    ax1 = plt.subplot(gs1[0:3, :])
+    ax2 = plt.subplot(gs1[4:7, :])
+  
+    ax1.plot(t,diverho,label=r'$||\nabla E \times \varepsilon_0 - \rho||$',lw=2) 
+    ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+    ax1.set_xlabel('t (s)')
 
-  fig1 = plt.figure(figsize=(12,8))
-  gs1 = gridspec.GridSpec(2, 2)
-  ax1 = plt.subplot(gs1[:, :])
-  
-  ax1.plot(t,diverho,label=r'$\nabla E \times \varepsilon_0 - \rho$',lw=2) 
-  ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
-  
-  ax1.set_xlabel('t (s)')
-  
-  print
-  print (' _______________________________________ ')
-  print (' Check DivE = rho/eps0')
-  if 1:
+    ax2.plot(t,dive*eps0,label=r'$|| \nabla E \times \varepsilon_0 ||$',lw=2) 
+    ax2.plot(t,rho,label=r'$|| \rho ||$',color='r',lw=2,ls='--')
+    ax2.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+    ax2.set_xlabel('t (s)')
+
+  #if ttest: assert (max(diverho) < 1E-3),"L2 norm||DivE - rho/eps0|| too high"
+
+  # Analyse of the files
+  if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
       for it in range(0,200,20):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
         rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
-        norm = LA.norm((dive.f*eps0-rho.f)) 
-        print
-        print(" Differences norme L2 ||rho-divE|| iteration it = " + str(it))
-        print(" Norm(dive.f*eps0-rho.f):",norm)
-        print(" Total charge:",np.sum(rho.f))
-        print(" Total divergence:",np.sum(dive.f*eps0))
-        if ttest: assert norm < 1E-5
-
-  if ttest: assert (max(diverho) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
+        F = ((dive.f*eps0-rho.f)) 
+        min_F = amin(abs(F))
+        max_F = amax(abs(F))
+        ave_F = average(abs(F))
+        
+        print()
+        print(" Iteration it = " + str(it))
+        print(" Total charge:",sqrt(sum(rho.f**2)))
+        print(" Total divergence:",sqrt(sum(dive.f**2))*eps0)
+        print(" min(divE*eps0-rho)):",min_F)
+        print(" max(divE*eps0-rho)):",max_F)
+        print(" ave(divE*eps0-rho)):",ave_F)
+        
+        #if ttest: assert (max_F < 1E-3),"L2 norm||DivE*eps0 - rho|| too high"
 
   # ____________________________________________________
   # Advice
@@ -209,17 +234,18 @@ def test_plasma_drift(trun,ttest,tpath):
   print (' - Check that divE = rho/eps0 for each tests')
   print
   
-  plt.show()
+  if tshow: plt.show()
 
 if __name__ == "__main__":
 
   argv = sys.argv[1:]
   run = 1
   test = 1
+  show = 1
   path = ''
 
   try:
-    opts, args = getopt.getopt(argv,"hr:t:p:",["test=","run=",'path='])
+    opts, args = getopt.getopt(argv,"hr:t:p:w:",["test=","run=",'path=','show='])
   except getopt.GetoptError:
     help()
     sys.exit(2)
@@ -234,6 +260,7 @@ if __name__ == "__main__":
       run = int(arg)
     elif opt in ("-p", "--path"):
       path = arg
-
-  test_plasma_drift(run,test,path)  
+    elif opt in ("-w", "--show"):
+      show = int(arg)
+  test_langmuir_wave(path,run,test,show)  
 

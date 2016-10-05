@@ -883,7 +883,13 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(7)     
             ELSE IF (INDEX(buffer,'divE-rho') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(8)                            
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(8)
+            ELSE IF (INDEX(buffer,'rho') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(9)
+            ELSE IF (INDEX(buffer,'divE') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(10)
             ENDIF            
         ENDDO    
         RETURN

@@ -482,13 +482,13 @@ MODULE output_data !#do not parse
 
 	! temporal diagnostics
 	!> Array of activation flags
-	INTEGER(isp), dimension(10) :: temdiag_act_list
+	INTEGER(isp), dimension(15) :: temdiag_act_list
 	!> Filename for the different temporal diags
 	CHARACTER(len=string_length), dimension(10) :: temdiag_name_list
 	!> Array of index to locate the value in the big array
-	INTEGER(isp), dimension(10) :: temdiag_i_list
+	INTEGER(isp), dimension(15) :: temdiag_i_list
 	!> Array containing the number of values in the big array
-	INTEGER(isp), dimension(10) :: temdiag_nb_values
+	INTEGER(isp), dimension(15) :: temdiag_nb_values
 
   !> Number of temoral diags
 	INTEGER(idp) :: temdiag_nb
