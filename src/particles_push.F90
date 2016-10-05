@@ -764,7 +764,7 @@ IF (nspecies .EQ. 0_idp) RETURN
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
-!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,c_dim) &
+!$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,c_dim, particle_pusher) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -777,18 +777,28 @@ DO iz=1, ntilez ! LOOP ON TILES
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .EQ. 0) CYCLE
-                !!! ---- Loop by blocks over particles in a tile (blocking)
-                !!! --- Push velocity with B half step
-        				CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
-        				curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, 	  &
-        				curr_tile%part_bz, curr%charge,curr%mass,dt*0.5_num)
-        				!! --- Push velocity with E half step
-        				CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
-        				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				          &
-        				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
-        				!! --- Sets gamma of particles
-        				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-        				curr_tile%part_uz, curr_tile%part_gaminv)
+                SELECT CASE (particle_pusher)
+                !! Vay pusher -- half push part 2
+                CASE (1)
+                  CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
+                  curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
+                  curr_tile%part_ey, 					                                       &
+                  curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
+                  curr_tile%part_bz,curr%charge,curr%mass,0.5_num*dtt,2_idp)
+                CASE DEFAULT
+                  !! Boris pusher -- half push part 2
+                  !!! --- Push velocity with B half step
+          				CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
+          				curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, 	  &
+          				curr_tile%part_bz, curr%charge,curr%mass,dt*0.5_num)
+          				!! --- Push velocity with E half step
+          				CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
+          				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				          &
+          				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
+          				!! --- Sets gamma of particles
+          				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
+          				curr_tile%part_uz, curr_tile%part_gaminv)
+                END SELECT
         				SELECT CASE (c_dim)
         				CASE (2) ! 2D CASE
         					!! --- Advance particle position of one time step
