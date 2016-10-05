@@ -717,7 +717,7 @@ DO iz=1, ntilez ! LOOP ON TILES
                 curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
                 curr_tile%part_ey, 					                                       &
                 curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-                curr_tile%part_bz,curr%charge,curr%mass,dtt,1_idp)
+                curr_tile%part_bz,curr%charge,curr%mass,0.5_num*dtt,1_idp)
               !! Boris pusher -- half push part 1
               CASE DEFAULT
       					!! --- Push velocity with E half step
