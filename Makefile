@@ -68,7 +68,8 @@ ifeq ($(SYS),cori1)
 	APPNAME=picsar_cori
   ifeq ($(MODE),prod)
 		COMP=none
-		FARGS= -O3 -xCORE-AVX2 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		FARGS= -O3 -xCORE-AVX2 -qopenmp -align array64byte -qopt-streaming-stores auto
+		# -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
@@ -93,7 +94,8 @@ else ifeq ($(SYS),edison)
 	APPNAME=picsar_edison
   ifeq ($(MODE),prod)
 		COMP=none
-		FARGS= -O3 -xAVX -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		FARGS= -O3 -xAVX -qopenmp -align array64byte -qopt-streaming-stores auto
+		# -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
@@ -138,10 +140,16 @@ else ifeq ($(SYS),carl)
 	else ifeq ($(MODE),vtune)
 		APPNAME=picsar_carl_vtune
 		COMP=none
-		FARGS= -D VTUNE=1	-g -dynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
-		CARGS= -D VTUNE=1 -g -dynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
+		FARGS= -D VTUNE=1	-g -Bdynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D VTUNE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
 		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
 		LARCH= 	
+	else ifeq ($(MODE),sde)
+		APPNAME=picsar_carl_sde
+		COMP=none
+		FARGS= -D SDE=1	-g -Bdynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D SDE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 
+		LARCH= 				
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_carl_advisor
 		COMP=none
@@ -165,12 +173,12 @@ ifeq ($(COMP),gnu)
 
   ifeq ($(MODE),prod)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize -ftree-vectorizer-verbose=2
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize 
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize -ftree-vectorizer-verbose=2
+	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
 	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules
@@ -226,7 +234,7 @@ FARGS+= $(LARCH)
 # ________________________________________________________
 
 
-$(SRCDIR)/%.o $(SRCDIR)/%.mod:$(SRCDIR)/%.F90
+$(SRCDIR)/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 
 $(SRCDIR)/%.o:$(SRCDIR)/%.c
@@ -319,10 +327,12 @@ build:$(SRCDIR)/modules.o \
 	mv $(APPNAME) $(BINDIR)
 endif
 	
-clean: cleantest
-	rm -rf $(SRCDIR)/*.o *.mod $(MODDIR)/*.mod
+clean: clean_test
+	rm -rf $(SRCDIR)/*.o
+	rm -f *.mod
 	rm -f $(BINDIR)/$(APPNAME)
 	rm -rf RESULTS
+	rm -r $(MODDIR)
 	rm -f $(SRCDIR)/*.mod
 	rm -rf *.dSYM
 	rm -f Doxygen/*.tmp
@@ -378,7 +388,7 @@ Acceptance_testing/Gcov_tests/%.o:Acceptance_testing/Gcov_tests/%.F90
 	$(FC) -c $(FARGS) -o $@ $<
 
 # Clean files related to the tests	
-cleantest:
+clean_test:
 	rm -f Acceptance_testing/Fortran_tests/*/picsar
 	rm -rf Acceptance_testing/Fortran_tests/*/RESULTS	
 	rm -f Acceptance_testing/Python_tests/*/*.cgm
@@ -498,7 +508,8 @@ build_esirkepov_2d_test: $(SRCDIR)/modules.o \
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_2d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
 		
 # Compilation of all the tests	
-build_test: build_tile_field_gathering_3d_test \
+build_test: createdir \
+	build_tile_field_gathering_3d_test \
 	build_field_gathering_3d_test \
 	build_field_gathering_2d_test \
 	build_rho_deposition_3d_test \

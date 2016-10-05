@@ -80,7 +80,7 @@ CONTAINS
         INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in) :: eex,eey,eez
         REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: divee
-        REAL(num) :: dx, dy, dz, invdx, invdy, invdz
+        REAL(num)    :: dx, dy, dz, invdx, invdy, invdz
 
         invdx=1.0_num/dx
         invdy=1.0_num/dy
@@ -221,7 +221,24 @@ CONTAINS
           temdiag_nb = temdiag_nb + 1
           i = i+1
         end if
-
+        ! Norn divE*eps0 - rho
+        if (temdiag_act_list(9).gt.0) then
+          temdiag_i_list(9) = i
+          temdiag_name_list(9) = 'rho'
+          temdiag_nb_values(9) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1
+          i = i+1
+        end if
+        ! Norn divE*eps0 - rho
+        if (temdiag_act_list(10).gt.0) then
+          temdiag_i_list(10) = i
+          temdiag_name_list(10) = 'divE'
+          temdiag_nb_values(10) = 1
+          temdiag_nb_field = temdiag_nb_field + 1
+          temdiag_nb = temdiag_nb + 1
+          i = i+1
+        end if
         temdiag_totvalues = i - 1
 
         if (temdiag_nb.gt.0) then
@@ -236,10 +253,11 @@ CONTAINS
             if (temdiag_act_list(rank+1).gt.0) then
               write(0,'(" Rank ",I3,", creation of the file ",A30)') rank,"./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1)))
               if (temdiag_format.eq.1) then
-                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),ACTION='write')
+                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),ACTION='write',STATUS='new')
                 write(42,*) temdiag_nb_values(rank+1), temdiag_frequency*dt
               else
-                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),FORM="unformatted",ACCESS='stream')
+                open(unit=42,file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),&
+                FORM="unformatted",ACCESS='stream',STATUS='new')
                 write(42) temdiag_nb_values(rank+1), temdiag_frequency*dt
               end if
 
@@ -252,10 +270,11 @@ CONTAINS
               if (temdiag_act_list(i) .gt.0) then
                 write(0,'(" Creation of the file ",A30)') "./RESULTS/"//trim(adjustl(temdiag_name_list(i)))
                 IF (temdiag_format.eq.1) THEN
-                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),ACTION='write')
+                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),ACTION='write',STATUS='new')
                   write(42+i,*) temdiag_nb_values(i),temdiag_frequency*dt
                 else
-                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),FORM="unformatted",ACCESS='stream')
+                  open(unit=42+i,file="./RESULTS/"//trim(adjustl(temdiag_name_list(i))),FORM="unformatted",&
+                  ACCESS='stream',STATUS='NEW')
                   write(42+i) temdiag_nb_values(i),temdiag_frequency*dt
                 end if
               end if
@@ -639,8 +658,22 @@ CONTAINS
     END SUBROUTINE
 
 
-    !!! --- Determine the total field energy for the given field
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Get the energy of the field component field
+    !
+    !> @author
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> 09.29.2016
+    !
+    !> @param[in] field: array for a given field component
+    !> @param[in] nx2,ny2,nz2: number of cells
+    !> @param[in] nxguard,nyguard,nzguard: number of guard cells
+    !
     SUBROUTINE get_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
+    ! ____________________________________________________________________________________
         USE constants
         USE mpi_derived_types
         USE mpi_type_constants
@@ -677,8 +710,14 @@ CONTAINS
 
     END SUBROUTINE
 
-    !!! --- Compute norm of dF/dt = divE -rho/eps0 (parallel function)
-    SUBROUTINE get_loc_norm_divErho(divee2,rho2,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm_loc)
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Compute norm of dF/dt = divE -rho/eps0 local to the MPI domain (parallel function)
+    !
+    !> @author
+    !> Mathieu Lobet
+    SUBROUTINE get_loc_norm_divErho(divee2,rho2,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm)
+    ! ____________________________________________________________________________________
         USE mpi_derived_types
         USE mpi_type_constants
         USE shared_data
@@ -686,19 +725,20 @@ CONTAINS
         IMPLICIT NONE
 
         INTEGER(idp)                :: j,k,l
-        INTEGER(idp),intent(in)     :: nx2,ny2,nz2,nxguard,nyguard,nzguard
+        INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
         REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: divee2,rho2
-        REAL(num), intent(out)      :: norm_loc
+        REAL(num)                   :: norm_loc
+        REAL(num), intent(out)      :: norm
 
-        norm_loc = 0
+        norm = 0
 
         !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
-        !$OMP DO COLLAPSE(3) REDUCTION(+:norm_loc)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:norm)
         do l = 1, nz2
             do k = 1, ny2
                 do j = 1, nx2
 
-                    norm_loc = norm_loc + (divee2(j,k,l)*eps0 - rho2(j,k,l))**2
+                    norm = norm + (divee2(j,k,l)*eps0 - rho2(j,k,l))**2
 
                 end do
             end do
@@ -708,9 +748,52 @@ CONTAINS
 
     END SUBROUTINE
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Compute the  square of the norm of array local to the MPI domain (OpenMP parallel function)
+    !
+    !> @author
+    !> Mathieu Lobet
+    SUBROUTINE get_loc_norm_2(array,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm)
+    ! ____________________________________________________________________________________
+        USE mpi_derived_types
+        USE mpi_type_constants
+        USE shared_data
+        USE constants
+        IMPLICIT NONE
 
-    !!! --- Compute norm of dF/dt = divE -rho/eps0 (parallel function)
+        INTEGER(idp)                :: j,k,l
+        INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
+        REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: array
+        REAL(num)                   :: norm_loc
+        REAL(num), intent(out)      :: norm
+
+        norm = 0
+
+        !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+        !$OMP DO COLLAPSE(3) REDUCTION(+:norm)
+        do l = 1, nz2
+            do k = 1, ny2
+                do j = 1, nx2
+
+                    norm = norm+ (array(j,k,l))**2
+
+                end do
+            end do
+        end do
+        !$OMP END DO
+        !$OMP END PARALLEL
+
+    END SUBROUTINE
+
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Compute norm of dF/dt = divE -rho/eps0 (parallel function)
+    !
+    !> @author
+    !> Mathieu Lobet
     SUBROUTINE get_norm_divErho(divee2,rho2,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm)
+    ! ____________________________________________________________________________________
         USE mpi_derived_types
         USE mpi_type_constants
         USE shared_data

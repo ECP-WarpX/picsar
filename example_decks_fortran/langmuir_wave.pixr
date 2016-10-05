@@ -73,6 +73,9 @@ section::solver
  # Charge deposition method
  rhodepo = 0
 
+ # Particle pusher and field gathering seperated
+ fg_p_pp_seperated = 0
+
 end::solver
 
 section::plasma
@@ -157,6 +160,7 @@ end::output
 section::timestat
   activation=0
   period=1
+  buffer=10
 end::timestat
 
 section::temporal
@@ -171,4 +175,6 @@ section::temporal
   byE=1
   bzE=1
   divE-rho=1
+  rho=1
+  divE=1
 end::temporal

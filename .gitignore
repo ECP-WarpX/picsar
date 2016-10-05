@@ -55,4 +55,6 @@ modules.d
 .DS_Store
 Acceptance_testing/Fortran_tests/test_Langmuir_wave/fort.41
 Doxygen/*.tmp
+Acceptance_testing/Fortran_tests/test_*/conftest.pyc
+postproc_python_script/__pycache__/*.pyc
 
