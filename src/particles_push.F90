@@ -779,28 +779,28 @@ DO iz=1, ntilez ! LOOP ON TILES
                 IF (count .EQ. 0) CYCLE
                 !!! ---- Loop by blocks over particles in a tile (blocking)
                 !!! --- Push velocity with B half step
-				CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
-				curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, 	  &
-				curr_tile%part_bz, curr%charge,curr%mass,dt*0.5_num)
-				!! --- Push velocity with E half step
-				CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
-				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				          &
-				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
-				!! --- Sets gamma of particles
-				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-				curr_tile%part_uz, curr_tile%part_gaminv)
-				SELECT CASE (c_dim)
-				CASE (2) ! 2D CASE
-					!! --- Advance particle position of one time step
-					CALL pxr_pushxz(count,curr_tile%part_x,                        				  &
-					curr_tile%part_z, curr_tile%part_ux,   				          				  &
-					curr_tile%part_uz,curr_tile%part_gaminv,dt)
-				CASE DEFAULT ! 3D CASE
-					!! --- Advance particle position of one time step
-					CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,                     &
-					curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,   				      &
-					curr_tile%part_uz,curr_tile%part_gaminv,dt)
-				END SELECT
+        				CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
+        				curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by, 	  &
+        				curr_tile%part_bz, curr%charge,curr%mass,dt*0.5_num)
+        				!! --- Push velocity with E half step
+        				CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
+        				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				          &
+        				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
+        				!! --- Sets gamma of particles
+        				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
+        				curr_tile%part_uz, curr_tile%part_gaminv)
+        				SELECT CASE (c_dim)
+        				CASE (2) ! 2D CASE
+        					!! --- Advance particle position of one time step
+        					CALL pxr_pushxz(count,curr_tile%part_x,                        				  &
+        					curr_tile%part_z, curr_tile%part_ux,   				          				  &
+        					curr_tile%part_uz,curr_tile%part_gaminv,dt)
+        				CASE DEFAULT ! 3D CASE
+        					!! --- Advance particle position of one time step
+        					CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,                     &
+        					curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,   				      &
+        					curr_tile%part_uz,curr_tile%part_gaminv,dt)
+        				END SELECT
             END DO! END LOOP ON SPECIES
         END DO
     END DO
