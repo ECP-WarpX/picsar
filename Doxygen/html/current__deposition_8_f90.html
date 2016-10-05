@@ -141,8 +141,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a9cba9f74ee775de5a5f60eb97ff619a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile sequentially.  <a href="#a9cba9f74ee775de5a5f60eb97ff619a4">More...</a><br /></td></tr>
 <tr class="separator:a9cba9f74ee775de5a5f60eb97ff619a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4575c491c1cfe9d048c6cb1b6d5fbdb"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#ac4575c491c1cfe9d048c6cb1b6d5fbdb">pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq</a> (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)</td></tr>
+<tr class="memdesc:ac4575c491c1cfe9d048c6cb1b6d5fbdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit current in each tile Sequential version.  <a href="#ac4575c491c1cfe9d048c6cb1b6d5fbdb">More...</a><br /></td></tr>
 <tr class="separator:ac4575c491c1cfe9d048c6cb1b6d5fbdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7347c7791083dae1b946cdbdce60602f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a7347c7791083dae1b946cdbdce60602f">depose_jxjyjz_scalar_1_1_1</a> (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)</td></tr>
+<tr class="memdesc:a7347c7791083dae1b946cdbdce60602f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D scalar current deposition routine (rho*v) This version does not vectorize on SIMD architectures.  <a href="#a7347c7791083dae1b946cdbdce60602f">More...</a><br /></td></tr>
 <tr class="separator:a7347c7791083dae1b946cdbdce60602f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a084ed42e79187e34df1e5e49cb589e87"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="current__deposition_8_f90.html#a084ed42e79187e34df1e5e49cb589e87">depose_jxjyjz_vechvv2_1_1_1</a> (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)</td></tr>
 <tr class="memdesc:a084ed42e79187e34df1e5e49cb589e87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Order 1 3D vector current deposition routine (rho*v)  <a href="#a084ed42e79187e34df1e5e49cb589e87">More...</a><br /></td></tr>
@@ -1283,6 +1285,9 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Order 1 3D scalar current deposition routine (rho*v) This version does not vectorize on SIMD architectures. </p>
+<dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
 
 </div>
 </div>
@@ -3744,6 +3749,8 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Deposit current in each tile Sequential version. </p>
 
 </div>
 </div>

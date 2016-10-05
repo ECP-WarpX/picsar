@@ -785,9 +785,18 @@ SUBROUTINE mpi_minimal_init()
   END SUBROUTINE
 
 ! ________________________________________________________________________________________
-  SUBROUTINE time_statistics_per_iteration
+!> @brief
+!> Subroutine dedicated to the time statistics for one iteration
+! 
+!> This subroutine prints time statistics during the simulation every iterations if timestat_perit > 0.
+!>  
 !
-!  Subroutine dedicated to the time statistics for one iteration
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
+  SUBROUTINE time_statistics_per_iteration
 ! ________________________________________________________________________________________    
 
     USE time_stat

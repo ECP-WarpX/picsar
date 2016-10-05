@@ -18,9 +18,9 @@ subroutine \hyperlink{current__deposition_8_f90_a7c88c5f1acf180c78f31dfdeb4b8051
 subroutine \hyperlink{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a4}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+classical\+\_\+sub\+\_\+seq} (func\+\_\+order, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
 \begin{DoxyCompactList}\small\item\em Deposit current in each tile sequentially. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq} (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-\item 
+\begin{DoxyCompactList}\small\item\em Deposit current in each tile Sequential version. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-\item 
+\begin{DoxyCompactList}\small\item\em Order 1 3D scalar current deposition routine (rho$\ast$v) This version does not vectorize on S\+I\+MD architectures. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a084ed42e79187e34df1e5e49cb589e87}{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
 \begin{DoxyCompactList}\small\item\em Order 1 3D vector current deposition routine (rho$\ast$v) \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a640df01330ec2f2b5ffcb43938a71db5}{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1} (jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
@@ -273,6 +273,13 @@ Mathieu Lobet
 \item[{integer(idp)}]{nzguard}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}{}\label{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}
+
+
+Order 1 3D scalar current deposition routine (rho$\ast$v) This version does not vectorize on S\+I\+MD architectures. 
+
+\begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2}}
 \index{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_scalar_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2 (
@@ -885,6 +892,10 @@ Mathieu Lobet
 \item[{real(num), intent(in)}]{dtt}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}{}\label{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}
+
+
+Deposit current in each tile Sequential version. 
+
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp}}
 \index{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp@{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+sub\+\_\+openmp (

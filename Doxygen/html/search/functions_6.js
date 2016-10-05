@@ -10,7 +10,8 @@ var searchData=
   ['get_5floc_5ffield_5fenergy',['get_loc_field_energy',['../namespacediagnostics.html#a00b7e2217883d1cfe260ccc24e740663',1,'diagnostics']]],
   ['get_5floc_5ffield_5fenergy_5f2d',['get_loc_field_energy_2d',['../namespacediagnostics.html#a26be0942bfb3d70876815b6e121dec1c',1,'diagnostics']]],
   ['get_5floc_5fkinetic_5fenergy',['get_loc_kinetic_energy',['../namespacediagnostics.html#addf30cc7cc0a935993be10cbf8b017f5',1,'diagnostics']]],
-  ['get_5floc_5fnorm_5fdiverho',['get_loc_norm_diverho',['../namespacediagnostics.html#a1a35a5a833c5e6c91cf6bc2f3d371d6a',1,'diagnostics']]],
+  ['get_5floc_5fnorm_5f2',['get_loc_norm_2',['../namespacediagnostics.html#a64b59a6d54ed382f0cdfc360a5ccea39',1,'diagnostics']]],
+  ['get_5floc_5fnorm_5fdiverho',['get_loc_norm_diverho',['../namespacediagnostics.html#a0c81a0eb062f6137922f5a857c51e684',1,'diagnostics']]],
   ['get_5flocal_5fnumber_5fof_5fpart',['get_local_number_of_part',['../namespacetiling.html#af9f6fdf5c755688f10dc74ed3c363d85',1,'tiling']]],
   ['get_5fmax_5ftime_5fper_5fit',['get_max_time_per_it',['../namespaceload__balance.html#a80526c03cd9a3f83bc80462c7202ed45',1,'load_balance']]],
   ['get_5fmin_5ftime_5fper_5fit',['get_min_time_per_it',['../namespaceload__balance.html#a0103fd1c4bbf143a08380b8784fbeb44',1,'load_balance']]],
@@ -29,7 +30,7 @@ var searchData=
   ['gete3d_5fenergy_5fconserving_5fscalar_5f1_5f1_5f1',['gete3d_energy_conserving_scalar_1_1_1',['../field__gathering__3d__o1_8_f90.html#a13e24ff5639b3dcf1e9cd8e51a1caf53',1,'field_gathering_3d_o1.F90']]],
   ['gete3d_5fenergy_5fconserving_5fscalar_5f3_5f3_5f3',['gete3d_energy_conserving_scalar_3_3_3',['../field__gathering__3d__o3_8_f90.html#aafcef6faa8aa6d61b950249a1285c258',1,'field_gathering_3d_o3.F90']]],
   ['geteb2dxz_5fenergy_5fconserving',['geteb2dxz_energy_conserving',['../field__gathering__2d_8_f90.html#a6d4781dd6cacd0867443a1d9ff142ad7',1,'field_gathering_2d.F90']]],
-  ['geteb3d_5fenergy_5fconserving',['geteb3d_energy_conserving',['../field__gathering_8_f90.html#ae97b65ed28e18c6c648fbcd18c5e1339',1,'field_gathering.F90']]],
+  ['geteb3d_5fenergy_5fconserving',['geteb3d_energy_conserving',['../field__gathering_8_f90.html#a02f8f275e2b38a13c4de92719714b016',1,'field_gathering.F90']]],
   ['geteb3d_5fenergy_5fconserving_5fvec_5f1_5f1_5f1',['geteb3d_energy_conserving_vec_1_1_1',['../field__gathering__3d__o1_8_f90.html#a3788d4a011335c931d314bc69f969508',1,'field_gathering_3d_o1.F90']]],
   ['geteb3d_5fenergy_5fconserving_5fvec_5f2_5f2_5f2',['geteb3d_energy_conserving_vec_2_2_2',['../field__gathering__3d__o2_8_f90.html#a84aaeb40b8a194f218668fd7723de670',1,'field_gathering_3d_o2.F90']]],
   ['geteb3d_5fenergy_5fconserving_5fvec_5f3_5f3_5f3',['geteb3d_energy_conserving_vec_3_3_3',['../field__gathering__3d__o3_8_f90.html#a72706be607c4bf29818ef38111a720a2',1,'field_gathering_3d_o3.F90']]]

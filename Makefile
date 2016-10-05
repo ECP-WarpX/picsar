@@ -81,6 +81,12 @@ ifeq ($(SYS),cori1)
 		FARGS= -D VTUNE=1 -O3 -g -dynamic -debug inline-debug-info -qopenmp -xCORE-AVX2 -align array64byte
 		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xCORE-AVX2 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
 		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
+		LARCH= 
+	else ifeq ($(MODE),sde)
+		APPNAME=picsar_cori_sde
+		COMP=none
+		FARGS= -D SDE=1	-g -O3 -xCORE-AVX2  -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D SDE=1 -g -O3 -qopenmp -xCORE-AVX2 
 		LARCH= 	
 	else ifeq ($(MODE),novec)
 		COMP=none
@@ -101,6 +107,12 @@ else ifeq ($(SYS),edison)
 		COMP=none
 		FARGS= -g -O3 -xAVX -qopenmp -qopt-report:5 -debug inline-debug-info -traceback
 		LARCH=	
+	else ifeq ($(MODE),sde)
+		APPNAME=picsar_edison_sde
+		COMP=none
+		FARGS= -D SDE=1	-g -O3 -xAVX  -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D SDE=1 -g -O3 -qopenmp -xAVX 
+		LARCH= 
 	else ifeq ($(MODE),novec)
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
@@ -147,8 +159,8 @@ else ifeq ($(SYS),carl)
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_carl_sde
 		COMP=none
-		FARGS= -D SDE=1	-g -Bdynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
-		CARGS= -D SDE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 
+		FARGS= -D SDE=1	-g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D SDE=1 -g -O3 -qopenmp -xMIC-AVX512 
 		LARCH= 				
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_carl_advisor
@@ -332,7 +344,7 @@ clean: clean_test
 	rm -f *.mod
 	rm -f $(BINDIR)/$(APPNAME)
 	rm -rf RESULTS
-	rm -r $(MODDIR)
+	rm -rf $(MODDIR)
 	rm -f $(SRCDIR)/*.mod
 	rm -rf *.dSYM
 	rm -f Doxygen/*.tmp

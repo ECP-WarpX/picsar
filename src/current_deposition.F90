@@ -384,8 +384,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(depose_jxjyjz_scalar_1_1_1, &
       jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
     ELSE
-      CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_scalar_1_1_1, &
-      jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
+           jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	         nox,noy,noz,dx,dy,dz,dt)
     ENDIF
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/tiling
@@ -401,6 +402,10 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_scalar_1_1_1, &
       jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+    ELSE
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
+           jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
+	         nox,noy,noz,dx,dy,dz,dt)
     ENDIF
 
   ! _______________________________________________________
@@ -2044,27 +2049,27 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order,jxg,jy
 nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 ! ________________________________________________________________________________________
-USE particles
-USE constants
-USE tiling
-USE timing
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
-INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
-INTEGER(idp) :: ispecies, ix, iy, iz, count
-INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
-TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-TYPE(grid_tile), POINTER :: currg
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-LOGICAL(idp) :: isdeposited=.FALSE.
+	USE particles
+	USE constants
+	USE tiling
+	USE timing
+	IMPLICIT NONE
+	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
+	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+	REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+	REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
+	REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
+	INTEGER(idp) :: ispecies, ix, iy, iz, count
+	INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+	INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+	TYPE(particle_species), POINTER :: curr
+	TYPE(particle_tile), POINTER :: curr_tile
+	TYPE(grid_tile), POINTER :: currg
+	REAL(num) :: tdeb, tend
+	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+	LOGICAL(idp) :: isdeposited=.FALSE.
 
 INTERFACE
   SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
