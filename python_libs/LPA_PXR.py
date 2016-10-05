@@ -1,5 +1,5 @@
 """Class for 2D & 3D FFT-based electromagnetic solver """
-from warp_init_tools.plasma_initialization import * 
+from warp.init_tools.plasma_initialization import * 
 try:
     import picsarpy as pxrpy
     pxr = pxrpy.picsar
