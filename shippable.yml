@@ -32,5 +32,5 @@ build:
     # Run tests for python
     - cd Acceptance_testing/Python_tests/test_Langmuir_wave
     - cp -p ../../../example_scripts_python/test_Langmuir_wave_3d.py .
-    - export OMP_NUM_THREADS=2
-    - mpirun -np 4 python test_Langmuir_wave_3d.py
+    #- export OMP_NUM_THREADS=2
+    #- mpirun -np 4 python test_Langmuir_wave_3d.py
