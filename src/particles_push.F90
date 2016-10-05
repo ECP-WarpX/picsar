@@ -472,7 +472,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg, &
-!$OMP bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,zgrid) &
+!$OMP bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,zgrid, particle_pusher) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -514,30 +514,40 @@ DO iz=1, ntilez ! LOOP ON TILES
 					          curr_tile=>curr%array_of_tiles(ix,iy,iz)
 					          count=curr_tile%np_tile(1)
 					          IF (count .EQ. 0) CYCLE
-
-					          !! --- Push velocity with E half step
-					          CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
-					          curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					    &
-					          curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-					          !! --- Set gamma of particles
-					          CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
-					          curr_tile%part_uz, curr_tile%part_gaminv)
-					          !! --- Push velocity with B half step
-					          CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
-					          curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,           &
-                    curr_tile%part_by,                                                    &
-					          curr_tile%part_bz, curr%charge,curr%mass,dtt)
-                    !!! --- Push velocity with E half step
-                    CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
-                    curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,              &
-                    curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-                    !! --- Set gamma of particles
-					          CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
-					          curr_tile%part_uz, curr_tile%part_gaminv)
-                    !!!! --- push particle species positions a time step
-                    CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,             &
-                    curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,                &
-                    curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+                    SELECT CASE (particle_pusher)
+                    !! Vay pusher -- Full push
+                    CASE (1)
+                      CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
+                      curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
+                      curr_tile%part_ey, 					                                       &
+                      curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
+                      curr_tile%part_bz,curr%charge,curr%mass,dtt,0_idp)
+                    !! Boris pusher -- Full push
+                    CASE DEFAULT
+  					          !! --- Push velocity with E half step
+  					          CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
+  					          curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					    &
+  					          curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+  					          !! --- Set gamma of particles
+  					          CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
+  					          curr_tile%part_uz, curr_tile%part_gaminv)
+  					          !! --- Push velocity with B half step
+  					          CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
+  					          curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,           &
+                      curr_tile%part_by,                                                    &
+  					          curr_tile%part_bz, curr%charge,curr%mass,dtt)
+                      !!! --- Push velocity with E half step
+                      CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
+                      curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,              &
+                      curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+                      !! --- Set gamma of particles
+  					          CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
+  					          curr_tile%part_uz, curr_tile%part_gaminv)
+                      !!!! --- push particle species positions a time step
+                      CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,             &
+                      curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,                &
+                      curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+                    END SELECT
                 END DO! END LOOP ON SPECIES
             ENDIF
         END DO
