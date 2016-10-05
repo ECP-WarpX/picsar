@@ -631,7 +631,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
 !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy, &
-!$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgave) &
+!$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgave,particle_pusher) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -654,7 +654,7 @@ DO iz=1, ntilez ! LOOP ON TILES
     			isgathered=.FALSE.
     			DO ispecies=1, nspecies ! LOOP ON SPECIES
             curr=>species_parray(ispecies)
-            curFull pushr_tile=>curr%array_of_tiles(ix,iy,iz)
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
             count=curr_tile%np_tile(1)
             IF (count .GT. 0) isgathered=.TRUE.
           END DO
@@ -731,8 +731,8 @@ DO iz=1, ntilez ! LOOP ON TILES
       					CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                 	&
       					curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,  &
       					curr_tile%part_bz, curr%charge,curr%mass,dtt*0.5_num)
+              END SELECT
     				END DO! END LOOP ON SPECIES
-            END SELECT
 			    ENDIF
         END DO
     END DO
