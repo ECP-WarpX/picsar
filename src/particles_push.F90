@@ -197,7 +197,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 
                   SELECT CASE (particle_pusher)
                   !! Vay pusher -- Full push
-                  CASE (1)
+                  CASE (1_idp)
                     CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
                     curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
                     curr_tile%part_ey, 					                                       &
@@ -221,10 +221,10 @@ DO iz=1, ntilez ! LOOP ON TILES
                     CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
                     curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
                     curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+                    !! --- Set gamma of particles
+                    CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
+                    curr_tile%part_uz, curr_tile%part_gaminv)
                   END SELECT
-                  !! --- Set gamma of particles
-                  CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
-                  curr_tile%part_uz, curr_tile%part_gaminv)
                   !!!! --- push particle species positions a time step
                   CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,          &
                   curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,             &
@@ -466,7 +466,6 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 #endif
 
 #if defined(DEBUG)
-  WRITE(0,*) "Push_particles: start"
 #endif
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -516,7 +515,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 					          IF (count .EQ. 0) CYCLE
                     SELECT CASE (particle_pusher)
                     !! Vay pusher -- Full push
-                    CASE (1)
+                  CASE (1_idp)
                       CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
                       curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
                       curr_tile%part_ey, 					                                       &
@@ -540,10 +539,10 @@ DO iz=1, ntilez ! LOOP ON TILES
                       CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
                       curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,              &
                       curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+                      !! --- Set gamma of particles
+                      CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
+                      curr_tile%part_uz, curr_tile%part_gaminv)
                     END SELECT
-                    !! --- Set gamma of particles
-                    CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
-                    curr_tile%part_uz, curr_tile%part_gaminv)
                     !!!! --- push particle species positions a time step
                     CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,             &
                     curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,                &
@@ -712,12 +711,12 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 						END SELECT
 						SELECT CASE (particle_pusher)
 						!! Vay pusher -- half push part 1
-						CASE (1)
+          CASE (1_idp)
 							CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
 							curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
 							curr_tile%part_ey, 					                                       &
 							curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-							curr_tile%part_bz,curr%charge,curr%mass,dtt,2_idp)
+							curr_tile%part_bz,curr%charge,curr%mass,dtt,1_idp)
 							!! Boris pusher -- half push part 1
 						CASE DEFAULT
 							!! --- Push velocity with E half step
@@ -779,12 +778,12 @@ DO iz=1, ntilez ! LOOP ON TILES
                 IF (count .EQ. 0) CYCLE
                 SELECT CASE (particle_pusher)
                 !! Vay pusher -- half push part 2
-                CASE (1)
+              CASE (1_idp)
                   CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
                   curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
                   curr_tile%part_ey, 					                                       &
                   curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-                  curr_tile%part_bz,curr%charge,curr%mass,dt,1_idp)
+                  curr_tile%part_bz,curr%charge,curr%mass,dt,2_idp)
                 CASE DEFAULT
                   !! Boris pusher -- half push part 2
                   !!! --- Push velocity with B half step
@@ -796,9 +795,10 @@ DO iz=1, ntilez ! LOOP ON TILES
           				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				          &
           				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
           				!! --- Sets gamma of particles
+                  CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
+                  curr_tile%part_uz, curr_tile%part_gaminv)
                 END SELECT
-                CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-                curr_tile%part_uz, curr_tile%part_gaminv)
+
         				SELECT CASE (c_dim)
         				CASE (2) ! 2D CASE
         					!! --- Advance particle position of one time step
@@ -1037,7 +1037,6 @@ REAL(num)    :: taux,tauy,tauz,tausq,ust,sigma
 
 invclight   = 1./clight
 invclightsq = 1./(clight*clight)
-
 IF (which==0) THEN
 	!     --- full push
     const = q*dt/m
@@ -1208,7 +1207,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   ! ___ Parameter declaration ____________________________________
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
+  INTEGER(idp)                         :: lvect, part_push
   REAL(num)                            :: q,m
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
   LOGICAL(isp)                         :: l_lower_order_in_v
