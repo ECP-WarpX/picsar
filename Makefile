@@ -448,7 +448,8 @@ build_current_deposition_3d_test: $(SRCDIR)/modules.o \
 	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
 
-build_tile_particle_push_3d_test: $(SRCDIR)/modules.o \
+build_tile_particle_push_3d_test: createdir \
+	$(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
 	$(SRCDIR)/particles_push_2d.o \
 	$(SRCDIR)/particles_push.o \

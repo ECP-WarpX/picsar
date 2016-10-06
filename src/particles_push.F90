@@ -824,17 +824,33 @@ END SUBROUTINE pxrpush_particles_part2
 
 
 
-!===============================================================================
-!  Advance particle positions
+! ________________________________________________________________________________________
+!> @brief
+!> Advance particle positions
+!
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+!> Revision 06.10.2016
+!
+!> @param[in] np number of super-particles
+!> @param[in] ux,uy,uz normalized momentum in each direction
+!> @param[in] uxp,uyp,uzp normalized momentum in each direction
+!> @param[in] gaminv particle Lorentz factors
+!> @param[in] dt time step
 SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
-!===============================================================================
-  USE constants
-  USE omp_lib
-  IMPLICIT NONE
-  INTEGER(idp)   :: np
-  REAL(num) :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
-  REAL(num) :: dt
-  INTEGER(idp)  :: ip
+! ________________________________________________________________________________________
+	USE constants
+	USE omp_lib
+	
+	IMPLICIT NONE
+	INTEGER(idp)   :: np
+	REAL(num)      :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
+	REAL(num)      :: dt
+	INTEGER(idp)   :: ip
 
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -854,37 +870,55 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
 #elif defined __INTEL_COMPILER
 		!DIR$ SIMD
 #endif
-  DO ip=1,np
-      xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-      yp(ip) = yp(ip) + uyp(ip)*gaminv(ip)*dt
-      zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-
-  ENDDO
+	DO ip=1,np
+		xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
+		yp(ip) = yp(ip) + uyp(ip)*gaminv(ip)*dt
+		zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
+	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
 #endif
 #endif
 
-  RETURN
+	RETURN
 END SUBROUTINE pxr_pushxyz
 
 
-!===============================================================================
-!  Push the particle velocity with E field
+! ________________________________________________________________________________________
+!> @brief
+!> Push the particle velocity with E field
+!
+!> @details
+!>fast b-field rotation algorithm
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+!> Revision 06.10.2016
+!
+!> @param[in] np number of super-particles
+!> @param[in] uxp,uyp,uzp normalized momentum in each direction
+!> @param[in] gaminv particle Lorentz factors
+!> @param[in] ex,ey,ez particle magnetic fields in each direction
+!> @param[in] q charge
+!> @param[in] m masse
+!> @param[in] dt time step
 SUBROUTINE pxr_epush_v(np,uxp,uyp,uzp,ex,ey,ez,q,m,dt)
-!===============================================================================
+! ________________________________________________________________________________________
 
-USE constants
-IMPLICIT NONE
-INTEGER(idp) :: np
-REAL(num)    :: uxp(np),uyp(np),uzp(np)
-REAL(num)    :: ex(np),ey(np),ez(np)
-REAL(num)    :: q,m,dt
-INTEGER(idp) :: ip
-REAL(num)    :: const
+	USE constants
+	IMPLICIT NONE
+	INTEGER(idp) :: np
+	REAL(num)    :: uxp(np),uyp(np),uzp(np)
+	REAL(num)    :: ex(np),ey(np),ez(np)
+	REAL(num)    :: q,m,dt
+	INTEGER(idp) :: ip
+	REAL(num)    :: const
 
-const = q*dt/m
+	const = q*dt/m
 
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
@@ -898,39 +932,57 @@ const = q*dt/m
 	!$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
-		!IBM* SIMD_LEVEL
+	!IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-		!DIR$ SIMD
+	!DIR$ SIMD
 #endif
-DO ip=1,np
-    uxp(ip) = uxp(ip) + ex(ip)*const
-    uyp(ip) = uyp(ip) + ey(ip)*const
-    uzp(ip) = uzp(ip) + ez(ip)*const
-ENDDO
+	DO ip=1,np
+		uxp(ip) = uxp(ip) + ex(ip)*const
+		uyp(ip) = uyp(ip) + ey(ip)*const
+		uzp(ip) = uzp(ip) + ez(ip)*const
+	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
 #endif
 #endif
-RETURN
+	RETURN
 END SUBROUTINE pxr_epush_v
 
-!===============================================================================
-!  Push the particle velocity with B field (Boris algorithm)
-! --- fast b-field rotation algorithm
+! ________________________________________________________________________________________
+!> @brief
+!> Push the particle velocity with B field (Boris algorithm)
+!
+!> @details
+!>fast b-field rotation algorithm
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+!> Revision 06.10.2016
+!
+!> @param[in] np number of super-particles
+!> @param[in] uxp,uyp,uzp normalized momentum in each direction
+!> @gparam[in] gaminv particle Lorentz factors
+!> @param[in] bx,by,bz particle magnetic fields in each direction
+!> @param[in] q charge
+!> @param[in] m masse
+!> @param[in] dt time step
 SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,gaminv,bx,by,bz,q,m,dt)
-!===============================================================================
+! ________________________________________________________________________________________
 
-USE constants
-IMPLICIT NONE
-INTEGER(idp)   :: np
-REAL(num) :: uxp(np), uyp(np), uzp(np), gaminv(np)
-REAL(num) :: bx(np), by(np), bz(np)
-REAL(num) :: q,m,dt
-INTEGER(idp)   :: ip
-REAL(num) :: const,sx,sy,sz,tx,ty,tz,tsqi,uxppr,uyppr,uzppr
+	USE constants
+	IMPLICIT NONE
+	INTEGER(idp)   :: np
+	REAL(num)      :: uxp(np), uyp(np), uzp(np), gaminv(np)
+	REAL(num)      :: bx(np), by(np), bz(np)
+	REAL(num)      :: q,m,dt
+	INTEGER(idp)   :: ip
+	REAL(num)      :: const,sx,sy,sz,tx,ty,tz,tsqi,uxppr,uyppr,uzppr
 
-const = q*dt*0.5_num/m
+	const = q*dt*0.5_num/m
 
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
@@ -950,45 +1002,60 @@ const = q*dt*0.5_num/m
 #elif defined __INTEL_COMPILER
 		!DIR$ SIMD
 #endif
-DO ip=1,np
-    tx = gaminv(ip)*bx(ip)*const
-    ty = gaminv(ip)*by(ip)*const
-    tz = gaminv(ip)*bz(ip)*const
-    tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-    sx = tx*tsqi
-    sy = ty*tsqi
-    sz = tz*tsqi
-    uxppr = uxp(ip) + uyp(ip)*tz - uzp(ip)*ty
-    uyppr = uyp(ip) + uzp(ip)*tx - uxp(ip)*tz
-    uzppr = uzp(ip) + uxp(ip)*ty - uyp(ip)*tx
-    uxp(ip) = uxp(ip) + uyppr*sz - uzppr*sy
-    uyp(ip) = uyp(ip) + uzppr*sx - uxppr*sz
-    uzp(ip) = uzp(ip) + uxppr*sy - uyppr*sx
-ENDDO
+	DO ip=1,np
+		tx = gaminv(ip)*bx(ip)*const
+		ty = gaminv(ip)*by(ip)*const
+		tz = gaminv(ip)*bz(ip)*const
+		tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
+		sx = tx*tsqi
+		sy = ty*tsqi
+		sz = tz*tsqi
+		uxppr = uxp(ip) + uyp(ip)*tz - uzp(ip)*ty
+		uyppr = uyp(ip) + uzp(ip)*tx - uxp(ip)*tz
+		uzppr = uzp(ip) + uxp(ip)*ty - uyp(ip)*tx
+		uxp(ip) = uxp(ip) + uyppr*sz - uzppr*sy
+		uyp(ip) = uyp(ip) + uzppr*sx - uxppr*sz
+		uzp(ip) = uzp(ip) + uxppr*sy - uyppr*sx
+	ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
 #endif
 #endif
 
-RETURN
+	RETURN
 
 END SUBROUTINE pxr_bpush_v
 
 
-!===============================================================================
-!  Push the particle velocity with B field (Boris algorithm)
-! --- fast b-field rotation algorithm
+! ________________________________________________________________________________________
+!> @brief
+!>  Push the particle velocity with B field (Boris algorithm)
+!
+!> @details
+!> fast b-field rotation algorithm
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+!> Revision 06.10.2016
+!
+!> @param[in] np number of super-particles
+!> @param[in] uxp,uyp,uzp normalized momentum in each direction
+!> @param[in] gaminv particle Lorentz factors
+!
 SUBROUTINE pxr_set_gamma(np,uxp,uyp,uzp,gaminv)
-!===============================================================================
+! ________________________________________________________________________________________
 
-USE constants
-IMPLICIT NONE
-INTEGER(idp)   :: ip, np
-REAL(num) :: uxp(np), uyp(np), uzp(np), gaminv(np)
-REAL(num) :: clghtisq, usq
+	USE constants
+	IMPLICIT NONE
+	INTEGER(idp)   :: ip, np
+	REAL(num) :: uxp(np), uyp(np), uzp(np), gaminv(np)
+	REAL(num) :: clghtisq, usq
 
-clghtisq = 1.0_num/clight**2
+	clghtisq = 1.0_num/clight**2
 
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
@@ -1006,10 +1073,12 @@ clghtisq = 1.0_num/clight**2
 #elif defined __INTEL_COMPILER
 		!DIR$ SIMD
 #endif
-DO ip=1,np
-    usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
-END DO
+
+	DO ip=1,np
+		usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
+		gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
+	END DO
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
@@ -1201,51 +1270,58 @@ END SUBROUTINE pxr_ebcancelpush3d
 
 
 ! ________________________________________________________________________________________
+!> @brief
 !> This function combined the field gathering and the particle pusher
 !> in 3D for CIC (order 1) shape factor.
 !> The field gathering and the particle pusher are done in the same particle loop.
-!> @brief
 !
+!> @details
 !> This function is vectorized.
-!> @detail
+
+!> @author
+!> Mathieu Lobet
 !
+!> @date
+!> Creation 2016
+!> Revision 10.06.2015
+
 ! Input parameters:
-! - np: number of particles
-! - xp,yp,zp: particle position
-! - uxp,uyp,uzp: particle momentum
-! - gaminv: inverse of the particle Lorentz factor
-! - ex,ey,ez: particle electric field
-! - bx,by,bz: particle magnetic field
-! - xmin,ymin,zmin: tile minimum grid position
-! - dx,dy,dz: space step
-! - dtt: time step
-! - nx,ny,nz: number of grid points in each direction
-! - nxguard, nyguard, nzguard: number of guard cells in each direction
-! - exg,eyg,ezg: electric field grid
-! - bxg,byg,bzg: magnetic field grid
-! - lvect: vector size for cache blocking
-! - l_lower_order_in_v:
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[in] uxp,uyp,uzp particle momentum
+!> @param[in] gaminv inverse of the particle Lorentz factor
+!> @param[in] ex,ey,ez particle electric field
+!> @param[in] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dtt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
 SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
                                       ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
 ! ________________________________________________________________________________________
 
-  USE omp_lib
-  USE constants
-  USE params
+	USE omp_lib
+	USE constants
+	USE params
 
-  ! ___ Parameter declaration ____________________________________
-  IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(isp)                         :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+	! ___ Parameter declaration ____________________________________
+	IMPLICIT NONE
+	INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+	INTEGER(idp)                         :: lvect
+	REAL(num)                            :: q,m
+	REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
+	LOGICAL(isp)                         :: l_lower_order_in_v
+	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
+	REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
 
-  INTEGER(isp), DIMENSION(lvect)       :: j, k, l
+	INTEGER(isp), DIMENSION(lvect)       :: j, k, l
 #if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j,k,l
 #endif
@@ -1253,42 +1329,45 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 #if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j0,k0,l0
 #endif
-  INTEGER(isp)                         :: ip
-  INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
-  REAL(num)                            :: dxi, dyi, dzi
-  REAL(num)                            :: x,y,z
-  REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
-  REAL(num)                            :: uxppr,uyppr,uzppr
-  REAL(num), DIMENSION(lvect,0:1)      :: sx,sy,sz
-  REAL(num), DIMENSION(lvect,0:1)      :: sx0,sy0,sz0
+	INTEGER(isp)                         :: ip
+	INTEGER(isp)                         :: nn,n
+	INTEGER(isp)                         :: jj, kk, ll
+	INTEGER(idp)                         :: blocksize
+	REAL(num)                            :: dxi, dyi, dzi
+	REAL(num)                            :: x,y,z
+	REAL(num)                            :: xint, yint, zint
+	REAL(num)                            :: clghtisq,const1,const2,usq
+	REAL(num)                            :: tx,ty,tz,tsqi
+	REAL(num)                            :: wx,wy,wz
+	REAL(num)                            :: uxppr,uyppr,uzppr
+	REAL(num), DIMENSION(lvect,0:1)      :: sx,sy,sz
+	REAL(num), DIMENSION(lvect,0:1)      :: sx0,sy0,sz0
 #if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
-  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
-  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+	REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+	REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
 
-  ! ___ Parameter initialization ____________________________________
-  dxi = 1.0_num/dx
-  dyi = 1.0_num/dy
-  dzi = 1.0_num/dz
+	! ___ Parameter initialization ____________________________________
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
 
-  const1 = 0.5_num*q*dtt/m
-  clghtisq = 1.0_num/clight**2
+	const1 = 0.5_num*q*dtt/m
+	clghtisq = 1.0_num/clight**2
 
-  sx=0.0_num
-  sy=0.0_num
-  sz=0.0_num
-  sx0=0.0_num
-  sy0=0.0_num
-  sz0=0.0_num
+	sx=0.0_num
+	sy=0.0_num
+	sz=0.0_num
+	sx0=0.0_num
+	sy0=0.0_num
+	sz0=0.0_num
 
-  ! ______________________________________________________________________________________
-  ! Loop on block of particles of size lvect
-  DO ip=1,np,lvect
+	! ______________________________________________________________________________________
+	! Loop on block of particles of size lvect
+	DO ip=1,np,lvect
+
+		blocksize = MIN(lvect,np-ip+1)
 
     ! ____________________________________________________________________________________
     ! Field gathering
@@ -1314,8 +1393,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1
+		DO n=1,blocksize
+			nn=ip+n-1
 
 			x = (xp(nn)-xmin)*dxi
 			y = (yp(nn)-ymin)*dyi
@@ -1378,8 +1457,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1
+		DO n=1,blocksize
+			nn=ip+n-1
 
 			! Compute Ex on particle
 			ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0(n),k(n),l(n))
@@ -1399,7 +1478,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 			ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,0)*ezg(j(n),k(n)+1,l0(n))
 			ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,0)*ezg(j(n)+1,k(n)+1,l0(n))
 
-    END DO
+		END DO
 #if  defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
@@ -1427,22 +1506,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1
+		DO n=1,blocksize
+			nn=ip+n-1
 
-      ! Compute Bx on particle
-      bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j(n),k0(n),l0(n))
-      bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j(n)+1,k0(n),l0(n))
+			! Compute Bx on particle
+			bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j(n),k0(n),l0(n))
+			bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j(n)+1,k0(n),l0(n))
 
-      ! Compute By on particle
-      by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0(n),k(n),l0(n))
-      by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0(n),k(n)+1,l0(n))
+			! Compute By on particle
+			by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0(n),k(n),l0(n))
+			by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0(n),k(n)+1,l0(n))
 
-      ! Compute Bz on particle
-      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0(n),k0(n),l(n))
-      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1)
+			! Compute Bz on particle
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0(n),k0(n),l(n))
+			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1)
 
-    END DO
+		END DO
 #if  defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
@@ -1452,144 +1531,190 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     ! ____________________________________________________________________________________
     ! Particle pusher
 
+		! ___ Push with E ___
+		CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1), &
+		                           uzp(ip:ip+blocksize-1), &
+		                           ex(ip:ip+blocksize-1),  &
+		                           ey(ip:ip+blocksize-1),  &
+		                           ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+
+		! ___ compute Gamma ___
+		CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1),   &
+		                           uzp(ip:ip+blocksize-1),   &
+		                           gaminv(ip:ip+blocksize-1))    
+
+		! ___ Push with B ___
+		CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
+		                           uyp(ip:ip+blocksize-1),   &
+		                           uzp(ip:ip+blocksize-1),   &
+		                           gaminv(ip:ip+blocksize-1),&
+		                           bx(ip:ip+blocksize-1),    &
+		                           by(ip:ip+blocksize-1),    &
+		                           bz(ip:ip+blocksize-1),q,m,dt)
+
+		! ___ Push with E ___
+		CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1), &
+		                           uzp(ip:ip+blocksize-1), &
+		                           ex(ip:ip+blocksize-1),  &
+		                           ey(ip:ip+blocksize-1),  &
+		                           ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+
+		! ___ compute Gamma ___
+		CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1),   &
+		                           uzp(ip:ip+blocksize-1),   &
+		                           gaminv(ip:ip+blocksize-1))    
+		 
+		! ___ Update position ___
+		CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
+		                           yp(ip:ip+blocksize-1),  &
+		                           zp(ip:ip+blocksize-1),  &
+		                           uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1),  &
+		                           uzp(ip:ip+blocksize-1),  &
+		                           gaminv(ip:ip+blocksize-1),dt)
+
     ! ___ Push with E + gamma ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      uxp(nn) = uxp(nn) + ex(nn)*const1
-      uyp(nn) = uyp(nn) + ey(nn)*const1
-      uzp(nn) = uzp(nn) + ez(nn)*const1
-
-      usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-      gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+!       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+!       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+!       !DIR$ ASSUME_ALIGNED gaminv:64
+!       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+!       !DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+!       !IBM* ALIGN(64,xp,yp,zp)
+!       !IBM* ALIGN(64,uxp,uyp,uzp)
+!       !IBM* ALIGN(64,ex,ey,ez)
+!       !IBM* ALIGN(64,bx,by,bz)
+!       !IBM* ALIGN(64,gaminv)
+!       !IBM* SIMD_LEVEL
+! #endif
+!     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+!       uxp(nn) = uxp(nn) + ex(nn)*const1
+!       uyp(nn) = uyp(nn) + ey(nn)*const1
+!       uzp(nn) = uzp(nn) + ez(nn)*const1
+! 
+!       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
+!       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
+! 
+!     END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
     ! ___ Push with B ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      const2 = gaminv(nn)*const1
-      tx = bx(nn)*const2
-      ty = by(nn)*const2
-      tz = bz(nn)*const2
-      tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-      wx = tx*tsqi
-      wy = ty*tsqi
-      wz = tz*tsqi
-      uxppr = uxp(nn) + uyp(nn)*tz - uzp(nn)*ty
-      uyppr = uyp(nn) + uzp(nn)*tx - uxp(nn)*tz
-      uzppr = uzp(nn) + uxp(nn)*ty - uyp(nn)*tx
-      uxp(nn) = uxp(nn) + uyppr*wz - uzppr*wy
-      uyp(nn) = uyp(nn) + uzppr*wx - uxppr*wz
-      uzp(nn) = uzp(nn) + uxppr*wy - uyppr*wx
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+!       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+!       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+!       !DIR$ ASSUME_ALIGNED gaminv:64
+!       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+!       !DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+!       !IBM* ALIGN(64,uxp,uyp,uzp)
+!       !IBM* ALIGN(64,bx,by,bz)
+!       !IBM* ALIGN(64,gaminv)
+!       !IBM* SIMD_LEVEL
+! #endif
+!     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+!       const2 = gaminv(nn)*const1
+!       tx = bx(nn)*const2
+!       ty = by(nn)*const2
+!       tz = bz(nn)*const2
+!       tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
+!       wx = tx*tsqi
+!       wy = ty*tsqi
+!       wz = tz*tsqi
+!       uxppr = uxp(nn) + uyp(nn)*tz - uzp(nn)*ty
+!       uyppr = uyp(nn) + uzp(nn)*tx - uxp(nn)*tz
+!       uzppr = uzp(nn) + uxp(nn)*ty - uyp(nn)*tx
+!       uxp(nn) = uxp(nn) + uyppr*wz - uzppr*wy
+!       uyp(nn) = uyp(nn) + uzppr*wx - uxppr*wz
+!       uzp(nn) = uzp(nn) + uxppr*wy - uyppr*wx
+!     END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
     ! ___ Push with E + gamma ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      uxp(nn) = uxp(nn) + ex(nn)*const1
-      uyp(nn) = uyp(nn) + ey(nn)*const1
-      uzp(nn) = uzp(nn) + ez(nn)*const1
-
-      usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-      gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+!       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+!       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+!       !DIR$ ASSUME_ALIGNED gaminv:64
+!       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+!       !DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+!       !IBM* ALIGN(64,uxp,uyp,uzp)
+!       !IBM* ALIGN(64,ex,ey,ez)
+!       !IBM* ALIGN(64,bx,by,bz)
+!       !IBM* ALIGN(64,gaminv)
+!       !IBM* SIMD_LEVEL
+! #endif
+!     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+!       uxp(nn) = uxp(nn) + ex(nn)*const1
+!       uyp(nn) = uyp(nn) + ey(nn)*const1
+!       uzp(nn) = uzp(nn) + ez(nn)*const1
+! 
+!       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
+!       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
+!     END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
     ! ___ Update position ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      const2 = gaminv(nn)*dtt
-      xp(nn) = xp(nn) + uxp(nn)*const2
-      yp(nn) = yp(nn) + uyp(nn)*const2
-      zp(nn) = zp(nn) + uzp(nn)*const2
-
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+! 			!DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+! 			!DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+! 			!DIR$ ASSUME_ALIGNED gaminv:64
+! 			!DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+! 			!DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+! 			!IBM* ALIGN(64,xp,yp,zp)
+! 			!IBM* ALIGN(64,uxp,uyp,uzp)
+! 			!IBM* ALIGN(64,gaminv)
+! 			!IBM* SIMD_LEVEL
+! #endif
+! 		DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+! 			const2 = gaminv(nn)*dtt
+! 			xp(nn) = xp(nn) + uxp(nn)*const2
+! 			yp(nn) = yp(nn) + uyp(nn)*const2
+! 			zp(nn) = zp(nn) + uzp(nn)*const2
+! 
+! 		END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
   ! End loop on particles
   ENDDO
@@ -1600,91 +1725,104 @@ END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
 
 ! ________________________________________________________________________________________
 !
-! This function combined the field gathering and the particle pusher
-! in 3D for order 2 shape factor.
-! The field gathering and the particle pusher are done in the same particle loop.
-! This function is vectorized.
+!> @brief
+!> This function combined the field gathering and the particle pusher
+!> in 3D for order 2 shape factor.
 !
+!> @details
+!> The field gathering and the particle pusher are done in the same particle loop.
+!> This function is vectorized.
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!> Revision 10.06.2015
+
 ! Input parameters:
-! - np: number of particles
-! - xp,yp,zp: particle position
-! - uxp,uyp,uzp: particle momentum
-! - gaminv: inverse of the particle Lorentz factor
-! - ex,ey,ez: particle electric field
-! - bx,by,bz: particle magnetic field
-! - xmin,ymin,zmin: tile minimum grid position
-! - dx,dy,dz: space step
-! - dtt: time step
-! - nx,ny,nz: number of grid points in each direction
-! - nxguard, nyguard, nzguard: number of guard cells in each direction
-! - exg,eyg,ezg: electric field grid
-! - bxg,byg,bzg: magnetic field grid
-! - lvect: vector size for cache blocking
-! - l_lower_order_in_v:
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[in] uxp,uyp,uzp particle momentum
+!> @param[in] gaminv inverse of the particle Lorentz factor
+!> @param[in] ex,ey,ez particle electric field
+!> @param[in] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dtt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
 SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
                                       ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
 ! ________________________________________________________________________________________
 
-  USE omp_lib
-  USE constants
-  USE params
+	USE omp_lib
+	USE constants
+	USE params
 
-  IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(isp)                         :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
-  INTEGER(isp)                         :: ip
-  INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
-  INTEGER(isp), DIMENSION(lvect)       :: j, k, l
+	IMPLICIT NONE
+	INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+	INTEGER(idp)                         :: lvect
+	REAL(num)                            :: q,m
+	REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
+	LOGICAL(isp)                         :: l_lower_order_in_v
+	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
+	REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+	INTEGER(isp)                         :: ip
+	INTEGER(isp)                         :: nn,n
+	INTEGER(isp)                         :: jj, kk, ll
+	INTEGER(idp)                         :: blocksize
+	INTEGER(isp), DIMENSION(lvect)       :: j, k, l
 #if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j,k,l
 #endif
-  INTEGER(isp), DIMENSION(lvect)       :: j0, k0, l0
+	INTEGER(isp), DIMENSION(lvect)       :: j0, k0, l0
 #if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j0,k0,l0
 #endif
-  REAL(num)                            :: dxi, dyi, dzi, x, y, z
-  REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
-  REAL(num)                            :: uxppr,uyppr,uzppr
-  REAL(num), DIMENSION(lvect,-1:1)     :: sx,sy,sz
-  REAL(num), DIMENSION(lvect,-1:1)     :: sx0,sy0,sz0
+	REAL(num)                            :: dxi, dyi, dzi, x, y, z
+	REAL(num)                            :: xint, yint, zint
+	REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+	REAL(num)                            :: clghtisq,const1,const2,usq
+	REAL(num)                            :: tx,ty,tz,tsqi
+	REAL(num)                            :: wx,wy,wz
+	REAL(num)                            :: uxppr,uyppr,uzppr
+	REAL(num), DIMENSION(lvect,-1:1)     :: sx,sy,sz
+	REAL(num), DIMENSION(lvect,-1:1)     :: sx0,sy0,sz0
 #if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
-  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
-  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+	REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+	REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
 
-  dxi = 1.0_num/dx
-  dyi = 1.0_num/dy
-  dzi = 1.0_num/dz
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
 
-  const1 = 0.5_num*q*dtt/m
+	const1 = 0.5_num*q*dtt/m
 
-  clghtisq = 1.0_num/clight**2
+	clghtisq = 1.0_num/clight**2
 
-  sx=0.0_num
-  sy=0.0_num
-  sz=0.0_num
-  sx0=0.0_num
-  sy0=0.0_num
-  sz0=0.0_num
+	sx=0.0_num
+	sy=0.0_num
+	sz=0.0_num
+	sx0=0.0_num
+	sy0=0.0_num
+	sz0=0.0_num
 
-  ! ___ Loop on partciles _______________________
-  DO ip=1,np,lvect
+	! ___ Loop on partciles _______________________
+	DO ip=1,np,lvect
 
-    ! ____________________________________________________________________________________
-    ! Field gathering
+		blocksize = MIN(lvect,np-ip+1)
+
+		! ____________________________________________________________________________________
+		! Field gathering
 
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -1707,12 +1845,12 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1
+		DO n=1,blocksize
+			nn=ip+n-1
 
-      x = (xp(nn)-xmin)*dxi
-      y = (yp(nn)-ymin)*dyi
-      z = (zp(nn)-zmin)*dzi
+			x = (xp(nn)-xmin)*dxi
+			y = (yp(nn)-ymin)*dyi
+			z = (zp(nn)-zmin)*dzi
 
 			! Compute index of particle
 			j(n)=nint(x)
@@ -1722,9 +1860,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 			l(n)=nint(z)
 			l0(n)=floor(z-0.5_num)
 
-      xint=x-j(n)
-      yint=y-k(n)
-      zint=z-l(n)
+			xint=x-j(n)
+			yint=y-k(n)
+			zint=z-l(n)
 
 			! Compute shape factors
 			xintsq = xint*xint
@@ -1784,7 +1922,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
+    DO n=1,blocksize
       nn=ip+n-1
 
 			! Compute Ex on particle
@@ -1834,7 +1972,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
+    DO n=1,blocksize
       nn=ip+n-1
 
 			! Compute Ey on particle
@@ -1884,7 +2022,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
+    DO n=1,blocksize
       nn=ip+n-1
 			! Compute Ez on particle
 			ez(nn) = ez(nn) + sx(n,-1)*sy(n,-1)*sz0(n,0)*ezg(j(n)-1,k(n)-1,l0(n))
@@ -1934,7 +2072,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
+    DO n=1,blocksize
       nn=ip+n-1
 
 			! Compute Bx on particle
@@ -1979,8 +2117,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1
+		DO n=1,blocksize
+			nn=ip+n-1
 
 			! Compute By on particle
 			by(nn) = by(nn) + sx0(n,0)*sy(n,-1)*sz0(n,0)*byg(j0(n),k(n)-1,l0(n))
@@ -1995,7 +2133,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 			by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,1)*byg(j0(n)+1,k(n),l0(n)+1)
 			by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,1)*byg(j0(n),k(n)+1,l0(n)+1)
 			by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,1)*byg(j0(n)+1,k(n)+1,l0(n)+1)
-	ENDDO
+		ENDDO
 #if  defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
@@ -2023,8 +2161,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
-    DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1
+		DO n=1,blocksize
+			nn=ip+n-1
 
 			! Compute Bz on particle
 			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,-1)*bzg(j0(n),k0(n),l(n)-1)
@@ -2040,7 +2178,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 			bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,1)*bzg(j0(n),k0(n)+1,l(n)+1)
 			bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,1)*bzg(j0(n)+1,k0(n)+1,l(n)+1)
 
-    END DO
+		END DO
 #if  defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
@@ -2050,145 +2188,191 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     ! ____________________________________________________________________________________
     ! Particle pusher
 
+		! ___ Push with E ___
+		CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1), &
+		                           uzp(ip:ip+blocksize-1), &
+		                           ex(ip:ip+blocksize-1),  &
+		                           ey(ip:ip+blocksize-1),  &
+		                           ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+
+		! ___ compute Gamma ___
+		CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1),   &
+		                           uzp(ip:ip+blocksize-1),   &
+		                           gaminv(ip:ip+blocksize-1))    
+
+		! ___ Push with B ___
+		CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
+		                           uyp(ip:ip+blocksize-1),   &
+		                           uzp(ip:ip+blocksize-1),   &
+		                           gaminv(ip:ip+blocksize-1),&
+		                           bx(ip:ip+blocksize-1),    &
+		                           by(ip:ip+blocksize-1),    &
+		                           bz(ip:ip+blocksize-1),q,m,dt)
+
+		! ___ Push with E ___
+		CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1), &
+		                           uzp(ip:ip+blocksize-1), &
+		                           ex(ip:ip+blocksize-1),  &
+		                           ey(ip:ip+blocksize-1),  &
+		                           ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+
+		! ___ compute Gamma ___
+		CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1),   &
+		                           uzp(ip:ip+blocksize-1),   &
+		                           gaminv(ip:ip+blocksize-1))    
+		 
+		! ___ Update position ___
+		CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
+		                           yp(ip:ip+blocksize-1),  &
+		                           zp(ip:ip+blocksize-1),  &
+		                           uxp(ip:ip+blocksize-1), &
+		                           uyp(ip:ip+blocksize-1),  &
+		                           uzp(ip:ip+blocksize-1),  &
+		                           gaminv(ip:ip+blocksize-1),dt)
+
     ! ___ Push with E + gamma ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      uxp(nn) = uxp(nn) + ex(nn)*const1
-      uyp(nn) = uyp(nn) + ey(nn)*const1
-      uzp(nn) = uzp(nn) + ez(nn)*const1
-
-      usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-      gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+!       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+!       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+!       !DIR$ ASSUME_ALIGNED gaminv:64
+!       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+!       !DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+!       !IBM* ALIGN(64,xp,yp,zp)
+!       !IBM* ALIGN(64,uxp,uyp,uzp)
+!       !IBM* ALIGN(64,ex,ey,ez)
+!       !IBM* ALIGN(64,bx,by,bz)
+!       !IBM* ALIGN(64,gaminv)
+!       !IBM* SIMD_LEVEL
+! #endif
+!     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+!       uxp(nn) = uxp(nn) + ex(nn)*const1
+!       uyp(nn) = uyp(nn) + ey(nn)*const1
+!       uzp(nn) = uzp(nn) + ez(nn)*const1
+! 
+!       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
+!       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
+! 
+!     END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
     ! ___ Push with B ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      const2 = gaminv(nn)*const1
-      tx = bx(nn)*const2
-      ty = by(nn)*const2
-      tz = bz(nn)*const2
-      tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-      wx = tx*tsqi
-      wy = ty*tsqi
-      wz = tz*tsqi
-      uxppr = uxp(nn) + uyp(nn)*tz - uzp(nn)*ty
-      uyppr = uyp(nn) + uzp(nn)*tx - uxp(nn)*tz
-      uzppr = uzp(nn) + uxp(nn)*ty - uyp(nn)*tx
-      uxp(nn) = uxp(nn) + uyppr*wz - uzppr*wy
-      uyp(nn) = uyp(nn) + uzppr*wx - uxppr*wz
-      uzp(nn) = uzp(nn) + uxppr*wy - uyppr*wx
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+! 			!DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+! 			!DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+! 			!DIR$ ASSUME_ALIGNED gaminv:64
+! 			!DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+! 			!DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+! 			!IBM* ALIGN(64,uxp,uyp,uzp)
+! 			!IBM* ALIGN(64,bx,by,bz)
+! 			!IBM* ALIGN(64,gaminv)
+! 			!IBM* SIMD_LEVEL
+! #endif
+! 		DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+! 			const2 = gaminv(nn)*const1
+! 			tx = bx(nn)*const2
+! 			ty = by(nn)*const2
+! 			tz = bz(nn)*const2
+! 			tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
+! 			wx = tx*tsqi
+! 			wy = ty*tsqi
+! 			wz = tz*tsqi
+! 			uxppr = uxp(nn) + uyp(nn)*tz - uzp(nn)*ty
+! 			uyppr = uyp(nn) + uzp(nn)*tx - uxp(nn)*tz
+! 			uzppr = uzp(nn) + uxp(nn)*ty - uyp(nn)*tx
+! 			uxp(nn) = uxp(nn) + uyppr*wz - uzppr*wy
+! 			uyp(nn) = uyp(nn) + uzppr*wx - uxppr*wz
+! 			uzp(nn) = uzp(nn) + uxppr*wy - uyppr*wx
+! 		END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
     ! ___ Push with E + gamma ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      uxp(nn) = uxp(nn) + ex(nn)*const1
-      uyp(nn) = uyp(nn) + ey(nn)*const1
-      uzp(nn) = uzp(nn) + ez(nn)*const1
-
-      usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-      gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+!       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+!       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+!       !DIR$ ASSUME_ALIGNED gaminv:64
+!       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+!       !DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+!       !IBM* ALIGN(64,xp,yp,zp)
+!       !IBM* ALIGN(64,uxp,uyp,uzp)
+!       !IBM* ALIGN(64,ex,ey,ez)
+!       !IBM* ALIGN(64,bx,by,bz)
+!       !IBM* ALIGN(64,gaminv)
+!       !IBM* SIMD_LEVEL
+! #endif
+!     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+!       uxp(nn) = uxp(nn) + ex(nn)*const1
+!       uyp(nn) = uyp(nn) + ey(nn)*const1
+!       uzp(nn) = uzp(nn) + ez(nn)*const1
+! 
+!       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
+!       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
+!     END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
     ! ___ Update position ___
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
-      !DIR$ SIMD VECREMAINDER
-#elif  defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* SIMD_LEVEL
-#endif
-    DO nn=ip,ip+MIN(lvect,np-ip+1)-1
-      const2 = gaminv(nn)*dtt
-      xp(nn) = xp(nn) + uxp(nn)*const2
-      yp(nn) = yp(nn) + uyp(nn)*const2
-      zp(nn) = zp(nn) + uzp(nn)*const2
-
-    END DO
-#if defined __INTEL_COMPILER
-#elif defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-	!$OMP END SIMD
-#endif
-#endif
+! #if defined __INTEL_COMPILER
+!       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+!       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+!       !DIR$ ASSUME_ALIGNED gaminv:64
+!       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+!       !DIR$ SIMD VECREMAINDER
+! #elif  defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP SIMD
+! #endif
+! #elif defined __IBMBGQ__
+!       !IBM* ALIGN(64,xp,yp,zp)
+!       !IBM* ALIGN(64,uxp,uyp,uzp)
+!       !IBM* ALIGN(64,gaminv)
+!       !IBM* SIMD_LEVEL
+! #endif
+!     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+!       const2 = gaminv(nn)*dtt
+!       xp(nn) = xp(nn) + uxp(nn)*const2
+!       yp(nn) = yp(nn) + uyp(nn)*const2
+!       zp(nn) = zp(nn) + uzp(nn)*const2
+! 
+!     END DO
+! #if defined __INTEL_COMPILER
+! #elif defined _OPENMP && _OPENMP>=201307
+! #ifndef NOVEC
+! 	!$OMP END SIMD
+! #endif
+! #endif
 
   ! End loop on particles
   ENDDO
@@ -2199,30 +2383,37 @@ END SUBROUTINE field_gathering_plus_particle_pusher_2_2_2
 
 
 ! ________________________________________________________________________________________
+!> @brief
 !> This function combined the field gathering and the particle pusher
 !> in 3D for CIC (order 1) shape factor.
 !> The field gathering and the particle pusher are done in the same particle loop.
-!> @brief
 !
-!> This function is vectorized.
 !> @detail
+!> This function is vectorized.
 !
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!> Revision 10.06.2015
+
 ! Input parameters:
-! - np: number of particles
-! - xp,yp,zp: particle position
-! - uxp,uyp,uzp: particle momentum
-! - gaminv: inverse of the particle Lorentz factor
-! - ex,ey,ez: particle electric field
-! - bx,by,bz: particle magnetic field
-! - xmin,ymin,zmin: tile minimum grid position
-! - dx,dy,dz: space step
-! - dtt: time step
-! - nx,ny,nz: number of grid points in each direction
-! - nxguard, nyguard, nzguard: number of guard cells in each direction
-! - exg,eyg,ezg: electric field grid
-! - bxg,byg,bzg: magnetic field grid
-! - lvect: vector size for cache blocking
-! - l_lower_order_in_v:
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[in] uxp,uyp,uzp particle momentum
+!> @param[in] gaminv inverse of the particle Lorentz factor
+!> @param[in] ex,ey,ez particle electric field
+!> @param[in] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dtt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
 SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
                                       ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &

@@ -20,11 +20,11 @@ subroutine \hyperlink{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{p
 subroutine \hyperlink{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}{pxr\+\_\+pushxyz} (np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
 \item 
 subroutine \hyperlink{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}{pxr\+\_\+epush\+\_\+v} (np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
-\item 
+\begin{DoxyCompactList}\small\item\em Push the particle velocity with E field. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}{pxr\+\_\+bpush\+\_\+v} (np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
-\item 
+\begin{DoxyCompactList}\small\item\em Push the particle velocity with B field (Boris algorithm) \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}{pxr\+\_\+set\+\_\+gamma} (np, uxp, uyp, uzp, gaminv)
-\item 
+\begin{DoxyCompactList}\small\item\em Push the particle velocity with B field (Boris algorithm) \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a4a0f739cde5e2d34dca78023a8b7145f}{pxr\+\_\+ebcancelpush3d} (np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)
 \begin{DoxyCompactList}\small\item\em Push the particle velocity with E and B fields, assuming Vmid = 0.\+5$\ast$(Vold+\+Vnew), solving directly for the new gamma. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_af9cba768132f6e7e5d6a39108c2c4118}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
@@ -90,7 +90,12 @@ subroutine \hyperlink{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{f
 
 This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. 
 
-This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}}
+This function is vectorized.  
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\end{DoxyParams}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2 (
 \begin{DoxyParamCaption}
@@ -284,6 +289,31 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{real(num)}]{dt}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}{}\label{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}
+
+
+Push the particle velocity with B field (Boris algorithm) 
+
+fast b-\/field rotation algorithm \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \mbox{[}in\mbox{]} gaminv particle Lorentz factors \\
+\hline
+\mbox{\tt in}  & {\em bx,by,bz} & particle magnetic fields in each direction \\
+\hline
+\mbox{\tt in}  & {\em q} & charge \\
+\hline
+\mbox{\tt in}  & {\em m} & masse \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+ebcancelpush3d@{pxr\+\_\+ebcancelpush3d}}
 \index{pxr\+\_\+ebcancelpush3d@{pxr\+\_\+ebcancelpush3d}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+ebcancelpush3d(np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}{pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+ebcancelpush3d (
@@ -352,6 +382,31 @@ Henri Vincenti
 \item[{real(num)}]{dt}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}{}\label{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}
+
+
+Push the particle velocity with E field. 
+
+fast b-\/field rotation algorithm \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \mbox{[}in\mbox{]} gaminv particle Lorentz factors \\
+\hline
+\mbox{\tt in}  & {\em ex,ey,ez} & particle magnetic fields in each direction \\
+\hline
+\mbox{\tt in}  & {\em q} & charge \\
+\hline
+\mbox{\tt in}  & {\em m} & masse \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+pushxyz@{pxr\+\_\+pushxyz}}
 \index{pxr\+\_\+pushxyz@{pxr\+\_\+pushxyz}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)}{pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+pushxyz (
@@ -378,6 +433,23 @@ Henri Vincenti
 \item[{real(num), dimension(np)}]{gaminv}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}{}\label{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}
+
+
+Push the particle velocity with B field (Boris algorithm) 
+
+fast b-\/field rotation algorithm \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \mbox{[}in\mbox{]} gaminv particle Lorentz factors \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part1@{pxrpush\+\_\+particles\+\_\+part1}}
 \index{pxrpush\+\_\+particles\+\_\+part1@{pxrpush\+\_\+particles\+\_\+part1}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part1}{pxrpush_particles_part1}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part1 (

@@ -138,10 +138,13 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:aa77ade6c16b80186ff4ba5e899c70848"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#aa77ade6c16b80186ff4ba5e899c70848">pxr_pushxyz</a> (np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)</td></tr>
 <tr class="separator:aa77ade6c16b80186ff4ba5e899c70848"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3b68e848193f6e2e6adb95490c79ea3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#ad3b68e848193f6e2e6adb95490c79ea3">pxr_epush_v</a> (np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)</td></tr>
+<tr class="memdesc:ad3b68e848193f6e2e6adb95490c79ea3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the particle velocity with E field.  <a href="#ad3b68e848193f6e2e6adb95490c79ea3">More...</a><br /></td></tr>
 <tr class="separator:ad3b68e848193f6e2e6adb95490c79ea3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ea5e15ca81ac196298e046dec12e3b9"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#a7ea5e15ca81ac196298e046dec12e3b9">pxr_bpush_v</a> (np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)</td></tr>
+<tr class="memdesc:a7ea5e15ca81ac196298e046dec12e3b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the particle velocity with B field (Boris algorithm)  <a href="#a7ea5e15ca81ac196298e046dec12e3b9">More...</a><br /></td></tr>
 <tr class="separator:a7ea5e15ca81ac196298e046dec12e3b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4471b8d19a27dc1e15683c68c2452d2"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#ad4471b8d19a27dc1e15683c68c2452d2">pxr_set_gamma</a> (np, uxp, uyp, uzp, gaminv)</td></tr>
+<tr class="memdesc:ad4471b8d19a27dc1e15683c68c2452d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the particle velocity with B field (Boris algorithm)  <a href="#ad4471b8d19a27dc1e15683c68c2452d2">More...</a><br /></td></tr>
 <tr class="separator:ad4471b8d19a27dc1e15683c68c2452d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a0f739cde5e2d34dca78023a8b7145f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#a4a0f739cde5e2d34dca78023a8b7145f">pxr_ebcancelpush3d</a> (np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)</td></tr>
 <tr class="memdesc:a4a0f739cde5e2d34dca78023a8b7145f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the particle velocity with E and B fields, assuming Vmid = 0.5*(Vold+Vnew), solving directly for the new gamma.  <a href="#a4a0f739cde5e2d34dca78023a8b7145f">More...</a><br /></td></tr>
@@ -406,7 +409,12 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>This function combined the field gathering and the particle pusher in 3D for CIC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. </p>
-<p>This function is vectorized.  </p>
+<p>This function is vectorized.  </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1419,6 +1427,21 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Push the particle velocity with B field (Boris algorithm) </p>
+<p>fast b-field rotation algorithm </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2015 Revision 06.10.2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of super-particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction [in] gaminv particle Lorentz factors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bx,by,bz</td><td>particle magnetic fields in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>masse </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>time step </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a class="anchor" id="a4a0f739cde5e2d34dca78023a8b7145f"></a>
@@ -1615,6 +1638,21 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Push the particle velocity with E field. </p>
+<p>fast b-field rotation algorithm </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2015 Revision 06.10.2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of super-particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction [in] gaminv particle Lorentz factors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ex,ey,ez</td><td>particle magnetic fields in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>charge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>masse </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>time step </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a class="anchor" id="aa77ade6c16b80186ff4ba5e899c70848"></a>
@@ -1726,6 +1764,17 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Push the particle velocity with B field (Boris algorithm) </p>
+<p>fast b-field rotation algorithm </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2015 Revision 06.10.2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of super-particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction [in] gaminv particle Lorentz factors </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -2,9 +2,9 @@ var searchData=
 [
   ['fdxrand',['fdxrand',['../namespaceparticle__properties.html#a68abb05c88189b0d3f2ac02b0bde9d83',1,'particle_properties']]],
   ['fdzrand',['fdzrand',['../namespaceparticle__properties.html#ac28362a40a4b808ff8ede4d94c4423f3',1,'particle_properties']]],
-  ['fg_5fp_5fpp_5fseperated',['fg_p_pp_seperated',['../namespaceparams.html#a58efb719fdc3fbbfa8c6beb237ce2716',1,'params']]],
+  ['fg_5fp_5fpp_5fseparated',['fg_p_pp_separated',['../namespaceparams.html#a041d5cfcf8653c0bd7eacd2e48077d42',1,'params']]],
   ['fh_5finput',['fh_input',['../namespacecontrol__file.html#a4d48196e76aeb5e34872568868ff74d4',1,'control_file']]],
-  ['fieldgave',['fieldgave',['../namespaceparams.html#afd98a17f8dde6a4f7d4e7b0efb7384ea',1,'params']]],
+  ['fieldgathe',['fieldgathe',['../namespaceparams.html#afef819010f4c590b2d6f9ecde05bd4c5',1,'params']]],
   ['filebx',['filebx',['../namespaceoutput__data.html#ac0a6ec606c33d1bc037b5ce85a9f4b3a',1,'output_data']]],
   ['fileby',['fileby',['../namespaceoutput__data.html#ac6e874f0a8121e42bed35e449a4a7c38',1,'output_data']]],
   ['filebz',['filebz',['../namespaceoutput__data.html#a07a77b208c10f32c5723378f16ea4301',1,'output_data']]],
