@@ -198,7 +198,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 
 						SELECT CASE (particle_pusher)
 						!! Vay pusher -- Full push
-						CASE (1)
+						CASE (1_idp)
 							CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
 							curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
 							curr_tile%part_ey, 					                                       &
@@ -468,7 +468,6 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 #endif
 
 #if defined(DEBUG)
-  WRITE(0,*) "Push_particles: start"
 #endif
 
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -518,7 +517,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 					          IF (count .EQ. 0) CYCLE
                     SELECT CASE (particle_pusher)
                     !! Vay pusher -- Full push
-                    CASE (1)
+                  CASE (1_idp)
                       CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
                       curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
                       curr_tile%part_ey, 					                                       &
@@ -543,13 +542,13 @@ DO iz=1, ntilez ! LOOP ON TILES
                       curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,              &
                       curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
                       !! --- Set gamma of particles
-  					          CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
-  					          curr_tile%part_uz, curr_tile%part_gaminv)
-                      !!!! --- push particle species positions a time step
-                      CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,             &
-                      curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,                &
-                      curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+                      CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
+                      curr_tile%part_uz, curr_tile%part_gaminv)
                     END SELECT
+                    !!!! --- push particle species positions a time step
+                    CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,             &
+                    curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,                &
+                    curr_tile%part_uz,curr_tile%part_gaminv,dtt)
                 END DO! END LOOP ON SPECIES
             ENDIF
         END DO
@@ -714,12 +713,12 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 						END SELECT
 						SELECT CASE (particle_pusher)
 						!! Vay pusher -- half push part 1
-						CASE (1)
+          CASE (1_idp)
 							CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
 							curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
 							curr_tile%part_ey, 					                                       &
 							curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-							curr_tile%part_bz,curr%charge,curr%mass,0.5_num*dtt,1_idp)
+							curr_tile%part_bz,curr%charge,curr%mass,dtt,1_idp)
 							!! Boris pusher -- half push part 1
 						CASE DEFAULT
 							!! --- Push velocity with E half step
@@ -781,12 +780,12 @@ DO iz=1, ntilez ! LOOP ON TILES
                 IF (count .EQ. 0) CYCLE
                 SELECT CASE (particle_pusher)
                 !! Vay pusher -- half push part 2
-                CASE (1)
+              CASE (1_idp)
                   CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
                   curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
                   curr_tile%part_ey, 					                                       &
                   curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-                  curr_tile%part_bz,curr%charge,curr%mass,0.5_num*dt,2_idp)
+                  curr_tile%part_bz,curr%charge,curr%mass,dt,2_idp)
                 CASE DEFAULT
                   !! Boris pusher -- half push part 2
                   !!! --- Push velocity with B half step
@@ -798,9 +797,10 @@ DO iz=1, ntilez ! LOOP ON TILES
           				curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,				          &
           				curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
           				!! --- Sets gamma of particles
-          				CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-          				curr_tile%part_uz, curr_tile%part_gaminv)
+                  CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
+                  curr_tile%part_uz, curr_tile%part_gaminv)
                 END SELECT
+
         				SELECT CASE (c_dim)
         				CASE (2) ! 2D CASE
         					!! --- Advance particle position of one time step
@@ -1149,36 +1149,37 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,w
 #elif defined __INTEL_COMPILER
 		!DIR$ SIMD
 #endif
-    DO ip=1,np
-			!       --- get tau
+		DO ip=1,np
+			! --- get tau
 			taux = bconst*bxp(ip)
 			tauy = bconst*byp(ip)
 			tauz = bconst*bzp(ip)
 			tausq = taux*taux+tauy*tauy+tauz*tauz
-			!       --- get U',gamma'^2
+			! --- get U',gamma'^2
 			uxpr = uxp(ip) + const*exp(ip) + (uyp(ip)*tauz-uzp(ip)*tauy)*gi(ip)
 			uypr = uyp(ip) + const*eyp(ip) + (uzp(ip)*taux-uxp(ip)*tauz)*gi(ip)
 			uzpr = uzp(ip) + const*ezp(ip) + (uxp(ip)*tauy-uyp(ip)*taux)*gi(ip)
-			gprsq = (1_num+(uxpr*uxpr+uypr*uypr+uzpr*uzpr)*invclightsq)
+			gprsq = (1._num+(uxpr*uxpr+uypr*uypr+uzpr*uzpr)*invclightsq)
 			!       --- get u*
 			ust = (uxpr*taux+uypr*tauy+uzpr*tauz)*invclight
-			!       --- get new gamma
+			! --- get new gamma
 			sigma = gprsq-tausq
-			gisq = 2_num/(sigma+sqrt(sigma*sigma+4_num*(tausq+ust*ust)))
+			gisq = 2._num/(sigma+sqrt(sigma*sigma+4._num*(tausq+ust*ust)))
 			gi(ip) = sqrt(gisq)
 			!       --- get t,s
 			bg = bconst*gi(ip)
 			tx = bg*bxp(ip)
 			ty = bg*byp(ip)
 			tz = bg*bzp(ip)
-			s = 1_num/(1_num+tausq*gisq)
-			!       --- get t.u'
+			s = 1._num/(1._num+tausq*gisq)
+			!  --- get t.u'
 			tu = tx*uxpr+ty*uypr+tz*uzpr
-			!       --- get new U
+			! --- get new U
 			uxp(ip) = s*(uxpr+tx*tu+uypr*tz-uzpr*ty)
 			uyp(ip) = s*(uypr+ty*tu+uzpr*tx-uxpr*tz)
 			uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
 		END DO
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
@@ -1199,27 +1200,28 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,w
 #elif defined __INTEL_COMPILER
 		!DIR$ SIMD
 #endif
-    DO ip=1,np
-			!     --- get new U
+		DO ip=1,np
+			! --- get new U
 			vx = uxp(ip)*gi(ip)
 			vy = uyp(ip)*gi(ip)
 			vz = uzp(ip)*gi(ip)
 			uxp(ip) = uxp(ip) + const*( exp(ip) + vy*bzp(ip)-vz*byp(ip) )
 			uyp(ip) = uyp(ip) + const*( eyp(ip) + vz*bxp(ip)-vx*bzp(ip) )
 			uzp(ip) = uzp(ip) + const*( ezp(ip) + vx*byp(ip)-vy*bxp(ip) )
-    ENDDO
+			gi(ip) = 1./sqrt(1.+(uxp(ip)*uxp(ip)+uyp(ip)*uyp(ip)+uzp(ip)*uzp(ip))*invclightsq)
+		ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
 #endif
 #endif
 
+
 	ELSE IF(which==2) THEN
-		! --- second half push
+	!     --- second half push
 		const = 0.5_num*q*dt/m
 		bconst = const
-		const = 0.5_num*q*dt/m
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP SIMD
@@ -1229,6 +1231,7 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,w
 #elif defined __INTEL_COMPILER
 		!DIR$ SIMD
 #endif
+
 		DO ip=1,np
 			!     --- get U'
 			uxpr = uxp(ip) + const*exp(ip)
@@ -1244,21 +1247,22 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,w
 			ust = (uxpr*taux+uypr*tauy+uzpr*tauz)*invclight
 			!       --- get new gamma
 			sigma = gprsq-tausq
-			gisq = 2_num/(sigma+sqrt(sigma*sigma+4_num*(tausq+ust*ust)))
+			gisq = 2._num/(sigma+sqrt(sigma*sigma+4._num*(tausq+ust*ust)))
 			gi(ip) = sqrt(gisq)
 			!       --- get t,s
 			bg = bconst*gi(ip)
 			tx = bg*bxp(ip)
 			ty = bg*byp(ip)
 			tz = bg*bzp(ip)
-			s = 1_num/(1_num+tausq*gisq)
+			s = 1._num/(1._num+tausq*gisq)
 			!       --- get t.u'
 			tu = tx*uxpr+ty*uypr+tz*uzpr
 			!       --- get new U
 			uxp(ip) = s*(uxpr+tx*tu+uypr*tz-uzpr*ty)
 			uyp(ip) = s*(uypr+ty*tu+uzpr*tx-uxpr*tz)
 			uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
-		ENDDO
+			ENDDO
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
 	!$OMP END SIMD
