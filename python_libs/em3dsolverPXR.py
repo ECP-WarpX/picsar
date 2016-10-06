@@ -341,9 +341,11 @@ class EM3DPXR(EM3DFFT):
 
         #Type of field gathering
         pxr.l4symtry=w3d.l4symtry
-        pxr.l_lower_order_in_v=self.l_lower_order_in_v
+        pxr.l_lower_order_in_v = self.l_lower_order_in_v
+        pxr.fg_p_pp_seperated  = 1 # use 1 or >1 for the moment,
+        # 0 needs t be fixed for Vay pusher)
 
-        # --- Tiling parameters
+		# --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
         pxr.ntilez = self.ntilez
@@ -1025,7 +1027,6 @@ class EM3DPXR(EM3DFFT):
                         particleboundaries3d(pg,-1,False)
         else:
             if l_pxr:
-
                 # Particle pusher
                 tdebpart=MPI.Wtime()
                 #pxr.push_particles()
@@ -1036,8 +1037,6 @@ class EM3DPXR(EM3DFFT):
 
                 # Particle boundary conditions
                 pxr.particle_bcs()
-
-
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
