@@ -251,173 +251,178 @@ END SUBROUTINE field_gathering_plus_particle_pusher_sub
 
 
 ! ________________________________________________________________________________________
+!> @brief
+!> Particle pusher in 3D called by the main function push_particle for the subroutines with cache blocking
+!
+!> @author
+!> Mathieu Lobet
 SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
-! Particle pusher in 3D called by the main function push_particle
 ! ________________________________________________________________________________________
-  USE particles
-  USE constants
-  USE tiling
-  USE time_stat
-  USE params
+
+	USE particles
+	USE constants
+	USE tiling
+	USE time_stat
+	USE params
 ! Vtune/SDE profiling
 #if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
+	USE ITT_SDE_FORTRAN
 #endif
-  IMPLICIT NONE
+	IMPLICIT NONE
 
-  ! ___ Parameter declaration __________________________________________
-  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
-  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-  LOGICAL                  :: l_lower_order_in_v_in
-  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
-  INTEGER(idp)             :: ispecies, ix, iy, iz, count
-  INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
-  TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
-  TYPE(particle_tile), POINTER    :: curr_tile
-  REAL(num)                :: tdeb, tend
-  INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
-  INTEGER(idp)             :: nxjg,nyjg,nzjg
-  LOGICAL(idp)             :: isgathered=.FALSE.
+	! ___ Parameter declaration __________________________________________
+	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
+	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+	LOGICAL                  :: l_lower_order_in_v_in
+	REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
+	REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+	INTEGER(idp)             :: ispecies, ix, iy, iz, count
+	INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
+	TYPE(particle_species), POINTER :: curr
+	TYPE(grid_tile), POINTER        :: currg
+	TYPE(particle_tile), POINTER    :: curr_tile
+	REAL(num)                :: tdeb, tend
+	INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
+	INTEGER(idp)             :: nxjg,nyjg,nzjg
+	LOGICAL(idp)             :: isgathered=.FALSE.
 
-  IF (it.ge.timestat_itstart) THEN
-    tdeb=MPI_WTIME()
-  ENDIF
+	IF (it.ge.timestat_itstart) THEN
+		tdeb=MPI_WTIME()
+	ENDIF
 
 #if VTUNE==3
   CALL start_vtune_collection()
 #endif
-IF (nspecies .EQ. 0_idp) RETURN
-!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
-!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,lvec_fieldgathe,l_lower_order_in_v,zgrid) &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
-!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
-DO iz=1, ntilez ! LOOP ON TILES
-    DO iy=1, ntiley
-        DO ix=1, ntilex
-          curr=>species_parray(1)
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
-          nxjg=curr_tile%nxg_tile
-          nyjg=curr_tile%nyg_tile
-          nzjg=curr_tile%nzg_tile
-          jmin=curr_tile%nx_tile_min-nxjg
-          jmax=curr_tile%nx_tile_max+nxjg
-          kmin=curr_tile%ny_tile_min-nyjg
-          kmax=curr_tile%ny_tile_max+nyjg
-          lmin=curr_tile%nz_tile_min-nzjg
-          lmax=curr_tile%nz_tile_max+nzjg
-          nxc=curr_tile%nx_cells_tile
-          nyc=curr_tile%ny_cells_tile
-          nzc=curr_tile%nz_cells_tile
-          isgathered=.FALSE.
+	IF (nspecies .EQ. 0_idp) RETURN
+	!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
+	!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
+	!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,lvec_fieldgathe,l_lower_order_in_v,zgrid) &
+	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
+	!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
+	DO iz=1, ntilez ! LOOP ON TILES
+		DO iy=1, ntiley
+			DO ix=1, ntilex
+				curr=>species_parray(1)
+				curr_tile=>curr%array_of_tiles(ix,iy,iz)
+				nxjg=curr_tile%nxg_tile
+				nyjg=curr_tile%nyg_tile
+				nzjg=curr_tile%nzg_tile
+				jmin=curr_tile%nx_tile_min-nxjg
+				jmax=curr_tile%nx_tile_max+nxjg
+				kmin=curr_tile%ny_tile_min-nyjg
+				kmax=curr_tile%ny_tile_max+nyjg
+				lmin=curr_tile%nz_tile_min-nzjg
+				lmax=curr_tile%nz_tile_max+nzjg
+				nxc=curr_tile%nx_cells_tile
+				nyc=curr_tile%ny_cells_tile
+				nzc=curr_tile%nz_cells_tile
+				isgathered=.FALSE.
 
-			DO ispecies=1, nspecies ! LOOP ON SPECIES
-			  curr=>species_parray(ispecies)
-        curr_tile=>curr%array_of_tiles(ix,iy,iz)
-        count=curr_tile%np_tile(1)
-        IF (count .GT. 0) isgathered=.TRUE.
-      END DO
-
-            IF (isgathered) THEN
-                currg=>aofgrid_tiles(ix,iy,iz)
-				currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
-				currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
-				currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
-				currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
-				currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
-				currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
 				DO ispecies=1, nspecies ! LOOP ON SPECIES
-					! - Get current tile properties
-					! - Init current tile variables
 					curr=>species_parray(ispecies)
 					curr_tile=>curr%array_of_tiles(ix,iy,iz)
 					count=curr_tile%np_tile(1)
-					IF (count .EQ. 0) CYCLE
-					curr_tile%part_ex(1:count)=0.0_num
-					curr_tile%part_ey(1:count)=0.0_num
-					curr_tile%part_ez(1:count)=0.0_num
-					curr_tile%part_bx(1:count)=0.0_num
-					curr_tile%part_by(1:count)=0.0_num
-					curr_tile%part_bz(1:count)=0.0_num
+					IF (count .GT. 0) isgathered=.TRUE.
+				END DO
 
-					IF ((noxx.eq.1).and.(noyy.eq.1).and.(nozz.eq.1)) THEN
+				IF (isgathered) THEN
+						currg=>aofgrid_tiles(ix,iy,iz)
+					currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
+					currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
+					currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
+					currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
+					currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
+					currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
+					DO ispecies=1, nspecies ! LOOP ON SPECIES
+						! - Get current tile properties
+						! - Init current tile variables
+						curr=>species_parray(ispecies)
+						curr_tile=>curr%array_of_tiles(ix,iy,iz)
+						count=curr_tile%np_tile(1)
+						IF (count .EQ. 0) CYCLE
+						curr_tile%part_ex(1:count)=0.0_num
+						curr_tile%part_ey(1:count)=0.0_num
+						curr_tile%part_ez(1:count)=0.0_num
+						curr_tile%part_bx(1:count)=0.0_num
+						curr_tile%part_by(1:count)=0.0_num
+						curr_tile%part_bz(1:count)=0.0_num
 
-					!!! ---- Loop by blocks over particles in a tile (blocking)
-           CALL field_gathering_plus_particle_pusher_1_1_1(count,   &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-								curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
-								curr_tile%part_gaminv, &
-								curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
-								curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-                curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
-                dxx,dyy,dzz,dtt,&
-                curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
-                nxjg,nyjg,nzjg, &
-                currg%extile,currg%eytile,currg%eztile,&
-                currg%bxtile,currg%bytile,currg%bztile,&
-                curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
+						IF ((noxx.eq.1).and.(noyy.eq.1).and.(nozz.eq.1)) THEN
 
-          ELSE IF ((noxx.eq.2).and.(noyy.eq.2).and.(nozz.eq.2)) THEN
+							!!! ---- Loop by blocks over particles in a tile (blocking)
+							 CALL field_gathering_plus_particle_pusher_1_1_1(count,   &
+										curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
+										curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
+										curr_tile%part_gaminv, &
+										curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
+										curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
+										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
+										dxx,dyy,dzz,dtt,&
+										curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
+										nxjg,nyjg,nzjg, &
+										currg%extile,currg%eytile,currg%eztile,&
+										currg%bxtile,currg%bytile,currg%bztile,&
+										curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
 
-					!!! ---- Loop by blocks over particles in a tile (blocking)
-           CALL field_gathering_plus_particle_pusher_2_2_2(count,   &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-								curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
-								curr_tile%part_gaminv, &
-								curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
-								curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-                curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
-                dxx,dyy,dzz,dtt,&
-                curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
-                nxjg,nyjg,nzjg, &
-                currg%extile,currg%eytile,currg%eztile,&
-                currg%bxtile,currg%bytile,currg%bztile,&
-                curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
+						ELSE IF ((noxx.eq.2).and.(noyy.eq.2).and.(nozz.eq.2)) THEN
 
-          ELSE IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3)) THEN
+							!!! ---- Loop by blocks over particles in a tile (blocking)
+							 CALL field_gathering_plus_particle_pusher_2_2_2(count,   &
+										curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
+										curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
+										curr_tile%part_gaminv, &
+										curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
+										curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
+										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
+										dxx,dyy,dzz,dtt,&
+										curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
+										nxjg,nyjg,nzjg, &
+										currg%extile,currg%eytile,currg%eztile,&
+										currg%bxtile,currg%bytile,currg%bztile,&
+										curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
 
-					!!! ---- Loop by blocks over particles in a tile (blocking)
-           CALL field_gathering_plus_particle_pusher_3_3_3(count,   &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-								curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
-								curr_tile%part_gaminv, &
-								curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
-								curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-                curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
-                dxx,dyy,dzz,dtt,&
-                curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
-                nxjg,nyjg,nzjg, &
-                currg%extile,currg%eytile,currg%eztile,&
-                currg%bxtile,currg%bytile,currg%bztile,&
-                curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
+						ELSE IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3)) THEN
 
-          ENDIF
+							!!! ---- Loop by blocks over particles in a tile (blocking)
+							 CALL field_gathering_plus_particle_pusher_3_3_3(count,   &
+										curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
+										curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
+										curr_tile%part_gaminv, &
+										curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
+										curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
+										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
+										dxx,dyy,dzz,dtt,&
+										curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
+										nxjg,nyjg,nzjg, &
+										currg%extile,currg%eytile,currg%eztile,&
+										currg%bxtile,currg%bytile,currg%bztile,&
+										curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
 
-                END DO! END LOOP ON SPECIES
-            ENDIF
-        END DO
-    END DO
-END DO! END LOOP ON TILES
-!$OMP END PARALLEL DO
+						ENDIF
+
+					END DO! END LOOP ON SPECIES
+				ENDIF
+			END DO
+		END DO
+	END DO! END LOOP ON TILES
+	!$OMP END PARALLEL DO
 
 #if VTUNE==3
   CALL stop_vtune_collection()
 #endif
 
-IF (it.ge.timestat_itstart) THEN
-  tend=MPI_WTIME()
-  localtimes(1) = localtimes(1) + (tend-tdeb)
-ENDIF
-  pushtime=pushtime+(tend-tdeb)
+	IF (it.ge.timestat_itstart) THEN
+		tend=MPI_WTIME()
+		localtimes(1) = localtimes(1) + (tend-tdeb)
+	ENDIF
+	pushtime=pushtime+(tend-tdeb)
 END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 
 
