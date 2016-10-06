@@ -280,8 +280,8 @@ SUBROUTINE initall
 		write(0,*) 'MPI com current:',mpicom_curr
 		write(0,*) 'Current deposition method:',currdepo
 		write(0,*) 'Charge deposition algo:',rhodepo
-		write(0,*) 'Field gathering method:',fieldgave
-		write(0,*) 'Field gathering plus particle pusher seperated:',fg_p_pp_seperated
+		write(0,*) 'Field gathering method:',fieldgathe
+		write(0,*) 'Field gathering plus particle pusher seperated:',fg_p_pp_separated
 		write(0,*) 'Current/field gathering order:',nox,noy,noz
 		write(0,*) 'Part com type:',partcom
 		write(0,*) 'Maxwell derivative coeff:',xcoeffs

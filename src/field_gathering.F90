@@ -96,7 +96,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
-  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,zgrid,fieldgave) &
+  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,zgrid,fieldgathe) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -159,7 +159,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					               &
 											  currg%eztile,                                          			           &
 											  currg%bxtile,currg%bytile,currg%bztile                 			           &
-											  ,.FALSE.,l_lower_order_in_v_in,fieldgave)
+											  ,.FALSE.,l_lower_order_in_v_in,fieldgathe)
 
                 END DO! END LOOP ON SPECIES
             ENDIF

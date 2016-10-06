@@ -710,7 +710,7 @@ SUBROUTINE mpi_minimal_init()
     WRITE(0,*) ""
     WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
     WRITE(0,*) "---------------------------------------------------------------------------"
-    IF (fg_p_pp_seperated.le.1) THEN
+    IF (fg_p_pp_separated.le.1) THEN
       WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher + field gathering:", mintimes(1), avetimes(1), maxtimes(1),&
       percenttimes(1), avetimes(1)/nsteps*1e3
     ELSE
@@ -760,9 +760,9 @@ SUBROUTINE mpi_minimal_init()
 #endif
 
     WRITE(0,*) ''
-    IF (fg_p_pp_seperated.le.1) THEN    
+    IF (fg_p_pp_separated.le.1) THEN    
       WRITE(0,*) 'For lib_performance python class:' 
-      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,",part_mpi_com=",F6.2,&
+      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",part_mpi_com=",F6.2,&
       ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
       ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")')&
       nproc,nthreads_tot,avetimes(20), &
@@ -771,7 +771,7 @@ SUBROUTINE mpi_minimal_init()
       avetimes(12),avetimes(13),avetimes(9)
     ELSE
       WRITE(0,*) 'For lib_performance python class:' 
-      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgave=",F6.2,",partpusher=",F6.2,",part_mpi_com=",F6.2,&
+      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",partpusher=",F6.2,",part_mpi_com=",F6.2,&
       ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
       ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
       nproc,nthreads_tot,avetimes(20), &
@@ -840,7 +840,7 @@ SUBROUTINE mpi_minimal_init()
         WRITE(0,*) '___________________________________________________________________________'
         WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
         WRITE(0,*) "---------------------------------------------------------------------------"
-        IF (fg_p_pp_seperated.le.1) THEN
+        IF (fg_p_pp_separated.le.1) THEN
           WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher + field gathering:", mintimes(1), avetimes(1), maxtimes(1),&
           percenttimes(1), avetimes(1)/nsteps*1e3
         ELSE

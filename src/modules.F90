@@ -309,11 +309,11 @@ USE constants
 	!> Charge deposition method
 	INTEGER(idp) :: rhodepo
 	!> Field gathering method
-	INTEGER(idp) :: fieldgave
+	INTEGER(idp) :: fieldgathe
 	!> Type of comm routine to use for particles
 	INTEGER(idp) :: partcom
 	!> Field gathering + part. pusher seperated flag
-	INTEGER(idp) :: fg_p_pp_seperated
+	INTEGER(idp) :: fg_p_pp_separated
 	!> Vector size for the current deposition
 	INTEGER(idp) :: LVEC_curr_depo
 	!> Vector size for the charge deposition
