@@ -6,7 +6,7 @@
 subroutine \hyperlink{particles__push_8_f90_aba6f2e1d26c95eebe4a184e026c0a3f6}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher}
 \begin{DoxyCompactList}\small\item\em Main subroutine for the field subroutine + particle pusher called in the main loop (in \hyperlink{submain_8_f90}{submain.\+F90}) \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
-\item 
+\begin{DoxyCompactList}\small\item\em Particle pusher in 3D called by the main function push\+\_\+particle. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
 \begin{DoxyCompactList}\small\item\em Particle pusher in 3D called by the main function push\+\_\+particle for the subroutines with cache blocking. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}{particle\+\_\+pusher\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
@@ -16,7 +16,7 @@ subroutine \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{p
 subroutine \hyperlink{particles__push_8_f90_af540a0f57e31e83e106a01e492318462}{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l4symtry\+\_\+in, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
 \begin{DoxyCompactList}\small\item\em Perform the field gathering + (E \& B) Push half a time step. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{pxrpush\+\_\+particles\+\_\+part2}
-\item 
+\begin{DoxyCompactList}\small\item\em (B \& E) Push half a time step + X\+YZ push half a time step \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}{pxr\+\_\+pushxyz} (np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
 \begin{DoxyCompactList}\small\item\em Advance particle positions. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}{pxr\+\_\+epush\+\_\+v} (np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
@@ -59,7 +59,7 @@ Choice of the method is done via the parameter fg\+\_\+p\+\_\+pp\+\_\+separated 
 Henri Vincenti Mathieu Lobet 
 \end{DoxyAuthor}
 \begin{DoxyDate}{Date}
-Creation 2016 Revision 10.\+06.\+2015 
+Creation 2015 Revision 10.\+06.\+2015 
 \end{DoxyDate}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
@@ -355,6 +355,30 @@ Particle pusher in 3D called by the main function push\+\_\+particle for the sub
 \begin{DoxyAuthor}{Author}
 Mathieu Lobet 
 \end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 10.\+06.\+2015 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub (
@@ -384,6 +408,37 @@ Mathieu Lobet
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{}\label{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}
+
+
+Particle pusher in 3D called by the main function push\+\_\+particle. 
+
+\begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 10.\+06.\+2015 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!particle\+\_\+pusher\+\_\+sub@{particle\+\_\+pusher\+\_\+sub}}
 \index{particle\+\_\+pusher\+\_\+sub@{particle\+\_\+pusher\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{particle\+\_\+pusher\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine particle\+\_\+pusher\+\_\+sub (
@@ -417,6 +472,30 @@ Mathieu Lobet
 
 Particle pusher in 3D called by the main function push\+\_\+particle. 
 
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 10.\+06.\+2015
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+bpush\+\_\+v@{pxr\+\_\+bpush\+\_\+v}}
 \index{pxr\+\_\+bpush\+\_\+v@{pxr\+\_\+bpush\+\_\+v}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+bpush\+\_\+v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)}{pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+bpush\+\_\+v (
@@ -668,8 +747,31 @@ This subroutine is wrapper for \hyperlink{particles__push_8_f90_af540a0f57e31e83
 Perform the field gathering + (E \& B) Push half a time step. 
 
 This subroutine is called in \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{pxrpush\+\_\+particles\+\_\+part1()} \begin{DoxyAuthor}{Author}
-Henri Vincenti Mathieu Lobet 
+Henri Vincenti Mathieu Lobet
 \end{DoxyAuthor}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l4symtry\+\_\+in} & \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}}
 \index{pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part2}{pxrpush_particles_part2}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part2 (
@@ -677,3 +779,13 @@ Henri Vincenti Mathieu Lobet
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{}\label{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}
+
+
+(B \& E) Push half a time step + X\+YZ push half a time step 
+
+\begin{DoxyAuthor}{Author}
+Henri Vincenti
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
