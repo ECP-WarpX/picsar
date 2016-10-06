@@ -249,9 +249,11 @@ PROGRAM tile_particle_push_3d_test
   tpp = 0
   
   i = 1
-  name(i) = 'field_gathering_sub + particle_pusher_sub'
+  name(i) = 'field_gathering_sub + particle_pusher_sub (Boris)'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 2 ; nox=1 ; noy=1 ; noz=1
+  particle_pusher = 0
+	fieldgathe = 2
+	nox=1 ; noy=1 ; noz=1
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -273,9 +275,37 @@ PROGRAM tile_particle_push_3d_test
 	curr = curr0
 
 	i = i+1
-	name(i) = 'field_gathering_plus_particle_pusher_sub'
+	name(i) = 'field_gathering_sub + particle_pusher_sub (JLVay)'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=1 ; noy=1 ; noz=1
+  particle_pusher = 1
+	fieldgathe = 0
+	nox=1 ; noy=1 ; noz=1
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tfg(i) = MPI_WTIME() - t0
+  ! Particle pusher then
+	t0 = MPI_WTIME()  
+	CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub (Boris)'
+	write(0,*) 'Computation of ',name(i)
+  particle_pusher = 0
+	fieldgathe = 0
+	nox=1 ; noy=1 ; noz=1
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -292,9 +322,53 @@ PROGRAM tile_particle_push_3d_test
 	curr = curr0
 
 	i = i+1
-	name(i) = 'field_gathering_plus_particle_pusher_sub'
+	name(i) = 'field_gathering_plus_particle_pusher_sub (JLVay)'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=1 ; noy=1 ; noz=1
+  particle_pusher = 1
+	fieldgathe = 0
+	nox=1 ; noy=1 ; noz=1
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_cacheblock_sub (Boris)'
+	write(0,*) 'Computation of ',name(i)
+  particle_pusher = 0
+	fieldgathe = 0
+	nox=1 ; noy=1 ; noz=1
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_cacheblock_sub (JLVay)'
+	write(0,*) 'Computation of ',name(i)
+  particle_pusher = 1
+	fieldgathe = 0
+	nox=1 ; noy=1 ; noz=1
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -345,9 +419,11 @@ PROGRAM tile_particle_push_3d_test
 	curr = curr0
 
   i = 1
-  name(i) = 'field_gathering_sub + particle_pusher_sub'
+  name(i) = 'field_gathering_sub + particle_pusher_sub (Boris)'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 2 ; nox=2 ; noy=2 ; noz=2
+	particle_pusher = 0
+	fieldgathe = 2
+	nox=2 ; noy=2 ; noz=2
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -365,14 +441,63 @@ PROGRAM tile_particle_push_3d_test
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
 	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
-	
+
 	curr = curr0
 
 	i = i+1
-	name(i) = 'field_gathering_plus_particle_pusher_sub'
+	name(i) = 'field_gathering_sub + particle_pusher_sub (JLVay)'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=2 ; noy=2 ; noz=2
+	particle_pusher = 1
+	fieldgathe = 0
+	nox=2 ; noy=2 ; noz=2
 	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tfg(i) = MPI_WTIME() - t0
+  ! Particle pusher then
+	t0 = MPI_WTIME()  
+	CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub (Boris)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 0
+	fieldgathe = 0
+	nox=2 ; noy=2 ; noz=2
+	! field gathering and particle pusher
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub (JLVay)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 1
+	fieldgathe = 0
+	nox=2 ; noy=2 ; noz=2
+	! field gathering and particle pusher
 	t0 = MPI_WTIME()
 	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -388,9 +513,32 @@ PROGRAM tile_particle_push_3d_test
 	curr = curr0
 	
 	i = i+1
-	name(i) = 'field_gathering_plus_particle_pusher_sub'
+	name(i) = 'field_gathering_plus_particle_pusher_sub (Boris)'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=2 ; noy=2 ; noz=2
+	particle_pusher = 0
+	fieldgathe = 0
+	nox=2 ; noy=2 ; noz=2
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+	
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub (JLVay)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 1
+	fieldgathe = 0
+	nox=2 ; noy=2 ; noz=2
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -438,10 +586,11 @@ PROGRAM tile_particle_push_3d_test
 	i = 0
 	curr = curr0
 
-  i = 1
-  name(i) = 'field_gathering_sub + particle_pusher_sub'
-  write(0,*) 'Computation of ',name(i)
-	fieldgave = 2 ; nox=3 ; noy=3 ; noz=3
+	i = 1
+	name(i) = 'field_gathering_sub + particle_pusher_sub (Boris)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 0
+	fieldgathe = 2 ; nox=3 ; noy=3 ; noz=3
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -459,13 +608,40 @@ PROGRAM tile_particle_push_3d_test
 	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
 	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
-	
+
 	curr = curr0
 
 	i = i+1
-	name(i) = 'field_gathering_plus_particle_pusher_sub, scalar'
+	name(i) = 'field_gathering_sub + particle_pusher_sub(JLVay)'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 1 ; nox=3 ; noy=3 ; noz=3
+	particle_pusher = 1
+	fieldgathe = 1
+	nox=3 ; noy=3 ; noz=3
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tfg(i) = MPI_WTIME() - t0
+  ! Particle pusher then
+	t0 = MPI_WTIME()  
+	CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
+  tpp(i) = MPI_WTIME() - t0   
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub, scalar (Boris)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 0
+	fieldgathe = 1 ; nox=3 ; noy=3 ; noz=3
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -482,9 +658,10 @@ PROGRAM tile_particle_push_3d_test
 	curr = curr0
 
 	i = i+1
-	name(i) = 'field_gathering_plus_particle_pusher_sub, vectorized'
+	name(i) = 'field_gathering_plus_particle_pusher_sub, scalar (JLVay)'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=3 ; noy=3 ; noz=3
+	particle_pusher = 1
+	fieldgathe = 1 ; nox=3 ; noy=3 ; noz=3
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -501,9 +678,70 @@ PROGRAM tile_particle_push_3d_test
 	curr = curr0
 
 	i = i+1
-	name(i) = 'field_gathering_plus_particle_pusher_cacheblock_sub'
+	name(i) = 'field_gathering_plus_particle_pusher_sub, vectorized (Boris)'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=3 ; noy=3 ; noz=3
+	particle_pusher = 0
+	fieldgathe = 0 ; nox=3 ; noy=3 ; noz=3
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_sub, vectorized (JLVay)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 1
+	fieldgathe = 0 ; nox=3 ; noy=3 ; noz=3
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_cacheblock_sub (Boris)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 0
+	fieldgathe = 0 ; nox=3 ; noy=3 ; noz=3
+	! field gathering first
+	t0 = MPI_WTIME()
+	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0  
+  ! Checking
+	CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
+	tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
+	sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+	sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+	sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
+	sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
+
+	curr = curr0
+
+	i = i+1
+	name(i) = 'field_gathering_plus_particle_pusher_cacheblock_sub (JLVay)'
+	write(0,*) 'Computation of ',name(i)
+	particle_pusher = 1
+	fieldgathe = 0 ; nox=3 ; noy=3 ; noz=3
 	! field gathering first
 	t0 = MPI_WTIME()
 	CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -698,10 +936,10 @@ SUBROUTINE display_statistics(title,n,name,&
 	write(0,'(A60, 7(A13))') "Subroutines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
 	write(0,'(" _____________________________________________________")')
 	DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') name(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), tfg(i)
+		write(0,'(A60,7(X,E12.5))') name(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), tfg(i)
 	ENDDO
 	
-	write(0,'(A40)') 'Field gathering, electric field, magnetic field'
+	write(0,'(A60)') 'Field gathering, electric field, magnetic field'
 	write(0,'(A60, 7(A13))') "Subroutines", "sum(bx)", "sum(by)", "sum(bz)", "err bx", "err by", "err bz", "time (s)"
 	write(0,'(" _____________________________________________________")')
 	DO i = 1,n

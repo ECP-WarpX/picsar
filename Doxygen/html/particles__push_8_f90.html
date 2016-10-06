@@ -120,12 +120,15 @@ $(document).ready(function(){initNavTree('particles__push_8_f90.html','');});
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:aba6f2e1d26c95eebe4a184e026c0a3f6"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#aba6f2e1d26c95eebe4a184e026c0a3f6">field_gathering_plus_particle_pusher</a></td></tr>
+<tr class="memdesc:aba6f2e1d26c95eebe4a184e026c0a3f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main subroutine for the field subroutine + particle pusher called in the main loop (in <a class="el" href="submain_8_f90.html">submain.F90</a>)  <a href="#aba6f2e1d26c95eebe4a184e026c0a3f6">More...</a><br /></td></tr>
 <tr class="separator:aba6f2e1d26c95eebe4a184e026c0a3f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0c9813b939a0ef799437c54d49cc947"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#ac0c9813b939a0ef799437c54d49cc947">field_gathering_plus_particle_pusher_sub</a> (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)</td></tr>
 <tr class="separator:ac0c9813b939a0ef799437c54d49cc947"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59d6ed8231bfda3a4c6d828c848b18ff"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#a59d6ed8231bfda3a4c6d828c848b18ff">field_gathering_plus_particle_pusher_cacheblock_sub</a> (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)</td></tr>
+<tr class="memdesc:a59d6ed8231bfda3a4c6d828c848b18ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Particle pusher in 3D called by the main function push_particle for the subroutines with cache blocking.  <a href="#a59d6ed8231bfda3a4c6d828c848b18ff">More...</a><br /></td></tr>
 <tr class="separator:a59d6ed8231bfda3a4c6d828c848b18ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab54fd25981abe6f64d5a146a1a933d24"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#ab54fd25981abe6f64d5a146a1a933d24">particle_pusher_sub</a> (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)</td></tr>
+<tr class="memdesc:ab54fd25981abe6f64d5a146a1a933d24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Particle pusher in 3D called by the main function push_particle.  <a href="#ab54fd25981abe6f64d5a146a1a933d24">More...</a><br /></td></tr>
 <tr class="separator:ab54fd25981abe6f64d5a146a1a933d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1143d3843261bfef77dc0c9665e947d1"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#a1143d3843261bfef77dc0c9665e947d1">pxrpush_particles_part1</a></td></tr>
 <tr class="memdesc:a1143d3843261bfef77dc0c9665e947d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering+ (E &amp; B) Push half a time step.  <a href="#a1143d3843261bfef77dc0c9665e947d1">More...</a><br /></td></tr>
@@ -136,6 +139,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ab65aba49863198b09c221d6bf6a8f6bc"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#ab65aba49863198b09c221d6bf6a8f6bc">pxrpush_particles_part2</a></td></tr>
 <tr class="separator:ab65aba49863198b09c221d6bf6a8f6bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa77ade6c16b80186ff4ba5e899c70848"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#aa77ade6c16b80186ff4ba5e899c70848">pxr_pushxyz</a> (np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)</td></tr>
+<tr class="memdesc:aa77ade6c16b80186ff4ba5e899c70848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance particle positions.  <a href="#aa77ade6c16b80186ff4ba5e899c70848">More...</a><br /></td></tr>
 <tr class="separator:aa77ade6c16b80186ff4ba5e899c70848"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3b68e848193f6e2e6adb95490c79ea3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#ad3b68e848193f6e2e6adb95490c79ea3">pxr_epush_v</a> (np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)</td></tr>
 <tr class="memdesc:ad3b68e848193f6e2e6adb95490c79ea3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the particle velocity with E field.  <a href="#ad3b68e848193f6e2e6adb95490c79ea3">More...</a><br /></td></tr>
@@ -153,6 +157,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:af9cba768132f6e7e5d6a39108c2c4118"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function combined the field gathering and the particle pusher in 3D for CIC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop.  <a href="#af9cba768132f6e7e5d6a39108c2c4118">More...</a><br /></td></tr>
 <tr class="separator:af9cba768132f6e7e5d6a39108c2c4118"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac04a46dfecd1ade015d3bf1ff801159a"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#ac04a46dfecd1ade015d3bf1ff801159a">field_gathering_plus_particle_pusher_2_2_2</a> (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:ac04a46dfecd1ade015d3bf1ff801159a"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function combined the field gathering and the particle pusher in 3D for order 2 shape factor.  <a href="#ac04a46dfecd1ade015d3bf1ff801159a">More...</a><br /></td></tr>
 <tr class="separator:ac04a46dfecd1ade015d3bf1ff801159a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87ad05cb46ac948188f2738ca82ab6a3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="particles__push_8_f90.html#a87ad05cb46ac948188f2738ca82ab6a3">field_gathering_plus_particle_pusher_3_3_3</a> (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)</td></tr>
 <tr class="memdesc:a87ad05cb46ac948188f2738ca82ab6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function combined the field gathering and the particle pusher in 3D for CIC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop.  <a href="#a87ad05cb46ac948188f2738ca82ab6a3">More...</a><br /></td></tr>
@@ -171,6 +176,16 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Main subroutine for the field subroutine + particle pusher called in the main loop (in <a class="el" href="submain_8_f90.html">submain.F90</a>) </p>
+<p>This routine calls the subroutines for the different particle pusher + field gathering algorithms:</p><ul>
+<li><a class="el" href="particles__push__2d_8_f90.html#a1498d53375cbc1abc8366bb22720df98">field_gathering_plus_particle_pusher_sub_2d()</a></li>
+<li><a class="el" href="particles__push_8_f90.html#ac0c9813b939a0ef799437c54d49cc947">field_gathering_plus_particle_pusher_sub()</a></li>
+<li><a class="el" href="particles__push_8_f90.html#a59d6ed8231bfda3a4c6d828c848b18ff" title="Particle pusher in 3D called by the main function push_particle for the subroutines with cache blocki...">field_gathering_plus_particle_pusher_cacheblock_sub()</a></li>
+<li><a class="el" href="field__gathering_8_f90.html#a3048fd8eb5e48d87fa67d382d260b22f" title="This subroutine performs the field gathering in 3D only. ">field_gathering_sub()</a></li>
+</ul>
+<p>Choice of the method is done via the parameter fg_p_pp_separated </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2016 Revision 10.06.2015 </dd></dl>
 
 </div>
 </div>
@@ -409,9 +424,25 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>This function combined the field gathering and the particle pusher in 3D for CIC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. </p>
-<p>This function is vectorized.  </p><dl class="params"><dt>Parameters</dt><dd>
+<p>This function is vectorized. </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2016 Revision 10.06.2015 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>particle momentum </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gaminv</td><td>inverse of the particle Lorentz factor </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ex,ey,ez</td><td>particle electric field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bx,by,bz</td><td>particle magnetic field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile minimum grid position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of grid points in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for cache blocking </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>performe the field interpolation at a lower order </td></tr>
   </table>
   </dd>
 </dl>
@@ -652,6 +683,30 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>This function combined the field gathering and the particle pusher in 3D for order 2 shape factor. </p>
+<p>The field gathering and the particle pusher are done in the same particle loop. This function is vectorized. </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2016 Revision 10.06.2015 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>particle momentum </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gaminv</td><td>inverse of the particle Lorentz factor </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ex,ey,ez</td><td>particle electric field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bx,by,bz</td><td>particle magnetic field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile minimum grid position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of grid points in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for cache blocking </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>performe the field interpolation at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a class="anchor" id="a87ad05cb46ac948188f2738ca82ab6a3"></a>
@@ -889,7 +944,28 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>This function combined the field gathering and the particle pusher in 3D for CIC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. </p>
-<p>This function is vectorized.  </p>
+<p>This function is vectorized. </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2016 Revision 10.06.2015 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>particle momentum </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gaminv</td><td>inverse of the particle Lorentz factor </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ex,ey,ez</td><td>particle electric field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bx,by,bz</td><td>particle magnetic field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile minimum grid position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of grid points in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for cache blocking </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>performe the field interpolation at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1042,6 +1118,9 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Particle pusher in 3D called by the main function push_particle for the subroutines with cache blocking. </p>
+<dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
 
 </div>
 </div>
@@ -1347,6 +1426,8 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Particle pusher in 3D called by the main function push_particle. </p>
+
 </div>
 </div>
 <a class="anchor" id="a7ea5e15ca81ac196298e046dec12e3b9"></a>
@@ -1644,7 +1725,8 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of super-particles </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction [in] gaminv particle Lorentz factors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gaminv</td><td>particle Lorentz factors </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ex,ey,ez</td><td>particle magnetic fields in each direction </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>charge </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>masse </td></tr>
@@ -1721,6 +1803,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Advance particle positions. </p>
+<dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2015 Revision 06.10.2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of super-particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ux,uy,uz</td><td>normalized momentum in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gaminv</td><td>particle Lorentz factors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>time step </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a class="anchor" id="ad4471b8d19a27dc1e15683c68c2452d2"></a>
@@ -1771,7 +1867,8 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of super-particles </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction [in] gaminv particle Lorentz factors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uxp,uyp,uzp</td><td>normalized momentum in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gaminv</td><td>particle Lorentz factors </td></tr>
   </table>
   </dd>
 </dl>
@@ -1792,6 +1889,7 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Field gathering+ (E &amp; B) Push half a time step. </p>
+<p>This subroutine is wrapper for <a class="el" href="particles__push_8_f90.html#af540a0f57e31e83e106a01e492318462" title="Perform the field gathering + (E &amp; B) Push half a time step. ">pxrpush_particles_part1_sub()</a> </p>
 
 </div>
 </div>

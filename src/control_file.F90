@@ -74,6 +74,9 @@ CONTAINS
         ! Particle communication routine
         partcom = 0
         
+        ! Particle pusher algorithm
+        particle_pusher = 0
+        
         ! Field gathering + part. pusher
         fg_p_pp_separated = 0
         
@@ -220,6 +223,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) partcom
+            ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) particle_pusher
             ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) sorting_activated     
@@ -316,6 +322,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated
+            ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') particle_pusher
             ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo 
@@ -356,7 +365,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), *) g0
             ELSE IF (INDEX(buffer,'pdistr') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), *) pdistr                
+                READ(buffer(ix+1:string_length), *) pdistr
+            ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') particle_pusher
             ELSE IF (INDEX(buffer,'end::plasma') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

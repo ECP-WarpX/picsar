@@ -283,7 +283,12 @@ SUBROUTINE initall
 		write(0,*) 'Field gathering method:',fieldgathe
 		write(0,*) 'Field gathering plus particle pusher seperated:',fg_p_pp_separated
 		write(0,*) 'Current/field gathering order:',nox,noy,noz
-		write(0,*) 'Part com type:',partcom
+		write(0,'(" Particle communication: (partcom=",I1,")")') partcom
+		IF (particle_pusher.eq.1) THEN
+			write(0,'(" Pusher: Jean-Luc Vay algorithm, particle_pusher=",I1)') particle_pusher
+		ELSE
+			write(0,'(" Pusher: Boris algorithm (particle_pusher=",I1,")")') particle_pusher
+		ENDIF
 		write(0,*) 'Maxwell derivative coeff:',xcoeffs
 		write(0,*) 'MPI buffer size:',mpi_buf_size 
 		WRITE(0,*) ''
