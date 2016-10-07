@@ -1,0 +1,68 @@
+#! /usr/bin/python
+"""
+This file configures the installation of PICSAR in Python mode.
+
+It reads the file Makefile_Forthon.in and creates a new file
+Makefile_Forthon, where the MPI libraries and flags have been 
+set to the proper values for the current system.
+
+Usage
+-----
+In a terminal, type `./configure` and then `make -f Makefile_Forthon`
+"""
+import subprocess, re, sys
+
+# Parse the result of mpif90 -show
+parsed_mpi = True   # By default ; errors modify this flag
+print('')
+try:
+    info = subprocess.check_output( [ 'mpif90', '-show' ] )
+except OSError:
+    print('** Failed to detect mpif90 on your system. Is it installed?')
+    parsed_mpi = False
+    libdir = ''
+    libs = ''
+else:
+    # Find the library path, using regular expressions
+    path_list = re.findall('\s-L(\S+)', info)
+    if path_list == []:
+        print('** Failed to detect MPI library location on your system.')
+        parsed_mpi = False
+        libdir = ''
+    else:
+        libdir = path_list[0]
+        print('MPI library: %s' %libdir)
+
+    # Find the proper flags, using regular expressions
+    flag_list = re.findall('\s-l(\S+)', info)
+    if flag_list == []:
+        print('** Failed to detect MPI flags on your system.')
+        parsed_mpi = False
+        libs = ''
+    else:
+        libs = ' '.join([ '-l%s' %flag for flag in flag_list ])
+        libs += ' -lgomp'
+        print('MPI flags: %s' %libs)
+
+# Read the file Makefile_Forthon.in
+with open('Makefile_Forthon.in') as f:
+    makefile_text = f.read()
+
+# Replace the libraries in the text
+makefile_text = makefile_text.replace( 'LIBDIR=', 'LIBDIR=-L%s' %libdir )
+makefile_text = makefile_text.replace( 'LIBS=', 'LIBS=%s' %libs )
+
+# Write the new file Makefile_Forthon
+with open('Makefile_Forthon', 'w') as f:
+    f.write( makefile_text )
+
+# Print messages if the configure failed
+if parsed_mpi == False:
+    print('\n** Configure failed.')
+    print('Modify the Makefile_Forthon by hand, to set LIBDIR and LIBS\n')
+    sys.exit(1)
+else:
+    print('\nConfigure succeeded.')
+    print('To compile PICSAR in Python mode, type `make -f Makefile_Forthon`\n')
+    sys.exit(0)
+    
