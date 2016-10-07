@@ -42,7 +42,7 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
 
   # 
-  Nsteps = 5
+  Nsteps = 30
 
   #Mesh: normalized at the plasma frequency
   dx=0.04
@@ -120,7 +120,7 @@ def test_langmuir_wave():
   laser_polangle     = 0#pi/2                       # polarization (0=aligned with x; pi/2=aligned with y)
   k0                 = 2.*pi/lambda_laser
   w0                 = k0*clight
-  ZR                 = 0.5*k0*(laser_waist**2)   # Rayleigh length
+  ZR                 = 0.5*k0*(laser_waist**2)            # Rayleigh length
   Eamp               = a0*w0*emass*clight/echarge
   Bamp               = Eamp/clight 
   if l_laser==0:Eamp=Bamp=0.
@@ -134,7 +134,7 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # Carbon plasma 
   #-------------------------------------------------------------------------------
-  dens0_C           = plasma_elec_density*densc    # plasma density
+  dens0_C           = plasma_elec_density*densc             # plasma density
   wp_C              = sqrt(dens0_C*echarge**2/(eps0*emass)) # plasma frequency
   kp_C              = wp_C/clight                           # plasma wavenumber
   lambda_plasma_C   = 2.*pi/kp_C                            # plasma wavelength
@@ -182,6 +182,8 @@ def test_langmuir_wave():
   # 0 - optimized version
   # 1 - MPI and OMP in separate subroutines
   partcom =0
+  # Field gathering and particle pusher together
+  fg_p_pp_separated=0
 
   #-------------------------------------------------------------------------------
   # grid dimensions, nb cells and BC
@@ -276,9 +278,9 @@ def test_langmuir_wave():
       
       np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
       
-      elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vzmean=0.01*clight,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.25*zmin,0.75*zmax,vzmean=0.01*clight,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
-      ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.25*zmin,0.75*zmax,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
 
   laser_total_duration=1.25*laser_duration
@@ -434,8 +436,8 @@ def test_langmuir_wave():
         species=1
         ekinE = em.get_kinetic_energy(species)*9.10938215E-31*299792458.**2 
         ikinE = em.get_kinetic_energy(2)*9.10938215E-31*299792458.**2 
-        print ' Kinetic energy (J)',ekinE
-      
+        print ' Electron kinetic energy (J)',ekinE
+        print ' Ion kinetic energy (J)',ekinE      
       
       # Electric energy
       # Using python
