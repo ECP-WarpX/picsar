@@ -4,33 +4,33 @@
 \begin{DoxyCompactItemize}
 \item 
 subroutine \hyperlink{particles__push_8_f90_aba6f2e1d26c95eebe4a184e026c0a3f6}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher}
-\item 
+\begin{DoxyCompactList}\small\item\em Main subroutine for the field subroutine + particle pusher called in the main loop (in \hyperlink{submain_8_f90}{submain.\+F90}) \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
-\item 
+\begin{DoxyCompactList}\small\item\em Particle pusher in 3D called by the main function push\+\_\+particle. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
-\item 
+\begin{DoxyCompactList}\small\item\em Particle pusher in 3D called by the main function push\+\_\+particle for the subroutines with cache blocking. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}{particle\+\_\+pusher\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
-\item 
+\begin{DoxyCompactList}\small\item\em Particle pusher in 3D called by the main function push\+\_\+particle. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{pxrpush\+\_\+particles\+\_\+part1}
 \begin{DoxyCompactList}\small\item\em Field gathering+ (E \& B) Push half a time step. \end{DoxyCompactList}\item 
-subroutine \hyperlink{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+subroutine \hyperlink{particles__push_8_f90_af540a0f57e31e83e106a01e492318462}{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l4symtry\+\_\+in, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
 \begin{DoxyCompactList}\small\item\em Perform the field gathering + (E \& B) Push half a time step. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{pxrpush\+\_\+particles\+\_\+part2}
-\item 
+\begin{DoxyCompactList}\small\item\em (B \& E) Push half a time step + X\+YZ push half a time step \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}{pxr\+\_\+pushxyz} (np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
-\item 
+\begin{DoxyCompactList}\small\item\em Advance particle positions. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}{pxr\+\_\+epush\+\_\+v} (np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
-\item 
+\begin{DoxyCompactList}\small\item\em Push the particle velocity with E field. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}{pxr\+\_\+bpush\+\_\+v} (np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
-\item 
+\begin{DoxyCompactList}\small\item\em Push the particle velocity with B field (Boris algorithm) \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}{pxr\+\_\+set\+\_\+gamma} (np, uxp, uyp, uzp, gaminv)
-\item 
-subroutine \hyperlink{particles__push_8_f90_a33af2f46aea122dab559b97c7de2f5f5}{pxr\+\_\+ebcancelpush3d} (np, uxp, uyp, uzp, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)
-\item 
+\begin{DoxyCompactList}\small\item\em Push the particle velocity with B field (Boris algorithm) \end{DoxyCompactList}\item 
+subroutine \hyperlink{particles__push_8_f90_a4a0f739cde5e2d34dca78023a8b7145f}{pxr\+\_\+ebcancelpush3d} (np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)
+\begin{DoxyCompactList}\small\item\em Push the particle velocity with E and B fields, assuming Vmid = 0.\+5$\ast$(Vold+\+Vnew), solving directly for the new gamma. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_af9cba768132f6e7e5d6a39108c2c4118}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1} (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
 \begin{DoxyCompactList}\small\item\em This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2} (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
-\item 
+\begin{DoxyCompactList}\small\item\em This function combined the field gathering and the particle pusher in 3D for order 2 shape factor. \end{DoxyCompactList}\item 
 subroutine \hyperlink{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3} (np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
 \begin{DoxyCompactList}\small\item\em This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
@@ -43,6 +43,24 @@ subroutine \hyperlink{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{f
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_aba6f2e1d26c95eebe4a184e026c0a3f6}{}\label{particles__push_8_f90_aba6f2e1d26c95eebe4a184e026c0a3f6}
+
+
+Main subroutine for the field subroutine + particle pusher called in the main loop (in \hyperlink{submain_8_f90}{submain.\+F90}) 
+
+This routine calls the subroutines for the different particle pusher + field gathering algorithms\+:
+\begin{DoxyItemize}
+\item \hyperlink{particles__push__2d_8_f90_a1498d53375cbc1abc8366bb22720df98}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub\+\_\+2d()}
+\item \hyperlink{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub()}
+\item \hyperlink{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub()}
+\item \hyperlink{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{field\+\_\+gathering\+\_\+sub()}
+\end{DoxyItemize}
+
+Choice of the method is done via the parameter fg\+\_\+p\+\_\+pp\+\_\+separated \begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 10.\+06.\+2015 
+\end{DoxyDate}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{field_gathering_plus_particle_pusher_1_1_1(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+1\+\_\+1\+\_\+1 (
@@ -90,7 +108,46 @@ subroutine \hyperlink{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{f
 
 This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. 
 
-This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}}
+This function is vectorized. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2016 Revision 10.\+06.\+2015 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & particle momentum \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & inverse of the particle Lorentz factor \\
+\hline
+\mbox{\tt in}  & {\em ex,ey,ez} & particle electric field \\
+\hline
+\mbox{\tt in}  & {\em bx,by,bz} & particle magnetic field \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile minimum grid position \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space step \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of grid points in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grid \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grid \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v} & performe the field interpolation at a lower order \\
+\hline
+\end{DoxyParams}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+2\+\_\+2\+\_\+2 (
 \begin{DoxyParamCaption}
@@ -133,6 +190,49 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{logical(isp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}{}\label{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}
+
+
+This function combined the field gathering and the particle pusher in 3D for order 2 shape factor. 
+
+The field gathering and the particle pusher are done in the same particle loop. This function is vectorized. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2016 Revision 10.\+06.\+2015 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & particle momentum \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & inverse of the particle Lorentz factor \\
+\hline
+\mbox{\tt in}  & {\em ex,ey,ez} & particle electric field \\
+\hline
+\mbox{\tt in}  & {\em bx,by,bz} & particle magnetic field \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile minimum grid position \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space step \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of grid points in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grid \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grid \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v} & performe the field interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, uzp, gaminv,                                                                                                                                                   ex, ey, ez, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, dtt, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   exg, eyg, ezg, bxg, byg, bzg, q, m, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+3\+\_\+3\+\_\+3 (
@@ -180,7 +280,46 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 
 This function combined the field gathering and the particle pusher in 3D for C\+IC (order 1) shape factor. The field gathering and the particle pusher are done in the same particle loop. 
 
-This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub}}
+This function is vectorized. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2016 Revision 10.\+06.\+2015 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & particle momentum \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & inverse of the particle Lorentz factor \\
+\hline
+\mbox{\tt in}  & {\em ex,ey,ez} & particle electric field \\
+\hline
+\mbox{\tt in}  & {\em bx,by,bz} & particle magnetic field \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile minimum grid position \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space step \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of grid points in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grid \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grid \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v} & performe the field interpolation at a lower order \\
+\hline
+\end{DoxyParams}
+\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub (
 \begin{DoxyParamCaption}
@@ -209,6 +348,37 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{}\label{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}
+
+
+Particle pusher in 3D called by the main function push\+\_\+particle for the subroutines with cache blocking. 
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 10.\+06.\+2015 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub}}
 \index{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub@{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,           nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,           nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub (
@@ -238,6 +408,37 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{}\label{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}
+
+
+Particle pusher in 3D called by the main function push\+\_\+particle. 
+
+\begin{DoxyAuthor}{Author}
+Henri Vincenti Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 10.\+06.\+2015 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!particle\+\_\+pusher\+\_\+sub@{particle\+\_\+pusher\+\_\+sub}}
 \index{particle\+\_\+pusher\+\_\+sub@{particle\+\_\+pusher\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{particle\+\_\+pusher\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine particle\+\_\+pusher\+\_\+sub (
@@ -267,6 +468,34 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}{}\label{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}
+
+
+Particle pusher in 3D called by the main function push\+\_\+particle. 
+
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 10.\+06.\+2015
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+bpush\+\_\+v@{pxr\+\_\+bpush\+\_\+v}}
 \index{pxr\+\_\+bpush\+\_\+v@{pxr\+\_\+bpush\+\_\+v}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+bpush\+\_\+v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)}{pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+bpush\+\_\+v (
@@ -284,14 +513,40 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{real(num)}]{dt}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}{}\label{particles__push_8_f90_a7ea5e15ca81ac196298e046dec12e3b9}
+
+
+Push the particle velocity with B field (Boris algorithm) 
+
+fast b-\/field rotation algorithm \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \mbox{[}in\mbox{]} gaminv particle Lorentz factors \\
+\hline
+\mbox{\tt in}  & {\em bx,by,bz} & particle magnetic fields in each direction \\
+\hline
+\mbox{\tt in}  & {\em q} & charge \\
+\hline
+\mbox{\tt in}  & {\em m} & masse \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+ebcancelpush3d@{pxr\+\_\+ebcancelpush3d}}
 \index{pxr\+\_\+ebcancelpush3d@{pxr\+\_\+ebcancelpush3d}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
-\subsubsection[{\texorpdfstring{pxr\+\_\+ebcancelpush3d(np, uxp, uyp, uzp, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}{pxr_ebcancelpush3d(np, uxp, uyp, uzp, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+ebcancelpush3d (
+\subsubsection[{\texorpdfstring{pxr\+\_\+ebcancelpush3d(np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}{pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, m, dt, which)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+ebcancelpush3d (
 \begin{DoxyParamCaption}
 \item[{integer(idp)}]{np, }
 \item[{real(num), dimension(np)}]{uxp, }
 \item[{real(num), dimension(np)}]{uyp, }
 \item[{real(num), dimension(np)}]{uzp, }
+\item[{real(num), dimension(np)}]{gi, }
 \item[{real(num), dimension(np)}]{exp, }
 \item[{real(num), dimension(np)}]{eyp, }
 \item[{real(num), dimension(np)}]{ezp, }
@@ -303,7 +558,38 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{real(num)}]{dt, }
 \item[{integer(idp)}]{which}
 \end{DoxyParamCaption}
-)}\hypertarget{particles__push_8_f90_a33af2f46aea122dab559b97c7de2f5f5}{}\label{particles__push_8_f90_a33af2f46aea122dab559b97c7de2f5f5}
+)}\hypertarget{particles__push_8_f90_a4a0f739cde5e2d34dca78023a8b7145f}{}\label{particles__push_8_f90_a4a0f739cde5e2d34dca78023a8b7145f}
+
+
+Push the particle velocity with E and B fields, assuming Vmid = 0.\+5$\ast$(Vold+\+Vnew), solving directly for the new gamma. 
+
+This offers better cancellation of E+\+VxB than the Boris velocity push. Question\+: should we recompute gamma from the new u, in order to prevent roundoff errors to create mismatched values of u and gamma? \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \\
+\hline
+\mbox{\tt in}  & {\em gi} & \\
+\hline
+\mbox{\tt in}  & {\em exp,eyp,ezp} & particle electric field values in each direction \\
+\hline
+\mbox{\tt in}  & {\em bxp,byp,bzp} & particle electric field values in each direction \\
+\hline
+\mbox{\tt in}  & {\em q} & charge \\
+\hline
+\mbox{\tt in}  & {\em m} & masse \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\mbox{\tt in}  & {\em which} & algorithm \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+epush\+\_\+v@{pxr\+\_\+epush\+\_\+v}}
 \index{pxr\+\_\+epush\+\_\+v@{pxr\+\_\+epush\+\_\+v}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+epush\+\_\+v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)}{pxr_epush_v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+epush\+\_\+v (
@@ -320,6 +606,33 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{real(num)}]{dt}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}{}\label{particles__push_8_f90_ad3b68e848193f6e2e6adb95490c79ea3}
+
+
+Push the particle velocity with E field. 
+
+fast b-\/field rotation algorithm \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & particle Lorentz factors \\
+\hline
+\mbox{\tt in}  & {\em ex,ey,ez} & particle magnetic fields in each direction \\
+\hline
+\mbox{\tt in}  & {\em q} & charge \\
+\hline
+\mbox{\tt in}  & {\em m} & masse \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+pushxyz@{pxr\+\_\+pushxyz}}
 \index{pxr\+\_\+pushxyz@{pxr\+\_\+pushxyz}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)}{pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+pushxyz (
@@ -335,6 +648,29 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{real(num)}]{dt}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}{}\label{particles__push_8_f90_aa77ade6c16b80186ff4ba5e899c70848}
+
+
+Advance particle positions. 
+
+\begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em ux,uy,uz} & normalized momentum in each direction \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & particle Lorentz factors \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxr\+\_\+set\+\_\+gamma@{pxr\+\_\+set\+\_\+gamma}}
 \index{pxr\+\_\+set\+\_\+gamma@{pxr\+\_\+set\+\_\+gamma}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+set\+\_\+gamma(np, uxp, uyp, uzp, gaminv)}{pxr_set_gamma(np, uxp, uyp, uzp, gaminv)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+set\+\_\+gamma (
@@ -346,6 +682,25 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 \item[{real(num), dimension(np)}]{gaminv}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}{}\label{particles__push_8_f90_ad4471b8d19a27dc1e15683c68c2452d2}
+
+
+Push the particle velocity with B field (Boris algorithm) 
+
+fast b-\/field rotation algorithm \begin{DoxyAuthor}{Author}
+Henri Vincenti 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of super-\/particles \\
+\hline
+\mbox{\tt in}  & {\em uxp,uyp,uzp} & normalized momentum in each direction \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & particle Lorentz factors \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part1@{pxrpush\+\_\+particles\+\_\+part1}}
 \index{pxrpush\+\_\+particles\+\_\+part1@{pxrpush\+\_\+particles\+\_\+part1}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part1}{pxrpush_particles_part1}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part1 (
@@ -357,9 +712,9 @@ This function is vectorized.  \index{particles\+\_\+push.\+F90@{particles\+\_\+p
 
 Field gathering+ (E \& B) Push half a time step. 
 
-\index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part1\+\_\+sub@{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub}}
+This subroutine is wrapper for \hyperlink{particles__push_8_f90_af540a0f57e31e83e106a01e492318462}{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub()} \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part1\+\_\+sub@{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub}}
 \index{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub@{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
-\subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}{pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part1\+\_\+sub (
+\subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part1\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l4symtry\+\_\+in, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l4symtry_in, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part1\+\_\+sub (
 \begin{DoxyParamCaption}
 \item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{exg, }
 \item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{eyg, }
@@ -382,16 +737,41 @@ Field gathering+ (E \& B) Push half a time step.
 \item[{real(num), intent(in)}]{dxx, }
 \item[{real(num), intent(in)}]{dyy, }
 \item[{real(num), intent(in)}]{dzz, }
-\item[{real(num), intent(in)}]{dtt}
+\item[{real(num), intent(in)}]{dtt, }
+\item[{logical(idp), intent(in)}]{l4symtry\+\_\+in, }
+\item[{logical(idp), intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
-)}\hypertarget{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}{}\label{particles__push_8_f90_a118ee5e2cb33e26a0bdd1db0f93a7fdd}
+)}\hypertarget{particles__push_8_f90_af540a0f57e31e83e106a01e492318462}{}\label{particles__push_8_f90_af540a0f57e31e83e106a01e492318462}
 
 
 Perform the field gathering + (E \& B) Push half a time step. 
 
 This subroutine is called in \hyperlink{particles__push_8_f90_a1143d3843261bfef77dc0c9665e947d1}{pxrpush\+\_\+particles\+\_\+part1()} \begin{DoxyAuthor}{Author}
-Henri Vincenti Mathieu Lobet 
+Henri Vincenti Mathieu Lobet
 \end{DoxyAuthor}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em nxx,nyy,nzz} & number of cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction for the grids \\
+\hline
+\mbox{\tt in}  & {\em nxjguard,nyjguard,nzjguard} & number of guard cells for the current grids \\
+\hline
+\mbox{\tt in}  & {\em noxx,noyy,nozz} & interpolation orders \\
+\hline
+\mbox{\tt in}  & {\em dxx,dyy,dzz} & space steps \\
+\hline
+\mbox{\tt in}  & {\em dtt} & time step \\
+\hline
+\mbox{\tt in}  & {\em l4symtry\+\_\+in} & \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in} & flag to activate interpolation at a lower order \\
+\hline
+\end{DoxyParams}
 \index{particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}!pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}}
 \index{pxrpush\+\_\+particles\+\_\+part2@{pxrpush\+\_\+particles\+\_\+part2}!particles\+\_\+push.\+F90@{particles\+\_\+push.\+F90}}
 \subsubsection[{\texorpdfstring{pxrpush\+\_\+particles\+\_\+part2}{pxrpush_particles_part2}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxrpush\+\_\+particles\+\_\+part2 (
@@ -399,3 +779,13 @@ Henri Vincenti Mathieu Lobet
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}{}\label{particles__push_8_f90_ab65aba49863198b09c221d6bf6a8f6bc}
+
+
+(B \& E) Push half a time step + X\+YZ push half a time step 
+
+\begin{DoxyAuthor}{Author}
+Henri Vincenti
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2015 Revision 06.\+10.\+2016 
+\end{DoxyDate}

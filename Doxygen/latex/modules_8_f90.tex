@@ -129,6 +129,8 @@ logical \hyperlink{namespacefields_a5a24e83e3fb185459ab237b37188c1d8}{fields\+::
 \item 
 logical \hyperlink{namespacefields_ab18c95cb8d4e80527bd87db458526d68}{fields\+::l\+\_\+nodalgrid}
 \item 
+logical \hyperlink{namespacefields_afcffe2f0f052e32d9e264c035db32bde}{fields\+::l4symtry}
+\item 
 integer(idp) \hyperlink{namespacefields_a930a275ec3d0c2c725a19a016cf140f0}{fields\+::nxs} =0
 \item 
 integer(idp) \hyperlink{namespacefields_adc125104f8f7666c683e307ad9703412}{fields\+::nys} =0
@@ -203,8 +205,8 @@ logical \hyperlink{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bf
 \item 
 logical \hyperlink{namespaceparticle__properties_a886a9f7d338c6c8fc14d80df9ac732ae}{particle\+\_\+properties\+::l\+\_\+particles\+\_\+weight} = .F\+A\+L\+S\+E.
 \item 
-logical \hyperlink{namespaceparticle__properties_adf7851e9d61da6389c759e11e09d218a}{particle\+\_\+properties\+::l4symtry} = .F\+A\+L\+S\+E.
-\item 
+integer(idp) \hyperlink{namespaceparticle__properties_ab885434a8bf6905c7fbd9108e77175f4}{particle\+\_\+properties\+::particle\+\_\+pusher} = 0
+\begin{DoxyCompactList}\small\item\em Particle pusher type (0\+: Boris, 1\+: Vay, Default\+: 0) \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparticle__properties_aaf6c9fb8697f29ccff6e1d82ee7f477a}{particle\+\_\+properties\+::pdistr}
 \begin{DoxyCompactList}\small\item\em Particle initial distribution. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparticle__properties_a5aabee3c3d0e9e902989125d50e03426}{particle\+\_\+properties\+::nspecies}
@@ -279,11 +281,11 @@ integer(idp) \hyperlink{namespaceparams_af4ccf29a8c1f3a8a47f08f5cbbcd30eb}{param
 \begin{DoxyCompactList}\small\item\em Current deposition method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_ae892561d7462a1e54b9b6b2bbe1adc4c}{params\+::rhodepo}
 \begin{DoxyCompactList}\small\item\em Charge deposition method. \end{DoxyCompactList}\item 
-integer(idp) \hyperlink{namespaceparams_afd98a17f8dde6a4f7d4e7b0efb7384ea}{params\+::fieldgave}
+integer(idp) \hyperlink{namespaceparams_afef819010f4c590b2d6f9ecde05bd4c5}{params\+::fieldgathe}
 \begin{DoxyCompactList}\small\item\em Field gathering method. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_aa63204e737d29465924b4275b46ddfb3}{params\+::partcom}
 \begin{DoxyCompactList}\small\item\em Type of comm routine to use for particles. \end{DoxyCompactList}\item 
-integer(idp) \hyperlink{namespaceparams_a58efb719fdc3fbbfa8c6beb237ce2716}{params\+::fg\+\_\+p\+\_\+pp\+\_\+seperated}
+integer(idp) \hyperlink{namespaceparams_a041d5cfcf8653c0bd7eacd2e48077d42}{params\+::fg\+\_\+p\+\_\+pp\+\_\+separated}
 \begin{DoxyCompactList}\small\item\em Field gathering + part. pusher seperated flag. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_aedb04c2dd01619937eaad2ce0a2626a5}{params\+::lvec\+\_\+curr\+\_\+depo}
 \begin{DoxyCompactList}\small\item\em Vector size for the current deposition. \end{DoxyCompactList}\item 
@@ -401,13 +403,13 @@ character(len=string\+\_\+length) \hyperlink{namespaceoutput__data_a655183a11c6b
 \item 
 character(len=string\+\_\+length) \hyperlink{namespaceoutput__data_abd9468ccde074971628171196a7873f2}{output\+\_\+data\+::filerho} =\textquotesingle{}rho\textquotesingle{}
 \item 
-integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a63d2f446c4aca8bf956973b6ff9bcfb0}{output\+\_\+data\+::temdiag\+\_\+act\+\_\+list}
+integer(isp), dimension(15) \hyperlink{namespaceoutput__data_a8343f9b523163c47d0661619374f3455}{output\+\_\+data\+::temdiag\+\_\+act\+\_\+list}
 \begin{DoxyCompactList}\small\item\em Array of activation flags. \end{DoxyCompactList}\item 
 character(len=string\+\_\+length), dimension(10) \hyperlink{namespaceoutput__data_a891f4f8be197dbbfe91c01ee5260b4c2}{output\+\_\+data\+::temdiag\+\_\+name\+\_\+list}
 \begin{DoxyCompactList}\small\item\em Filename for the different temporal diags. \end{DoxyCompactList}\item 
-integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a272ff12d370f1ddd453ed84e0aea955b}{output\+\_\+data\+::temdiag\+\_\+i\+\_\+list}
+integer(isp), dimension(15) \hyperlink{namespaceoutput__data_a9cf412af092dd4e6d2877134a66b665d}{output\+\_\+data\+::temdiag\+\_\+i\+\_\+list}
 \begin{DoxyCompactList}\small\item\em Array of index to locate the value in the big array. \end{DoxyCompactList}\item 
-integer(isp), dimension(10) \hyperlink{namespaceoutput__data_a2c62698838d0295802c6b2a6637c3827}{output\+\_\+data\+::temdiag\+\_\+nb\+\_\+values}
+integer(isp), dimension(15) \hyperlink{namespaceoutput__data_aa73fc47cc7d7d0cee7422d6fee957c48}{output\+\_\+data\+::temdiag\+\_\+nb\+\_\+values}
 \begin{DoxyCompactList}\small\item\em Array containing the number of values in the big array. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceoutput__data_a996655a7d030216dcce6367a59b22ae8}{output\+\_\+data\+::temdiag\+\_\+nb}
 \begin{DoxyCompactList}\small\item\em Number of temoral diags. \end{DoxyCompactList}\item 

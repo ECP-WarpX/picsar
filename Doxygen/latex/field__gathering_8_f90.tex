@@ -7,7 +7,7 @@ subroutine \hyperlink{field__gathering_8_f90_a967586c463fd968e31a929a61e6e2b65}{
 \begin{DoxyCompactList}\small\item\em Field gathering main subroutine in 3D called in the main loop when not coupled with the particle pusher. \end{DoxyCompactList}\item 
 subroutine \hyperlink{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{field\+\_\+gathering\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
 \begin{DoxyCompactList}\small\item\em This subroutine performs the field gathering in 3D only. \end{DoxyCompactList}\item 
-subroutine \hyperlink{field__gathering_8_f90_ae97b65ed28e18c6c648fbcd18c5e1339}{geteb3d\+\_\+energy\+\_\+conserving} (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+subroutine \hyperlink{field__gathering_8_f90_a02f8f275e2b38a13c4de92719714b016}{geteb3d\+\_\+energy\+\_\+conserving} (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v, field\+\_\+gathe\+\_\+algo)
 \begin{DoxyCompactList}\small\item\em General subroutines for the 3D field gathering. \end{DoxyCompactList}\item 
 subroutine \hyperlink{field__gathering_8_f90_aff764c0eb8ae48e31d7bb6f39467cabf}{pxrgete3d\+\_\+n\+\_\+energy\+\_\+conserving} (np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, exg, eyg, ezg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
 \begin{DoxyCompactList}\small\item\em Gathering of electric field from Yee grid (\char`\"{}energy conserving\char`\"{}) on particles at arbitrary order. W\+A\+R\+N\+I\+NG\+: Highly unoptimized routine. \end{DoxyCompactList}\item 
@@ -66,7 +66,7 @@ This subroutine performs the field gathering in 3D only.
 
 \index{field\+\_\+gathering.\+F90@{field\+\_\+gathering.\+F90}!geteb3d\+\_\+energy\+\_\+conserving@{geteb3d\+\_\+energy\+\_\+conserving}}
 \index{geteb3d\+\_\+energy\+\_\+conserving@{geteb3d\+\_\+energy\+\_\+conserving}!field\+\_\+gathering.\+F90@{field\+\_\+gathering.\+F90}}
-\subsubsection[{\texorpdfstring{geteb3d\+\_\+energy\+\_\+conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{geteb3d_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb3d\+\_\+energy\+\_\+conserving (
+\subsubsection[{\texorpdfstring{geteb3d\+\_\+energy\+\_\+conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v, field\+\_\+gathe\+\_\+algo)}{geteb3d_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, field_gathe_algo)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb3d\+\_\+energy\+\_\+conserving (
 \begin{DoxyParamCaption}
 \item[{integer(idp)}]{np, }
 \item[{real(num), dimension(np)}]{xp, }
@@ -100,19 +100,51 @@ This subroutine performs the field gathering in 3D only.
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
 \item[{logical, intent(in)}]{ll4symtry, }
-\item[{logical, intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical, intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v, }
+\item[{integer(idp)}]{field\+\_\+gathe\+\_\+algo}
 \end{DoxyParamCaption}
-)}\hypertarget{field__gathering_8_f90_ae97b65ed28e18c6c648fbcd18c5e1339}{}\label{field__gathering_8_f90_ae97b65ed28e18c6c648fbcd18c5e1339}
+)}\hypertarget{field__gathering_8_f90_a02f8f275e2b38a13c4de92719714b016}{}\label{field__gathering_8_f90_a02f8f275e2b38a13c4de92719714b016}
 
 
 General subroutines for the 3D field gathering. 
 
-This subroutine controls the different algorithms for the field gathering as a function of the user variable fieldgave. This subroutine is called in the subroutine \hyperlink{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{field\+\_\+gathering\+\_\+sub()}. \begin{DoxyAuthor}{Author}
+This subroutine controls the different algorithms for the field gathering Choice of an algorithm is done using the argument field\+\_\+gathe\+\_\+algo. This subroutine is called in the subroutine \hyperlink{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{field\+\_\+gathering\+\_\+sub()}. \begin{DoxyAuthor}{Author}
 Henri Vincenti Mathieu Lobet 
 \end{DoxyAuthor}
 \begin{DoxyDate}{Date}
 2015-\/2016 
 \end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle positions \\
+\hline
+\mbox{\tt out}  & {\em ex,ey,ez} & particle electric field \\
+\hline
+\mbox{\tt out}  & {\em bx,by,bz} & particle magnetic field \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile origin \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space discretization \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em nox,noy,noz} & shape factor order \\
+\hline
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grids \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grids \\
+\hline
+\mbox{\tt in}  & {\em ll4symtry} & \\
+\hline
+\mbox{\tt in}  & {\em l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v} & \\
+\hline
+\mbox{\tt in}  & {\em field\+\_\+gathe\+\_\+algo} & gathering algorithm \\
+\hline
+\end{DoxyParams}
 \index{field\+\_\+gathering.\+F90@{field\+\_\+gathering.\+F90}!pxr\+\_\+getb3d\+\_\+n\+\_\+energy\+\_\+conserving@{pxr\+\_\+getb3d\+\_\+n\+\_\+energy\+\_\+conserving}}
 \index{pxr\+\_\+getb3d\+\_\+n\+\_\+energy\+\_\+conserving@{pxr\+\_\+getb3d\+\_\+n\+\_\+energy\+\_\+conserving}!field\+\_\+gathering.\+F90@{field\+\_\+gathering.\+F90}}
 \subsubsection[{\texorpdfstring{pxr\+\_\+getb3d\+\_\+n\+\_\+energy\+\_\+conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, bxg, byg, bzg, l4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, bxg, byg, bzg, l4symtry, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine pxr\+\_\+getb3d\+\_\+n\+\_\+energy\+\_\+conserving (

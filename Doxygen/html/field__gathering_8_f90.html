@@ -125,9 +125,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a3048fd8eb5e48d87fa67d382d260b22f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#a3048fd8eb5e48d87fa67d382d260b22f">field_gathering_sub</a> (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)</td></tr>
 <tr class="memdesc:a3048fd8eb5e48d87fa67d382d260b22f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This subroutine performs the field gathering in 3D only.  <a href="#a3048fd8eb5e48d87fa67d382d260b22f">More...</a><br /></td></tr>
 <tr class="separator:a3048fd8eb5e48d87fa67d382d260b22f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae97b65ed28e18c6c648fbcd18c5e1339"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#ae97b65ed28e18c6c648fbcd18c5e1339">geteb3d_energy_conserving</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:ae97b65ed28e18c6c648fbcd18c5e1339"><td class="mdescLeft">&#160;</td><td class="mdescRight">General subroutines for the 3D field gathering.  <a href="#ae97b65ed28e18c6c648fbcd18c5e1339">More...</a><br /></td></tr>
-<tr class="separator:ae97b65ed28e18c6c648fbcd18c5e1339"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02f8f275e2b38a13c4de92719714b016"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#a02f8f275e2b38a13c4de92719714b016">geteb3d_energy_conserving</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, field_gathe_algo)</td></tr>
+<tr class="memdesc:a02f8f275e2b38a13c4de92719714b016"><td class="mdescLeft">&#160;</td><td class="mdescRight">General subroutines for the 3D field gathering.  <a href="#a02f8f275e2b38a13c4de92719714b016">More...</a><br /></td></tr>
+<tr class="separator:a02f8f275e2b38a13c4de92719714b016"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff764c0eb8ae48e31d7bb6f39467cabf"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#aff764c0eb8ae48e31d7bb6f39467cabf">pxrgete3d_n_energy_conserving</a> (np, xp, yp, zp, ex, ey, ez, xmin, ymin, zmin,                                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   nox, noy, noz, exg, eyg, ezg, l_lower_order_in_v)</td></tr>
 <tr class="memdesc:aff764c0eb8ae48e31d7bb6f39467cabf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gathering of electric field from Yee grid ("energy conserving") on particles at arbitrary order. WARNING: Highly unoptimized routine.  <a href="#aff764c0eb8ae48e31d7bb6f39467cabf">More...</a><br /></td></tr>
 <tr class="separator:aff764c0eb8ae48e31d7bb6f39467cabf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -312,7 +312,7 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ae97b65ed28e18c6c648fbcd18c5e1339"></a>
+<a class="anchor" id="a02f8f275e2b38a13c4de92719714b016"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -512,7 +512,13 @@ Functions/Subroutines</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">logical, intent(in)&#160;</td>
-          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>field_gathe_algo</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -523,8 +529,27 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>General subroutines for the 3D field gathering. </p>
-<p>This subroutine controls the different algorithms for the field gathering as a function of the user variable fieldgave. This subroutine is called in the subroutine <a class="el" href="field__gathering_8_f90.html#a3048fd8eb5e48d87fa67d382d260b22f" title="This subroutine performs the field gathering in 3D only. ">field_gathering_sub()</a>. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<p>This subroutine controls the different algorithms for the field gathering Choice of an algorithm is done using the argument field_gathe_algo. This subroutine is called in the subroutine <a class="el" href="field__gathering_8_f90.html#a3048fd8eb5e48d87fa67d382d260b22f" title="This subroutine performs the field gathering in 3D only. ">field_gathering_sub()</a>. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2015-2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle positions </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ex,ey,ez</td><td>particle electric field </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">bx,by,bz</td><td>particle magnetic field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile origin </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nox,noy,noz</td><td>shape factor order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grids </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grids </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ll4symtry</td><td></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">field_gathe_algo</td><td>gathering algorithm </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

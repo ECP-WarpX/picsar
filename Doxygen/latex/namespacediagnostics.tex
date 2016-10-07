@@ -33,11 +33,13 @@ subroutine \hyperlink{namespacediagnostics_a00b7e2217883d1cfe260ccc24e740663}{ge
 subroutine \hyperlink{namespacediagnostics_a35743d1121d2d5381a758ad94085362e}{get\+\_\+field\+\_\+energy\+\_\+2d} (field, nx2, nz2, dx2, dz2, nxguard, nzguard, field\+\_\+energy)
 \item 
 subroutine \hyperlink{namespacediagnostics_ac039b5b8f68cf780a761ee735024fe56}{get\+\_\+field\+\_\+energy} (field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard, nyguard, nzguard, field\+\_\+energy)
-\item 
-subroutine \hyperlink{namespacediagnostics_a1a35a5a833c5e6c91cf6bc2f3d371d6a}{get\+\_\+loc\+\_\+norm\+\_\+diverho} (divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm\+\_\+loc)
-\item 
+\begin{DoxyCompactList}\small\item\em Get the energy of the field component field. \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespacediagnostics_a0c81a0eb062f6137922f5a857c51e684}{get\+\_\+loc\+\_\+norm\+\_\+diverho} (divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)
+\begin{DoxyCompactList}\small\item\em Compute norm of d\+F/dt = divE -\/rho/eps0 local to the M\+PI domain (parallel function) \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespacediagnostics_a64b59a6d54ed382f0cdfc360a5ccea39}{get\+\_\+loc\+\_\+norm\+\_\+2} (array, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)
+\begin{DoxyCompactList}\small\item\em Compute the square of the norm of array local to the M\+PI domain (Open\+MP parallel function) \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespacediagnostics_a39c7463e667e97124ccb0c85381e6d03}{get\+\_\+norm\+\_\+diverho} (divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Compute norm of d\+F/dt = divE -\/rho/eps0 (parallel function) \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
@@ -92,6 +94,25 @@ Henri Vincenti, Mathieu Lobet
 \item[{real(num)}]{field\+\_\+energy}
 \end{DoxyParamCaption}
 )}\hypertarget{namespacediagnostics_ac039b5b8f68cf780a761ee735024fe56}{}\label{namespacediagnostics_ac039b5b8f68cf780a761ee735024fe56}
+
+
+Get the energy of the field component field. 
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+09.\+29.\+2016 
+\end{DoxyDate}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em field} & array for a given field component \\
+\hline
+\mbox{\tt in}  & {\em nx2,ny2,nz2} & number of cells \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells \\
+\hline
+\end{DoxyParams}
 \index{diagnostics@{diagnostics}!get\+\_\+field\+\_\+energy\+\_\+2d@{get\+\_\+field\+\_\+energy\+\_\+2d}}
 \index{get\+\_\+field\+\_\+energy\+\_\+2d@{get\+\_\+field\+\_\+energy\+\_\+2d}!diagnostics@{diagnostics}}
 \subsubsection[{\texorpdfstring{get\+\_\+field\+\_\+energy\+\_\+2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard, field\+\_\+energy)}{get_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard, field_energy)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine diagnostics\+::get\+\_\+field\+\_\+energy\+\_\+2d (
@@ -153,21 +174,49 @@ Henri Vincenti, Mathieu Lobet
 \item[{real(num)}]{kinetic\+\_\+energy\+\_\+loc}
 \end{DoxyParamCaption}
 )}\hypertarget{namespacediagnostics_addf30cc7cc0a935993be10cbf8b017f5}{}\label{namespacediagnostics_addf30cc7cc0a935993be10cbf8b017f5}
+\index{diagnostics@{diagnostics}!get\+\_\+loc\+\_\+norm\+\_\+2@{get\+\_\+loc\+\_\+norm\+\_\+2}}
+\index{get\+\_\+loc\+\_\+norm\+\_\+2@{get\+\_\+loc\+\_\+norm\+\_\+2}!diagnostics@{diagnostics}}
+\subsubsection[{\texorpdfstring{get\+\_\+loc\+\_\+norm\+\_\+2(array, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)}{get_loc_norm_2(array, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine diagnostics\+::get\+\_\+loc\+\_\+norm\+\_\+2 (
+\begin{DoxyParamCaption}
+\item[{real(num), dimension(-\/nxguard\+:nx2+nxguard,-\/nyguard\+:ny2+nyguard,-\/nzguard\+:nz2+nzguard), intent(in)}]{array, }
+\item[{integer(idp)}]{nx2, }
+\item[{integer(idp)}]{ny2, }
+\item[{integer(idp)}]{nz2, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), intent(out)}]{norm}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacediagnostics_a64b59a6d54ed382f0cdfc360a5ccea39}{}\label{namespacediagnostics_a64b59a6d54ed382f0cdfc360a5ccea39}
+
+
+Compute the square of the norm of array local to the M\+PI domain (Open\+MP parallel function) 
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
 \index{diagnostics@{diagnostics}!get\+\_\+loc\+\_\+norm\+\_\+diverho@{get\+\_\+loc\+\_\+norm\+\_\+diverho}}
 \index{get\+\_\+loc\+\_\+norm\+\_\+diverho@{get\+\_\+loc\+\_\+norm\+\_\+diverho}!diagnostics@{diagnostics}}
-\subsubsection[{\texorpdfstring{get\+\_\+loc\+\_\+norm\+\_\+diverho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm\+\_\+loc)}{get_loc_norm_diverho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm_loc)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine diagnostics\+::get\+\_\+loc\+\_\+norm\+\_\+diverho (
+\subsubsection[{\texorpdfstring{get\+\_\+loc\+\_\+norm\+\_\+diverho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)}{get_loc_norm_diverho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine diagnostics\+::get\+\_\+loc\+\_\+norm\+\_\+diverho (
 \begin{DoxyParamCaption}
 \item[{real(num), dimension(-\/nxguard\+:nx2+nxguard,-\/nyguard\+:ny2+nyguard,-\/nzguard\+:nz2+nzguard), intent(in)}]{divee2, }
 \item[{real(num), dimension(-\/nxguard\+:nx2+nxguard,-\/nyguard\+:ny2+nyguard,-\/nzguard\+:nz2+nzguard), intent(in)}]{rho2, }
-\item[{integer(idp), intent(in)}]{nx2, }
-\item[{integer(idp), intent(in)}]{ny2, }
-\item[{integer(idp), intent(in)}]{nz2, }
-\item[{integer(idp), intent(in)}]{nxguard, }
-\item[{integer(idp), intent(in)}]{nyguard, }
-\item[{integer(idp), intent(in)}]{nzguard, }
-\item[{real(num), intent(out)}]{norm\+\_\+loc}
+\item[{integer(idp)}]{nx2, }
+\item[{integer(idp)}]{ny2, }
+\item[{integer(idp)}]{nz2, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), intent(out)}]{norm}
 \end{DoxyParamCaption}
-)}\hypertarget{namespacediagnostics_a1a35a5a833c5e6c91cf6bc2f3d371d6a}{}\label{namespacediagnostics_a1a35a5a833c5e6c91cf6bc2f3d371d6a}
+)}\hypertarget{namespacediagnostics_a0c81a0eb062f6137922f5a857c51e684}{}\label{namespacediagnostics_a0c81a0eb062f6137922f5a857c51e684}
+
+
+Compute norm of d\+F/dt = divE -\/rho/eps0 local to the M\+PI domain (parallel function) 
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
 \index{diagnostics@{diagnostics}!get\+\_\+norm\+\_\+diverho@{get\+\_\+norm\+\_\+diverho}}
 \index{get\+\_\+norm\+\_\+diverho@{get\+\_\+norm\+\_\+diverho}!diagnostics@{diagnostics}}
 \subsubsection[{\texorpdfstring{get\+\_\+norm\+\_\+diverho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)}{get_norm_diverho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine diagnostics\+::get\+\_\+norm\+\_\+diverho (
@@ -183,6 +232,13 @@ Henri Vincenti, Mathieu Lobet
 \item[{real(num), intent(out)}]{norm}
 \end{DoxyParamCaption}
 )}\hypertarget{namespacediagnostics_a39c7463e667e97124ccb0c85381e6d03}{}\label{namespacediagnostics_a39c7463e667e97124ccb0c85381e6d03}
+
+
+Compute norm of d\+F/dt = divE -\/rho/eps0 (parallel function) 
+
+\begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
 \index{diagnostics@{diagnostics}!get\+\_\+tot\+\_\+number\+\_\+of\+\_\+particles@{get\+\_\+tot\+\_\+number\+\_\+of\+\_\+particles}}
 \index{get\+\_\+tot\+\_\+number\+\_\+of\+\_\+particles@{get\+\_\+tot\+\_\+number\+\_\+of\+\_\+particles}!diagnostics@{diagnostics}}
 \subsubsection[{\texorpdfstring{get\+\_\+tot\+\_\+number\+\_\+of\+\_\+particles(nptot)}{get_tot_number_of_particles(nptot)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine diagnostics\+::get\+\_\+tot\+\_\+number\+\_\+of\+\_\+particles (

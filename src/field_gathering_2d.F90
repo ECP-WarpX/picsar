@@ -38,7 +38,7 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,z
               
   ! ______________________________________________                                  
   ! Arbitrary order, non-optimized subroutines
-  IF (fieldgave.eq.1) THEN
+  IF (fieldgathe.eq.1) THEN
   
 
     !!! --- Gather electric field on particles

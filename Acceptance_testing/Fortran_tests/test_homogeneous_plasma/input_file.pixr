@@ -72,7 +72,10 @@ section::solver
  rhodepo = 0
  
  # Particle pusher and field gathering seperated
- fg_p_pp_seperated = 0
+ fg_p_pp_separated = 0
+ 
+ # Particle pusher algorithm
+ particle_pusher = 0
 
 end::solver
 

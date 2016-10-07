@@ -69,13 +69,16 @@ CONTAINS
         rhodepo = 0
         
         ! Field gathering algorithm 
-        fieldgave = 0
+        fieldgathe = 0
         
         ! Particle communication routine
         partcom = 0
         
+        ! Particle pusher algorithm
+        particle_pusher = 0
+        
         ! Field gathering + part. pusher
-        fg_p_pp_seperated = 0
+        fg_p_pp_separated = 0
         
         ! Vector length current deposition
         lvec_curr_depo = 8
@@ -210,7 +213,7 @@ CONTAINS
                 READ(buffer, *) nz_global_grid   
             ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) fieldgave   
+                READ(buffer, *) fieldgathe   
             ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) currdepo 
@@ -220,6 +223,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) partcom
+            ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) particle_pusher
             ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) sorting_activated     
@@ -313,9 +319,12 @@ CONTAINS
             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') partcom
-            ELSE IF (INDEX(buffer,'fg_p_pp_seperated') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_seperated
+                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated
+            ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') particle_pusher
             ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo 
@@ -356,7 +365,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), *) g0
             ELSE IF (INDEX(buffer,'pdistr') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), *) pdistr                
+                READ(buffer(ix+1:string_length), *) pdistr
+            ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), '(i10)') particle_pusher
             ELSE IF (INDEX(buffer,'end::plasma') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -397,7 +409,7 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') currdepo        
              ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fieldgave      
+                READ(buffer(ix+1:string_length), '(i10)') fieldgathe      
              ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') rhodepo
@@ -407,9 +419,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size 
-            ELSE IF (INDEX(buffer,'fg_p_pp_seperated') .GT. 0) THEN
+            ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_seperated                                              
+                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated                                              
             ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

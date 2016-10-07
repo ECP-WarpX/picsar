@@ -16,8 +16,8 @@ logical \hyperlink{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bf
 \item 
 logical \hyperlink{namespaceparticle__properties_a886a9f7d338c6c8fc14d80df9ac732ae}{l\+\_\+particles\+\_\+weight} = .F\+A\+L\+S\+E.
 \item 
-logical \hyperlink{namespaceparticle__properties_adf7851e9d61da6389c759e11e09d218a}{l4symtry} = .F\+A\+L\+S\+E.
-\item 
+integer(idp) \hyperlink{namespaceparticle__properties_ab885434a8bf6905c7fbd9108e77175f4}{particle\+\_\+pusher} = 0
+\begin{DoxyCompactList}\small\item\em Particle pusher type (0\+: Boris, 1\+: Vay, Default\+: 0) \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparticle__properties_aaf6c9fb8697f29ccff6e1d82ee7f477a}{pdistr}
 \begin{DoxyCompactList}\small\item\em Particle initial distribution. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparticle__properties_a5aabee3c3d0e9e902989125d50e03426}{nspecies}
@@ -52,9 +52,6 @@ Module containing useful properties for the particles.
 \index{particle\+\_\+properties@{particle\+\_\+properties}!fdzrand@{fdzrand}}
 \index{fdzrand@{fdzrand}!particle\+\_\+properties@{particle\+\_\+properties}}
 \subsubsection[{\texorpdfstring{fdzrand}{fdzrand}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) particle\+\_\+properties\+::fdzrand =0.\+0\+\_\+num}\hypertarget{namespaceparticle__properties_ac28362a40a4b808ff8ede4d94c4423f3}{}\label{namespaceparticle__properties_ac28362a40a4b808ff8ede4d94c4423f3}
-\index{particle\+\_\+properties@{particle\+\_\+properties}!l4symtry@{l4symtry}}
-\index{l4symtry@{l4symtry}!particle\+\_\+properties@{particle\+\_\+properties}}
-\subsubsection[{\texorpdfstring{l4symtry}{l4symtry}}]{\setlength{\rightskip}{0pt plus 5cm}logical particle\+\_\+properties\+::l4symtry = .F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_adf7851e9d61da6389c759e11e09d218a}{}\label{namespaceparticle__properties_adf7851e9d61da6389c759e11e09d218a}
 \index{particle\+\_\+properties@{particle\+\_\+properties}!l\+\_\+initongrid@{l\+\_\+initongrid}}
 \index{l\+\_\+initongrid@{l\+\_\+initongrid}!particle\+\_\+properties@{particle\+\_\+properties}}
 \subsubsection[{\texorpdfstring{l\+\_\+initongrid}{l_initongrid}}]{\setlength{\rightskip}{0pt plus 5cm}logical particle\+\_\+properties\+::l\+\_\+initongrid = .F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bfa9}{}\label{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bfa9}
@@ -90,6 +87,13 @@ Max number of particle species.
 
 
 total number of particles (all species, all subdomains -\/$>$ useful for stat) 
+
+\index{particle\+\_\+properties@{particle\+\_\+properties}!particle\+\_\+pusher@{particle\+\_\+pusher}}
+\index{particle\+\_\+pusher@{particle\+\_\+pusher}!particle\+\_\+properties@{particle\+\_\+properties}}
+\subsubsection[{\texorpdfstring{particle\+\_\+pusher}{particle_pusher}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) particle\+\_\+properties\+::particle\+\_\+pusher = 0}\hypertarget{namespaceparticle__properties_ab885434a8bf6905c7fbd9108e77175f4}{}\label{namespaceparticle__properties_ab885434a8bf6905c7fbd9108e77175f4}
+
+
+Particle pusher type (0\+: Boris, 1\+: Vay, Default\+: 0) 
 
 \index{particle\+\_\+properties@{particle\+\_\+properties}!pdistr@{pdistr}}
 \index{pdistr@{pdistr}!particle\+\_\+properties@{particle\+\_\+properties}}

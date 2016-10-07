@@ -130,8 +130,9 @@ Variables</h2></td></tr>
 <tr class="separator:ac2f3b846a4154ff9b4cccadaffe4bfa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a886a9f7d338c6c8fc14d80df9ac732ae"><td class="memItemLeft" align="right" valign="top">logical&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceparticle__properties.html#a886a9f7d338c6c8fc14d80df9ac732ae">l_particles_weight</a> = .FALSE.</td></tr>
 <tr class="separator:a886a9f7d338c6c8fc14d80df9ac732ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf7851e9d61da6389c759e11e09d218a"><td class="memItemLeft" align="right" valign="top">logical&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceparticle__properties.html#adf7851e9d61da6389c759e11e09d218a">l4symtry</a> = .FALSE.</td></tr>
-<tr class="separator:adf7851e9d61da6389c759e11e09d218a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab885434a8bf6905c7fbd9108e77175f4"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceparticle__properties.html#ab885434a8bf6905c7fbd9108e77175f4">particle_pusher</a> = 0</td></tr>
+<tr class="memdesc:ab885434a8bf6905c7fbd9108e77175f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Particle pusher type (0: Boris, 1: Vay, Default: 0)  <a href="#ab885434a8bf6905c7fbd9108e77175f4">More...</a><br /></td></tr>
+<tr class="separator:ab885434a8bf6905c7fbd9108e77175f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf6c9fb8697f29ccff6e1d82ee7f477a"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceparticle__properties.html#aaf6c9fb8697f29ccff6e1d82ee7f477a">pdistr</a></td></tr>
 <tr class="memdesc:aaf6c9fb8697f29ccff6e1d82ee7f477a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Particle initial distribution.  <a href="#aaf6c9fb8697f29ccff6e1d82ee7f477a">More...</a><br /></td></tr>
 <tr class="separator:aaf6c9fb8697f29ccff6e1d82ee7f477a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,18 +181,6 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">real(num) particle_properties::fdzrand =0.0_num</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="adf7851e9d61da6389c759e11e09d218a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">logical particle_properties::l4symtry = .FALSE.</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -297,6 +286,20 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>total number of particles (all species, all subdomains -&gt; useful for stat) </p>
+
+</div>
+</div>
+<a class="anchor" id="ab885434a8bf6905c7fbd9108e77175f4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer(idp) particle_properties::particle_pusher = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Particle pusher type (0: Boris, 1: Vay, Default: 0) </p>
 
 </div>
 </div>
