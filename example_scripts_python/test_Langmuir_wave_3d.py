@@ -278,9 +278,9 @@ def test_langmuir_wave():
       
       np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
       
-      elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.25*zmin,0.75*zmax,vzmean=0.01*clight,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vzmean=0.01*clight,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
-      ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.25*zmin,0.75*zmax,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
 
   laser_total_duration=1.25*laser_duration

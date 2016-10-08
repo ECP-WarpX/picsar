@@ -272,58 +272,58 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 	INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 	LOGICAL(idp)                    :: isdeposited=.FALSE.
 
-IF (nspecies .EQ. 0_idp) RETURN
-!$OMP PARALLEL DEFAULT(NONE)                                                              &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old,zgrid)       &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
-!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
-!! Current deposition
-!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-DO iz=1,ntilez
-    DO iy=1,ntiley
-        DO ix=1,ntilex
-        	curr => species_parray(1)
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
-            nxjg=curr_tile%nxg_tile
-            nyjg=curr_tile%nyg_tile
-            nzjg=curr_tile%nzg_tile
-            jmin=curr_tile%nx_tile_min
-        	jmax=curr_tile%nx_tile_max
-            kmin=curr_tile%ny_tile_min
-            kmax=curr_tile%ny_tile_max
-            lmin=curr_tile%nz_tile_min
-            lmax=curr_tile%nz_tile_max
-            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-            nzc=curr_tile%nz_cells_tile
-			      currg=>aofgrid_tiles(ix,iy,iz)
-            currg%rhotile=0._num
-            isdeposited=.FALSE.
-            DO ispecies=1, nspecies ! LOOP ON SPECIES
-           	    curr => species_parray(ispecies)
-                curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) THEN
-                	CYCLE
-                ELSE
-                	isdeposited=.TRUE.
-                ENDIF
-                ! Depose charge in rhotile
+	IF (nspecies .EQ. 0_idp) RETURN
+	!$OMP PARALLEL DEFAULT(NONE)                                                              &
+	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old,zgrid)       &
+	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
+	!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
+	!! Current deposition
+	!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+	DO iz=1,ntilez
+		DO iy=1,ntiley
+			DO ix=1,ntilex
+				curr => species_parray(1)
+				curr_tile=>curr%array_of_tiles(ix,iy,iz)
+				nxjg=curr_tile%nxg_tile
+				nyjg=curr_tile%nyg_tile
+				nzjg=curr_tile%nzg_tile
+				jmin=curr_tile%nx_tile_min
+				jmax=curr_tile%nx_tile_max
+				kmin=curr_tile%ny_tile_min
+				kmax=curr_tile%ny_tile_max
+				lmin=curr_tile%nz_tile_min
+				lmax=curr_tile%nz_tile_max
+				nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+				nzc=curr_tile%nz_cells_tile
+				currg=>aofgrid_tiles(ix,iy,iz)
+				currg%rhotile=0._num
+				isdeposited=.FALSE.
+				DO ispecies=1, nspecies ! LOOP ON SPECIES
+					curr => species_parray(ispecies)
+					curr_tile=>curr%array_of_tiles(ix,iy,iz)
+					count=curr_tile%np_tile(1)
+					IF (count .EQ. 0) THEN
+						CYCLE
+					ELSE
+						isdeposited=.TRUE.
+					ENDIF
+							! Depose charge in rhotile
 
-				    CALL pxr_depose_rho_n(currg%rhotile,count,               &
-					  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
-					  curr_tile%pid(1,wpid),curr%charge,                       &
-					  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					  curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
-				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
+					CALL pxr_depose_rho_n(currg%rhotile,count,               &
+					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
+					curr_tile%pid(1,wpid),curr%charge,                       &
+					curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+					curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
+					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
 
-            END DO! END LOOP ON SPECIES
-            IF (isdeposited) THEN
-            	rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
-            ENDIF
-        END DO
-    END DO
-END DO!END LOOP ON TILES
+				END DO! END LOOP ON SPECIES
+				IF (isdeposited) THEN
+					rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
+				ENDIF
+			END DO
+		END DO
+	END DO!END LOOP ON TILES
 !$OMP END DO
 !! Adding charge from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
 !+/- X
@@ -565,12 +565,12 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 
 					ELSE
 
-				    CALL pxr_depose_rho_n(currg%rhotile,count,               &
-					  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
-					  curr_tile%pid(1,wpid),curr%charge,                       &
-					  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					  curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
-				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
+						CALL pxr_depose_rho_n(currg%rhotile,count,               &
+						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
+						curr_tile%pid(1,wpid),curr%charge,                       &
+						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+						nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
 
 					ENDIF
 
