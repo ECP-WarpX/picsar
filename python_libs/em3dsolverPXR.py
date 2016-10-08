@@ -320,7 +320,7 @@ class EM3DPXR(EM3DFFT):
         # Tye of MPI communication for the current
         pxr.mpicom_curr=self.mpicom_curr
         # Field gathering method
-        pxr.fieldgave=self.fieldgathe
+        pxr.fieldgathe=self.fieldgathe
         # Particle communication
         pxr.partcom=self.partcom
 		# Particle pusher type
@@ -342,7 +342,7 @@ class EM3DPXR(EM3DFFT):
         #Type of field gathering
         pxr.l4symtry=w3d.l4symtry
         pxr.l_lower_order_in_v = self.l_lower_order_in_v
-        pxr.fg_p_pp_seperated  = 1 # use 1 or >1 for the moment,
+        pxr.fg_p_pp_separated  = 1 # use 1 or >1 for the moment,
         # 0 needs t be fixed for Vay pusher)
 
 		# --- Tiling parameters
