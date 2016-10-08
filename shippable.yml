@@ -14,7 +14,7 @@ build:
     - make clean
     - make
     # Add path to pythonpath
-    - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar:$PYTHONPATH"
+    - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/python_bin:$PYTHONPATH"
     - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/postproc_python_script:$PYTHONPATH"
     - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/python_libs:$PYTHONPATH"
     # Run the tests for Picsar Fortran
