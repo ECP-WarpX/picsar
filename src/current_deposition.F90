@@ -2383,6 +2383,7 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 
 
 ! ________________________________________________________________________________________
+! - depose_jxjyjz_vecHVv2_1_1_1
 !> @author
 !> Henri Vincenti
 !
@@ -2416,9 +2417,9 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 !> @param[in] nxguard number of guard cells along x (scalar)
 !> @param[in] nyguard number of guard cells along y (scalar)
 !> @param[in] nzguard number of guard cells along z (scalar)
-!> @param[out] jx x-current component (3D array)
-!> @param[out] jy y-current component (3D array)
-!> @param[out] jz z-current component (3D array)
+!> @param[inout] jx x-current component (3D array)
+!> @param[inout] jy y-current component (3D array)
+!> @param[inout] jz z-current component (3D array)
 !> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
@@ -3048,33 +3049,44 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 
 
 ! ________________________________________________________________________________________
-! depose_jxjyjz_vecHVv2_2_2_2
-!
-!> Order 2 3D vector current deposition routine (rho*v)
-!> @brief
-!
-!> This versions have good performances on SIMD architectures
-!> providing that OpenMP 4.0 is available (Directive SIMD).
-!> To use this function, select nox=2, noy=2, noz=2.
-!> @details
-!
+! - depose_jxjyjz_vecHVv2_2_2_2
 !> @author
 !> Henri Vincenti
 !
-!> @date
-!> 2015
-!>
-!> @param[inout] jx,jy,jz current arrays
-!> @param[in] np number of particles
-!> @param[in] xp,yp,zp particle position arrays
-!> @param[in] uxp,uyp,uzp particle momentum arrays
-!> @param[in] gaminv particle Lorentz factor arrays
-!> @param[in] w particle weight arrays
-!> @param[in] q particle species charge
-!> @param[in] xmin,ymin,zmin tile grid minimum position
-!> @param[in] dx,dy,dz space discretization steps
-!> @param[in] nx,ny,nz number of cells
-!> @param[in] nxguard,nyguard,nzguard number of guard cells
+! DESCRIPTION:
+!> Brief description of routine.
+!> @brief
+!> Order 2 3D vector direct current deposition routine (rho*v)
+!> This versions have good performances on SIMD architectures
+!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!
+!> @param[in] np Number of particles
+!> @param[in] xp 1D array of x-coordinates of particles
+!> @param[in] yp 1D array of x-coordinates of particles
+!> @param[in] zp 1D array of x-coordinates of particles
+!> @param[in] uxp 1D array of ux-velocity components of particles
+!> @param[in] uyp 1D array of ux-velocity components of particles
+!> @param[in] uzp 1D array of ux-velocity components of particles
+!> @param[in] gaminv 1D array of the inverse 1/gamma-factor of particles
+!> @param[in] w 1D array of the weghts of particles
+!> @param[in] q charge of current species (scalar)
+!> @param[in] xmin x-minimum boundary of current tile
+!> @param[in] ymin y-minimum boundary of current tile
+!> @param[in] zmin z-minimum boundary of current tile
+!> @param[in] dt time step (scalar)
+!> @param[in] dx mesh size along x (scalar)
+!> @param[in] dy mesh size along y (scalar)
+!> @param[in] dz mesh size along z (scalar)
+!> @param[in] nx number of cells along x (scalar)
+!> @param[in] ny number of cells along y (scalar)
+!> @param[in] nz number of cells along z (scalar)
+!> @param[in] nxguard number of guard cells along x (scalar)
+!> @param[in] nyguard number of guard cells along y (scalar)
+!> @param[in] nzguard number of guard cells along z (scalar)
+!> @param[inout] jx x-current component (3D array)
+!> @param[inout] jy y-current component (3D array)
+!> @param[inout] jz z-current component (3D array)
+!> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________
