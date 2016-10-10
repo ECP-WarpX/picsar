@@ -41,7 +41,6 @@ USE SDE_FORTRAN
 #endif   
 
 IMPLICIT NONE
-INTEGER :: i,ierror,j,l
 
 ! Intel Design Forward project
 #if defined(DFP)
