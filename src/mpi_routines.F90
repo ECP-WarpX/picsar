@@ -1,9 +1,11 @@
 ! ______________________________________________________________________________
 ! 
 ! MPI_ROUTINES.F90
-! Contains subroutines for MPI
+!
+!> @brief
+!> This module contains subroutines for MPI
 ! 
-
+! ________________________________________________________________________________________
 MODULE mpi_routines
   USE shared_data
   USE fields
@@ -67,17 +69,15 @@ SUBROUTINE mpi_minimal_init()
 	INTEGER(isp) :: nproc_comm,dims(ndims), old_comm, ierr, neighb
 	INTEGER(isp) :: proc_x_minsp, proc_x_maxsp,proc_y_minsp, proc_y_maxsp, & 
 					proc_z_minsp, proc_z_maxsp
-    LOGICAL(isp) :: periods(ndims), reorder, op, reset
+    LOGICAL(isp) :: periods(ndims), reorder, op
     INTEGER(isp) :: test_coords(ndims), rank_in_comm
     INTEGER(idp) :: ix, iy, iz
     INTEGER(idp) :: x_coords_neight, y_coords_neight, z_coords_neight
     INTEGER(idp) :: nxsplit, nysplit, nzsplit
-    INTEGER(isp) :: ranges(3,1), nproc_orig, oldgroup, newgroup
     INTEGER(idp) :: rankyz
     INTEGER(idp) :: new_rank,old_rank
     INTEGER(idp), dimension(:,:,:),allocatable :: topo_array
     REAL(num) :: r
-    CHARACTER(LEN=11) :: str
 
     nx_global=nx_global_grid-1
     ny_global=ny_global_grid-1
@@ -440,7 +440,6 @@ SUBROUTINE mpi_minimal_init()
     INTEGER(isp) :: nx0, nxp
     INTEGER(isp) :: ny0, nyp
     INTEGER(isp) :: nz0, nzp
-    INTEGER(isp) :: iproc, ix, iy, iz
 
     ! Init number of guard cells of subdomains in each dimension
     
@@ -808,7 +807,6 @@ SUBROUTINE mpi_minimal_init()
     REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
     REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
-    INTEGER(idp)             :: nthreads_tot
 
     ! Time stats per iteration activated
     IF (timestat_perit.gt.0) THEN

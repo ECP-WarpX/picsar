@@ -166,7 +166,7 @@ CONTAINS
     !> @brief
     !> Useful for parametric studies
     SUBROUTINE read_from_cl
-        INTEGER :: i, ix
+        INTEGER :: i
         DO i = 1, COMMAND_ARGUMENT_COUNT()-1,2
             CALL GETARG(i, buffer)
             IF (INDEX(buffer,'ntilex') .GT. 0) THEN

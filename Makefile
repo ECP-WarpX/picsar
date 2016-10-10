@@ -190,7 +190,7 @@ ifeq ($(COMP),gnu)
 	  #FARGS=-g
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -g -JModules -fcheck=bound -ftree-vectorize
+	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
 	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules

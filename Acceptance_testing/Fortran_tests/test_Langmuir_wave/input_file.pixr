@@ -109,10 +109,10 @@ section::species
  nppcell = 10
  x_min = -20e-6
  y_min = -20e-6
- z_min = -20e-6
+ z_min = -10e-6
  x_max = 20e-6
  y_max = 20e-6
- z_max = 20e-6
+ z_max = 10e-6
  ! Drift velocity (in clight)
  vdrift_x = 0.0
  vdrift_y = 0.0
@@ -132,10 +132,10 @@ section::species
  nppcell = 10
  x_min = -20e-6
  y_min = -20e-6
- z_min = -20e-6
+ z_min = -10e-6
  x_max = 20e-6
  y_max = 20e-6
- z_max = 20e-6
+ z_max = 10e-6
  ! Drift velocity (in clight)
  vdrift_x = 0.0
  vdrift_y = 0.0

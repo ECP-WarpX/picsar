@@ -192,15 +192,9 @@ SUBROUTINE initall
 
 	!use IFPORT ! uncomment if using the intel compiler (for rand)
 	IMPLICIT NONE
-	INTEGER(idp)                    :: i,ierror,j,k,l, ispecies, ipart, count
-	INTEGER(idp)                    :: jmin, jmax, lmin, lmax, kmin, kmax
-	INTEGER(idp)                    :: ix, iy, iz
-	INTEGER(idp)                    :: npartemp, ncurr
-	REAL(num)                       :: v, th, phi
+	INTEGER(idp)                    :: ispecies
 	REAL(num)                       :: tdeb
 	TYPE(particle_species), POINTER :: curr
-	TYPE(particle_tile), POINTER    :: curr_tile
-	!real(8) :: rand
 
 	! Time statistics
 	init_localtimes(:) = 0

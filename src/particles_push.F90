@@ -998,7 +998,7 @@ END SUBROUTINE pxr_pushxyz
 !> @param[in] np number of super-particles
 !> @param[in] uxp,uyp,uzp normalized momentum in each direction
 !> @param[in] gaminv particle Lorentz factors
-!> @param[in] ex,ey,ez particle magnetic fields in each direction
+!> @param[in] ex,ey,ez particle electric fields in each direction
 !> @param[in] q charge
 !> @param[in] m masse
 !> @param[in] dt time step

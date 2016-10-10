@@ -1,3 +1,11 @@
+! ________________________________________________________________________________________
+!
+! SIMPLE_IO.F90
+!
+!> @brief
+!> This module contains subroutines for the outputs.
+! 
+! ________________________________________________________________________________________
 MODULE simple_io
 
   USE mpi_derived_types
@@ -13,9 +21,8 @@ CONTAINS
         USE time_stat
         USE diagnostics
         IMPLICIT NONE
+        
         CHARACTER(LEN=string_length) :: strtemp
-        INTEGER(KIND=MPI_OFFSET_KIND) :: offset=0
-        INTEGER(KIND=4) :: err=0
         REAL(num) :: tmptime,tmptime2
 
 #if defined(DEBUG)
@@ -356,7 +363,6 @@ CONTAINS
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(IN OUT) :: array
     INTEGER(KIND=MPI_OFFSET_KIND)             :: offset
     INTEGER(isp)                              :: err
-    INTEGER(isp)                              :: subt, suba, fh, i
     
     ! Creation of the header by the processor 0
     IF (rank.eq.0) THEN
@@ -390,7 +396,7 @@ CONTAINS
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(IN OUT) :: array
     INTEGER(KIND=MPI_OFFSET_KIND), INTENT(IN) :: offset
     INTEGER(isp), INTENT(INOUT)               :: err
-    INTEGER(isp)                              :: subt, suba, fh, i
+    INTEGER(isp)                              :: subt, suba, fh
 
     CALL MPI_FILE_OPEN(comm, TRIM(filename), MPI_MODE_CREATE + MPI_MODE_WRONLY, &
         MPI_INFO_NULL, fh, errcode)
@@ -506,7 +512,7 @@ CONTAINS
   INTEGER(idp), INTENT(IN) :: idump, narr
   INTEGER(idp), INTENT(IN OUT) :: ndump 
   LOGICAL(isp), DIMENSION(narr), INTENT(IN OUT) :: mask 
-  INTEGER(idp) :: ix, iy, iz, count, ncurr, ip
+  INTEGER(idp) :: ix, iy, iz, count, ip
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER :: dp
   TYPE(particle_tile), POINTER :: curr_tile

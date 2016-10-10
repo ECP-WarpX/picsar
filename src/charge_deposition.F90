@@ -272,58 +272,58 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 	INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 	LOGICAL(idp)                    :: isdeposited=.FALSE.
 
-IF (nspecies .EQ. 0_idp) RETURN
-!$OMP PARALLEL DEFAULT(NONE)                                                              &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old,zgrid)       &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
-!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
-!! Current deposition
-!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
-DO iz=1,ntilez
-    DO iy=1,ntiley
-        DO ix=1,ntilex
-        	curr => species_parray(1)
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
-            nxjg=curr_tile%nxg_tile
-            nyjg=curr_tile%nyg_tile
-            nzjg=curr_tile%nzg_tile
-            jmin=curr_tile%nx_tile_min
-        	jmax=curr_tile%nx_tile_max
-            kmin=curr_tile%ny_tile_min
-            kmax=curr_tile%ny_tile_max
-            lmin=curr_tile%nz_tile_min
-            lmax=curr_tile%nz_tile_max
-            nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
-            nzc=curr_tile%nz_cells_tile
-			      currg=>aofgrid_tiles(ix,iy,iz)
-            currg%rhotile=0._num
-            isdeposited=.FALSE.
-            DO ispecies=1, nspecies ! LOOP ON SPECIES
-           	    curr => species_parray(ispecies)
-                curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) THEN
-                	CYCLE
-                ELSE
-                	isdeposited=.TRUE.
-                ENDIF
-                ! Depose charge in rhotile
+	IF (nspecies .EQ. 0_idp) RETURN
+	!$OMP PARALLEL DEFAULT(NONE)                                                              &
+	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old,zgrid)       &
+	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
+	!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
+	!! Current deposition
+	!$OMP DO COLLAPSE(3) SCHEDULE(runtime)
+	DO iz=1,ntilez
+		DO iy=1,ntiley
+			DO ix=1,ntilex
+				curr => species_parray(1)
+				curr_tile=>curr%array_of_tiles(ix,iy,iz)
+				nxjg=curr_tile%nxg_tile
+				nyjg=curr_tile%nyg_tile
+				nzjg=curr_tile%nzg_tile
+				jmin=curr_tile%nx_tile_min
+				jmax=curr_tile%nx_tile_max
+				kmin=curr_tile%ny_tile_min
+				kmax=curr_tile%ny_tile_max
+				lmin=curr_tile%nz_tile_min
+				lmax=curr_tile%nz_tile_max
+				nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+				nzc=curr_tile%nz_cells_tile
+				currg=>aofgrid_tiles(ix,iy,iz)
+				currg%rhotile=0._num
+				isdeposited=.FALSE.
+				DO ispecies=1, nspecies ! LOOP ON SPECIES
+					curr => species_parray(ispecies)
+					curr_tile=>curr%array_of_tiles(ix,iy,iz)
+					count=curr_tile%np_tile(1)
+					IF (count .EQ. 0) THEN
+						CYCLE
+					ELSE
+						isdeposited=.TRUE.
+					ENDIF
+							! Depose charge in rhotile
 
-				    CALL pxr_depose_rho_n(currg%rhotile,count,               &
-					  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
-					  curr_tile%pid(1,wpid),curr%charge,                       &
-					  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					  curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
-				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
+					CALL pxr_depose_rho_n(currg%rhotile,count,               &
+					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
+					curr_tile%pid(1,wpid),curr%charge,                       &
+					curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+					curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
+					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
 
-            END DO! END LOOP ON SPECIES
-            IF (isdeposited) THEN
-            	rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
-            ENDIF
-        END DO
-    END DO
-END DO!END LOOP ON TILES
+				END DO! END LOOP ON SPECIES
+				IF (isdeposited) THEN
+					rhog(jmin:jmax,kmin:kmax,lmin:lmax)=rhog(jmin:jmax,kmin:kmax,lmin:lmax)+currg%rhotile(0:nxc,0:nyc,0:nzc)
+				ENDIF
+			END DO
+		END DO
+	END DO!END LOOP ON TILES
 !$OMP END DO
 !! Adding charge from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
 !+/- X
@@ -565,12 +565,12 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 
 					ELSE
 
-				    CALL pxr_depose_rho_n(currg%rhotile,count,               &
-					  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
-					  curr_tile%pid(1,wpid),curr%charge,                       &
-					  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					  curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
-				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
+						CALL pxr_depose_rho_n(currg%rhotile,count,               &
+						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
+						curr_tile%pid(1,wpid),curr%charge,                       &
+						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
+						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+						nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
 
 					ENDIF
 
@@ -1032,7 +1032,6 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
 	TYPE(particle_species), POINTER :: curr
 	TYPE(particle_tile), POINTER    :: curr_tile
 	TYPE(grid_tile), POINTER        :: currg
-	REAL(num) :: tdeb, tend
 	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 	LOGICAL(idp) :: isdeposited=.FALSE.
 
@@ -1257,7 +1256,6 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog,nxx,nyy,nzz,nxjguard,nyjguar
 	TYPE(particle_species), POINTER :: curr
 	TYPE(particle_tile), POINTER :: curr_tile
 	TYPE(grid_tile), POINTER :: currg
-	REAL(num) :: tdeb, tend
 	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 	LOGICAL(idp) :: isdeposited=.FALSE.
 
@@ -1493,15 +1491,14 @@ SUBROUTINE depose_rho_scalar_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
 	INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
 	REAL(num) :: xp(np), yp(np), zp(np), w(np)
-	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	REAL(num) :: q,dx,dy,dz,xmin,ymin,zmin
 	INTEGER(idp), INTENT (IN) :: lvect
 
-	REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
-						 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+	REAL(num) :: dxi,dyi,dzi,xint,yint,zint
 	REAL(num) :: x,y,z,wq,invvol
 	REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
 	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+	INTEGER(idp) :: j,k,l,ip
 
 	dxi = 1.0_num/dx
 	dyi = 1.0_num/dy
@@ -1577,18 +1574,18 @@ SUBROUTINE depose_rho_scalar_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
 	USE constants
 	IMPLICIT NONE
 
-	INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+	INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
 	REAL(num) :: xp(np), yp(np), zp(np), w(np)
-	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	REAL(num) :: q,dx,dy,dz,xmin,ymin,zmin
 	INTEGER(idp), INTENT (IN) :: lvect
 
 	REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
-						 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+						 xintsq,yintsq,zintsq
 	REAL(num) :: x,y,z,wq,invvol,sx1,sx2,sx3,sx4,sx5,sx6,sx7,sx8,sx9
 	REAL(num) :: sx(-1:1), sy(-1:1), sz(-1:1)
 	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+	INTEGER(idp) :: j,k,l,ip
 
 	dxi = 1.0_num/dx
 	dyi = 1.0_num/dy
@@ -1689,6 +1686,7 @@ END SUBROUTINE depose_rho_scalar_2_2_2
 !> @param[in] nx,ny,nz number of cells
 !> @param[in] nxguard,nyguard,nzguard number of guard cells
 !> @param[in] lvect: vector length (useless here, just for interface compatibility)
+!>
 SUBROUTINE depose_rho_scalar_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz, &
            nxguard,nyguard,nzguard,lvect)
 ! ________________________________________________________________________________________
@@ -1698,15 +1696,16 @@ SUBROUTINE depose_rho_scalar_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
 	INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
 	REAL(num) :: xp(np), yp(np), zp(np), w(np)
-	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	REAL(num) :: q,dx,dy,dz,xmin,ymin,zmin
 	INTEGER(idp), INTENT (IN) :: lvect
 
 	REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
 						 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-	REAL(num) :: x,y,z,wq,invvol,sx1,sx2,sx3,sx4,sx5,sx6,sx7,sx8,sx9
+	REAL(num) :: x,y,z,wq,invvol
 	REAL(num) :: sx(-1:2), sy(-1:2), sz(-1:2)
 	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: j,k,l,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+	INTEGER(idp) :: j,k,l,ip
+	
 	dxi = 1.0_num/dx
 	dyi = 1.0_num/dy
 	dzi = 1.0_num/dz
@@ -1969,15 +1968,15 @@ SUBROUTINE depose_rho_vecNOY_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
 		REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), INTENT(IN OUT) :: rho
 		REAL(num), DIMENSION(:,:,:,:), ALLOCATABLE :: rho1
 		REAL(num) :: xp(np), yp(np), zp(np), w(np)
-		REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-		REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
-							 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+		REAL(num) :: q,dx,dy,dz,xmin,ymin,zmin
+		REAL(num) :: dxi,dyi,dzi,xint,yint,zint
 		REAL(num) :: x,y,z,wq,invvol
 		REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
 		REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-		INTEGER(idp) :: j,k,l,vv,n,ip,jj,kk,ll,ixmin, ixmax, iymin, iymax, izmin, izmax
+		INTEGER(idp) :: j,k,l,vv,n,ip,jj
 		INTEGER(idp), INTENT(IN) :: lvect
 		REAL(num), DIMENSION(lvect,8) :: ww
+		
 		dxi = 1.0_num/dx
 		dyi = 1.0_num/dy
 		dzi = 1.0_num/dz
@@ -2051,11 +2050,16 @@ SUBROUTINE depose_rho_vecNOY_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
 		RETURN
 END SUBROUTINE depose_rho_vecNOY_1_1_1
 
-
-!!! --- Order 1 3D vector charge deposition routine
-!!! --- Computes charge density on grid vectorized (HV-SCHEME v2)
-!!! --- This routine does vectorize on SIMD architecture but poor performances
-SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
+!> @brief
+!> Order 1 3D vector charge deposition routine
+!>
+!> @details
+!> Computes charge density on grid vectorized (HV-SCHEME v2)
+!> This routine does vectorize on SIMD architecture but poor performances
+SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,&
+          xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
 		USE constants
 		IMPLICIT NONE
 		INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -2066,14 +2070,14 @@ SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx
 		REAL(num) :: wq
 		INTEGER(idp) :: NCELLS
 		REAL(num) :: xp(np), yp(np), zp(np), w(np)
-		REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+		REAL(num) :: q,dx,dy,dz,xmin,ymin,zmin
 		REAL(num) :: dxi,dyi,dzi
 		REAL(num) :: xint,yint,zint
 		REAL(num) :: x,y,z,invvol
 		REAL(num) :: sx(0:1), sy(0:1), sz(0:1)
 		REAL(num) :: ww(1:LVEC2,8)
 		REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-		INTEGER(idp) :: ic,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+		INTEGER(idp) :: ic,j,k,l,n,ip,nv,nn
 		INTEGER(idp) :: nnx, nnxy
 		INTEGER(idp) :: moff(1:8)
 
@@ -2208,11 +2212,10 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 	REAL(num)                 :: ww
 	INTEGER(idp) :: NCELLS
 	REAL(num) :: dxi,dyi,dzi
-	REAL(num) :: xint,yint,zint
 	REAL(num) :: x,y,z,invvol
 	REAL(num) :: sx(lvect), sy(lvect), sz(lvect), wq(lvect)
 	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
+	INTEGER(idp) :: ic,igrid,j,k,l,n,ip,nv,nn
 	INTEGER(idp) :: nnx, nnxy
 	INTEGER(idp) :: moff(1:8)
 	REAL(num):: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
@@ -2403,43 +2406,43 @@ SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 
 	REAL(num), DIMENSION(:,:), ALLOCATABLE :: rhocells
 	INTEGER(idp), DIMENSION(lvect) :: ICELL, IG
-	REAL(num)                      :: ww, wwx,wwy,wwz
+	REAL(num)                      :: ww
 	INTEGER(idp) :: NCELLS
 	REAL(num) :: dxi,dyi,dzi
 	REAL(num) :: xint,yint,zint,xintsq,yintsq,zintsq
 	REAL(num) :: x,y,z,invvol, wq0, wq, szy, syy0,syy1,syy2,szz0,szz1,szz2
 	REAL(num) :: sx0(lvect), sx1(lvect), sx2(lvect)
 	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp) :: ic,igrid,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-	INTEGER(idp) :: nnx, nnxy, off0, ind0
+	INTEGER(idp) :: ic,igrid,j,k,l,n,ip,nv,nn
+	INTEGER(idp) :: nnx, nnxy
 	INTEGER(idp) :: moff(1:8)
 	REAL(num):: ww0(1:lvect,1:8),www(1:lvect,1:8)
 	INTEGER(idp) :: orig, jorig, korig, lorig
 	INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
-        ! Init parameters
-        dxi = 1.0_num/dx
-        dyi = 1.0_num/dy
-        dzi = 1.0_num/dz
-        invvol = dxi*dyi*dzi
-        wq0=q*invvol
-        ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
-        ncx=nx+3;ncy=ny+3;ncz=nz+3
-        NCELLS=ncx*ncy*ncz
-        ALLOCATE(rhocells(8,NCELLS))
-        rhocells=0.0_num
-        nnx = nx + 1 + 2*nxguard
-        nnxy = nnx*(ny+1+2*nyguard)
-        moff = (/-nnx-nnxy,-nnxy,nnx-nnxy,-nnx,nnx,-nnx+nnxy,nnxy,nnx+nnxy/)
-	      ww0=0.0_num
-        jorig=-1; korig=-1;lorig=-1
-        orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-        ngx=(ngridx-ncx)
-        ngxy=(ngridx*ngridy-ncx*ncy)
-        ncxy=ncx*ncy
-        ! FIRST LOOP: computes cell index of particle and their weight on vertices
-
-        DO ip=1,np,lvect
+	! Init parameters
+	dxi = 1.0_num/dx
+	dyi = 1.0_num/dy
+	dzi = 1.0_num/dz
+	invvol = dxi*dyi*dzi
+	wq0=q*invvol
+	ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
+	ncx=nx+3;ncy=ny+3;ncz=nz+3
+	NCELLS=ncx*ncy*ncz
+	ALLOCATE(rhocells(8,NCELLS))
+	rhocells=0.0_num
+	nnx = nx + 1 + 2*nxguard
+	nnxy = nnx*(ny+1+2*nyguard)
+	moff = (/-nnx-nnxy,-nnxy,nnx-nnxy,-nnx,nnx,-nnx+nnxy,nnxy,nnx+nnxy/)
+	ww0=0.0_num
+	jorig=-1; korig=-1;lorig=-1
+	orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
+	ngx=(ngridx-ncx)
+	ngxy=(ngridx*ngridy-ncx*ncy)
+	ncxy=ncx*ncy
+	
+	! FIRST LOOP: computes cell index of particle and their weight on vertices
+	DO ip=1,np,lvect
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
@@ -3087,7 +3090,6 @@ SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 
 	REAL(num), DIMENSION(:,:), ALLOCATABLE:: rhocells
 	INTEGER(idp), DIMENSION(lvect) :: ICELL
-	REAL(num) :: ww, wwx,wwy,wwz
 	INTEGER(idp) :: NCELLS
 	REAL(num) :: dxi,dyi,dzi,xint,yint,zint(1:lvect), &
 						 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
@@ -3095,10 +3097,10 @@ SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 	REAL(num) :: sx1(lvect), sx2(lvect), sx3(lvect),sx4(lvect), sy1, sy2, sy3,sy4, &
 							 sz1, sz2, sz3,sz4, w1,w2
 	REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-	INTEGER(idp):: ic, igrid, ic0,j,k,l,vv,n,ip,jj,kk,ll,nv,nn
-	INTEGER(idp) :: nnx, nnxy, off0, ind0
+	INTEGER(idp):: ic, igrid,j,k,l,n,ip,nv,nn
+	INTEGER(idp) :: nnx, nnxy
 	INTEGER(idp) :: moff(1:8)
-	REAL(num):: www1(lvect,8),www2(lvect,8), zdec(1:8), h1(1:8), h11(1:8), h12(1:8), sgn(1:8), szz(1:8)
+	REAL(num):: www1(lvect,8),www2(lvect,8)
 	INTEGER(idp) :: orig, jorig, korig, lorig
 	INTEGER(idp) :: ncx, ncy, ncxy, ncz,ix,iy,iz, ngridx, ngridy, ngx, ngxy
 
@@ -3318,10 +3320,9 @@ SUBROUTINE pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz
 	IMPLICIT NONE
 
 	INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-	INTEGER(idp) :: lvect ! Useless here, for the common interface
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: rho
 	REAL(num) :: xp(np), yp(np), zp(np), w(np)
-	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+	REAL(num) :: q,dx,dy,dz,xmin,ymin,zmin
 	LOGICAL :: l_particles_weight, l4symtry
 
 	REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
@@ -3464,15 +3465,21 @@ SUBROUTINE pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz
 	RETURN
 END SUBROUTINE pxr_depose_rho_n
 
-    ! 2D Charge deposition at nth order
-	subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard,nox,noz, &
+! ________________________________________________________________________________________
+!> @brief
+!> 2D Charge deposition at nth order
+!>
+!> @author
+!> Henri Vincenti
+subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard,nox,noz, &
 							l_particles_weight,l4symtry,l_2drz, type_rz_depose)
+! ________________________________________________________________________________________
 	   use constants
 	   implicit none
 	   integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
 	   real(num), dimension(-nxguard:nx+nxguard,0:0,-nzguard:nz+nzguard), intent(in out) :: rho
 	   real(num), dimension(np) :: xp,yp,zp,w
-	   real(num) :: q,dt,dx,dz,xmin,zmin
+	   real(num) :: q,dx,dz,xmin,zmin
 	   logical(idp) :: l_particles_weight,l4symtry,l_2drz
 
 	   real(num) :: dxi,dzi,xint,zint, &
@@ -3619,7 +3626,7 @@ subroutine pxr_depose_rhoold_n_2dxz(rhoold,np,xp,zp,ux,uy,uz,gaminv,w,q,xmin,zmi
 	   real(num) :: sxold(-int(nox/2):int((nox+1)/2)), &
 					   szold(-int(noz/2):int((noz+1)/2))
 	   real(num), parameter :: onesixth=1./6.,twothird=2./3.
-	   integer(idp) :: j,l,ip,jj,ll,jold,lold,ixmin, ixmax, izmin, izmax, istep, ndt,idt
+	   integer(idp) :: j,l,ip,jj,ll,jold,lold,ixmin, ixmax, izmin, izmax, ndt,idt
 	   real(num) :: dxp,dzp,x0,z0,x1,z1
 
 		  dxi = 1./dx
