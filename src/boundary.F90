@@ -223,7 +223,7 @@ MODULE boundary
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: subarray, basetype, sz, szmax, i, j, k, n
+    INTEGER(isp) :: basetype, sz
     INTEGER(isp):: requests(4)
 
     basetype = mpidbl
@@ -308,17 +308,18 @@ MODULE boundary
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
 
 
-
-
-!!! --- Routine for adding current contributions fron adjacent subdomains
+! ________________________________________________________________________________________
+!> @brief
+!> Routine for adding current contributions fron adjacent subdomains
   SUBROUTINE summation_bcs(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
+! ________________________________________________________________________________________
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: subarray, nn, sz, i
+    INTEGER(isp) :: nn, sz
 
     sizes(1) = nx + 1 + 2 * nxg
     sizes(2) = ny + 1 + 2 * nyg
@@ -421,7 +422,7 @@ MODULE boundary
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: subarray, nn, sz, i
+    INTEGER(isp) :: nn, sz
     INTEGER(isp) :: requests(4)
 
     sizes(1) = nx + 1 + 2 * nxg
@@ -535,7 +536,7 @@ MODULE boundary
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
+    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz
     INTEGER(isp) :: proc_x_min_mpisp, proc_x_max_mpisp
     INTEGER(isp) :: proc_y_min_mpisp, proc_y_max_mpisp
     INTEGER(isp) :: proc_z_min_mpisp, proc_z_max_mpisp
@@ -703,7 +704,7 @@ MODULE boundary
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
+    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz
     INTEGER(isp) :: proc_x_min_mpisp, proc_x_max_mpisp
     INTEGER(isp) :: proc_y_min_mpisp, proc_y_max_mpisp
     INTEGER(isp) :: proc_z_min_mpisp, proc_z_max_mpisp
@@ -866,7 +867,7 @@ MODULE boundary
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
     REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: temp1, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz, i
+    INTEGER(isp) :: subarrayx, subarrayy, subarrayz, nn, sz
     INTEGER(isp) :: proc_x_min_mpisp, proc_x_max_mpisp
     INTEGER(isp) :: proc_y_min_mpisp, proc_y_max_mpisp
     INTEGER(isp) :: proc_z_min_mpisp, proc_z_max_mpisp
@@ -1380,9 +1381,8 @@ END SUBROUTINE charge_bcs
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
-    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
+    TYPE(particle_tile), POINTER :: curr_tile
     REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-    INTEGER(idp) :: test =0
 
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
@@ -1443,17 +1443,17 @@ END SUBROUTINE charge_bcs
 !
 !> @date
 !> 2016
-  SUBROUTINE particle_bcs_tiles_openmp()
+	SUBROUTINE particle_bcs_tiles_openmp()
 ! ________________________________________________________________________________________
 
-    USE omp_lib
-    IMPLICIT NONE
-    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
-    INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-    TYPE(particle_species), POINTER :: curr
-    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-    INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
+		USE omp_lib
+		IMPLICIT NONE
+		INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
+		INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+		TYPE(particle_species), POINTER :: curr
+		TYPE(particle_tile), POINTER :: curr_tile
+		REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+		INTEGER(idp) :: nthreads_tot, nthreads_loop1, nthreads_loop2
 
 #ifdef _OPENMP
 	nthreads_tot=OMP_GET_MAX_THREADS()
@@ -1463,13 +1463,13 @@ END SUBROUTINE charge_bcs
 	nthreads_tot=1
 #endif
 
-	IF (nthreads_tot .GT. 1) THEN
-		nthreads_loop1=MIN(nspecies,nthreads_tot)
-		nthreads_loop2=MAX(1_idp,nthreads_tot/nthreads_loop1)
-	ELSE
-		nthreads_loop1=1
-		nthreads_loop2=1
-	ENDIF
+		IF (nthreads_tot .GT. 1) THEN
+			nthreads_loop1=MIN(nspecies,nthreads_tot)
+			nthreads_loop2=MAX(1_idp,nthreads_tot/nthreads_loop1)
+		ELSE
+			nthreads_loop1=1
+			nthreads_loop2=1
+		ENDIF
 
 	!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz, &
 	!$OMP partx,party,partz,partux,partuy,partuz,gaminv,partw,indx,indy,indz,nptile,curr_tile) &
@@ -1535,16 +1535,17 @@ END SUBROUTINE charge_bcs
     !$OMP END PARALLEL DO
   END SUBROUTINE particle_bcs_tiles_openmp
 
-
-!!! Boundary condition on tiles
+! ________________________________________________________________________________________
+!> @brief
+!> Boundary condition on tiles
   SUBROUTINE particle_bcs_tiles_2d
+! ________________________________________________________________________________________
     IMPLICIT NONE
-    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
-    INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+    INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indz
+    INTEGER(idp) :: nptile, nx0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
-    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
+    TYPE(particle_tile), POINTER :: curr_tile
     REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-    INTEGER(idp) :: test =0
 
     iy=1
     DO ispecies=1, nspecies ! LOOP ON SPECIES
@@ -1588,18 +1589,21 @@ END SUBROUTINE charge_bcs
     END DO ! END LOOP ON SPECIES
   END SUBROUTINE particle_bcs_tiles_2d
 
-!!! Boundary condition on tiles - 2D version
-!!! This version is efficient when the number of tiles is large
-!!! compared to the number of threads
+! ________________________________________________________________________________________
+!> Boundary condition on tiles - 2D version
+!> This version is efficient when the number of tiles is large
+!> compared to the number of threads
   SUBROUTINE particle_bcs_tiles_2d_openmp()
+! ________________________________________________________________________________________
+
     USE omp_lib
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
-    TYPE(particle_tile), POINTER :: curr_tile, curr_tile_add
+    TYPE(particle_tile), POINTER :: curr_tile
     REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-    INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
+    INTEGER(idp) :: nthreads_tot, nthreads_loop1, nthreads_loop2
 
 #ifdef _OPENMP
 	nthreads_tot=OMP_GET_MAX_THREADS()
@@ -1980,21 +1984,23 @@ END SUBROUTINE charge_bcs
   END SUBROUTINE particle_bsc_openmp_reordering
 #endif
 
-!!! MPI Boundary condition routine on particles
+! ________________________________________________________________________________________
+!> @brief
+!> MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
+! ________________________________________________________________________________________
     INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
-    REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
     LOGICAL(idp), ALLOCATABLE, DIMENSION(:) :: mask
-    INTEGER(isp) :: ibuff, isend, nout, nbuff, ninit
+    INTEGER(isp) :: ibuff, nout, nbuff
     INTEGER(isp) :: xbd, ybd, zbd
     INTEGER(isp) :: ixp, iyp, izp
-    INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
+    INTEGER(isp) :: nsend_buf, nrecv_buf
     INTEGER(isp) :: dest, src
     LOGICAL(idp) :: out_of_bounds
-    INTEGER(idp) :: ispecies, i, ip, ix, iy, iz
+    INTEGER(idp) :: ispecies, i, ix, iy, iz
     INTEGER(idp) :: ixtile, iytile, iztile
     REAL(num) :: part_xyz, tdeb, tend
     TYPE(particle_species), POINTER :: currsp
@@ -2205,27 +2211,29 @@ END SUBROUTINE charge_bcs
     END DO ! End loop on species
   END SUBROUTINE particle_bcs_mpi_blocking
 
-!!! MPI Boundary condition routine on particles
+! ________________________________________________________________________________________
+!> @brief
+!> MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_non_blocking
-    INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
-    INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuff, recvbuff
-    REAL(num), ALLOCATABLE, DIMENSION(:) :: temp
-    LOGICAL(idp) :: remove_from_sim
-    INTEGER(isp) :: ibuff, isend, nout, nbuff, ninit
-    INTEGER(isp) :: xbd, ybd, zbd
-    INTEGER(isp) :: ixp, iyp, izp
-    INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
-	INTEGER(isp) :: mpitag, count
-    INTEGER(idp), ALLOCATABLE, DIMENSION(:,:,:,:) :: npart_recv, npart_send
-    INTEGER(isp) :: dest, src, ireq
-    INTEGER(isp), DIMENSION(:), ALLOCATABLE :: requests
-    LOGICAL(idp) :: out_of_bounds
-    INTEGER(idp) :: ispecies, i, ip, ix, iy, iz, npcurr, ipart
-    INTEGER(idp) :: ixtile, iytile, iztile, ispec, nmax
-    REAL(num) :: part_xyz, tdeb, tend
-    TYPE(particle_species), POINTER :: currsp
-    TYPE(particle_tile), POINTER :: curr
+! ________________________________________________________________________________________
+
+		IMPLICIT NONE
+
+		INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
+		INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
+		REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuff, recvbuff
+		LOGICAL(idp) :: remove_from_sim
+		INTEGER(isp) :: ibuff, nbuff
+		INTEGER(isp) :: xbd, ybd, zbd
+		INTEGER(isp) :: mpitag, count
+		INTEGER(idp), ALLOCATABLE, DIMENSION(:,:,:,:) :: npart_recv, npart_send
+		INTEGER(isp) :: dest, src, ireq
+		INTEGER(isp), DIMENSION(:), ALLOCATABLE :: requests
+		INTEGER(idp) :: ispecies, i, ix, iy, iz, npcurr, ipart
+		INTEGER(idp) :: ixtile, iytile, iztile, ispec, nmax
+		REAL(num) :: part_xyz
+		TYPE(particle_species), POINTER :: currsp
+		TYPE(particle_tile), POINTER :: curr
 
     mpitag=0_isp
     ALLOCATE(npart_send(1:nspecies,-1:1,-1:1,-1:1))
@@ -2502,27 +2510,25 @@ END SUBROUTINE charge_bcs
   END SUBROUTINE particle_bcs_mpi_non_blocking
 
 ! ________________________________________________________________________________________
+!> @brief
+!> MPI Boundary condition routine on particles in 2D
   SUBROUTINE particle_bcs_mpi_non_blocking_2d
-! MPI Boundary condition routine on particles in 2D
 ! ________________________________________________________________________________________
 
     INTEGER(isp), PARAMETER                  :: nvar=8 ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1)       :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: sendbuff, recvbuff
-    REAL(num), ALLOCATABLE, DIMENSION(:)     :: temp
     LOGICAL(idp), ALLOCATABLE, DIMENSION(:)  :: mask
-    INTEGER(isp)                             :: ibuff, isend, nout, nbuff, ninit
-    INTEGER(isp) :: xbd, ybd, zbd
-    INTEGER(isp) :: ixp, iyp, izp
-    INTEGER(isp) :: nsend_buf, nrecv_buf, npart_curr
+    INTEGER(isp)                             :: ibuff, nbuff
+    INTEGER(isp) :: xbd, zbd
     INTEGER(isp) :: mpitag, count
     INTEGER(idp), ALLOCATABLE, DIMENSION(:,:,:) :: npart_recv, npart_send
     INTEGER(isp) :: dest, src, ireq
     INTEGER(isp), DIMENSION(:), ALLOCATABLE :: requests
     LOGICAL(idp) :: out_of_bounds
-    INTEGER(idp) :: ispecies, i, ip, ix, iy, iz, npcurr, ipart
-    INTEGER(idp) :: ixtile, iytile, iztile, ispec, nmax
-    REAL(num) :: part_xyz, tdeb, tend
+    INTEGER(idp) :: ispecies, i, ix, iz, npcurr, ipart
+    INTEGER(idp) :: ixtile, iztile, ispec, nmax
+    REAL(num) :: part_xyz
     TYPE(particle_species), POINTER :: currsp
     TYPE(particle_tile), POINTER :: curr
 
@@ -2770,9 +2776,9 @@ END SUBROUTINE charge_bcs
 	INTEGER(isp)                    :: dest, src
 	INTEGER(idp)                    :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
 	TYPE(particle_species), POINTER :: curr
-	TYPE(particle_tile), POINTER    :: curr_tile, curr_tile_add
+	TYPE(particle_tile), POINTER    :: curr_tile
 	REAL(num)                       :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-	INTEGER(idp)                                      :: test =0, nthreads_tot
+	INTEGER(idp)                                      :: nthreads_tot
 	INTEGER(idp)                                      :: nthreads_loop1, nthreads_loop2
 	INTEGER(idp), dimension(:,:), ALLOCATABLE         :: mpi_npart
 	REAL(num), dimension(:,:,:,:), ALLOCATABLE        :: bufsend
