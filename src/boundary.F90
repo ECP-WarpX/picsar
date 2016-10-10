@@ -61,7 +61,7 @@ MODULE boundary
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: subarray, basetype, sz, szmax, i, j, k, n
+    INTEGER(isp) :: basetype, sz, szmax, i, j, k, n
     REAL(num), ALLOCATABLE :: temp(:)
 
     basetype = mpidbl
@@ -211,17 +211,19 @@ MODULE boundary
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards
 
-
-!!! --- ROUTINE EXCHANGING GUARD REGIONS BETWEEN SUBDOMAINS (NON-BLOCKING VERSION+ DIAGONAL TRICK)
+! ________________________________________________________________________________________
+!> @brief
+!> ROUTINE EXCHANGING GUARD REGIONS BETWEEN SUBDOMAINS (NON-BLOCKING VERSION+ DIAGONAL TRICK)
+!>
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking(field, nxg, nyg, nzg, &
              nx_local, ny_local, nz_local)
+! ________________________________________________________________________________________
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(isp) :: subarray, basetype, sz, szmax, i, j, k, n
-    REAL(num), ALLOCATABLE :: temp(:)
     INTEGER(isp):: requests(4)
 
     basetype = mpidbl

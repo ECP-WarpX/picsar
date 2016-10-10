@@ -338,7 +338,7 @@ CONTAINS
         INTEGER(idp), INTENT(INOUT) :: nptot
         INTEGER(idp), INTENT(IN) :: is
         INTEGER(idp) :: nptot_loc
-        INTEGER(idp) :: ix,iy,iz,np,ip,n
+        INTEGER(idp) :: ix,iy,iz,ip,n
         TYPE(particle_tile), POINTER :: curr_tile
         TYPE(particle_species), POINTER :: curr
 
@@ -727,7 +727,6 @@ CONTAINS
         INTEGER(idp)                :: j,k,l
         INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
         REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: divee2,rho2
-        REAL(num)                   :: norm_loc
         REAL(num), intent(out)      :: norm
 
         norm = 0
@@ -765,7 +764,6 @@ CONTAINS
         INTEGER(idp)                :: j,k,l
         INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
         REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: array
-        REAL(num)                   :: norm_loc
         REAL(num), intent(out)      :: norm
 
         norm = 0
