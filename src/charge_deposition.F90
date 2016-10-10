@@ -2175,7 +2175,9 @@ END SUBROUTINE depose_rho_vecHV_1_1_1
 !> This routine does vectorize on SIMD architecture with good performances
 !> Speedup>2 on AVX 256 bits
 !> lvect, the vector length was originally at 64
-!
+!>
+!> @image html charge_deposition_grid.jpg "Description of the rho structure (2d vision) and internal parameters"
+!>
 !> @author
 !> Henri Vincenti
 !> Mathieu Lobet
@@ -2229,7 +2231,7 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 	dyi = 1.0_num/dy
 	dzi = 1.0_num/dz
 	invvol = dxi*dyi*dzi
-	ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
+	ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
 	ncx=nx+2;ncy=ny+2;ncz=nz+2
 	NCELLS=ncx*ncy*ncz
 	ALLOCATE(rhocells(8,NCELLS))

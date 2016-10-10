@@ -13,9 +13,9 @@ subroutine \hyperlink{namespaceboundary_aaf2c39f38c9f0330fd2501f49ef34b7d}{field
 subroutine \hyperlink{namespaceboundary_a7fcd1d8e118d647057f0523af107674e}{exchange\+\_\+mpi\+\_\+3d\+\_\+grid\+\_\+array\+\_\+with\+\_\+guards} (field, nxg, nyg, nzg,                                               nx\+\_\+local, ny\+\_\+local, nz\+\_\+local)
 \item 
 subroutine \hyperlink{namespaceboundary_a4e895aead34d40e905893ad3a0ee3d32}{exchange\+\_\+mpi\+\_\+3d\+\_\+grid\+\_\+array\+\_\+with\+\_\+guards\+\_\+nonblocking} (field, nxg, nyg, nzg,                                               nx\+\_\+local, ny\+\_\+local, nz\+\_\+local)
-\item 
+\begin{DoxyCompactList}\small\item\em R\+O\+U\+T\+I\+NE E\+X\+C\+H\+A\+N\+G\+I\+NG G\+U\+A\+RD R\+E\+G\+I\+O\+NS B\+E\+T\+W\+E\+EN S\+U\+B\+D\+O\+M\+A\+I\+NS (N\+O\+N-\/\+B\+L\+O\+C\+K\+I\+NG V\+E\+R\+S\+I\+O\+N+ D\+I\+A\+G\+O\+N\+AL T\+R\+I\+CK) \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_ad298755064359a32a3e7d89b376329cf}{summation\+\_\+bcs} (array, nxg, nyg, nzg, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local)
-\item 
+\begin{DoxyCompactList}\small\item\em Routine for adding current contributions fron adjacent subdomains. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_a1ad86bf436bc91d3210fdf0f6d86ab1f}{summation\+\_\+bcs\+\_\+nonblocking} (array, nxg, nyg, nzg, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local)
 \item 
 subroutine \hyperlink{namespaceboundary_ac7114eb91bced14ba975f1467fb2db08}{summation\+\_\+bcs\+\_\+persistent\+\_\+jx} (array, nxg, nyg, nzg, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local)
@@ -41,15 +41,15 @@ subroutine \hyperlink{namespaceboundary_added6cf2ea0ffc7ab618c3d9af16fade}{parti
 subroutine \hyperlink{namespaceboundary_af6d7a140eef6818609e44869b67cd3a7}{particle\+\_\+bcs\+\_\+tiles\+\_\+openmp} ()
 \begin{DoxyCompactList}\small\item\em Boundary condition on tiles -\/ 3D version. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_afb4e6ab09e288dab2bb9ce2d731e276f}{particle\+\_\+bcs\+\_\+tiles\+\_\+2d}
-\item 
+\begin{DoxyCompactList}\small\item\em Boundary condition on tiles. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_a9f9517df19ef503bb2a69e63aeec91d4}{particle\+\_\+bcs\+\_\+tiles\+\_\+2d\+\_\+openmp} ()
-\item 
+\begin{DoxyCompactList}\small\item\em Boundary condition on tiles -\/ 2D version This version is efficient when the number of tiles is large compared to the number of threads. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_a1789d63402ac897697791a2fca4fa8e6}{particle\+\_\+bcs\+\_\+mpi\+\_\+blocking}
-\item 
+\begin{DoxyCompactList}\small\item\em M\+PI Boundary condition routine on particles. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_aac32f7f65f1998963706f9d5776d29d2}{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking}
-\item 
+\begin{DoxyCompactList}\small\item\em M\+PI Boundary condition routine on particles. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_a3293856926030dfea9e8ca05c61e1a5a}{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d}
-\item 
+\begin{DoxyCompactList}\small\item\em M\+PI Boundary condition routine on particles in 2D. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespaceboundary_ac117306978e83b787afba90c3ac038f4}{particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d}
 \begin{DoxyCompactList}\small\item\em This subroutine combined in a single routine the particle communications between tiles and between M\+PI domains for 3D. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
@@ -117,6 +117,10 @@ For the moment this module handles\+: periodic external boundary conditions for 
 \item[{integer(idp), intent(in)}]{nz\+\_\+local}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_a4e895aead34d40e905893ad3a0ee3d32}{}\label{namespaceboundary_a4e895aead34d40e905893ad3a0ee3d32}
+
+
+R\+O\+U\+T\+I\+NE E\+X\+C\+H\+A\+N\+G\+I\+NG G\+U\+A\+RD R\+E\+G\+I\+O\+NS B\+E\+T\+W\+E\+EN S\+U\+B\+D\+O\+M\+A\+I\+NS (N\+O\+N-\/\+B\+L\+O\+C\+K\+I\+NG V\+E\+R\+S\+I\+O\+N+ D\+I\+A\+G\+O\+N\+AL T\+R\+I\+CK) 
+
 \index{boundary@{boundary}!field\+\_\+bc@{field\+\_\+bc}}
 \index{field\+\_\+bc@{field\+\_\+bc}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{field\+\_\+bc(field, nxg, nyg, nzg, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local)}{field_bc(field, nxg, nyg, nzg, nx_local, ny_local, nz_local)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::field\+\_\+bc (
@@ -161,6 +165,10 @@ last modified\+: 09/12/2016
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_a1789d63402ac897697791a2fca4fa8e6}{}\label{namespaceboundary_a1789d63402ac897697791a2fca4fa8e6}
+
+
+M\+PI Boundary condition routine on particles. 
+
 \index{boundary@{boundary}!particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking@{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking}}
 \index{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking@{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking}{particle_bcs_mpi_non_blocking}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking (
@@ -168,6 +176,10 @@ last modified\+: 09/12/2016
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_aac32f7f65f1998963706f9d5776d29d2}{}\label{namespaceboundary_aac32f7f65f1998963706f9d5776d29d2}
+
+
+M\+PI Boundary condition routine on particles. 
+
 \index{boundary@{boundary}!particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d@{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d}}
 \index{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d@{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d}{particle_bcs_mpi_non_blocking_2d}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::particle\+\_\+bcs\+\_\+mpi\+\_\+non\+\_\+blocking\+\_\+2d (
@@ -175,6 +187,10 @@ last modified\+: 09/12/2016
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_a3293856926030dfea9e8ca05c61e1a5a}{}\label{namespaceboundary_a3293856926030dfea9e8ca05c61e1a5a}
+
+
+M\+PI Boundary condition routine on particles in 2D. 
+
 \index{boundary@{boundary}!particle\+\_\+bcs\+\_\+tiles@{particle\+\_\+bcs\+\_\+tiles}}
 \index{particle\+\_\+bcs\+\_\+tiles@{particle\+\_\+bcs\+\_\+tiles}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{particle\+\_\+bcs\+\_\+tiles}{particle_bcs_tiles}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::particle\+\_\+bcs\+\_\+tiles (
@@ -189,6 +205,10 @@ last modified\+: 09/12/2016
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_afb4e6ab09e288dab2bb9ce2d731e276f}{}\label{namespaceboundary_afb4e6ab09e288dab2bb9ce2d731e276f}
+
+
+Boundary condition on tiles. 
+
 \index{boundary@{boundary}!particle\+\_\+bcs\+\_\+tiles\+\_\+2d\+\_\+openmp@{particle\+\_\+bcs\+\_\+tiles\+\_\+2d\+\_\+openmp}}
 \index{particle\+\_\+bcs\+\_\+tiles\+\_\+2d\+\_\+openmp@{particle\+\_\+bcs\+\_\+tiles\+\_\+2d\+\_\+openmp}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{particle\+\_\+bcs\+\_\+tiles\+\_\+2d\+\_\+openmp()}{particle_bcs_tiles_2d_openmp()}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::particle\+\_\+bcs\+\_\+tiles\+\_\+2d\+\_\+openmp (
@@ -196,6 +216,10 @@ last modified\+: 09/12/2016
 {}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_a9f9517df19ef503bb2a69e63aeec91d4}{}\label{namespaceboundary_a9f9517df19ef503bb2a69e63aeec91d4}
+
+
+Boundary condition on tiles -\/ 2D version This version is efficient when the number of tiles is large compared to the number of threads. 
+
 \index{boundary@{boundary}!particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d@{particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d}}
 \index{particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d@{particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d}{particle_bcs_tiles_and_mpi_3d}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::particle\+\_\+bcs\+\_\+tiles\+\_\+and\+\_\+mpi\+\_\+3d (
@@ -243,6 +267,10 @@ Henri Vincenti
 \item[{integer(idp), intent(in)}]{nz\+\_\+local}
 \end{DoxyParamCaption}
 )}\hypertarget{namespaceboundary_ad298755064359a32a3e7d89b376329cf}{}\label{namespaceboundary_ad298755064359a32a3e7d89b376329cf}
+
+
+Routine for adding current contributions fron adjacent subdomains. 
+
 \index{boundary@{boundary}!summation\+\_\+bcs\+\_\+nonblocking@{summation\+\_\+bcs\+\_\+nonblocking}}
 \index{summation\+\_\+bcs\+\_\+nonblocking@{summation\+\_\+bcs\+\_\+nonblocking}!boundary@{boundary}}
 \subsubsection[{\texorpdfstring{summation\+\_\+bcs\+\_\+nonblocking(array, nxg, nyg, nzg, nx\+\_\+local, ny\+\_\+local, nz\+\_\+local)}{summation_bcs_nonblocking(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine boundary\+::summation\+\_\+bcs\+\_\+nonblocking (
