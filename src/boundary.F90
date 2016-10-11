@@ -1278,7 +1278,7 @@ END SUBROUTINE charge_bcs
     	  CALL particle_bcs_tiles_2d()
 #endif
 
-    	  CALL particle_bcs_mpi_non_blocking()
+    	  CALL particle_bcs_mpi_non_blocking_2d()
 
       ! __________________________
       ! 3D
