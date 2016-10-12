@@ -2518,7 +2518,6 @@ END SUBROUTINE charge_bcs
     INTEGER(isp), PARAMETER                  :: nvar=8 ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1)       :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: sendbuff, recvbuff
-    LOGICAL(idp), ALLOCATABLE, DIMENSION(:)  :: mask
     INTEGER(isp)                             :: ibuff, nbuff
     INTEGER(isp) :: xbd, zbd
     INTEGER(isp) :: mpitag, count
@@ -2596,7 +2595,8 @@ END SUBROUTINE charge_bcs
                             IF (x_min_boundary) THEN
                             	SELECT CASE (pbound_x_min)
                             	CASE (1_idp) ! absorbing
-                            		mask(i)=.FALSE.
+                            		CALL rm_particles_from_species_2d(currsp, &
+                                ixtile, iztile, i)
                             		CYCLE
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz + length_x
@@ -2609,7 +2609,8 @@ END SUBROUTINE charge_bcs
                             IF (x_max_boundary) THEN
                             	SELECT CASE (pbound_x_max)
                             	CASE (1_idp) ! absorbing
-                            		mask(i)=.FALSE.
+                            		CALL rm_particles_from_species_2d(currsp, &
+                                ixtile, iztile, i)
                             		CYCLE
                             	CASE DEFAULT ! periodic
                                 	curr%part_x(i) = part_xyz - length_x
@@ -2622,13 +2623,14 @@ END SUBROUTINE charge_bcs
                         IF (part_xyz .LT. z_min_local) THEN
                             zbd = -1
                             IF (z_min_boundary) THEN
-								SELECT CASE (pbound_z_min)
-								CASE (1_idp) ! absorbing
-									mask(i)=.FALSE.
-									CYCLE
-								CASE DEFAULT ! periodic
-									curr%part_z(i) = part_xyz + length_z
-								END SELECT
+              								SELECT CASE (pbound_z_min)
+              								CASE (1_idp) ! absorbing
+              									CALL rm_particles_from_species_2d(currsp, &
+                                 ixtile, iztile, i)
+              									CYCLE
+              								CASE DEFAULT ! periodic
+              									curr%part_z(i) = part_xyz + length_z
+              								END SELECT
                             ENDIF
                         ENDIF
 
@@ -2639,7 +2641,8 @@ END SUBROUTINE charge_bcs
                             IF (z_max_boundary) THEN
                             	SELECT CASE (pbound_z_max)
                             	CASE (1_idp) ! absorbing
-                            		mask(i)=.FALSE.
+                            		CALL rm_particles_from_species_2d(currsp, &
+                                ixtile, iztile, i)
                             		CYCLE
                             	CASE DEFAULT ! periodic
                                 	curr%part_z(i) = part_xyz - length_z
