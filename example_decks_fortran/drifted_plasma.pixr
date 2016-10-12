@@ -100,7 +100,7 @@ section::plasma
 end::plasma
 
 section::species
- name = electron
+ name = electron_z
  mass = 1
  charge = -1
  nppcell = 3
@@ -122,7 +122,7 @@ section::species
 end::species
 
 section::species
- name = positron
+ name = positron_z
  mass = 1
  charge = 1
  nppcell = 3

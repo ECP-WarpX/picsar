@@ -139,6 +139,7 @@ CONTAINS
 
         ! --- Init number of particle dumps 
         npdumps = 0
+        
         ! --- Particle distribution
         pdistr=1
         ! Init species array
@@ -702,8 +703,8 @@ CONTAINS
     END SUBROUTINE read_species_section
 
     SUBROUTINE read_particle_dumps_section
-        INTEGER :: ix = 0, ispecies
-        LOGICAL :: end_section
+        INTEGER                      :: ix = 0, ispecies
+        LOGICAL                      :: end_section
         TYPE(particle_dump), POINTER :: dp
         CHARACTER(LEN=string_length) :: dump_name
         ! READS SPECIES SECTION OF INPUT FILE

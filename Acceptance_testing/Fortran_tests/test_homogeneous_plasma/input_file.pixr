@@ -17,6 +17,9 @@ section::cpusplit
  # LVEC size for the charge deposition
  lvec_fieldgathe = 256
  
+ # Size of the local mpi buffers
+ mpi_buf_size = 10
+ 
 end::cpusplit
 
 section::main

@@ -192,9 +192,10 @@ SUBROUTINE initall
 
 	!use IFPORT ! uncomment if using the intel compiler (for rand)
 	IMPLICIT NONE
-	INTEGER(idp)                    :: ispecies
+	INTEGER(idp)                    :: ispecies,i
 	REAL(num)                       :: tdeb
 	TYPE(particle_species), POINTER :: curr
+	TYPE(particle_dump), POINTER    :: dp 
 
 	! Time statistics
 	init_localtimes(:) = 0
@@ -305,6 +306,7 @@ SUBROUTINE initall
 		write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
 		write(0,*) ''  
 		
+		! Sorting
 		IF (sorting_activated.gt.0) THEN 
 			write(0,*) 'Particle sorting activated'
 			write(0,*) 'dx:',sorting_dx
@@ -340,6 +342,19 @@ SUBROUTINE initall
 			write(0,'(X,"Computation of the time statistics starts at iteration:",I5)') timestat_itstart    
 		ENDIF
 		write(0,*) 
+		
+		! Particle Dump
+		IF (npdumps.gt.0) THEN
+			DO i = 1, npdumps
+				dp => particle_dumps(i)
+				WRITE(0,'(" Dump number: ",I2)') i
+				WRITE(0,'(" species name: ",A10)') species_parray(dp%ispecies)%name
+				WRITE(0,*) 
+			ENDDO
+		ELSE
+			WRITE(0,'(" No particle dump (",I2,")")') npdumps
+			WRITE(0,*) 
+		ENDIF
 	
 	end if
 

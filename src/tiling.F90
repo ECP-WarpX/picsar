@@ -848,6 +848,10 @@ CONTAINS
         DEALLOCATE(temp)
     END SUBROUTINE resize_1D_array_real
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Resize a 2D array of real
+    !
     SUBROUTINE resize_2D_array_real(arr, nx_old,nx_new,ny_old,ny_new)
         IMPLICIT NONE
         REAL(num), DIMENSION(:,:),ALLOCATABLE, INTENT(IN OUT) :: arr

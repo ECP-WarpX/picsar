@@ -2783,10 +2783,11 @@ END SUBROUTINE charge_bcs
 	INTEGER(idp), dimension(:,:), ALLOCATABLE         :: mpi_npart
 	REAL(num), dimension(:,:,:,:), ALLOCATABLE        :: bufsend
 	REAL(num), dimension(:,:), ALLOCATABLE            :: recvbuf
-	TYPE(mpi_buffer), dimension(:,:,:,:), ALLOCATABLE :: tilebuf
+	TYPE(mpi_tile_buffer), dimension(:,:,:,:), ALLOCATABLE :: tilebuf
 	INTEGER(isp), DIMENSION(:,:), ALLOCATABLE         :: nrecv_buf
 	INTEGER(isp), DIMENSION(:), ALLOCATABLE           :: reqs
 	INTEGER(isp)                                      :: nrecv_buf_tot,npos, typebuffer
+	INTEGER(idp)                                      :: new_mpi_buf_size,old_mpi_buf_size
 	REAL(num)                                         :: nx0_grid_tile_dx
 	REAL(num)                                         :: ny0_grid_tile_dy,nz0_grid_tile_dz
 	INTEGER(isp)                                      :: stats(2)
@@ -2907,7 +2908,7 @@ END SUBROUTINE charge_bcs
 					!$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect,zgrid)  &
 					!$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
 					!$OMP PRIVATE(ix,iy,iz,i,ib,k,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
-					!$OMP indx,indy,indz,xbd,ybd,zbd,i2,i3)  &
+					!$OMP indx,indy,indz,xbd,ybd,zbd,i2,i3,new_mpi_buf_size,old_mpi_buf_size)  &
 #if defined(PART_BCS_TIMER)
 					!$OMP SHARED(tltmpi) &
 					!$OMP PRIVATE(t0,t2,t4,tlt) &
@@ -3091,6 +3092,21 @@ END SUBROUTINE charge_bcs
                     tilebuf(ix,iy,iz,is)%part_gaminv(k,ib) = curr_tile%part_gaminv(i)
                     tilebuf(ix,iy,iz,is)%pid(k,ib) = curr_tile%pid(i,wpid)
 
+                    IF (k.eq.SIZE(tilebuf(ix,iy,iz,is)%part_x,1)) THEN
+                      old_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)
+                      new_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)*2
+                      WRITE(0,'(" WARNING: Tile buffer array has been resized: nbpart = ",I3,&
+" new buffer size = ",I3)') k,new_mpi_buf_size
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_x, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_y, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_z, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_ux, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uy, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uz, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_gaminv, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%pid, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                    ENDIF
+                    
                     ! Update of the number of particles
                     tilebuf(ix,iy,iz,is)%npart(ib) = k
 

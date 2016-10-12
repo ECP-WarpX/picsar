@@ -321,7 +321,7 @@ USE constants
 	!> Vector size for the field gathering
 	INTEGER(idp) :: LVEC_fieldgathe
 	!> MPI buffer size
-	INTEGER(isp) :: mpi_buf_size
+	INTEGER(idp) :: mpi_buf_size
 
 END MODULE params
 
@@ -379,7 +379,7 @@ INTEGER(isp) :: reqperjzx(4),reqperjzy(4),reqperjzz(4)
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_pos
   END TYPE
 
-  TYPE mpi_buffer
+  TYPE mpi_tile_buffer
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_x
       !dir$ attributes align:64 :: part_x
       !DIR ATTRIBUTES FASTMEM  :: part_x
@@ -504,6 +504,10 @@ MODULE output_data !#do not parse
 	! Computation flags
 	LOGICAL      :: divE_computed
 
+
+	! Particle dump
+
+	LOGICAL(idp) :: particle_dump_activated
 	INTEGER(idp) :: npdumps
 	TYPE particle_dump
 		INTEGER(idp) :: ispecies
