@@ -282,6 +282,7 @@ MODULE sorting
       
       ! Bin id
       hcnb(ip) = iz*nx3*ny3 + iy*nx3 + ix+1
+#if defined(DEBUG)
       IF ((hcnb(ip) > nbhc).OR.(hcnb(ip)<1)) THEN
         print*, 'Bin id',ip,hcnb(ip),nbhc
         print*, 'Particle ix,iy,iz',ix,iy,iz
@@ -292,7 +293,7 @@ MODULE sorting
         print*, 'Particle nx,ny,nz',nx3,ny3,nz3  
         stop        
       ENDIF
-
+#endif
       ! We count the number of particles in each bin
       nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1  
       !if (rank.eq.0) print*, 'nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1',nbppc(hcnb(ip))

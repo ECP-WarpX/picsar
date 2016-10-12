@@ -294,7 +294,8 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 				kmax=curr_tile%ny_tile_max
 				lmin=curr_tile%nz_tile_min
 				lmax=curr_tile%nz_tile_max
-				nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+				nxc=curr_tile%nx_cells_tile;
+				nyc=curr_tile%ny_cells_tile
 				nzc=curr_tile%nz_cells_tile
 				currg=>aofgrid_tiles(ix,iy,iz)
 				currg%rhotile=0._num
@@ -2168,13 +2169,13 @@ SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,&
 END SUBROUTINE depose_rho_vecHV_1_1_1
 
 ! ________________________________________________________________________________________
-!> Order 1 3D vector charge deposition routine
 !> @brief
+!> Order 1 3D vector charge deposition routine
 !
-!> Computes charge density on grid vectorized at order 1 (HV-SCHEME v2)
-!> This routine does vectorize on SIMD architecture with good performances
-!> Speedup>2 on AVX 256 bits
-!> lvect, the vector length was originally at 64
+!> Computes charge density on grid vectorized at order 1 (HV-SCHEME v2).
+!> This routine does vectorize on SIMD architecture with good performances:
+!> Speedup>2 on AVX 256 bits.
+!> The parameter lvect is the vector length and is originally at 64 for order 1.
 !>
 !> @image html charge_deposition_grid.jpg "Description of the rho structure (2d vision) and internal parameters"
 !>

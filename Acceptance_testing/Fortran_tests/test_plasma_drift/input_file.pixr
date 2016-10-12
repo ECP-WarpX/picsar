@@ -40,12 +40,12 @@ section::main
  ntilez = 2
  
  # Guard cells
- nguardsx = 4
- nguardsy = 4
- nguardsz = 4
- njguardsx = 4
- njguardsy = 4
- njguardsz = 4
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
  
 end::main
 
