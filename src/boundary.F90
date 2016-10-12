@@ -2510,8 +2510,16 @@ END SUBROUTINE charge_bcs
   END SUBROUTINE particle_bcs_mpi_non_blocking
 
 ! ________________________________________________________________________________________
+!> @author
+!> Mathieu Lobet
+!> Henri Vincenti
+!
 !> @brief
-!> MPI Boundary condition routine on particles in 2D
+!> MPI Boundary condition routine for particles in 2D x,z geometry
+!
+!> @todo
+!> Need to add reflecting boundary conditions to be consistent with
+!> other MPI particle exchange routines
   SUBROUTINE particle_bcs_mpi_non_blocking_2d
 ! ________________________________________________________________________________________
 
