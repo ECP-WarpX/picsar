@@ -203,6 +203,9 @@ CONTAINS
             ELSE IF (INDEX(buffer,'tmax') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) tmax   
+            ELSE IF (INDEX(buffer,'dtcoef') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) dtcoef                 
             ELSE IF (INDEX(buffer,'nx') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) nx_global_grid   
@@ -569,7 +572,10 @@ CONTAINS
                 READ(buffer(ix+1:string_length), *) tmax
             ELSE IF (INDEX(buffer,'nsteps') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), *) nsteps                
+                READ(buffer(ix+1:string_length), *) nsteps
+            ELSE IF (INDEX(buffer,'dtcoef') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) dtcoef
             ELSE IF (INDEX(buffer,'nguardsx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nxguards

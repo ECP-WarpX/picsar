@@ -143,11 +143,12 @@ else ifeq ($(SYS),carl)
 	APPNAME=picsar_carl
   ifeq ($(MODE),prod)
 		COMP=none
-		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto
 		LARCH=
 	else ifeq ($(MODE),debug)
+		APPNAME=picsar_carl_debug
 		COMP=none
-		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
+		FARGS= -g -O3 -D DEBUG=1 -xMIC-AVX512 -qopenmp -debug inline-debug-info -heap-arrays -fp-stack-check -traceback -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),vtune)
 		APPNAME=picsar_carl_vtune

@@ -519,7 +519,6 @@ CONTAINS
 		IF (it.ge.timestat_itstart) THEN
 			localtimes(9) = localtimes(9) + ( MPI_WTIME() - t0 )
 		ENDIF
-        
 
 	END SUBROUTINE write_particles_to_file
 
