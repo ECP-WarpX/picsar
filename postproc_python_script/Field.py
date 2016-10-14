@@ -36,10 +36,10 @@ class Field:
     print ('xmin: %f, xmax: %f, nx: %d'%(self.xmin,self.xmax,self.nx))
     print ('ymin: %f, ymax: %f, ny: %d'%(self.ymin,self.ymax,self.ny))
     print ('zmin: %f, zmax: %f, nz: %d'%(self.zmin,self.zmax,self.nz))
-            
-    self.x = np.linspace(self.xmin,self.xmax,self.nx)
-    self.y = np.linspace(self.ymin,self.ymax,self.ny)    
-    self.z = np.linspace(self.zmin,self.zmax,self.nz)
+
+    self.x = np.linspace(self.xmin,self.xmax,self.nx, endpoint=False)
+    self.y = np.linspace(self.ymin,self.ymax,self.ny, endpoint=False)
+    self.z = np.linspace(self.zmin,self.zmax,self.nz, endpoint=False)
     
     self.dx = self.x[1] - self.x[0]
     self.dy = self.y[1] - self.y[0]

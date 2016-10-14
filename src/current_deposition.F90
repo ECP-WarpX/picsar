@@ -518,7 +518,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 	ENDIF
 
     ! Arbitrary order
-  ELSE 
+  ELSE
 
     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
@@ -2144,7 +2144,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 	noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 ! ________________________________________________________________________________________
-	
+
 	USE particles
 	USE constants
 	USE tiling
@@ -2220,19 +2220,49 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq
 
 
 ! ________________________________________________________________________________________
-!
-!> Order 1 3D scalar current deposition routine (rho*v)
-!> This version does not vectorize on SIMD architectures
-!
 !> @author
 !> Henri Vincenti
+!
+! DESCRIPTION:
+!> Brief description of routine.
+!> @brief
+!> Order 1 3D scalar direct current deposition routine (rho*v)
+!> This version does not vectorize on SIMD architectures
+!
+!> @param[in] np Number of particles
+!> @param[in] xp 1D array of x-coordinates of particles
+!> @param[in] yp 1D array of x-coordinates of particles
+!> @param[in] zp 1D array of x-coordinates of particles
+!> @param[in] uxp 1D array of ux-velocity components of particles
+!> @param[in] uyp 1D array of ux-velocity components of particles
+!> @param[in] uzp 1D array of ux-velocity components of particles
+!> @param[in] gaminv 1D array of the inverse 1/gamma-factor of particles
+!> @param[in] w 1D array of the weghts of particles
+!> @param[in] q charge of current species (scalar)
+!> @param[in] xmin x-minimum boundary of current tile
+!> @param[in] ymin y-minimum boundary of current tile
+!> @param[in] zmin z-minimum boundary of current tile
+!> @param[in] dt time step (scalar)
+!> @param[in] dx mesh size along x (scalar)
+!> @param[in] dy mesh size along y (scalar)
+!> @param[in] dz mesh size along z (scalar)
+!> @param[in] nx number of cells along x (scalar)
+!> @param[in] ny number of cells along y (scalar)
+!> @param[in] nz number of cells along z (scalar)
+!> @param[in] nxguard number of guard cells along x (scalar)
+!> @param[in] nyguard number of guard cells along y (scalar)
+!> @param[in] nzguard number of guard cells along z (scalar)
+!> @param[inout] jx x-current component (3D array)
+!> @param[inout] jy y-current component (3D array)
+!> @param[inout] jz z-current component (3D array)
+!> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
 SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________
 
 	USE constants
 	IMPLICIT NONE
-    
+
 	INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
 	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
@@ -2244,7 +2274,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
 	REAL(num), DIMENSION(2)  :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
 	REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
 	INTEGER(idp)             :: j,k,l,j0,k0,l0,ip
-    
+
 	dxi = 1.0_num/dx
 	dyi = 1.0_num/dy
 	dzi = 1.0_num/dz
@@ -2260,7 +2290,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
 	! Prevent loop to vectorize (dependencies)
 	!DIR$ NOVECTOR
 	DO ip=1,np
-	
+
 		! --- computes position in  grid units at (n+1)
 		x = (xp(ip)-xmin)*dxi
 		y = (yp(ip)-ymin)*dyi
@@ -2289,7 +2319,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
 		j0=floor(xmid-0.5_num)
 		k0=floor(ymid-0.5_num)
 		l0=floor(zmid-0.5_num)
-		
+
 		! --- computes set of coefficients for node centered quantities
 		xint = xmid-j
 		yint = ymid-k
@@ -2348,28 +2378,49 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 
 
 
+
+
+
+
 ! ________________________________________________________________________________________
-!> Order 1 3D vector current deposition routine (rho*v)
-!> @brief
+! - depose_jxjyjz_vecHVv2_1_1_1
+!> @author
+!> Henri Vincenti
 !
-!> @detail
+! DESCRIPTION:
+!> Brief description of routine.
+!> @brief
+!> Order 1 3D vector direct current deposition routine (rho*v)
 !> This versions have good performances on SIMD architectures
 !> Providing that OpenMP 4.0 is available (Directive SIMD)
 !
-!> @author
-!> Henri Vincenti
-!>
-!> @param[inout] jx,jy,jz current arrays
-!> @param[in] np number of particles
-!> @param[in] xp,yp,zp particle position arrays
-!> @param[in] uxp,uyp,uzp particle momentum arrays
-!> @param[in] gaminv particle Lorentz factor arrays
-!> @param[in] w particle weight arrays
-!> @param[in] q particle species charge
-!> @param[in] xmin,ymin,zmin tile grid minimum position
-!> @param[in] dx,dy,dz space discretization steps
-!> @param[in] nx,ny,nz number of cells
-!> @param[in] nxguard,nyguard,nzguard number of guard cells
+!> @param[in] np Number of particles
+!> @param[in] xp 1D array of x-coordinates of particles
+!> @param[in] yp 1D array of x-coordinates of particles
+!> @param[in] zp 1D array of x-coordinates of particles
+!> @param[in] uxp 1D array of ux-velocity components of particles
+!> @param[in] uyp 1D array of ux-velocity components of particles
+!> @param[in] uzp 1D array of ux-velocity components of particles
+!> @param[in] gaminv 1D array of the inverse 1/gamma-factor of particles
+!> @param[in] w 1D array of the weghts of particles
+!> @param[in] q charge of current species (scalar)
+!> @param[in] xmin x-minimum boundary of current tile
+!> @param[in] ymin y-minimum boundary of current tile
+!> @param[in] zmin z-minimum boundary of current tile
+!> @param[in] dt time step (scalar)
+!> @param[in] dx mesh size along x (scalar)
+!> @param[in] dy mesh size along y (scalar)
+!> @param[in] dz mesh size along z (scalar)
+!> @param[in] nx number of cells along x (scalar)
+!> @param[in] ny number of cells along y (scalar)
+!> @param[in] nz number of cells along z (scalar)
+!> @param[in] nxguard number of guard cells along x (scalar)
+!> @param[in] nyguard number of guard cells along y (scalar)
+!> @param[in] nzguard number of guard cells along z (scalar)
+!> @param[inout] jx x-current component (3D array)
+!> @param[inout] jy y-current component (3D array)
+!> @param[inout] jz z-current component (3D array)
+!> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________
@@ -2998,33 +3049,44 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 
 
 ! ________________________________________________________________________________________
-! depose_jxjyjz_vecHVv2_2_2_2
-!
-!> Order 2 3D vector current deposition routine (rho*v)
-!> @brief
-!
-!> This versions have good performances on SIMD architectures
-!> providing that OpenMP 4.0 is available (Directive SIMD).
-!> To use this function, select nox=2, noy=2, noz=2.
-!> @details
-!
+! - depose_jxjyjz_vecHVv2_2_2_2
 !> @author
 !> Henri Vincenti
 !
-!> @date
-!> 2015
-!>
-!> @param[inout] jx,jy,jz current arrays
-!> @param[in] np number of particles
-!> @param[in] xp,yp,zp particle position arrays
-!> @param[in] uxp,uyp,uzp particle momentum arrays
-!> @param[in] gaminv particle Lorentz factor arrays
-!> @param[in] w particle weight arrays
-!> @param[in] q particle species charge
-!> @param[in] xmin,ymin,zmin tile grid minimum position
-!> @param[in] dx,dy,dz space discretization steps
-!> @param[in] nx,ny,nz number of cells
-!> @param[in] nxguard,nyguard,nzguard number of guard cells
+! DESCRIPTION:
+!> Brief description of routine.
+!> @brief
+!> Order 2 3D vector direct current deposition routine (rho*v)
+!> This versions have good performances on SIMD architectures
+!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!
+!> @param[in] np Number of particles
+!> @param[in] xp 1D array of x-coordinates of particles
+!> @param[in] yp 1D array of x-coordinates of particles
+!> @param[in] zp 1D array of x-coordinates of particles
+!> @param[in] uxp 1D array of ux-velocity components of particles
+!> @param[in] uyp 1D array of ux-velocity components of particles
+!> @param[in] uzp 1D array of ux-velocity components of particles
+!> @param[in] gaminv 1D array of the inverse 1/gamma-factor of particles
+!> @param[in] w 1D array of the weghts of particles
+!> @param[in] q charge of current species (scalar)
+!> @param[in] xmin x-minimum boundary of current tile
+!> @param[in] ymin y-minimum boundary of current tile
+!> @param[in] zmin z-minimum boundary of current tile
+!> @param[in] dt time step (scalar)
+!> @param[in] dx mesh size along x (scalar)
+!> @param[in] dy mesh size along y (scalar)
+!> @param[in] dz mesh size along z (scalar)
+!> @param[in] nx number of cells along x (scalar)
+!> @param[in] ny number of cells along y (scalar)
+!> @param[in] nz number of cells along z (scalar)
+!> @param[in] nxguard number of guard cells along x (scalar)
+!> @param[in] nyguard number of guard cells along y (scalar)
+!> @param[in] nzguard number of guard cells along z (scalar)
+!> @param[inout] jx x-current component (3D array)
+!> @param[inout] jy y-current component (3D array)
+!> @param[inout] jz z-current component (3D array)
+!> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________
@@ -5150,7 +5212,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 !> @param[in] nxguard,nyguard,nzguard number of guard cells
 !> @param[in] nox,noy,noz interpolation order
 !> @param[in] l_particles_weight use the particle weigth
-!> @param[in] l4symtry 
+!> @param[in] l4symtry
 !>
 SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -5159,14 +5221,14 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	USE omp_lib
 	USE constants
 	IMPLICIT NONE
-	
+
 	! Input/output parameters
 	INTEGER(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
 	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
 	REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
 	LOGICAL(idp)             :: l_particles_weight,l4symtry
-	
+
 	! Internal parameters
 	REAL(num)                            :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
 	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
@@ -5203,7 +5265,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	dtsdz0 = dt*dzi
 	sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
 	sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
-	
+
 	!!$OMP PARALLEL DEFAULT(NONE) PRIVATE(ip,x,y,z,usq,vx,vy,vz,gaminv,xold,yold,zold, &
 	!!$OMP wq,wqx,wqy,wqz,iixp0,ijxp0,ikxp0, xint,yint,zint, oxint,xintsq, oxintsq,dix,diy,diz, &
 	!!$OMP dsx, dsy, dsz, oyint,yintsq, oyintsq, ozint,zintsq, ozintsq,ixmin, ixmax, iymin, iymax, izmin, izmax,  &
@@ -5211,7 +5273,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	!!$OMP SHARED(np,xp,yp,zp,uxp,uyp,uzp,w,dxi,dyi,dzi,invdtdx,invdtdy,invdtdz,xmin,ymin,zmin,clghtisq,dtsdx0,dtsdy0,dtsdz0,q,jx,jy,jz)
 	!!$OMP DO
 	DO ip=1,np
-	
+
 		! --- computes current position in grid units
 		x = (xp(ip)-xmin)*dxi
 		y = (yp(ip)-ymin)*dyi
@@ -8365,7 +8427,7 @@ END SUBROUTINE
 !> @param[in] nxguard,nyguard,nzguard number of guard cells
 !> @param[in] nox,noy,noz interpolation order
 !> @param[in] l_particles_weight use the particle weigth
-!> @param[in] l4symtry 
+!> @param[in] l4symtry
 !>
 SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -8380,7 +8442,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
 	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
 	LOGICAL(idp) :: l_particles_weight,l4symtry
-	
+
 	REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
 	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
 	REAL(num) :: clghtisq,xold,yold,zold
