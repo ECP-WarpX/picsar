@@ -269,6 +269,7 @@ SUBROUTINE initall
 		write(0,*) 'Dimension:',c_dim  
 		write(0,*) 'dx, dy, dz:',dx,dy,dz
 		write(0,*) 'dt:',dt,'s',dt*1e15,'fs'
+		write(0,'(" Coefficient on dt determined via the CFL (dtcoef): ",F12.5)')	dtcoef	
 		write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
 		write(0,*) 'Number of steps:',nsteps
 		write(0,*) 'Tiles:',ntilex,ntiley,ntilez

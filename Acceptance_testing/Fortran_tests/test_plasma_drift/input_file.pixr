@@ -35,6 +35,9 @@ section::main
  # Simulation duration (in 1/w0)
  t_max = 20
  
+ # Dtcoef on the dt determined from the CFL
+ dtcoef = 0.8
+ 
  ntilex = 2
  ntiley = 2
  ntilez = 2
@@ -100,7 +103,7 @@ section::plasma
 end::plasma
 
 section::species
- name = electron
+ name = electron_z
  mass = 1
  charge = -1
  nppcell = 3
@@ -122,7 +125,7 @@ section::species
 end::species
 
 section::species
- name = positron
+ name = positron_z
  mass = 1
  charge = 1
  nppcell = 3

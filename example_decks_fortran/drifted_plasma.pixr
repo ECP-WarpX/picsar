@@ -35,6 +35,9 @@ section::main
  # Simulation duration (in 1/w0)
  t_max = 20
  
+ # Dtcoef on the dt determined from the CFL
+ dtcoef = 0.8
+ 
  ntilex = 2
  ntiley = 2
  ntilez = 2
