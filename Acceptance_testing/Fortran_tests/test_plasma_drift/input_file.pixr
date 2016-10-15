@@ -36,7 +36,7 @@ section::main
  t_max = 20
  
  # Dtcoef on the dt determined from the CFL
- dtcoef = 0.8
+ dtcoef = 0.7
  
  ntilex = 2
  ntiley = 2
