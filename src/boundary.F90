@@ -2517,7 +2517,7 @@ END SUBROUTINE charge_bcs
 !> @brief
 !> MPI Boundary condition routine for particles in 2D x,z geometry
 !
-!> @todo
+!> @warning
 !> Need to add reflecting boundary conditions to be consistent with
 !> other MPI particle exchange routines
   SUBROUTINE particle_bcs_mpi_non_blocking_2d
@@ -2647,7 +2647,7 @@ END SUBROUTINE charge_bcs
                             zbd = 1
                             ! Particle has left the system
                             IF (z_max_boundary) THEN
-                            	SELECT CASE (pbound_z_max)particle_bcs_mpi_non_blocking
+                            	SELECT CASE (pbound_z_max)
                             	CASE (1_idp) ! absorbing
                             		CALL rm_particles_from_species_2d(currsp, &
                                 ixtile, iztile, i)
