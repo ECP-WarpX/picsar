@@ -2555,7 +2555,7 @@ END SUBROUTINE charge_bcs
 				IF (ABS(ix) + ABS(iz) .EQ. 0) CYCLE
 				count=nspecies
 				dest = neighbour(ix,0,iz)
-				CALL MPI_IRECV(npart_recv(1:count,ix,iz), count,  MPI_INTEGER8, dest, mpitag,    &
+				CALL MPI_IRECV(npart_recv(1:count,ix,iz), count,  MPI_INTEGER8, dest, MPI_ANY_TAG,    &
 								comm, requests(ireq), errcode)
 				ireq=ireq+1
 			END DO
@@ -2647,7 +2647,7 @@ END SUBROUTINE charge_bcs
                             zbd = 1
                             ! Particle has left the system
                             IF (z_max_boundary) THEN
-                            	SELECT CASE (pbound_z_max)
+                            	SELECT CASE (pbound_z_max)particle_bcs_mpi_non_blocking
                             	CASE (1_idp) ! absorbing
                             		CALL rm_particles_from_species_2d(currsp, &
                                 ixtile, iztile, i)
