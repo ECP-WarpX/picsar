@@ -6,7 +6,7 @@ UTIL=utils
 FC=Forthon
 FCARGS=-v --no2underscores  --nowritemodules
 FCOMP=gfortran
-FCOMPEXEC=mpif90
+FCOMPEXEC=
 FARGS="-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"
 
 LIBDIR=
