@@ -99,9 +99,6 @@ Testing the code after compilation is highly recommended.
 
 To test the compilation/execution, you can use the makefile (py.test is required):
 
-  For all test:
-  - `make -f Makefile_Forthon test`
-
-  For each test one by one
-  - Simple running test:     `make -f Makefile_Forthon test1`
-  - Langmuir wave:           `make -f Makefile_Forthon test2`
+```
+make -f Makefile_Forthon test2
+```
