@@ -99,9 +99,9 @@ section::sorting
  dx=0.5
  dy=0.5
  dz=0.5
- shiftx=-0.
- shifty=-0.
- shiftz=-0.
+ shiftx=-0.5
+ shifty=-0.5
+ shiftz=-0.5
 end::sorting 
 
 
