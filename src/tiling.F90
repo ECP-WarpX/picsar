@@ -677,14 +677,15 @@ CONTAINS
                   kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
                   lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
                   lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+
                   DO l=lmin,lmax-1
                       DO k=kmin,kmax-1
                           DO j=jmin,jmax-1
                               DO ipart=1,curr%nppcell
                                   ! Sets positions and weight
-                                  partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
-                                  party = y_min_local+k*dy+dy/curr%nppcell*(ipart-1)
-                                  partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
+                                  partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-0.5d0)
+                                  party = y_min_local+k*dy+dy/curr%nppcell*(ipart-0.5d0)
+                                  partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-0.5d0)
                                   partw = nc*dx*dy*dz/(curr%nppcell)
                                   ! Sets velocity
                                   CALL RANDOM_NUMBER(rng(1:3))
