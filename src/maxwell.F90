@@ -107,8 +107,8 @@ ENDIF
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
 	CALL pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-			clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
-			clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
+			clight**2*dt/dx,clight**2*dt/dy,                           &
+			clight**2*dt/dz,nx,ny,nz,                                          &
 			nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
 			l_nodalgrid)
 			
