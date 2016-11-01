@@ -433,7 +433,7 @@ SUBROUTINE FD_weights(coeffs, norder, l_nodal)
 USE constants
 IMPLICIT NONE
 INTEGER(idp) :: norder, n, m, mn, i, j, k
-LOGICAL      :: l_nodal
+LOGICAL(lp)  :: l_nodal
 REAL(num)    :: z, fact, c1, c2, c3, c4, c5
 REAL(num), INTENT(IN OUT), DIMENSION(norder/2) :: coeffs
 REAL(num), ALLOCATABLE, DIMENSION(:)           :: x

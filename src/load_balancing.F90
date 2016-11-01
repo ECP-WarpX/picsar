@@ -26,7 +26,7 @@ SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, &
                                     cxmax,cymax,czmax,npx,npy,npz,np,l_cart_comm)
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, np
-    LOGICAL(idp) :: l_cart_comm
+    LOGICAL(lp)  :: l_cart_comm
     INTEGER(idp), INTENT(IN OUT), DIMENSION(0:np-1) :: ix1, ix2, iy1, iy2, iz1, iz2
     INTEGER(idp), INTENT(IN),  DIMENSION(0:npx-1) :: cxmin, cxmax
     INTEGER(idp), INTENT(IN), DIMENSION(0:npy-1) :: cymin, cymax
@@ -56,7 +56,7 @@ SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_car
     IMPLICIT NONE 
     INTEGER(isp), INTENT(IN) :: mpi_comm_in
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix,iy,iz
-    LOGICAL(idp), INTENT(IN) :: l_cart_comm
+    LOGICAL(lp) , INTENT(IN) :: l_cart_comm
     INTEGER(idp), INTENT(IN OUT) :: curr_rank
     INTEGER(isp) :: mpi_rank, mpi_comm_isp
     INTEGER(idp) :: ixt, iyt, izt 
@@ -153,7 +153,7 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
     INTEGER(idp) :: ix1oldip, ix2oldip, iy1oldip, iy2oldip, iz1oldip, iz2oldip
     INTEGER(idp) :: ixmin_old, ixmax_old, iymin_old, iymax_old, izmin_old, izmax_old
     INTEGER(idp) :: ixmin_new, ixmax_new, iymin_new, iymax_new, izmin_new, izmax_new
-    LOGICAL(idp) :: l_is_intersection
+    LOGICAL(lp)  :: l_is_intersection
     INTEGER(isp), DIMENSION(0:nprocs-1) :: sendtype, recvtype 
     INTEGER(isp), DIMENSION(0:2_isp*nprocs-1) :: requests 
     INTEGER(isp) :: mpitag, proc_rank,  i, nsreq, nrreq, error, count
@@ -314,7 +314,7 @@ SUBROUTINE remap_em_2Dfields(emfield_old,nxold,nzold,               &
     INTEGER(idp) :: ix1oldip, ix2oldip, iz1oldip, iz2oldip
     INTEGER(idp) :: ixmin_old, ixmax_old, izmin_old, izmax_old
     INTEGER(idp) :: ixmin_new, ixmax_new, izmin_new, izmax_new
-    LOGICAL(idp) :: l_is_intersection
+    LOGICAL(lp)  :: l_is_intersection
     INTEGER(isp), DIMENSION(0:nprocs-1) :: sendtype, recvtype 
     INTEGER(isp), DIMENSION(0:2_isp*nprocs-1) :: requests 
     INTEGER(isp) :: mpitag, proc_rank,  i, nsreq, nrreq, error, count
@@ -460,8 +460,8 @@ SUBROUTINE get_3Dintersection(ix1min,ix1max,iy1min,iy1max,iz1min,iz1max, &
     INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iy1min, iy1max, iz1min, iz1max
     INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iy2min, iy2max, iz2min, iz2max
     INTEGER(idp), INTENT(IN OUT) ::  ix3min, ix3max, iy3min, iy3max, iz3min, iz3max
-    LOGICAL(idp), INTENT(IN OUT) :: l_is_intersection 
-    LOGICAL(idp) :: l_is_intersectionx, l_is_intersectiony, l_is_intersectionz
+    LOGICAL(lp) , INTENT(IN OUT) :: l_is_intersection 
+    LOGICAL(lp)  :: l_is_intersectionx, l_is_intersectiony, l_is_intersectionz
     ix3min=0; iy3min=0; iz3min=0
     ix3max=0; iy3max=0; iz3max=0
     l_is_intersectionx=.FALSE.
@@ -529,8 +529,8 @@ SUBROUTINE get_2Dintersection(ix1min,ix1max,iz1min,iz1max, &
     INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iz1min, iz1max
     INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iz2min, iz2max
     INTEGER(idp), INTENT(IN OUT) ::  ix3min, ix3max, iz3min, iz3max
-    LOGICAL(idp), INTENT(IN OUT) :: l_is_intersection 
-    LOGICAL(idp) :: l_is_intersectionx, l_is_intersectionz
+    LOGICAL(lp) , INTENT(IN OUT) :: l_is_intersection 
+    LOGICAL(lp)  :: l_is_intersectionx, l_is_intersectionz
     ix3min=0; iz3min=0
     ix3max=0; iz3max=0
     l_is_intersectionx=.FALSE.
@@ -685,7 +685,7 @@ SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirm
     INTEGER(idp), INTENT(IN) :: nproc_in_dir, ncellmaxdir 
     INTEGER(idp) :: iproc, icell 
     REAL(num) :: balanced_load=0_num, curr_balanced_load=0_num, curr_proc_load=0_num  
-    LOGICAL(idp) :: not_balanced 
+    LOGICAL(lp)  :: not_balanced 
     REAL(num) :: delta 
     REAL(num), DIMENSION(0:nproc_in_dir-1) :: load_per_proc
 
@@ -1104,7 +1104,7 @@ INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1new, ix2new, iy1new, iy2new
 INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
 INTEGER(idp), INTENT(IN), DIMENSION(0:npy-1) :: ncymin, ncymax
 INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
-LOGICAL(idp), INTENT(IN) :: l_cart_comm
+LOGICAL(lp) , INTENT(IN) :: l_cart_comm
 INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies, npcurr
 INTEGER(idp) :: ix3min,ix3max,iy3min,iy3max,iz3min,iz3max
 INTEGER(idp) :: ix1newip, ix2newip, iy1newip, iy2newip, iz1newip, iz2newip
@@ -1114,7 +1114,7 @@ INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
 INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
 INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
 INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
-LOGICAL(idp) :: l_is_intersection
+LOGICAL(lp)  :: l_is_intersection
 INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
 REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
 REAL(num), ALLOCATABLE, DIMENSION (:,:) :: recvbuff
@@ -1334,7 +1334,7 @@ INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1old, ix2old, iz1old, iz2old
 INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1new, ix2new, iz1new, iz2new
 INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
 INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
-LOGICAL(idp), INTENT(IN) :: l_cart_comm
+LOGICAL(lp) , INTENT(IN) :: l_cart_comm
 INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies, npcurr,npy
 INTEGER(idp) :: ix3min,ix3max,iz3min,iz3max
 INTEGER(idp) :: ix1newip, ix2newip,  iz1newip, iz2newip
@@ -1344,7 +1344,7 @@ INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
 INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
 INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
 INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
-LOGICAL(idp) :: l_is_intersection
+LOGICAL(lp)  :: l_is_intersection
 INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
 REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
 REAL(num), ALLOCATABLE, DIMENSION (:,:) :: recvbuff
@@ -1550,7 +1550,7 @@ INTEGER(idp), INTENT(IN OUT) :: iproc
 INTEGER(idp), INTENT(IN) :: ic, ncpus
 INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ncmin, ncmax 
 INTEGER(idp) :: imin, imax, imid
-LOGICAL(idp) :: is_not_found
+LOGICAL(lp)  :: is_not_found
 
 imin=0
 imax=ncpus-1
@@ -1579,7 +1579,7 @@ INTEGER(isp), INTENT(IN) :: crank
 INTEGER(idp), INTENT(IN) :: narr
 INTEGER(isp), INTENT(IN), DIMENSION(narr) :: arr
 INTEGER(idp) :: imin, imax, imid
-LOGICAL(idp) :: is_not_found
+LOGICAL(lp)  :: is_not_found
 
 imin=1
 imax=narr

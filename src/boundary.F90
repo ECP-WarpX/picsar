@@ -1993,13 +1993,13 @@ END SUBROUTINE charge_bcs
     INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
-    LOGICAL(idp), ALLOCATABLE, DIMENSION(:) :: mask
+    LOGICAL(lp) , ALLOCATABLE, DIMENSION(:) :: mask
     INTEGER(isp) :: ibuff, nout, nbuff
     INTEGER(isp) :: xbd, ybd, zbd
     INTEGER(isp) :: ixp, iyp, izp
     INTEGER(isp) :: nsend_buf, nrecv_buf
     INTEGER(isp) :: dest, src
-    LOGICAL(idp) :: out_of_bounds
+    LOGICAL(lp)  :: out_of_bounds
     INTEGER(idp) :: ispecies, i, ix, iy, iz
     INTEGER(idp) :: ixtile, iytile, iztile
     REAL(num) :: part_xyz, tdeb, tend
@@ -2222,7 +2222,7 @@ END SUBROUTINE charge_bcs
 		INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
 		INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
 		REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuff, recvbuff
-		LOGICAL(idp) :: remove_from_sim
+		LOGICAL(lp)  :: remove_from_sim
 		INTEGER(isp) :: ibuff, nbuff
 		INTEGER(isp) :: xbd, ybd, zbd
 		INTEGER(isp) :: mpitag, count
@@ -2532,7 +2532,7 @@ END SUBROUTINE charge_bcs
     INTEGER(idp), ALLOCATABLE, DIMENSION(:,:,:) :: npart_recv, npart_send
     INTEGER(isp) :: dest, src, ireq
     INTEGER(isp), DIMENSION(:), ALLOCATABLE :: requests
-    LOGICAL(idp) :: out_of_bounds
+    LOGICAL(lp)  :: out_of_bounds
     INTEGER(idp) :: ispecies, i, ix, iz, npcurr, ipart
     INTEGER(idp) :: ixtile, iztile, ispec, nmax
     REAL(num) :: part_xyz

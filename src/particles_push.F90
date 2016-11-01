@@ -118,7 +118,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 	! ___ Parameter declaration __________________________________________
 	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-	LOGICAL                  :: l_lower_order_in_v_in
+	LOGICAL(lp)                   :: l_lower_order_in_v_in
 	REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -134,7 +134,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 	REAL(num)                :: tdeb, tend
 	INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
 	INTEGER(idp)             :: nxjg,nyjg,nzjg
-	LOGICAL(idp)             :: isgathered=.FALSE.
+	LOGICAL(lp)              :: isgathered=.FALSE.
 
 	tdeb=MPI_WTIME()
 
@@ -326,7 +326,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 	! ___ Parameter declaration __________________________________________
 	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-	LOGICAL                  :: l_lower_order_in_v_in
+	LOGICAL(lp)                   :: l_lower_order_in_v_in
 	REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -342,7 +342,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 	REAL(num)                :: tdeb, tend
 	INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
 	INTEGER(idp)             :: nxjg,nyjg,nzjg
-	LOGICAL(idp)             :: isgathered=.FALSE.
+	LOGICAL(lp)              :: isgathered=.FALSE.
 
 	IF (it.ge.timestat_itstart) THEN
 		tdeb=MPI_WTIME()
@@ -421,7 +421,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 										nxjg,nyjg,nzjg, &
 										currg%extile,currg%eytile,currg%eztile,&
 										currg%bxtile,currg%bytile,currg%bztile,&
-										curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
+										curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
 
 						ELSE IF ((noxx.eq.2).and.(noyy.eq.2).and.(nozz.eq.2)) THEN
 
@@ -438,7 +438,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 										nxjg,nyjg,nzjg, &
 										currg%extile,currg%eytile,currg%eztile,&
 										currg%bxtile,currg%bytile,currg%bztile,&
-										curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
+										curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
 
 						ELSE IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3)) THEN
 
@@ -455,7 +455,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 										nxjg,nyjg,nzjg, &
 										currg%extile,currg%eytile,currg%eztile,&
 										currg%bxtile,currg%bytile,currg%bztile,&
-										curr%charge,curr%mass,lvec_fieldgathe,LOGICAL(l_lower_order_in_v,isp))
+										curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
 
 						ENDIF
 
@@ -513,7 +513,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	! ___ Parameter declaration __________________________________________
 	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-	LOGICAL                  :: l_lower_order_in_v_in
+	LOGICAL(lp)                   :: l_lower_order_in_v_in
 	REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -529,7 +529,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	REAL(num)                :: tdeb, tend
 	INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
 	INTEGER(idp)             :: nxjg,nyjg,nzjg
-	LOGICAL(idp)             :: isgathered=.FALSE.
+	LOGICAL(lp)              :: isgathered=.FALSE.
 
 	IF (nspecies .EQ. 0_idp) RETURN
 
@@ -660,7 +660,7 @@ SUBROUTINE pxrpush_particles_part1
 	IMPLICIT NONE
 
 	CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,LOGICAL(l4symtry,idp),LOGICAL(l_lower_order_in_v,idp))
+	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry,l_lower_order_in_v)
 
 END SUBROUTINE pxrpush_particles_part1
 
@@ -697,7 +697,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	IMPLICIT NONE
 	INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
 	INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-	LOGICAL(idp), INTENT(IN) :: l4symtry_in, l_lower_order_in_v_in
+	LOGICAL(lp) , INTENT(IN) :: l4symtry_in, l_lower_order_in_v_in
 	REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
 	REAL(num), INTENT(IN) :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -713,7 +713,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	REAL(num) :: tdeb, tend
 	INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 	INTEGER(idp) :: nxjg,nyjg,nzjg
-	LOGICAL(idp) :: isgathered=.FALSE.
+	LOGICAL(lp)  :: isgathered=.FALSE.
 
 
 	IF (nspecies .EQ. 0_idp) RETURN
@@ -1418,7 +1418,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 	INTEGER(idp)                         :: lvect
 	REAL(num)                            :: q,m
 	REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-	LOGICAL(isp)                         :: l_lower_order_in_v
+	LOGICAL(lp)                          :: l_lower_order_in_v
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
 	REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
 
@@ -1890,7 +1890,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 	INTEGER(idp)                         :: lvect
 	REAL(num)                            :: q,m
 	REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-	LOGICAL(isp)                         :: l_lower_order_in_v
+	LOGICAL(lp)                          :: l_lower_order_in_v
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
 	REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
 	INTEGER(isp)                         :: ip
@@ -2566,7 +2566,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 	INTEGER(idp)                         :: lvect
 	REAL(num)                            :: q,m
 	REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-	LOGICAL(isp)                         :: l_lower_order_in_v
+	LOGICAL(lp)                          :: l_lower_order_in_v
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
 	REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
 	INTEGER(isp)                         :: ip

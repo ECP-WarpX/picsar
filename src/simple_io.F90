@@ -435,7 +435,7 @@ CONTAINS
 		USE time_stat
 
 		REAL(num), ALLOCATABLE, DIMENSION(:)    :: arr 
-		LOGICAL(isp), ALLOCATABLE, DIMENSION(:) :: mask 
+		LOGICAL(lp) , ALLOCATABLE, DIMENSION(:) :: mask 
 		INTEGER(idp)                            :: narr, idump, ncurr, ndump 
 		INTEGER(isp)                            :: fh
 		INTEGER(idp)                            :: offset 
@@ -531,7 +531,7 @@ CONTAINS
   
   INTEGER(idp), INTENT(IN) :: idump, narr
   INTEGER(idp), INTENT(IN OUT) :: ndump 
-  LOGICAL(isp), DIMENSION(narr), INTENT(IN OUT) :: mask 
+  LOGICAL(lp) , DIMENSION(narr), INTENT(IN OUT) :: mask 
   INTEGER(idp) :: ix, iy, iz, count, ip
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER :: dp
@@ -588,7 +588,7 @@ CONTAINS
   USE constants
   USE tiling
   INTEGER(idp), INTENT(IN) :: idump, narr, var, nmask
-  LOGICAL(isp), DIMENSION(nmask), INTENT(IN) :: mask 
+  LOGICAL(lp) , DIMENSION(nmask), INTENT(IN) :: mask 
   REAL(num), DIMENSION(narr), INTENT(IN OUT) :: arr 
   INTEGER(idp) :: ix, iy, iz, count, ncurr, np, ip
   TYPE(particle_species), POINTER :: curr

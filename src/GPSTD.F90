@@ -15,7 +15,7 @@ IMPLICIT NONE
 TYPE block3d
     COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: block3dc
     INTEGER(idp) :: nx, ny, nz
-    LOGICAL(idp) :: is_source_variable = .FALSE. 
+    LOGICAL(lp)  :: is_source_variable = .FALSE. 
 END TYPE block3d
 TYPE matrix_blocks
     TYPE(block3d), POINTER, DIMENSION(:,:) :: block_matrix2d
@@ -90,7 +90,7 @@ SUBROUTINE point_to_vector_block_p2f(ain,n1,n2,n3,iv,mat_index,old,is_source)
 USE matrix_coefficients 
 IMPLICIT NONE 
 INTEGER(idp), INTENT(IN) :: n1,n2,n3, mat_index, iv
-LOGICAL(idp), INTENT(IN) :: old, is_source
+LOGICAL(lp) , INTENT(IN) :: old, is_source
 COMPLEX(cpx), INTENT(IN), TARGET, DIMENSION(n1,n2,n3) :: ain
 
 IF (old) THEN 

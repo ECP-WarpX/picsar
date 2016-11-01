@@ -143,7 +143,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
 real(num), intent(IN) :: mudt,dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
     ist = 0
@@ -217,7 +217,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
 real(num), intent(IN) :: mudt,dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
     ist = 0
@@ -282,7 +282,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
 real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
     ist = 0
@@ -341,7 +341,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: jx,jy,jz
 real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
 integer(idp):: j,k,l
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 ! advance Ex
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
@@ -399,7 +399,7 @@ integer(idp)          :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,no
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp)          :: i,j,k,l,ist
-logical               :: l_nodalgrid
+LOGICAL(lp)                :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0
@@ -469,7 +469,7 @@ integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,nor
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0
@@ -529,7 +529,7 @@ integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,nor
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0
@@ -582,7 +582,7 @@ integer(idp):: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 integer(idp) :: j,k,l
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 ! advance Bx
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
@@ -631,7 +631,7 @@ INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 REAL(num), INTENT(IN) :: dtsdx,dtsdy,dtsdz
 INTEGER(idp) :: j,k,l
-LOGICAL(idp) :: l_2dxz
+LOGICAL(lp)  :: l_2dxz
 
 IF (.NOT.l_2dxz) THEN
 

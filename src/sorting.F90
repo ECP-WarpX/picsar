@@ -48,7 +48,7 @@ MODULE sorting
     USE params
     IMPLICIT NONE
 
-    !LOGICAL(idp) :: verbose=.TRUE.
+    !LOGICAL(lp)  :: verbose=.TRUE.
     REAL(num) :: tdeb, tend
     
     IF ((sorting_activated.gt.0)) THEN
@@ -100,8 +100,8 @@ MODULE sorting
     TYPE(grid_tile), POINTER :: currg
     INTEGER(idp) :: nxc, nyc, nzc, np,ip
     INTEGER(idp) :: nxjg,nyjg,nzjg
-    LOGICAL(idp) :: isgathered=.FALSE.
-    LOGICAL(idp) :: verbose=.TRUE.
+    LOGICAL(lp)  :: isgathered=.FALSE.
+    LOGICAL(lp)  :: verbose=.TRUE.
     REAL(num) :: sxmin,symin,szmin
     REAL(num) :: tdeb, tend
     

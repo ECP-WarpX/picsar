@@ -62,7 +62,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   ! ___ Parameter declaration ________________________________________
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-  LOGICAL                  :: l_lower_order_in_v_in
+  LOGICAL(lp)                   :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -78,7 +78,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   REAL(num)                :: tdeb, tend
   INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
   INTEGER(idp)             :: nxjg,nyjg,nzjg
-  LOGICAL                  :: isgathered=.FALSE.
+  LOGICAL(lp)                   :: isgathered=.FALSE._lp
 
   IF (nspecies .EQ. 0_idp) RETURN
 
@@ -116,7 +116,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
           nxc=curr_tile%nx_cells_tile
           nyc=curr_tile%ny_cells_tile
           nzc=curr_tile%nz_cells_tile
-          isgathered=.FALSE.
+          isgathered=.FALSE._lp
 
           DO ispecies=1, nspecies ! LOOP ON SPECIES
             curr=>species_parray(ispecies)
@@ -159,7 +159,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					               &
 											  currg%eztile,                                          			           &
 											  currg%bxtile,currg%bytile,currg%bztile                 			           &
-											  ,.FALSE.,l_lower_order_in_v_in,fieldgathe)
+											  ,.FALSE._lp,l_lower_order_in_v_in,fieldgathe)
 
                 END DO! END LOOP ON SPECIES
             ENDIF
@@ -224,7 +224,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 
 	integer(idp)             :: field_gathe_algo
   integer(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-  logical, intent(in)      :: ll4symtry,l_lower_order_in_v
+  LOGICAL(lp) , intent(in)      :: ll4symtry,l_lower_order_in_v
   real(num), dimension(np) :: xp,yp,zp,ex,ey,ez,bx,by,bz
   real(num)                :: xmin,ymin,zmin,dx,dy,dz
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
@@ -369,7 +369,7 @@ IMPLICIT NONE
 
 	INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 	REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-	LOGICAL :: l4symtry,l_lower_order_in_v
+	LOGICAL(lp)  :: l4symtry,l_lower_order_in_v
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
 	REAL(num) :: xmin,ymin,zmin,dx,dy,dz
 	INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -669,7 +669,7 @@ USE constants
 IMPLICIT NONE
 INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
-LOGICAL :: l_lower_order_in_v
+LOGICAL(lp)  :: l_lower_order_in_v
 REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 REAL(num) :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -979,7 +979,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
 
 	integer(idp)                     :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 	real(num), dimension(np)         :: xp,yp,zp,bx,by,bz
-	logical      :: l4symtry,l_lower_order_in_v
+	LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
 	real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 	real(num) :: xmin,ymin,zmin,dx,dy,dz
 	integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -992,16 +992,16 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
 	real(num), dimension(:), allocatable :: sx0,sy0,sz0
 	real(num), parameter :: onesixth=1./6.,twothird=2./3.
 
-      dxi = 1./dx
-      dyi = 1./dy
-      dzi = 1./dz
+	dxi = 1./dx
+	dyi = 1./dy
+	dzi = 1./dz
 
-      ixmin = -int(nox/2)
-      ixmax =  int((nox+1)/2)-1
-      iymin = -int(noy/2)
-      iymax =  int((noy+1)/2)-1
-      izmin = -int(noz/2)
-      izmax =  int((noz+1)/2)-1
+	ixmin = -int(nox/2)
+	ixmax =  int((nox+1)/2)-1
+	iymin = -int(noy/2)
+	iymax =  int((noy+1)/2)-1
+	izmin = -int(noz/2)
+	izmax =  int((noz+1)/2)-1
 
 
       if (l_lower_order_in_v) then
@@ -1307,7 +1307,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
 		implicit none
 		integer(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
 		real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-		logical      :: l4symtry,l_lower_order_in_v
+		LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
 		real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
 		real(num) :: xmin,ymin,zmin,dx,dy,dz
 		integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &

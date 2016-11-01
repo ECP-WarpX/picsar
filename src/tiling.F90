@@ -392,7 +392,7 @@ CONTAINS
     !!! --- This technique avoids packing or reallocating arrays
     SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt,mask)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        LOGICAL(idp), DIMENSION (:), INTENT(IN) :: mask
+        LOGICAL(lp) , DIMENSION (:), INTENT(IN) :: mask
         INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
         INTEGER(idp) :: ninit, i
         TYPE(particle_tile), POINTER :: curr

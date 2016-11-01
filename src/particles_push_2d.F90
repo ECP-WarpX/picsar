@@ -36,7 +36,7 @@ TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, ip
 INTEGER(idp) :: nxjg,nyjg,nzjg
-LOGICAL(idp) :: isgathered=.FALSE.
+LOGICAL(lp)  :: isgathered=.FALSE.
 
 tdeb=MPI_WTIME()
 

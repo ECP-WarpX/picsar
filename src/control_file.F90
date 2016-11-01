@@ -297,7 +297,7 @@ CONTAINS
 
     SUBROUTINE read_cpusplit_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -353,7 +353,7 @@ CONTAINS
 
     SUBROUTINE read_plasma_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -382,7 +382,7 @@ CONTAINS
 
     SUBROUTINE read_solver_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -435,7 +435,7 @@ CONTAINS
 
     SUBROUTINE read_sorting_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -476,7 +476,7 @@ CONTAINS
 
     SUBROUTINE read_timestat_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -508,7 +508,7 @@ CONTAINS
 
     SUBROUTINE read_main_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL(lp)  :: end_section = .FALSE.
         ! READS GRID SECTION OF INPUT FILE
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -603,7 +603,7 @@ CONTAINS
 
     SUBROUTINE read_species_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section
+        LOGICAL(lp)  :: end_section
         TYPE(particle_species), POINTER :: curr
         ! READS SPECIES SECTION OF INPUT FILE
         IF (.NOT. l_species_allocated) THEN
@@ -710,7 +710,7 @@ CONTAINS
 
     SUBROUTINE read_particle_dumps_section
         INTEGER                      :: ix = 0, ispecies
-        LOGICAL                      :: end_section
+        LOGICAL(lp)                       :: end_section
         TYPE(particle_dump), POINTER :: dp
         CHARACTER(LEN=string_length) :: dump_name
         ! READS SPECIES SECTION OF INPUT FILE
@@ -806,7 +806,7 @@ CONTAINS
 
     SUBROUTINE read_output_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.
+        LOGICAL(lp)  :: end_section = .FALSE.
         ! READS GRID SECTION OF INPUT FILE
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -865,7 +865,7 @@ CONTAINS
 
     SUBROUTINE read_temporal_output_section
         INTEGER :: ix = 0
-        LOGICAL :: end_section = .FALSE.    
+        LOGICAL(lp)  :: end_section = .FALSE.    
 
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer

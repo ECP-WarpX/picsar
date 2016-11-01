@@ -11,6 +11,9 @@ INTEGER, PARAMETER :: num = 8
 INTEGER, PARAMETER :: isp = 4
 !> integer double precision
 INTEGER, PARAMETER :: idp = 8
+!> logical precision
+INTEGER, PARAMETER :: lp = 8
+
 INTEGER, PARAMETER :: cpx = 8
 !> Electron mass
 REAL(num), PARAMETER :: emass   = 9.10938291e-31_num
@@ -36,7 +39,7 @@ INTEGER, PARAMETER :: c_dir_x = 1
 INTEGER, PARAMETER :: c_dir_y = 2
 !> z direction index parameter
 INTEGER, PARAMETER :: c_dir_z = 3
-LOGICAL:: l_smooth_compensate
+LOGICAL(lp):: l_smooth_compensate
 !> string length parameter for some outputs
 INTEGER, PARAMETER :: string_length = 264
 ! Error handling
@@ -71,7 +74,7 @@ END MODULE precomputed
 MODULE fields
 !=========================================================================================
 USE constants
-LOGICAL:: l_lower_order_in_v, l_nodalgrid, l4symtry
+LOGICAL(lp):: l_lower_order_in_v, l_nodalgrid, l4symtry
 INTEGER(idp):: nxs=0, nys=0, nzs=0
 INTEGER(idp):: norderx, nordery, norderz
 INTEGER(idp):: nxguards,nyguards, nzguards, nox, noy, noz, npass(3)
@@ -126,7 +129,7 @@ MODULE particle_tilemodule !#do not parse
 !===============================================================================
 USE constants
 TYPE particle_tile
-    LOGICAL :: l_arrays_allocated= .FALSE.
+    LOGICAL(lp) :: l_arrays_allocated= .FALSE.
     ! Current number of particles in tile
     INTEGER(idp), DIMENSION(1) :: np_tile
     INTEGER(idp) :: npmax_tile
@@ -141,7 +144,7 @@ TYPE particle_tile
     REAL(num) :: x_grid_tile_min, y_grid_tile_min, z_grid_tile_min
     REAL(num) :: x_grid_tile_max, y_grid_tile_max, z_grid_tile_max
     ! Subdomain border flags
-    LOGICAL :: subdomain_bound = .FALSE.
+    LOGICAL(lp) :: subdomain_bound = .FALSE.
     ! Particle arrays
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
     !DIR ATTRIBUTES FASTMEM  :: part_x
@@ -219,7 +222,7 @@ TYPE particle_species
     INTEGER(idp)   :: nppcell
     INTEGER(idp)   :: sorting_period
     INTEGER(idp)   :: sorting_start     ! Sorting start iteration
-    LOGICAL(idp)   :: l_arrayoftiles_allocated =.FALSE.
+    LOGICAL(lp)   :: l_arrayoftiles_allocated =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
     TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE :: array_of_tiles
@@ -251,8 +254,8 @@ MODULE particle_properties
 	USE constants
 	INTEGER(idp), PARAMETER :: npid=1
 	INTEGER(idp), PARAMETER :: wpid=1
-	LOGICAL :: l_initongrid = .FALSE.
-	LOGICAL :: l_particles_weight = .FALSE.
+	LOGICAL(lp) :: l_initongrid = .FALSE.
+	LOGICAL(lp) :: l_particles_weight = .FALSE.
   !> Particle pusher type (0: Boris, 1: Vay, Default: 0)
   INTEGER(idp) :: particle_pusher = 0
 	!> Particle initial distribution
@@ -264,7 +267,7 @@ MODULE particle_properties
 	!> Max number of particle species
 	INTEGER(idp) :: nspecies_max=6
 	REAL(num) :: fdxrand=0.0_num,fdzrand=0.0_num,vthx=0.0_num,vthy=0.0_num,vthz=0.0_num
-	LOGICAL :: l_species_allocated=.FALSE.,  l_pdumps_allocated=.FALSE.
+	LOGICAL(lp) :: l_species_allocated=.FALSE.,  l_pdumps_allocated=.FALSE.
 END MODULE particle_properties
 
 
@@ -297,7 +300,7 @@ USE constants
 	INTEGER(idp)         :: nsteps
 	REAL(num)            :: g0,b0,dt,w0,dtcoef,tmax
 	REAL(num)            :: theta,nlab,wlab,nc,w0_l,w0_t,lambdalab
-	LOGICAL              :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
+	LOGICAL(lp)              :: l_coeffs_allocated= .FALSE., l_ck=.FALSE.
 	REAL(num), PARAMETER :: resize_factor=2._num
 	REAL(num), PARAMETER :: downsize_factor=0.5_num
 	REAL(num), PARAMETER :: downsize_threshold=0.4_num
@@ -337,7 +340,7 @@ INTEGER(isp) :: status(MPI_STATUS_SIZE)
 INTEGER(isp) :: derived_type_grid
 INTEGER(isp) :: derived_subarray_grid
 INTEGER(isp), DIMENSION(100) :: mpi_dtypes
-LOGICAL(isp), DIMENSION(100) :: is_dtype_init = .TRUE.
+LOGICAL(lp), DIMENSION(100) :: is_dtype_init = .TRUE.
 END MODULE mpi_type_constants
 
 !===============================================================================
@@ -502,13 +505,13 @@ MODULE output_data !#do not parse
 	REAL(num), dimension(:),allocatable :: temdiag_array
 
 	! Computation flags
-	LOGICAL      :: divE_computed
+	LOGICAL(lp)  :: divE_computed
 
 
 	! Particle dump
 
-	LOGICAL(idp) :: particle_dump_activated
-	INTEGER(idp) :: npdumps
+	LOGICAL(lp) :: particle_dump_activated
+	INTEGER(lp) :: npdumps
 	TYPE particle_dump
 		INTEGER(idp) :: ispecies
 		INTEGER(idp) :: diag_period
@@ -554,9 +557,9 @@ MODULE shared_data
 	INTEGER(isp)                        :: nprocdir(3)
 	INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
 	! Boundary data
-	LOGICAL(idp)                        :: x_min_boundary, x_max_boundary
-	LOGICAL(idp)                        :: y_min_boundary, y_max_boundary
-	LOGICAL(idp)                        :: z_min_boundary, z_max_boundary
+	LOGICAL(lp)                        :: x_min_boundary, x_max_boundary
+	LOGICAL(lp)                        :: y_min_boundary, y_max_boundary
+	LOGICAL(lp)                        :: z_min_boundary, z_max_boundary
 	INTEGER(idp)                        :: pbound_x_min, pbound_x_max
 	INTEGER(idp)                        :: pbound_y_min, pbound_y_max
 	INTEGER(idp)                        :: pbound_z_min, pbound_z_max
@@ -572,7 +575,7 @@ MODULE shared_data
 	INTEGER(idp)                        :: ny_global_grid_min, ny_global_grid_max
 	INTEGER(idp)                        :: nz_global_grid_min, nz_global_grid_max
 	! Domain axis
-	LOGICAL(idp)                        :: l_axis_allocated=.FALSE.
+	LOGICAL(lp)                        :: l_axis_allocated=.FALSE.
 	REAL(num), DIMENSION(:), POINTER    :: x_global, y_global, z_global
 	REAL(num), DIMENSION(:), POINTER    :: xb_global, yb_global, zb_global
 	REAL(num), DIMENSION(:), POINTER    :: xb_offset_global
@@ -602,7 +605,7 @@ MODULE shared_data
 	!> Shift of the sorting grid in respect of the origin
 	REAL(NUM)    :: sorting_shiftx, sorting_shifty, sorting_shiftz
 	!> verbose for the sorting (depreciated)
-	LOGICAL      :: sorting_verbose
+	LOGICAL(lp)      :: sorting_verbose
 
 	! Axis
 	!> Space dimension
