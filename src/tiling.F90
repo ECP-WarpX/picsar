@@ -683,9 +683,9 @@ CONTAINS
                           DO j=jmin,jmax-1
                               DO ipart=1,curr%nppcell
                                   ! Sets positions and weight
-                                  partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-0.5d0)
-                                  party = y_min_local+k*dy+dy/curr%nppcell*(ipart-0.5d0)
-                                  partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-0.5d0)
+                                  partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-0.5_num)
+                                  party = y_min_local+k*dy+dy/curr%nppcell*(ipart-0.5_num)
+                                  partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-0.5_num)
                                   partw = nc*dx*dy*dz/(curr%nppcell)
                                   ! Sets velocity
                                   CALL RANDOM_NUMBER(rng(1:3))
