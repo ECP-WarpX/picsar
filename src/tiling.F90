@@ -392,7 +392,7 @@ CONTAINS
     !!! --- This technique avoids packing or reallocating arrays
     SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt,mask)
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        LOGICAL(idp), DIMENSION (:), INTENT(IN) :: mask
+        LOGICAL(lp) , DIMENSION (:), INTENT(IN) :: mask
         INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
         INTEGER(idp) :: ninit, i
         TYPE(particle_tile), POINTER :: curr
@@ -677,14 +677,15 @@ CONTAINS
                   kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
                   lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
                   lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+
                   DO l=lmin,lmax-1
                       DO k=kmin,kmax-1
                           DO j=jmin,jmax-1
                               DO ipart=1,curr%nppcell
                                   ! Sets positions and weight
-                                  partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
-                                  party = y_min_local+k*dy+dy/curr%nppcell*(ipart-1)
-                                  partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
+                                  partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-0.5_num)
+                                  party = y_min_local+k*dy+dy/curr%nppcell*(ipart-0.5_num)
+                                  partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-0.5_num)
                                   partw = nc*dx*dy*dz/(curr%nppcell)
                                   ! Sets velocity
                                   CALL RANDOM_NUMBER(rng(1:3))
@@ -848,6 +849,10 @@ CONTAINS
         DEALLOCATE(temp)
     END SUBROUTINE resize_1D_array_real
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Resize a 2D array of real
+    !
     SUBROUTINE resize_2D_array_real(arr, nx_old,nx_new,ny_old,ny_new)
         IMPLICIT NONE
         REAL(num), DIMENSION(:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
@@ -1052,6 +1057,7 @@ CONTAINS
 
       INTEGER(idp)                    :: ispecies, ix, iy, iz, nbp
       INTEGER(idp)                    :: nxc,nyc,nzc
+      INTEGER(idp)                    :: nxg,nyg,nzg      
       REAL(num)                       :: nctot,ncloc
       REAL(num)                       :: mpipartsize
       REAL(num)                       :: tilepartsize
@@ -1067,8 +1073,8 @@ CONTAINS
 
         !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
         !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
-        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp,nxc,nyc,nzc) &
-        !$OMP REDUCTION(+:mpipartsize,ncloc)
+        !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp,nxc,nyc,nzc,nxg,nyg,nzg) &
+        !$OMP REDUCTION(+:mpipartsize,ncloc,tilefieldsize)
         DO iz=1, ntilez ! LOOP ON TILES
           DO iy=1, ntiley
             DO ix=1, ntilex
@@ -1083,9 +1089,14 @@ CONTAINS
                  nxc=curr_tile%nx_cells_tile
                  nyc=curr_tile%ny_cells_tile
                  nzc=curr_tile%nz_cells_tile
+                 nxg=curr_tile%nxg_tile
+                 nyg=curr_tile%nyg_tile
+                 nzg=curr_tile%nzg_tile
 
                  mpipartsize = mpipartsize + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
-                 ncloc = ncloc + nxc*nyc*nzc
+                 ncloc = ncloc + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)
+                 
+                 tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)*8.
 
               END DO! END LOOP ON SPECIES
             END DO
@@ -1097,8 +1108,8 @@ CONTAINS
 
         !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) &
         !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
-        !$OMP PRIVATE(ix,iz,ispecies,curr,curr_tile,nbp,nxc,nzc) &
-        !$OMP REDUCTION(+:mpipartsize,ncloc)
+        !$OMP PRIVATE(ix,iz,ispecies,curr,curr_tile,nbp,nxc,nzc,nxg,nzg) &
+        !$OMP REDUCTION(+:mpipartsize,ncloc,tilefieldsize)
         DO iz=1, ntilez ! LOOP ON TILES
             DO ix=1, ntilex
 
@@ -1111,9 +1122,13 @@ CONTAINS
                  nbp=curr_tile%npmax_tile  ! size of the arrays
                  nxc=curr_tile%nx_cells_tile
                  nzc=curr_tile%nz_cells_tile
-
+                 nxg=curr_tile%nxg_tile
+                 nzg=curr_tile%nzg_tile
+                 
                  mpipartsize = mpipartsize + nbp*8*13 ! 8 for double, 13 for x,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
-                 ncloc = ncloc + nxc*nzc
+                 ncloc = ncloc + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)
+
+                 tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)*8.
 
               END DO! END LOOP ON SPECIES
           END DO
@@ -1124,20 +1139,22 @@ CONTAINS
       IF (c_dim.eq.3) THEN
         tilepartsize = mpipartsize/(ntilex*ntiley*ntilez)
         ncloc = ncloc / (ntilex*ntiley*ntilez)
+        tilefieldsize = tilefieldsize / (ntilex*ntiley*ntilez)
       ELSE IF (c_dim.eq.2) THEN
         tilepartsize = mpipartsize/(ntilex*ntilez)
         ncloc = ncloc / (ntilex*ntilez)
+        tilefieldsize = tilefieldsize / (ntilex*ntilez)
       ENDIF
 
       ! _________________________________________
       ! Memory used for fields
 
       IF (c_dim.eq.3) THEN
-        mpifieldsize = (nx+2*nxguards+1)*(ny+2*nyguards+1)*(nz+2*nzguards+1)*8.*6.
-        tilefieldsize = mpifieldsize/(ntilex*ntiley*ntilez)
+        mpifieldsize = (nx+2*nxguards+1)*(ny+2*nyguards+1)*(nz+2*nzguards+1)*8.
+        !tilefieldsize = (real(nx)/ntilex+1+2*nxguard)*(real(ny)/ntiley+1+2*nyguard)*(real(nz)/ntilez+1+2*nzguard))*8.*
       ELSE IF (c_dim.eq.2) THEN
-        mpifieldsize = (nx+2*nxguards+1)*(nz+2*nzguards+1)*8.*6.
-        tilefieldsize = mpifieldsize/(ntilex*ntilez)
+        mpifieldsize = (nx+2*nxguards+1)*(nz+2*nzguards+1)*8.
+        !tilefieldsize = mpifieldsize/(ntilex*ntilez)
       ENDIF
 
       ! _________________________________________
@@ -1188,22 +1205,24 @@ CONTAINS
       IF (rank.eq.0) WRITE(0,*) 'Average number of cells per tiles',ncloc
 
       !IF (rank.eq.0) WRITE(0,*)
-      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the fields',mpifieldsize,unity
-
+      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process per each field component',mpifieldsize,unity
+      IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for E and B',mpifieldsize*6.,unity
+      
       if (tilefieldsize > 1024.) then
         tilefieldsize = tilefieldsize/1024.
         unity = 'Ko'
       endif
-
+      
       IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity
+      IF (rank.eq.0) WRITE(0,*) 'Average tile size for the current',tilefieldsize*3.,unity
 
-      if (tilefieldcurrent > 1024.) then
-        tilefieldcurrent = tilefieldcurrent/1024.
-        unity = 'Ko'
-      endif
+      !if (tilefieldcurrent > 1024.) then
+      !  tilefieldcurrent = tilefieldcurrent/1024.
+      !  unity = 'Ko'
+      !endif
 
-      IF (rank.eq.0) WRITE(0,*) 'Average tile size for currents',tilefieldcurrent,unity
-      IF (rank.eq.0) WRITE(0,*)
+      !IF (rank.eq.0) WRITE(0,*) 'Average tile size for currents',tilefieldcurrent,unity
+      !IF (rank.eq.0) WRITE(0,*)
 
     END SUBROUTINE estimate_memory_consumption
 

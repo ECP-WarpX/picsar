@@ -100,12 +100,13 @@ else ifeq ($(SYS),edison)
 	APPNAME=picsar_edison
   ifeq ($(MODE),prod)
 		COMP=none
-		FARGS= -O3 -xAVX -qopenmp -align array64byte -qopt-streaming-stores auto
+		FARGS= -O3 -xAVX -align array64byte -qopt-streaming-stores auto
 		# -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),debug)
+		APPNAME=picsar_edison_debug
 		COMP=none
-		FARGS= -g -O3 -xAVX -qopenmp -qopt-report:5 -debug inline-debug-info -traceback
+		FARGS= -g -O3 -xAVX -qopt-report:5 -debug inline-debug-info -traceback
 		LARCH=	
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_edison_sde
@@ -143,11 +144,12 @@ else ifeq ($(SYS),carl)
 	APPNAME=picsar_carl
   ifeq ($(MODE),prod)
 		COMP=none
-		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto
 		LARCH=
 	else ifeq ($(MODE),debug)
+		APPNAME=picsar_carl_debug
 		COMP=none
-		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
+		FARGS= -g -O3 -D DEBUG=1 -xMIC-AVX512 -qopenmp -debug inline-debug-info -heap-arrays -fp-stack-check -traceback -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),vtune)
 		APPNAME=picsar_carl_vtune
@@ -353,9 +355,10 @@ createdir:
 	mkdir -p $(MODDIR)
 
 echo:
-	@echo ' Compiler $(COMP)'
+	@echo	''
 	@echo ' MPI wrapper $(FC)'
 	@echo ' Fortran arguments $(FARGS)'
+	@echo	''
 
 # Compiler type
 # - gnu

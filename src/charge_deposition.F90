@@ -270,7 +270,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 	TYPE(particle_tile), POINTER    :: curr_tile
 	TYPE(grid_tile), POINTER        :: currg
 	INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp)                    :: isdeposited=.FALSE.
+	LOGICAL(lp)                     :: isdeposited=.FALSE._lp
 
 	IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DEFAULT(NONE)                                                              &
@@ -294,11 +294,12 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 				kmax=curr_tile%ny_tile_max
 				lmin=curr_tile%nz_tile_min
 				lmax=curr_tile%nz_tile_max
-				nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
+				nxc=curr_tile%nx_cells_tile;
+				nyc=curr_tile%ny_cells_tile
 				nzc=curr_tile%nz_cells_tile
 				currg=>aofgrid_tiles(ix,iy,iz)
 				currg%rhotile=0._num
-				isdeposited=.FALSE.
+				isdeposited=.FALSE._lp
 				DO ispecies=1, nspecies ! LOOP ON SPECIES
 					curr => species_parray(ispecies)
 					curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -306,7 +307,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 					IF (count .EQ. 0) THEN
 						CYCLE
 					ELSE
-						isdeposited=.TRUE.
+						isdeposited=.TRUE._lp
 					ENDIF
 							! Depose charge in rhotile
 
@@ -315,7 +316,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 					curr_tile%pid(1,wpid),curr%charge,                       &
 					curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
 					curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
-					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
+					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._lp,.FALSE._lp)
 
 				END DO! END LOOP ON SPECIES
 				IF (isdeposited) THEN
@@ -331,12 +332,12 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-        	isdeposited=.FALSE.
+        	isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -371,12 +372,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -411,12 +412,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -496,7 +497,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 	TYPE(particle_tile), POINTER    :: curr_tile
 	TYPE(grid_tile), POINTER        :: currg
 	INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp)                    :: isdeposited=.FALSE.
+	LOGICAL(lp)                     :: isdeposited=.FALSE._lp
 
   IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DEFAULT(NONE)                                                               &
@@ -524,7 +525,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 				nzc=curr_tile%nz_cells_tile
 				currg=>aofgrid_tiles(ix,iy,iz)
 				currg%rhotile=0._num
-				isdeposited=.FALSE.
+				isdeposited=.FALSE._lp
 				DO ispecies=1, nspecies ! LOOP ON SPECIES
 						curr => species_parray(ispecies)
 						curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -532,7 +533,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 						IF (count .EQ. 0) THEN
 							CYCLE
 						ELSE
-							isdeposited=.TRUE.
+							isdeposited=.TRUE._lp
 						ENDIF
 						! Depose charge in rhotile
 
@@ -570,7 +571,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 						curr_tile%pid(1,wpid),curr%charge,                       &
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
 						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
-						nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
+						nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._lp,.FALSE._lp)
 
 					ENDIF
 
@@ -589,12 +590,12 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-        	isdeposited=.FALSE.
+        	isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -629,12 +630,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -669,12 +670,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -754,7 +755,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 	TYPE(particle_tile), POINTER    :: curr_tile
 	TYPE(grid_tile), POINTER        :: currg
 	INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp)                    :: isdeposited=.FALSE.
+	LOGICAL(lp)                     :: isdeposited=.FALSE._lp
 
   IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DEFAULT(NONE)                                                             				 &
@@ -782,7 +783,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 				nzc=curr_tile%nz_cells_tile
 				currg=>aofgrid_tiles(ix,iy,iz)
 				currg%rhotile=0._num
-				isdeposited=.FALSE.
+				isdeposited=.FALSE._lp
 				DO ispecies=1, nspecies ! LOOP ON SPECIES
 						curr => species_parray(ispecies)
 						curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -790,7 +791,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 						IF (count .EQ. 0) THEN
 							CYCLE
 						ELSE
-							isdeposited=.TRUE.
+							isdeposited=.TRUE._lp
 						ENDIF
 						! Depose charge in rhotile
 
@@ -828,7 +829,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 					  curr_tile%pid(1,wpid),curr%charge,                       &
 					  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
 					  curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
-				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE.,.FALSE.)
+				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._lp,.FALSE._lp)
 
 					ENDIF
 
@@ -847,12 +848,12 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-        	isdeposited=.FALSE.
+        	isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -887,12 +888,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -927,12 +928,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -1033,7 +1034,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
 	TYPE(particle_tile), POINTER    :: curr_tile
 	TYPE(grid_tile), POINTER        :: currg
 	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp) :: isdeposited=.FALSE.
+	LOGICAL(lp)  :: isdeposited=.FALSE._lp
 
   IF (nspecies .EQ. 0_idp) RETURN
 
@@ -1064,7 +1065,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
 					nzc=curr_tile%nz_cells_tile
 					currg=>aofgrid_tiles(ix,iy,iz)
 					currg%rhotile=0._num
-					isdeposited=.FALSE.
+					isdeposited=.FALSE._lp
 					DO ispecies=1, nspecies ! LOOP ON SPECIES
 						curr => species_parray(ispecies)
 						curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -1072,7 +1073,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
 						IF (count .EQ. 0) THEN
 							CYCLE
 						ELSE
-							isdeposited=.TRUE.
+							isdeposited=.TRUE._lp
 						ENDIF
 						! Depose charge in rhotile
 
@@ -1098,12 +1099,12 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-        	isdeposited=.FALSE.
+        	isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -1138,12 +1139,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -1178,12 +1179,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -1257,7 +1258,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog,nxx,nyy,nzz,nxjguard,nyjguar
 	TYPE(particle_tile), POINTER :: curr_tile
 	TYPE(grid_tile), POINTER :: currg
 	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp) :: isdeposited=.FALSE.
+	LOGICAL(lp)  :: isdeposited=.FALSE._lp
 
 IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
@@ -1285,7 +1286,7 @@ DO iz=1,ntilez
             nzc=curr_tile%nz_cells_tile
 						currg=>aofgrid_tiles(ix,iy,iz)
             currg%rhotile=0._num
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
            	    curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -1293,7 +1294,7 @@ DO iz=1,ntilez
                 IF (count .EQ. 0) THEN
                 	CYCLE
                 ELSE
-                	isdeposited=.TRUE.
+                	isdeposited=.TRUE._lp
                 ENDIF
                 ! Depose charge in rhotile
 
@@ -1305,13 +1306,13 @@ DO iz=1,ntilez
 						curr_tile%part_gaminv,curr_tile%pid(1,wpid),curr%charge,  		&
 						curr_tile%x_grid_tile_min,  curr_tile%z_grid_tile_min+zgrid, 	&
 						dtt,dxx,dzz,nxc,nzc,                          								&
-						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp)
+						nxjg,nzjg,noxx,nozz,.TRUE._lp,.FALSE._lp)
 					CASE DEFAULT  ! Rho at current time
 						CALL pxr_depose_rho_n_2dxz(currg%rhotile(:,0,:),count,        &
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     			&
 						curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,  &
 						curr_tile%z_grid_tile_min+zgrid,dxx,dzz,nxc,nzc,              &
-						nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
+						nxjg,nzjg,noxx,nozz,.TRUE._lp,.FALSE._lp,.FALSE._lp,0_idp)
 					END SELECT
 
             END DO! END LOOP ON SPECIES
@@ -1330,12 +1331,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-        	isdeposited=.FALSE.
+        	isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -1372,12 +1373,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -1414,12 +1415,12 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-            isdeposited=.FALSE.
+            isdeposited=.FALSE._lp
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.
+                IF (count .GT. 0) isdeposited=.TRUE._lp
             END DO
             IF (isdeposited) THEN
             	currg=>aofgrid_tiles(ix,iy,iz)
@@ -2168,14 +2169,16 @@ SUBROUTINE depose_rho_vecHV_1_1_1(rho,np,xp,yp,zp,w,q,&
 END SUBROUTINE depose_rho_vecHV_1_1_1
 
 ! ________________________________________________________________________________________
-!> Order 1 3D vector charge deposition routine
 !> @brief
+!> Order 1 3D vector charge deposition routine
 !
-!> Computes charge density on grid vectorized at order 1 (HV-SCHEME v2)
-!> This routine does vectorize on SIMD architecture with good performances
-!> Speedup>2 on AVX 256 bits
-!> lvect, the vector length was originally at 64
-!
+!> Computes charge density on grid vectorized at order 1 (HV-SCHEME v2).
+!> This routine does vectorize on SIMD architecture with good performances:
+!> Speedup>2 on AVX 256 bits.
+!> The parameter lvect is the vector length and is originally at 64 for order 1.
+!>
+!> @image html charge_deposition_grid.jpg "Description of the rho structure (2d vision) and internal parameters"
+!>
 !> @author
 !> Henri Vincenti
 !> Mathieu Lobet
@@ -2229,7 +2232,7 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 	dyi = 1.0_num/dy
 	dzi = 1.0_num/dz
 	invvol = dxi*dyi*dzi
-	ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard;
+	ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
 	ncx=nx+2;ncy=ny+2;ncz=nz+2
 	NCELLS=ncx*ncy*ncz
 	ALLOCATE(rhocells(8,NCELLS))
@@ -3323,7 +3326,7 @@ SUBROUTINE pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: rho
 	REAL(num) :: xp(np), yp(np), zp(np), w(np)
 	REAL(num) :: q,dx,dy,dz,xmin,ymin,zmin
-	LOGICAL :: l_particles_weight, l4symtry
+	LOGICAL(lp) :: l_particles_weight, l4symtry
 
 	REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
 						 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
@@ -3480,7 +3483,7 @@ subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,nxgua
 	   real(num), dimension(-nxguard:nx+nxguard,0:0,-nzguard:nz+nzguard), intent(in out) :: rho
 	   real(num), dimension(np) :: xp,yp,zp,w
 	   real(num) :: q,dx,dz,xmin,zmin
-	   logical(idp) :: l_particles_weight,l4symtry,l_2drz
+	   LOGICAL(lp)  :: l_particles_weight,l4symtry,l_2drz
 
 	   real(num) :: dxi,dzi,xint,zint, &
 					   oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
@@ -3614,7 +3617,7 @@ subroutine pxr_depose_rhoold_n_2dxz(rhoold,np,xp,zp,ux,uy,uz,gaminv,w,q,xmin,zmi
 	   real(num), dimension(-nxguard:nx+nxguard,0:0,-nzguard:nz+nzguard), intent(in out) :: rhoold
 	   real(num), dimension(np) :: xp,zp,w,ux,uy,uz,gaminv
 	   real(num) :: q,dt,dx,dz,xmin,zmin
-	   logical(idp) :: l_particles_weight,l4symtry
+	   LOGICAL(lp) :: l_particles_weight,l4symtry
 
 	   real(num) :: dxi,dzi,xint,zint, &
 					   oxint,ozint,xintsq,zintsq,oxintsq,ozintsq

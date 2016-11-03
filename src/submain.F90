@@ -192,9 +192,10 @@ SUBROUTINE initall
 
 	!use IFPORT ! uncomment if using the intel compiler (for rand)
 	IMPLICIT NONE
-	INTEGER(idp)                    :: ispecies
+	INTEGER(idp)                    :: ispecies,i
 	REAL(num)                       :: tdeb
 	TYPE(particle_species), POINTER :: curr
+	TYPE(particle_dump), POINTER    :: dp 
 
 	! Time statistics
 	init_localtimes(:) = 0
@@ -268,6 +269,7 @@ SUBROUTINE initall
 		write(0,*) 'Dimension:',c_dim  
 		write(0,*) 'dx, dy, dz:',dx,dy,dz
 		write(0,*) 'dt:',dt,'s',dt*1e15,'fs'
+		write(0,'(" Coefficient on dt determined via the CFL (dtcoef): ",F12.5)')	dtcoef	
 		write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
 		write(0,*) 'Number of steps:',nsteps
 		write(0,*) 'Tiles:',ntilex,ntiley,ntilez
@@ -305,6 +307,7 @@ SUBROUTINE initall
 		write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
 		write(0,*) ''  
 		
+		! Sorting
 		IF (sorting_activated.gt.0) THEN 
 			write(0,*) 'Particle sorting activated'
 			write(0,*) 'dx:',sorting_dx
@@ -340,6 +343,19 @@ SUBROUTINE initall
 			write(0,'(X,"Computation of the time statistics starts at iteration:",I5)') timestat_itstart    
 		ENDIF
 		write(0,*) 
+		
+		! Particle Dump
+		IF (npdumps.gt.0) THEN
+			DO i = 1, npdumps
+				dp => particle_dumps(i)
+				WRITE(0,'(" Dump number: ",I2)') i
+				WRITE(0,'(" species name: ",A10)') species_parray(dp%ispecies)%name
+				WRITE(0,*) 
+			ENDDO
+		ELSE
+			WRITE(0,'(" No particle dump (",I2,")")') npdumps
+			WRITE(0,*) 
+		ENDIF
 	
 	end if
 
@@ -417,7 +433,7 @@ SUBROUTINE FD_weights(coeffs, norder, l_nodal)
 USE constants
 IMPLICIT NONE
 INTEGER(idp) :: norder, n, m, mn, i, j, k
-LOGICAL      :: l_nodal
+LOGICAL(lp)  :: l_nodal
 REAL(num)    :: z, fact, c1, c2, c3, c4, c5
 REAL(num), INTENT(IN OUT), DIMENSION(norder/2) :: coeffs
 REAL(num), ALLOCATABLE, DIMENSION(:)           :: x

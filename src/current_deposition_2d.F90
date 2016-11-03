@@ -38,7 +38,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
       real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
       real(num)                             :: q,dt,dx,dz,xmin,zmin
-      logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+      LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
       real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
     END SUBROUTINE
 
@@ -53,7 +53,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
       real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
       real(num)                             :: q,dt,dx,dz,xmin,zmin
-      logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+      LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
       real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
     END SUBROUTINE
 
@@ -68,7 +68,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
       real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
       real(num)                             :: q,dt,dx,dz,xmin,zmin
-      logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+      LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
       real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
     END SUBROUTINE
 
@@ -80,7 +80,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
      integer(idp)                           :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
      real(num), dimension(np)               :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
      real(num)                              :: q,dt,dx,dz,xmin,zmin
-     logical(idp)                           :: l_particles_weight,l4symtry,l_2drz     
+     LOGICAL(lp)                            :: l_particles_weight,l4symtry,l_2drz     
      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   END SUBROUTINE
 
@@ -97,7 +97,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     real(num), dimension((1+nx+2*nxguard)*(1+nz+2*nzguard)), intent(in out) :: jx,jy,jz
     real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
     real(num)                             :: q,dt,dx,dz,xmin,zmin
-    logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+    LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   END SUBROUTINE
   
   END INTERFACE
@@ -226,7 +226,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   TYPE(grid_tile), POINTER  :: currg
   REAL(num)                 :: tdeb, tend
   INTEGER(idp)              :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-  LOGICAL(idp)              :: isdeposited=.FALSE.
+  LOGICAL(lp)               :: isdeposited=.FALSE.
 
   ! ___ Interface _________________________________________________
   ! For the func_order input function
@@ -242,7 +242,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
       REAL(num), DIMENSION(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
       REAL(num), DIMENSION(np) :: xp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num)                :: q,dt,dx,dz,xmin,zmin
-      LOGICAL(idp)             :: l_particles_weight,l4symtry,l_2drz
+      LOGICAL(lp)              :: l_particles_weight,l4symtry,l_2drz
     END SUBROUTINE
 
   END INTERFACE
@@ -503,7 +503,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
    real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
    real(num), dimension(np) :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
    real(num) :: q,dt,dx,dz,xmin,zmin
-   logical(idp) :: l_particles_weight,l4symtry,l_2drz
+   LOGICAL(lp)  :: l_particles_weight,l4symtry,l_2drz
 
    real(num) :: dxi,dzi,dtsdx,dtsdz,xint,yint,zint
    real(num),dimension(:,:), allocatable :: sdx,sdz
@@ -845,7 +845,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
-  logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+  LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
   real(num),dimension(:,:), allocatable :: sdx,sdz
   real(num)                             :: xold,zold,rold,xmid,zmid,x,z,c,s,wq,wqx,wqz
@@ -1022,7 +1022,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
-  logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+  LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
   real(num),dimension(:,:), allocatable :: sdx,sdz
   real(num)                             :: xold,zold,rold,xmid,zmid,x,z,c,s,wq,wqx,wqz
@@ -1209,7 +1209,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
-  logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+  LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
   real(num),dimension(:,:), allocatable :: sdx,sdz
   real(num)                             :: xold,zold,rold,xmid,zmid,x,z,c,s,wq,wqx,wqz
@@ -1420,7 +1420,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
   real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
-  logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+  LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
   real(num),dimension(:,:,:), allocatable :: sdx,sdz,sdy
   real(num)                             :: xold,zold,rold,xmid,zmid,x,z,c,s,wq,wqx,wqz
@@ -1833,7 +1833,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
   real(num), dimension((1+nx+2*nxguard)*(1+nz+2*nzguard)), intent(in out) :: jx,jy,jz
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
-  logical(idp)                          :: l_particles_weight,l4symtry,l_2drz
+  LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   
   ! Local parameters
   real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint

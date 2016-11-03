@@ -35,17 +35,20 @@ section::main
  # Simulation duration (in 1/w0)
  t_max = 20
  
+ # Dtcoef on the dt determined from the CFL
+ dtcoef = 0.7
+ 
  ntilex = 2
  ntiley = 2
  ntilez = 2
  
  # Guard cells
- nguardsx = 4
- nguardsy = 4
- nguardsz = 4
- njguardsx = 4
- njguardsy = 4
- njguardsz = 4
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
  
 end::main
 
@@ -85,9 +88,9 @@ section::sorting
  dx=1.
  dy=1.
  dz=1.
- shiftx=-0.
- shifty=-0.
- shiftz=-0.
+ shiftx=-0.5
+ shifty=-0.5
+ shiftz=-0.5
 end::sorting 
 
 section::plasma
@@ -100,7 +103,7 @@ section::plasma
 end::plasma
 
 section::species
- name = electron
+ name = electron_z
  mass = 1
  charge = -1
  nppcell = 3
@@ -122,7 +125,7 @@ section::species
 end::species
 
 section::species
- name = positron
+ name = positron_z
  mass = 1
  charge = 1
  nppcell = 3

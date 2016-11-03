@@ -231,7 +231,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-      LOGICAL(idp) :: l_particles_weight,l4symtry
+      LOGICAL(lp)  :: l_particles_weight,l4symtry
     END SUBROUTINE
 
     ! Esirkepov order 1
@@ -245,7 +245,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-      LOGICAL(idp) :: l_particles_weight,l4symtry
+      LOGICAL(lp)  :: l_particles_weight,l4symtry
     END SUBROUTINE
 
     ! Esirkepov order 2
@@ -259,7 +259,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-      LOGICAL(idp) :: l_particles_weight,l4symtry
+      LOGICAL(lp)  :: l_particles_weight,l4symtry
     END SUBROUTINE
 
     ! Esirkepov order 3
@@ -273,7 +273,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-      LOGICAL(idp) :: l_particles_weight,l4symtry
+      LOGICAL(lp)  :: l_particles_weight,l4symtry
     END SUBROUTINE
 
     ! Esirkepov optimized order 1
@@ -287,7 +287,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-      LOGICAL(idp) :: l_particles_weight,l4symtry
+      LOGICAL(lp)  :: l_particles_weight,l4symtry
     END SUBROUTINE
 
     SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
@@ -300,7 +300,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-      LOGICAL(idp) :: l_particles_weight,l4symtry
+      LOGICAL(lp)  :: l_particles_weight,l4symtry
     END SUBROUTINE
 
     SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells, &
@@ -602,7 +602,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
   TYPE(grid_tile), POINTER        :: currg
   REAL(num)                       :: tdeb, tend
   INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-  LOGICAL(idp)                    :: isdeposited=.FALSE.
+  LOGICAL(lp)                     :: isdeposited=.FALSE.
 
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
@@ -909,7 +909,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   TYPE(particle_tile), POINTER           :: curr_tile
   TYPE(grid_tile), POINTER               :: currg
   INTEGER(idp)                           :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-  LOGICAL(idp)                           :: isdeposited=.FALSE.
+  LOGICAL(lp)                            :: isdeposited=.FALSE.
 
   IF (nspecies .EQ. 0_idp) RETURN
   ! _______________________________________________________________________
@@ -1241,7 +1241,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   TYPE(particle_tile), POINTER           :: curr_tile
   TYPE(grid_tile), POINTER               :: currg
   INTEGER(idp)                           :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-  LOGICAL(idp)                           :: isdeposited=.FALSE.
+  LOGICAL(lp)                            :: isdeposited=.FALSE.
 
   IF (nspecies .EQ. 0_idp) RETURN
   ! _______________________________________________________________________
@@ -1533,7 +1533,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,jxg
 	TYPE(grid_tile), POINTER :: currg
 	REAL(num) :: tdeb, tend
 	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp) :: isdeposited=.FALSE.
+	LOGICAL(lp)  :: isdeposited=.FALSE.
 
 	! For the func_order input function
 	INTERFACE
@@ -1547,7 +1547,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,jxg
 			REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
 			REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
 			REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-			LOGICAL(idp) :: l_particles_weight,l4symtry
+			LOGICAL(lp)  :: l_particles_weight,l4symtry
 		END SUBROUTINE
 
 	END INTERFACE
@@ -1808,7 +1808,7 @@ TYPE(particle_tile), POINTER    :: curr_tile
 TYPE(grid_tile), POINTER        :: currg
 REAL(num)                       :: tdeb, tend
 INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-LOGICAL(idp)                    :: isdeposited=.FALSE.
+LOGICAL(lp)                     :: isdeposited=.FALSE.
 
 IF (nspecies .EQ. 0_idp) RETURN
 tdeb=MPI_WTIME()
@@ -2069,7 +2069,7 @@ noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 	TYPE(grid_tile), POINTER :: currg
 	REAL(num) :: tdeb, tend
 	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp) :: isdeposited=.FALSE.
+	LOGICAL(lp)  :: isdeposited=.FALSE.
 
 INTERFACE
   SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
@@ -2165,7 +2165,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg,jyg,jzg,nxx,n
 	TYPE(grid_tile), POINTER :: currg
 	REAL(num) :: tdeb, tend
 	INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-	LOGICAL(idp) :: isdeposited=.FALSE.
+	LOGICAL(lp)  :: isdeposited=.FALSE.
 
 IF (nspecies .EQ. 0_idp) RETURN
 DO iz=1,ntilez
@@ -5227,7 +5227,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
 	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
 	REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-	LOGICAL(idp)             :: l_particles_weight,l4symtry
+	LOGICAL(lp)              :: l_particles_weight,l4symtry
 
 	! Internal parameters
 	REAL(num)                            :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
@@ -5415,7 +5415,7 @@ IMPLICIT NONE
     REAL(num), DIMENSION(:,:), ALLOCATABLE:: jxcells,jycells,jzcells
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
     REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    LOGICAL(idp)             :: l_particles_weight,l4symtry ! Useless here but need to be passed in argument to match func_order arguments
+    LOGICAL(lp)              :: l_particles_weight,l4symtry ! Useless here but need to be passed in argument to match func_order arguments
 
     REAL(num)                :: xint,yint,zint
     REAL(num)                :: oxint,oyint,ozint,xintsq,yintsq,zintsq, oxintsq,oyintsq, ozintsq
@@ -6317,7 +6317,7 @@ IMPLICIT NONE
     REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
     REAL(num):: wx1,wx2,wy1,wy2,wz1,wz2
     INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
-    LOGICAL(idp) :: l_particles_weight,l4symtry ! Useless here but need to be passed in argument to match func_order arguments
+    LOGICAL(lp)  :: l_particles_weight,l4symtry ! Useless here but need to be passed in argument to match func_order arguments
     REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
     REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
     REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
@@ -6985,7 +6985,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
 	INTEGER :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
 																				ixmin, ixmax, iymin, iymax, izmin, izmax
-	LOGICAL(idp) :: l_particles_weight,l4symtry
+	LOGICAL(lp)  :: l_particles_weight,l4symtry
 
 	! PARAMETER INIT
 	dxi = 1.0_num/dx
@@ -7171,7 +7171,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
   INTEGER(isp)                             :: n,nn, nv
   INTEGER(isp)                             :: igrid, ix, iy, iz, orig
   INTEGER(isp)                             :: moffjx(1:8), moffjy(1:8), moffjz(1:8)
-  LOGICAL(idp)                             :: l_particles_weight,l4symtry
+  LOGICAL(lp)                              :: l_particles_weight,l4symtry
 
   ! __________________________________________________________
   ! Computation of the parameters
@@ -8441,7 +8441,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
 	REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
 	REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-	LOGICAL(idp) :: l_particles_weight,l4symtry
+	LOGICAL(lp)  :: l_particles_weight,l4symtry
 
 	REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
 	REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
@@ -8647,7 +8647,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 	INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
 	ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
 	xl,xu,yl,yu,zl,zu
-	LOGICAL(idp) :: l_particles_weight,l4symtry
+	LOGICAL(lp)  :: l_particles_weight,l4symtry
 
 ! PARAMETER INIT
 	ndtodx = int(clight*dt/dx)

@@ -48,7 +48,7 @@ MODULE sorting
     USE params
     IMPLICIT NONE
 
-    !LOGICAL(idp) :: verbose=.TRUE.
+    !LOGICAL(lp)  :: verbose=.TRUE.
     REAL(num) :: tdeb, tend
     
     IF ((sorting_activated.gt.0)) THEN
@@ -100,8 +100,8 @@ MODULE sorting
     TYPE(grid_tile), POINTER :: currg
     INTEGER(idp) :: nxc, nyc, nzc, np,ip
     INTEGER(idp) :: nxjg,nyjg,nzjg
-    LOGICAL(idp) :: isgathered=.FALSE.
-    LOGICAL(idp) :: verbose=.TRUE.
+    LOGICAL(lp)  :: isgathered=.FALSE.
+    LOGICAL(lp)  :: verbose=.TRUE.
     REAL(num) :: sxmin,symin,szmin
     REAL(num) :: tdeb, tend
     
@@ -282,6 +282,7 @@ MODULE sorting
       
       ! Bin id
       hcnb(ip) = iz*nx3*ny3 + iy*nx3 + ix+1
+#if defined(DEBUG)
       IF ((hcnb(ip) > nbhc).OR.(hcnb(ip)<1)) THEN
         print*, 'Bin id',ip,hcnb(ip),nbhc
         print*, 'Particle ix,iy,iz',ix,iy,iz
@@ -292,7 +293,7 @@ MODULE sorting
         print*, 'Particle nx,ny,nz',nx3,ny3,nz3  
         stop        
       ENDIF
-
+#endif
       ! We count the number of particles in each bin
       nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1  
       !if (rank.eq.0) print*, 'nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1',nbppc(hcnb(ip))

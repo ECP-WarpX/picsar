@@ -23,7 +23,7 @@ IF (it.ge.timestat_itstart) THEN
 ENDIF
 
   ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2)) then
+  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
     CALL pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
               0.5_num*dt/dx,0.5_num*dt/dy,0.5_num*dt/dz,&
               nx,ny,nz,nxguards,nyguards,nzguards,nxs,nys,nzs, &
@@ -104,12 +104,23 @@ IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
 
-CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-    clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
-    clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
-    norderx,nordery,norderz,                                                   &
-    nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
-    l_nodalgrid)
+  ! Yee scheme at order 2
+  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
+	CALL pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
+			clight**2*dt/dx,clight**2*dt/dy,                           &
+			clight**2*dt/dz,nx,ny,nz,                                          &
+			nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
+			l_nodalgrid)
+			
+	ELSE
+  ! Yee scheme arbitrary order
+	CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
+			clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
+			clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
+			norderx,nordery,norderz,                                                   &
+			nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
+			l_nodalgrid)
+	ENDIF
 
 IF (it.ge.timestat_itstart) THEN
   localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
@@ -132,7 +143,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
 real(num), intent(IN) :: mudt,dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
     ist = 0
@@ -206,7 +217,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
 real(num), intent(IN) :: mudt,dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
     ist = 0
@@ -271,7 +282,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: Jx, Jy, Jz
 real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
     ist = 0
@@ -330,7 +341,7 @@ real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nz
 real(num), intent(IN), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: jx,jy,jz
 real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
 integer(idp):: j,k,l
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 ! advance Ex
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
@@ -388,7 +399,7 @@ integer(idp)          :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,no
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp)          :: i,j,k,l,ist
-logical               :: l_nodalgrid
+LOGICAL(lp)                :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0
@@ -458,7 +469,7 @@ integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,nor
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0
@@ -518,7 +529,7 @@ integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,nor
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 integer(idp) :: i,j,k,l,ist
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 if (l_nodalgrid) then
 ist = 0
@@ -571,7 +582,7 @@ integer(idp):: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
 real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 integer(idp) :: j,k,l
-logical :: l_nodalgrid
+LOGICAL(lp)  :: l_nodalgrid
 
 ! advance Bx
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
@@ -620,7 +631,7 @@ INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
 REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
 REAL(num), INTENT(IN) :: dtsdx,dtsdy,dtsdz
 INTEGER(idp) :: j,k,l
-LOGICAL(idp) :: l_2dxz
+LOGICAL(lp)  :: l_2dxz
 
 IF (.NOT.l_2dxz) THEN
 
