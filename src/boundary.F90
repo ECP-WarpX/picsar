@@ -2517,7 +2517,7 @@ END SUBROUTINE charge_bcs
 !> @brief
 !> MPI Boundary condition routine for particles in 2D x,z geometry
 !
-!> @todo
+!> @warning
 !> Need to add reflecting boundary conditions to be consistent with
 !> other MPI particle exchange routines
   SUBROUTINE particle_bcs_mpi_non_blocking_2d
@@ -2555,7 +2555,7 @@ END SUBROUTINE charge_bcs
 				IF (ABS(ix) + ABS(iz) .EQ. 0) CYCLE
 				count=nspecies
 				dest = neighbour(ix,0,iz)
-				CALL MPI_IRECV(npart_recv(1:count,ix,iz), count,  MPI_INTEGER8, dest, mpitag,    &
+				CALL MPI_IRECV(npart_recv(1:count,ix,iz), count,  MPI_INTEGER8, dest, MPI_ANY_TAG,    &
 								comm, requests(ireq), errcode)
 				ireq=ireq+1
 			END DO
