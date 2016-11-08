@@ -983,28 +983,30 @@ class EM3DPXR(EM3DFFT):
 
       if (self.l_debug): print("Call step")
 
-    	stdout_stat=10
-    	tdeb=MPI.Wtime()
-        for i in range(n):
-            if(me==0):
-                if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
-            if lallspecl:
-                l_first=l_last=1
-            else:
-                if i==0:
-                    l_first=1
-                else:
-                    l_first=0
-                if i==n-1:
-                    l_last=1
-                else:
-                    l_last=0
-            self.onestep(l_first,l_last)
-            if(l_pxr & (top.it%stdout_stat==0) & (pxr.rank==0)):
-            	tend=MPI.Wtime()
-            	mpi_time_per_stat=(tend-tdeb)
-            	tdeb=MPI.Wtime()
-                print("time/stdout_stat (s)",mpi_time_per_stat)
+      stdout_stat=10
+      tdeb=MPI.Wtime()
+      for i in range(n):
+          if(me==0):
+              if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
+          if lallspecl:
+              l_first=l_last=1
+          else:
+              if i==0:
+                  l_first=1
+              else:
+                  l_first=0
+              if i==n-1:
+                  l_last=1
+              else:
+                  l_last=0
+                  
+          self.onestep(l_first,l_last)
+          
+          if(l_pxr & (top.it%stdout_stat==0) & (pxr.rank==0)):
+              tend=MPI.Wtime()
+              mpi_time_per_stat=(tend-tdeb)
+              tdeb=MPI.Wtime()
+              print("time/stdout_stat (s)",mpi_time_per_stat)
 
       if (self.l_debug): print("End step")
 
