@@ -1014,7 +1014,7 @@ class EM3DPXR(EM3DFFT):
 
     def onestep(self,l_first,l_last):
 
-      if (self.l_debug): print("Call onestep")
+        if (self.l_debug): print("Call onestep")
 
         # --- Iteration number
         pxr.it = top.it
@@ -1164,21 +1164,21 @@ class EM3DPXR(EM3DFFT):
                     self.load_balance_3d(str(imbalance)+"%")
         # Try to Load balance at init
         if ((top.it==self.it_dlb_init) & self.dlb_at_init & self.dload_balancing):
-			pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
-			pxr.get_max_time_per_it()
-			pxr.get_min_time_per_it()
-			## --- Compute time per part and per cell
-			pxr.compute_time_per_part()
-			pxr.compute_time_per_cell()
-			if (self.l_2dxz):
-			    self.load_balance_2d('Init')
-			else:
-				self.load_balance_3d('Init')
+          pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
+          pxr.get_max_time_per_it()
+          pxr.get_min_time_per_it()
+          ## --- Compute time per part and per cell
+          pxr.compute_time_per_part()
+          pxr.compute_time_per_cell()
+          if (self.l_2dxz):
+              self.load_balance_2d('Init')
+          else:
+            self.load_balance_3d('Init')
 
         # PXr custom outputs mpi-io
         print("Call PXR custom outputs mpi-io")
         if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)):
-        	self.output_pxr(top.it)
+          self.output_pxr(top.it)
 
         # --- call afterstep functions
         callafterstepfuncs.callfuncsinlist()
@@ -1337,40 +1337,40 @@ class EM3DPXR(EM3DFFT):
                 self.nxlocal=pxr.nx
                 self.nylocal=pxr.ny
                 self.nzlocal=pxr.nz
-             	self.xmminlocal = pxr.x_min_local
-             	self.ymminlocal = pxr.y_min_local
-             	self.zmminlocal = pxr.z_min_local
+                self.ymminlocal = pxr.y_min_local
+                self.zmminlocal = pxr.z_min_local
                 self.fields.xmin = pxr.x_min_local
                 self.fields.xmax = pxr.x_max_local
                 self.fields.ymin = pxr.y_min_local
                 self.fields.ymax = pxr.y_max_local
                 self.fields.zmin = pxr.z_min_local
                 self.fields.zmax = pxr.z_max_local
-           		# Udpate domain decomposition in WARP
-            	top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
-            	top.fsdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
-            	top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
-            	top.fsdecomp.ix=pxr.cell_x_min
-            	top.fsdecomp.iy=pxr.cell_y_min
-            	top.fsdecomp.iz=pxr.cell_z_min
-            	top.fsdecomp.xmin=pxr.cell_x_min*pxr.dx
-            	top.fsdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
-            	top.fsdecomp.ymin=pxr.cell_y_min*pxr.dy
-            	top.fsdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
-            	top.fsdecomp.zmin=pxr.cell_z_min*pxr.dz
-            	top.fsdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
-            	top.ppdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
-            	top.ppdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
-            	top.ppdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
-            	top.ppdecomp.ix=pxr.cell_x_min
-            	top.ppdecomp.iy=pxr.cell_y_min
-            	top.ppdecomp.iz=pxr.cell_z_min
-            	top.ppdecomp.xmin=pxr.cell_x_min*pxr.dx
-            	top.ppdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
-            	top.ppdecomp.ymin=pxr.cell_y_min*pxr.dy
-            	top.ppdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
-            	top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
-            	top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
+                
+                # Udpate domain decomposition in WARP
+                top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
+                top.fsdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
+                top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
+                top.fsdecomp.ix=pxr.cell_x_min
+                top.fsdecomp.iy=pxr.cell_y_min
+                top.fsdecomp.iz=pxr.cell_z_min
+                top.fsdecomp.xmin=pxr.cell_x_min*pxr.dx
+                top.fsdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
+                top.fsdecomp.ymin=pxr.cell_y_min*pxr.dy
+                top.fsdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
+                top.fsdecomp.zmin=pxr.cell_z_min*pxr.dz
+                top.fsdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
+                top.ppdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
+                top.ppdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
+                top.ppdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
+                top.ppdecomp.ix=pxr.cell_x_min
+                top.ppdecomp.iy=pxr.cell_y_min
+                top.ppdecomp.iz=pxr.cell_z_min
+                top.ppdecomp.xmin=pxr.cell_x_min*pxr.dx
+                top.ppdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
+                top.ppdecomp.ymin=pxr.cell_y_min*pxr.dy
+                top.ppdecomp.ymax=(pxr.cell_y_max+1)*pxr.dy
+                top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
+                top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
 
                 # Reallocate warp arrays
                 self.allocatefieldarrays()
@@ -1397,56 +1397,56 @@ class EM3DPXR(EM3DFFT):
 
                 # If domain has been resized, do a new tile split and exchange particles
                 if 1:#((isnewdom != 0)):
-					# Now exchanging particles
+                   # Now exchanging particles
                     pxr.create_new_tile_split()
 
                     self.ntilex = pxr.ntilex
                     self.ntiley = pxr.ntiley
                     self.ntilez = pxr.ntilez
 
-					# Alias PXR tiles to WARP pgroups
+                  # Alias PXR tiles to WARP pgroups
                     for i,s in enumerate(self.listofallspecies):
-						s.pgroups = []
-						s.jslist = [0]
-						for iz in range(1,self.ntilez+1):
-							xygroup=[]
-							for iy in range(1,self.ntiley+1):
-								xgroup=[]
-								for ix in range(1,self.ntilex+1):
-									pg = ParticleGroup()
-									xgroup.append(pg)
-									pxr.point_to_tile(i+1, ix, iy, iz)
-									pg.npmax = 0
-									pxr.partnmax
-									pg.ns=1
-									pg.npid=top.npid
-									pg.gchange()
-									pg.sq = s.charge
-									pg.sm = s.mass
-									pg.sw = s.sw
-									pg.npmax = pxr.partnmax
-									pg.nps = pxr.partn
-									pg.ins[0] = 1
-									pg.sid[0]=0
-									pg.xp = pxr.partx
-									pg.yp = pxr.party
-									pg.zp = pxr.partz
-									pg.uxp = pxr.partux
-									pg.uyp = pxr.partuy
-									pg.uzp = pxr.partuz
-									pg.pid = fzeros([pg.npmax,top.npid])
-									pg.pid = pxr.pid
-									pg.gaminv = pxr.partgaminv
-									pg.ex = pxr.partex
-									pg.ey = pxr.partey
-									pg.ez = pxr.partez
-									pg.bx = pxr.partbx
-									pg.by = pxr.partby
-									pg.bz = pxr.partbz
-									pg.lebcancel_pusher=top.pgroup.lebcancel_pusher
-								xygroup.append(xgroup)
-							s.pgroups.append(xygroup)
-						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
+                      s.pgroups = []
+                      s.jslist = [0]
+                      for iz in range(1,self.ntilez+1):
+                        xygroup=[]
+                        for iy in range(1,self.ntiley+1):
+                          xgroup=[]
+                          for ix in range(1,self.ntilex+1):
+                            pg = ParticleGroup()
+                            xgroup.append(pg)
+                            pxr.point_to_tile(i+1, ix, iy, iz)
+                            pg.npmax = 0
+                            pxr.partnmax
+                            pg.ns=1
+                            pg.npid=top.npid
+                            pg.gchange()
+                            pg.sq = s.charge
+                            pg.sm = s.mass
+                            pg.sw = s.sw
+                            pg.npmax = pxr.partnmax
+                            pg.nps = pxr.partn
+                            pg.ins[0] = 1
+                            pg.sid[0]=0
+                            pg.xp = pxr.partx
+                            pg.yp = pxr.party
+                            pg.zp = pxr.partz
+                            pg.uxp = pxr.partux
+                            pg.uyp = pxr.partuy
+                            pg.uzp = pxr.partuz
+                            pg.pid = fzeros([pg.npmax,top.npid])
+                            pg.pid = pxr.pid
+                            pg.gaminv = pxr.partgaminv
+                            pg.ex = pxr.partex
+                            pg.ey = pxr.partey
+                            pg.ez = pxr.partez
+                            pg.bx = pxr.partbx
+                            pg.by = pxr.partby
+                            pg.bz = pxr.partbz
+                            pg.lebcancel_pusher=top.pgroup.lebcancel_pusher
+                          xygroup.append(xgroup)
+                        s.pgroups.append(xygroup)
+                      pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
 #                pxr.particle_bcs_mpi_blocking()
                 pxr.remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,
                             ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,
@@ -1467,11 +1467,11 @@ class EM3DPXR(EM3DFFT):
             isnewsplit=sum(pxr.cell_x_min-pxr.new_cell_x_min)+sum(pxr.cell_x_max-pxr.new_cell_x_max)+ \
                 	   sum(pxr.cell_z_min-pxr.new_cell_z_min)+sum(pxr.cell_z_max-pxr.new_cell_z_max)
             if (isnewsplit==0):
-            	if(pxr.rank==0):
-                	print("Optimal load balancing already achieved by current implementation")
+                if(pxr.rank==0):
+                  print("Optimal load balancing already achieved by current implementation")
             else:
-            	if(pxr.rank==0):
-                	print("trying to load balance the simulation, imbalance=", imbalance)
+                if(pxr.rank==0):
+                  print("trying to load balance the simulation, imbalance=", imbalance)
 
                 ## --- Compute limits for all procs
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
@@ -1595,34 +1595,35 @@ class EM3DPXR(EM3DFFT):
                 ##--- Alias WARP grid arrays on pxr new arrays
                 self.nxlocal=pxr.nx
                 self.nzlocal=pxr.nz
-             	self.xmminlocal = pxr.x_min_local
-             	self.zmminlocal = pxr.z_min_local
+                self.xmminlocal = pxr.x_min_local
+                self.zmminlocal = pxr.z_min_local
                 self.fields.xmin = pxr.x_min_local
                 self.fields.xmax = pxr.x_max_local
                 self.fields.zmin = pxr.z_min_local
                 self.fields.zmax = pxr.z_max_local
-           		# Udpate domain decomposition in WARP
-            	top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
-            	top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
-            	top.fsdecomp.ix=pxr.cell_x_min
-            	top.fsdecomp.iz=pxr.cell_z_min
-            	top.fsdecomp.xmin=pxr.cell_x_min*pxr.dx
-            	top.fsdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
-            	top.fsdecomp.zmin=pxr.cell_z_min*pxr.dz
-            	top.fsdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
-            	top.ppdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
-            	top.ppdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
-            	top.ppdecomp.ix=pxr.cell_x_min
-            	top.ppdecomp.iz=pxr.cell_z_min
-            	top.ppdecomp.xmin=pxr.cell_x_min*pxr.dx
-            	top.ppdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
-            	top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
-            	top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
+                
+                # Udpate domain decomposition in WARP
+                top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
+                top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
+                top.fsdecomp.ix=pxr.cell_x_min
+                top.fsdecomp.iz=pxr.cell_z_min
+                top.fsdecomp.xmin=pxr.cell_x_min*pxr.dx
+                top.fsdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
+                top.fsdecomp.zmin=pxr.cell_z_min*pxr.dz
+                top.fsdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
+                top.ppdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
+                top.ppdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
+                top.ppdecomp.ix=pxr.cell_x_min
+                top.ppdecomp.iz=pxr.cell_z_min
+                top.ppdecomp.xmin=pxr.cell_x_min*pxr.dx
+                top.ppdecomp.xmax=(pxr.cell_x_max+1)*pxr.dx
+                top.ppdecomp.zmin=pxr.cell_z_min*pxr.dz
+                top.ppdecomp.zmax=(pxr.cell_z_max+1)*pxr.dz
 
                 # Reallocate warp arrays
                 self.allocatefieldarrays()
                 if (self.spectral==1):
-					self.allocatefieldarraysFFT()
+                  self.allocatefieldarraysFFT()
                 # Alias newly allocated arrays on WARP structure
                 self.fields.Ex=pxr.ex
                 self.fields.Ey=pxr.ey
@@ -1645,63 +1646,63 @@ class EM3DPXR(EM3DFFT):
                 em3d_exchange_b(self.block)
                 #If domain has been resized, do a new tile split and exchange particles
                 if 1:#((isnewdom != 0)):
-					# Now exchanging particles
+                # Now exchanging particles
                     pxr.create_new_tile_split()
                     pxr.remap_particles_2d(ix1old,ix2old,iz1old,iz2old,
-								ix1new,ix2new,iz1new,iz2new,
-								pxr.cell_x_min,pxr.cell_x_max,
-								pxr.cell_z_min,pxr.cell_z_max,
-								pxr.rank, pxr.nproc, pxr.nprocx,pxr.nprocz,top.lcomm_cartesian)
+                                            ix1new,ix2new,iz1new,iz2new,
+                                            pxr.cell_x_min,pxr.cell_x_max,
+                                            pxr.cell_z_min,pxr.cell_z_max,
+                                            pxr.rank, pxr.nproc, pxr.nprocx,pxr.nprocz,top.lcomm_cartesian)
                     self.ntilex = pxr.ntilex
                     self.ntilez = pxr.ntilez
 
 					# Alias PXR tiles to WARP pgroups
                     for i,s in enumerate(self.listofallspecies):
-						s.pgroups = []
-						s.jslist = [0]
-						for iz in range(1,self.ntilez+1):
-							xygroup=[]
-							for iy in range(1,self.ntiley+1):
-								xgroup=[]
-								for ix in range(1,self.ntilex+1):
-									pg = ParticleGroup()
-									xgroup.append(pg)
-									pxr.point_to_tile(i+1, ix, iy, iz)
-									pg.npmax = 0
-									pxr.partnmax
-									pg.ns=1
-									pg.npid=top.npid
-									pg.gchange()
-									pg.sq = s.charge
-									pg.sm = s.mass
-									pg.sw = s.sw
-									pg.npmax = pxr.partnmax
-									pg.nps = pxr.partn
-									pg.ins[0] = 1
-									pg.sid[0]=0
-									pg.xp = pxr.partx
-									pg.yp = pxr.party
-									pg.zp = pxr.partz
-									pg.uxp = pxr.partux
-									pg.uyp = pxr.partuy
-									pg.uzp = pxr.partuz
-									pg.pid = fzeros([pg.npmax,top.npid])
-									pg.pid = pxr.pid
-									pg.gaminv = pxr.partgaminv
-									pg.ex = pxr.partex
-									pg.ey = pxr.partey
-									pg.ez = pxr.partez
-									pg.bx = pxr.partbx
-									pg.by = pxr.partby
-									pg.bz = pxr.partbz
-									pg.lebcancel_pusher=top.pgroup.lebcancel_pusher
-								xygroup.append(xgroup)
-							s.pgroups.append(xygroup)
-						pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
+                        s.pgroups = []
+                        s.jslist = [0]
+                        for iz in range(1,self.ntilez+1):
+                          xygroup=[]
+                          for iy in range(1,self.ntiley+1):
+                            xgroup=[]
+                            for ix in range(1,self.ntilex+1):
+                              pg = ParticleGroup()
+                              xgroup.append(pg)
+                              pxr.point_to_tile(i+1, ix, iy, iz)
+                              pg.npmax = 0
+                              pxr.partnmax
+                              pg.ns=1
+                              pg.npid=top.npid
+                              pg.gchange()
+                              pg.sq = s.charge
+                              pg.sm = s.mass
+                              pg.sw = s.sw
+                              pg.npmax = pxr.partnmax
+                              pg.nps = pxr.partn
+                              pg.ins[0] = 1
+                              pg.sid[0]=0
+                              pg.xp = pxr.partx
+                              pg.yp = pxr.party
+                              pg.zp = pxr.partz
+                              pg.uxp = pxr.partux
+                              pg.uyp = pxr.partuy
+                              pg.uzp = pxr.partuz
+                              pg.pid = fzeros([pg.npmax,top.npid])
+                              pg.pid = pxr.pid
+                              pg.gaminv = pxr.partgaminv
+                              pg.ex = pxr.partex
+                              pg.ey = pxr.partey
+                              pg.ez = pxr.partez
+                              pg.bx = pxr.partbx
+                              pg.by = pxr.partby
+                              pg.bz = pxr.partbz
+                              pg.lebcancel_pusher=top.pgroup.lebcancel_pusher
+                            xygroup.append(xgroup)
+                          s.pgroups.append(xygroup)
+                        pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
 
 
     def output_pxr(self,iter):
-    	pxr.py_mpi_output_grid_quantity('ez',pxr.ez,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,iter)
+      pxr.py_mpi_output_grid_quantity('ez',pxr.ez,pxr.nx,pxr.ny,pxr.nz,pxr.nxguards,pxr.nyguards,pxr.nzguards,iter)
 
 
     def fetcheb(self,js,pg=None):
@@ -1905,7 +1906,7 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-			# Depose currents in PXR
+            # Depose currents in PXR
 
              pxr.jx = self.fields.Jx
              pxr.jy = self.fields.Jy
@@ -1922,11 +1923,11 @@ class EM3DPXR(EM3DFFT):
 
                pxr.pxrdepose_currents_on_grid_jxjyjz()
 
-			# Depose charge density in PXR if required
+              # Depose charge density in PXR if required
              if self.l_getrho : # Depose Rho in PXR
                if pxr.c_dim == 2:
 
-				         pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
+                 pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
 
                elif pxr.c_dim ==3:
 
@@ -2057,35 +2058,35 @@ class EM3DPXR(EM3DFFT):
 
         if pxr.c_dim==2:
 
-					if field=='ex':
-						pxr.get_field_energy_2d(self.fields.Ex,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
-					elif field=='ey':
-						pxr.get_field_energy_2d(self.fields.Ey,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
-					elif field=='ez':
-						pxr.get_field_energy_2d(self.fields.Ez,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
-					elif field=='bx':
-						pxr.get_field_energy_2d(self.fields.Bx,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
-					elif field=='by':
-						pxr.get_field_energy_2d(self.fields.By,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
-					elif field=='bz':
-						pxr.get_field_energy_2d(self.fields.Bz,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
-					return field_energy[0]
+          if field=='ex':
+            pxr.get_field_energy_2d(self.fields.Ex,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+          elif field=='ey':
+            pxr.get_field_energy_2d(self.fields.Ey,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+          elif field=='ez':
+            pxr.get_field_energy_2d(self.fields.Ez,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+          elif field=='bx':
+            pxr.get_field_energy_2d(self.fields.Bx,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+          elif field=='by':
+            pxr.get_field_energy_2d(self.fields.By,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+          elif field=='bz':
+            pxr.get_field_energy_2d(self.fields.Bz,pxr.nx,pxr.nz,pxr.dx,pxr.dz,pxr.nxguards,pxr.nzguards,field_energy)
+          return field_energy[0]
 
         else:
 
-					if field=='ex':
-						pxr.get_field_energy(self.fields.Ex,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-					elif field=='ey':
-						pxr.get_field_energy(self.fields.Ey,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-					elif field=='ez':
-						pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-					elif field=='bx':
-						pxr.get_field_energy(self.fields.Bx,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-					elif field=='by':
-						pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-					elif field=='bz':
-						pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
-					return field_energy[0]
+          if field=='ex':
+            pxr.get_field_energy(self.fields.Ex,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+          elif field=='ey':
+            pxr.get_field_energy(self.fields.Ey,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+          elif field=='ez':
+            pxr.get_field_energy(self.fields.Ez,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+          elif field=='bx':
+            pxr.get_field_energy(self.fields.Bx,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+          elif field=='by':
+            pxr.get_field_energy(self.fields.By,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+          elif field=='bz':
+            pxr.get_field_energy(self.fields.Bz,pxr.nx,pxr.ny,pxr.nz,pxr.dx,pxr.dy,pxr.dz,pxr.nxguards,pxr.nyguards,pxr.nzguards,field_energy)
+          return field_energy[0]
 
     def get_normL2_divEeps0_rho(self):
         """
@@ -2126,14 +2127,14 @@ class EM3DPXR(EM3DFFT):
 
         if me==0:
 
-					print ' ________________________________________________'
-					print
-					print '  Time statisctics'
-					print ' ________________________________________________'
+          print ' ________________________________________________'
+          print
+          print '  Time statisctics'
+          print ' ________________________________________________'
 
-					print ' Part                               {:^7} {:^7}'.format('min', 'ave', 'max')
-					print ' Particle pusher + field gathering: {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
-					print
+          print ' Parts                              {:^7} {:^7}'.format('min', 'ave', 'max')
+          print ' Particle pusher + field gathering: {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
+          print
 
 
     def allocatefieldarraysFFT(self):
@@ -2142,9 +2143,9 @@ class EM3DPXR(EM3DFFT):
             fact2 = 1
             result = 0
             for i in range(abs(norder)/2):
-	            fact1 *= max(i,1)
-	            fact2 *= max(2*i,1)*max(2*i-1,1)
-	            result += x**(2*i+1)*fact2/float(2**(2*i)*fact1**2*(2*i+1))
+              fact1 *= max(i,1)
+              fact2 *= max(2*i,1)*max(2*i-1,1)
+              result += x**(2*i+1)*fact2/float(2**(2*i)*fact1**2*(2*i+1))
             return result
 
 
