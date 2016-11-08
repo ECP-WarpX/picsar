@@ -955,48 +955,51 @@ CONTAINS
 
     END SUBROUTINE point_to_tile
 
-    ! _____________________________________________________________________________
-    SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
+		! _____________________________________________________________________________
+		SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
 		vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start)
-		!
-    ! This subroutine returns pointer arrays on a given tile
-    ! of a given species (USED mainly by python interface)
-		! ______________________________________________________________________________
-        IMPLICIT NONE
-        INTEGER(idp), INTENT(IN) :: nsp, nppc
-		REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
-		CHARACTER(LEN=*), INTENT(IN) :: sname
-        TYPE(particle_species), POINTER  :: currsp
-        INTEGER(idp) :: sorting_period, sorting_start
+			!
+			! This subroutine returns pointer arrays on a given tile
+			! of a given species (USED mainly by python interface)
+			! ______________________________________________________________________________
+			IMPLICIT NONE
+			INTEGER(idp), INTENT(IN) :: nsp, nppc
+			REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
+			CHARACTER(LEN=*), INTENT(IN) :: sname
+			TYPE(particle_species), POINTER  :: currsp
+			INTEGER(idp) :: sorting_period, sorting_start
 
-        currsp=> species_parray(nsp)
-		currsp%charge=chrg
-		currsp%mass=mss
-		currsp%x_min=xsmin
-		currsp%y_min=ysmin
-		currsp%z_min=zsmin
-		currsp%x_max=xsmax
-		currsp%y_max=ysmax
-		currsp%z_max=zsmax
-		currsp%vdrift_x=vdxs
-		currsp%vdrift_y=vdys
-		currsp%vdrift_z=vdzs
-		currsp%vth_x=vthxs
-		currsp%vth_y=vthys
-		currsp%vth_z=vthzs
-		currsp%nppcell=nppc
-		currsp%name=sname
-		currsp%sorting_period=sorting_period
-		currsp%sorting_start=sorting_start
-		IF (rank .EQ. 0) THEN
-			PRINT *, "species name: ", trim(adjustl(sname))
-			PRINT *, "species mass: ", mss
-			PRINT *, "species charge: ", chrg
-			PRINT *, "sorting period: ", currsp%sorting_period
-			PRINT *, "sorting start: ", currsp%sorting_start
-			PRINT *, ""
-		ENDIF
-    END SUBROUTINE set_particle_species_properties
+			currsp=> species_parray(nsp)
+			currsp%charge=chrg
+			currsp%mass=mss
+			currsp%x_min=xsmin
+			currsp%y_min=ysmin
+			currsp%z_min=zsmin
+			currsp%x_max=xsmax
+			currsp%y_max=ysmax
+			currsp%z_max=zsmax
+			currsp%vdrift_x=vdxs
+			currsp%vdrift_y=vdys
+			currsp%vdrift_z=vdzs
+			currsp%vth_x=vthxs
+			currsp%vth_y=vthys
+			currsp%vth_z=vthzs
+			currsp%nppcell=nppc
+			currsp%name=sname
+			currsp%sorting_period=sorting_period
+			currsp%sorting_start=sorting_start
+			
+			! this part poses problems for the python version compiled on Cori
+			!IF (rank .EQ. 0) THEN
+			!	PRINT *, "species name: ", trim(adjustl(sname))
+			!	PRINT *, "species mass: ", mss
+			!	PRINT *, "species charge: ", chrg
+			!	PRINT *, "sorting period: ", currsp%sorting_period
+			!	PRINT *, "sorting start: ", currsp%sorting_start
+			!	PRINT *, ""
+			!ENDIF
+			
+		END SUBROUTINE set_particle_species_properties
 
     !!! --- Add particle to array of tiles
     SUBROUTINE py_add_particles_to_species(nsp, npart, partx, party, partz, &

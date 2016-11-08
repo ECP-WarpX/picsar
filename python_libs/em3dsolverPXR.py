@@ -60,6 +60,7 @@ class EM3DPXR(EM3DFFT):
                       'lvec_charge_depo':64,
                       'lvec_fieldgathe':512,
                       'sorting':None,
+                      'l_debug':0
                       }
 
     def __init__(self,**kw):
@@ -70,7 +71,13 @@ class EM3DPXR(EM3DFFT):
         except KeyError:
             pass
 
+
         self.processdefaultsfromdict(EM3DPXR.__flaginputs__,kw)
+
+        if (self.l_debug):
+          print("Call __init__")
+          print(' Debug prints activated')
+
         EM3DFFT.__init__(self,kwdict=kw)
 
         self.l_pxr = l_pxr
@@ -78,7 +85,9 @@ class EM3DPXR(EM3DFFT):
 
         # If sorting undefined
         if self.sorting==None:
-          self.sorting = Sorting([],[],activated=0,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0)
+          self.sorting = Sorting([],[],activated=0,dx=1.,dy=1.,dz=1.,xshift=-0.5,yshift=-0.5,zshift=-0.5)
+
+        if (self.l_debug): print("End __init__")
 
     def finalize(self,lforce=False):
         if self.finalized and not lforce: return
@@ -108,12 +117,15 @@ class EM3DPXR(EM3DFFT):
 
     def allocatefieldarraysPXR(self):
 
-    	# Set up case dimensionality
-    	if (self.l_2dxz):
-    		pxr.c_dim=2
-    	else:
-    		pxr.c_dim=3
+      if (self.l_debug): print("allocatefieldarraysPXR")
+
+      # Set up case dimensionality
+      if (self.l_2dxz):
+        pxr.c_dim=2
+      else:
+        pxr.c_dim=3
         # Set up PXR MPI Data
+        if (self.l_debug): print(" Setup PXR MPI Data")
         pxr.nprocx=top.fsdecomp.nxprocs
         pxr.nprocy=top.fsdecomp.nyprocs
         pxr.nprocz=top.fsdecomp.nzprocs
@@ -144,6 +156,7 @@ class EM3DPXR(EM3DFFT):
         pxr.z_coords=izcpu
 
         # MPI boundaries index in global array
+        if (self.l_debug): print(" MPI boundaries index in global array")
         pxr.cell_x_min=top.fsdecomp.ix
         pxr.cell_y_min=top.fsdecomp.iy
         pxr.cell_z_min=top.fsdecomp.iz
@@ -158,6 +171,7 @@ class EM3DPXR(EM3DFFT):
         pxr.z_grid_maxs=top.fsdecomp.zmax
 
         # Particle boundaries for PXR
+        if (self.l_debug): print(" Setup particle boundaries for PXR")
         if (top.pbound0 == absorb):
         	pxr.pbound_z_min=1
         elif(top.pbound0 == reflect):
@@ -189,6 +203,7 @@ class EM3DPXR(EM3DFFT):
         	pxr.pbound_y_max=0
 
         # --- number of grid cells
+        if (self.l_debug): (" Setup number of grid cells for PXR")
         pxr.nx_global = w3d.nx
         pxr.ny_global = w3d.ny
         pxr.nz_global = w3d.nz
@@ -205,6 +220,7 @@ class EM3DPXR(EM3DFFT):
 
 
         # --- number of guard cells
+        if (self.l_debug): print(" Setup number of guard cells for PXR")
         pxr.nxguards = self.nxguard
         pxr.nyguards = self.nyguard
         pxr.nzguards = self.nzguard
@@ -244,11 +260,13 @@ class EM3DPXR(EM3DFFT):
         pxr.length_y = pxr.ymax-pxr.ymin
         pxr.length_z = pxr.zmax-pxr.zmin
 
-		# INIT MPI_DATA FOR PICSAR
+        # INIT MPI_DATA FOR PICSAR
         # Init communicator variable in picsar
+        if (self.l_debug): print(" Init communicator variable in PXR")
         pxr.mpi_minimal_init_python(top.fsdecomp.mpi_comm)
 
         # allocate grid quantities
+        if (self.l_debug): print(" Allocate grid quantities in PXR")
         pxr.allocate_grid_quantities()
         pxr.compute_simulation_axis()
 
@@ -256,6 +274,7 @@ class EM3DPXR(EM3DFFT):
         pxr.dt = top.dt
 
         # --- Resolution
+        if (self.l_debug): print(" Setup resolution and related variables in PXR")
         pxr.dx = self.dx
         pxr.dy = self.dy
         pxr.dz = self.dz
@@ -278,6 +297,7 @@ class EM3DPXR(EM3DFFT):
         pxr.zcoeffs = self.fields.zcoefs
 
         # Set coefficient for Maxwell solver
+        if (self.l_debug): print(" Set coefficient for Maxwell solver")
         pxr.alphax = em3d.alphax
         pxr.alphay = em3d.alphay
         pxr.alphaz = em3d.alphaz
@@ -313,6 +333,8 @@ class EM3DPXR(EM3DFFT):
         pxr.noy = top.depos_order[1][0]
         pxr.noz = top.depos_order[2][0]
 
+        if (self.l_debug): print(" Set up algorithms in PXR")
+
         # Charge deposition algorithm
         pxr.rhodepo=self.rhodepo
         # Current deposition algorithm
@@ -323,7 +345,7 @@ class EM3DPXR(EM3DFFT):
         pxr.fieldgathe=self.fieldgathe
         # Particle communication
         pxr.partcom=self.partcom
-		# Particle pusher type
+        # Particle pusher type
         pxr.particle_pusher = top.pgroup.lebcancel_pusher
         # lvec size for the current deposition
         pxr.lvec_curr_depo = self.lvec_curr_depo
@@ -331,7 +353,7 @@ class EM3DPXR(EM3DFFT):
         pxr.lvec_charge_depo = self.lvec_charge_depo
         # lvec size for the field gathering
         if (self.lvec_fieldgathe==0):
-          if ((pxr.nox==3)and(pxr.noy==2)and(pxr.noz==3)):
+          if ((pxr.nox==3)and(pxr.noy==3)and(pxr.noz==3)):
             pxr.lvec_fieldgathe = 64
           else:
             pxr.lvec_fieldgathe = 512
@@ -345,19 +367,20 @@ class EM3DPXR(EM3DFFT):
         pxr.fg_p_pp_separated  = 1 # use 1 or >1 for the moment,
         # 0 needs t be fixed for Vay pusher)
 
-		# --- Tiling parameters
+        # --- Tiling parameters
         pxr.ntilex = self.ntilex
         pxr.ntiley = self.ntiley
         pxr.ntilez = self.ntilez
 
         # --- Sorting parameters
+        if (self.l_debug): print(" Setup sorting parameters in PXR")
         pxr.sorting_activated = self.sorting.activated
         pxr.sorting_dx = self.sorting.dx*pxr.dx
         pxr.sorting_dy = self.sorting.dy*pxr.dy
         pxr.sorting_dz = self.sorting.dz*pxr.dz
-        pxr.sorting_shiftx = self.sorting.xshift
-        pxr.sorting_shifty = self.sorting.yshift
-        pxr.sorting_shiftz = self.sorting.zshift
+        pxr.sorting_shiftx = self.sorting.xshift*pxr.dx
+        pxr.sorting_shifty = self.sorting.yshift*pxr.dy
+        pxr.sorting_shiftz = self.sorting.zshift*pxr.dz
         pxr.sorting_verbose = self.sorting.verbose
 
         # --- time statistics
@@ -366,7 +389,8 @@ class EM3DPXR(EM3DFFT):
         # --- species section
         pxr.nspecies_max=top.pgroup.ns
 
-            # --- allocates array of species
+        # --- allocates array of species
+        if (self.l_debug): print(" Allocates array of species")
         pxr.init_species_section()
 
         for i,s in enumerate(self.listofallspecies):
@@ -401,6 +425,7 @@ class EM3DPXR(EM3DFFT):
         top.pgroup.gchange()
 
         # --- mirror PXR tile structure in Warp with list of pgroups
+        if (self.l_debug): print(" Mirror PXR tile structure in Warp with list of pgroups")
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]
@@ -448,6 +473,8 @@ class EM3DPXR(EM3DFFT):
 #            def ppzx(self,**kw):
 #                for pg in self.pgroups:
 #                   self._callppfunc(ppzx,pgroup=pg,**kw)
+
+    if (self.l_debug): print("End allocatefieldarraysPXR")
 
 #            s.ppzx = ppzx
     def aliasparticlearrays(self):
@@ -953,6 +980,9 @@ class EM3DPXR(EM3DFFT):
 
 
     def step(self,n=1,freq_print=10,lallspecl=0):
+
+      if (self.l_debug): print("Call step")
+
     	stdout_stat=10
     	tdeb=MPI.Wtime()
         for i in range(n):
@@ -976,18 +1006,24 @@ class EM3DPXR(EM3DFFT):
             	tdeb=MPI.Wtime()
                 print("time/stdout_stat (s)",mpi_time_per_stat)
 
+      if (self.l_debug): print("End step")
+
 
 
     def onestep(self,l_first,l_last):
+
+      if (self.l_debug): print("Call onestep")
 
         # --- Iteration number
         pxr.it = top.it
 
         # --- call beforestep functions
+        if (self.l_debug): print("Call beforestep functions")
         callbeforestepfuncs.callfuncsinlist()
         top.zgrid+=top.vbeamfrm*top.dt
         top.zbeam=top.zgrid
         # --- gather fields from grid to particles
+        if (self.l_debug): print("Call Field gathering and particle push")
 #        w3d.pgroupfsapi = top.pgroup
 #        for js in range(top.pgroup.ns):
 #          self.fetcheb(js)
@@ -1049,12 +1085,15 @@ class EM3DPXR(EM3DFFT):
                         self.push_velocity_full(0,pg)
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
+
         # --- Particle sorting
+        if (self.l_debug): print("Call Particle Sorting")
         if l_pxr:
           if ((self.sorting.activated)and(top.it>=0)):
             pxr.particle_sorting_sub()
 
         # --- call beforeloadrho functions
+        if (self.l_debug): print("Call beforeloadrho functions")
         beforeloadrho.callfuncsinlist()
         pgroups = []
         for i,s in enumerate(self.listofallspecies):
@@ -1064,6 +1103,7 @@ class EM3DPXR(EM3DFFT):
         #tdebpart=MPI.Wtime()
 
         # Call user-defined injection routines
+        if (self.l_debug): print("Call user-defined injection routines")
         userinjection.callfuncsinlist()
         if (self.l_pxr):
             pxr.zgrid=self.zgrid
@@ -1106,6 +1146,7 @@ class EM3DPXR(EM3DFFT):
         top.it+=1
 
         # Load balance every dlb_freq time step
+        print("Call Load balance")
         if (l_pxr & (self.dload_balancing & (top.it%self.dlb_freq==0))):
             pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
             pxr.get_max_time_per_it()
@@ -1133,6 +1174,7 @@ class EM3DPXR(EM3DFFT):
 				self.load_balance_3d('Init')
 
         # PXr custom outputs mpi-io
+        print("Call PXR custom outputs mpi-io")
         if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)):
         	self.output_pxr(top.it)
 
@@ -2352,11 +2394,11 @@ class Sorting:
 
     Used to setup the sorting with picsars
 
-    activated: >0 sorting is activated
-    periods: list containing the sorting periods for each species
-    starts: first iteration before the start of the sorting
-    dx, dy, dz: the bin size normalized to the cell size
-    xshift,yshift,zshift: shift of the sorting grid
+    - activated: >0 sorting is activated
+    - periods: list containing the sorting periods for each species
+    - starts: first iteration before the start of the sorting
+    - dx, dy, dz: the bin size normalized to the cell size. For instance, a dx of 1 corresponds to the cell dx.
+    - xshift,yshift,zshift: shift of the sorting grid. The shift is normalized to dx,dy,dz. For instance a shift of 1 corresponds of 1 space step.
 
   """
   def __init__(self,periods,starts,activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0,zshift=0,verbose=False):
