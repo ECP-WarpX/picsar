@@ -117,13 +117,14 @@ class EM3DPXR(EM3DFFT):
 
     def allocatefieldarraysPXR(self):
 
-      if (self.l_debug): print("allocatefieldarraysPXR")
+        if (self.l_debug): print("allocatefieldarraysPXR")
 
-      # Set up case dimensionality
-      if (self.l_2dxz):
-        pxr.c_dim=2
-      else:
-        pxr.c_dim=3
+        # Set up case dimensionality
+        if (self.l_2dxz):
+          pxr.c_dim=2
+        else:
+          pxr.c_dim=3
+          
         # Set up PXR MPI Data
         if (self.l_debug): print(" Setup PXR MPI Data")
         pxr.nprocx=top.fsdecomp.nxprocs
@@ -180,27 +181,27 @@ class EM3DPXR(EM3DFFT):
         	pxr.pbound_z_min=0
 
         if (top.pboundnz == absorb):
-        	pxr.pbound_z_max=1
+            pxr.pbound_z_max=1
         elif(top.pboundnz == reflect):
-        	pxr.pbound_z_max=2
+            pxr.pbound_z_max=2
         else: # Default is periodic
-        	pxr.pbound_z_max=0
+            pxr.pbound_z_max=0
 
         if (top.pboundxy == absorb):
-        	pxr.pbound_x_min=1
-        	pxr.pbound_x_max=1
-        	pxr.pbound_y_min=1
-        	pxr.pbound_y_max=1
+            pxr.pbound_x_min=1
+            pxr.pbound_x_max=1
+            pxr.pbound_y_min=1
+            pxr.pbound_y_max=1
         elif(top.pboundxy == reflect):
-        	pxr.pbound_x_min=2
-        	pxr.pbound_x_max=2
-        	pxr.pbound_y_min=2
-        	pxr.pbound_y_max=2
+            pxr.pbound_x_min=2
+            pxr.pbound_x_max=2
+            pxr.pbound_y_min=2
+            pxr.pbound_y_max=2
         else: # Default is periodic
-        	pxr.pbound_x_min=0
-        	pxr.pbound_x_max=0
-        	pxr.pbound_y_min=0
-        	pxr.pbound_y_max=0
+            pxr.pbound_x_min=0
+            pxr.pbound_x_max=0
+            pxr.pbound_y_min=0
+            pxr.pbound_y_max=0
 
         # --- number of grid cells
         if (self.l_debug): (" Setup number of grid cells for PXR")
@@ -474,7 +475,7 @@ class EM3DPXR(EM3DFFT):
 #                for pg in self.pgroups:
 #                   self._callppfunc(ppzx,pgroup=pg,**kw)
 
-    if (self.l_debug): print("End allocatefieldarraysPXR")
+        if (self.l_debug): print("End allocatefieldarraysPXR")
 
 #            s.ppzx = ppzx
     def aliasparticlearrays(self):
