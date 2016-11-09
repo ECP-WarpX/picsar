@@ -881,10 +881,12 @@ class EM3DPXR(EM3DFFT):
         if self.l_pxr:
           tendcell=MPI.Wtime()
           pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+          self.time_stat_loc_array[7] += (tendcell-tdebcell)
 
-        def current_cor_spectral(self):
+    def current_cor_spectral(self):
         if self.l_pxr:
-          tdebcell=MPI.Wtime()
+            tdebcell=MPI.Wtime()
+            
         j=1j      # imaginary number
         emK = self.FSpace
         em = self
@@ -960,7 +962,6 @@ class EM3DPXR(EM3DFFT):
         if self.l_pxr:
           tendcell=MPI.Wtime()
           pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
-          self.time_stat_loc_array[7] += (tend-tdeb)
           
 
     def exchange_e(self,dir=1.):
