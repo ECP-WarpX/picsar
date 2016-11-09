@@ -2143,8 +2143,6 @@ class EM3DPXR(EM3DFFT):
         MPI.COMM_WORLD.Reduce([self.time_stat_loc_array,MPI.DOUBLE], [self.time_stat_max_array,MPI.DOUBLE], op=MPI.MAX, root=0)
 
         self.time_stat_ave_array[:] /= nproc
-        self.time_stat_min_array[:] /= nproc
-        self.time_stat_max_array[:] /= nproc
 
         if me==0:
 
