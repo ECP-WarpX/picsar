@@ -636,9 +636,9 @@ class EM3DPXR(EM3DFFT):
         self.time_stat_loc_array[7] += (tend-tdeb)
 
     def push_b_part_1(self,dir=1.):
-    """
-    Magnetic field solver
-    """
+      """
+      Magnetic field solver
+      """
     
       tdeb=MPI.Wtime()
       
@@ -725,9 +725,9 @@ class EM3DPXR(EM3DFFT):
       self.time_stat_loc_array[5] += (tend-tdeb)
 
     def push_b_part_2(self):
-    """
-    Magnetic field solver
-    """
+      """
+      Magnetic field solver
+      """
 
       tdeb=MPI.Wtime()
     
@@ -964,9 +964,9 @@ class EM3DPXR(EM3DFFT):
           
 
     def exchange_e(self,dir=1.):
-    """
-    Electric field boundary conditions
-    """
+        """
+        Electric field boundary conditions
+        """
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -987,9 +987,9 @@ class EM3DPXR(EM3DFFT):
             self.__class__.__bases__[1].exchange_e(self.field_coarse)
 
     def exchange_b(self,dir=1.):
-    """
-    Magnetic field boundary conditions
-    """
+        """
+        Magnetic field boundary conditions
+        """
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -1052,9 +1052,9 @@ class EM3DPXR(EM3DFFT):
 
 
     def onestep(self,l_first,l_last):
-    """
-    Perform a single particle-in-cell step
-    """
+        """
+        Perform a single particle-in-cell step
+        """
 
         if (self.l_debug): print("Call onestep")
 
