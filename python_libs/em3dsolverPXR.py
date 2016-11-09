@@ -1051,10 +1051,10 @@ class EM3DPXR(EM3DFFT):
                 self.time_stat_loc_array[0] += (tendpart-tdebpart)
 
                 # Particle boundary consitions
-
                 #pxr.particle_bcs_2d()
                 tdebpart=MPI.Wtime()
                 pxr.particle_bcs()
+                tendpart=MPI.Wtime()
                 self.time_stat_loc_array[1] += (tendpart-tdebpart)
                 
                 #for i,s in enumerate(self.listofallspecies):
@@ -1081,6 +1081,7 @@ class EM3DPXR(EM3DFFT):
                 # Particle boundary conditions
                 tdebpart=MPI.Wtime()
                 pxr.particle_bcs()
+                tendpart=MPI.Wtime()
                 self.time_stat_loc_array[1] += (tendpart-tdebpart)
                 
                 
@@ -1093,15 +1094,26 @@ class EM3DPXR(EM3DFFT):
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
+                        tendpart=MPI.Wtime()
                         self.push_velocity_full(0,pg)
                         self.push_positions(0,pg)
-                        particleboundaries3d(pg,-1,False)
+                        tendpart=MPI.Wtime()
+                        self.time_stat_loc_array[0] += (tendpart-tdebpart)
 
+                        # Particle boundary conditions
+                        tdebpart=MPI.Wtime()
+                        particleboundaries3d(pg,-1,False)
+                        tendpart=MPI.Wtime()
+                        self.time_stat_loc_array[1] += (tendpart-tdebpart)
+                        
         # --- Particle sorting
         if (self.l_debug): print("Call Particle Sorting")
         if l_pxr:
           if ((self.sorting.activated)and(top.it>=0)):
+            tdebpart=MPI.Wtime()
             pxr.particle_sorting_sub()
+            tendpart=MPI.Wtime()
+            self.time_stat_loc_array[10] += (tendpart-tdebpart)
 
         # --- call beforeloadrho functions
         if (self.l_debug): print("Call beforeloadrho functions")
@@ -2141,10 +2153,11 @@ class EM3DPXR(EM3DFFT):
           print '  Time statisctics'
           print ' ________________________________________________'
 
-          print ' Parts                              {:^7} {:^7}'.format('min', 'ave', 'max')
+          print ' Parts                              {:^7} {:^7} {:^7}'.format('min', 'ave', 'max')
           print ' -----------------------------------------------------------'
           print ' Particle pusher + field gathering: {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
           print ' Particle boundary conditions:      {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1])
+          print ' Particle sorting:                  {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10])
           print
 
 
