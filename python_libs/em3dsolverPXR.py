@@ -96,7 +96,7 @@ class EM3DPXR(EM3DFFT):
         	self.allocatefieldarraysFFT()
         	self.allocatefieldarraysPXR()
         else:
-			EM3DFFT.finalize(self)
+          EM3DFFT.finalize(self)
 
     def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
       ixt = ix
@@ -636,315 +636,337 @@ class EM3DPXR(EM3DFFT):
         self.time_stat_loc_array[7] += (tend-tdeb)
 
     def push_b_part_1(self,dir=1.):
-		dt = dir*top.dt/self.ntsub
-		if self.novercycle==1:
-			if dir>0.:
-				doit=True
-			else:
-				doit=False
-		else:
-			if self.icycle==0 or (self.icycle==self.novercycle-1 and dir>0.):
-				doit=True
-			else:
-				doit=False
-		if doit:
-			if self.l_verbose:print 'push_b part 1',self,dt,top.it,self.icycle,dir
-			if self.l_pxr:
-				tdebcell=MPI.Wtime()
-				f=self.fields
-				l_pushb=False
-				if self.l_2dxz:
-					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-						if (f.stencil==0): # Yee solver
-							pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver
-							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx,
-												  0.5*dt/f.dy,
-												  0.5*dt/f.dz,
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  f.l_2dxz)
-					else: #nth order solver >  2
-						pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-											  0.5*dt/f.dx*f.xcoefs,
-											  0.5*dt/f.dy*f.ycoefs,
-											  0.5*dt/f.dz*f.zcoefs,
-											  f.nx,f.ny,f.nz,
-											  f.norderx,f.nordery,f.norderz,
-											  f.nxguard,f.nyguard,f.nzguard,
-											  0,0,0,f.l_nodalgrid)
-				else:
-					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-						if (f.stencil==0): # Yee solver
-							pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver
-							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx,
-												  0.5*dt/f.dy,
-												  0.5*dt/f.dz,
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  f.l_2dxz)
-					else: #nth order solver >  2
-						pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-											  0.5*dt/f.dx*f.xcoefs,
-											  0.5*dt/f.dy*f.ycoefs,
-											  0.5*dt/f.dz*f.zcoefs,
-											  f.nx,f.ny,f.nz,
-											  f.norderx,f.nordery,f.norderz,
-											  f.nxguard,f.nyguard,f.nzguard,
-											  0,0,0,f.l_nodalgrid)
-				tendcell=MPI.Wtime()
-				pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
-			else:
-				l_pushb=True
-			push_em3d_bf(self.block,dt,1,self.l_pushf,self.l_pushpot,l_pushb)
-		if self.refinement is not None:
-			self.__class__.__bases__[1].push_b_part_1(self.field_coarse,dir)
+    """
+    Magnetic field solver
+    """
+    
+      tdeb=MPI.Wtime()
+      
+      dt = dir*top.dt/self.ntsub
+      if self.novercycle==1:
+        if dir>0.:
+          doit=True
+        else:
+          doit=False
+      else:
+        if self.icycle==0 or (self.icycle==self.novercycle-1 and dir>0.):
+          doit=True
+        else:
+          doit=False
+      if doit:
+        if self.l_verbose:print 'push_b part 1',self,dt,top.it,self.icycle,dir
+        if self.l_pxr:
+          tdebcell=MPI.Wtime()
+          f=self.fields
+          l_pushb=False
+          if self.l_2dxz:
+            if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+              if (f.stencil==0): # Yee solver
+                pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx*f.xcoefs[0],
+                            0.5*dt/f.dy*f.ycoefs[0],
+                            0.5*dt/f.dz*f.zcoefs[0],
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            0,0,0,f.l_nodalgrid)
+              elif (f.stencil==1): # Karkainnen solver
+                pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx,
+                            0.5*dt/f.dy,
+                            0.5*dt/f.dz,
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            f.l_2dxz)
+            else: #nth order solver >  2
+              pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                          0.5*dt/f.dx*f.xcoefs,
+                          0.5*dt/f.dy*f.ycoefs,
+                          0.5*dt/f.dz*f.zcoefs,
+                          f.nx,f.ny,f.nz,
+                          f.norderx,f.nordery,f.norderz,
+                          f.nxguard,f.nyguard,f.nzguard,
+                          0,0,0,f.l_nodalgrid)
+          else:
+            if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+              if (f.stencil==0): # Yee solver
+                pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx*f.xcoefs[0],
+                            0.5*dt/f.dy*f.ycoefs[0],
+                            0.5*dt/f.dz*f.zcoefs[0],
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            0,0,0,f.l_nodalgrid)
+              elif (f.stencil==1): # Karkainnen solver
+                pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx,
+                            0.5*dt/f.dy,
+                            0.5*dt/f.dz,
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            f.l_2dxz)
+            else: #nth order solver >  2
+              pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                          0.5*dt/f.dx*f.xcoefs,
+                          0.5*dt/f.dy*f.ycoefs,
+                          0.5*dt/f.dz*f.zcoefs,
+                          f.nx,f.ny,f.nz,
+                          f.norderx,f.nordery,f.norderz,
+                          f.nxguard,f.nyguard,f.nzguard,
+                          0,0,0,f.l_nodalgrid)
+          tendcell=MPI.Wtime()
+          pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+        else:
+          l_pushb=True
+        push_em3d_bf(self.block,dt,1,self.l_pushf,self.l_pushpot,l_pushb)
+      if self.refinement is not None:
+        self.__class__.__bases__[1].push_b_part_1(self.field_coarse,dir)
+
+      tend=MPI.Wtime()
+      self.time_stat_loc_array[5] += (tend-tdeb)
 
     def push_b_part_2(self):
-		if top.efetch[0] != 4 and (self.refinement is None):self.node2yee3d()
-		dt = top.dt/self.ntsub
-		if self.ntsub<1.:
-			self.novercycle = nint(1./self.ntsub)
-			self.icycle = (top.it-1)%self.novercycle
-		else:
-			self.novercycle = 1
-			self.icycle = 0
-		if self.icycle==0:
-			if self.l_verbose:print 'push_b part 2',self,dt,top.it,self.icycle
-			if self.l_pxr:
-				f=self.fields
-				l_pushb=False
-				tdebcell=MPI.Wtime()
-				if self.l_2dxz:
-					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-						if (f.stencil==0): # Yee solver
-							pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver
-							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx,
-												  0.5*dt/f.dy,
-												  0.5*dt/f.dz,
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  f.l_2dxz)
-					else: #nth order solver >  2
-						pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-											  0.5*dt/f.dx*f.xcoefs,
-											  0.5*dt/f.dy*f.ycoefs,
-											  0.5*dt/f.dz*f.zcoefs,
-											  f.nx,f.ny,f.nz,
-											  f.norderx,f.nordery,f.norderz,
-											  f.nxguard,f.nyguard,f.nzguard,
-											  0,0,0,f.l_nodalgrid)
-				else:
-					if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
-						if (f.stencil==0): # Yee solver
-							pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx*f.xcoefs[0],
-												  0.5*dt/f.dy*f.ycoefs[0],
-												  0.5*dt/f.dz*f.zcoefs[0],
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  0,0,0,f.l_nodalgrid)
-						elif (f.stencil==1): # Karkainnen solver
-							pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-												  0.5*dt/f.dx,
-												  0.5*dt/f.dy,
-												  0.5*dt/f.dz,
-												  f.nx,f.ny,f.nz,
-												  f.nxguard,f.nyguard,f.nzguard,
-												  f.l_2dxz)
-					else:  #nth order solver >  2
-						pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
-											  0.5*dt/f.dx*f.xcoefs,
-											  0.5*dt/f.dy*f.ycoefs,
-											  0.5*dt/f.dz*f.zcoefs,
-											  f.nx,f.ny,f.nz,
-											  f.norderx,f.nordery,f.norderz,
-											  f.nxguard,f.nyguard,f.nzguard,
-											  0,0,0,f.l_nodalgrid)
-				tendcell=MPI.Wtime()
-				pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
-			else:
-				l_pushb=True
-			push_em3d_bf(self.block,dt,2,self.l_pushf,self.l_pushpot,l_pushb)
-		if self.refinement is not None:
-			self.__class__.__bases__[1].push_b_part_2(self.field_coarse)
+    """
+    Magnetic field solver
+    """
+
+      tdeb=MPI.Wtime()
+    
+      if top.efetch[0] != 4 and (self.refinement is None):self.node2yee3d()
+      dt = top.dt/self.ntsub
+      if self.ntsub<1.:
+        self.novercycle = nint(1./self.ntsub)
+        self.icycle = (top.it-1)%self.novercycle
+      else:
+        self.novercycle = 1
+        self.icycle = 0
+      if self.icycle==0:
+        if self.l_verbose:print 'push_b part 2',self,dt,top.it,self.icycle
+        if self.l_pxr:
+          f=self.fields
+          l_pushb=False
+          tdebcell=MPI.Wtime()
+          if self.l_2dxz:
+            if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+              if (f.stencil==0): # Yee solver
+                pxr.pxrpush_em2d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx*f.xcoefs[0],
+                            0.5*dt/f.dy*f.ycoefs[0],
+                            0.5*dt/f.dz*f.zcoefs[0],
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            0,0,0,f.l_nodalgrid)
+              elif (f.stencil==1): # Karkainnen solver
+                pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx,
+                            0.5*dt/f.dy,
+                            0.5*dt/f.dz,
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            f.l_2dxz)
+            else: #nth order solver >  2
+              pxr.pxrpush_em2d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                          0.5*dt/f.dx*f.xcoefs,
+                          0.5*dt/f.dy*f.ycoefs,
+                          0.5*dt/f.dz*f.zcoefs,
+                          f.nx,f.ny,f.nz,
+                          f.norderx,f.nordery,f.norderz,
+                          f.nxguard,f.nyguard,f.nzguard,
+                          0,0,0,f.l_nodalgrid)
+          else:
+            if (f.norderx==2) & (f.nordery==2) & (f.norderz==2):
+              if (f.stencil==0): # Yee solver
+                pxr.pxrpush_em3d_bvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx*f.xcoefs[0],
+                            0.5*dt/f.dy*f.ycoefs[0],
+                            0.5*dt/f.dz*f.zcoefs[0],
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            0,0,0,f.l_nodalgrid)
+              elif (f.stencil==1): # Karkainnen solver
+                pxr.pxr_push_em3d_kyeebvec(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                            0.5*dt/f.dx,
+                            0.5*dt/f.dy,
+                            0.5*dt/f.dz,
+                            f.nx,f.ny,f.nz,
+                            f.nxguard,f.nyguard,f.nzguard,
+                            f.l_2dxz)
+            else:  #nth order solver >  2
+              pxr.pxrpush_em3d_bvec_norder(f.Ex,f.Ey,f.Ez,f.Bx,f.By,f.Bz,
+                          0.5*dt/f.dx*f.xcoefs,
+                          0.5*dt/f.dy*f.ycoefs,
+                          0.5*dt/f.dz*f.zcoefs,
+                          f.nx,f.ny,f.nz,
+                          f.norderx,f.nordery,f.norderz,
+                          f.nxguard,f.nyguard,f.nzguard,
+                          0,0,0,f.l_nodalgrid)
+          tendcell=MPI.Wtime()
+          pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+        else:
+          l_pushb=True
+        push_em3d_bf(self.block,dt,2,self.l_pushf,self.l_pushpot,l_pushb)
+      if self.refinement is not None:
+        self.__class__.__bases__[1].push_b_part_2(self.field_coarse)
+
+      tend=MPI.Wtime()
+      self.time_stat_loc_array[5] += (tend-tdeb)
 
     def push_spectral_psaotd(self):
-		###################################
-		#              PSAOTD             #
-		###################################
-		if self.l_pxr:
-			tdebcell=MPI.Wtime()
-		###################################
-		#              PSAOTD             #
-		###################################
-		if top.it%100==0:print 'push PSAOTD',top.it
-		if top.efetch[0] != 4 and (self.refinement is None) and not self.l_nodalgrid:self.node2yee3d()
+        """
+        PSAOTD Maxwell solver
+        """
+        if self.l_pxr:
+          tdebcell=MPI.Wtime()
 
-		if self.ntsub==inf:
-			self.GPSTDMaxwell.fields['rhoold']=self.fields.Rhoold
-			self.fields.Rho=self.fields.Rhoarray[...,0]
-			self.GPSTDMaxwell.fields['rhonew']=self.fields.Rho
-		else:
-			if self.l_pushf:
-		#                self.fields.Rho=self.fields.Rhoarray[...,0]
-				self.GPSTDMaxwell.fields['rhoold']=self.fields.Rhoold.copy()
-				self.GPSTDMaxwell.fields['rhonew']=self.fields.Rho.copy()
-				self.GPSTDMaxwell.fields['drho']=self.fields.Rho-self.fields.Rhoold
+        if top.it%100==0:print 'push PSAOTD',top.it
+        if top.efetch[0] != 4 and (self.refinement is None) and not self.l_nodalgrid:self.node2yee3d()
 
-		self.GPSTDMaxwell.fields['jx']=self.fields.Jx
-		self.GPSTDMaxwell.fields['jy']=self.fields.Jy
-		self.GPSTDMaxwell.fields['jz']=self.fields.Jz
+        if self.ntsub==inf:
+          self.GPSTDMaxwell.fields['rhoold']=self.fields.Rhoold
+          self.fields.Rho=self.fields.Rhoarray[...,0]
+          self.GPSTDMaxwell.fields['rhonew']=self.fields.Rho
+        else:
+          if self.l_pushf:
+        #                self.fields.Rho=self.fields.Rhoarray[...,0]
+            self.GPSTDMaxwell.fields['rhoold']=self.fields.Rhoold.copy()
+            self.GPSTDMaxwell.fields['rhonew']=self.fields.Rho.copy()
+            self.GPSTDMaxwell.fields['drho']=self.fields.Rho-self.fields.Rhoold
 
-		self.GPSTDMaxwell.push_fields()
+        self.GPSTDMaxwell.fields['jx']=self.fields.Jx
+        self.GPSTDMaxwell.fields['jy']=self.fields.Jy
+        self.GPSTDMaxwell.fields['jz']=self.fields.Jz
 
-		b=self.block
+        self.GPSTDMaxwell.push_fields()
 
-		# --- sides
-		if b.xlbnd==openbc:self.xlPML.push()
-		if b.xrbnd==openbc:self.xrPML.push()
-		if b.ylbnd==openbc:self.ylPML.push()
-		if b.yrbnd==openbc:self.yrPML.push()
-		if b.zlbnd==openbc:self.zlPML.push()
-		if b.zrbnd==openbc:self.zrPML.push()
+        b=self.block
 
-		# --- edges
-		if(b.xlbnd==openbc and b.ylbnd==openbc):self.xlylPML.push()
-		if(b.xrbnd==openbc and b.ylbnd==openbc):self.xrylPML.push()
-		if(b.xlbnd==openbc and b.yrbnd==openbc):self.xlyrPML.push()
-		if(b.xrbnd==openbc and b.yrbnd==openbc):self.xryrPML.push()
-		if(b.xlbnd==openbc and b.zlbnd==openbc):self.xlzlPML.push()
-		if(b.xrbnd==openbc and b.zlbnd==openbc):self.xrzlPML.push()
-		if(b.xlbnd==openbc and b.zrbnd==openbc):self.xlzrPML.push()
-		if(b.xrbnd==openbc and b.zrbnd==openbc):self.xrzrPML.push()
-		if(b.ylbnd==openbc and b.zlbnd==openbc):self.ylzlPML.push()
-		if(b.yrbnd==openbc and b.zlbnd==openbc):self.yrzlPML.push()
-		if(b.ylbnd==openbc and b.zrbnd==openbc):self.ylzrPML.push()
-		if(b.yrbnd==openbc and b.zrbnd==openbc):self.yrzrPML.push()
+        # --- sides
+        if b.xlbnd==openbc:self.xlPML.push()
+        if b.xrbnd==openbc:self.xrPML.push()
+        if b.ylbnd==openbc:self.ylPML.push()
+        if b.yrbnd==openbc:self.yrPML.push()
+        if b.zlbnd==openbc:self.zlPML.push()
+        if b.zrbnd==openbc:self.zrPML.push()
 
-		# --- corners
-		if(b.xlbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc):self.xlylzlPML.push()
-		if(b.xrbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc):self.xrylzlPML.push()
-		if(b.xlbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc):self.xlyrzlPML.push()
-		if(b.xrbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc):self.xryrzlPML.push()
-		if(b.xlbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc):self.xlylzrPML.push()
-		if(b.xrbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc):self.xrylzrPML.push()
-		if(b.xlbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc):self.xlyrzrPML.push()
-		if(b.xrbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc):self.xryrzrPML.push()
+        # --- edges
+        if(b.xlbnd==openbc and b.ylbnd==openbc):self.xlylPML.push()
+        if(b.xrbnd==openbc and b.ylbnd==openbc):self.xrylPML.push()
+        if(b.xlbnd==openbc and b.yrbnd==openbc):self.xlyrPML.push()
+        if(b.xrbnd==openbc and b.yrbnd==openbc):self.xryrPML.push()
+        if(b.xlbnd==openbc and b.zlbnd==openbc):self.xlzlPML.push()
+        if(b.xrbnd==openbc and b.zlbnd==openbc):self.xrzlPML.push()
+        if(b.xlbnd==openbc and b.zrbnd==openbc):self.xlzrPML.push()
+        if(b.xrbnd==openbc and b.zrbnd==openbc):self.xrzrPML.push()
+        if(b.ylbnd==openbc and b.zlbnd==openbc):self.ylzlPML.push()
+        if(b.yrbnd==openbc and b.zlbnd==openbc):self.yrzlPML.push()
+        if(b.ylbnd==openbc and b.zrbnd==openbc):self.ylzrPML.push()
+        if(b.yrbnd==openbc and b.zrbnd==openbc):self.yrzrPML.push()
 
-		#    if em.pml_method==2:
-		#      self.fields.spectral=0
-		#      scale_em3d_bnd_fields(self.block,top.dt,self.l_pushf)
-		#      self.fields.spectral=1
+        # --- corners
+        if(b.xlbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc):self.xlylzlPML.push()
+        if(b.xrbnd==openbc and b.ylbnd==openbc and b.zlbnd==openbc):self.xrylzlPML.push()
+        if(b.xlbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc):self.xlyrzlPML.push()
+        if(b.xrbnd==openbc and b.yrbnd==openbc and b.zlbnd==openbc):self.xryrzlPML.push()
+        if(b.xlbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc):self.xlylzrPML.push()
+        if(b.xrbnd==openbc and b.ylbnd==openbc and b.zrbnd==openbc):self.xrylzrPML.push()
+        if(b.xlbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc):self.xlyrzrPML.push()
+        if(b.xrbnd==openbc and b.yrbnd==openbc and b.zrbnd==openbc):self.xryrzrPML.push()
 
-		if self.boris_cor:
-			self.boris_correction()
-		if self.l_pxr:
-			tendcell=MPI.Wtime()
-			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+        #    if em.pml_method==2:
+        #      self.fields.spectral=0
+        #      scale_em3d_bnd_fields(self.block,top.dt,self.l_pushf)
+        #      self.fields.spectral=1
 
-    def current_cor_spectral(self):
-		if self.l_pxr:
-			tdebcell=MPI.Wtime()
-		j=1j      # imaginary number
-		emK = self.FSpace
-		em = self
-		f = self.fields
-		ixl,ixu,iyl,iyu,izl,izu = emK.get_ius()
+        if self.boris_cor:
+          self.boris_correction()
+        if self.l_pxr:
+          tendcell=MPI.Wtime()
+          pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
 
-		fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
+        def current_cor_spectral(self):
+        if self.l_pxr:
+          tdebcell=MPI.Wtime()
+        j=1j      # imaginary number
+        emK = self.FSpace
+        em = self
+        f = self.fields
+        ixl,ixu,iyl,iyu,izl,izu = emK.get_ius()
 
-		if emK.planj_rfftn is None:
-			emK.planj_rfftn= emK.create_plan_rfftn(np.asarray(fields_shape))
-		if emK.planj_irfftn is None:
-			emK.planj_irfftn= emK.create_plan_irfftn(np.asarray(fields_shape))
+        fields_shape = [ixu-ixl,iyu-iyl,izu-izl]
 
-		self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
+        if emK.planj_rfftn is None:
+          emK.planj_rfftn= emK.create_plan_rfftn(np.asarray(fields_shape))
+        if emK.planj_irfftn is None:
+          emK.planj_irfftn= emK.create_plan_irfftn(np.asarray(fields_shape))
+
+        self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
 
 
-		if emK.nx>1:JxF = emK.rfftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
-		if emK.ny>1:JyF = emK.rfftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
-		if emK.nz>1:JzF = emK.rfftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
+        if emK.nx>1:JxF = emK.rfftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
+        if emK.ny>1:JyF = emK.rfftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
+        if emK.nz>1:JzF = emK.rfftn(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
 
-		em.dRhoodtF = emK.rfftn(squeeze((f.Rho-f.Rhoold_local)[ixl:ixu,iyl:iyu,izl:izu]/top.dt),plan=emK.planj_rfftn)
+        em.dRhoodtF = emK.rfftn(squeeze((f.Rho-f.Rhoold_local)[ixl:ixu,iyl:iyu,izl:izu]/top.dt),plan=emK.planj_rfftn)
 
-		# --- get longitudinal J
-		divJ = 0.
-		if emK.nx>1:divJ += emK.kxmn*JxF
-		if emK.ny>1:divJ += emK.kymn*JyF
-		if emK.nz>1:divJ += emK.kzmn*JzF
+        # --- get longitudinal J
+        divJ = 0.
+        if emK.nx>1:divJ += emK.kxmn*JxF
+        if emK.ny>1:divJ += emK.kymn*JyF
+        if emK.nz>1:divJ += emK.kzmn*JzF
 
-		if emK.nx>1:
-			Jxl = emK.kxpn*divJ
-		if emK.ny>1:
-			Jyl = emK.kypn*divJ
-		if emK.nz>1:
-			Jzl = emK.kzpn*divJ
+        if emK.nx>1:
+          Jxl = emK.kxpn*divJ
+        if emK.ny>1:
+          Jyl = emK.kypn*divJ
+        if emK.nz>1:
+          Jzl = emK.kzpn*divJ
 
-		# --- get transverse J
-		if emK.nx>1:
-			Jxt = JxF-Jxl
-		if emK.ny>1:
-			Jyt = JyF-Jyl
-		if emK.nz>1:
-			Jzt = JzF-Jzl
+        # --- get transverse J
+        if emK.nx>1:
+          Jxt = JxF-Jxl
+        if emK.ny>1:
+          Jyt = JyF-Jyl
+        if emK.nz>1:
+          Jzt = JzF-Jzl
 
-		if emK.nx>1:
-			Jxl = j*em.dRhoodtF*emK.kxpn/emK.kmag
-		if emK.ny>1:
-			Jyl = j*em.dRhoodtF*emK.kypn/emK.kmag
-		if emK.nz>1:
-			Jzl = j*em.dRhoodtF*emK.kzpn/emK.kmag
+        if emK.nx>1:
+          Jxl = j*em.dRhoodtF*emK.kxpn/emK.kmag
+        if emK.ny>1:
+          Jyl = j*em.dRhoodtF*emK.kypn/emK.kmag
+        if emK.nz>1:
+          Jzl = j*em.dRhoodtF*emK.kzpn/emK.kmag
 
-		if emK.nx>1:
-			JxF = Jxt+Jxl
-		if emK.ny>1:
-			JyF = Jyt+Jyl
-		if emK.nz>1:
-			JzF = Jzt+Jzl
+        if emK.nx>1:
+          JxF = Jxt+Jxl
+        if emK.ny>1:
+          JyF = Jyt+Jyl
+        if emK.nz>1:
+          JzF = Jzt+Jzl
 
 
-		if emK.nx>1:
-			Jx = emK.irfftn(JxF, np.asarray(np.shape(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
-			Jx.resize(fields_shape)
-			f.Jx[ixl:ixu,iyl:iyu,izl:izu] = Jx.real
-		if emK.ny>1:
-			Jy = emK.irfftn(JyF, np.asarray(np.shape(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
-			Jy.resize(fields_shape)
-			f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
-		if emK.nz>1:
-			Jz = emK.irfftn(JzF, np.asarray(np.shape(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
-			Jz.resize(fields_shape)
-			f.Jz[ixl:ixu,iyl:iyu,izl:izu] = Jz.real
+        if emK.nx>1:
+          Jx = emK.irfftn(JxF, np.asarray(np.shape(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]))
+          Jx.resize(fields_shape)
+          f.Jx[ixl:ixu,iyl:iyu,izl:izu] = Jx.real
+        if emK.ny>1:
+          Jy = emK.irfftn(JyF, np.asarray(np.shape(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]))
+          Jy.resize(fields_shape)
+          f.Jy[ixl:ixu,iyl:iyu,izl:izu] = Jy.real
+        if emK.nz>1:
+          Jz = emK.irfftn(JzF, np.asarray(np.shape(squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))), plan=emK.planj_irfftn, field_out=squeeze(f.Jz[ixl:ixu,iyl:iyu,izl:izu]))
+          Jz.resize(fields_shape)
+          f.Jz[ixl:ixu,iyl:iyu,izl:izu] = Jz.real
 
-		if self.l_pxr:
-			tendcell=MPI.Wtime()
-			pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+        # Time statistics
+        if self.l_pxr:
+          tendcell=MPI.Wtime()
+          pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+          self.time_stat_loc_array[7] += (tend-tdeb)
+          
 
     def exchange_e(self,dir=1.):
+    """
+    Electric field boundary conditions
+    """
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -965,6 +987,9 @@ class EM3DPXR(EM3DFFT):
             self.__class__.__bases__[1].exchange_e(self.field_coarse)
 
     def exchange_b(self,dir=1.):
+    """
+    Magnetic field boundary conditions
+    """
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -987,6 +1012,13 @@ class EM3DPXR(EM3DFFT):
 
 
     def step(self,n=1,freq_print=10,lallspecl=0):
+      """
+      This function performs a range of Particle-In-Cell iterations
+      
+      Inputs:
+      - n: number of iterations
+      - freq_print: print frequency
+      """
 
       if (self.l_debug): print("Call step")
 
@@ -1020,6 +1052,9 @@ class EM3DPXR(EM3DFFT):
 
 
     def onestep(self,l_first,l_last):
+    """
+    Perform a single particle-in-cell step
+    """
 
         if (self.l_debug): print("Call onestep")
 
@@ -1211,7 +1246,13 @@ class EM3DPXR(EM3DFFT):
         callafterstepfuncs.callfuncsinlist()
 
     def load_balance_3d(self,imbalance):
+        """
+        Load balance between MPI domains in 3D
+        """
         if (l_pxr):
+        
+            tdeb = MPIWTIME()
+        
             ## --- Compute time per part and per cell
             pxr.compute_time_per_part()
             pxr.compute_time_per_cell()
@@ -1481,6 +1522,10 @@ class EM3DPXR(EM3DFFT):
                             pxr.cell_z_min,pxr.cell_z_max,
                             pxr.rank, pxr.nproc, pxr.nprocx, pxr.nprocy,pxr.nprocz,top.lcomm_cartesian)
 
+            # Time statistics
+            tend=MPI.Wtime()
+            self.time_stat_loc_array[15] += (tend-tdeb)
+                
     def load_balance_2d(self,imbalance):
         if (l_pxr):
             ## --- Compute time per part and per cell
@@ -2157,12 +2202,14 @@ class EM3DPXR(EM3DFFT):
           print '  Time statisctics'
           print ' ___________________________________________________________'
 
-          print ' Parts                              {:^7} {:^7} {:^7}'.format('min', 'ave', 'max')
+          print ' Parts                              {:^8} {:^8} {:^8}'.format('min', 'ave', 'max')
           print ' -----------------------------------------------------------'
-          print ' Particle pusher + field gathering: {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
-          print ' Particle boundary conditions:      {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1])
-          print ' Electric field solver:             {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[7],self.time_stat_ave_array[7],self.time_stat_max_array[7])
-          print ' Particle sorting:                  {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10])
+          print ' Particle pusher + field gathering: {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
+          print ' Particle boundary conditions:      {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1])
+          print ' Magnetic field solver:             {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[5],self.time_stat_ave_array[5],self.time_stat_max_array[5])
+          print ' Electric field solver:             {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[7],self.time_stat_ave_array[7],self.time_stat_max_array[7])
+          print ' Particle sorting:                  {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10])
+          print ' Load balancing:                    {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[15],self.time_stat_ave_array[15],self.time_stat_max_array[15])
           print
 
 
