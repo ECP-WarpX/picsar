@@ -1157,7 +1157,7 @@ class EM3DPXR(EM3DFFT):
         top.it+=1
 
         # Load balance every dlb_freq time step
-        if (l_debug): print("Call Load balance")
+        if (self.l_debug): print("Call Load balance")
         if (l_pxr & (self.dload_balancing & (top.it%self.dlb_freq==0))):
             pxr.mpitime_per_it=pxr.local_time_part+pxr.local_time_cell
             pxr.get_max_time_per_it()
@@ -1185,7 +1185,7 @@ class EM3DPXR(EM3DFFT):
             self.load_balance_3d('Init')
 
         # PXr custom outputs mpi-io
-        if (l_debug): print("Call PXR custom outputs mpi-io")
+        if (self.l_debug): print("Call PXR custom outputs mpi-io")
         if(l_pxr & self.l_output_grid & (top.it % self.l_output_freq ==0)):
           self.output_pxr(top.it)
 
