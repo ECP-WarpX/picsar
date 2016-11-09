@@ -550,6 +550,9 @@ class EM3DPXR(EM3DFFT):
                     ppg(pxr.partx[:pxr.partn[0]],pxr.partz[:pxr.partn[0]],kwdict=kw)
 
     def push_e(self,dir=1.):
+        
+        tdeb=MPI.Wtime()
+        
         dt = dir*top.dt/self.ntsub
         if self.novercycle==1:
             if dir>0.:
@@ -628,6 +631,9 @@ class EM3DPXR(EM3DFFT):
                 self.fields.Ey_inz*=-1.
         if self.refinement is not None:
             self.__class__.__bases__[1].push_e(self.field_coarse,dir)
+            
+        tend=MPI.Wtime()
+        self.time_stat_loc_array[7] += (tend-tdeb)
 
     def push_b_part_1(self,dir=1.):
 		dt = dir*top.dt/self.ntsub
@@ -2146,15 +2152,16 @@ class EM3DPXR(EM3DFFT):
 
         if me==0:
 
-          print ' ________________________________________________'
+          print ' ___________________________________________________________'
           print
           print '  Time statisctics'
-          print ' ________________________________________________'
+          print ' ___________________________________________________________'
 
           print ' Parts                              {:^7} {:^7} {:^7}'.format('min', 'ave', 'max')
           print ' -----------------------------------------------------------'
           print ' Particle pusher + field gathering: {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
           print ' Particle boundary conditions:      {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1])
+          print ' Electric field solver:             {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[7],self.time_stat_ave_array[7],self.time_stat_max_array[7])
           print ' Particle sorting:                  {:7.3f} {:7.3f} {:7.3f}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10])
           print
 
