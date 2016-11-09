@@ -531,9 +531,10 @@ def test_langmuir_wave():
  
     # ______________________________________________________________________________
     # RCparams
-    mpl.rcParams['font.size'] = 15
-    mpl.rcParams['legend.fontsize'] = 12
-    mpl.rcParams['figure.facecolor'] = 'white'
+    if l_matplotlib:
+      mpl.rcParams['font.size'] = 15
+      mpl.rcParams['legend.fontsize'] = 12
+      mpl.rcParams['figure.facecolor'] = 'white'
 
     t_array=array(t_array)
 
