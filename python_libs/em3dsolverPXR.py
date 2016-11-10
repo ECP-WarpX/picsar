@@ -976,7 +976,7 @@ class EM3DPXR(EM3DFFT):
         Electric field boundary conditions
         """
         
-        t0 = MPI.WTIME()
+        t0 = MPI.Wtime()
         
         if self.novercycle==1:
             if dir>0.:
@@ -997,7 +997,7 @@ class EM3DPXR(EM3DFFT):
         if self.refinement is not None:
             self.__class__.__bases__[1].exchange_e(self.field_coarse)
             
-        t1 = MPI.WTIME()
+        t1 = MPI.Wtime()
         self.time_stat_loc_array[8] += (t0-t1)
 
     def exchange_b(self,dir=1.):
@@ -1005,7 +1005,7 @@ class EM3DPXR(EM3DFFT):
         Magnetic field boundary conditions
         """
         
-        t0 = MPI.WTIME()        
+        t0 = MPI.Wtime()
         
         if self.novercycle==1:
             if dir>0.:
@@ -1027,7 +1027,7 @@ class EM3DPXR(EM3DFFT):
         if self.refinement is not None:
             self.__class__.__bases__[1].exchange_b(self.field_coarse,dir)
 
-        t1 = MPI.WTIME()
+        t1 = MPI.Wtime()
         self.time_stat_loc_array[6] += (t0-t1)
 
 
@@ -2009,7 +2009,7 @@ class EM3DPXR(EM3DFFT):
              # ___________________________________
              # Depose currents in PXR
 
-             t0 = MPI.WTIME()
+             t0 = MPI.Wtime()
 
              pxr.jx = self.fields.Jx
              pxr.jy = self.fields.Jy
@@ -2027,7 +2027,7 @@ class EM3DPXR(EM3DFFT):
                pxr.pxrdepose_currents_on_grid_jxjyjz()
 
              # Time statistics
-             t1 = MPI.WTIME()
+             t1 = MPI.Wtime()
              self.time_stat_loc_array[3] += (t1-t0)
 
              # ___________________________________
@@ -2035,7 +2035,7 @@ class EM3DPXR(EM3DFFT):
               
              if self.l_getrho : # Depose Rho in PXR
              
-               t0 = MPI.WTIME()
+               t0 = MPI.Wtime()
              
                if pxr.c_dim == 2:
 
@@ -2047,14 +2047,14 @@ class EM3DPXR(EM3DFFT):
                  pxr.pxrdepose_rho_on_grid()
 
                # Time statistics
-               t1 = MPI.WTIME()
+               t1 = MPI.Wtime()
                self.time_stat_loc_array[12] += (t1-t0)
 
              #pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
              if self.current_cor: # Depose Rhoold_local in PXR
-                 t0 = MPI.WTIME()
+                 t0 = MPI.Wtime()
                  pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rhoold_local,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,1)
-                 t1 = MPI.WTIME()
+                 t1 = MPI.Wtime()
                  self.time_stat_loc_array[12] += (t1-t0)
                
         else:
