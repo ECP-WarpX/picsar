@@ -550,6 +550,9 @@ class EM3DPXR(EM3DFFT):
                     ppg(pxr.partx[:pxr.partn[0]],pxr.partz[:pxr.partn[0]],kwdict=kw)
 
     def push_e(self,dir=1.):
+        """
+        Electric field Maxwell solver
+        """
         
         tdeb=MPI.Wtime()
         
@@ -884,6 +887,10 @@ class EM3DPXR(EM3DFFT):
           self.time_stat_loc_array[7] += (tendcell-tdebcell)
 
     def current_cor_spectral(self):
+        """
+        Current spectral correction
+        """
+    
         if self.l_pxr:
             tdebcell=MPI.Wtime()
             
@@ -901,7 +908,6 @@ class EM3DPXR(EM3DFFT):
           emK.planj_irfftn= emK.create_plan_irfftn(np.asarray(fields_shape))
 
         self.wrap_periodic_BC([f.Rho,f.Rhoold_local,f.Jx,f.Jy,f.Jz])
-
 
         if emK.nx>1:JxF = emK.rfftn(squeeze(f.Jx[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
         if emK.ny>1:JyF = emK.rfftn(squeeze(f.Jy[ixl:ixu,iyl:iyu,izl:izu]),plan=emK.planj_rfftn)
@@ -962,12 +968,16 @@ class EM3DPXR(EM3DFFT):
         if self.l_pxr:
           tendcell=MPI.Wtime()
           pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
+          self.time_stat_loc_array[16] += (tendcell-tdebcell)
           
 
     def exchange_e(self,dir=1.):
         """
         Electric field boundary conditions
         """
+        
+        t0 = MPI.WTIME()
+        
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -986,11 +996,17 @@ class EM3DPXR(EM3DFFT):
                 em3d_exchange_e(self.block)
         if self.refinement is not None:
             self.__class__.__bases__[1].exchange_e(self.field_coarse)
+            
+        t1 = MPI.WTIME()
+        self.time_stat_loc_array[8] += (t0-t1)
 
     def exchange_b(self,dir=1.):
         """
         Magnetic field boundary conditions
         """
+        
+        t0 = MPI.WTIME()        
+        
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -1010,6 +1026,9 @@ class EM3DPXR(EM3DFFT):
                 em3d_exchange_b(self.block)
         if self.refinement is not None:
             self.__class__.__bases__[1].exchange_b(self.field_coarse,dir)
+
+        t1 = MPI.WTIME()
+        self.time_stat_loc_array[6] += (t0-t1)
 
 
     def step(self,n=1,freq_print=10,lallspecl=0):
@@ -1913,8 +1932,15 @@ class EM3DPXR(EM3DFFT):
         if self.l_verbose:print me,'exit push_ions_positions'
 
     def loadsource(self,lzero=None,lfinalize_rho=None,pgroups=None,**kw):
-        '''Current and charge deposition, uses particles from top directly
-           - jslist: option list of species to load'''
+        '''
+        Current and charge deposition, uses particles from top directly.
+        
+        Inputs:
+           - lzero
+           - lfinalize_rho
+           - pgroups
+        '''
+        
         # --- Note that the grid location is advanced even if no field solve
         # --- is being done.
         self.advancezgrid()
@@ -1935,7 +1961,7 @@ class EM3DPXR(EM3DFFT):
             # --- PICSAR current deposition
             # --- js = 0
              f=self.fields
-             tdeb = MPI.Wtime()
+
              for pgroup in pgroups:
                 if w3d.js1fsapi >= 0: js1 = w3d.js1fsapi
                 else:                 js1 = 0
@@ -1979,7 +2005,11 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-            # Depose currents in PXR
+                                       
+             # ___________________________________
+             # Depose currents in PXR
+
+             t0 = MPI.WTIME()
 
              pxr.jx = self.fields.Jx
              pxr.jy = self.fields.Jy
@@ -1996,8 +2026,17 @@ class EM3DPXR(EM3DFFT):
 
                pxr.pxrdepose_currents_on_grid_jxjyjz()
 
+             # Time statistics
+             t1 = MPI.WTIME()
+             self.time_stat_loc_array[3] += (t1-t0)
+
+             # ___________________________________
               # Depose charge density in PXR if required
+              
              if self.l_getrho : # Depose Rho in PXR
+             
+               t0 = MPI.WTIME()
+             
                if pxr.c_dim == 2:
 
                  pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
@@ -2007,10 +2046,17 @@ class EM3DPXR(EM3DFFT):
                  pxr.rho = self.fields.Rho
                  pxr.pxrdepose_rho_on_grid()
 
-				         #pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
+               # Time statistics
+               t1 = MPI.WTIME()
+               self.time_stat_loc_array[12] += (t1-t0)
+
+             #pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
              if self.current_cor: # Depose Rhoold_local in PXR
+                 t0 = MPI.WTIME()
                  pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rhoold_local,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,1)
-             tend=MPI.Wtime()
+                 t1 = MPI.WTIME()
+                 self.time_stat_loc_array[12] += (t1-t0)
+               
         else:
 
             for pgroup in pgroups:
@@ -2207,9 +2253,15 @@ class EM3DPXR(EM3DFFT):
           print ' -----------------------------------------------------------'
           print ' Particle pusher + field gathering: {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
           print ' Particle boundary conditions:      {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1])
+          print ' Current deposition:                {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[2],self.time_stat_ave_array[2],self.time_stat_max_array[2])
+          print ' Current bound. cond.:              {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[3],self.time_stat_ave_array[3],self.time_stat_max_array[3])
           print ' Magnetic field solver:             {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[5],self.time_stat_ave_array[5],self.time_stat_max_array[5])
+          print ' Magnetic field bound. cond.:       {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[6],self.time_stat_ave_array[6],self.time_stat_max_array[6])
           print ' Electric field solver:             {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[7],self.time_stat_ave_array[7],self.time_stat_max_array[7])
+          print ' Electric field bound. cond.:       {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[8],self.time_stat_ave_array[8],self.time_stat_max_array[8])
           print ' Particle sorting:                  {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10])
+          print ' Charge bound. cond.:               {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[11],self.time_stat_ave_array[11],self.time_stat_max_array[11])
+          print ' Charge deposition:                 {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[12],self.time_stat_ave_array[12],self.time_stat_max_array[12])
           print ' Load balancing:                    {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[15],self.time_stat_ave_array[15],self.time_stat_max_array[15])
           print
 
