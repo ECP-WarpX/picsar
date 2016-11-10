@@ -998,7 +998,7 @@ class EM3DPXR(EM3DFFT):
             self.__class__.__bases__[1].exchange_e(self.field_coarse)
             
         t1 = MPI.Wtime()
-        self.time_stat_loc_array[8] += (t0-t1)
+        self.time_stat_loc_array[8] += (t1-t0)
 
     def exchange_b(self,dir=1.):
         """
@@ -1028,7 +1028,7 @@ class EM3DPXR(EM3DFFT):
             self.__class__.__bases__[1].exchange_b(self.field_coarse,dir)
 
         t1 = MPI.Wtime()
-        self.time_stat_loc_array[6] += (t0-t1)
+        self.time_stat_loc_array[6] += (t1-t0)
 
 
     def step(self,n=1,freq_print=10,lallspecl=0):
@@ -2028,7 +2028,7 @@ class EM3DPXR(EM3DFFT):
 
              # Time statistics
              t1 = MPI.Wtime()
-             self.time_stat_loc_array[3] += (t1-t0)
+             self.time_stat_loc_array[2] += (t1-t0)
 
              # ___________________________________
               # Depose charge density in PXR if required
@@ -2244,13 +2244,13 @@ class EM3DPXR(EM3DFFT):
 
         if me==0:
 
-          print ' ___________________________________________________________'
+          print ' _____________________________________________________________'
           print
           print '  Time statisctics'
-          print ' ___________________________________________________________'
+          print ' _____________________________________________________________'
 
           print ' Parts                              {:^8} {:^8} {:^8}'.format('min', 'ave', 'max')
-          print ' -----------------------------------------------------------'
+          print ' -------------------------------------------------------------'
           print ' Particle pusher + field gathering: {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
           print ' Particle boundary conditions:      {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1])
           print ' Current deposition:                {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[2],self.time_stat_ave_array[2],self.time_stat_max_array[2])
@@ -2260,8 +2260,8 @@ class EM3DPXR(EM3DFFT):
           print ' Electric field solver:             {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[7],self.time_stat_ave_array[7],self.time_stat_max_array[7])
           print ' Electric field bound. cond.:       {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[8],self.time_stat_ave_array[8],self.time_stat_max_array[8])
           print ' Particle sorting:                  {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10])
-          print ' Charge bound. cond.:               {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[11],self.time_stat_ave_array[11],self.time_stat_max_array[11])
           print ' Charge deposition:                 {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[12],self.time_stat_ave_array[12],self.time_stat_max_array[12])
+          print ' Charge bound. cond.:               {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[13],self.time_stat_ave_array[13],self.time_stat_max_array[13])
           print ' Load balancing:                    {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[15],self.time_stat_ave_array[15],self.time_stat_max_array[15])
           print
 
