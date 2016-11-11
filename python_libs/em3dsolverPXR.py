@@ -56,6 +56,7 @@ class EM3DPXR(EM3DFFT):
                       'mpicom_curr':1,  # Com type Current deposition
                       'fieldgathe':0,   # Field gathering method
                       'partcom':0,      # Particle communication
+                      'fg_p_pp_seperated':0
                       'lvec_curr_depo':8,
                       'lvec_charge_depo':64,
                       'lvec_fieldgathe':512,
@@ -346,6 +347,8 @@ class EM3DPXR(EM3DFFT):
         pxr.fieldgathe=self.fieldgathe
         # Particle communication
         pxr.partcom=self.partcom
+        # Field gathering and PArticle pusher seperated
+        pxr.fg_p_pp_seperated=self.fg_p_pp_seperated
         # Particle pusher type
         pxr.particle_pusher = top.pgroup.lebcancel_pusher
         # lvec size for the current deposition
@@ -365,8 +368,6 @@ class EM3DPXR(EM3DFFT):
         #Type of field gathering
         pxr.l4symtry=w3d.l4symtry
         pxr.l_lower_order_in_v = self.l_lower_order_in_v
-        pxr.fg_p_pp_separated  = 1 # use 1 or >1 for the moment,
-        # 0 needs t be fixed for Vay pusher)
 
         # --- Tiling parameters
         pxr.ntilex = self.ntilex
