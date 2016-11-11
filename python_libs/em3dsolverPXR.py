@@ -1215,13 +1215,17 @@ class EM3DPXR(EM3DFFT):
                 pxr.pxrpush_particles_part1()
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
+                self.time_stat_loc_array[0] += (tendpart-tdebpart)
         else:
+            t0=MPI.Wtime()
             for i,s in enumerate(self.listofallspecies):
                 for pg in s.flatten(s.pgroups):
                     w3d.pgroupfsapi = pg
                     self.fetcheb(0,pg)
                     if l_last:
                         self.push_velocity_first_half(0,pg)
+            t1 = MPI.Wtime()
+            self.time_stat_loc_array[0] += (t1-t0)
 
         # --- update time, time counter
         top.time+=top.dt
