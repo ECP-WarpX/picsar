@@ -56,7 +56,7 @@ class EM3DPXR(EM3DFFT):
                       'mpicom_curr':1,  # Com type Current deposition
                       'fieldgathe':0,   # Field gathering method
                       'partcom':0,      # Particle communication
-                      'fg_p_pp_seperated':0
+                      'fg_p_pp_separated':0,
                       'lvec_curr_depo':8,
                       'lvec_charge_depo':64,
                       'lvec_fieldgathe':512,
@@ -347,8 +347,8 @@ class EM3DPXR(EM3DFFT):
         pxr.fieldgathe=self.fieldgathe
         # Particle communication
         pxr.partcom=self.partcom
-        # Field gathering and PArticle pusher seperated
-        pxr.fg_p_pp_seperated=self.fg_p_pp_seperated
+        # Field gathering and PArticle pusher separated
+        pxr.fg_p_pp_separated=self.fg_p_pp_separated
         # Particle pusher type
         pxr.particle_pusher = top.pgroup.lebcancel_pusher
         # lvec size for the current deposition
