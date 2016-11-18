@@ -59,7 +59,7 @@ class EM3DPXR(EM3DFFT):
                       'fg_p_pp_separated':0,
                       'lvec_curr_depo':8,
                       'lvec_charge_depo':64,
-                      'lvec_fieldgathe':512,
+                      'lvec_fieldgathe':0,
                       'sorting':None,
                       'l_debug':0
                       }
