@@ -327,9 +327,10 @@ SUBROUTINE initall
 		DO ispecies=1,nspecies
 			curr => species_parray(ispecies)
 			write(0,*) trim(adjustl(curr%name))
+			write(0,*) 'Charge:',curr%charge
 			write(0,*) 'Drift velocity:',curr%vdrift_x,curr%vdrift_y,curr%vdrift_z
 			write(0,*) 'Sorting period:',curr%sorting_period 
-			write(0,*) 'Sorting start:',curr%sorting_start     
+			write(0,*) 'Sorting start:',curr%sorting_start
 			write(0,*) ''
 		end do
 	

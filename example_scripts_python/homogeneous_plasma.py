@@ -233,7 +233,7 @@ else:
 # set particles weights
 #-------------------------------------------------------------------------------
 weight_C   = dens0_C*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C) 
-weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C) 
+weight_H   = dens0_H*w3d.dx*w3d.dy*w3d.dz/(nppcellx_H*nppcelly_H*nppcellz_H) 
 top.wpid = nextpid() # Activate variable weights in the method addpart
 
 # --- create plasma species
@@ -288,16 +288,16 @@ if l_plasma:
     if dim=='3d':
         ymin= w3d.ymmin
         ymax= w3d.ymmax
-        np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
+        np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_H*nppcelly_H*nppcellz_H
     else:
         ymin=ymax=0.
-        np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
+        np = w3d.nx*nint((zmax-zmin)/w3d.dz)*nppcellx_H*nppcelly_H*nppcellz_H
     
-    elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
+    elec_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
                        vthx=0.2*clight,vthy=0.,vthz=0.,
                        spacing='uniform')
 
-    ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
+    ions_H.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,
                        vthx=0.,vthy=0.,vthz=0.,
                        spacing='uniform')
 
@@ -371,10 +371,19 @@ if l_pxr:
                  ntilex=ntilex,
                  ntiley=ntiley,
                  ntilez=ntilez,
+                 # Guard cells
+                 #nxguard=6,
+                 #nyguard=6,
+                 #nzguard=6,
+                 currdepo=currdepo,   
+                 mpicom_curr=mpicom_curr,
+                 fieldgathe=fieldgathe,
+                 sorting=sort,
+                 partcom=partcom,
                  l_verbose=l_verbose)
     step = em.step
 else:
-    em = EM3D(       laser_func=laser_func,
+    em = EM3D(   laser_func=laser_func,
                  laser_source_z=laser_source_z,
                  laser_polangle=laser_polangle,
                  laser_emax=Eamp,
@@ -403,45 +412,12 @@ em.finalize()
 loadrho()
 
 print 'done'
+
+# _______________________________________________
+# Install After Step:
   
 def liveplots():
-  if top.it%live_plot_freq==0:
-    fma(0);
-
-
-    if dim=="1d":
-      em.pfex(view=3,titles=0,gridscale=1.e-12,direction=1)
-      ptitles('Ex [V/m]','z [um]')
-      density=elec_C.get_density()
-      plsys(4)
-      pla(density)
-      ptitles('n','z [um]','X [um]')
-      pzxez(view=5,msize=2,titles=0,gridscale=1.e-9)
-      ptitles('Ez [V/m]','z [um]')
-      refresh()
-    else:    
-      em.pfey(view=3,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-12,l_transpose=1,direction=1)
-      ptitles('Ey [TV/m]','z [um]','X [um]')
-      density=elec_C.get_density()
-      if dim=='3d':density=density[:,w3d.ny/2,:]
-      ppg(transpose(density),view=4,titles=0, \
-          xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid, \
-          ymin=w3d.xmmin,ymax=w3d.xmmax,
-          xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
-
-      ptitles('n_elec','z [um]','X [um]')
-      em.pfez(view=5,titles=0,xscale=1e6,yscale=1.e6,gridscale=1.e-9,l_transpose=1,direction=1)
-      ptitles('Ez [GV/m]','z [um]','X [um]')
-      
-      density=ions_C.get_density()
-      if dim=='3d':density=density[:,w3d.ny/2,:]
-      ppg(transpose(density),view=6,titles=0, \
-          xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid, \
-          ymin=w3d.xmmin,ymax=w3d.xmmax,
-          xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
-      ptitles('n_ion','z [um]','X [um]')
-      
-      refresh()
+  print "liveplots"
 
 installafterstep(liveplots)
 
@@ -449,11 +425,11 @@ installafterstep(liveplots)
 # Load additional OpenPMD diagnostic
 diag_f = FieldDiagnostic( period=fielddiag_period, top=top, w3d=w3d, em=em,
                           comm_world=comm_world, lparallel_output=lparallel )
-diag_elec_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
-            species = {"elec_C" : elec_C},
+diag_elec_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
+            species = {"elec_H" : elec_H},
             comm_world=comm_world, lparallel_output=lparallel )
-diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
-            species = {"ions_C" : ions_C},
+diag_ions_H = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
+            species = {"ions_H" : ions_H},
             comm_world=comm_world, lparallel_output=lparallel )
 #installafterstep( diag_f.write )
 #installafterstep( diag_elec_C.write )
@@ -461,6 +437,7 @@ diag_ions_C = ParticleDiagnostic( period=partdiag_period, top=top, w3d=w3d,
 #installafterstep( diag_ions_C.write )
 #installafterstep( diag_ions_H.write )
 
+# Time 
 tottime = AppendableArray()
 def accuttime():
   global tottime
@@ -474,9 +451,9 @@ installafterstep(accuttime)
 
 if me==0:
     f=PW.PW('sim_params.pck')
-    f.weight_C=weight_C
+    f.weight_H=weight_H
     f.dt=top.dt
-    f.dens0_C=dens0_C
+    f.dens0_H=dens0_H
     f.close()
 
 print '\nInitialization complete\n'
@@ -488,5 +465,4 @@ if l_test:
 else:
   step(N_step,1,1)
   
-  
-#pxr.point_to_tile(1,1,1,1)
+

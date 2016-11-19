@@ -67,11 +67,11 @@
 !> 2015-2016
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 ! ________________________________________________________________________________________
-  USE fields
-  USE particles
-  USE shared_data
-  USE params
-  USE time_stat
+	USE fields
+	USE particles
+	USE shared_data
+	USE params
+	USE time_stat
 #if defined(VTUNE) && VTUNE==2
   USE ITT_FORTRAN
 #endif
@@ -79,8 +79,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   USE SDE_FORTRAN
 #endif
 
-  IMPLICIT NONE
-  REAL(num) :: tdeb, tend
+	IMPLICIT NONE
+	REAL(num) :: tdeb, tend
 
 
   ! ___________________________________________________________________________

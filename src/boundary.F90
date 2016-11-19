@@ -57,6 +57,10 @@ MODULE boundary
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, &
              nx_local, ny_local, nz_local)
 
+    USE constants
+    USE mpi
+    IMPLICIT NONE
+
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
@@ -218,6 +222,8 @@ MODULE boundary
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking(field, nxg, nyg, nzg, &
              nx_local, ny_local, nz_local)
 ! ________________________________________________________________________________________
+
+    USE mpi
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
@@ -417,6 +423,8 @@ MODULE boundary
 !!! --- Routine for adding current contributions fron adjacent subdomains nonblocking version
   SUBROUTINE summation_bcs_nonblocking(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
+    USE mpi
+
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: array
@@ -530,6 +538,7 @@ MODULE boundary
 !!! --- Routine for adding current contributions fron adjacent subdomains persistent version
   SUBROUTINE summation_bcs_persistent_jx(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
     USE communications
+    USE mpi
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
@@ -698,6 +707,7 @@ MODULE boundary
 !!! --- Routine for adding current contributions fron adjacent subdomains persistent version
   SUBROUTINE summation_bcs_persistent_jy(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
     USE communications
+    USE mpi
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
@@ -861,6 +871,7 @@ MODULE boundary
 !!! --- Routine for adding current contributions fron adjacent subdomains persistent version
   SUBROUTINE summation_bcs_persistent_jz(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
     USE communications
+    USE mpi
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
@@ -1024,6 +1035,7 @@ MODULE boundary
 
 !!! --- Boundary condition routine for electric field
   SUBROUTINE efield_bcs
+  
     REAL(num) :: tmptime
 #if defined(DEBUG)
   WRITE(0,*) "efield_bcs: start"
@@ -1377,6 +1389,7 @@ END SUBROUTINE charge_bcs
 
 !!! Boundary condition on tiles
   SUBROUTINE particle_bcs_tiles
+  
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
@@ -1989,6 +2002,9 @@ END SUBROUTINE charge_bcs
 !> MPI Boundary condition routine on particles
   SUBROUTINE particle_bcs_mpi_blocking
 ! ________________________________________________________________________________________
+
+    USE mpi
+
     INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
@@ -2213,9 +2229,21 @@ END SUBROUTINE charge_bcs
 
 ! ________________________________________________________________________________________
 !> @brief
-!> MPI Boundary condition routine on particles
+!> MPI Boundary condition routine on particles with non blocking mpi communication subroutine
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+!> Revision 11/2016
+!>
+!> Modifications:
+!> Mathieu - 11/09/2016 - add use mpi for compatibility with my version of mpi
   SUBROUTINE particle_bcs_mpi_non_blocking
 ! ________________________________________________________________________________________
+
+		USE mpi
 
 		IMPLICIT NONE
 
@@ -2235,13 +2263,13 @@ END SUBROUTINE charge_bcs
 		TYPE(particle_species), POINTER :: currsp
 		TYPE(particle_tile), POINTER :: curr
 
-    mpitag=0_isp
-    ALLOCATE(npart_send(1:nspecies,-1:1,-1:1,-1:1))
-    ALLOCATE(npart_recv(1:nspecies,-1:1,-1:1,-1:1))
-    ALLOCATE(requests(27*2))
+		mpitag=0_isp
+		ALLOCATE(npart_send(1:nspecies,-1:1,-1:1,-1:1))
+		ALLOCATE(npart_recv(1:nspecies,-1:1,-1:1,-1:1))
+		ALLOCATE(requests(27*2))
 
-    npart_recv=0
-    npart_send=0
+		npart_recv=0
+		npart_send=0
 
 	! POST IRECV PARTICLES FROM ADJACENT DOMAINS
 	! ----- POST ISEND FOR THE NUMBER OF PARTICLES
@@ -2260,10 +2288,10 @@ END SUBROUTINE charge_bcs
 	END DO
 
 
-    ! GET NUMBER OF PARTICLES AT BORDER OF CURRENT DOMAIN (INIT SEND BUFFER)
-    nbuff=0
-    DO ispecies=1, nspecies
-    	currsp => species_parray(ispecies)
+		! GET NUMBER OF PARTICLES AT BORDER OF CURRENT DOMAIN (INIT SEND BUFFER)
+		nbuff=0
+		DO ispecies=1, nspecies
+			currsp => species_parray(ispecies)
 		DO iztile=1, ntilez !LOOP ON TILES
 			DO iytile=1, ntiley
 				DO ixtile=1, ntilex
@@ -2278,151 +2306,151 @@ END SUBROUTINE charge_bcs
 	ALLOCATE(sendbuff(1:nbuff*nvar,-1:1,-1:1,-1:1))
 	! PUT PARTICLES TO BE SENT IN BUFFER
 	nptoexch=0
-    DO ispecies=1, nspecies !LOOP ON SPECIES
-        ! Init send recv buffers
-        currsp => species_parray(ispecies)
-        DO iztile=1, ntilez !LOOP ON TILES
-            DO iytile=1, ntiley
-                DO ixtile=1, ntilex
-                    curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
-                    ! If not subdomain border, nothing to do
-                    IF (.NOT. curr%subdomain_bound) CYCLE
-                    ! Else, search for outbound particles
-                    part_xyz=0.
-                    ! Identify outbounds particles
-                	npcurr=curr%np_tile(1)
-                    DO i = npcurr,1,-1 !LOOP ON PARTICLES
-                        xbd = 0
-                        ybd = 0
-                        zbd = 0
-                        remove_from_sim = .FALSE.
-                        part_xyz = curr%part_x(i)
-                        ! Particle has left this processor
-                        IF (part_xyz .LT. x_min_local) THEN
-                            xbd = -1
-                            IF (x_min_boundary) THEN
-                            	SELECT CASE (pbound_x_min)
-                            	CASE (1_idp) ! absorbing
-                            		remove_from_sim=.TRUE.
-                            	CASE (2_idp) ! Reflecting
-                            	    curr%part_x(i) = part_xyz + dx
-									                curr%part_ux(i) = - curr%part_ux(i)
-                                  xbd=0
-                            	CASE DEFAULT ! periodic
-                                	curr%part_x(i) = part_xyz + length_x
-                                END SELECT
-                            ENDIF
-                        ENDIF
-                        ! Particle has left this processor
-                        IF (part_xyz .GE. x_max_local) THEN
-                            xbd = 1
-                            IF (x_max_boundary) THEN
-                            	SELECT CASE (pbound_x_max)
-                            	CASE (1_idp) ! absorbing
-                            		remove_from_sim=.TRUE.
-                            	CASE (2_idp) ! Reflecting
-                            	    curr%part_x(i) = part_xyz - dx
-									                curr%part_ux(i) = - curr%part_ux(i)
-                                  xbd=0
-                            	CASE DEFAULT ! periodic
-                                	curr%part_x(i) = part_xyz - length_x
-                                END SELECT
-                            ENDIF
-                        ENDIF
+	DO ispecies=1, nspecies !LOOP ON SPECIES
+			! Init send recv buffers
+			currsp => species_parray(ispecies)
+			DO iztile=1, ntilez !LOOP ON TILES
+					DO iytile=1, ntiley
+							DO ixtile=1, ntilex
+									curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+									! If not subdomain border, nothing to do
+									IF (.NOT. curr%subdomain_bound) CYCLE
+										! Else, search for outbound particles
+										part_xyz=0.
+										! Identify outbounds particles
+										npcurr=curr%np_tile(1)
+										DO i = npcurr,1,-1 !LOOP ON PARTICLES
+												xbd = 0
+												ybd = 0
+												zbd = 0
+												remove_from_sim = .FALSE.
+												part_xyz = curr%part_x(i)
+												! Particle has left this processor
+												IF (part_xyz .LT. x_min_local) THEN
+														xbd = -1
+														IF (x_min_boundary) THEN
+															SELECT CASE (pbound_x_min)
+															CASE (1_idp) ! absorbing
+																remove_from_sim=.TRUE.
+															CASE (2_idp) ! Reflecting
+																	curr%part_x(i) = part_xyz + dx
+																	curr%part_ux(i) = - curr%part_ux(i)
+																	xbd=0
+															CASE DEFAULT ! periodic
+																	curr%part_x(i) = part_xyz + length_x
+																END SELECT
+														ENDIF
+												ENDIF
+												! Particle has left this processor
+												IF (part_xyz .GE. x_max_local) THEN
+														xbd = 1
+														IF (x_max_boundary) THEN
+															SELECT CASE (pbound_x_max)
+															CASE (1_idp) ! absorbing
+																remove_from_sim=.TRUE.
+															CASE (2_idp) ! Reflecting
+																	curr%part_x(i) = part_xyz - dx
+																	curr%part_ux(i) = - curr%part_ux(i)
+																	xbd=0
+															CASE DEFAULT ! periodic
+																	curr%part_x(i) = part_xyz - length_x
+																END SELECT
+														ENDIF
+												ENDIF
 
-                        part_xyz = curr%part_y(i)
-                        ! Particle has left this processor
-                        IF ((part_xyz .LT. y_min_local) .AND. (c_dim .EQ. 3)) THEN
-                            ybd = -1
-                            IF (y_min_boundary) THEN
-                            	SELECT CASE (pbound_y_min)! absorbing
-                            	CASE (1_idp)
-                            		remove_from_sim=.TRUE.
-                            	CASE (2_idp) ! Reflecting
-                            	    curr%part_y(i) = part_xyz + dy
-									                curr%part_uy(i) = - curr%part_uy(i)
-                                  ybd=0
-                            	CASE DEFAULT ! periodic
-                               		curr%part_y(i) = part_xyz + length_y
-                                END SELECT
-                            ENDIF
-                        ENDIF
+												part_xyz = curr%part_y(i)
+												! Particle has left this processor
+												IF ((part_xyz .LT. y_min_local) .AND. (c_dim .EQ. 3)) THEN
+														ybd = -1
+														IF (y_min_boundary) THEN
+															SELECT CASE (pbound_y_min)! absorbing
+															CASE (1_idp)
+																remove_from_sim=.TRUE.
+															CASE (2_idp) ! Reflecting
+																	curr%part_y(i) = part_xyz + dy
+																	curr%part_uy(i) = - curr%part_uy(i)
+																	ybd=0
+															CASE DEFAULT ! periodic
+																	curr%part_y(i) = part_xyz + length_y
+																END SELECT
+														ENDIF
+												ENDIF
 
-                        ! Particle has left this processor
-                        IF ((part_xyz .GE. y_max_local) .AND. (c_dim .EQ. 3)) THEN
-                            ybd = 1
-                            IF (y_max_boundary) THEN
-                            	SELECT CASE (pbound_y_max)
-                            	CASE (1_idp) ! absorbing
-                            		remove_from_sim=.TRUE.
-                            	CASE (2_idp) ! Reflecting
-                            	    curr%part_y(i) = part_xyz - dy
-									                curr%part_uy(i) = - curr%part_uy(i)
-                                  ybd=0
-                            	CASE DEFAULT ! periodic
-                                	curr%part_y(i) = part_xyz - length_y
-                                END SELECT
-                            ENDIF
-                        ENDIF
+												! Particle has left this processor
+												IF ((part_xyz .GE. y_max_local) .AND. (c_dim .EQ. 3)) THEN
+														ybd = 1
+														IF (y_max_boundary) THEN
+															SELECT CASE (pbound_y_max)
+															CASE (1_idp) ! absorbing
+																remove_from_sim=.TRUE.
+															CASE (2_idp) ! Reflecting
+																	curr%part_y(i) = part_xyz - dy
+																	curr%part_uy(i) = - curr%part_uy(i)
+																	ybd=0
+															CASE DEFAULT ! periodic
+																	curr%part_y(i) = part_xyz - length_y
+																END SELECT
+														ENDIF
+												ENDIF
 
-                        part_xyz = curr%part_z(i)
-                        ! Particle has left this processor
-                        IF (part_xyz .LT. z_min_local+zgrid) THEN
-                            zbd = -1
-                            IF (z_min_boundary) THEN
-								                SELECT CASE (pbound_z_min)
-								                CASE (1_idp) ! absorbing
-									                remove_from_sim=.TRUE.
-                              	CASE (2_idp) ! Reflecting
-                            	    curr%part_z(i) = part_xyz + dz
-									                curr%part_uz(i) = - curr%part_uz(i)
-                                  zbd=0
-								                CASE DEFAULT ! periodic
-									                curr%part_z(i) = part_xyz + length_z
-								                END SELECT
-                            ENDIF
-                        ENDIF
+												part_xyz = curr%part_z(i)
+												! Particle has left this processor
+												IF (part_xyz .LT. z_min_local+zgrid) THEN
+														zbd = -1
+														IF (z_min_boundary) THEN
+																SELECT CASE (pbound_z_min)
+																CASE (1_idp) ! absorbing
+																	remove_from_sim=.TRUE.
+																CASE (2_idp) ! Reflecting
+																	curr%part_z(i) = part_xyz + dz
+																	curr%part_uz(i) = - curr%part_uz(i)
+																	zbd=0
+																CASE DEFAULT ! periodic
+																	curr%part_z(i) = part_xyz + length_z
+																END SELECT
+														ENDIF
+												ENDIF
 
-                        ! Particle has left this processor
-                        IF (part_xyz .GE. z_max_local+zgrid) THEN
-                            zbd = 1
-                            ! Particle has left the system
-                            IF (z_max_boundary) THEN
-                            	SELECT CASE (pbound_z_max)
-                            	CASE (1_idp) ! absorbing
-                            		remove_from_sim=.TRUE.
-                            	CASE (2_idp) ! Reflecting
-                            	    curr%part_z(i) = part_xyz - dz
-									                curr%part_uz(i) = - curr%part_uz(i)
-                                  zbd=0
-                            	CASE DEFAULT ! periodic
-                                	curr%part_z(i) = part_xyz - length_z
-                                END SELECT
-                            ENDIF
-                        ENDIF
+												! Particle has left this processor
+												IF (part_xyz .GE. z_max_local+zgrid) THEN
+														zbd = 1
+														! Particle has left the system
+														IF (z_max_boundary) THEN
+															SELECT CASE (pbound_z_max)
+															CASE (1_idp) ! absorbing
+																remove_from_sim=.TRUE.
+															CASE (2_idp) ! Reflecting
+																	curr%part_z(i) = part_xyz - dz
+																	curr%part_uz(i) = - curr%part_uz(i)
+																	zbd=0
+															CASE DEFAULT ! periodic
+																	curr%part_z(i) = part_xyz - length_z
+																END SELECT
+														ENDIF
+												ENDIF
 
-                        IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
-                        ! Particle has left processor, send it to its neighbour
-                        	IF (.NOT. remove_from_sim) THEN
-								                    ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
-								                    sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
-								                    sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
-								                    sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
-								                    sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
-								                    sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
-								                    sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
-								                    sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
-								                    sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
-								                    npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
-								                    nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
-								                    ! Remove particle of current species from current tile
-							            ENDIF
-							            CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
-                        ENDIF
-                    ENDDO !END LOOP ON PARTICLES
-                  ENDDO
-               ENDDO
-            ENDDO ! END LOOP ON TILES
+												IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
+												! Particle has left processor, send it to its neighbour
+													IF (.NOT. remove_from_sim) THEN
+																		ibuff=nptoexch(xbd,ybd,zbd)*nvar+1
+																		sendbuff(ibuff,xbd,ybd,zbd)    = curr%part_x(i)
+																		sendbuff(ibuff+1,xbd,ybd,zbd)  = curr%part_y(i)
+																		sendbuff(ibuff+2,xbd,ybd,zbd)  = curr%part_z(i)
+																		sendbuff(ibuff+3,xbd,ybd,zbd)  = curr%part_ux(i)
+																		sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
+																		sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
+																		sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
+																		sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
+																		npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
+																		nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
+																		! Remove particle of current species from current tile
+													ENDIF
+													CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
+												ENDIF
+										ENDDO !END LOOP ON PARTICLES
+									ENDDO
+							 ENDDO
+						ENDDO ! END LOOP ON TILES
 		ENDDO ! END LOOP ON SPECIES
 
 		! ----- POST ISEND FOR THE NUMBER OF PARTICLES
@@ -2510,18 +2538,24 @@ END SUBROUTINE charge_bcs
   END SUBROUTINE particle_bcs_mpi_non_blocking
 
 ! ________________________________________________________________________________________
+!
+!> @brief
+!> MPI Boundary condition routine for particles in 2D x,z geometry
+!
 !> @author
 !> Mathieu Lobet
 !> Henri Vincenti
 !
-!> @brief
-!> MPI Boundary condition routine for particles in 2D x,z geometry
+!> @date
+!> Creation 2015
 !
 !> @warning
 !> Need to add reflecting boundary conditions to be consistent with
 !> other MPI particle exchange routines
   SUBROUTINE particle_bcs_mpi_non_blocking_2d
 ! ________________________________________________________________________________________
+
+		USE mpi
 
     INTEGER(isp), PARAMETER                  :: nvar=8 ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1)       :: nptoexch
@@ -2760,9 +2794,9 @@ END SUBROUTINE charge_bcs
 
 
 ! ______________________________________________________________________________________
+!> @brief
 !> This subroutine combined in a single routine the particle communications between tiles
 !> and between MPI domains for 3D
-!> @brief
 !
 !> @author
 !> Mathieu Lobet
@@ -2776,6 +2810,7 @@ END SUBROUTINE charge_bcs
 	USE communications
 	USE precomputed
 	USE params
+	USE mpi
 	IMPLICIT NONE
 
 	INTEGER(idp)                    :: is, ix, iy, iz
