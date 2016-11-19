@@ -47,7 +47,8 @@ tdeb=MPI_WTIME()
 
 !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim) &
+!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
+!$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,fieldgathe) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 DO iz=1, ntilez ! LOOP ON TILES
@@ -105,7 +106,7 @@ DO iz=1, ntilez ! LOOP ON TILES
 											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
 											  currg%eztile,                                          			&
 											  currg%bxtile,currg%bytile,currg%bztile                 			&
-											  ,.FALSE.,.TRUE.)										  
+											  ,.FALSE.,.TRUE.,fieldgathe)
 
 					!! --- Push velocity with E half step
 					CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
