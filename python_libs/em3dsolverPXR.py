@@ -60,6 +60,7 @@ class EM3DPXR(EM3DFFT):
                       'lvec_curr_depo':8,
                       'lvec_charge_depo':64,
                       'lvec_fieldgathe':0,
+                      'mpi_buf_size':2000,
                       'sorting':None,
                       'l_debug':0
                       }
@@ -363,9 +364,11 @@ class EM3DPXR(EM3DFFT):
             pxr.lvec_fieldgathe = 512
         else:
           pxr.lvec_fieldgathe = self.lvec_fieldgathe
+        # MPI buffer size for particle exchange
+        pxr.mpi_buf_size = self.mpi_buf_size
+        
 
-
-        #Type of field gathering
+        # Type of field gathering
         pxr.l4symtry=w3d.l4symtry
         pxr.l_lower_order_in_v = self.l_lower_order_in_v
 
