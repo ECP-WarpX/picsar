@@ -1110,6 +1110,7 @@ class EM3DPXR(EM3DFFT):
             if l_pxr:
                 # Particle pusher
                 tdebpart=MPI.Wtime()
+                if (self.l_debug): print("Call pxr.pxrpush_particles_part2()")
                 pxr.pxrpush_particles_part2()
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
@@ -1118,6 +1119,7 @@ class EM3DPXR(EM3DFFT):
                 # Particle boundary consitions
                 #pxr.particle_bcs_2d()
                 tdebpart=MPI.Wtime()
+                if (self.l_debug): print("Call pxr.particle_bcs()")
                 pxr.particle_bcs()
                 tendpart=MPI.Wtime()
                 self.time_stat_loc_array[1] += (tendpart-tdebpart)
@@ -1126,6 +1128,7 @@ class EM3DPXR(EM3DFFT):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
                 #pxr.particle_bcs_tiles()
+                if (self.l_debug): print("Call aliasparticlearrays()")
                 self.aliasparticlearrays()
             else:
                 for i,s in enumerate(self.listofallspecies):
