@@ -2930,25 +2930,26 @@ END SUBROUTINE charge_bcs
 		!$OMP SHARED(tltmpi) &
 		!$OMP PRIVATE(t0,t2,t4,tlt) &
 #endif
-    !$OMP NUM_THREADS(nthreads_loop1)
-    ! LOOP ON SPECIES
-    DO is=1, nspecies
+	!$OMP NUM_THREADS(nthreads_loop1)
+	! LOOP ON SPECIES
+	DO is=1, nspecies
 
-        curr=> species_parray(is)
-        ! Get first tiles dimensions (may be different from last tile)
-        nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
-        ny0_grid_tile = curr%array_of_tiles(1,1,1)%ny_grid_tile
-        nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
+		curr=> species_parray(is)
+		! Get first tiles dimensions (may be different from last tile)
+		nx0_grid_tile = curr%array_of_tiles(1,1,1)%nx_grid_tile
+		ny0_grid_tile = curr%array_of_tiles(1,1,1)%ny_grid_tile
+		nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
 
-        nx0_grid_tile_dx = 1._num/(nx0_grid_tile*dx)
-        ny0_grid_tile_dy = 1._num/(ny0_grid_tile*dy)
-        nz0_grid_tile_dz = 1._num/(nz0_grid_tile*dz)
+		nx0_grid_tile_dx = 1._num/(nx0_grid_tile*dx)
+		ny0_grid_tile_dy = 1._num/(ny0_grid_tile*dy)
+		nz0_grid_tile_dz = 1._num/(nz0_grid_tile*dz)
 
-        mpi_npart(:,is) = 0
-        ! LOOP ON TILES
-        DO ipz=1,3
-        	DO ipy=1,3
-        		DO ipx=1,3
+		mpi_npart(:,is) = 0
+		! LOOP ON TILES
+		DO ipz=1,3
+			DO ipy=1,3
+				DO ipx=1,3
+				
 					!$OMP PARALLEL DO DEFAULT(NONE) &
 					!$OMP SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
 					!$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile, &
@@ -2994,6 +2995,10 @@ END SUBROUTINE charge_bcs
 								tlt(3) = t4 - t0
 #endif
 
+#if defined(DEBUG) && (DEBUG==3)
+	write(0,*) " Loop on particles inside tiles"
+#endif
+
 								! Loop on particles inside tiles
 								DO i=nptile, 1, -1
 
@@ -3031,39 +3036,39 @@ END SUBROUTINE charge_bcs
 
 									! Then we determine in which domain this particle is going
 									xbd = 0
-                  ybd = 0
-                  zbd = 0
+									ybd = 0
+									zbd = 0
 
 #if defined(PART_BCS_TIMER)
 								  t0 = MPI_WTIME()
 #endif
 
-                   ! Particle has left this processor -x
-                   IF (partx .LT. x_min_local) THEN
-                     xbd = -1
-                     IF (x_min_boundary) THEN
-                       SELECT CASE (pbound_x_min)
-                         CASE (1_idp) ! absorbing
-                         CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                         CYCLE
-                         CASE DEFAULT ! periodic
-                          curr_tile%part_x(i) = partx + length_x
-                        END SELECT
-                      ENDIF
+									! Particle has left this processor -x
+									IF (partx .LT. x_min_local) THEN
+										xbd = -1
+										IF (x_min_boundary) THEN
+											SELECT CASE (pbound_x_min)
+												CASE (1_idp) ! absorbing
+												CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+												CYCLE
+												CASE DEFAULT ! periodic
+													curr_tile%part_x(i) = partx + length_x
+												END SELECT
+											ENDIF
 
-                    ! Particle has left this processor +x
-                    ELSE IF (partx .GE. x_max_local) THEN
-                      xbd = 1
-                      IF (x_max_boundary) THEN
-                        SELECT CASE (pbound_x_max)
-                          CASE (1_idp) ! absorbing
-                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                            CYCLE
-                           CASE DEFAULT ! periodic
-                          curr_tile%part_x(i) = partx - length_x
-                        END SELECT
-                      ENDIF
-                    ENDIF
+										! Particle has left this processor +x
+										ELSE IF (partx .GE. x_max_local) THEN
+											xbd = 1
+											IF (x_max_boundary) THEN
+												SELECT CASE (pbound_x_max)
+													CASE (1_idp) ! absorbing
+													CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+														CYCLE
+													 CASE DEFAULT ! periodic
+													curr_tile%part_x(i) = partx - length_x
+												END SELECT
+											ENDIF
+										ENDIF
 
                     ! Particle has left this processor -y
                     IF ((party .LT. y_min_local)) THEN
@@ -3250,6 +3255,10 @@ END SUBROUTINE charge_bcs
 	  t1 = MPI_WTIME()
 #endif
 
+#if defined(DEBUG) && (DEBUG==3)
+	write(0,*) "Part 2 - Creation of the send buffer for the MPI communications"
+#endif
+
     ! ____________________________________________________________________________________
     ! Part 2 - Creation of the send buffer for the MPI communications
     !
@@ -3328,6 +3337,10 @@ END SUBROUTINE charge_bcs
     !$OMP END PARALLEL DO
 
     DEALLOCATE(tilebuf)
+
+#if defined(DEBUG) && (DEBUG==3)
+	write(0,*) "Part 3 - MPI Communications"
+#endif
 
     ! _______________________________________
     ! Part 3 - MPI Communications
@@ -3728,6 +3741,10 @@ END SUBROUTINE charge_bcs
       ! ________________________________________________
 
       ENDIF
+
+#if defined(DEBUG) && (DEBUG==3)
+	write(0,*) " Copy of the buffers in the tile particle arrays"
+#endif
 
       ! If the buffer is not empty...
       IF (nrecv_buf_tot.gt.0) THEN
