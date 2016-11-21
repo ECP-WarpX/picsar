@@ -1212,6 +1212,7 @@ class EM3DPXR(EM3DFFT):
         # --- dosolve
         # Current deposition + Maxwell
 
+        if (self.l_debug): print("Call dosolve")
         self.dosolve()
 
         #tendcell=MPI.Wtime()
