@@ -1198,7 +1198,9 @@ class EM3DPXR(EM3DFFT):
         userinjection.callfuncsinlist()
         if (self.l_pxr):
             pxr.zgrid=self.zgrid
+        if (self.l_debug): print("Call loadrho")
         self.loadrho(pgroups=pgroups)
+        if (self.l_debug): print("Call loadj")
         self.loadj(pgroups=pgroups)
         # Moving window
 
@@ -1218,6 +1220,7 @@ class EM3DPXR(EM3DFFT):
         if l_pxr:
             if l_last:
                 tdebpart=MPI.Wtime()
+                if (self.l_debug): print("Call pxr.pxrpush_particles_part1()")
                 pxr.pxrpush_particles_part1()
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
@@ -1274,6 +1277,7 @@ class EM3DPXR(EM3DFFT):
           self.output_pxr(top.it)
 
         # --- call afterstep functions
+        if (self.l_debug): print("Call callafterstepfuncs.callfuncsinlist()")
         callafterstepfuncs.callfuncsinlist()
 
     def load_balance_3d(self,imbalance):

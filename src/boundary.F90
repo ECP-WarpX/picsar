@@ -2878,6 +2878,10 @@ END SUBROUTINE charge_bcs
 	!
 	! This part os the most time consuming for homogeneous plasmas
 
+#if defined(DEBUG) && (DEBUG==3)
+	write(0,*) "Part 1 - Determine the particle to be exchanged with other tiles or with other MPI domains"
+#endif
+
 	ALLOCATE(mpi_npart(27,nspecies))
 	ALLOCATE(tilebuf(ntilex,ntiley,ntilez,nspecies))
 
