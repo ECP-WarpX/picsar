@@ -3111,8 +3111,8 @@ END SUBROUTINE charge_bcs
                     IF (k.eq.SIZE(tilebuf(ix,iy,iz,is)%part_x,1)) THEN
                       old_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)
                       new_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)*2
-                      WRITE(0,'(" WARNING: Tile buffer array has been resized: nbpart = ",I3,&
-" new buffer size = ",I3)') k,new_mpi_buf_size
+                      WRITE(0,'(" WARNING: Tile buffer array has been resized: nbpart = ",I7,&
+" new buffer size = ",I7)') k,new_mpi_buf_size
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_x, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_y, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_z, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
