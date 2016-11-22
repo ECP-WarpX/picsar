@@ -3777,7 +3777,7 @@ END SUBROUTINE charge_bcs
 
 ! ________________________________________
 ! Checking
-#if define(DEBUG)
+#if defined(DEBUG)
 		DO iz=1, ntilez
 			DO iy=1, ntiley
 				DO ix=1, ntilex
