@@ -2994,6 +2994,10 @@ END SUBROUTINE charge_bcs
 									gaminv=curr_tile%part_gaminv(i)
 									partw=curr_tile%pid(i,wpid)
 
+#if defined(DEBUG) && (DEBUG==3)
+	write(0,*) " Case 1: if particle did not leave tile nothing to do"
+#endif
+
 									! Case 1: if particle did not leave tile nothing to do
 									IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
 									.AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
@@ -3135,6 +3139,10 @@ END SUBROUTINE charge_bcs
 									  CYCLE
 
                   ENDIF !end if particle left MPI domain
+
+#if defined(DEBUG) && (DEBUG==3)
+	write(0,*) " Case 3: particles changed tile. Tranfer particle to new tile"
+#endif
 
 									! Case 3: particles changed tile. Tranfer particle to new tile
 									! Get new indexes of particle in array of tiles
