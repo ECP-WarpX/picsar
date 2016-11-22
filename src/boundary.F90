@@ -2975,7 +2975,7 @@ END SUBROUTINE charge_bcs
 								tilebuf(ix,iy,iz,is)%npart(1:27) = 0
 
 #if defined(DEBUG) && (DEBUG==3)
-	write(0,*) " Loop on particles inside tiles",ix,iy,iz
+	write(0,'("Loop on particles inside tiles: ",I2,X,I2,X,I2)')ix,iy,iz
 #endif
 
 								! Loop on particles inside tiles
@@ -2993,10 +2993,6 @@ END SUBROUTINE charge_bcs
 									partuz=curr_tile%part_uz(i)
 									gaminv=curr_tile%part_gaminv(i)
 									partw=curr_tile%pid(i,wpid)
-
-#if defined(DEBUG) && (DEBUG==3)
-	write(0,*) " Case 1: if particle did not leave tile nothing to do"
-#endif
 
 									! Case 1: if particle did not leave tile nothing to do
 									IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
@@ -3041,58 +3037,60 @@ END SUBROUTINE charge_bcs
 											ENDIF
 										ENDIF
 
-                    ! Particle has left this processor -y
-                    IF ((party .LT. y_min_local)) THEN
-                      ybd = -1
-                       IF (y_min_boundary) THEN
-                            	SELECT CASE (pbound_y_min)! absorbing
-                            	CASE (1_idp)
-                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                          CYCLE
-                        CASE DEFAULT ! periodic
-                          curr_tile%part_y(i) = party + length_y
-                        END SELECT
-                      ENDIF
-                    ! Particle has left this processor +y
-                    ELSE IF ((party .GE. y_max_local)) THEN
-                      ybd = 1
-                      IF (y_max_boundary) THEN
-                        SELECT CASE (pbound_y_max)
-                        CASE (1_idp) ! absorbing
-                            		CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                          CYCLE
-                        CASE DEFAULT ! periodic
-                          curr_tile%part_y(i) = party - length_y
-                        END SELECT
-                      ENDIF
-                    ENDIF
+										! Particle has left this processor -y
+										IF ((party .LT. y_min_local)) THEN
+											ybd = -1
+											 IF (y_min_boundary) THEN
+															SELECT CASE (pbound_y_min)! absorbing
+															CASE (1_idp)
+													CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+													CYCLE
+												CASE DEFAULT ! periodic
+													curr_tile%part_y(i) = party + length_y
+												END SELECT
+											ENDIF
+											
+										! Particle has left this processor +y
+										ELSE IF ((party .GE. y_max_local)) THEN
+											ybd = 1
+											IF (y_max_boundary) THEN
+												SELECT CASE (pbound_y_max)
+												CASE (1_idp) ! absorbing
+																CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+													CYCLE
+												CASE DEFAULT ! periodic
+													curr_tile%part_y(i) = party - length_y
+												END SELECT
+											ENDIF
+										ENDIF
 
-                    ! Particle has left this processor -z
-                    IF (partz .LT. z_min_local+zgrid) THEN
-                      zbd = -1
-                      IF (z_min_boundary) THEN
-                        SELECT CASE (pbound_z_min)
-                          CASE (1_idp) ! absorbing
-                            CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                          CYCLE
-                          CASE DEFAULT ! periodic
-                            curr_tile%part_z(i) = partz + length_z
-                          END SELECT
-                      ENDIF
-                        ! Particle has left this processor +z
-                    ELSE IF (partz .GE. z_max_local+zgrid) THEN
-                            zbd = 1
-                            ! Particle has left the system
-                            IF (z_max_boundary) THEN
-                            	SELECT CASE (pbound_z_max)
-                            	CASE (1_idp) ! absorbing
-                            		CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                            		CYCLE
-                            	CASE DEFAULT ! periodic
-                                	curr_tile%part_z(i) = partz - length_z
-                      END SELECT
-                    ENDIF
-									ENDIF
+										! Particle has left this processor -z
+										IF (partz .LT. z_min_local+zgrid) THEN
+											zbd = -1
+											IF (z_min_boundary) THEN
+												SELECT CASE (pbound_z_min)
+													CASE (1_idp) ! absorbing
+														CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+													CYCLE
+													CASE DEFAULT ! periodic
+														curr_tile%part_z(i) = partz + length_z
+													END SELECT
+											ENDIF
+										
+										! Particle has left this processor +z
+										ELSE IF (partz .GE. z_max_local+zgrid) THEN
+											zbd = 1
+											! Particle has left the system
+											IF (z_max_boundary) THEN
+												SELECT CASE (pbound_z_max)
+												CASE (1_idp) ! absorbing
+													CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+													CYCLE
+												CASE DEFAULT ! periodic
+														curr_tile%part_z(i) = partz - length_z
+												END SELECT
+											ENDIF
+										ENDIF
 
                   ! Particle has left processor, we put it in a local buffer
                   IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
@@ -3140,9 +3138,6 @@ END SUBROUTINE charge_bcs
 
                   ENDIF !end if particle left MPI domain
 
-#if defined(DEBUG) && (DEBUG==3)
-	write(0,*) " Case 3: particles changed tile. Tranfer particle to new tile"
-#endif
 
 									! Case 3: particles changed tile. Tranfer particle to new tile
 									! Get new indexes of particle in array of tiles
