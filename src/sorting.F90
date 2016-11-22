@@ -167,10 +167,16 @@ MODULE sorting
                 szmin = curr_tile%z_tile_min + sorting_shiftz
                 
                 CALL pxr_particle_bin_sorting(count,curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,&
-                curr_tile%pid, wpid, sxmin,symin,szmin, &
-                curr_tile%x_tile_max,curr_tile%y_tile_max,curr_tile%z_tile_max, &
-                sorting_dx, sorting_dy, sorting_dz)
+								curr_tile%part_ux,
+								curr_tile%part_uy,
+								curr_tile%part_uz,
+								curr_tile%part_gaminv,&
+								curr_tile%pid, wpid,
+								sxmin,symin,szmin, &
+								curr_tile%x_tile_max + sorting_dx, &
+								curr_tile%y_tile_max + sorting_dy, &
+								curr_tile%z_tile_max + sorting_dz, &
+								sorting_dx, sorting_dy, sorting_dz)
      
               ENDIF
      
@@ -289,7 +295,7 @@ MODULE sorting
         print*, 'Particle x,y,z',xp(ip),yp(ip),zp(ip)
         print*, 'Particle x2,y2,z2',x2,y2,z2
         print*, 'xmin,ymin,zmin',xmin2,ymin2,zmin2
-        print*, 'xmin,ymin,zmin',xmax2,ymax2,zmax2
+        print*, 'xmax,ymax,zmax',xmax2,ymax2,zmax2
         print*, 'Particle dx,dy,dz',dxi,dyi,dzi  
         print*, 'Particle nx,ny,nz',nx3,ny3,nz3  
         stop        
