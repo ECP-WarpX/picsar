@@ -289,6 +289,7 @@ MODULE sorting
         print*, 'Particle x,y,z',xp(ip),yp(ip),zp(ip)
         print*, 'Particle x2,y2,z2',x2,y2,z2
         print*, 'xmin,ymin,zmin',xmin2,ymin2,zmin2
+        print*, 'xmin,ymin,zmin',xmax2,ymax2,zmax2
         print*, 'Particle dx,dy,dz',dxi,dyi,dzi  
         print*, 'Particle nx,ny,nz',nx3,ny3,nz3  
         stop        

@@ -814,6 +814,7 @@ class EM3DPXR(EM3DFFT):
       if self.refinement is not None:
         self.__class__.__bases__[1].push_b_part_2(self.field_coarse)
 
+      # Time statistics
       tend=MPI.Wtime()
       self.time_stat_loc_array[5] += (tend-tdeb)
 
