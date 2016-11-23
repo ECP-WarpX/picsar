@@ -2840,11 +2840,51 @@ END SUBROUTINE charge_bcs
 	INTEGER(idp)                                      :: recvbuf_index(27)
 	INTEGER(idp)                                      :: lvect
 
-#if defined(PART_BCS_TIMER)
-	REAL(num), DIMENSION(0:20)                        :: tl,tt,tlt,tltmpi
-	REAL(num)                                         :: t0,t1,t2,t4
-	tltmpi = 0
+
+! ________________________________________
+! Checking
+#if defined(DEBUG)
+		DO iz=1, ntilez
+			DO iy=1, ntiley
+				DO ix=1, ntilex
+		
+					curr_tile=>curr%array_of_tiles(ix,iy,iz)
+					nptile=curr_tile%np_tile(1)
+					
+					DO i=1,nptile
+						partx=curr_tile%part_x(i)
+						party=curr_tile%part_y(i)
+						partz=curr_tile%part_z(i)
+						partux=curr_tile%part_ux(i)
+						partuy=curr_tile%part_uy(i)
+						partuz=curr_tile%part_uz(i)
+						gaminv=curr_tile%part_gaminv(i)
+						partw=curr_tile%pid(i,wpid)
+
+						IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
+						    (partx .GE. curr_tile%x_tile_max) .OR.   &
+						    (party .LT. curr_tile%y_tile_min) .OR.   &
+						    (party .GE. curr_tile%y_tile_max) .OR.  &
+						    (partz .LT. curr_tile%z_tile_min+zgrid) .OR. &
+						    (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
+						    
+						    
+						    WRITE(0,'("ERROR: particle outside the domain")')
+						    WRITE(0,'("x:",E12.5,X,E12.5,X,E12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
+						    WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
+						    WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
+						    WRITE(0,*)
+						    
+						ENDIF
+						
+					ENDDO
+		
+				ENDDO
+			ENDDO
+		ENDDO
+		WRITE(0,*) " Checking after particle boundary condition ok"
 #endif
+
 	  ! _________________________________________________________
 	  ! Determine number of threads to be used for nested parallel region
 
@@ -3774,50 +3814,6 @@ END SUBROUTINE charge_bcs
 
     DEALLOCATE(mpi_npart)
     DEALLOCATE(reqs)
-
-! ________________________________________
-! Checking
-#if defined(DEBUG)
-		DO iz=1, ntilez
-			DO iy=1, ntiley
-				DO ix=1, ntilex
-		
-					curr_tile=>curr%array_of_tiles(ix,iy,iz)
-					nptile=curr_tile%np_tile(1)
-					
-					DO i=1,nptile
-						partx=curr_tile%part_x(i)
-						party=curr_tile%part_y(i)
-						partz=curr_tile%part_z(i)
-						partux=curr_tile%part_ux(i)
-						partuy=curr_tile%part_uy(i)
-						partuz=curr_tile%part_uz(i)
-						gaminv=curr_tile%part_gaminv(i)
-						partw=curr_tile%pid(i,wpid)
-
-						IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
-						    (partx .GE. curr_tile%x_tile_max) .OR.   &
-						    (party .LT. curr_tile%y_tile_min) .OR.   &
-						    (party .GE. curr_tile%y_tile_max) .OR.  &
-						    (partz .LT. curr_tile%z_tile_min+zgrid) .OR. &
-						    (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
-						    
-						    
-						    WRITE(0,'("ERROR: particle outside the domain")')
-						    WRITE(0,'("x:",E12.5,X,E12.5,X,E12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
-						    WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
-						    WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
-						    WRITE(0,*)
-						    
-						ENDIF
-						
-					ENDDO
-		
-				ENDDO
-			ENDDO
-		ENDDO
-		WRITE(0,*) " Checking after particle boundary condition ok"
-#endif
 
 	END SUBROUTINE particle_bcs_tiles_and_mpi_3d
 
