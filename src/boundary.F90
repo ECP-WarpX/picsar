@@ -3803,9 +3803,9 @@ END SUBROUTINE charge_bcs
 						    (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
 						    
 						    WRITE(0,'("ERROR: particle outside the domain")')
-						    WRITE(0,'("x:",F12.5,X,F12.5,X,F12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
-						    WRITE(0,'("y:",F12.5,X,F12.5,X,F12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
-						    WRITE(0,'("z:",F12.5,X,F12.5,X,F12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
+						    WRITE(0,'("x:",E12.5,X,E12.5,X,E12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
+						    WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
+						    WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
 						    WRITE(0,*)
 						    
 						ENDIF
