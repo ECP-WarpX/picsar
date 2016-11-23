@@ -2844,6 +2844,7 @@ END SUBROUTINE charge_bcs
 ! ________________________________________
 ! Checking
 #if defined(DEBUG)
+	WRITE(0,*) " Checking before particle boundary condition: start"
 	DO is=1, nspecies
 		curr=> species_parray(is)
 		DO iz=1, ntilez
@@ -2872,6 +2873,8 @@ END SUBROUTINE charge_bcs
 						    
 						    
 						    WRITE(0,'("ERROR: particle outside the domain")')
+						    WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
+						    WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
 						    WRITE(0,'("x:",E12.5,X,E12.5,X,E12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
 						    WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
 						    WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
@@ -2885,7 +2888,7 @@ END SUBROUTINE charge_bcs
 			ENDDO
 		ENDDO
 	ENDDO
-	WRITE(0,*) " Checking before particle boundary condition ok"
+	WRITE(0,*) " Checking before particle boundary condition: stop"
 #endif
 
 	  ! _________________________________________________________
@@ -3820,6 +3823,7 @@ END SUBROUTINE charge_bcs
 ! ________________________________________
 ! Checking
 #if defined(DEBUG)
+	WRITE(0,*) " Checking after particle boundary conditions: start"
 	DO is=1, nspecies
 		curr=> species_parray(is)
 		DO iz=1, ntilez
@@ -3848,6 +3852,8 @@ END SUBROUTINE charge_bcs
 						    
 						    
 						    WRITE(0,'("ERROR: particle outside the domain")')
+						    WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
+						    WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
 						    WRITE(0,'("x:",E12.5,X,E12.5,X,E12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
 						    WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
 						    WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
@@ -3861,7 +3867,7 @@ END SUBROUTINE charge_bcs
 			ENDDO
 		ENDDO
 	ENDDO
-	WRITE(0,*) " Checking after particle boundary condition ok"
+	WRITE(0,*) " Checking after particle boundary conditions: stop"
 #endif
 
 	END SUBROUTINE particle_bcs_tiles_and_mpi_3d
