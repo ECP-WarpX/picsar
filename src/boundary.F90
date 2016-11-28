@@ -2843,53 +2843,53 @@ END SUBROUTINE charge_bcs
 
 ! ________________________________________
 ! Checking
-#if defined(DEBUG)
-	WRITE(0,*) " Checking before particle boundary condition: start"
-	DO is=1, nspecies
-		curr=> species_parray(is)
-		DO iz=1, ntilez
-			DO iy=1, ntiley
-				DO ix=1, ntilex
-		
-					curr_tile=>curr%array_of_tiles(ix,iy,iz)
-					nptile=curr_tile%np_tile(1)
-					
-					DO i=1,nptile
-						partx=curr_tile%part_x(i)
-						party=curr_tile%part_y(i)
-						partz=curr_tile%part_z(i)
-						partux=curr_tile%part_ux(i)
-						partuy=curr_tile%part_uy(i)
-						partuz=curr_tile%part_uz(i)
-						gaminv=curr_tile%part_gaminv(i)
-						partw=curr_tile%pid(i,wpid)
-
-						IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
-						    (partx .GE. curr_tile%x_tile_max) .OR.   &
-						    (party .LT. curr_tile%y_tile_min) .OR.   &
-						    (party .GE. curr_tile%y_tile_max) .OR.  &
-						    (partz .LT. curr_tile%z_tile_min+zgrid) .OR. &
-						    (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
-						    
-						    
-						    WRITE(0,'("ERROR: particle outside the domain")')
-						    WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
-						    WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
-						    WRITE(0,'("x:",E12.5,X,E12.5,X,E12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
-						    WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
-						    WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
-						    WRITE(0,*)
-						    
-						ENDIF
-						
-					ENDDO
-		
-				ENDDO
-			ENDDO
-		ENDDO
-	ENDDO
-	WRITE(0,*) " Checking before particle boundary condition: stop"
-#endif
+! #if defined(DEBUG)
+! 	WRITE(0,*) " Checking before particle boundary condition: start"
+! 	DO is=1, nspecies
+! 		curr=> species_parray(is)
+! 		DO iz=1, ntilez
+! 			DO iy=1, ntiley
+! 				DO ix=1, ntilex
+! 		
+! 					curr_tile=>curr%array_of_tiles(ix,iy,iz)
+! 					nptile=curr_tile%np_tile(1)
+! 					
+! 					DO i=1,nptile
+! 						partx=curr_tile%part_x(i)
+! 						party=curr_tile%part_y(i)
+! 						partz=curr_tile%part_z(i)
+! 						partux=curr_tile%part_ux(i)
+! 						partuy=curr_tile%part_uy(i)
+! 						partuz=curr_tile%part_uz(i)
+! 						gaminv=curr_tile%part_gaminv(i)
+! 						partw=curr_tile%pid(i,wpid)
+! 
+! 						IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
+! 						    (partx .GE. curr_tile%x_tile_max) .OR.   &
+! 						    (party .LT. curr_tile%y_tile_min) .OR.   &
+! 						    (party .GE. curr_tile%y_tile_max) .OR.  &
+! 						    (partz .LT. curr_tile%z_tile_min+zgrid) .OR. &
+! 						    (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
+! 						    
+! 						    
+! 						    WRITE(0,'("ERROR: particle outside the domain")')
+! 						    WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
+! 						    WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
+! 						    WRITE(0,'("x:",E12.5,X,E12.5,X,E12.5)') curr_tile%x_tile_min,partx,curr_tile%x_tile_max
+! 						    WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
+! 						    WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
+! 						    WRITE(0,*)
+! 						    
+! 						ENDIF
+! 						
+! 					ENDDO
+! 		
+! 				ENDDO
+! 			ENDDO
+! 		ENDDO
+! 	ENDDO
+! 	WRITE(0,*) " Checking before particle boundary condition: stop"
+! #endif
 
 	  ! _________________________________________________________
 	  ! Determine number of threads to be used for nested parallel region
