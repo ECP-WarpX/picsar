@@ -9,11 +9,10 @@ from em3dsolverPXR import *
 import os
 from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
-#import matplotlib.pyplot as plt
-#import matplotlib.gridspec as gridspec
-#import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import matplotlib as mpl
 from numpy import linalg as LA
-home=os.getenv('HOME')
 
 def test_langmuir_wave():
   """
@@ -41,7 +40,7 @@ def test_langmuir_wave():
   # Parameters
   #-------------------------------------------------------------------------------
 
-  # 
+  # Number of iterations
   Nsteps = 30
 
   #Mesh: normalized at the plasma frequency
@@ -152,9 +151,9 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # number of plasma macro-particles/cell
   #-------------------------------------------------------------------------------
-  nppcellx_C = 5#5
-  nppcelly_C = 5#5
-  nppcellz_C = 5#5
+  nppcellx_C = 1#5
+  nppcelly_C = 1#5
+  nppcellz_C = 1#5
 
   #-------------------------------------------------------------------------------
   # Algorithm choices
@@ -238,7 +237,7 @@ def test_langmuir_wave():
   ions_C = Species(type=Proton,weight=weight_C,name='ions')
 
   # --- Init the sorting
-  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
+  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=0.5,dy=0.5,dz=0.5,xshift=-0.5,yshift=-0.5,zshift=-0.5)
 
   top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
   top.efetch[...] = top.efetch[0] # same for field gathering
@@ -321,7 +320,6 @@ def test_langmuir_wave():
       ntiley = max(1,w3d.nylocal/10)
       ntilez = max(1,w3d.nzlocal/10)
   #    pg.sw=0.
-      print ' em=EM3DPXR'
       em = EM3DPXR(laser_func=laser_func,
                    laser_source_z=laser_source_z,
                    laser_polangle=laser_polangle,
@@ -349,7 +347,9 @@ def test_langmuir_wave():
                    fieldgathe=fieldgathe,
                    sorting=sort,
                    partcom=partcom,
-                   l_verbose=l_verbose)
+                   fg_p_pp_separated=fg_p_pp_separated,
+                   l_verbose=l_verbose,
+		   l_debug = 0)
       step = em.step
   else:
       print ' em=EM3D'
@@ -531,44 +531,45 @@ def test_langmuir_wave():
  
     # ______________________________________________________________________________
     # RCparams
-    #mpl.rcParams['font.size'] = 15
-    #mpl.rcParams['legend.fontsize'] = 12
-    #mpl.rcParams['figure.facecolor'] = 'white'
+    if l_matplotlib:
+      mpl.rcParams['font.size'] = 15
+      mpl.rcParams['legend.fontsize'] = 12
+      mpl.rcParams['figure.facecolor'] = 'white'
 
     t_array=array(t_array)
 
     print ' Plasma period:',Tplasma
 
     # Plotting    
-    #if l_matplotlib:  
-    #  fig = plt.figure(figsize=(12,8))
-    #  gs = gridspec.GridSpec(2, 2)
-    #  ax = plt.subplot(gs[:, :])
+    if l_matplotlib:  
+      fig = plt.figure(figsize=(12,8))
+      gs = gridspec.GridSpec(2, 2)
+      ax = plt.subplot(gs[:, :])
 
-    #  ax.plot(t_array,ekinE_array,label='Elec. kin. energy')
-    #  ax.plot(t_array,ezE_array,label='Ez energy')
-    #  ax.plot(t_array,eyE_array,label='Ey energy')
-    #  ax.plot(t_array,exE_array,label='Ex energy')
-    #  ax.plot(t_array,bzE_array,label='Bz energy')
-    #  ax.plot(t_array,byE_array,label='By energy')
-    #  ax.plot(t_array,bxE_array,label='Bx energy')
-    #  ax.plot(t_array,etot_array,label='Total energy',color='k',ls=':')
+      ax.plot(t_array,ekinE_array,label='Elec. kin. energy')
+      ax.plot(t_array,ezE_array,label='Ez energy')
+      ax.plot(t_array,eyE_array,label='Ey energy')
+      ax.plot(t_array,exE_array,label='Ex energy')
+      ax.plot(t_array,bzE_array,label='Bz energy')
+      ax.plot(t_array,byE_array,label='By energy')
+      ax.plot(t_array,bxE_array,label='Bx energy')
+      ax.plot(t_array,etot_array,label='Total energy',color='k',ls=':')
 
-    #  ax.set_ylim([0,max(etot_array)*1.1])
+      ax.set_ylim([0,max(etot_array)*1.1])
 
-    #  ax.set_xlabel('t (s)')
-    #  ax.set_ylabel('Energy (J)')
+      ax.set_xlabel('t (s)')
+      ax.set_ylabel('Energy (J)')
 
-    #  plt.annotate('', xy=(0, ekinE_array[0]*0.5), xycoords='data',xytext=(Tplasma, ekinE_array[0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
+      plt.annotate('', xy=(0, ekinE_array[0]*0.5), xycoords='data',xytext=(Tplasma, ekinE_array[0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
 
     # Theoretical oscillations
     ekinth = zeros(len(ekinE_array))
     A = 0.5 * max(ekinE_array)
     ekinth = A + A*cos(2*pi*t_array/(Tplasma*0.5))
     
-    #if l_matplotlib:     
-    #  ax.plot(t_array,ekinth,ls='--',label='Th. Elec. kin. energy',color='b')
-    #  ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
+    if l_matplotlib:     
+      ax.plot(t_array,ekinth,ls='--',label='Th. Elec. kin. energy',color='b')
+      ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
 
     # Test oscillations
     diffth = abs(ekinE_array - ekinth)
@@ -578,15 +579,15 @@ def test_langmuir_wave():
     
     # _____________________________________________________________________
     # DivE*eps0 - rho
-#    if l_matplotlib:
-#      fig1 = plt.figure(figsize=(12,8))
-#      gs1 = gridspec.GridSpec(2, 2)
-#      ax1 = plt.subplot(gs[:, :])    
+    if l_matplotlib:
+      fig1 = plt.figure(figsize=(12,8))
+      gs1 = gridspec.GridSpec(2, 2)
+      ax1 = plt.subplot(gs[:, :])    
 
-#      ax1.plot(t_array,div_array,label=r'$\nabla E \times \varepsilon_0 - \rho$',lw=2) 
-#      ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+      ax1.plot(t_array,div_array,label=r'$\nabla E \times \varepsilon_0 - \rho$',lw=2) 
+      ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
     
-#      ax1.set_xlabel('t (s)')
+      ax1.set_xlabel('t (s)')
     
     if l_pytest: assert (max(div_array) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
     
@@ -601,7 +602,7 @@ def test_langmuir_wave():
     print ' - Check the energy oscillating behavior'
     print    
     
-#    if l_matplotlib: plt.show()
+    if l_matplotlib: plt.show()
   
 if __name__ == "__main__":
 

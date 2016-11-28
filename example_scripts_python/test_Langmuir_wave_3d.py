@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib as mpl
 from numpy import linalg as LA
-home=os.getenv('HOME')
 
 def test_langmuir_wave():
   """
@@ -41,7 +40,7 @@ def test_langmuir_wave():
   # Parameters
   #-------------------------------------------------------------------------------
 
-  # 
+  # Number of iterations
   Nsteps = 30
 
   #Mesh: normalized at the plasma frequency
@@ -134,53 +133,38 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # Carbon plasma 
   #-------------------------------------------------------------------------------
-  dens0_C           = plasma_elec_density*densc             # plasma density
-  wp_C              = sqrt(dens0_C*echarge**2/(eps0*emass)) # plasma frequency
-  kp_C              = wp_C/clight                           # plasma wavenumber
-  lambda_plasma_C   = 2.*pi/kp_C                            # plasma wavelength
-  Tplasma           = 2.*pi/wp_C                            # plasma period
+  dens0           = plasma_elec_density*densc             # plasma density
+  wp              = sqrt(dens0*echarge**2/(eps0*emass)) # plasma frequency
+  kp              = wp/clight                           # plasma wavenumber
+  lambda_plasma_C   = 2.*pi/kp                            # plasma wavelength
+  Tplasma           = 2.*pi/wp                            # plasma period
 
   #-------------------------------------------------------------------------------
   # print some plasma parameters to the screen
   #-------------------------------------------------------------------------------
   print dx,dy,dz,dt
-  print " Plasma elec. density: ",plasma_elec_density,'nc',dens0_C 
+  print " Plasma elec. density: ",plasma_elec_density,'nc',dens0 
   print " Plasma wavelength: ",lambda_plasma_C
-  print " Plasma frequency: ",wp_C
+  print " Plasma frequency: ",wp
   print ' Plasma period:',Tplasma
 
   #-------------------------------------------------------------------------------
   # number of plasma macro-particles/cell
   #-------------------------------------------------------------------------------
-  nppcellx_C = 5#5
-  nppcelly_C = 5#5
-  nppcellz_C = 5#5
+  nppcellx_C = 1#5
+  nppcelly_C = 1#5
+  nppcellz_C = 1#5
 
   #-------------------------------------------------------------------------------
   # Algorithm choices
-  #-------------------------------------------------------------------------------
-	# Optional: current deposition algorithm, 
-  # 0 - Esirkepov tiling/optimized
-  # 1 - Esirkepov tiling/non-optimized
-  # 2 - Esirkepov sequential
-  # 3 - Classical vectorized
-  # 4 - Classical tiling/non-optimized
-  # 5 - Classical sequential/non-optimized
+  #--------------------------------------------------------------------------------
+  # Optional: current deposition algorithm, 
   currdepo=3
   # Optional: mpi com for the current desposition
-  # 0 - nonblocking communication
-  # 1 - blocking communication
-  # 2 - persistent (under development)
   mpicom_curr=0
   # Field gathering method
-  # 0 - Most optimized functions (default)
-  # 1 - Optimized but E and B in separate subroutines
-  # 2 - Scalar subroutines
-  # 3 - General order subroutines
   fieldgathe=0
   # Type of particle communication
-  # 0 - optimized version
-  # 1 - MPI and OMP in separate subroutines
   partcom =0
   # Field gathering and particle pusher together
   fg_p_pp_separated=0
@@ -230,7 +214,7 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # set particles weights
   #-------------------------------------------------------------------------------
-  weight_C   = dens0_C *w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
+  weight_C   = dens0 *w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
   top.wpid = nextpid() # Activate variable weights in the method addpart
 
   # --- create plasma species
@@ -238,7 +222,7 @@ def test_langmuir_wave():
   ions_C = Species(type=Proton,weight=weight_C,name='ions')
 
   # --- Init the sorting
-  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
+  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=0.5,dy=0.5,dz=0.5,xshift=-0.5,yshift=-0.5,zshift=-0.5)
 
   top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
   top.efetch[...] = top.efetch[0] # same for field gathering
@@ -321,7 +305,6 @@ def test_langmuir_wave():
       ntiley = max(1,w3d.nylocal/10)
       ntilez = max(1,w3d.nzlocal/10)
   #    pg.sw=0.
-      print ' em=EM3DPXR'
       em = EM3DPXR(laser_func=laser_func,
                    laser_source_z=laser_source_z,
                    laser_polangle=laser_polangle,
@@ -349,7 +332,9 @@ def test_langmuir_wave():
                    fieldgathe=fieldgathe,
                    sorting=sort,
                    partcom=partcom,
-                   l_verbose=l_verbose)
+                   fg_p_pp_separated=fg_p_pp_separated,
+                   l_verbose=l_verbose,
+		   l_debug = 0)
       step = em.step
   else:
       print ' em=EM3D'
@@ -437,7 +422,7 @@ def test_langmuir_wave():
         ekinE = em.get_kinetic_energy(species)*9.10938215E-31*299792458.**2 
         ikinE = em.get_kinetic_energy(2)*9.10938215E-31*299792458.**2 
         print ' Electron kinetic energy (J)',ekinE
-        print ' Ion kinetic energy (J)',ekinE      
+        print ' Ion kinetic energy (J)',ikinE      
       
       # Electric energy
       # Using python
