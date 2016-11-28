@@ -3377,101 +3377,101 @@ END SUBROUTINE charge_bcs
     ! Thread version
     IF (.FALSE.) THEN
 
-    ALLOCATE(reqs(2))
+			ALLOCATE(reqs(2))
 
-    DO is=1, nspecies ! LOOP ON SPECIES
-      !curr=> species_parray(is)
+			DO is=1, nspecies ! LOOP ON SPECIES
+				!curr=> species_parray(is)
 
-     !$OMP PARALLEL DO DEFAULT(NONE) &
-     !$OMP SHARED(is,mpi_npart,comm,neighbour,nrecv_buf) &
-     !$OMP FIRSTPRIVATE(tag,status,stats,reqs,MPI_STATUSES_IGNORE) &
-     !$OMP PRIVATE(ix,iy,iz,k,ipx,ipy,ipz,dest,src,ib,ibs,errcode) &
-     !$OMP COLLAPSE(3) SCHEDULE(runtime) &
-     !$OMP NUM_THREADS(nthreads_loop2)
+			 !$OMP PARALLEL DO DEFAULT(NONE) &
+			 !$OMP SHARED(is,mpi_npart,comm,neighbour,nrecv_buf) &
+			 !$OMP FIRSTPRIVATE(tag,status,stats,reqs,MPI_STATUSES_IGNORE) &
+			 !$OMP PRIVATE(ix,iy,iz,k,ipx,ipy,ipz,dest,src,ib,ibs,errcode) &
+			 !$OMP COLLAPSE(3) SCHEDULE(runtime) &
+			 !$OMP NUM_THREADS(nthreads_loop2)
 
-      DO iz = -1, 1
-        DO iy = -1, 1
-          DO ix = -1, 1
-            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-               ! index of the communication direction
-               ib = 2+ix + (1+iy)*3 + (1+iz)*9
+				DO iz = -1, 1
+					DO iy = -1, 1
+						DO ix = -1, 1
+							IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+								 ! index of the communication direction
+								 ib = 2+ix + (1+iy)*3 + (1+iz)*9
 
-               ! indexes of the source/destination mpi task
-               ipx = -ix
-               ipy = -iy
-               ipz = -iz
+								 ! indexes of the source/destination mpi task
+								 ipx = -ix
+								 ipy = -iy
+								 ipz = -iz
 
-               !ibs = 2+ipx + (1+ipy)*3 + (1+ipz)*9
+								 !ibs = 2+ipx + (1+ipy)*3 + (1+ipz)*9
 
-               dest = INT(neighbour(ix,iy,iz),isp)
-               src  = INT(neighbour(ipx,ipy,ipz),isp)
+								 dest = INT(neighbour(ix,iy,iz),isp)
+								 src  = INT(neighbour(ipx,ipy,ipz),isp)
 
-               ! Number of particle
-               k = mpi_npart(ib,is)
+								 ! Number of particle
+								 k = mpi_npart(ib,is)
 
-               ! Exchange
-               CALL MPI_Irecv( nrecv_buf(ib,is), 1_isp, MPI_INTEGER, src, &
-               INT(ib,isp), comm, reqs(1), errcode)
+								 ! Exchange
+								 CALL MPI_Irecv( nrecv_buf(ib,is), 1_isp, MPI_INTEGER, src, &
+								 INT(ib,isp), comm, reqs(1), errcode)
 
-               CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib,isp), &
-               comm, reqs(2), errcode)
+								 CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib,isp), &
+								 comm, reqs(2), errcode)
 
-               CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
+								 CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
 
-               !CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, ib, nrecv_buf(ib,is), 1_isp, &
-               !     MPI_INTEGER, src, ib, comm, status, errcode)
+								 !CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, ib, nrecv_buf(ib,is), 1_isp, &
+								 !     MPI_INTEGER, src, ib, comm, status, errcode)
 
-          ENDDO
-        ENDDO
-      ENDDO
-      !$OMP END PARALLEL DO
-    ENDDO
+						ENDDO
+					ENDDO
+				ENDDO
+				!$OMP END PARALLEL DO
+			ENDDO
 
     ELSE
 
     ! _______________________________________________________
     ! Sequential version of the previous block
-!
-! Waitall is done after the loops
-    ALLOCATE(reqs(54*nspecies))
-    DO is=1, nspecies ! LOOP ON SPECIES
-      ireq = 0
-      !curr=> species_parray(is)
-      DO iz = -1, 1
-        DO iy = -1, 1
-          DO ix = -1, 1
-            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-               ! index of the communication direction
-               ib = 2+ix + (1+iy)*3 + (1+iz)*9
 
-               ! indexes of the source/destination mpi task
-               ipx = -ix
-               ipy = -iy
-               ipz = -iz
+			! Waitall is done after the loops
+			ALLOCATE(reqs(54*nspecies))
+			DO is=1, nspecies ! LOOP ON SPECIES
+				ireq = 0
+				!curr=> species_parray(is)
+				DO iz = -1, 1
+					DO iy = -1, 1
+						DO ix = -1, 1
+							IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+								 ! index of the communication direction
+								 ib = 2+ix + (1+iy)*3 + (1+iz)*9
 
-               !ibs = 2+ipx + (1+ipy)*3 + (1+ipz)*9
+								 ! indexes of the source/destination mpi task
+								 ipx = -ix
+								 ipy = -iy
+								 ipz = -iz
 
-               dest = INT(neighbour(ix,iy,iz),isp)
-               src  = INT(neighbour(ipx,ipy,ipz),isp)
+								 !ibs = 2+ipx + (1+ipy)*3 + (1+ipz)*9
 
-               ! Number of particle
-               k = mpi_npart(ib,is)
+								 dest = INT(neighbour(ix,iy,iz),isp)
+								 src  = INT(neighbour(ipx,ipy,ipz),isp)
 
-               ! Exchange
-                 ireq = ireq + 1
-                 CALL MPI_Irecv( nrecv_buf(ib,is), 1_isp, MPI_INTEGER, src, &
-                 INT(ib,isp), comm, reqs(ireq), errcode)
-                 ireq = ireq + 1
-                 CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib,isp), &
-                 comm, reqs(ireq), errcode)
+								 ! Number of particle
+								 k = mpi_npart(ib,is)
 
-               !CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, ib, nrecv_buf(ib,is), 1_isp, &
-               !     MPI_INTEGER, src, ib, comm, status, errcode)
-          ENDDO
-        ENDDO
-      ENDDO
-      CALL MPI_Waitall(ireq,reqs,MPI_STATUSES_IGNORE,errcode)
-    ENDDO
+								 ! Exchange
+									 ireq = ireq + 1
+									 CALL MPI_Irecv( nrecv_buf(ib,is), 1_isp, MPI_INTEGER, src, &
+									 INT(ib,isp), comm, reqs(ireq), errcode)
+									 ireq = ireq + 1
+									 CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib,isp), &
+									 comm, reqs(ireq), errcode)
+
+								 !CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, ib, nrecv_buf(ib,is), 1_isp, &
+								 !     MPI_INTEGER, src, ib, comm, status, errcode)
+						ENDDO
+					ENDDO
+				ENDDO
+				CALL MPI_Waitall(ireq,reqs,MPI_STATUSES_IGNORE,errcode)
+			ENDDO
 
 ! First irecv and then isend
 !    ALLOCATE(reqs(54*nspecies))
@@ -3569,68 +3569,68 @@ END SUBROUTINE charge_bcs
       ! Multithread version
       IF (.FALSE.) THEN
 
-      ! ________________________________________________
-      ! Multiple thread version
-      ! Determine the position of each received buffer in recvbuf
-      npos=1
-      DO iz = -1, 1
-        DO iy = -1, 1
-          DO ix = -1, 1
-          ib = 2+ix + (1+iy)*3 + (1+iz)*9
-          recvbuf_index(ib) = npos
-          npos = npos + nrecv_buf(ib,is)
-          ENDDO
-        ENDDO
-      ENDDO
+				! ________________________________________________
+				! Multiple thread version
+				! Determine the position of each received buffer in recvbuf
+				npos=1
+				DO iz = -1, 1
+					DO iy = -1, 1
+						DO ix = -1, 1
+						ib = 2+ix + (1+iy)*3 + (1+iz)*9
+						recvbuf_index(ib) = npos
+						npos = npos + nrecv_buf(ib,is)
+						ENDDO
+					ENDDO
+				ENDDO
 
-     !$OMP PARALLEL DO DEFAULT(NONE) &
-     !$OMP SHARED(is,mpi_npart,comm,neighbour,nrecv_buf,nrecv_buf_tot,recvbuf_index,MPI_STATUSES_IGNORE, &
-     !$OMP bufsend,mpidbl,recvbuf) &
-     !$OMP FIRSTPRIVATE(tag,status,stats,reqs) &
-     !$OMP PRIVATE(ix,iy,iz,k,j,ipx,ipy,ipz,dest,src,ib,ibs,errcode,typebuffer) &
-     !$OMP COLLAPSE(3) SCHEDULE(runtime) &
-     !$OMP NUM_THREADS(nthreads_loop2)
-      DO iz = -1, 1
-        DO iy = -1, 1
-          DO ix = -1, 1
+			 !$OMP PARALLEL DO DEFAULT(NONE) &
+			 !$OMP SHARED(is,mpi_npart,comm,neighbour,nrecv_buf,nrecv_buf_tot,recvbuf_index,MPI_STATUSES_IGNORE, &
+			 !$OMP bufsend,mpidbl,recvbuf) &
+			 !$OMP FIRSTPRIVATE(tag,status,stats,reqs) &
+			 !$OMP PRIVATE(ix,iy,iz,k,j,ipx,ipy,ipz,dest,src,ib,ibs,errcode,typebuffer) &
+			 !$OMP COLLAPSE(3) SCHEDULE(runtime) &
+			 !$OMP NUM_THREADS(nthreads_loop2)
+				DO iz = -1, 1
+					DO iy = -1, 1
+						DO ix = -1, 1
 
-            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+							IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
 
-            ib = 2+ix + (1+iy)*3 + (1+iz)*9
+							ib = 2+ix + (1+iy)*3 + (1+iz)*9
 
-            k = mpi_npart(ib,is)
-            j = nrecv_buf(ib,is)
+							k = mpi_npart(ib,is)
+							j = nrecv_buf(ib,is)
 
-            dest = INT(neighbour(ix,iy,iz),isp)
-            src  = INT(neighbour(-ix,-iy,-iz),isp)
+							dest = INT(neighbour(ix,iy,iz),isp)
+							src  = INT(neighbour(-ix,-iy,-iz),isp)
 
-            CALL MPI_TYPE_VECTOR(8_isp,INT(j,isp),INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION,typebuffer,errcode)
-            call MPI_TYPE_COMMIT(typebuffer,errcode)
+							CALL MPI_TYPE_VECTOR(8_isp,INT(j,isp),INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION,typebuffer,errcode)
+							call MPI_TYPE_COMMIT(typebuffer,errcode)
 
-           ! Exchange
-           CALL MPI_Irecv(recvbuf(recvbuf_index(ib),1),1_isp, typebuffer,src, &
-           INT(ib,isp),comm,reqs(1),errcode)
+						 ! Exchange
+						 CALL MPI_Irecv(recvbuf(recvbuf_index(ib),1),1_isp, typebuffer,src, &
+						 INT(ib,isp),comm,reqs(1),errcode)
 
-           CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
-           comm, reqs(2), errcode)
+						 CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
+						 comm, reqs(2), errcode)
 
-           CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
+						 CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
 
-            !CALL MPI_SENDRECV(bufsend(1:k,1:8,ib,is), 8_isp*k, mpidbl, dest, INT(ib,isp), &
-            !recvbuf(recvbuf_index(ib),1), 1_isp, typebuffer, src, INT(ib,isp), comm, status, errcode)
+							!CALL MPI_SENDRECV(bufsend(1:k,1:8,ib,is), 8_isp*k, mpidbl, dest, INT(ib,isp), &
+							!recvbuf(recvbuf_index(ib),1), 1_isp, typebuffer, src, INT(ib,isp), comm, status, errcode)
 
-            call MPI_TYPE_FREE(typebuffer,errcode)
+							call MPI_TYPE_FREE(typebuffer,errcode)
 
-            !npos = npos + j
-            !print*,ib,npos,j,iz,iy,ix
+							!npos = npos + j
+							!print*,ib,npos,j,iz,iy,ix
 
-          ENDDO
-        ENDDO
-      ENDDO
-      !$OMP END PARALLEL DO
-      ! ________________________________________________
+						ENDDO
+					ENDDO
+				ENDDO
+				!$OMP END PARALLEL DO
+				! ________________________________________________
 
-      ELSE
+			ELSE
 
       ! ________________________________________________
       ! Sequential version
@@ -3682,131 +3682,131 @@ END SUBROUTINE charge_bcs
 !       ENDDO
 !       CALL MPI_Waitall(ireq,reqs,MPI_STATUSES_IGNORE,errcode)
 
-! Wait all is done inside the loop
-      npos=1
-      DO iz = -1, 1
-        DO iy = -1, 1
-          DO ix = -1, 1
+				! Wait all is done inside the loop
+				npos=1
+				DO iz = -1, 1
+					DO iy = -1, 1
+						DO ix = -1, 1
 
-            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+							IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
 
-            ib = 2+ix + (1+iy)*3 + (1+iz)*9
+							ib = 2+ix + (1+iy)*3 + (1+iz)*9
 
-            k = mpi_npart(ib,is)
-            j = nrecv_buf(ib,is)
+							k = mpi_npart(ib,is)
+							j = nrecv_buf(ib,is)
 
-            dest = INT(neighbour(ix,iy,iz),isp)
-            src  = INT(neighbour(-ix,-iy,-iz),isp)
+							dest = INT(neighbour(ix,iy,iz),isp)
+							src  = INT(neighbour(-ix,-iy,-iz),isp)
 
-            CALL MPI_TYPE_VECTOR(8_isp,INT(j,isp),INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION,typebuffer,errcode)
-            call MPI_TYPE_COMMIT(typebuffer,errcode)
-            ! Exchange
-            CALL MPI_Irecv(recvbuf(npos,1),1_isp, typebuffer,src, &
-            INT(ib,isp),comm,reqs(1),errcode)
-            CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
-            comm, reqs(2), errcode)
-            CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
+							CALL MPI_TYPE_VECTOR(8_isp,INT(j,isp),INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION,typebuffer,errcode)
+							call MPI_TYPE_COMMIT(typebuffer,errcode)
+							! Exchange
+							CALL MPI_Irecv(recvbuf(npos,1),1_isp, typebuffer,src, &
+							INT(ib,isp),comm,reqs(1),errcode)
+							CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
+							comm, reqs(2), errcode)
+							CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
 
-            !CALL MPI_SENDRECV(bufsend(1:k,1:8,ib,is), 8_isp*k, mpidbl, dest, tag, &
-            !recvbuf(npos,1), 1_isp, typebuffer, src, tag, comm, status, errcode)
+							!CALL MPI_SENDRECV(bufsend(1:k,1:8,ib,is), 8_isp*k, mpidbl, dest, tag, &
+							!recvbuf(npos,1), 1_isp, typebuffer, src, tag, comm, status, errcode)
 
-            call MPI_TYPE_FREE(typebuffer,errcode)
-            npos = npos + j
-            !print*,ib,npos,j,iz,iy,ix
+							call MPI_TYPE_FREE(typebuffer,errcode)
+							npos = npos + j
+							!print*,ib,npos,j,iz,iy,ix
 
-          ENDDO
-        ENDDO
-      ENDDO
+						ENDDO
+					ENDDO
+				ENDDO
 
-      ! ________________________________________________
+			! ________________________________________________
 
-      ENDIF
+			ENDIF
 
 #if defined(DEBUG) && (DEBUG==3)
 	write(0,*) " Copy of the buffers in the tile particle arrays"
 #endif
 
-      ! If the buffer is not empty...
-      IF (nrecv_buf_tot.gt.0) THEN
+			! If the buffer is not empty...
+			IF (nrecv_buf_tot.gt.0) THEN
 
-      ! Get first tile dimensions (may be different from last tile)
-      nx0_grid_tile_dx = 1._num/(curr%array_of_tiles(1,1,1)%nx_grid_tile*dx)
-      ny0_grid_tile_dy = 1._num/(curr%array_of_tiles(1,1,1)%ny_grid_tile*dy)
-      nz0_grid_tile_dz = 1._num/(curr%array_of_tiles(1,1,1)%nz_grid_tile*dz)
+				! Get first tile dimensions (may be different from last tile)
+				nx0_grid_tile_dx = 1._num/(curr%array_of_tiles(1,1,1)%nx_grid_tile*dx)
+				ny0_grid_tile_dy = 1._num/(curr%array_of_tiles(1,1,1)%ny_grid_tile*dy)
+				nz0_grid_tile_dz = 1._num/(curr%array_of_tiles(1,1,1)%nz_grid_tile*dz)
 
-      ! Parallelization on the tiles:
-      ! Each tile will read the buffer and copy particles which belong
-      ! to it into its own particle array
+				! Parallelization on the tiles:
+				! Each tile will read the buffer and copy particles which belong
+				! to it into its own particle array
 
-      !$OMP PARALLEL DO DEFAULT(NONE) &
-      !$OMP SHARED(is,ntilez,ntiley,ntilex,nrecv_buf_tot,recvbuf,curr,dxs2,dys2,dzs2, &
-      !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz, &
-      !$OMP x_min_local,y_min_local,z_min_local,zgrid) &
-      !$OMP PRIVATE(ix,iy,iz,i,k,indx,indy,indz,curr_tile,nptile) &
-      !$OMP COLLAPSE(3) SCHEDULE(runtime)
-      DO iz=1, ntilez! LOOP ON TILES
-			DO iy=1, ntiley
-			DO ix=1, ntilex
+				!$OMP PARALLEL DO DEFAULT(NONE) &
+				!$OMP SHARED(is,ntilez,ntiley,ntilex,nrecv_buf_tot,recvbuf,curr,dxs2,dys2,dzs2, &
+				!$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz, &
+				!$OMP x_min_local,y_min_local,z_min_local,zgrid) &
+				!$OMP PRIVATE(ix,iy,iz,i,k,indx,indy,indz,curr_tile,nptile) &
+				!$OMP COLLAPSE(3) SCHEDULE(runtime)
+				DO iz=1, ntilez! LOOP ON TILES
+					DO iy=1, ntiley
+						DO ix=1, ntilex
 
-				curr_tile=>curr%array_of_tiles(ix,iy,iz)
-				!nptile=curr_tile%np_tile(1)
+						curr_tile=>curr%array_of_tiles(ix,iy,iz)
+						!nptile=curr_tile%np_tile(1)
 
-        ! If the tile is not at the boundary, no particle will be transfer
-				IF (.NOT.curr_tile%subdomain_bound) CYCLE
+						! If the tile is not at the boundary, no particle will be transfer
+						IF (.NOT.curr_tile%subdomain_bound) CYCLE
 
-        ! Add received particles to particle arrays
-        DO i = 1,nrecv_buf_tot
+						! Add received particles to particle arrays
+						DO i = 1,nrecv_buf_tot
 
-        ! Get particle index in array of tile
-		    indx = MIN(FLOOR((recvbuf(i,1)-x_min_local+dxs2)*(nx0_grid_tile_dx),idp)+1,ntilex)
-		    indy = MIN(FLOOR((recvbuf(i,2)-y_min_local+dys2)*(ny0_grid_tile_dy),idp)+1,ntiley)
-		    indz = MIN(FLOOR((recvbuf(i,3)-(z_min_local+zgrid)+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
+						! Get particle index in array of tile
+						indx = MIN(FLOOR((recvbuf(i,1)-x_min_local+dxs2)*(nx0_grid_tile_dx),idp)+1,ntilex)
+						indy = MIN(FLOOR((recvbuf(i,2)-y_min_local+dys2)*(ny0_grid_tile_dy),idp)+1,ntiley)
+						indz = MIN(FLOOR((recvbuf(i,3)-(z_min_local+zgrid)+dzs2)*(nz0_grid_tile_dz),idp)+1,ntilez)
 
-! 				IF (((recvbuf(i,1) .LT. x_min_local) .OR. (recvbuf(i,1) .GE. x_max_local)) .OR. &
-! 					 ((recvbuf(i,2) .LT. y_min_local) .OR. (recvbuf(i,2) .GE. y_max_local)) .OR. &
-! 					((recvbuf(i,3) .LT. z_min_local) .OR. (recvbuf(i,3) .GE. z_max_local))) THEN
-!
-! 					print*,i,nrecv_buf_tot,indx,indy,indz, recvbuf(i,1),recvbuf(i,2),recvbuf(i,3),recvbuf(i,4)
-!
-! 				ENDIF
+		! 				IF (((recvbuf(i,1) .LT. x_min_local) .OR. (recvbuf(i,1) .GE. x_max_local)) .OR. &
+		! 					 ((recvbuf(i,2) .LT. y_min_local) .OR. (recvbuf(i,2) .GE. y_max_local)) .OR. &
+		! 					((recvbuf(i,3) .LT. z_min_local) .OR. (recvbuf(i,3) .GE. z_max_local))) THEN
+		!
+		! 					print*,i,nrecv_buf_tot,indx,indy,indz, recvbuf(i,1),recvbuf(i,2),recvbuf(i,3),recvbuf(i,4)
+		!
+		! 				ENDIF
 
-		    ! If the particle is in the current tile
-		    IF ((indx.eq.ix).AND.(indy.eq.iy).AND.(indz.eq.iz)) THEN
+						! If the particle is in the current tile
+						IF ((indx.eq.ix).AND.(indy.eq.iy).AND.(indz.eq.iz)) THEN
 
-          ! Sanity check for max number of particles in tile
-          nptile = curr_tile%np_tile(1)+1 ! Current number of particles in the tile
-          k  = curr_tile%npmax_tile  ! Max number of particles in the tile
-          IF (nptile .GT. k) THEN
-          ! Resize particle tile arrays if tile is full
-        	curr%are_tiles_reallocated(ix,iy,iz)=1
-            CALL resize_particle_arrays(curr_tile, k, NINT(resize_factor*k+1,idp))
-          ENDIF
+							! Sanity check for max number of particles in tile
+							nptile = curr_tile%np_tile(1)+1 ! Current number of particles in the tile
+							k  = curr_tile%npmax_tile  ! Max number of particles in the tile
+							IF (nptile .GT. k) THEN
+							! Resize particle tile arrays if tile is full
+							curr%are_tiles_reallocated(ix,iy,iz)=1
+								CALL resize_particle_arrays(curr_tile, k, NINT(resize_factor*k+1,idp))
+							ENDIF
 
-          ! Finally, add particle to tile
-          curr_tile%np_tile(1)=nptile
-          curr_tile%part_x(nptile)  = recvbuf(i,1)
-          curr_tile%part_y(nptile)  = recvbuf(i,2)
-          curr_tile%part_z(nptile)  = recvbuf(i,3)
-          curr_tile%part_ux(nptile) = recvbuf(i,4)
-          curr_tile%part_uy(nptile) = recvbuf(i,5)
-          curr_tile%part_uz(nptile) = recvbuf(i,6)
-          curr_tile%part_gaminv(nptile) = recvbuf(i,7)
-          curr_tile%pid(nptile,wpid) = recvbuf(i,8)
-          curr_tile%part_ex(nptile)  = 0._num
-          curr_tile%part_ey(nptile)  = 0._num
-          curr_tile%part_ez(nptile)  = 0._num
-          curr_tile%part_bx(nptile)  = 0._num
-          curr_tile%part_by(nptile)  = 0._num
-          curr_tile%part_bz(nptile)  = 0._num
+							! Finally, add particle to tile
+							curr_tile%np_tile(1)=nptile
+							curr_tile%part_x(nptile)  = recvbuf(i,1)
+							curr_tile%part_y(nptile)  = recvbuf(i,2)
+							curr_tile%part_z(nptile)  = recvbuf(i,3)
+							curr_tile%part_ux(nptile) = recvbuf(i,4)
+							curr_tile%part_uy(nptile) = recvbuf(i,5)
+							curr_tile%part_uz(nptile) = recvbuf(i,6)
+							curr_tile%part_gaminv(nptile) = recvbuf(i,7)
+							curr_tile%pid(nptile,wpid) = recvbuf(i,8)
+							curr_tile%part_ex(nptile)  = 0._num
+							curr_tile%part_ey(nptile)  = 0._num
+							curr_tile%part_ez(nptile)  = 0._num
+							curr_tile%part_bx(nptile)  = 0._num
+							curr_tile%part_by(nptile)  = 0._num
+							curr_tile%part_bz(nptile)  = 0._num
 
-		    ENDIF
+						ENDIF
 
-		    ENDDO
+						ENDDO
 
-		  ENDDO
-		  ENDDO
-		  ENDDO
-		  !!$OMP END PARALLEL DO
+						ENDDO
+					ENDDO
+				ENDDO
+				!!$OMP END PARALLEL DO
 
 		  ! Update total number of particle species
       curr%species_npart=curr%species_npart+nrecv_buf_tot
