@@ -2808,7 +2808,6 @@ END SUBROUTINE charge_bcs
 ! ______________________________________________________________________________________
 	USE omp_lib
 	USE communications
-	USE precomputed
 	USE params
 	USE mpi
 	IMPLICIT NONE
@@ -2839,7 +2838,7 @@ END SUBROUTINE charge_bcs
 	INTEGER(isp)                                      :: stats(2)
 	INTEGER(idp)                                      :: recvbuf_index(27)
 	INTEGER(idp)                                      :: lvect
-
+	REAL(num)                                         :: dxs2,dys2,dzs2
 
 ! ________________________________________
 ! Checking
@@ -2912,6 +2911,10 @@ END SUBROUTINE charge_bcs
 
 	lvect = 64
 
+	dxs2 = dx*0.5_num
+	dys2 = dy*0.5_num
+	dzs2 = dz*0.5_num
+	
 	! ___________________________________________________________
 	! Part 1 - Determine the particle to be exchanged with other tiles or with other MPI domains
 	!
@@ -3777,8 +3780,8 @@ END SUBROUTINE charge_bcs
 							nptile = curr_tile%np_tile(1)+1 ! Current number of particles in the tile
 							k  = curr_tile%npmax_tile  ! Max number of particles in the tile
 							IF (nptile .GT. k) THEN
-							! Resize particle tile arrays if tile is full
-							curr%are_tiles_reallocated(ix,iy,iz)=1
+								! Resize particle tile arrays if tile is full
+								curr%are_tiles_reallocated(ix,iy,iz)=1
 								CALL resize_particle_arrays(curr_tile, k, NINT(resize_factor*k+1,idp))
 							ENDIF
 
