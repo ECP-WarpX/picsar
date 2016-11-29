@@ -2577,7 +2577,7 @@ END SUBROUTINE charge_bcs
 	END DO
 
 
-	ALLOCATE(sendbuff(1:nbuff,-1:1,-1:1))
+	ALLOCATE(sendbuff(1:nbuff*nvar,-1:1,-1:1))
 	! PUT PARTICLES TO BE SENT IN BUFFER
 	nptoexch=0
     DO ispecies=1, nspecies !LOOP ON SPECIES
@@ -3117,7 +3117,7 @@ END SUBROUTINE charge_bcs
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_gaminv, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%pid, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
                     ENDIF
-                    
+
                     ! Update of the number of particles
                     tilebuf(ix,iy,iz,is)%npart(ib) = k
 
