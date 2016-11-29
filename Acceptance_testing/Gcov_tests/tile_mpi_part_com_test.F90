@@ -111,7 +111,7 @@ PROGRAM tile_mpi_part_com_test
 	curr => species_parray(1)
 	curr%charge = -echarge
 	curr%mass = emass
-	curr%nppcell = 20
+	curr%nppcell = 10
 	curr%x_min = xmin
 	curr%x_max = xmax
 	curr%y_min = ymin
@@ -132,7 +132,7 @@ PROGRAM tile_mpi_part_com_test
 	curr => species_parray(2)
 	curr%charge = echarge
 	curr%mass = emass
-	curr%nppcell = 20
+	curr%nppcell = 10
 	curr%x_min = xmin
 	curr%x_max = xmax
 	curr%y_min = ymin
