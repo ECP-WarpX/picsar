@@ -1049,6 +1049,7 @@ class EM3DPXR(EM3DFFT):
 
       stdout_stat=10
       tdeb=MPI.Wtime()
+      
       for i in range(n):
           if(me==0):
               if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
@@ -1071,6 +1072,10 @@ class EM3DPXR(EM3DFFT):
               mpi_time_per_stat=(tend-tdeb)
               tdeb=MPI.Wtime()
               print("time/stdout_stat (s)",mpi_time_per_stat)
+
+      # Total time spend in the kernel
+      tend = MPI.Wtime()
+      self.total_kernel_time = (tend-tdeb)
 
       if (self.l_debug): print("End step")
 
@@ -2244,7 +2249,7 @@ class EM3DPXR(EM3DFFT):
         """
         pxr.time_statistics()
 
-    def display_time_statistics(self):
+    def display_time_statistics(self,):
         """
         Display the time statistics
         """
@@ -2266,20 +2271,20 @@ class EM3DPXR(EM3DFFT):
           print '  Time statisctics'
           print ' _____________________________________________________________'
 
-          print ' Parts                              {:^8} {:^8} {:^8}'.format('min', 'ave', 'max')
+          print ' Parts                              {:^8} {:^8} {:^8} {:^8}'.format('min', 'ave', 'max', '%')
           print ' -------------------------------------------------------------'
-          print ' Particle pusher + field gathering: {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0])
-          print ' Particle boundary conditions:      {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1])
-          print ' Current deposition:                {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[2],self.time_stat_ave_array[2],self.time_stat_max_array[2])
-          print ' Current bound. cond.:              {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[3],self.time_stat_ave_array[3],self.time_stat_max_array[3])
-          print ' Magnetic field solver:             {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[5],self.time_stat_ave_array[5],self.time_stat_max_array[5])
-          print ' Magnetic field bound. cond.:       {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[6],self.time_stat_ave_array[6],self.time_stat_max_array[6])
-          print ' Electric field solver:             {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[7],self.time_stat_ave_array[7],self.time_stat_max_array[7])
-          print ' Electric field bound. cond.:       {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[8],self.time_stat_ave_array[8],self.time_stat_max_array[8])
-          print ' Particle sorting:                  {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10])
-          print ' Charge deposition:                 {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[12],self.time_stat_ave_array[12],self.time_stat_max_array[12])
-          print ' Charge bound. cond.:               {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[13],self.time_stat_ave_array[13],self.time_stat_max_array[13])
-          print ' Load balancing:                    {:8.3f} {:8.3f} {:8.3f}'.format(self.time_stat_min_array[15],self.time_stat_ave_array[15],self.time_stat_max_array[15])
+          print ' Particle pusher + field gathering: {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0],self.time_stat_max_array[0]/self.total_kernel_time*100)
+          print ' Particle boundary conditions:      {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1],self.time_stat_max_array[1]/self.total_kernel_time*100)
+          print ' Current deposition:                {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[2],self.time_stat_ave_array[2],self.time_stat_max_array[2],self.time_stat_max_array[2]/self.total_kernel_time*100)
+          print ' Current bound. cond.:              {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[3],self.time_stat_ave_array[3],self.time_stat_max_array[3],self.time_stat_max_array[3]/self.total_kernel_time*100)
+          print ' Magnetic field solver:             {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[5],self.time_stat_ave_array[5],self.time_stat_max_array[5],self.time_stat_max_array[5]/self.total_kernel_time*100)
+          print ' Magnetic field bound. cond.:       {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[6],self.time_stat_ave_array[6],self.time_stat_max_array[6],self.time_stat_max_array[6]/self.total_kernel_time*100)
+          print ' Electric field solver:             {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[7],self.time_stat_ave_array[7],self.time_stat_max_array[7],self.time_stat_max_array[7]/self.total_kernel_time*100)
+          print ' Electric field bound. cond.:       {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[8],self.time_stat_ave_array[8],self.time_stat_max_array[8],self.time_stat_max_array[8]/self.total_kernel_time*100)
+          print ' Particle sorting:                  {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[10],self.time_stat_ave_array[10],self.time_stat_max_array[10],self.time_stat_max_array[10]/self.total_kernel_time*100)
+          print ' Charge deposition:                 {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[12],self.time_stat_ave_array[12],self.time_stat_max_array[12],self.time_stat_max_array[12]/self.total_kernel_time*100)
+          print ' Charge bound. cond.:               {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[13],self.time_stat_ave_array[13],self.time_stat_max_array[13],self.time_stat_max_array[13]/self.total_kernel_time*100)
+          print ' Load balancing:                    {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[15],self.time_stat_ave_array[15],self.time_stat_max_array[15],self.time_stat_max_array[15]/self.total_kernel_time*100)
           print
 
 
