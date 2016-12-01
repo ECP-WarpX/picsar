@@ -367,17 +367,17 @@ SUBROUTINE initall
 	!!! --- Set tile split for particles
 	CALL set_tile_split
 
-	IF (rank .EQ. 0) write(0,*), "Set tile split: done"
+	IF (rank .EQ. 0) write(0,*) "Set tile split: done"
 
 	! - Allocate particle arrays for each tile of each species
 	CALL init_tile_arrays
 
-	IF (rank .EQ. 0) write(0,*), "Initialization of the tile arrays: done"
+	IF (rank .EQ. 0) write(0,*) "Initialization of the tile arrays: done"
 
 	! - Load particle distribution on each tile
 	CALL load_particles
 
-	IF (rank .EQ. 0) write(0,*), "Creation of the particles: done"
+	IF (rank .EQ. 0) write(0,*) "Creation of the particles: done"
 
 	init_localtimes(1) = MPI_WTIME() - tdeb
 

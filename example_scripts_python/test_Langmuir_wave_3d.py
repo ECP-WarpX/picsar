@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib as mpl
 from numpy import linalg as LA
-home=os.getenv('HOME')
 
 def test_langmuir_wave():
   """
@@ -41,7 +40,7 @@ def test_langmuir_wave():
   # Parameters
   #-------------------------------------------------------------------------------
 
-  # 
+  # Number of iterations
   Nsteps = 30
 
   #Mesh: normalized at the plasma frequency
@@ -134,53 +133,39 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # Carbon plasma 
   #-------------------------------------------------------------------------------
-  dens0_C           = plasma_elec_density*densc             # plasma density
-  wp_C              = sqrt(dens0_C*echarge**2/(eps0*emass)) # plasma frequency
-  kp_C              = wp_C/clight                           # plasma wavenumber
-  lambda_plasma_C   = 2.*pi/kp_C                            # plasma wavelength
-  Tplasma           = 2.*pi/wp_C                            # plasma period
+  dens0           = plasma_elec_density*densc             # plasma density
+  wp              = sqrt(dens0*echarge**2/(eps0*emass)) # plasma frequency
+  kp              = wp/clight                           # plasma wavenumber
+  lambda_plasma   = 2.*pi/kp                            # plasma wavelength
+  Tplasma           = 2.*pi/wp                            # plasma period
 
   #-------------------------------------------------------------------------------
   # print some plasma parameters to the screen
   #-------------------------------------------------------------------------------
   print dx,dy,dz,dt
-  print " Plasma elec. density: ",plasma_elec_density,'nc',dens0_C 
-  print " Plasma wavelength: ",lambda_plasma_C
-  print " Plasma frequency: ",wp_C
+  print " Plasma elec. density: ",plasma_elec_density,'nc',dens0 
+  print " Plasma wavelength: ",lambda_plasma
+  print " Plasma frequency: ",wp
   print ' Plasma period:',Tplasma
 
   #-------------------------------------------------------------------------------
   # number of plasma macro-particles/cell
   #-------------------------------------------------------------------------------
-  nppcellx_C = 5#5
-  nppcelly_C = 5#5
-  nppcellz_C = 5#5
+  nppcellx = 1#5
+  nppcelly = 1#5
+  nppcellz = 1#5
 
   #-------------------------------------------------------------------------------
   # Algorithm choices
-  #-------------------------------------------------------------------------------
-	# Optional: current deposition algorithm, 
-  # 0 - Esirkepov tiling/optimized
-  # 1 - Esirkepov tiling/non-optimized
-  # 2 - Esirkepov sequential
-  # 3 - Classical vectorized
-  # 4 - Classical tiling/non-optimized
-  # 5 - Classical sequential/non-optimized
+  # See Doxygen doc for more information
+  #--------------------------------------------------------------------------------
+  # Optional: current deposition algorithm, 
   currdepo=3
   # Optional: mpi com for the current desposition
-  # 0 - nonblocking communication
-  # 1 - blocking communication
-  # 2 - persistent (under development)
   mpicom_curr=0
   # Field gathering method
-  # 0 - Most optimized functions (default)
-  # 1 - Optimized but E and B in separate subroutines
-  # 2 - Scalar subroutines
-  # 3 - General order subroutines
   fieldgathe=0
   # Type of particle communication
-  # 0 - optimized version
-  # 1 - MPI and OMP in separate subroutines
   partcom =0
   # Field gathering and particle pusher together
   fg_p_pp_separated=0
@@ -188,16 +173,16 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # grid dimensions, nb cells and BC
   #-------------------------------------------------------------------------------
-  w3d.zmmax = 4*lambda_plasma_C
+  w3d.zmmax = 4*lambda_plasma
   w3d.zmmin = 0.
-  w3d.xmmin = -0.5*lambda_plasma_C
+  w3d.xmmin = -0.5*lambda_plasma
   w3d.xmmax = -w3d.xmmin
-  w3d.ymmin = -0.5*lambda_plasma_C
+  w3d.ymmin = -0.5*lambda_plasma
   w3d.ymmax = -w3d.ymmin
 
-  w3d.nx = nint((w3d.xmmax-w3d.xmmin)/(dx*lambda_plasma_C))
-  w3d.ny = nint((w3d.ymmax-w3d.ymmin)/(dy*lambda_plasma_C))
-  w3d.nz = nint((w3d.zmmax-w3d.zmmin)/(dz*lambda_plasma_C))
+  w3d.nx = nint((w3d.xmmax-w3d.xmmin)/(dx*lambda_plasma))
+  w3d.ny = nint((w3d.ymmax-w3d.ymmin)/(dy*lambda_plasma))
+  w3d.nz = nint((w3d.zmmax-w3d.zmmin)/(dz*lambda_plasma))
 
   w3d.dx = (w3d.xmmax-w3d.xmmin)/w3d.nx
   w3d.dy = (w3d.ymmax-w3d.ymmin)/w3d.ny
@@ -230,15 +215,15 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # set particles weights
   #-------------------------------------------------------------------------------
-  weight_C   = dens0_C *w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
+  weight_C   = dens0 *w3d.dx*w3d.dy*w3d.dz/(nppcellx*nppcelly*nppcellz)
   top.wpid = nextpid() # Activate variable weights in the method addpart
 
   # --- create plasma species
-  elec_C = Species(type=Electron,weight=weight_C,name='elec')
-  ions_C = Species(type=Proton,weight=weight_C,name='ions')
+  electron = Species(type=Electron,weight=weight_C,name='elec')
+  ion = Species(type=Proton,weight=weight_C,name='ions')
 
   # --- Init the sorting
-  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=1.,dy=1.,dz=1.,xshift=0.,yshift=0.,zshift=0.)
+  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=0.5,dy=0.5,dz=0.5,xshift=-0.5,yshift=-0.5,zshift=-0.5)
 
   top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
   top.efetch[...] = top.efetch[0] # same for field gathering
@@ -276,17 +261,18 @@ def test_langmuir_wave():
       ymin = w3d.ymmin
       ymax = w3d.ymmax
       
-      np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
+      np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx*nppcelly*nppcellz
       
-      elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vzmean=0.01*clight,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      electron.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vzmean=0.01*clight,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
-      ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      ion.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
-
-  laser_total_duration=1.25*laser_duration
   #-------------------------------------------------------------------------------
   # set laser pulse shape
   #-------------------------------------------------------------------------------
+
+  laser_total_duration=1.25*laser_duration
+
   def laser_amplitude(time):
    global laser_total_duration,Eamp
    #fx=Exp[-((x-t)*2/xblen)]^12
@@ -321,7 +307,6 @@ def test_langmuir_wave():
       ntiley = max(1,w3d.nylocal/10)
       ntilez = max(1,w3d.nzlocal/10)
   #    pg.sw=0.
-      print ' em=EM3DPXR'
       em = EM3DPXR(laser_func=laser_func,
                    laser_source_z=laser_source_z,
                    laser_polangle=laser_polangle,
@@ -349,7 +334,9 @@ def test_langmuir_wave():
                    fieldgathe=fieldgathe,
                    sorting=sort,
                    partcom=partcom,
-                   l_verbose=l_verbose)
+                   fg_p_pp_separated=fg_p_pp_separated,
+                   l_verbose=l_verbose,
+		   l_debug = 0)
       step = em.step
   else:
       print ' em=EM3D'
@@ -406,14 +393,14 @@ def test_langmuir_wave():
   def liveplots():
     if top.it%live_plot_freq==0:
       fma(0); 
-      em.pfez(view=3,titles=0,xscale=1./lambda_plasma_C,yscale=1./lambda_plasma_C,gridscale=1.e-12,l_transpose=1,direction=1)
+      em.pfez(view=3,titles=0,xscale=1./lambda_plasma,yscale=1./lambda_plasma,gridscale=1.e-12,l_transpose=1,direction=1)
       ptitles('Ez [TV/m]','Z [lambda]','X [lambda]')
       
-      density=elec_C.get_density()
+      density=electron.get_density()
       density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=4,titles=0,xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid,ymin=w3d.xmmin,ymax=w3d.xmmax,xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
 
-      density=ions_C.get_density()
+      density=ion.get_density()
       density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=5,titles=0,xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid,ymin=w3d.xmmin,ymax=w3d.xmmax,xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
    
@@ -428,8 +415,8 @@ def test_langmuir_wave():
         for i in range(em.ntilez):
           for j in range(em.ntiley):
             for k in range(em.ntilex):
-                ekinE += sum((1./elec_C.pgroups[i][j][k].gaminv[0:elec_C.pgroups[i][j][k].nps]-1.)*elec_C.pgroups[i][j][k].pid[0:elec_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
-                ikinE += sum((1./ions_C.pgroups[i][j][k].gaminv[0:ions_C.pgroups[i][j][k].nps]-1.)*ions_C.pgroups[i][j][k].pid[0:ions_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                ekinE += sum((1./electron.pgroups[i][j][k].gaminv[0:electron.pgroups[i][j][k].nps]-1.)*electron.pgroups[i][j][k].pid[0:electron.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                ikinE += sum((1./ion.pgroups[i][j][k].gaminv[0:ion.pgroups[i][j][k].nps]-1.)*ion.pgroups[i][j][k].pid[0:ion.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
         print ' Kinetic energy (J):', ekinE,ikinE
       else:
         # Using the fortran subroutine
@@ -437,7 +424,7 @@ def test_langmuir_wave():
         ekinE = em.get_kinetic_energy(species)*9.10938215E-31*299792458.**2 
         ikinE = em.get_kinetic_energy(2)*9.10938215E-31*299792458.**2 
         print ' Electron kinetic energy (J)',ekinE
-        print ' Ion kinetic energy (J)',ekinE      
+        print ' Ion kinetic energy (J)',ikinE      
       
       # Electric energy
       # Using python
@@ -493,11 +480,11 @@ def test_langmuir_wave():
         
       print ' NormL2 of DivE*eps0 - rho:',div,LA.norm(F),'Max',maxdiv,'Min',mindiv
     
-      #elec_C.getn()      # selectron macro-particle number
-      #x = elec_C.getx()      # selectron macro-particle x-coordinates 
-      #y = elec_C.gety()      # selectron macro-particle y-coordinates      
-      #z = elec_C.getz()      # selectron macro-particle x-coordinates
-      #pid = elec_C.getpid()    
+      #electron.getn()      # selectron macro-particle number
+      #x = electron.getx()      # selectron macro-particle x-coordinates 
+      #y = electron.gety()      # selectron macro-particle y-coordinates      
+      #z = electron.getz()      # selectron macro-particle x-coordinates
+      #pid = electron.getpid()    
       
       div_array.append(div)
       t_array.append(top.time)

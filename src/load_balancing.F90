@@ -1237,7 +1237,7 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                     IF((iprocx .NE. x_coords) .OR. (iprocy .NE. y_coords) .OR. (iprocz .NE. z_coords))  THEN 
                         ! Finds indices in buffer for curr_rank using a binary search algorithm
                         CALL pxr_convertindtoproc(comm,iprocx,iprocy,iprocz,npx,npy,npz,curr_rank,l_cart_comm)
-                        CALL binary_search(isend,curr_rank,send_rank(1:nsend),nsend)
+                        CALL binary_search(isend,INT(curr_rank,isp),send_rank(1:nsend),nsend)
                         ibuff=nvar*nptoexch(isend)+1
                         sendbuff(ibuff,   isend)    = curr%part_x(i)
                         sendbuff(ibuff+1, isend)  = curr%part_y(i)
@@ -1457,7 +1457,7 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                     IF((iprocx .NE. x_coords) .OR. (iprocy .NE. y_coords) .OR. (iprocz .NE. z_coords))  THEN 
                         ! Finds indices in buffer for curr_rank using a binary search algorithm
                         CALL pxr_convertindtoproc(comm,iprocx,iprocy,iprocz,npx,npy,npz,curr_rank,l_cart_comm)
-                        CALL binary_search(isend,curr_rank,send_rank(1:nsend),nsend)
+                        CALL binary_search(isend,INT(curr_rank,isp),send_rank(1:nsend),nsend)
                         ibuff=nvar*nptoexch(isend)+1
                         sendbuff(ibuff,   isend)    = curr%part_x(i)
                         sendbuff(ibuff+1, isend)  = curr%part_y(i)

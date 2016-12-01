@@ -534,7 +534,8 @@ build_test: createdir \
 	build_tile_rho_depo_3d_test \
 	build_tile_curr_depo_3d_test \
 	build_esirkepov_3d_test \
-	build_esirkepov_2d_test 
+	build_esirkepov_2d_test \
+	build_tile_mpi_part_com_test
 
 #	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o			
 
@@ -566,7 +567,8 @@ test_gcov: field_gathering_2d_test \
 	tile_rho_depo_3d_test \
 	current_deposition_3d_test \
 	esirkepov_3d_test \
-	esirkepov_2d_test
+	esirkepov_2d_test \
+	tile_mpi_part_com_test
 
 current_deposition_3d_test:
 	export OMP_NUM_THREADS=1

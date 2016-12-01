@@ -1,12 +1,19 @@
 # ______________________________________________________________________________
 #
-# Execution test: Langmuir wave
+# Execution test: Drifted plasmas
 # We advice to not delete or modify this script, else make a copy
+#
+# In this script, electron-positron beams (drifted plasmas) are sent in each 
+# direction of the domain: x,y,z.
+#
+# This script enables to test that neutral plasmas propagate correctly 
+# and that particle communications work properly
+#
 # ______________________________________________________________________________
 
 from warp import *
 from em3dsolverPXR import *
-import os
+from warp.init_tools import *
 from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 import matplotlib.pyplot as plt
@@ -14,13 +21,15 @@ import matplotlib.gridspec as gridspec
 import matplotlib as mpl
 from numpy import linalg as LA
 
-def test_langmuir_wave():
+def test_drifted_plasmas():
   """
-  fshow: flag to show or not matplotlib figures
+  main function for the case test_drifted_plasmas
+  
   """
 
   # Picsar flag: 0 warp routines, 1 picsar routines
   l_pxr=1
+  l_temporal_diags=0
   l_pytest=0
   # --- flags turning off unnecessary diagnostics (ignore for now)
   top.ifzmmnt = 0
@@ -41,17 +50,17 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
 
   # Number of iterations
-  Nsteps = 30
+  Nsteps = 100
 
   #Mesh: normalized at the plasma frequency
   dx=0.04
   dy=0.04
   dz=0.04
-  dt=1./sqrt(1./dx**2+1./dy**2+1./dz**2)
+  dt=0.9*1./sqrt(1./dx**2+1./dy**2+1./dz**2)
 
   # Plasma properties
   plasma_elec_density = 0.01
-  nppcell_carbon         = 5
+  nppcell         = 5
 
 
   #Laser at the left border:
@@ -91,7 +100,7 @@ def test_langmuir_wave():
   top.depos_order    = 3      # particles deposition order (1=linear, 2=quadratic, 3=cubic)
   top.efetch         = 4      # field gather type (1=from nodes "momentum conserving"; 4=from Yee mesh "energy conserving")
 
-  top.runid          = "Test_Langmuir_wave_3D"                         # run name
+  top.runid          = "Test_drifted_plasma"                         # run name
   top.pline1         = "Test"                         # comment line on plots
   top.runmaker       = "J.L. Vay, M. Lobet"                        # run makers
   top.lrelativ       = true                                # on/off relativity (for particles push)
@@ -133,53 +142,39 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # Carbon plasma 
   #-------------------------------------------------------------------------------
-  dens0_C           = plasma_elec_density*densc             # plasma density
-  wp_C              = sqrt(dens0_C*echarge**2/(eps0*emass)) # plasma frequency
-  kp_C              = wp_C/clight                           # plasma wavenumber
-  lambda_plasma_C   = 2.*pi/kp_C                            # plasma wavelength
-  Tplasma           = 2.*pi/wp_C                            # plasma period
+  dens0             = plasma_elec_density*densc             # plasma density
+  wp                = sqrt(dens0*echarge**2/(eps0*emass)) # plasma frequency
+  kp                = wp/clight                           # plasma wavenumber
+  lambda_plasma     = 2.*pi/kp                            # plasma wavelength
+  Tplasma           = 2.*pi/wp                            # plasma period
 
   #-------------------------------------------------------------------------------
   # print some plasma parameters to the screen
   #-------------------------------------------------------------------------------
-  print dx,dy,dz,dt
-  print " Plasma elec. density: ",plasma_elec_density,'nc',dens0_C 
-  print " Plasma wavelength: ",lambda_plasma_C
-  print " Plasma frequency: ",wp_C
+  print " dx: ",dx,"dy: ",dy,"dz: ",dz,"dt: ",dt
+  print " Plasma elec. density: ",plasma_elec_density,'nc',dens0 
+  print " Plasma wavelength: ",lambda_plasma
+  print " Plasma frequency: ",wp
   print ' Plasma period:',Tplasma
 
   #-------------------------------------------------------------------------------
   # number of plasma macro-particles/cell
   #-------------------------------------------------------------------------------
-  nppcellx_C = 1#5
-  nppcelly_C = 1#5
-  nppcellz_C = 1#5
+  nppcellx = 1#5
+  nppcelly = 1#5
+  nppcellz = 1#5
 
   #-------------------------------------------------------------------------------
   # Algorithm choices
+  # See Doxygen doc for more information
   #-------------------------------------------------------------------------------
-	# Optional: current deposition algorithm, 
-  # 0 - Esirkepov tiling/optimized
-  # 1 - Esirkepov tiling/non-optimized
-  # 2 - Esirkepov sequential
-  # 3 - Classical vectorized
-  # 4 - Classical tiling/non-optimized
-  # 5 - Classical sequential/non-optimized
-  currdepo=3
+  # Optional: current deposition algorithm, 
+  currdepo=0
   # Optional: mpi com for the current desposition
-  # 0 - nonblocking communication
-  # 1 - blocking communication
-  # 2 - persistent (under development)
   mpicom_curr=0
   # Field gathering method
-  # 0 - Most optimized functions (default)
-  # 1 - Optimized but E and B in separate subroutines
-  # 2 - Scalar subroutines
-  # 3 - General order subroutines
   fieldgathe=0
   # Type of particle communication
-  # 0 - optimized version
-  # 1 - MPI and OMP in separate subroutines
   partcom =0
   # Field gathering and particle pusher together
   fg_p_pp_separated=0
@@ -187,16 +182,16 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # grid dimensions, nb cells and BC
   #-------------------------------------------------------------------------------
-  w3d.zmmax = 4*lambda_plasma_C
-  w3d.zmmin = 0.
-  w3d.xmmin = -0.5*lambda_plasma_C
+  w3d.zmmin = -2.*lambda_plasma
+  w3d.zmmax = -w3d.zmmin
+  w3d.xmmin = -2.*lambda_plasma
   w3d.xmmax = -w3d.xmmin
-  w3d.ymmin = -0.5*lambda_plasma_C
+  w3d.ymmin = -2.*lambda_plasma
   w3d.ymmax = -w3d.ymmin
 
-  w3d.nx = nint((w3d.xmmax-w3d.xmmin)/(dx*lambda_plasma_C))
-  w3d.ny = nint((w3d.ymmax-w3d.ymmin)/(dy*lambda_plasma_C))
-  w3d.nz = nint((w3d.zmmax-w3d.zmmin)/(dz*lambda_plasma_C))
+  w3d.nx = nint((w3d.xmmax-w3d.xmmin)/(dx*lambda_plasma))
+  w3d.ny = nint((w3d.ymmax-w3d.ymmin)/(dy*lambda_plasma))
+  w3d.nz = nint((w3d.zmmax-w3d.zmmin)/(dz*lambda_plasma))
 
   w3d.dx = (w3d.xmmax-w3d.xmmin)/w3d.nx
   w3d.dy = (w3d.ymmax-w3d.ymmin)/w3d.ny
@@ -229,15 +224,19 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   # set particles weights
   #-------------------------------------------------------------------------------
-  weight_C   = dens0_C *w3d.dx*w3d.dy*w3d.dz/(nppcellx_C*nppcelly_C*nppcellz_C)
+  weight   = dens0 *w3d.dx*w3d.dy*w3d.dz/(nppcellx*nppcelly*nppcellz)
   top.wpid = nextpid() # Activate variable weights in the method addpart
 
   # --- create plasma species
-  elec_C = Species(type=Electron,weight=weight_C,name='elec')
-  ions_C = Species(type=Proton,weight=weight_C,name='ions')
+  electron0 = Species(type=Electron,weight=weight,name='electron0')
+  positron0 = Species(type=Positron,weight=weight,name='positron0')
+  electron1 = Species(type=Electron,weight=weight,name='electron1')
+  positron1 = Species(type=Positron,weight=weight,name='positron1')
+  electron2 = Species(type=Electron,weight=weight,name='electron2')
+  positron2 = Species(type=Positron,weight=weight,name='positron2')
 
   # --- Init the sorting
-  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=0.5,dy=0.5,dz=0.5,xshift=-0.5,yshift=-0.5,zshift=-0.5)
+  sort = Sorting(periods=[10,10,10,10],starts=[0,0,0,0],activated=1,dx=0.5,dy=0.5,dz=0.5,xshift=-0.5,yshift=-0.5,zshift=-0.5)
 
   top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
   top.efetch[...] = top.efetch[0] # same for field gathering
@@ -268,19 +267,26 @@ def test_langmuir_wave():
 
   if l_plasma:
 
-      zmin = w3d.zmmin
-      zmax = w3d.zmmax
-      xmin = w3d.xmmin
-      xmax = w3d.xmmax
-      ymin = w3d.ymmin
-      ymax = w3d.ymmax
-      
-      np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx_C*nppcelly_C*nppcellz_C
-      
-      elec_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vzmean=0.01*clight,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      spatial_extent = 0.05
+      speed = 0.9*clight
 
-      ions_C.add_uniform_box(np,xmin,xmax,ymin,ymax,0.2*zmax,0.8*zmax,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      zmin = w3d.zmmin*spatial_extent
+      zmax = w3d.zmmax*spatial_extent
+      xmin = w3d.xmmin*spatial_extent
+      xmax = w3d.xmmax*spatial_extent
+      ymin = w3d.ymmin*spatial_extent
+      ymax = w3d.ymmax*spatial_extent
+      
+      np = w3d.nx*w3d.ny*nint((zmax-zmin)/w3d.dz)*nppcellx*nppcelly*nppcellz
+      
+      electron0.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vzmean=speed,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      positron0.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vzmean=speed,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
+      electron1.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vymean=speed,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      positron1.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vymean=speed,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+
+      electron2.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vxmean=speed,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
+      positron2.add_uniform_box(np,xmin,xmax,ymin,ymax,zmin,zmax,vxmean=speed,vthx=0.,vthy=0.,vthz=0.,spacing='uniform')
 
   laser_total_duration=1.25*laser_duration
   #-------------------------------------------------------------------------------
@@ -353,7 +359,7 @@ def test_langmuir_wave():
       step = em.step
   else:
       print ' em=EM3D'
-      em = EM3D(       laser_func=laser_func,
+      em = EM3D(   laser_func=laser_func,
                    laser_source_z=laser_source_z,
                    laser_polangle=laser_polangle,
                    laser_emax=Eamp,
@@ -391,7 +397,12 @@ def test_langmuir_wave():
   t = 0
   imu0 = 12.566370614E-7
   t_array = []
-  ekinE_array = []
+  e0kinE_array = []
+  p0kinE_array = []
+  e1kinE_array = []
+  p1kinE_array = []
+  e2kinE_array = []
+  p2kinE_array = []
   ezE_array = []
   eyE_array = []
   exE_array = []
@@ -406,103 +417,145 @@ def test_langmuir_wave():
   def liveplots():
     if top.it%live_plot_freq==0:
       fma(0); 
-      em.pfez(view=3,titles=0,xscale=1./lambda_plasma_C,yscale=1./lambda_plasma_C,gridscale=1.e-12,l_transpose=1,direction=1)
+      em.pfez(view=3,titles=0,xscale=1./lambda_plasma,yscale=1./lambda_plasma,gridscale=1.e-12,l_transpose=1,direction=1)
       ptitles('Ez [TV/m]','Z [lambda]','X [lambda]')
       
-      density=elec_C.get_density()
+      density=electron0.get_density()
       density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=4,titles=0,xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid,ymin=w3d.xmmin,ymax=w3d.xmmax,xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
 
-      density=ions_C.get_density()
+      density=positron0.get_density()
       density=density[:,w3d.ny/2,:]
       ppg(transpose(density),view=5,titles=0,xmin=w3d.zmmin+top.zgrid,xmax=w3d.zmmax+top.zgrid,ymin=w3d.xmmin,ymax=w3d.xmmax,xscale=1e6,yscale=1.e6)#,gridscale=1./dens0)
    
-    
-    # With Picsar
-    if l_pxr:
-      # Kinetic energy  
-      # Using python
-      if False:
-        ekinE = 0
-        ikinE = 0
-        for i in range(em.ntilez):
-          for j in range(em.ntiley):
-            for k in range(em.ntilex):
-                ekinE += sum((1./elec_C.pgroups[i][j][k].gaminv[0:elec_C.pgroups[i][j][k].nps]-1.)*elec_C.pgroups[i][j][k].pid[0:elec_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
-                ikinE += sum((1./ions_C.pgroups[i][j][k].gaminv[0:ions_C.pgroups[i][j][k].nps]-1.)*ions_C.pgroups[i][j][k].pid[0:ions_C.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
-        print ' Kinetic energy (J):', ekinE,ikinE
-      else:
-        # Using the fortran subroutine
-        species=1
-        ekinE = em.get_kinetic_energy(species)*9.10938215E-31*299792458.**2 
-        ikinE = em.get_kinetic_energy(2)*9.10938215E-31*299792458.**2 
-        print ' Electron kinetic energy (J)',ekinE
-        print ' Ion kinetic energy (J)',ekinE      
-      
-      # Electric energy
-      # Using python
-      if False:  
-        ezE = 0.5*sum(em.fields.Ez[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-        exE = 0.5*sum(em.fields.Ex[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-        eyE = 0.5*sum(em.fields.Ey[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
-        bzE = 0.5*sum(em.fields.Bz[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
-        bxE = 0.5*sum(em.fields.Bx[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
-        byE = 0.5*sum(em.fields.By[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
-        div = 0
-        print ' Electric energy (J):',ezE,eyE,exE
-        print ' Magnetic energy (J):',bzE,byE,bxE
-      # using picsar fortran subroutine
-      else:
-        exE = em.get_field_energy('ex')*8.85418782E-12 
-        eyE = em.get_field_energy('ey')*8.85418782E-12 
-        ezE = em.get_field_energy('ez')*8.85418782E-12 
-        bxE = em.get_field_energy('bx')*8.85418782E-12 
-        byE = em.get_field_energy('by')*8.85418782E-12 
-        bzE = em.get_field_energy('bz')*8.85418782E-12   
-        div = em.get_normL2_divEeps0_rho()  
-        print ' Electric energy (J):',ezE,eyE,exE
-        print ' Magnetic energy (J):',bzE,byE,bxE
-        print ' NormL2 of DivE*eps0 - rho:',div
-      
-      etot = ezE + exE + eyE + ekinE + ikinE + bzE + bxE + byE
-      print ' Total energy (J)',etot
-      
-      # Put in arrays
-      ekinE_array.append(ekinE)
-      ezE_array.append(ezE)
-      eyE_array.append(eyE)
-      exE_array.append(exE)
-      bzE_array.append(bzE)
-      byE_array.append(byE)
-      bxE_array.append(bxE)  
-      div_array.append(div)
-      etot_array.append(etot)
-      t_array.append(top.time)
+   
+    if (l_temporal_diags):
+     
+      # With Picsar
+      if l_pxr:
+        # Kinetic energy  
+        # Using python
+        if False:
+          e0kinE = 0
+	  e1kinE = 0
+          e2kinE = 0
+          p0kinE = 0
+          p1kinE = 0
+          p2kinE = 0
+          for i in range(em.ntilez):
+            for j in range(em.ntiley):
+              for k in range(em.ntilex):
+                  e0kinE += sum((1./electron0.pgroups[i][j][k].gaminv[0:electron0.pgroups[i][j][k].nps]-1.)*electron0.pgroups[i][j][k].pid[0:electron0.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                  e1kinE += sum((1./electron1.pgroups[i][j][k].gaminv[0:electron1.pgroups[i][j][k].nps]-1.)*electron1.pgroups[i][j][k].pid[0:electron1.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                  e2kinE += sum((1./electron2.pgroups[i][j][k].gaminv[0:electron2.pgroups[i][j][k].nps]-1.)*electron2.pgroups[i][j][k].pid[0:electron2.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                  p0kinE += sum((1./positron0.pgroups[i][j][k].gaminv[0:positron0.pgroups[i][j][k].nps]-1.)*positron0.pgroups[i][j][k].pid[0:positron0.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                  p1kinE += sum((1./positron1.pgroups[i][j][k].gaminv[0:positron1.pgroups[i][j][k].nps]-1.)*positron1.pgroups[i][j][k].pid[0:positron1.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+                  p2kinE += sum((1./positron2.pgroups[i][j][k].gaminv[0:positron2.pgroups[i][j][k].nps]-1.)*positron2.pgroups[i][j][k].pid[0:positron2.pgroups[i][j][k].nps,0])*9.10938215E-31*299792458.**2
+        else:
+          # Using the fortran subroutine
+          e0kinE = em.get_kinetic_energy(1)*9.10938215E-31*299792458.**2 
+          e1kinE = em.get_kinetic_energy(3)*9.10938215E-31*299792458.**2 
+          e2kinE = em.get_kinetic_energy(5)*9.10938215E-31*299792458.**2 
+          p0kinE = em.get_kinetic_energy(2)*9.10938215E-31*299792458.**2 
+          p1kinE = em.get_kinetic_energy(4)*9.10938215E-31*299792458.**2
+          p2kinE = em.get_kinetic_energy(6)*9.10938215E-31*299792458.**2
 
-    #With warp      
-    else:
-    
-      # Get divergence
-      divE = em.getdive()
-      rho = em.getrho()
-      F = em.getf()
-      divarray = divE*eps0 - rho
-      div = LA.norm((divarray))
-      maxdiv = abs(divarray).max()
-      mindiv = abs(divarray).min()
+        print ' Electron kinetic energy (J)',e0kinE,e1kinE,e2kinE
+        print ' Positron kinetic energy (J)',p0kinE,p1kinE,p2kinE    
         
-      print ' NormL2 of DivE*eps0 - rho:',div,LA.norm(F),'Max',maxdiv,'Min',mindiv
-    
-      #elec_C.getn()      # selectron macro-particle number
-      #x = elec_C.getx()      # selectron macro-particle x-coordinates 
-      #y = elec_C.gety()      # selectron macro-particle y-coordinates      
-      #z = elec_C.getz()      # selectron macro-particle x-coordinates
-      #pid = elec_C.getpid()    
+        # Electric energy
+        # Using python
+        if False:  
+          ezE = 0.5*sum(em.fields.Ez[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
+          exE = 0.5*sum(em.fields.Ex[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
+          eyE = 0.5*sum(em.fields.Ey[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*8.85418782E-12
+          bzE = 0.5*sum(em.fields.Bz[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
+          bxE = 0.5*sum(em.fields.Bx[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
+          byE = 0.5*sum(em.fields.By[0:em.nxlocal,0:em.nylocal,0:em.nzlocal]**2)*em.dx*em.dy*em.dz*imu0
+          div = 0
+          print ' Electric energy (J):',ezE,eyE,exE
+          print ' Magnetic energy (J):',bzE,byE,bxE
+        # using picsar fortran subroutine
+        else:
+          exE = em.get_field_energy('ex')*8.85418782E-12 
+          eyE = em.get_field_energy('ey')*8.85418782E-12 
+          ezE = em.get_field_energy('ez')*8.85418782E-12 
+          bxE = em.get_field_energy('bx')*8.85418782E-12 
+          byE = em.get_field_energy('by')*8.85418782E-12 
+          bzE = em.get_field_energy('bz')*8.85418782E-12   
+          div = em.get_normL2_divEeps0_rho()  
+          print ' Electric energy (J):',ezE,eyE,exE
+          print ' Magnetic energy (J):',bzE,byE,bxE
+          print ' NormL2 of DivE*eps0 - rho:',div
+        
+        etot = ezE + exE + eyE 
+        etot += e0kinE + e1kinE + e2kinE
+        etot += p0kinE + p1kinE + p2kinE 
+        etot += bzE + bxE + byE
+        print ' Total energy (J)',etot
+        
+        # Put in arrays
+        e0kinE_array.append(e0kinE)
+        p0kinE_array.append(p0kinE)
+        e1kinE_array.append(e1kinE)
+        p1kinE_array.append(p1kinE)
+        e2kinE_array.append(e2kinE)
+        p2kinE_array.append(p2kinE)
+        ezE_array.append(ezE)
+        eyE_array.append(eyE)
+        exE_array.append(exE)
+        bzE_array.append(bzE)
+        byE_array.append(byE)
+        bxE_array.append(bxE)  
+        div_array.append(div)
+        etot_array.append(etot)
+        t_array.append(top.time)
+
+      #With warp      
+      else:
       
-      div_array.append(div)
-      t_array.append(top.time)
+        # Get divergence
+        divE = em.getdive()
+        rho = em.getrho()
+        F = em.getf()
+        divarray = divE*eps0 - rho
+        div = LA.norm((divarray))
+        maxdiv = abs(divarray).max()
+        mindiv = abs(divarray).min()
+          
+        print ' NormL2 of DivE*eps0 - rho:',div,LA.norm(F),'Max',maxdiv,'Min',mindiv
+      
+        #electron0.getn()      # selectron macro-particle number
+        #x = electron0.getx()      # selectron macro-particle x-coordinates 
+        #y = electron0.gety()      # selectron macro-particle y-coordinates      
+        #z = electron0.getz()      # selectron macro-particle x-coordinates
+        #pid = electron0.getpid()    
+        
+        div_array.append(div)
+        t_array.append(top.time)
       
   installafterstep(liveplots)
+
+  # _____________________________________________________________________________
+  #
+  # Outputs
+  # _____________________________________________________________________________
+
+  # Setup the diagnostics
+  diag_period = 10
+
+  remove_existing_directory( ['diags'] )
+
+  diag1 = FieldDiagnostic( period=diag_period, top=top, w3d=w3d, em=em,\
+    comm_world=comm_world , write_dir='diags')
+
+  installafterstep( diag1.write )
+
+  diag2 = ParticleDiagnostic( period=diag_period, top=top, w3d=w3d, \
+    species={ species.name : species for species in listofallspecies }, \
+    comm_world=comm_world , write_dir='diags')
+
+  installafterstep( diag2.write )
 
   tottime = AppendableArray()
   def accuttime():
@@ -529,67 +582,59 @@ def test_langmuir_wave():
 
   if me==0:
  
-    # ______________________________________________________________________________
-    # RCparams
-    if l_matplotlib:
-      mpl.rcParams['font.size'] = 15
-      mpl.rcParams['legend.fontsize'] = 12
-      mpl.rcParams['figure.facecolor'] = 'white'
+    if (l_temporal_diags):
+   
+      # ______________________________________________________________________________
+      # RCparams
+      if l_matplotlib:
+        mpl.rcParams['font.size'] = 15
+        mpl.rcParams['legend.fontsize'] = 12
+        mpl.rcParams['figure.facecolor'] = 'white'
 
-    t_array=array(t_array)
+      t_array=array(t_array)
 
-    print ' Plasma period:',Tplasma
+      print ' Plasma period:',Tplasma
 
-    # Plotting    
-    if l_matplotlib:  
-      fig = plt.figure(figsize=(12,8))
-      gs = gridspec.GridSpec(2, 2)
-      ax = plt.subplot(gs[:, :])
+      # Plotting    
+      if l_matplotlib:  
+        fig = plt.figure(figsize=(16,8))
+        gs = gridspec.GridSpec(2, 2)
+        ax = plt.subplot(gs[:, :])
 
-      ax.plot(t_array,ekinE_array,label='Elec. kin. energy')
-      ax.plot(t_array,ezE_array,label='Ez energy')
-      ax.plot(t_array,eyE_array,label='Ey energy')
-      ax.plot(t_array,exE_array,label='Ex energy')
-      ax.plot(t_array,bzE_array,label='Bz energy')
-      ax.plot(t_array,byE_array,label='By energy')
-      ax.plot(t_array,bxE_array,label='Bx energy')
-      ax.plot(t_array,etot_array,label='Total energy',color='k',ls=':')
+        ax.plot(t_array,e0kinE_array,label='Elec. kin. energy')
+        ax.plot(t_array,p0kinE_array,label='Posi. kin. energy')
+        ax.plot(t_array,e1kinE_array,label='Elec. kin. energy')
+        ax.plot(t_array,p1kinE_array,label='Posi. kin. energy')
+        ax.plot(t_array,e2kinE_array,label='Elec. kin. energy')
+        ax.plot(t_array,p2kinE_array,label='Posi. kin. energy')
+        ax.plot(t_array,ezE_array,label='Ez energy')
+        ax.plot(t_array,eyE_array,label='Ey energy')
+        ax.plot(t_array,exE_array,label='Ex energy')
+        ax.plot(t_array,bzE_array,label='Bz energy')
+        ax.plot(t_array,byE_array,label='By energy')
+        ax.plot(t_array,bxE_array,label='Bx energy')
+        ax.plot(t_array,etot_array,label='Total energy',color='k',ls=':')
 
-      ax.set_ylim([0,max(etot_array)*1.1])
+        ax.set_ylim([0,max(etot_array)*1.1])
 
-      ax.set_xlabel('t (s)')
-      ax.set_ylabel('Energy (J)')
+        ax.set_xlabel('t (s)')
+        ax.set_ylabel('Energy (J)')
 
-      plt.annotate('', xy=(0, ekinE_array[0]*0.5), xycoords='data',xytext=(Tplasma, ekinE_array[0]*0.5), textcoords='data',arrowprops={'arrowstyle': '<->'})
+        ax.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+      
+      # _____________________________________________________________________
+      # DivE*eps0 - rho
+      if l_matplotlib:
+        fig1 = plt.figure(figsize=(12,8))
+        gs1 = gridspec.GridSpec(2, 2)
+        ax1 = plt.subplot(gs[:, :])    
 
-    # Theoretical oscillations
-    ekinth = zeros(len(ekinE_array))
-    A = 0.5 * max(ekinE_array)
-    ekinth = A + A*cos(2*pi*t_array/(Tplasma*0.5))
-    
-    if l_matplotlib:     
-      ax.plot(t_array,ekinth,ls='--',label='Th. Elec. kin. energy',color='b')
-      ax.legend(loc='upper center',ncol=5,borderaxespad=-3)
-
-    # Test oscillations
-    diffth = abs(ekinE_array - ekinth)
-    print
-    print ' Maximum difference between theory and simulation:',max(diffth),1E-3*max(ekinE_array)
-    if l_pytest: assert max(diffth) < 1E-3*max(ekinE_array)
-    
-    # _____________________________________________________________________
-    # DivE*eps0 - rho
-    if l_matplotlib:
-      fig1 = plt.figure(figsize=(12,8))
-      gs1 = gridspec.GridSpec(2, 2)
-      ax1 = plt.subplot(gs[:, :])    
-
-      ax1.plot(t_array,div_array,label=r'$\nabla E \times \varepsilon_0 - \rho$',lw=2) 
-      ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
-    
-      ax1.set_xlabel('t (s)')
-    
-    if l_pytest: assert (max(div_array) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
+        ax1.plot(t_array,div_array,label=r'$\nabla E \times \varepsilon_0 - \rho$',lw=2) 
+        ax1.legend(loc='upper center',ncol=4,borderaxespad=-2,fontsize=20)
+      
+        ax1.set_xlabel('t (s)')
+      
+      if l_pytest: assert (max(div_array) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
     
     # _____________________________________________________________________
     # Advice
@@ -607,4 +652,4 @@ def test_langmuir_wave():
 if __name__ == "__main__":
 
 	# Launch the test
-  test_langmuir_wave() 
+  test_drifted_plasmas() 
