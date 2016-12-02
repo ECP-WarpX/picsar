@@ -652,13 +652,6 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
 		! Loop over the particles by block
 		DO ip=1,np,lvect
 
-#if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
-#elif defined __IBMBGQ__
-			!IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-			!DIR$ SIMD 
-#endif
 #if defined __INTEL_COMPILER 
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
@@ -666,6 +659,15 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
 !DIR$ ASSUME_ALIGNED sx:64,sz:64
 !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
 !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!DIR$ SIMD 
 #endif
 			! Loop over the particles inside a block
 			DO n=1,MIN(lvect,np-ip+1)
@@ -773,13 +775,6 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
 
 		DO ip=1,np
 
-#if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
-#elif defined __IBMBGQ__
-			!IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-			!DIR$ SIMD 
-#endif
 #if defined __INTEL_COMPILER 
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
@@ -787,6 +782,15 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
 !DIR$ ASSUME_ALIGNED sx:64,sz:64
 !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
 !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!DIR$ SIMD 
 #endif
 			! Loop over the particles inside a block
 			DO n=1,MIN(lvect,np-ip+1)
@@ -1419,13 +1423,6 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,d
 		! Loop over the particles by block
 		DO ip=1,np,lvect
 
-#if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
-#elif defined __IBMBGQ__
-			!IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-			!DIR$ SIMD 
-#endif
 #if defined __INTEL_COMPILER 
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
@@ -1433,6 +1430,15 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,d
 !DIR$ ASSUME_ALIGNED sx:64,sz:64
 !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
 !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!DIR$ SIMD 
 #endif
 			! Loop over the particles inside a block
 			DO n=1,MIN(lvect,np-ip+1)
@@ -1535,13 +1541,6 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,d
 		! Loop over the particles by block
 		DO ip=1,np,lvect
 
-#if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
-#elif defined __IBMBGQ__
-			!IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-			!DIR$ SIMD 
-#endif
 #if defined __INTEL_COMPILER 
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
@@ -1549,6 +1548,15 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,d
 !DIR$ ASSUME_ALIGNED sx:64,sz:64
 !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
 !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
+#elif defined __IBMBGQ__
+	!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+	!DIR$ SIMD 
 #endif
 			! Loop over the particles inside a block
 			DO n=1,MIN(lvect,np-ip+1)
