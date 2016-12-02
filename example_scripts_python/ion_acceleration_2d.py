@@ -10,9 +10,7 @@ from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 home=os.getenv('HOME')
 
-<<<<<<< HEAD
-l_pxr=0
-=======
+
 # Picsar flag: 0 warp routines, 1 picsar routines
 l_pxr=1
 print ' l_pxr=',l_pxr
@@ -20,7 +18,7 @@ if l_pxr==0:
   print ' The picsar package will not be used' 
 print
 
->>>>>>> picsar_mpi_com_opt
+
 # --- flags turning off unnecessary diagnostics (ignore for now)
 top.ifzmmnt = 0
 top.itmomnts = 0
@@ -53,7 +51,8 @@ dlb_at_init=1 # Do a load balancing of the simulation at init
 dfact = 1
 dxfact = 1
 dtfact = 2
-N_step = 20000/dtfact
+
+Nsteps = 50
 
 #Two-layer foil:
 #Carbon layer
@@ -200,6 +199,22 @@ if dim=="1d":
   nppcellx_C = nppcellx_H = 1
   nppcelly_C = nppcelly_H = 1
 
+
+#-------------------------------------------------------------------------------
+# Algorithm choices
+# See Doxygen doc for more information
+#--------------------------------------------------------------------------------
+# Optional: current deposition algorithm, 
+currdepo=0
+# Optional: mpi com for the current desposition
+mpicom_curr=0
+# Field gathering method
+fieldgathe=0
+# Type of particle communication
+partcom =0
+# Field gathering and particle pusher together
+fg_p_pp_separated=0
+
 #-------------------------------------------------------------------------------
 # grid dimensions, nb cells and BC
 #-------------------------------------------------------------------------------
@@ -264,7 +279,9 @@ elec_H = Species(type=Electron,weight=weight_H,name='elec_H')
 ions_C = Species(type=Carbon,weight=weight_C/6.,charge_state=6.,name='ions_C')
 ions_H = Species(type=Proton,weight=weight_H,name='ions_H')
 
-
+if (l_pxr):
+  # --- Init the sorting
+  sort = Sorting(periods=[10,10],starts=[0,0],activated=1,dx=0.5,dy=0.5,dz=0.5,xshift=-0.5,yshift=-0.5,zshift=-0.5)
 
 top.depos_order[...] = top.depos_order[0,0] # sets deposition order of all species = those of species 0
 top.efetch[...] = top.efetch[0] # same for field gathering
@@ -395,7 +412,7 @@ if l_pxr:
         ntiley = 1
         ntilez = max(1,w3d.nzlocal/30)
     print ' em=EM3DPXR'
-    em = EM3DPXR(       laser_func=laser_func,
+    em = EM3DPXR(laser_func=laser_func,
                  laser_source_z=laser_source_z,
                  laser_polangle=laser_polangle,
                  laser_emax=Eamp,
@@ -413,7 +430,6 @@ if l_pxr:
                  ntilex=ntilex,
                  ntiley=ntiley,
                  ntilez=ntilez,
-                 l_verbose=l_verbose,
                  dload_balancing=load_balance, 
                  dlb_freq=dlb_freq, 
                  dlb_threshold=dlb_threshold, 
@@ -422,15 +438,12 @@ if l_pxr:
                  #nxguard=6,
                  #nyguard=6,
                  #nzguard=6,
-                 # Optional: current deposition algorithm, 
-                 # 0 - parallel classical current deposition (defaults)
-                 # 1 - sequential classical current deposition
-                 currdepo=0,   
-                 # Optional: mpi com for the current desposition
-                 # 0 - nonblocking communication
-                 # 1 - blocking communication
-                 # 2 - persistent (under development)
-                 mpicom_curr=0,
+                 currdepo=currdepo,
+                 mpicom_curr=mpicom_curr,
+                 fieldgathe=fieldgathe,
+                 #sorting=sort,
+                 partcom=partcom,
+                 fg_p_pp_separated=fg_p_pp_separated,
                  l_verbose=l_verbose)
     step = em.step
 else:
@@ -556,8 +569,13 @@ if l_test:
 #  raise('')
 else:
   tdeb=MPI.Wtime()
-  em.step(100,1,1)
+  em.step(Nsteps,1,1)
   tend=MPI.Wtime()
   print("Final runtime (s): "+str(tend-tdeb))
+
+  # _____________________________________________________________________
+  # Time statistics
+  
+  em.display_time_statistics()   
   
 #pxr.point_to_tile(1,1,1,1)
