@@ -12,11 +12,11 @@
 from numpy import *
 
 # Parameters
-nox=2 # order of gathering
-noy=2
-noz=2
+nox=1 # order of gathering
+noy=1
+noz=1
 
-l_lower_order_in_v=False
+l_lower_order_in_v=True
   
 filename="gathering_routines_2d_"+str(nox)+"_"+str(noz)+".F90"
 subroutine_b_field="getb2dxz_energy_conserving_"+str(nox)+"_"+str(noz)
