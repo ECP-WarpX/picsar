@@ -1048,6 +1048,7 @@ class EM3DPXR(EM3DFFT):
       if (self.l_debug): print("Call step")
 
       stdout_stat=10
+      t0=MPI.Wtime()
       tdeb=MPI.Wtime()
       
       for i in range(n):
@@ -1075,7 +1076,7 @@ class EM3DPXR(EM3DFFT):
 
       # Total time spend in the kernel
       tend = MPI.Wtime()
-      self.total_kernel_time = (tend-tdeb)
+      self.total_kernel_time = (tend-t0)
 
       if (self.l_debug): print("End step")
 
@@ -2266,13 +2267,13 @@ class EM3DPXR(EM3DFFT):
 
         if me==0:
 
-          print ' _____________________________________________________________'
+          print ' _______________________________________________________________________________'
           print
           print '  Time statisctics'
-          print ' _____________________________________________________________'
+          print ' _______________________________________________________________________________'
 
           print ' Parts                              {:^8} {:^8} {:^8} {:^8}'.format('min', 'ave', 'max', '%')
-          print ' -------------------------------------------------------------'
+          print ' -------------------------------------------------------------------------------'
           print ' Particle pusher + field gathering: {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[0],self.time_stat_ave_array[0],self.time_stat_max_array[0],self.time_stat_max_array[0]/self.total_kernel_time*100)
           print ' Particle boundary conditions:      {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[1],self.time_stat_ave_array[1],self.time_stat_max_array[1],self.time_stat_max_array[1]/self.total_kernel_time*100)
           print ' Current deposition:                {:8.3f} {:8.3f} {:8.3f} {:8.3}'.format(self.time_stat_min_array[2],self.time_stat_ave_array[2],self.time_stat_max_array[2],self.time_stat_max_array[2]/self.total_kernel_time*100)
