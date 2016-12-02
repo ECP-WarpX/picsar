@@ -667,7 +667,6 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
 !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
 !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif
-		
 			! Loop over the particles inside a block
 			DO n=1,MIN(lvect,np-ip+1)
 		
@@ -789,7 +788,6 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
 !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
 !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif
-
 			! Loop over the particles inside a block
 			DO n=1,MIN(lvect,np-ip+1)
 
@@ -1429,7 +1427,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,d
 			!DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR$ IVDEP
+!!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
 !DIR$ ASSUME_ALIGNED xp:64,zp:64
 !DIR$ ASSUME_ALIGNED sx:64,sz:64
@@ -1545,14 +1543,13 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,d
 			!DIR$ SIMD 
 #endif
 #if defined __INTEL_COMPILER 
-!DIR$ IVDEP
+!!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
 !DIR$ ASSUME_ALIGNED xp:64,zp:64
 !DIR$ ASSUME_ALIGNED sx:64,sz:64
 !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
 !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif
-
 			! Loop over the particles inside a block
 			DO n=1,MIN(lvect,np-ip+1)
 
