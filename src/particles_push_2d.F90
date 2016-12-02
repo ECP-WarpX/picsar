@@ -5,10 +5,10 @@
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
+!> @brief
+!> This subroutine is the 2D version of the particle pusher + field gathering
 SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-!
-! This subroutine is the 2D version of the particle pusher + field gathering
 ! ________________________________________________________________________________________
   USE particles
   USE constants

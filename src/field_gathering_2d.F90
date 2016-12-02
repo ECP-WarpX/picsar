@@ -1192,7 +1192,7 @@ return
 
 !_________________________________________________________________________________________
 !> @brief
-!> Field gathering cartesian in 2D for the magnetic field
+!> Scalar Cartesian subroutine for the magnetic field gathering in 2D at order 3
 !
 !> @details
 !> This function is vectorized
@@ -1202,8 +1202,21 @@ return
 !
 !> @date
 !> 12/01/2016
+!
+
+!> @param[in] np Number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[inout] bx,by,bz magnetic field particle arrays
+!> @param[in] xmin,zmin tile boundaries
+!> @param[in] dx,dz space steps
+!> @param[in] nx,nz space discretization
+!> @param[in] nxguard, nzguard number of guard cells
+!> @param[in] bxg, byg,bzg field arrays
+!> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
+!
 subroutine pxr_getb2dxz_energy_conserving_scalar_3_3(np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,&
                     nxguard,nzguard,bxg,byg,bzg,l_lower_order_in_v)
+!_________________________________________________________________________________________
 
 	use constants
 	implicit none
@@ -1391,7 +1404,7 @@ end subroutine
 
 !_________________________________________________________________________________________
 !> @brief
-!> Field gathering cartesian in 2D for the magnetic field
+!> Field gathering cartesian in 2D for the magnetic field at order 2
 !
 !> @details
 !> This function is vectorized
@@ -1402,7 +1415,261 @@ end subroutine
 !> @date
 !> 12/01/2016
 !
-!> @param lvect the vector length of the block of particles for the field gathering
+!> @param[in] np Number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[inout] bx,by,bz magnetic field particle arrays
+!> @param[in] xmin,zmin tile boundaries
+!> @param[in] dx,dz space steps
+!> @param[in] nx,nz space discretization
+!> @param[in] nxguard, nzguard number of guard cells
+!> @param[in] bxg, byg,bzg field arrays
+!> @param[in] lvect the vector length of the block of particles
+!> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
+!
+subroutine pxr_getb2dxz_energy_conserving_vect_2_2(np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,&
+                    nxguard,nzguard,bxg,byg,bzg,lvect,l_lower_order_in_v)
+!_________________________________________________________________________________________
+
+	use constants
+	implicit none
+
+	! __ Parameter declaration ___________________________________________
+	integer(idp)                       :: np,nx,nz,nox,noz,nxguard,nzguard
+	integer(idp)                       :: lvect
+	real(num), dimension(np)           :: xp,zp,bx,by,bz
+	logical(idp)                       :: l_lower_order_in_v
+	real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: bxg,byg,bzg
+	real(num)                          :: xmin,zmin,dx,dz
+	integer(idp)                       :: ip, j, l, ixmin, ixmax, izmin, izmax
+	integer(idp)                       :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
+	integer(idp)                       :: n,nn
+	real(num)                          :: dxi, dzi, x, y, z, xint, zint
+	real(num)                          :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
+	real(num), DIMENSION(lvect,-1:1)   :: sx, sx0
+	real(num), DIMENSION(lvect,-1:1)   :: sz, sz0
+	real(num), parameter               :: onesixth=1./6.,twothird=2./3.
+
+	! ___________________________     
+	! Compute parameters
+
+	dxi = 1./dx
+	dzi = 1./dz
+
+	sx=0
+	sz=0.
+	sx0=0.
+	sz0=0.
+
+	! ___________________________   
+	IF (l_lower_order_in_v) THEN
+
+		! Loop over the particles by block
+		DO ip=1,np,lvect
+
+#if defined __INTEL_COMPILER 
+!!DIR$ IVDEP
+!!DIR$ DISTRIBUTE POINT
+!DIR$ ASSUME_ALIGNED xp:64,zp:64
+!DIR$ ASSUME_ALIGNED sx:64,sz:64
+!DIR$ ASSUME_ALIGNED sx0:64,sz0:64
+!DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!DIR$ SIMD 
+#endif
+			! Loop over the particles inside a block
+			DO n=1,MIN(lvect,np-ip+1)
+
+				nn=ip+n-1
+
+				x = (xp(nn)-xmin)*dxi
+				z = (zp(nn)-zmin)*dzi
+
+				j=nint(x)
+				j0=floor(x-0.5)
+
+				l=nint(z)
+				l0=floor(z-0.5)
+
+				xint=x-j
+				zint=z-l
+		
+				! Compute shape factors
+				xintsq = xint*xint
+				sx(n,-1) = 0.5_num*(0.5_num-xint)**2
+				sx(n, 0) = 0.75_num-xintsq
+				sx(n, 1) = 0.5_num*(0.5_num+xint)**2
+				zintsq = zint*zint
+				sz(n,-1) = 0.5_num*(0.5_num-zint)**2
+				sz(n, 0) = 0.75_num-zintsq
+				sz(n, 1) = 0.5_num*(0.5_num+zint)**2
+		
+				xint=x-0.5_num-j0
+				zint=z-0.5_num-l0
+		
+				sx0(n, 0) = 1.0_num-xint
+				sx0(n, 1) = xint
+				sz0(n, 0) = 1.0_num-zint
+				sz0(n, 1) = zint
+		
+				! Compute Bx on particle
+				bx(nn) = bx(nn) + sx(n,-1)*sz0(n,0)*bxg(j-1,1,l0)
+				bx(nn) = bx(nn) + sx(n,0)*sz0(n,0)*bxg(j,1,l0)
+				bx(nn) = bx(nn) + sx(n,1)*sz0(n,0)*bxg(j+1,1,l0)
+				bx(nn) = bx(nn) + sx(n,-1)*sz0(n,1)*bxg(j-1,1,l0+1)
+				bx(nn) = bx(nn) + sx(n,0)*sz0(n,1)*bxg(j,1,l0+1)
+				bx(nn) = bx(nn) + sx(n,1)*sz0(n,1)*bxg(j+1,1,l0+1)
+		
+				! Compute By on particle
+				by(nn) = by(nn) + sx0(n,0)*sz0(n,0)*byg(j0,1,l0)
+				by(nn) = by(nn) + sx0(n,1)*sz0(n,0)*byg(j0+1,1,l0)
+				by(nn) = by(nn) + sx0(n,0)*sz0(n,1)*byg(j0,1,l0+1)
+				by(nn) = by(nn) + sx0(n,1)*sz0(n,1)*byg(j0+1,1,l0+1)
+		
+				! Compute Bz on particle
+				bz(nn) = bz(nn) + sx0(n,0)*sz(n,-1)*bzg(j0,1,l-1)
+				bz(nn) = bz(nn) + sx0(n,1)*sz(n,-1)*bzg(j0+1,1,l-1)
+				bz(nn) = bz(nn) + sx0(n,0)*sz(n,0)*bzg(j0,1,l)
+				bz(nn) = bz(nn) + sx0(n,1)*sz(n,0)*bzg(j0+1,1,l)
+				bz(nn) = bz(nn) + sx0(n,0)*sz(n,1)*bzg(j0,1,l+1)
+				bz(nn) = bz(nn) + sx0(n,1)*sz(n,1)*bzg(j0+1,1,l+1)
+
+			end do
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP END SIMD 
+#endif
+		end do 
+
+	! ___________________________ 
+	! l_lower_order_in_v is false
+	else
+
+		! Loop over the particles by block
+		DO ip=1,np,lvect
+
+#if defined __INTEL_COMPILER 
+!!DIR$ IVDEP
+!!DIR$ DISTRIBUTE POINT
+!DIR$ ASSUME_ALIGNED xp:64,zp:64
+!DIR$ ASSUME_ALIGNED sx:64,sz:64
+!DIR$ ASSUME_ALIGNED sx0:64,sz0:64
+!DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+	!$OMP SIMD 
+#endif 
+#elif defined __IBMBGQ__
+			!IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+			!DIR$ SIMD 
+#endif
+			! Loop over the particles inside a block
+			DO n=1,MIN(lvect,np-ip+1)
+
+				nn=ip+n-1
+
+				x = (xp(nn)-xmin)*dxi
+				z = (zp(nn)-zmin)*dzi
+
+				j=nint(x)
+				j0=floor(x)
+
+				l=nint(z)
+				l0=floor(z)
+
+				xint=x-j
+				zint=z-l
+			
+				! Compute shape factors
+				xintsq = xint*xint
+				sx(n,-1) = 0.5_num*(0.5_num-xint)**2
+				sx(n, 0) = 0.75_num-xintsq
+				sx(n, 1) = 0.5_num*(0.5_num+xint)**2
+				
+				zintsq = zint*zint
+				sz(n,-1) = 0.5_num*(0.5_num-zint)**2
+				sz(n, 0) = 0.75_num-zintsq
+				sz(n, 1) = 0.5_num*(0.5_num+zint)**2
+			
+				xint=x-0.5_num-j0
+				zint=z-0.5_num-l0
+			
+				xintsq = xint*xint
+				sx0(n,-1) = 0.5_num*(0.5_num-xint)**2
+				sx0(n, 0) = 0.75_num-xintsq
+				sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
+			
+				zintsq = zint*zint
+				sz0(n,-1) = 0.5_num*(0.5_num-zint)**2
+				sz0(n, 0) = 0.75_num-zintsq
+				sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
+			
+				! Compute Bx on particle
+				bx(nn) = bx(nn) + sx(n,-1)*sz0(n,0)*bxg(j-1,1,l0)
+				bx(nn) = bx(nn) + sx(n,0)*sz0(n,0)*bxg(j,1,l0)
+				bx(nn) = bx(nn) + sx(n,1)*sz0(n,0)*bxg(j+1,1,l0)
+				bx(nn) = bx(nn) + sx(n,-1)*sz0(n,1)*bxg(j-1,1,l0+1)
+				bx(nn) = bx(nn) + sx(n,0)*sz0(n,1)*bxg(j,1,l0+1)
+				bx(nn) = bx(nn) + sx(n,1)*sz0(n,1)*bxg(j+1,1,l0+1)
+			
+				! Compute By on particle
+				by(nn) = by(nn) + sx0(n,0)*sz0(n,0)*byg(j0,1,l0)
+				by(nn) = by(nn) + sx0(n,1)*sz0(n,0)*byg(j0+1,1,l0)
+				by(nn) = by(nn) + sx0(n,0)*sz0(n,1)*byg(j0,1,l0+1)
+				by(nn) = by(nn) + sx0(n,1)*sz0(n,1)*byg(j0+1,1,l0+1)
+    
+				! Compute Bz on particle
+				bz(nn) = bz(nn) + sx0(n,0)*sz(n,-1)*bzg(j0,1,l-1)
+				bz(nn) = bz(nn) + sx0(n,1)*sz(n,-1)*bzg(j0+1,1,l-1)
+				bz(nn) = bz(nn) + sx0(n,0)*sz(n,0)*bzg(j0,1,l)
+				bz(nn) = bz(nn) + sx0(n,1)*sz(n,0)*bzg(j0+1,1,l)
+				bz(nn) = bz(nn) + sx0(n,0)*sz(n,1)*bzg(j0,1,l+1)
+				bz(nn) = bz(nn) + sx0(n,1)*sz(n,1)*bzg(j0+1,1,l+1)
+
+			enddo
+#if defined _OPENMP && _OPENMP>=201307
+			!$OMP END SIMD 
+#endif
+		end do
+
+	ENDIF
+	return
+
+end subroutine
+
+
+
+!_________________________________________________________________________________________
+!> @brief
+!> Field gathering cartesian in 2D for the magnetic field at order 3
+!
+!> @details
+!> This function is vectorized
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 12/01/2016
+!
+!> @param[in] np Number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[inout] bx,by,bz magnetic field particle arrays
+!> @param[in] xmin,zmin tile boundaries
+!> @param[in] dx,dz space steps
+!> @param[in] nx,nz space discretization
+!> @param[in] nxguard, nzguard number of guard cells
+!> @param[in] bxg, byg,bzg field arrays
+!> @param[in] lvect the vector length of the block of particles
+!> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
+!
 subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,&
                     nxguard,nzguard,bxg,byg,bzg,lvect,l_lower_order_in_v)
 !_________________________________________________________________________________________
