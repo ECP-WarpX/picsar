@@ -275,7 +275,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 	IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DEFAULT(NONE)                                                              &
 	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old,zgrid)       &
+	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old)       &
 	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 	!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 	!! Current deposition
@@ -315,7 +315,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
 					curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
 					curr_tile%pid(1,wpid),curr%charge,                       &
 					curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
+					curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,  &
 					nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._lp,.FALSE._lp)
 
 				END DO! END LOOP ON SPECIES
@@ -502,7 +502,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
   IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DEFAULT(NONE)                                                               &
 	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,               &
-	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old, zgrid) &
+	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old) &
 	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,      &
 	!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 	!! Current deposition
@@ -543,7 +543,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
 						curr_tile%pid(1,wpid),curr%charge,                       &
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc, &
 						nxjg,nyjg,nzjg,0_idp)
 
 					ELSE IF ((noxx.eq.2).AND.(noyy.eq.2).AND.(nozz.eq.2)) THEN
@@ -552,7 +552,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
 						curr_tile%pid(1,wpid),curr%charge,                       &
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc, &
 						nxjg,nyjg,nzjg,0_idp)
 
 					ELSE IF ((noxx.eq.1).AND.(noyy.eq.1).AND.(nozz.eq.1)) THEN
@@ -561,7 +561,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
 						curr_tile%pid(1,wpid),curr%charge,                       &
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc, &
 						nxjg,nyjg,nzjg,0_idp)
 
 					ELSE
@@ -570,7 +570,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
 						curr_tile%pid(1,wpid),curr%charge,                       &
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc, &
 						nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._lp,.FALSE._lp)
 
 					ENDIF
@@ -760,7 +760,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
   IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DEFAULT(NONE)                                                             				 &
 	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,             				 &
-	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old, lvect,zgrid) &
+	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old, lvect) &
 	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     			 &
 	!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 	!! Current deposition
@@ -801,7 +801,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      	&
 						curr_tile%pid(1,wpid),curr%charge,                       	&
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     	&
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,  &
 						nxjg,nyjg,nzjg,LVECT)
 
 					ELSE IF ((noxx.eq.2).AND.(noyy.eq.2).AND.(nozz.eq.2)) THEN
@@ -810,7 +810,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      	&
 						curr_tile%pid(1,wpid),curr%charge,                       	&
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     	&
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,  &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,  &
 						nxjg,nyjg,nzjg,lvect)
 
 					ELSE IF ((noxx.eq.1).AND.(noyy.eq.1).AND.(nozz.eq.1)) THEN
@@ -819,7 +819,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
 						curr_tile%pid(1,wpid),curr%charge,                       &
 						curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc, &
 						nxjg,nyjg,nzjg,lvect)
 
 					ELSE
@@ -828,7 +828,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
 					  curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
 					  curr_tile%pid(1,wpid),curr%charge,                       &
 					  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-					  curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc, &
+					  curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc, &
 				    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._lp,.FALSE._lp)
 
 					ENDIF
@@ -1040,7 +1040,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
 
 	!$OMP PARALLEL DEFAULT(NONE)                                                              &
 	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old,zgrid) &
+	!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old) &
 	!$OMP FIRSTPRIVATE(lvectt)                                                                &
 	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 	!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg,             &
@@ -1081,7 +1081,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     					&
 						curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,			&
 						curr_tile%y_grid_tile_min,     																		&
-						curr_tile%z_grid_tile_min+zgrid,dxx,dyy,dzz,nxc,nyc,nzc,          &
+						curr_tile%z_grid_tile_min,dxx,dyy,dzz,nxc,nyc,nzc,          &
 						nxjg,nyjg,nzjg,lvectt)
 
 					END DO! END LOOP ON SPECIES
@@ -1263,7 +1263,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog,nxx,nyy,nzz,nxjguard,nyjguar
 IF (nspecies .EQ. 0_idp) RETURN
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old,zgrid) &
+!$OMP nzjguard,dxx,dyy,dzz,dtt,rhog,noxx,noyy,nozz,aofgrid_tiles, c_dim, c_rho_old) &
 !$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
 !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
 !! Current deposition
@@ -1304,14 +1304,14 @@ DO iz=1,ntilez
 						curr_tile%part_x,curr_tile%part_z,     												&
 						curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,     		&
 						curr_tile%part_gaminv,curr_tile%pid(1,wpid),curr%charge,  		&
-						curr_tile%x_grid_tile_min,  curr_tile%z_grid_tile_min+zgrid, 	&
+						curr_tile%x_grid_tile_min,  curr_tile%z_grid_tile_min, 	&
 						dtt,dxx,dzz,nxc,nzc,                          								&
 						nxjg,nzjg,noxx,nozz,.TRUE._lp,.FALSE._lp)
 					CASE DEFAULT  ! Rho at current time
 						CALL pxr_depose_rho_n_2dxz(currg%rhotile(:,0,:),count,        &
 						curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,     			&
 						curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,  &
-						curr_tile%z_grid_tile_min+zgrid,dxx,dzz,nxc,nzc,              &
+						curr_tile%z_grid_tile_min,dxx,dzz,nxc,nzc,              &
 						nxjg,nzjg,noxx,nozz,.TRUE._lp,.FALSE._lp,.FALSE._lp,0_idp)
 					END SELECT
 

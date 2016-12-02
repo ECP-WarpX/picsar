@@ -144,7 +144,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 
 	IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
+	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 	!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
 	!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,&
 	!$OMP particle_pusher,fieldgathe) &
@@ -209,7 +209,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 													curr_tile%part_ey,curr_tile%part_ez,                   			            &
 													curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			          &
 													curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                    &
-													curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
+													curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
 													curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,              &
 													nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					                &
 													currg%eztile,                                          			            &
@@ -224,7 +224,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 													curr_tile%part_ey,curr_tile%part_ez,                   			          &
 													curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			        &
 													curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                  &
-													curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
+													curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
 													curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,            &
 													nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					              &
 													currg%eztile,                                          			          &
@@ -355,7 +355,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 	!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 	!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
-	!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,lvec_fieldgathe,l_lower_order_in_v,zgrid) &
+	!$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,lvec_fieldgathe,l_lower_order_in_v) &
 	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 	!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 	DO iz=1, ntilez ! LOOP ON TILES
@@ -415,7 +415,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 										curr_tile%part_gaminv, &
 										curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
 										curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
+										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min, &
 										dxx,dyy,dzz,dtt,&
 										curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
 										nxjg,nyjg,nzjg, &
@@ -432,7 +432,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 										curr_tile%part_gaminv, &
 										curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
 										curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
+										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min, &
 										dxx,dyy,dzz,dtt,&
 										curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
 										nxjg,nyjg,nzjg, &
@@ -449,7 +449,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 										curr_tile%part_gaminv, &
 										curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
 										curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min+zgrid, &
+										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min, &
 										dxx,dyy,dzz,dtt,&
 										curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
 										nxjg,nyjg,nzjg, &
@@ -545,7 +545,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 	!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
 	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 	!$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg, &
-	!$OMP bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,zgrid, particle_pusher) &
+	!$OMP bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim, particle_pusher) &
 	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
 	!$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
 	DO iz=1, ntilez ! LOOP ON TILES
@@ -718,7 +718,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 
 	IF (nspecies .EQ. 0_idp) RETURN
 	!$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,zgrid, &
+	!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
 	!$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy, &
 	!$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgathe,particle_pusher) &
 	!$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
@@ -779,7 +779,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 										curr_tile%part_ey,curr_tile%part_ez,                   			&
 										curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			&
 										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-										curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
+										curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
 										curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
 										nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
 										currg%eztile,                                          			&
@@ -792,7 +792,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 										curr_tile%part_ey,curr_tile%part_ez,                   		   		&
 										curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,          		&
 										curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,             		&
-										curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
+										curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
 										curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,       		&
 										nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 				   		&
 										currg%eztile,                                          				&

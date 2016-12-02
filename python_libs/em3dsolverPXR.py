@@ -238,7 +238,7 @@ class EM3DPXR(EM3DFFT):
         pxr.y_grid_max_local=pxr.y_max_local
         pxr.z_grid_min_local=pxr.z_min_local
         pxr.z_grid_max_local=pxr.z_max_local
-        pxr.zgrid=top.zgrid
+        #pxr.zgrid=top.zgrid
 
         pxr.length_x = pxr.xmax-pxr.xmin
         pxr.length_y = pxr.ymax-pxr.ymin
@@ -985,8 +985,9 @@ class EM3DPXR(EM3DFFT):
 
         # --- call beforestep functions
         callbeforestepfuncs.callfuncsinlist()
-        top.zgrid+=top.vbeamfrm*top.dt
-        top.zbeam=top.zgrid
+        #top.zgrid+=top.vbeamfrm*top.dt
+        #top.zbeam=top.zgrid
+
         # --- gather fields from grid to particles
 #        w3d.pgroupfsapi = top.pgroup
 #        for js in range(top.pgroup.ns):
@@ -1049,6 +1050,7 @@ class EM3DPXR(EM3DFFT):
                         self.push_velocity_full(0,pg)
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
+
         # --- Particle sorting
         if l_pxr:
           if ((self.sorting.activated)and(top.it>=0)):
@@ -1056,6 +1058,8 @@ class EM3DPXR(EM3DFFT):
 
         # --- call beforeloadrho functions
         beforeloadrho.callfuncsinlist()
+
+
         pgroups = []
         for i,s in enumerate(self.listofallspecies):
             pgroups+=s.flatten(s.pgroups)
@@ -1063,12 +1067,19 @@ class EM3DPXR(EM3DFFT):
 #        self.loadsource(pgroups=pgroups)
         #tdebpart=MPI.Wtime()
 
-        # Call user-defined injection routines
-        userinjection.callfuncsinlist()
-        if (self.l_pxr):
-            pxr.zgrid=self.zgrid
+        # Call user-defined injection routines       
+	userinjection.callfuncsinlist()
+
+	xgrid=w3d.xmmin-pxr.xmin
+	ygrid=w3d.ymmin-pxr.ymin
+	zgrid=w3d.zmmin-pxr.zmin
+
+        if (xgrid != 0 or ygrid!=0 or zgrid !=0):
+            pxr.pxr_move_sim_boundaries(xgrid,ygrid,zgrid)
+
         self.loadrho(pgroups=pgroups)
         self.loadj(pgroups=pgroups)
+    
         # Moving window
 
         #tendpart=MPI.Wtime()
