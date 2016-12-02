@@ -41,13 +41,18 @@ SUBROUTINE field_gathering_plus_particle_pusher
 #endif
 	IF (nspecies .EQ. 0_idp) RETURN
 	SELECT CASE (c_dim)
-		CASE (2) ! 2D CASE X Z
+	
+		! ___________________________________________________________
+		! 2D CASE X Z
+		CASE (2)
 
-		! Particle advance (one time step)
-		CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-		 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+			! Particle advance (one time step)
+			CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+			 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
 
-		CASE DEFAULT ! 3D CASE
+		! ___________________________________________________________
+		! 3D CASE
+		CASE DEFAULT
 
 			! The field gathering and the particle pusher are performed together
 			IF (fg_p_pp_separated.eq.0) THEN
