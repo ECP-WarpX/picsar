@@ -16,7 +16,7 @@ nox=2 # order of gathering
 noy=2
 noz=2
 
-l_lower_order_in_v=True
+l_lower_order_in_v=False
   
 filename="gathering_routines_2d_"+str(nox)+"_"+str(noz)+".F90"
 subroutine_b_field="getb2dxz_energy_conserving_"+str(nox)+"_"+str(noz)
@@ -382,10 +382,17 @@ fh.write("sx=0.0_num\n");
 fh.write("sz=0.0_num\n");
 fh.write("sx0=0.0_num\n");
 fh.write("sz0=0.0_num\n");
-fh.write("DO ip=1,np\n");
+
+fh.write(indent_1+"IF (l_lower_order_in_v) THEN\n")
+fh.write(indent_2+"DO ip=1,np,lvect\n")
+fh.write(indent_3+"DO n=1,MIN(lvect,np-ip+1)\n")
+fh.write(indent_3+"\n")
+
+fh.write(indent_4+"nn=ip+n-1\n")
+
 fh.write(indent_2+"\n")
-fh.write(indent_2+"x = (xp(ip)-xmin)*dxi\n");
-fh.write(indent_2+"z = (zp(ip)-zmin)*dzi\n");
+fh.write(indent_2+"x = (xp(nn)-xmin)*dxi\n");
+fh.write(indent_2+"z = (zp(nn)-zmin)*dzi\n");
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute index of particle\n")
 if (l_lower_order_in_v):
@@ -419,38 +426,38 @@ fh.write(indent_2+"zint=z-l\n");
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute shape factors\n")
 if(nox==1):
-    fh.write(indent_2+"sx( 0) = 1.0_num-xint\n");
-    fh.write(indent_2+"sx( 1) = xint\n");
+    fh.write(indent_2+"sx(n, 0) = 1.0_num-xint\n");
+    fh.write(indent_2+"sx(n, 1) = xint\n");
 if(nox==2):
     fh.write(indent_2+"xintsq = xint*xint\n");
-    fh.write(indent_2+"sx(-1) = 0.5_num*(0.5_num-xint)**2\n");
-    fh.write(indent_2+"sx( 0) = 0.75_num-xintsq\n");
-    fh.write(indent_2+"sx( 1) = 0.5_num*(0.5_num+xint)**2\n");
+    fh.write(indent_2+"sx(n,-1) = 0.5_num*(0.5_num-xint)**2\n");
+    fh.write(indent_2+"sx(n, 0) = 0.75_num-xintsq\n");
+    fh.write(indent_2+"sx(n, 1) = 0.5_num*(0.5_num+xint)**2\n");
 if (nox==3):
     fh.write(indent_2+"oxint = 1.0_num-xint\n");
     fh.write(indent_2+"xintsq = xint*xint\n");
     fh.write(indent_2+"oxintsq = oxint*oxint\n");
-    fh.write(indent_2+"sx(-1) = onesixth*oxintsq*oxint\n");
-    fh.write(indent_2+"sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)\n");
-    fh.write(indent_2+"sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)\n");
-    fh.write(indent_2+"sx( 2) = onesixth*xintsq*xint\n");
+    fh.write(indent_2+"sx(n,-1) = onesixth*oxintsq*oxint\n");
+    fh.write(indent_2+"sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)\n");
+    fh.write(indent_2+"sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)\n");
+    fh.write(indent_2+"sx(n, 2) = onesixth*xintsq*xint\n");
 
 if(noz==1):
-    fh.write(indent_2+"sz( 0) = 1.0_num-zint\n");
-    fh.write(indent_2+"sz( 1) = zint\n");
+    fh.write(indent_2+"sz(n, 0) = 1.0_num-zint\n");
+    fh.write(indent_2+"sz(n, 1) = zint\n");
 if(noz==2):
     fh.write(indent_2+"zintsq = zint*zint\n");
-    fh.write(indent_2+"sz(-1) = 0.5_num*(0.5_num-zint)**2\n");
-    fh.write(indent_2+"sz( 0) = 0.75_num-zintsq\n");
-    fh.write(indent_2+"sz( 1) = 0.5_num*(0.5_num+zint)**2\n");
+    fh.write(indent_2+"sz(n,-1) = 0.5_num*(0.5_num-zint)**2\n");
+    fh.write(indent_2+"sz(n, 0) = 0.75_num-zintsq\n");
+    fh.write(indent_2+"sz(n, 1) = 0.5_num*(0.5_num+zint)**2\n");
 if(noz==3):
     fh.write(indent_2+"ozint = 1.0_num-zint\n");
     fh.write(indent_2+"zintsq = zint*zint\n");
     fh.write(indent_2+"ozintsq = ozint*ozint\n");
-    fh.write(indent_2+"sz(-1) = onesixth*ozintsq*ozint\n");
-    fh.write(indent_2+"sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
-    fh.write(indent_2+"sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
-    fh.write(indent_2+"sz( 2) = onesixth*zintsq*zint\n");
+    fh.write(indent_2+"sz(n,-1) = onesixth*ozintsq*ozint\n");
+    fh.write(indent_2+"sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
+    fh.write(indent_2+"sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
+    fh.write(indent_2+"sz(n, 2) = onesixth*zintsq*zint\n");
     
 fh.write(indent_2+"\n");
 fh.write(indent_2+"xint=x-0.5_num-j0\n");
@@ -459,84 +466,85 @@ fh.write(indent_2+"zint=z-0.5_num-l0\n");
 if(l_lower_order_in_v):
     fh.write(indent_2+"\n"); 
     if(nox==1):
-        fh.write(indent_2+"sx0( 0) = 1.0_num\n");
+        fh.write(indent_2+"sx0(n, 0) = 1.0_num\n");
     if (nox==2):
-        fh.write(indent_2+"sx0( 0) = 1.0_num-xint\n");
-        fh.write(indent_2+"sx0( 1) = xint\n");
+        fh.write(indent_2+"sx0(n, 0) = 1.0_num-xint\n");
+        fh.write(indent_2+"sx0(n, 1) = xint\n");
     if (nox==3):
         fh.write(indent_2+"xintsq = xint*xint\n");
-        fh.write(indent_2+"sx0(-1) = 0.5_num*(0.5_num-xint)**2\n");
-        fh.write(indent_2+"sx0( 0) = 0.75_num-xintsq\n");
-        fh.write(indent_2+"sx0( 1) = 0.5_num*(0.5_num+xint)**2\n");
+        fh.write(indent_2+"sx0(n,-1) = 0.5_num*(0.5_num-xint)**2\n");
+        fh.write(indent_2+"sx0(n, 0) = 0.75_num-xintsq\n");
+        fh.write(indent_2+"sx0(n, 1) = 0.5_num*(0.5_num+xint)**2\n");
 
 
     fh.write(indent_2+"\n");     
     if(noz==1):
-        fh.write(indent_2+"sz0( 0) = 1.0_num\n");
+        fh.write(indent_2+"sz0(n, 0) = 1.0_num\n");
     if (noz==2):
-        fh.write(indent_2+"sz0( 0) = 1.0_num-zint\n");
-        fh.write(indent_2+"sz0( 1) = zint\n");
+        fh.write(indent_2+"sz0(n, 0) = 1.0_num-zint\n");
+        fh.write(indent_2+"sz0(n, 1) = zint\n");
     if (noz==3):
         fh.write(indent_2+"zintsq = zint*zint\n");
-        fh.write(indent_2+"sz0(-1) = 0.5_num*(0.5_num-zint)**2\n");
-        fh.write(indent_2+"sz0( 0) = 0.75_num-zintsq\n");
-        fh.write(indent_2+"sz0( 1) = 0.5_num*(0.5_num+zint)**2\n");   
+        fh.write(indent_2+"sz0(n,-1) = 0.5_num*(0.5_num-zint)**2\n");
+        fh.write(indent_2+"sz0(n, 0) = 0.75_num-zintsq\n");
+        fh.write(indent_2+"sz0(n, 1) = 0.5_num*(0.5_num+zint)**2\n");   
         
 else:
     fh.write(indent_2+"\n"); 
     if(nox==1):
-        fh.write(indent_2+"sx0( 0) = 1.0_num-xint\n");
-        fh.write(indent_2+"sx0( 1) = xint\n");
+        fh.write(indent_2+"sx0(n, 0) = 1.0_num-xint\n");
+        fh.write(indent_2+"sx0(n, 1) = xint\n");
     if(nox==2):
         fh.write(indent_2+"xintsq = xint*xint\n");
-        fh.write(indent_2+"sx0(-1) = 0.5_num*(0.5_num-xint)**2\n");
-        fh.write(indent_2+"sx0( 0) = 0.75_num-xintsq\n");
-        fh.write(indent_2+"sx0( 1) = 0.5_num*(0.5_num+xint)**2\n");
+        fh.write(indent_2+"sx0(n,-1) = 0.5_num*(0.5_num-xint)**2\n");
+        fh.write(indent_2+"sx0(n, 0) = 0.75_num-xintsq\n");
+        fh.write(indent_2+"sx0(n, 1) = 0.5_num*(0.5_num+xint)**2\n");
     if (nox==3):
         fh.write(indent_2+"oxint = 1.0_num-xint\n");
         fh.write(indent_2+"xintsq = xint*xint\n");
         fh.write(indent_2+"oxintsq = oxint*oxint\n");
-        fh.write(indent_2+"sx0(-1) = onesixth*oxintsq*oxint\n");
-        fh.write(indent_2+"sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)\n");
-        fh.write(indent_2+"sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)\n");
-        fh.write(indent_2+"sx0( 2) = onesixth*xintsq*xint\n");
+        fh.write(indent_2+"sx0(n,-1) = onesixth*oxintsq*oxint\n");
+        fh.write(indent_2+"sx0(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)\n");
+        fh.write(indent_2+"sx0(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)\n");
+        fh.write(indent_2+"sx0(n, 2) = onesixth*xintsq*xint\n");
         
     fh.write(indent_2+"\n");    
     if(noz==1):
-        fh.write(indent_2+"sz0( 0) = 1.0_num-zint\n");
-        fh.write(indent_2+"sz0( 1) = zint\n");
+        fh.write(indent_2+"sz0(n, 0) = 1.0_num-zint\n");
+        fh.write(indent_2+"sz0(n, 1) = zint\n");
     if(noz==2):
         fh.write(indent_2+"zintsq = zint*zint\n");
-        fh.write(indent_2+"sz0(-1) = 0.5_num*(0.5_num-zint)**2\n");
-        fh.write(indent_2+"sz0( 0) = 0.75_num-zintsq\n");
-        fh.write(indent_2+"sz0( 1) = 0.5_num*(0.5_num+zint)**2\n");
+        fh.write(indent_2+"sz0(n,-1) = 0.5_num*(0.5_num-zint)**2\n");
+        fh.write(indent_2+"sz0(n, 0) = 0.75_num-zintsq\n");
+        fh.write(indent_2+"sz0(n, 1) = 0.5_num*(0.5_num+zint)**2\n");
     if(noz==3):
         fh.write(indent_2+"ozint = 1.0_num-zint\n");
         fh.write(indent_2+"zintsq = zint*zint\n");
         fh.write(indent_2+"ozintsq = ozint*ozint\n");
-        fh.write(indent_2+"sz0(-1) = onesixth*ozintsq*ozint\n");
-        fh.write(indent_2+"sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
-        fh.write(indent_2+"sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
-        fh.write(indent_2+"sz0( 2) = onesixth*zintsq*zint\n");
+        fh.write(indent_2+"sz0(n,-1) = onesixth*ozintsq*ozint\n");
+        fh.write(indent_2+"sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
+        fh.write(indent_2+"sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
+        fh.write(indent_2+"sz0(n, 2) = onesixth*zintsq*zint\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ex on particle\n")
 for ll in range(izmin, izmax+2):
         for jj in range(ixmin0, ixmax0+1):
-            fh.write(indent_2+"ex(ip) = ex(ip) + sx0("+str(jj)+")*sz("+str(ll)+")*exg(j0"+plusi(jj)+",1,l"+plusi(ll)+")\n");
+            fh.write(indent_2+"ex(nn) = ex(nn) + sx0(n,"+str(jj)+")*sz(n,"+str(ll)+")*exg(j0"+plusi(jj)+",1,l"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ey on particle\n")
 for ll in range(izmin, izmax+2):
         for jj in range(ixmin, ixmax+2):
-            fh.write(indent_2+"ey(ip) = ey(ip) + sx("+str(jj)+")*sz("+str(ll)+")*eyg(j"+plusi(jj)+",1,l"+plusi(ll)+")\n");
+            fh.write(indent_2+"ey(nn) = ey(nn) + sx(n,"+str(jj)+")*sz(n,"+str(ll)+")*eyg(j"+plusi(jj)+",1,l"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ez on particle\n")
 for ll in range(izmin0, izmax0+1):
         for jj in range(ixmin, ixmax+2):
-            fh.write(indent_2+"ez(ip) = ez(ip) + sx("+str(jj)+")*sz0("+str(ll)+")*ezg(j"+plusi(jj)+",1,l0"+plusi(ll)+")\n");          
+            fh.write(indent_2+"ez(nn) = ez(nn) + sx(n,"+str(jj)+")*sz0(n,"+str(ll)+")*ezg(j"+plusi(jj)+",1,l0"+plusi(ll)+")\n");          
 
+fh.write("END DO\n");
 fh.write("END DO\n");
 fh.write("DEALLOCATE(sx0,sz0)\n");
 fh.write("RETURN\n");
