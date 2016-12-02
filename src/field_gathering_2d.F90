@@ -113,21 +113,13 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
 		ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
 
 			!!! --- Gather electric field on particles
-			CALL pxr_gete2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz, &
-			                                               nxguard,nzguard,exg,eyg,ezg,l_lower_order_in_v)
-
+			CALL pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+			                                      dx,dz,nx,nz,nxguard,nzguard, &
+			                                      exg,eyg,ezg,LVEC_fieldgathe,l_lower_order_in_v)
 			!!! --- Gather magnetic fields on particles
-			CALL pxr_getb2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz, &
-			                                               nxguard,nzguard,exg,eyg,ezg,l_lower_order_in_v)
-
-			!!! --- Gather electric field on particles
-! 			CALL pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
-! 			                                      dx,dz,nx,nz,nxguard,nzguard, &
-! 			                                      exg,eyg,ezg,l_lower_order_in_v)
-			!!! --- Gather magnetic fields on particles
-! 			CALL pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
-! 			                                      dx,dz,nx,nz,nxguard,nzguard, &
-! 			                                      bxg,byg,bzg,l_lower_order_in_v) 
+			CALL pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
+			                                      dx,dz,nx,nz,nxguard,nzguard, &
+			                                      bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v) 
 	
 		! Arbitrary order
 		ELSE
@@ -146,10 +138,25 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
 END SUBROUTINE geteb2dxz_energy_conserving
 
 !_________________________________________________________________________________________
-!> 2D electric field gathering routine 
+!> @brief
+!> 2D electric field non-optimized gathering routine 
+!
+!> @details
+!> This function is similar to what is implemented in WARP
+!
+!> @param[in] np Number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[inout] ex,ey,ez electric field particle arrays
+!> @param[in] xmin,zmin tile boundaries
+!> @param[in] dx,dz space steps
+!> @param[in] nx,nz space discretization
+!> @param[in] nxguard, nzguard number of guard cells
+!> @param[in] exg, eyg,ezg field arrays
+!> @param[in] lvect vector size for the block of particles
+!> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 subroutine pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
                                        nox,noz,exg,eyg,ezg,l4symtry,l_2drz,l_lower_order_in_v)
-!_________________________________________________________________________________________                                       
+!_________________________________________________________________________________________
 	use constants
 	implicit none
 	
@@ -396,7 +403,7 @@ subroutine pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz
  deallocate(sx0,sz0)
  
 return
- end subroutine pxr_gete2dxz_n_energy_conserving
+end subroutine pxr_gete2dxz_n_energy_conserving
 
 !_________________________________________________________________________________________
 !> @brief
@@ -410,8 +417,19 @@ return
 !
 !> @date
 !> 12/01/2016
+!
+!> @param[in] np Number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[inout] ex,ey,ez electric field particle arrays
+!> @param[in] xmin,zmin tile boundaries
+!> @param[in] dx,dz space steps
+!> @param[in] nx,nz space discretization
+!> @param[in] nxguard, nzguard number of guard cells
+!> @param[in] exg, eyg,ezg field arrays
+!> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
+!
 subroutine pxr_gete2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz, &
-													nxguard,nzguard,exg,eyg,ezg,l_lower_order_in_v)
+                     nxguard,nzguard,exg,eyg,ezg,l_lower_order_in_v)
 
 
 	use constants
@@ -598,7 +616,6 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin
 		
 	endif
 	
-
 end subroutine
 
 !_________________________________________________________________________________________
@@ -607,23 +624,26 @@ end subroutine
 !
 !> This function is vectorized
 !> @details
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 12/01/2016
+!
+!> @param[in] np Number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[inout] ex,ey,ez electric field particle arrays
+!> @param[in] xmin,zmin tile boundaries
+!> @param[in] dx,dz space steps
+!> @param[in] nx,nz space discretization
+!> @param[in] nxguard, nzguard number of guard cells
+!> @param[in] exg, eyg,ezg field arrays
+!> @param[in] lvect vector size for the block of particles
+!> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
+!
 subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz, &
-													nxguard,nzguard,exg,eyg,ezg,lvect,l_lower_order_in_v)
-!                                       
-!
-! Inputs:
-! - np: particle number
-! - xp, zp: particle position arrays
-! - ex,ey,ez: electric field particle arrays
-! - xmin, zmin: tile boundaries
-! - dx, dz: space steps
-! - nx,nz: space discretization
-! - nxguard, nzguard: number of guard cells
-! - exg, eyg,ezg: field arrays
-! - l_lower_order_in_v:
-!
-! output:
-! - ex,ey,ez: electric field particle arrays
+                    nxguard,nzguard,exg,eyg,ezg,lvect,l_lower_order_in_v)
 !_________________________________________________________________________________________
 	use constants
 	implicit none
