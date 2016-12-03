@@ -579,6 +579,11 @@ def test_langmuir_wave():
     if l_pytest: assert (max(div_array) < 1E-5),"L2 norm||DivE - rho/eps0|| too high"
     
     # _____________________________________________________________________
+    # Time statistics
+    
+    em.display_time_statistics()    
+    
+    # _____________________________________________________________________
     # Advice
     
     print
