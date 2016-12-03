@@ -130,8 +130,12 @@ else ifeq ($(SYS),cori2)
 		LARCH=
 	else ifeq ($(MODE),debug)
 		COMP=none
-		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
-		LARCH=	
+		FARGS= -g -O3 -D DEBUG=0 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
+		LARCH=
+	else ifeq ($(MODE),dev)
+		COMP=none
+		FARGS= -O3 -D DEV=0 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto 
+		LARCH=		
 	else ifeq ($(MODE),novec)
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
@@ -193,6 +197,11 @@ ifeq ($(COMP),gnu)
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
+	else ifeq ($(MODE),dev)
+	  FC=mpif90
+	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize 
+	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
+	  #FARGS=-g	
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
 	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules

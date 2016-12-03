@@ -229,7 +229,7 @@ PROGRAM tile_field_gathering_3d_test
   i = 1
   name(i) = 'pxr_gete3d_n_energy_conserving'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 2 ; nox=1 ; noy=1 ; noz=1
+	fieldgathe = 2 ; nox=1 ; noy=1 ; noz=1
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -241,7 +241,7 @@ PROGRAM tile_field_gathering_3d_test
   i = i+1
   name(i) = 'gete3d_energy_conserving_scalar_1_1_1'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 1 ; nox=1 ; noy=1 ; noz=1
+	fieldgathe = 1 ; nox=1 ; noy=1 ; noz=1
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -254,7 +254,7 @@ PROGRAM tile_field_gathering_3d_test
   i = i+1
   name(i) = 'geteb3d_energy_conserving_vec_1_1_1'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=1 ; noy=1 ; noz=1
+	fieldgathe = 0 ; nox=1 ; noy=1 ; noz=1
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -285,7 +285,7 @@ PROGRAM tile_field_gathering_3d_test
 	i = 1
 	name(i) = 'pxr_gete3d_n_energy_conserving'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 2 ; nox=2 ; noy=2 ; noz=2
+	fieldgathe = 2 ; nox=2 ; noy=2 ; noz=2
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -297,7 +297,7 @@ PROGRAM tile_field_gathering_3d_test
 	i = i+1
 	name(i) = 'gete3d_energy_conserving_scalar_2_2_2'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 1 ; nox=2 ; noy=2 ; noz=2
+	fieldgathe = 1 ; nox=2 ; noy=2 ; noz=2
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -309,7 +309,7 @@ PROGRAM tile_field_gathering_3d_test
   i = i+1
   name(i) = 'geteb3d_energy_conserving_vec_2_2_2'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=2 ; noy=2 ; noz=2
+	fieldgathe = 0 ; nox=2 ; noy=2 ; noz=2
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -340,7 +340,7 @@ PROGRAM tile_field_gathering_3d_test
 	i = 1
 	name(i) = 'pxr_gete3d_n_energy_conserving'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 2 ; nox=3 ; noy=3 ; noz=3
+	fieldgathe = 2 ; nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -352,7 +352,7 @@ PROGRAM tile_field_gathering_3d_test
 	i = i+1
 	name(i) = 'gete3d_energy_conserving_scalar_3_3_3'
   write(0,*) 'Computation of ',name(i)
-	fieldgave = 1 ; nox=3 ; noy=3 ; noz=3
+	fieldgathe = 1 ; nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
@@ -364,7 +364,7 @@ PROGRAM tile_field_gathering_3d_test
   i = i+1
   name(i) = 'geteb3d_energy_conserving_vec_3_3_3'
 	write(0,*) 'Computation of ',name(i)
-	fieldgave = 0 ; nox=3 ; noy=3 ; noz=3
+	fieldgathe = 0 ; nox=3 ; noy=3 ; noz=3
 	t0 = MPI_WTIME()
 	CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
 	nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
