@@ -554,7 +554,7 @@ PROGRAM field_gathering_3d_test
   IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
   IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
   IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
-
+  
 
 #endif
 
