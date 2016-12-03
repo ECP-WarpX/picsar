@@ -251,7 +251,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,LVEC_fieldgathe,l_lower_order_in_v)
         !!! --- Gather magnetic fields on particles
-        CALL getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
+        CALL getb3d_energy_conserving_vect2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
       ELSE
