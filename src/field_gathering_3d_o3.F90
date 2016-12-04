@@ -535,7 +535,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,
 RETURN
 END SUBROUTINE
 
-
+#if defined(DEV)
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -1086,14 +1086,25 @@ SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
 
 RETURN
 END SUBROUTINE
+#endif
 
+#if defined(DEV)
 ! ________________________________________________________________________________________
+!> @brief
+! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles
+! at order 3
+!
+!> @details
+!> This function is not vectorized
+!
+!> @date
+!> Creation 2016
+!
+!> @author
+!> Mathieu Lobet
 SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,l_lower_order_in_v)
-! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles
-! at order 3
-! This function is not vectorized                                      
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1569,7 +1580,7 @@ SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,
   
 RETURN
 END SUBROUTINE
-
+#endif
 
 #if defined(DEV)
 ! ________________________________________________________________________________________
@@ -1586,7 +1597,7 @@ END SUBROUTINE
 !> @author
 !> Mathieu Lobet
 !
-SUBROUTINE gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
+SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
 ! ________________________________________________________________________________________
@@ -2190,7 +2201,7 @@ SUBROUTINE gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,  
 ENDIF
 
 RETURN
-END SUBROUTINE gete3d_energy_conserving_3_3_3
+END SUBROUTINE
 #endif
 
 
@@ -2207,7 +2218,7 @@ END SUBROUTINE gete3d_energy_conserving_3_3_3
 !
 !> @author
 !> Mathieu Lobet
-SUBROUTINE getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
+SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ________________________________________________________________________________________
@@ -2753,7 +2764,7 @@ SUBROUTINE getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,  
   
   ENDIF
   RETURN
-END SUBROUTINE getb3d_energy_conserving_3_3_3
+END SUBROUTINE
 #endif
 
 #if defined(DEV)
@@ -4030,7 +4041,7 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !
-SUBROUTINE geteb3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+SUBROUTINE geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )

@@ -432,6 +432,37 @@ PROGRAM field_gathering_3d_test
   IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
   IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
 
+  !write(0,*) 'test 3: geteb3d_energy_conserving_1_1_1'
+  i = i + 1  
+  namee(i) = 'geteb3d_energy_conserving_blockvec2_3_3_3'
+  nameb(i) = 'geteb3d_energy_conserving_blockvec2_3_3_3'
+  ex = 0 ; ey = 0 ; ez = 0
+  bx = 0 ; by = 0 ; bz = 0
+  t0 = MPI_WTIME()
+  CALL geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+  te(i) = MPI_WTIME() -t0
+
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+  errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+  errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+  errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+  errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+  errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)   
+  IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+
+  ! _________________________________________
+  ! Test of extra developer's functions
+#if defined(DEV)
+
   !write(0,*) 'test 2: gete3d_energy_conserving_scalar_1_1_1'
   i = i + 1  
   namee(i) = 'gete3d_energy_conserving_linear_3_3_3'
@@ -465,50 +496,19 @@ PROGRAM field_gathering_3d_test
   IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
   IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
 
-  !write(0,*) 'test 3: geteb3d_energy_conserving_1_1_1'
   i = i + 1  
-  namee(i) = 'geteb3d_energy_conserving_blockvec2_3_3_3'
-  nameb(i) = 'geteb3d_energy_conserving_blockvec2_3_3_3'
-  ex = 0 ; ey = 0 ; ez = 0
-  bx = 0 ; by = 0 ; bz = 0
-  t0 = MPI_WTIME()
-  CALL geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
-  te(i) = MPI_WTIME() -t0
-
-  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
-  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
-  errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
-  errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
-  errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
-  errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
-  errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
-  errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)   
-  IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
-  IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
-  IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
-  IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
-  IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
-  IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
-
-  ! _________________________________________
-  ! Test of extra developer's functions
-#if defined(DEV)
-
-  i = i + 1  
-  namee(i) = 'gete3d_energy_conserving_3_3_3'
-  nameb(i) = 'getb3d_energy_conserving_3_3_3'
+  namee(i) = 'gete3d_energy_conserving_vec_3_3_3'
+  nameb(i) = 'getb3d_energy_conserving_vec_3_3_3'
   ex = 0 ; ey = 0 ; ez = 0
   bx = 0 ; by = 0 ; bz = 0
   
-  CALL gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+  CALL gete3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() -t0 
   
   t0 = MPI_WTIME()
-  CALL getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+  CALL getb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() -t0 
@@ -529,13 +529,13 @@ PROGRAM field_gathering_3d_test
   IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
 
   i = i + 1  
-  namee(i) = 'geteb3d_energy_conserving_3_3_3'
-  nameb(i) = 'geteb3d_energy_conserving_3_3_3'
+  namee(i) = 'geteb3d_energy_conserving_vec_3_3_3'
+  nameb(i) = 'geteb3d_energy_conserving_vec_3_3_3'
   ex = 0 ; ey = 0 ; ez = 0
   bx = 0 ; by = 0 ; bz = 0
   
   t0 = MPI_WTIME()
-  CALL geteb3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+  CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() -t0 
