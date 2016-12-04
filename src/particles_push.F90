@@ -2639,6 +2639,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC

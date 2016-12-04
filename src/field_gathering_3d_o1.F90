@@ -9,228 +9,230 @@
 ! 
 ! - gete3d_energy_conserving_scalar_1_1_1
 ! - getb3d_energy_conserving_scalar_1_1_1
-! - gete3d_energy_conserving_linear_1_1_1
-! - getb3d_energy_conserving_linear_1_1_1
+!
 ! - gete3d_energy_conserving_1_1_1
 ! - getb3d_energy_conserving_1_1_1
 ! 
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
-!> Scalar version: gathering of electric field from Yee grid ("energy conserving") on particles
-!> at order 1
 !> @brief
+!> Scalar version: gathering of electric field from Yee grid ("energy conserving")
+!> on particles at order 1.
+!
+!> @details
+!> This subroutine is NOT vectorized.
 SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,l_lower_order_in_v)
 !
 ! ________________________________________________________________________________________
 
-USE omp_lib
-USE constants
-USE params
+  USE omp_lib
+  USE constants
+  USE params
 
-IMPLICIT NONE
-INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-logical                              :: l_lower_order_in_v
-REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
-INTEGER(isp)                         :: ip, j, k, l
-INTEGER(isp)                         :: ixmin, ixmax, iymin, iymax, izmin, izmax
-INTEGER(isp)                         :: ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0
-INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
-REAL(num)                            :: dxi, dyi, dzi, x, y, z
-REAL(num)                            :: xint, yint, zint, &
-              xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-REAL(num), DIMENSION(0:1)            :: sx, sx0
-REAL(num), DIMENSION(0:1)            :: sy, sy0
-REAL(num), DIMENSION(0:1)            :: sz, sz0
-REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
-REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+  IMPLICIT NONE
+  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
+  logical                              :: l_lower_order_in_v
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(isp)                         :: ip, j, k, l
+  INTEGER(isp)                         :: ixmin, ixmax, iymin, iymax, izmin, izmax
+  INTEGER(isp)                         :: ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0
+  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z
+  REAL(num)                            :: xint, yint, zint, &
+                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num), DIMENSION(0:1)            :: sx, sx0
+  REAL(num), DIMENSION(0:1)            :: sy, sy0
+  REAL(num), DIMENSION(0:1)            :: sz, sz0
+  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
 
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
 
-ixmin = 0
-ixmax = 0
-iymin = 0
-iymax = 0
-izmin = 0
-izmax = 0
+  ixmin = 0
+  ixmax = 0
+  iymin = 0
+  iymax = 0
+  izmin = 0
+  izmax = 0
 
-sx=0.0_num
-sy=0.0_num
-sz=0.0_num
-sx0=0.0_num
-sy0=0.0_num
-sz0=0.0_num
+  sx=0.0_num
+  sy=0.0_num
+  sz=0.0_num
+  sx0=0.0_num
+  sy0=0.0_num
+  sz0=0.0_num
 
-IF (l_lower_order_in_v) THEN
+  IF (l_lower_order_in_v) THEN
 
-  ixmin0 = 0
-  ixmax0 = 0
-  iymin0 = 0
-  iymax0 = 0
-  izmin0 = 0
-  izmax0 = 0
+    ixmin0 = 0
+    ixmax0 = 0
+    iymin0 = 0
+    iymax0 = 0
+    izmin0 = 0
+    izmax0 = 0
 
-  DO ip=1,np
+    DO ip=1,np
   
-    x = (xp(ip)-xmin)*dxi
-    y = (yp(ip)-ymin)*dyi
-    z = (zp(ip)-zmin)*dzi
+      x = (xp(ip)-xmin)*dxi
+      y = (yp(ip)-ymin)*dyi
+      z = (zp(ip)-zmin)*dzi
     
-    ! Compute index of particle
+      ! Compute index of particle
     
-    j=floor(x)
-    j0=floor(x)
-    k=floor(y)
-    k0=floor(y)
-    l=floor(z)
-    l0=floor(z)
+      j=floor(x)
+      j0=floor(x)
+      k=floor(y)
+      k0=floor(y)
+      l=floor(z)
+      l0=floor(z)
     
-    xint=x-j
-    yint=y-k
-    zint=z-l
+      xint=x-j
+      yint=y-k
+      zint=z-l
     
-    ! Compute shape factors
-    sx( 0) = 1.0_num-xint
-    sx( 1) = xint
-    sy( 0) = 1.0_num-yint
-    sy( 1) = yint
-    sz( 0) = 1.0_num-zint
-    sz( 1) = zint
+      ! Compute shape factors
+      sx( 0) = 1.0_num-xint
+      sx( 1) = xint
+      sy( 0) = 1.0_num-yint
+      sy( 1) = yint
+      sz( 0) = 1.0_num-zint
+      sz( 1) = zint
     
-    xint=x-0.5_num-j0
-    yint=y-0.5_num-k0
-    zint=z-0.5_num-l0
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
     
-    sx0( 0) = 1.0_num
-    sy0( 0) = 1.0_num
-    sz0( 0) = 1.0_num
+      sx0( 0) = 1.0_num
+      sy0( 0) = 1.0_num
+      sz0( 0) = 1.0_num
     
-    do ll = izmin, izmax+1
-      do kk = iymin, iymax+1
-      	! Prevent wrong vectorization from the compiler
-      	!DIR$ NOVECTOR
-        do jj = ixmin0, ixmax0
-          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+      do ll = izmin, izmax+1
+        do kk = iymin, iymax+1
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
+          do jj = ixmin0, ixmax0
+            ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+          end do
         end do
       end do
-    end do
 
-    do ll = izmin, izmax+1
-      do kk = iymin0, iymax0
-      	!DIR$ NOVECTOR
-        do jj = ixmin, ixmax+1
-          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+      do ll = izmin, izmax+1
+        do kk = iymin0, iymax0
+          !DIR$ NOVECTOR
+          do jj = ixmin, ixmax+1
+            ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+          end do
         end do
       end do
-    end do
 
-    do ll = izmin0, izmax0
-      do kk = iymin, iymax+1
-      	!DIR$ NOVECTOR
-        do jj = ixmin, ixmax+1
-          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+      do ll = izmin0, izmax0
+        do kk = iymin, iymax+1
+          !DIR$ NOVECTOR
+          do jj = ixmin, ixmax+1
+            ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+          end do
         end do
       end do
-    end do
 
-    ! Debugging
-!     IF (it.gt.0) THEN
-!       print*,'ex,ey,ez',ex(ip),ey(ip),ez(ip)
-!       print*,'j',j,k,l
-!       print*,'j0',j0,k0,l0  
-!       print*,'sx',sx(:)
-!       print*,'sy',sy(:)   
-!       print*,'sz',sz(:)   
-!       print*,'sx0',sx0(:)
-!       print*,'sy0',sy0(:)   
-!       print*,'sz0',sz0(:)            
-!       read*
-!     ENDIF
+      ! Debugging
+  !     IF (it.gt.0) THEN
+  !       print*,'ex,ey,ez',ex(ip),ey(ip),ez(ip)
+  !       print*,'j',j,k,l
+  !       print*,'j0',j0,k0,l0  
+  !       print*,'sx',sx(:)
+  !       print*,'sy',sy(:)   
+  !       print*,'sz',sz(:)   
+  !       print*,'sx0',sx0(:)
+  !       print*,'sy0',sy0(:)   
+  !       print*,'sz0',sz0(:)            
+  !       read*
+  !     ENDIF
 
-  END DO
+    END DO
 
-! __ l_lower_order_in_v false  _____________________________
-ELSE
+  ! __ l_lower_order_in_v false  _____________________________
+  ELSE
 
-  ixmin0 = 0
-  ixmax0 = 1
-  iymin0 = 0
-  iymax0 = 1
-  izmin0 = 0
-  izmax0 = 1
+    ixmin0 = 0
+    ixmax0 = 1
+    iymin0 = 0
+    iymax0 = 1
+    izmin0 = 0
+    izmax0 = 1
 
-  DO ip=1,np
+    DO ip=1,np
     
-    x = (xp(ip)-xmin)*dxi
-    y = (yp(ip)-ymin)*dyi
-    z = (zp(ip)-zmin)*dzi
+      x = (xp(ip)-xmin)*dxi
+      y = (yp(ip)-ymin)*dyi
+      z = (zp(ip)-zmin)*dzi
   
-    ! Compute index of particle
-    j=floor(x)
-    j0=floor(x-0.5_num)
-    k=floor(y)
-    k0=floor(y-0.5_num)
-    l=floor(z)
-    l0=floor(z-0.5_num)
-    xint=x-j
-    yint=y-k
-    zint=z-l
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x-0.5_num)
+      k=floor(y)
+      k0=floor(y-0.5_num)
+      l=floor(z)
+      l0=floor(z-0.5_num)
+      xint=x-j
+      yint=y-k
+      zint=z-l
   
-    ! Compute shape factors
-    sx( 0) = 1.0_num-xint
-    sx( 1) = xint
-    sy( 0) = 1.0_num-yint
-    sy( 1) = yint
-    sz( 0) = 1.0_num-zint
-    sz( 1) = zint
-    xint=x-0.5_num-j0
-    yint=y-0.5_num-k0
-    zint=z-0.5_num-l0
-    sx0( 0) = 1.0_num-xint
-    sx0( 1) = xint
-    sy0( 0) = 1.0_num-yint
-    sy0( 1) = yint
-    sz0( 0) = 1.0_num-zint
-    sz0( 1) = zint
+      ! Compute shape factors
+      sx( 0) = 1.0_num-xint
+      sx( 1) = xint
+      sy( 0) = 1.0_num-yint
+      sy( 1) = yint
+      sz( 0) = 1.0_num-zint
+      sz( 1) = zint
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+      sx0( 0) = 1.0_num-xint
+      sx0( 1) = xint
+      sy0( 0) = 1.0_num-yint
+      sy0( 1) = yint
+      sz0( 0) = 1.0_num-zint
+      sz0( 1) = zint
     
-    do ll = izmin, izmax+1
-      do kk = iymin, iymax+1
-      	! Prevent wrong vectorization from the compiler
-      	!DIR$ NOVECTOR
-        do jj = ixmin0, ixmax0
-          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+      do ll = izmin, izmax+1
+        do kk = iymin, iymax+1
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
+          do jj = ixmin0, ixmax0
+            ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
+          end do
         end do
       end do
-    end do
 
-    do ll = izmin, izmax+1
-      do kk = iymin0, iymax0
-      	! Prevent wrong vectorization from the compiler
-      	!DIR$ NOVECTOR
-        do jj = ixmin, ixmax+1
-          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+      do ll = izmin, izmax+1
+        do kk = iymin0, iymax0
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
+          do jj = ixmin, ixmax+1
+            ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
+          end do
         end do
       end do
-    end do
 
-    do ll = izmin0, izmax0
-      do kk = iymin, iymax+1
-      	! Prevent wrong vectorization from the compiler
-      	!DIR$ NOVECTOR
-        do jj = ixmin, ixmax+1
-          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+      do ll = izmin0, izmax0
+        do kk = iymin, iymax+1
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
+          do jj = ixmin, ixmax+1
+            ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+          end do
         end do
       end do
-    end do
       
-  END DO
-ENDIF
+    END DO
+  ENDIF
 
 RETURN
 END SUBROUTINE gete3d_energy_conserving_scalar_1_1_1
@@ -1193,6 +1195,7 @@ END SUBROUTINE geteb3d_energy_conserving_1_1_1
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
+!
 SUBROUTINE geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -1489,6 +1492,7 @@ END SUBROUTINE
 !> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
+!
 SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &
                                            dxi,dyi,dzi,nx,ny,nz,nxguard,nyguard,nzguard, &
