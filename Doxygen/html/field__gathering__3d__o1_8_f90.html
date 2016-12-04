@@ -281,7 +281,23 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles at order 1. </p>
-<p>This function is vectorized </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2016 Revison 12/04/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>particle magnetic field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile minimum grid position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space steps in every directions </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of grid points in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>magnetic field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>lower order for the interpolation </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -436,6 +452,23 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Scalar version: gathering of electric field from Yee grid ("energy conserving") on particles at order 1. </p>
+<p>This subroutine is NOT vectorized. </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2016 Revison 12/04/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,yp,zp</td><td>particle position </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>particle electric field </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,ymin,zmin</td><td>tile minimum grid position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz</td><td>space step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>time step </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,ny,nz</td><td>number of grid points in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nyguard,nzguard</td><td>number of guard cells in each direction </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>electric field grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>decrease the interpolation order if True </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

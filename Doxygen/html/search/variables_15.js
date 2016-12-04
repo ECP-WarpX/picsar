@@ -22,7 +22,6 @@ var searchData=
   ['zb_5fglobal',['zb_global',['../namespaceshared__data.html#afd2142e5ba5165c1826ad1826cb061e3',1,'shared_data']]],
   ['zb_5foffset_5fglobal',['zb_offset_global',['../namespaceshared__data.html#afbe25de83b836cecc5e144cdee8fbb3e',1,'shared_data']]],
   ['zcoeffs',['zcoeffs',['../namespacefields.html#aab4aa30b16b003222aa946420ff709d6',1,'fields']]],
-  ['zgrid',['zgrid',['../namespaceshared__data.html#aa22a8c4655934eea9cdf5b3c33ca9a33',1,'shared_data']]],
   ['zgtmax',['zgtmax',['../namespacepython__pointers.html#a46b682b61a01fee0e8b0c9aa64e9a59b',1,'python_pointers']]],
   ['zgtmin',['zgtmin',['../namespacepython__pointers.html#ac782e4d3b6e67b7391a8c6f03617f937',1,'python_pointers']]],
   ['zmax',['zmax',['../namespaceshared__data.html#aff54734070a6327d11c386fed6a31878',1,'shared_data']]],

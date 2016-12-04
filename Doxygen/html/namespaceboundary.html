@@ -176,6 +176,8 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ac117306978e83b787afba90c3ac038f4"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceboundary.html#ac117306978e83b787afba90c3ac038f4">particle_bcs_tiles_and_mpi_3d</a></td></tr>
 <tr class="memdesc:ac117306978e83b787afba90c3ac038f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This subroutine combined in a single routine the particle communications between tiles and between MPI domains for 3D.  <a href="#ac117306978e83b787afba90c3ac038f4">More...</a><br /></td></tr>
 <tr class="separator:ac117306978e83b787afba90c3ac038f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc8da330c43e7779c706f9971a24a731"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceboundary.html#acc8da330c43e7779c706f9971a24a731">pxr_move_sim_boundaries</a> (dxx, dyy, dzz)</td></tr>
+<tr class="separator:acc8da330c43e7779c706f9971a24a731"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Module containing routines for boundary conditions on fields, currents and particles. </p>
@@ -587,6 +589,38 @@ Functions/Subroutines</h2></td></tr>
 <p>Boundary condition on tiles - 3D version. </p>
 <p>This version is efficient when the number of tiles is large compared to the number of threads </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="acc8da330c43e7779c706f9971a24a731"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine boundary::pxr_move_sim_boundaries </td>
+          <td>(</td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dxx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dyy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), intent(in)&#160;</td>
+          <td class="paramname"><em>dzz</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

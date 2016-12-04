@@ -5006,7 +5006,7 @@ ENDIF
 END SUBROUTINE
 #endif
 
-#if defined(DEV)
+
 ! ________________________________________________________________________________________
 !
 !> @brief
@@ -5991,12 +5991,9 @@ ENDIF
   
   RETURN 
 END SUBROUTINE
-#endif
 
 
-
-
-
+#if defined(DEV)
 ! ________________________________________________________________________________________
 !> @brief
 !> Field gathering by block at order 3 with gathering of E and B 
@@ -6627,7 +6624,9 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
   
   RETURN 
 END SUBROUTINE
+#endif
 
+#if defined(DEV)
 ! ________________________________________________________________________________________
 !> @brief
 !> Field gathering by block at order 3 with gathering of E and B 
@@ -7295,4 +7294,4 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
   
   RETURN 
 END SUBROUTINE
-
+#endif
