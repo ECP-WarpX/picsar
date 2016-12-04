@@ -8,20 +8,36 @@
 !
 ! - gete3d_energy_conserving_scalar_3_3_3
 ! - getb3d_energy_conserving_scalar_3_3_3
-! - gete3d_energy_conserving_3_3_3
-! - getb3d_energy_conserving_3_3_3
+
 ! - gete3d_energy_conserving_linear_3_3_3
 ! - getb3d_energy_conserving_linear_3_3_3
+
+! - gete3d_energy_conserving_vec_3_3_3
+! - getb3d_energy_conserving_vec_3_3_3
+
+! - gete3d_energy_conserving_vec2_3_3_3
+! - getb3d_energy_conserving_vec2_3_3_3
+
+! - geteb3d_energy_conserving_vec_3_3_3
+
+! - geteb3d_energy_conserving_vec2_3_3_3
+
+! - gete3d_energy_conserving_vecblock_3_3_3
+! - getb3d_energy_conserving_vecblock_3_3_3
+
+! - gete3d_energy_conserving_vecblock2_3_3_3
+! - getb3d_energy_conserving_vecblock2_3_3_3
 ! 
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
+!> @brief
+!> Scalar version: gathering of electric field from Yee grid ("energy conserving")
+!> on particles at order 3
+!
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,l_lower_order_in_v)
-!
-! Scalar version: gathering of electric field from Yee grid ("energy conserving") on particles
-! at order 3
 ! ________________________________________________________________________________________
 
   USE omp_lib
