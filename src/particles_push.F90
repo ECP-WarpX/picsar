@@ -1389,7 +1389,10 @@ END SUBROUTINE pxr_ebcancelpush3d
 !> @date
 !> Creation 2016
 !> Revision 10.06.2015
-
+!
+!> @warning
+!> Only l_lower_order_in_v=True is implemented
+!
 ! Input parameters:
 !> @param[in] np number of particles
 !> @param[in] xp,yp,zp particle position
@@ -1862,7 +1865,10 @@ END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
 !> @date
 !> Creation 2016
 !> Revision 10.06.2015
-
+!
+!> @warning
+!> Only l_lower_order_in_v=True is implemented
+!
 ! Input parameters:
 !> @param[in] np number of particles
 !> @param[in] xp,yp,zp particle position

@@ -35,6 +35,26 @@
 !> Scalar version: gathering of electric field from Yee grid ("energy conserving")
 !> on particles at order 3
 !
+!> @details
+!> This function is not vectorized but performs better than general order subroutines.
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] ex,ey,ez particle electric field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
+!
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,l_lower_order_in_v)
@@ -301,12 +321,33 @@ RETURN
 END SUBROUTINE
 
 ! ________________________________________________________________________________________
+! @brief
+! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving")
+!  on particles at order 3
+!
+!> @details
+!> This function is NOT vectorized but performs better than general order subroutines.
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
+!
 SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,l_lower_order_in_v)
-! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles
-! at order 3
-! This function is vectorized                                      
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -553,13 +594,33 @@ END SUBROUTINE
 
 #if defined(DEV)
 ! ________________________________________________________________________________________
+!> @brief
+!> Scalar version: gathering of electric field from Yee grid ("energy conserving").
+!> on particles at order 3
+!
+!> @details
+!> This function is NOT vectorized
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] ex,ey,ez particle electric field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
+!
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,l_lower_order_in_v)
-!
-! Scalar version: gathering of electric field from Yee grid ("energy conserving") on particles
-! at order 3
-! This function is not vectorized
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1118,6 +1179,19 @@ END SUBROUTINE
 !
 !> @author
 !> Mathieu Lobet
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
+!
 SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,l_lower_order_in_v)
@@ -1612,6 +1686,18 @@ END SUBROUTINE
 !
 !> @author
 !> Mathieu Lobet
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] ex,ey,ez particle electric field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -2234,6 +2320,19 @@ END SUBROUTINE
 !
 !> @author
 !> Mathieu Lobet
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
+!
 SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
@@ -2801,6 +2900,18 @@ END SUBROUTINE
 !
 !> @author
 !> Mathieu Lobet
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] ex,ey,ez particle electric field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -3452,6 +3563,18 @@ END SUBROUTINE
 !
 !> @author
 !> Mathieu Lobet
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
