@@ -239,7 +239,7 @@ CONTAINS
         ! Get particle index in array of tile
 		    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
 		    iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
-		    iztile = MIN(FLOOR((partz-(z_min_local+zgrid)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+		    iztile = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)

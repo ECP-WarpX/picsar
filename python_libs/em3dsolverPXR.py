@@ -257,7 +257,7 @@ class EM3DPXR(EM3DFFT):
         pxr.y_grid_max_local=pxr.y_max_local
         pxr.z_grid_min_local=pxr.z_min_local
         pxr.z_grid_max_local=pxr.z_max_local
-        pxr.zgrid=top.zgrid
+        #pxr.zgrid=top.zgrid
 
         pxr.length_x = pxr.xmax-pxr.xmin
         pxr.length_y = pxr.ymax-pxr.ymin
@@ -1095,8 +1095,9 @@ class EM3DPXR(EM3DFFT):
         # --- call beforestep functions
         if (self.l_debug): print("Call beforestep functions")
         callbeforestepfuncs.callfuncsinlist()
-        top.zgrid+=top.vbeamfrm*top.dt
-        top.zbeam=top.zgrid
+        #top.zgrid+=top.vbeamfrm*top.dt
+        #top.zbeam=top.zgrid
+
         # --- gather fields from grid to particles
         if (self.l_debug): print("Call Field gathering and particle push")
 #        w3d.pgroupfsapi = top.pgroup
@@ -1178,9 +1179,11 @@ class EM3DPXR(EM3DFFT):
                         # Particle boundary conditions
                         tdebpart=MPI.Wtime()
                         particleboundaries3d(pg,-1,False)
+
                         tendpart=MPI.Wtime()
                         self.time_stat_loc_array[1] += (tendpart-tdebpart)
                         
+
         # --- Particle sorting
         if (self.l_debug): print("Call Particle Sorting")
         if l_pxr:
@@ -1193,6 +1196,8 @@ class EM3DPXR(EM3DFFT):
         # --- call beforeloadrho functions
         if (self.l_debug): print("Call beforeloadrho functions")
         beforeloadrho.callfuncsinlist()
+
+
         pgroups = []
         for i,s in enumerate(self.listofallspecies):
             pgroups+=s.flatten(s.pgroups)
@@ -1203,12 +1208,20 @@ class EM3DPXR(EM3DFFT):
         # Call user-defined injection routines
         if (self.l_debug): print("Call user-defined injection routines")
         userinjection.callfuncsinlist()
-        if (self.l_pxr):
-            pxr.zgrid=self.zgrid
+
+        xgrid=w3d.xmmin-pxr.xmin
+        ygrid=w3d.ymmin-pxr.ymin
+        zgrid=w3d.zmmin-pxr.zmin
+
+        if (xgrid != 0 or ygrid!=0 or zgrid !=0):
+            pxr.pxr_move_sim_boundaries(xgrid,ygrid,zgrid)
+
+
         if (self.l_debug): print("Call loadrho")
         self.loadrho(pgroups=pgroups)
         if (self.l_debug): print("Call loadj")
         self.loadj(pgroups=pgroups)
+    
         # Moving window
 
         #tendpart=MPI.Wtime()

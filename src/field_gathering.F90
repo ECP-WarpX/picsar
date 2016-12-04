@@ -100,7 +100,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
-  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,zgrid,fieldgathe) &
+  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,fieldgathe) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -139,31 +139,32 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
             DO ispecies=1, nspecies ! LOOP ON SPECIES
               ! - Get current tile properties
               ! - Init current tile variables
-          curr=>species_parray(ispecies)
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
-          count=curr_tile%np_tile(1)
-          IF (count .EQ. 0) CYCLE
-          curr_tile%part_ex(1:count) = 0.0_num
-          curr_tile%part_ey(1:count) = 0.0_num
-          curr_tile%part_ez(1:count) = 0.0_num
-          curr_tile%part_bx(1:count)=0.0_num
-          curr_tile%part_by(1:count)=0.0_num
-          curr_tile%part_bz(1:count)=0.0_num
-          !!! ---- Loop by blocks over particles in a tile (blocking)
-          !!! --- Gather electric field on particles
 
-            !!! --- Gather electric and magnetic fields on particles
-            CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,            &
-                        curr_tile%part_z, curr_tile%part_ex,                                   &
-                        curr_tile%part_ey,curr_tile%part_ez,                                    &
-                        curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,                &
-                        curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                   &
-                        curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile,  &
-                        curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             &
-                        nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                          &
-                        currg%eztile,                                                           &
-                        currg%bxtile,currg%bytile,currg%bztile                                  &
-                        ,.FALSE._lp,l_lower_order_in_v_in,fieldgathe)
+              curr=>species_parray(ispecies)
+              curr_tile=>curr%array_of_tiles(ix,iy,iz)
+              count=curr_tile%np_tile(1)
+              IF (count .EQ. 0) CYCLE
+              curr_tile%part_ex(1:count) = 0.0_num
+              curr_tile%part_ey(1:count) = 0.0_num
+              curr_tile%part_ez(1:count) = 0.0_num
+              curr_tile%part_bx(1:count)=0.0_num
+              curr_tile%part_by(1:count)=0.0_num
+              curr_tile%part_bz(1:count)=0.0_num
+              !!! ---- Loop by blocks over particles in a tile (blocking)
+              !!! --- Gather electric field on particles
+
+              !!! --- Gather electric and magnetic fields on particles
+              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,            &
+                          curr_tile%part_z, curr_tile%part_ex,                                   &
+                          curr_tile%part_ey,curr_tile%part_ez,                                    &
+                          curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,                &
+                          curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                   &
+                          curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,  &
+                          curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             &
+                          nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                          &
+                          currg%eztile,                                                           &
+                          currg%bxtile,currg%bytile,currg%bztile                                  &
+                          ,.FALSE._lp,l_lower_order_in_v_in,fieldgathe)
 
                 END DO! END LOOP ON SPECIES
             ENDIF
