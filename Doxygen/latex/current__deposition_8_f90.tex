@@ -20,15 +20,15 @@ subroutine \hyperlink{current__deposition_8_f90_a9cba9f74ee775de5a5f60eb97ff619a
 subroutine \hyperlink{current__deposition_8_f90_ac4575c491c1cfe9d048c6cb1b6d5fbdb}{pxrdepose\+\_\+currents\+\_\+on\+\_\+grid\+\_\+jxjyjz\+\_\+esirkepov\+\_\+sub\+\_\+seq} (jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
 \begin{DoxyCompactList}\small\item\em Deposit current in each tile Sequential version. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-\begin{DoxyCompactList}\small\item\em Order 1 3D scalar current deposition routine (rho$\ast$v) This version does not vectorize on S\+I\+MD architectures. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Brief description of routine. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a084ed42e79187e34df1e5e49cb589e87}{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+1\+\_\+1\+\_\+1} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-\begin{DoxyCompactList}\small\item\em Order 1 3D vector current deposition routine (rho$\ast$v) \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Brief description of routine. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a640df01330ec2f2b5ffcb43938a71db5}{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+1\+\_\+1\+\_\+1} (jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
 \begin{DoxyCompactList}\small\item\em Order 1 3D vector current deposition routine (rho$\ast$v) with no reduction. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a3b2c43f71118a3d22ad1d1fea9494fa4}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
 \item 
 subroutine \hyperlink{current__deposition_8_f90_a82878814b59bae3273786c1c0e92deb6}{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-\begin{DoxyCompactList}\small\item\em Order 2 3D vector current deposition routine (rho$\ast$v) \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Brief description of routine. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a110bf577b181354401374e000770acbf}{depose\+\_\+jxjyjz\+\_\+vechv\+\_\+vnr\+\_\+2\+\_\+2\+\_\+2} (jxcells, jycells, jzcells, np, ncells, xp, yp, zp,                                   uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
 \begin{DoxyCompactList}\small\item\em Order 2 3D vector current deposition routine (rho$\ast$v) with no reduction. \end{DoxyCompactList}\item 
 subroutine \hyperlink{current__deposition_8_f90_a9b0dd01b38cde503f1aac44bb2bd1ca8}{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+3\+\_\+3\+\_\+3} (jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
@@ -163,8 +163,8 @@ Mathieu Lobet
 \item[{integer(idp)}]{nox, }
 \item[{integer(idp)}]{noy, }
 \item[{integer(idp)}]{noz, }
-\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
-\item[{logical(idp)}]{l4symtry}
+\item[{logical(lp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(lp)}]{l4symtry}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_ad43ded0ebf597e9d3cb47ff84ec04413}{}\label{current__deposition_8_f90_ad43ded0ebf597e9d3cb47ff84ec04413}
 
@@ -243,8 +243,8 @@ Revision 10/09/2016
 \item[{integer}]{nox, }
 \item[{integer}]{noy, }
 \item[{integer}]{noz, }
-\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
-\item[{logical(idp)}]{l4symtry}
+\item[{logical(lp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(lp)}]{l4symtry}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a1b0279f68e8d25ed75dea74ec525c04b}{}\label{current__deposition_8_f90_a1b0279f68e8d25ed75dea74ec525c04b}
 
@@ -323,8 +323,8 @@ Revision 10/09/2016
 \item[{integer}]{nox, }
 \item[{integer}]{noy, }
 \item[{integer}]{noz, }
-\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
-\item[{logical(idp)}]{l4symtry}
+\item[{logical(lp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(lp)}]{l4symtry}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_a764fd99e306237a96ae8675235ca96bb}{}\label{current__deposition_8_f90_a764fd99e306237a96ae8675235ca96bb}
 
@@ -404,11 +404,69 @@ Revision 10/09/2016
 )}\hypertarget{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}{}\label{current__deposition_8_f90_a7347c7791083dae1b946cdbdce60602f}
 
 
-Order 1 3D scalar current deposition routine (rho$\ast$v) This version does not vectorize on S\+I\+MD architectures. 
+Brief description of routine. 
 
 \begin{DoxyAuthor}{Author}
-Henri Vincenti 
+Henri Vincenti Order 1 3D scalar direct current deposition routine (rho$\ast$v) This version does not vectorize on S\+I\+MD architectures 
 \end{DoxyAuthor}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & Number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp} & 1D array of x-\/coordinates of particles \\
+\hline
+\mbox{\tt in}  & {\em yp} & 1D array of x-\/coordinates of particles \\
+\hline
+\mbox{\tt in}  & {\em zp} & 1D array of x-\/coordinates of particles \\
+\hline
+\mbox{\tt in}  & {\em uxp} & 1D array of ux-\/velocity components of particles \\
+\hline
+\mbox{\tt in}  & {\em uyp} & 1D array of ux-\/velocity components of particles \\
+\hline
+\mbox{\tt in}  & {\em uzp} & 1D array of ux-\/velocity components of particles \\
+\hline
+\mbox{\tt in}  & {\em gaminv} & 1D array of the inverse 1/gamma-\/factor of particles \\
+\hline
+\mbox{\tt in}  & {\em w} & 1D array of the weghts of particles \\
+\hline
+\mbox{\tt in}  & {\em q} & charge of current species (scalar) \\
+\hline
+\mbox{\tt in}  & {\em xmin} & x-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em ymin} & y-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em zmin} & z-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dx} & mesh size along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dy} & mesh size along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dz} & mesh size along z (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nx} & number of cells along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em ny} & number of cells along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nz} & number of cells along z (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nxguard} & number of guard cells along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nyguard} & number of guard cells along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nzguard} & number of guard cells along z (scalar) \\
+\hline
+\mbox{\tt in,out}  & {\em jx} & x-\/current component (3D array) \\
+\hline
+\mbox{\tt in,out}  & {\em jy} & y-\/current component (3D array) \\
+\hline
+\mbox{\tt in,out}  & {\em jz} & z-\/current component (3D array) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyWarning}{Warning}
+arrays jx,jy,jz should be set to 0 before entering this subroutine. 
+\end{DoxyWarning}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2}}
 \index{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_scalar_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+scalar\+\_\+2\+\_\+2\+\_\+2 (
@@ -669,36 +727,69 @@ Mathieu Lobet
 )}\hypertarget{current__deposition_8_f90_a084ed42e79187e34df1e5e49cb589e87}{}\label{current__deposition_8_f90_a084ed42e79187e34df1e5e49cb589e87}
 
 
-Order 1 3D vector current deposition routine (rho$\ast$v) 
+Brief description of routine. 
 
-This versions have good performances on S\+I\+MD architectures Providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD) \begin{DoxyAuthor}{Author}
-Henri Vincenti
+\begin{DoxyAuthor}{Author}
+Henri Vincenti Order 1 3D vector direct current deposition routine (rho$\ast$v) This versions have good performances on S\+I\+MD architectures Providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD) 
 \end{DoxyAuthor}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em jx,jy,jz} & current arrays \\
+\mbox{\tt in}  & {\em np} & Number of particles \\
 \hline
-\mbox{\tt in}  & {\em np} & number of particles \\
+\mbox{\tt in}  & {\em xp} & 1D array of x-\/coordinates of particles \\
 \hline
-\mbox{\tt in}  & {\em xp,yp,zp} & particle position arrays \\
+\mbox{\tt in}  & {\em yp} & 1D array of x-\/coordinates of particles \\
 \hline
-\mbox{\tt in}  & {\em uxp,uyp,uzp} & particle momentum arrays \\
+\mbox{\tt in}  & {\em zp} & 1D array of x-\/coordinates of particles \\
 \hline
-\mbox{\tt in}  & {\em gaminv} & particle Lorentz factor arrays \\
+\mbox{\tt in}  & {\em uxp} & 1D array of ux-\/velocity components of particles \\
 \hline
-\mbox{\tt in}  & {\em w} & particle weight arrays \\
+\mbox{\tt in}  & {\em uyp} & 1D array of ux-\/velocity components of particles \\
 \hline
-\mbox{\tt in}  & {\em q} & particle species charge \\
+\mbox{\tt in}  & {\em uzp} & 1D array of ux-\/velocity components of particles \\
 \hline
-\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile grid minimum position \\
+\mbox{\tt in}  & {\em gaminv} & 1D array of the inverse 1/gamma-\/factor of particles \\
 \hline
-\mbox{\tt in}  & {\em dx,dy,dz} & space discretization steps \\
+\mbox{\tt in}  & {\em w} & 1D array of the weghts of particles \\
 \hline
-\mbox{\tt in}  & {\em nx,ny,nz} & number of cells \\
+\mbox{\tt in}  & {\em q} & charge of current species (scalar) \\
 \hline
-\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells \\
+\mbox{\tt in}  & {\em xmin} & x-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em ymin} & y-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em zmin} & z-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dx} & mesh size along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dy} & mesh size along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dz} & mesh size along z (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nx} & number of cells along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em ny} & number of cells along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nz} & number of cells along z (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nxguard} & number of guard cells along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nyguard} & number of guard cells along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nzguard} & number of guard cells along z (scalar) \\
+\hline
+\mbox{\tt in,out}  & {\em jx} & x-\/current component (3D array) \\
+\hline
+\mbox{\tt in,out}  & {\em jy} & y-\/current component (3D array) \\
+\hline
+\mbox{\tt in,out}  & {\em jz} & z-\/current component (3D array) \\
 \hline
 \end{DoxyParams}
+\begin{DoxyWarning}{Warning}
+arrays jx,jy,jz should be set to 0 before entering this subroutine. 
+\end{DoxyWarning}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2}}
 \index{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2@{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_vechvv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechvv2\+\_\+2\+\_\+2\+\_\+2 (
@@ -733,39 +824,69 @@ Henri Vincenti
 )}\hypertarget{current__deposition_8_f90_a82878814b59bae3273786c1c0e92deb6}{}\label{current__deposition_8_f90_a82878814b59bae3273786c1c0e92deb6}
 
 
-Order 2 3D vector current deposition routine (rho$\ast$v) 
+Brief description of routine. 
 
-This versions have good performances on S\+I\+MD architectures providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD). To use this function, select nox=2, noy=2, noz=2. \begin{DoxyAuthor}{Author}
-Henri Vincenti 
+\begin{DoxyAuthor}{Author}
+Henri Vincenti Order 2 3D vector direct current deposition routine (rho$\ast$v) This versions have good performances on S\+I\+MD architectures Providing that Open\+MP 4.\+0 is available (Directive S\+I\+MD) 
 \end{DoxyAuthor}
-\begin{DoxyDate}{Date}
-2015
-\end{DoxyDate}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\tt in,out}  & {\em jx,jy,jz} & current arrays \\
+\mbox{\tt in}  & {\em np} & Number of particles \\
 \hline
-\mbox{\tt in}  & {\em np} & number of particles \\
+\mbox{\tt in}  & {\em xp} & 1D array of x-\/coordinates of particles \\
 \hline
-\mbox{\tt in}  & {\em xp,yp,zp} & particle position arrays \\
+\mbox{\tt in}  & {\em yp} & 1D array of x-\/coordinates of particles \\
 \hline
-\mbox{\tt in}  & {\em uxp,uyp,uzp} & particle momentum arrays \\
+\mbox{\tt in}  & {\em zp} & 1D array of x-\/coordinates of particles \\
 \hline
-\mbox{\tt in}  & {\em gaminv} & particle Lorentz factor arrays \\
+\mbox{\tt in}  & {\em uxp} & 1D array of ux-\/velocity components of particles \\
 \hline
-\mbox{\tt in}  & {\em w} & particle weight arrays \\
+\mbox{\tt in}  & {\em uyp} & 1D array of ux-\/velocity components of particles \\
 \hline
-\mbox{\tt in}  & {\em q} & particle species charge \\
+\mbox{\tt in}  & {\em uzp} & 1D array of ux-\/velocity components of particles \\
 \hline
-\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile grid minimum position \\
+\mbox{\tt in}  & {\em gaminv} & 1D array of the inverse 1/gamma-\/factor of particles \\
 \hline
-\mbox{\tt in}  & {\em dx,dy,dz} & space discretization steps \\
+\mbox{\tt in}  & {\em w} & 1D array of the weghts of particles \\
 \hline
-\mbox{\tt in}  & {\em nx,ny,nz} & number of cells \\
+\mbox{\tt in}  & {\em q} & charge of current species (scalar) \\
 \hline
-\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells \\
+\mbox{\tt in}  & {\em xmin} & x-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em ymin} & y-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em zmin} & z-\/minimum boundary of current tile \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dx} & mesh size along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dy} & mesh size along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em dz} & mesh size along z (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nx} & number of cells along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em ny} & number of cells along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nz} & number of cells along z (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nxguard} & number of guard cells along x (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nyguard} & number of guard cells along y (scalar) \\
+\hline
+\mbox{\tt in}  & {\em nzguard} & number of guard cells along z (scalar) \\
+\hline
+\mbox{\tt in,out}  & {\em jx} & x-\/current component (3D array) \\
+\hline
+\mbox{\tt in,out}  & {\em jy} & y-\/current component (3D array) \\
+\hline
+\mbox{\tt in,out}  & {\em jz} & z-\/current component (3D array) \\
 \hline
 \end{DoxyParams}
+\begin{DoxyWarning}{Warning}
+arrays jx,jy,jz should be set to 0 before entering this subroutine. 
+\end{DoxyWarning}
 \index{current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}!depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3}}
 \index{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3@{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3}!current\+\_\+deposition.\+F90@{current\+\_\+deposition.\+F90}}
 \subsubsection[{\texorpdfstring{depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}{depose_jxjyjz_vechvv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin,                                       dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine depose\+\_\+jxjyjz\+\_\+vechvv3\+\_\+3\+\_\+3\+\_\+3 (
@@ -868,8 +989,8 @@ Creation 2015 Revison 10/09/2016
 \item[{integer(idp)}]{nox, }
 \item[{integer(idp)}]{noy, }
 \item[{integer(idp)}]{noz, }
-\item[{logical(idp)}]{l\+\_\+particles\+\_\+weight, }
-\item[{logical(idp)}]{l4symtry}
+\item[{logical(lp)}]{l\+\_\+particles\+\_\+weight, }
+\item[{logical(lp)}]{l4symtry}
 \end{DoxyParamCaption}
 )}\hypertarget{current__deposition_8_f90_addb36b5ec8b753baa5098db4d6de7820}{}\label{current__deposition_8_f90_addb36b5ec8b753baa5098db4d6de7820}
 

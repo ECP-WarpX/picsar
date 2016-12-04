@@ -362,7 +362,7 @@ PROGRAM tile_field_gathering_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_vec_3_3_3'
+  name(i) = 'geteb3d_energy_conserving_blockvec2_3_3_3'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 0 ; nox=3 ; noy=3 ; noz=3
   t0 = MPI_WTIME()
@@ -378,7 +378,7 @@ PROGRAM tile_field_gathering_3d_test
 #if defined(DEV)
 
   i = i+1
-  name(i) = 'gete3d_energy_conserving_3_3_3'
+  name(i) = 'gete3d_energy_conserving_vec2_3_3_3'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 5 ; nox=3 ; noy=3 ; noz=3
   t0 = MPI_WTIME()
@@ -390,21 +390,9 @@ PROGRAM tile_field_gathering_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
   
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_3_3_3'
+  name(i) = 'geteb3d_energy_conserving_vec2_3_3_3'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 4 ; nox=3 ; noy=3 ; noz=3
-  t0 = MPI_WTIME()
-  CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  t(i) = MPI_WTIME() - t0
-  CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
-  sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
-  sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
-
-  i = i+1
-  name(i) = 'gete3d_energy_conserving_vect2_3_3_3'
-  write(0,*) 'Computation of ',name(i)
-  fieldgathe = 6 ; nox=3 ; noy=3 ; noz=3
   t0 = MPI_WTIME()
   CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)

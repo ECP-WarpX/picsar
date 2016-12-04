@@ -11,7 +11,7 @@ type \hyperlink{structparticle__speciesmodule_1_1particle__species}{particle\+\_
 \begin{DoxyCompactList}\small\item\em Fortran object representing a particle species. \end{DoxyCompactList}\item 
 type \hyperlink{structcommunications_1_1part__com__buffer}{communications\+::part\+\_\+com\+\_\+buffer}
 \item 
-type \hyperlink{structcommunications_1_1mpi__buffer}{communications\+::mpi\+\_\+buffer}
+type \hyperlink{structcommunications_1_1mpi__tile__buffer}{communications\+::mpi\+\_\+tile\+\_\+buffer}
 \item 
 type \hyperlink{structoutput__data_1_1particle__dump}{output\+\_\+data\+::particle\+\_\+dump}
 \end{DoxyCompactItemize}
@@ -63,6 +63,8 @@ integer, parameter \hyperlink{namespaceconstants_a5a2ae450a00d2a29f9b70dcb776f7a
 \begin{DoxyCompactList}\small\item\em Integer 4 byte precision. \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_ae345db51770e3628e6aaf76e6a45e160}{constants\+::idp} = 8
 \begin{DoxyCompactList}\small\item\em integer double precision \end{DoxyCompactList}\item 
+integer, parameter \hyperlink{namespaceconstants_abcbe699dae64804bc375533c0f40c6b1}{constants\+::lp} = 8
+\begin{DoxyCompactList}\small\item\em logical precision \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a5709f0ae2ee52b1906446ad25ed0f587}{constants\+::cpx} = 8
 \item 
 real(num), parameter \hyperlink{namespaceconstants_ad39536f583f0861abb2fb19a27c56fc8}{constants\+::emass} = 9.\+10938291e-\/31\+\_\+num
@@ -89,7 +91,7 @@ integer, parameter \hyperlink{namespaceconstants_a5d84bc6ed2e3bd7b6e64704dc58782
 \begin{DoxyCompactList}\small\item\em y direction index parameter \end{DoxyCompactList}\item 
 integer, parameter \hyperlink{namespaceconstants_a9d2fa70332164d956c148a895e769983}{constants\+::c\+\_\+dir\+\_\+z} = 3
 \begin{DoxyCompactList}\small\item\em z direction index parameter \end{DoxyCompactList}\item 
-logical \hyperlink{namespaceconstants_a91e41f33367410db88a66890aae444cc}{constants\+::l\+\_\+smooth\+\_\+compensate}
+logical(lp) \hyperlink{namespaceconstants_a1a543c29c1b8e1fee70164d6704fbbb5}{constants\+::l\+\_\+smooth\+\_\+compensate}
 \item 
 integer, parameter \hyperlink{namespaceconstants_a6082bfa433cfb27d3f80d0f32b278570}{constants\+::string\+\_\+length} = 264
 \begin{DoxyCompactList}\small\item\em string length parameter for some outputs \end{DoxyCompactList}\item 
@@ -125,11 +127,11 @@ real(num) \hyperlink{namespaceprecomputed_a346904589bbf53c6f100296d1b29b7ca}{pre
 \item 
 real(num) \hyperlink{namespaceprecomputed_adbd674e54a2326703d464d475f0d1dc2}{precomputed\+::clightsq}
 \item 
-logical \hyperlink{namespacefields_a5a24e83e3fb185459ab237b37188c1d8}{fields\+::l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+logical(lp) \hyperlink{namespacefields_a67f662f46bba94ac18562e7812803f57}{fields\+::l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \item 
-logical \hyperlink{namespacefields_ab18c95cb8d4e80527bd87db458526d68}{fields\+::l\+\_\+nodalgrid}
+logical(lp) \hyperlink{namespacefields_a9ea1f27108bfb1c1e85280d56cf8ec3f}{fields\+::l\+\_\+nodalgrid}
 \item 
-logical \hyperlink{namespacefields_afcffe2f0f052e32d9e264c035db32bde}{fields\+::l4symtry}
+logical(lp) \hyperlink{namespacefields_a12122e98c83fda712ad6b5acfc9d8e0d}{fields\+::l4symtry}
 \item 
 integer(idp) \hyperlink{namespacefields_a930a275ec3d0c2c725a19a016cf140f0}{fields\+::nxs} =0
 \item 
@@ -201,9 +203,9 @@ integer(idp), parameter \hyperlink{namespaceparticle__properties_a9a2b5f32261035
 \item 
 integer(idp), parameter \hyperlink{namespaceparticle__properties_a9661ac258a1ee308b3cad93e5da3c579}{particle\+\_\+properties\+::wpid} =1
 \item 
-logical \hyperlink{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bfa9}{particle\+\_\+properties\+::l\+\_\+initongrid} = .F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a1467b26440f0e3d53bb841a3ad51de21}{particle\+\_\+properties\+::l\+\_\+initongrid} = .F\+A\+L\+S\+E.
 \item 
-logical \hyperlink{namespaceparticle__properties_a886a9f7d338c6c8fc14d80df9ac732ae}{particle\+\_\+properties\+::l\+\_\+particles\+\_\+weight} = .F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a65c15e57d5eda084b47f9832fa67d19d}{particle\+\_\+properties\+::l\+\_\+particles\+\_\+weight} = .F\+A\+L\+S\+E.
 \item 
 integer(idp) \hyperlink{namespaceparticle__properties_ab885434a8bf6905c7fbd9108e77175f4}{particle\+\_\+properties\+::particle\+\_\+pusher} = 0
 \begin{DoxyCompactList}\small\item\em Particle pusher type (0\+: Boris, 1\+: Vay, Default\+: 0) \end{DoxyCompactList}\item 
@@ -225,9 +227,9 @@ real(num) \hyperlink{namespaceparticle__properties_a6edaa2cc58de2c03d2f9da281f25
 \item 
 real(num) \hyperlink{namespaceparticle__properties_a7826780fb51369556dcbf7bd63f1ef81}{particle\+\_\+properties\+::vthz} =0.\+0\+\_\+num
 \item 
-logical \hyperlink{namespaceparticle__properties_a3dcd8fa47e189305bb2534a72c4a8d5c}{particle\+\_\+properties\+::l\+\_\+species\+\_\+allocated} =.F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a28560b71636b1cc7340564a08847511f}{particle\+\_\+properties\+::l\+\_\+species\+\_\+allocated} =.F\+A\+L\+S\+E.
 \item 
-logical \hyperlink{namespaceparticle__properties_a5ab16464c3ac1b31175817e811763fe1}{particle\+\_\+properties\+::l\+\_\+pdumps\+\_\+allocated} =.F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a7b33d0ccf5fa671ec3287c0243fc4b69}{particle\+\_\+properties\+::l\+\_\+pdumps\+\_\+allocated} =.F\+A\+L\+S\+E.
 \item 
 type(particle\+\_\+species), dimension(\+:), allocatable, target \hyperlink{namespaceparticles_ab5efcd7db2bd15deeba572ac268eef8e}{particles\+::species\+\_\+parray}
 \begin{DoxyCompactList}\small\item\em Array of particle species objects. \end{DoxyCompactList}\item 
@@ -261,9 +263,9 @@ real(num) \hyperlink{namespaceparams_a7a94c587421680abbe506082d28ff8b6}{params\+
 \item 
 real(num) \hyperlink{namespaceparams_a24b22ed48dbf0d3d0f582e6db7d40a76}{params\+::lambdalab}
 \item 
-logical \hyperlink{namespaceparams_abbe8f0ac16d41f275328feb0a5d63fed}{params\+::l\+\_\+coeffs\+\_\+allocated} = .F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparams_a4b1f8ff700f30016bbf830bc640b49da}{params\+::l\+\_\+coeffs\+\_\+allocated} = .F\+A\+L\+S\+E.
 \item 
-logical \hyperlink{namespaceparams_a7e70ec0bfba23188ddeb3004e464a69b}{params\+::l\+\_\+ck} =.F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparams_a15761ff2e6c2554f53e451a6a7d3b5e5}{params\+::l\+\_\+ck} =.F\+A\+L\+S\+E.
 \item 
 real(num), parameter \hyperlink{namespaceparams_a70195e670ef122bc4f91d74793b68621}{params\+::resize\+\_\+factor} =2.\+\_\+num
 \item 
@@ -293,7 +295,7 @@ integer(idp) \hyperlink{namespaceparams_a73dceeb78f9f0abe2d39ba48e2aee2d9}{param
 \begin{DoxyCompactList}\small\item\em Vector size for the charge deposition. \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceparams_acb2db26088c715aabd2ca6722e0bcdc6}{params\+::lvec\+\_\+fieldgathe}
 \begin{DoxyCompactList}\small\item\em Vector size for the field gathering. \end{DoxyCompactList}\item 
-integer(isp) \hyperlink{namespaceparams_aa785f776093a166811d21fa25c320b75}{params\+::mpi\+\_\+buf\+\_\+size}
+integer(idp) \hyperlink{namespaceparams_a130afa667477bbefb53f06c15b86d2e1}{params\+::mpi\+\_\+buf\+\_\+size}
 \begin{DoxyCompactList}\small\item\em M\+PI buffer size. \end{DoxyCompactList}\item 
 integer(isp) \hyperlink{namespacempi__type__constants_a19270446a7b267fa3b13821e93b1744f}{mpi\+\_\+type\+\_\+constants\+::mpidbl} = M\+P\+I\+\_\+\+D\+O\+U\+B\+L\+E\+\_\+\+P\+R\+E\+C\+I\+S\+I\+ON
 \item 
@@ -305,7 +307,7 @@ integer(isp) \hyperlink{namespacempi__type__constants_ad3a88774f5b3d027503997955
 \item 
 integer(isp), dimension(100) \hyperlink{namespacempi__type__constants_a17a815d34db410fbd4e9591e3a0fdd96}{mpi\+\_\+type\+\_\+constants\+::mpi\+\_\+dtypes}
 \item 
-logical(isp), dimension(100) \hyperlink{namespacempi__type__constants_ad8671c5eb1d13c7171bfb4617dab9a38}{mpi\+\_\+type\+\_\+constants\+::is\+\_\+dtype\+\_\+init} = .T\+R\+U\+E.
+logical(lp), dimension(100) \hyperlink{namespacempi__type__constants_a9a7750e86add91334ea455e5eb1516e6}{mpi\+\_\+type\+\_\+constants\+::is\+\_\+dtype\+\_\+init} = .T\+R\+U\+E.
 \item 
 integer(isp), dimension(4) \hyperlink{namespacecommunications_ab09f2571f6d9283fbc47609b3e6de32a}{communications\+::reqperjxx}
 \item 
@@ -425,9 +427,11 @@ integer(idp) \hyperlink{namespaceoutput__data_a2f4ce5fdd4011f5db5c6b9de97cf133a}
 \item 
 real(num), dimension(\+:), allocatable \hyperlink{namespaceoutput__data_a034b19d2c3a5211b1fd96df24cd28dd1}{output\+\_\+data\+::temdiag\+\_\+array}
 \begin{DoxyCompactList}\small\item\em Big array containing all the temporal diag at a given iteration. \end{DoxyCompactList}\item 
-logical \hyperlink{namespaceoutput__data_abc6cc1ed098892996b0f0dd858e410d1}{output\+\_\+data\+::dive\+\_\+computed}
+logical(lp) \hyperlink{namespaceoutput__data_adcce4470ad25c02f78f99f1a71fc9371}{output\+\_\+data\+::dive\+\_\+computed}
 \item 
-integer(idp) \hyperlink{namespaceoutput__data_a4dbfde333a6a2225527c27d33472032e}{output\+\_\+data\+::npdumps}
+logical(lp) \hyperlink{namespaceoutput__data_a8b8e6968d2063ddada37b5d050b011b4}{output\+\_\+data\+::particle\+\_\+dump\+\_\+activated}
+\item 
+integer(lp) \hyperlink{namespaceoutput__data_a1a9d2dcc12c89a8aaeb60ab9501f1008}{output\+\_\+data\+::npdumps}
 \item 
 type(particle\+\_\+dump), dimension(\+:), allocatable, target \hyperlink{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}{output\+\_\+data\+::particle\+\_\+dumps}
 \begin{DoxyCompactList}\small\item\em Object for the particle dumping. \end{DoxyCompactList}\item 
@@ -481,17 +485,17 @@ integer(idp), dimension(\+:), pointer \hyperlink{namespaceshared__data_a1307d0cb
 \item 
 integer(idp), dimension(\+:), pointer \hyperlink{namespaceshared__data_a39afe3f315d74dc819777e3345afbdd3}{shared\+\_\+data\+::nz\+\_\+each\+\_\+rank}
 \item 
-logical(idp) \hyperlink{namespaceshared__data_a1fb2edce254dcc9943d5a9d227ea3c58}{shared\+\_\+data\+::x\+\_\+min\+\_\+boundary}
+logical(lp) \hyperlink{namespaceshared__data_a016aabf832acc2511d767d2736e9ce95}{shared\+\_\+data\+::x\+\_\+min\+\_\+boundary}
 \item 
-logical(idp) \hyperlink{namespaceshared__data_aaa822590de7afd77e48ecc4d9016fe29}{shared\+\_\+data\+::x\+\_\+max\+\_\+boundary}
+logical(lp) \hyperlink{namespaceshared__data_ac0044d1bc7bb3189c0c1294d8b71b0d0}{shared\+\_\+data\+::x\+\_\+max\+\_\+boundary}
 \item 
-logical(idp) \hyperlink{namespaceshared__data_ac54278949a6918cd0e9ed158e4eadb52}{shared\+\_\+data\+::y\+\_\+min\+\_\+boundary}
+logical(lp) \hyperlink{namespaceshared__data_ae92a066d51a02d4b4a60837c3033066d}{shared\+\_\+data\+::y\+\_\+min\+\_\+boundary}
 \item 
-logical(idp) \hyperlink{namespaceshared__data_a72d92c74a360b173dd6bc143b5b376b4}{shared\+\_\+data\+::y\+\_\+max\+\_\+boundary}
+logical(lp) \hyperlink{namespaceshared__data_a45584e39581808654dfb5aafe584b033}{shared\+\_\+data\+::y\+\_\+max\+\_\+boundary}
 \item 
-logical(idp) \hyperlink{namespaceshared__data_aaa333d54e2048c0199124fa66e0c460e}{shared\+\_\+data\+::z\+\_\+min\+\_\+boundary}
+logical(lp) \hyperlink{namespaceshared__data_aa748805397529f7eca50f76b9beed0d5}{shared\+\_\+data\+::z\+\_\+min\+\_\+boundary}
 \item 
-logical(idp) \hyperlink{namespaceshared__data_ac180e0f2fae72319d7a6be1f1bbf4bb3}{shared\+\_\+data\+::z\+\_\+max\+\_\+boundary}
+logical(lp) \hyperlink{namespaceshared__data_aa4005dc9afe16dc3fb569acf6236e135}{shared\+\_\+data\+::z\+\_\+max\+\_\+boundary}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_ab9740d57cf165e22f3691c51de24c520}{shared\+\_\+data\+::pbound\+\_\+x\+\_\+min}
 \item 
@@ -541,7 +545,7 @@ integer(idp) \hyperlink{namespaceshared__data_a4d4e8b153ff11b729a93959b3cbb94ab}
 \item 
 integer(idp) \hyperlink{namespaceshared__data_ad91a511266f2d05cfcdff8f7dc585e52}{shared\+\_\+data\+::nz\+\_\+global\+\_\+grid\+\_\+max}
 \item 
-logical(idp) \hyperlink{namespaceshared__data_a535396756120187a82019bbf9bcb2563}{shared\+\_\+data\+::l\+\_\+axis\+\_\+allocated} =.F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceshared__data_a18ba8eba764d429843bd89846c59bea9}{shared\+\_\+data\+::l\+\_\+axis\+\_\+allocated} =.F\+A\+L\+S\+E.
 \item 
 real(num), dimension(\+:), pointer \hyperlink{namespaceshared__data_a103bc2f0564094768f3a34476b371d3a}{shared\+\_\+data\+::x\+\_\+global}
 \item 
@@ -635,7 +639,7 @@ real(num) \hyperlink{namespaceshared__data_a0f7304391a34d6a0216cab82d97ee037}{sh
 \item 
 real(num) \hyperlink{namespaceshared__data_a6b24bb129ab0581a9b353bd1cb663422}{shared\+\_\+data\+::sorting\+\_\+shiftz}
 \item 
-logical \hyperlink{namespaceshared__data_a1e3cea0f116b338483676d0bd5126c75}{shared\+\_\+data\+::sorting\+\_\+verbose}
+logical(lp) \hyperlink{namespaceshared__data_a3967a61950e8f0c86d9ecd322e3d05ec}{shared\+\_\+data\+::sorting\+\_\+verbose}
 \begin{DoxyCompactList}\small\item\em verbose for the sorting (depreciated) \end{DoxyCompactList}\item 
 integer(idp) \hyperlink{namespaceshared__data_a9dcd30bdab987f8957482cbd80ba40b3}{shared\+\_\+data\+::c\+\_\+dim} = 3
 \begin{DoxyCompactList}\small\item\em Space dimension. \end{DoxyCompactList}\item 

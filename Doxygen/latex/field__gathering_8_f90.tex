@@ -5,7 +5,7 @@
 \item 
 subroutine \hyperlink{field__gathering_8_f90_a967586c463fd968e31a929a61e6e2b65}{field\+\_\+gathering}
 \begin{DoxyCompactList}\small\item\em Field gathering main subroutine in 3D called in the main loop when not coupled with the particle pusher. \end{DoxyCompactList}\item 
-subroutine \hyperlink{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{field\+\_\+gathering\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
+subroutine \hyperlink{field__gathering_8_f90_a331d1bcb6c50afc68081f4c9842d2aea}{field\+\_\+gathering\+\_\+sub} (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,                   nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz,               dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)
 \begin{DoxyCompactList}\small\item\em This subroutine performs the field gathering in 3D only. \end{DoxyCompactList}\item 
 subroutine \hyperlink{field__gathering_8_f90_a02f8f275e2b38a13c4de92719714b016}{geteb3d\+\_\+energy\+\_\+conserving} (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v, field\+\_\+gathe\+\_\+algo)
 \begin{DoxyCompactList}\small\item\em General subroutines for the 3D field gathering. \end{DoxyCompactList}\item 
@@ -33,7 +33,7 @@ Field gathering main subroutine in 3D called in the main loop when not coupled w
 
 \index{field\+\_\+gathering.\+F90@{field\+\_\+gathering.\+F90}!field\+\_\+gathering\+\_\+sub@{field\+\_\+gathering\+\_\+sub}}
 \index{field\+\_\+gathering\+\_\+sub@{field\+\_\+gathering\+\_\+sub}!field\+\_\+gathering.\+F90@{field\+\_\+gathering.\+F90}}
-\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+sub (
+\subsubsection[{\texorpdfstring{field\+\_\+gathering\+\_\+sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,                   nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz,               dxx, dyy, dzz, dtt, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in)}{field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,                   nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz,               dxx, dyy, dzz, dtt, l_lower_order_in_v_in)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine field\+\_\+gathering\+\_\+sub (
 \begin{DoxyParamCaption}
 \item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{exg, }
 \item[{real(num), dimension(-\/nxguard\+:nxx+nxguard,-\/nyguard\+:nyy+nyguard,-\/nzguard\+:nzz+nzguard), intent(in)}]{eyg, }
@@ -57,9 +57,9 @@ Field gathering main subroutine in 3D called in the main loop when not coupled w
 \item[{real(num), intent(in)}]{dyy, }
 \item[{real(num), intent(in)}]{dzz, }
 \item[{real(num), intent(in)}]{dtt, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
-)}\hypertarget{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{}\label{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}
+)}\hypertarget{field__gathering_8_f90_a331d1bcb6c50afc68081f4c9842d2aea}{}\label{field__gathering_8_f90_a331d1bcb6c50afc68081f4c9842d2aea}
 
 
 This subroutine performs the field gathering in 3D only. 
@@ -99,8 +99,8 @@ This subroutine performs the field gathering in 3D only.
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
-\item[{logical, intent(in)}]{ll4symtry, }
-\item[{logical, intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v, }
+\item[{logical(lp), intent(in)}]{ll4symtry, }
+\item[{logical(lp), intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v, }
 \item[{integer(idp)}]{field\+\_\+gathe\+\_\+algo}
 \end{DoxyParamCaption}
 )}\hypertarget{field__gathering_8_f90_a02f8f275e2b38a13c4de92719714b016}{}\label{field__gathering_8_f90_a02f8f275e2b38a13c4de92719714b016}
@@ -108,7 +108,7 @@ This subroutine performs the field gathering in 3D only.
 
 General subroutines for the 3D field gathering. 
 
-This subroutine controls the different algorithms for the field gathering Choice of an algorithm is done using the argument field\+\_\+gathe\+\_\+algo. This subroutine is called in the subroutine \hyperlink{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{field\+\_\+gathering\+\_\+sub()}. \begin{DoxyAuthor}{Author}
+This subroutine controls the different algorithms for the field gathering Choice of an algorithm is done using the argument field\+\_\+gathe\+\_\+algo. This subroutine is called in the subroutine \hyperlink{field__gathering_8_f90_a331d1bcb6c50afc68081f4c9842d2aea}{field\+\_\+gathering\+\_\+sub()}. \begin{DoxyAuthor}{Author}
 Henri Vincenti Mathieu Lobet 
 \end{DoxyAuthor}
 \begin{DoxyDate}{Date}
@@ -174,8 +174,8 @@ Henri Vincenti Mathieu Lobet
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
-\item[{logical}]{l4symtry, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical(lp)}]{l4symtry, }
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{field__gathering_8_f90_a3d18b5a2fca069b67c4e49c7d1559dd8}{}\label{field__gathering_8_f90_a3d18b5a2fca069b67c4e49c7d1559dd8}
 
@@ -214,8 +214,8 @@ This subroutine is inherited from Warp.  From Warp \begin{DoxyDate}{Date}
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
-\item[{logical}]{l4symtry, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical(lp)}]{l4symtry, }
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{field__gathering_8_f90_af8a29b924d0086de0d933851a07b5f32}{}\label{field__gathering_8_f90_af8a29b924d0086de0d933851a07b5f32}
 
@@ -254,7 +254,7 @@ This subroutine is inherited from Warp  From Warp \begin{DoxyDate}{Date}
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{field__gathering_8_f90_aa51d5771b10a0ee5f74ceda73388778e}{}\label{field__gathering_8_f90_aa51d5771b10a0ee5f74ceda73388778e}
 \index{field\+\_\+gathering.\+F90@{field\+\_\+gathering.\+F90}!pxrgete3d\+\_\+n\+\_\+energy\+\_\+conserving@{pxrgete3d\+\_\+n\+\_\+energy\+\_\+conserving}}
@@ -286,7 +286,7 @@ This subroutine is inherited from Warp  From Warp \begin{DoxyDate}{Date}
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
 \item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{field__gathering_8_f90_aff764c0eb8ae48e31d7bb6f39467cabf}{}\label{field__gathering_8_f90_aff764c0eb8ae48e31d7bb6f39467cabf}
 

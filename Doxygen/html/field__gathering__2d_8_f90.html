@@ -119,23 +119,42 @@ $(document).ready(function(){initNavTree('field__gathering__2d_8_f90.html','');}
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:a6d4781dd6cacd0867443a1d9ff142ad7"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a6d4781dd6cacd0867443a1d9ff142ad7">geteb2dxz_energy_conserving</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, l4symtry, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:a6d4781dd6cacd0867443a1d9ff142ad7"><td class="mdescLeft">&#160;</td><td class="mdescRight">General subroutines for the 2D cartesian field gathering.  <a href="#a6d4781dd6cacd0867443a1d9ff142ad7">More...</a><br /></td></tr>
-<tr class="separator:a6d4781dd6cacd0867443a1d9ff142ad7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c6ac50abbe5706b3f8f33afa68a23a5"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a5c6ac50abbe5706b3f8f33afa68a23a5">geteb2dxz_energy_conserving</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                   xmin, ymin, zmin, dx, dy, dz, nx, ny, nz,                                                                                                                                                   nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg,                                                                                                                                                   l4symtry, l_lower_order_in_v, field_gathe_algo)</td></tr>
+<tr class="memdesc:a5c6ac50abbe5706b3f8f33afa68a23a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">General subroutines for the 2D cartesian field gathering.  <a href="#a5c6ac50abbe5706b3f8f33afa68a23a5">More...</a><br /></td></tr>
+<tr class="separator:a5c6ac50abbe5706b3f8f33afa68a23a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab93a0f4d8c25f1ff4ec81319daea39e2"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#ab93a0f4d8c25f1ff4ec81319daea39e2">pxr_gete2dxz_n_energy_conserving</a> (np, xp, yp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, exg, eyg, ezg, l4symtry, l_2drz, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:ab93a0f4d8c25f1ff4ec81319daea39e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D electric field gathering routine  <a href="#ab93a0f4d8c25f1ff4ec81319daea39e2">More...</a><br /></td></tr>
+<tr class="memdesc:ab93a0f4d8c25f1ff4ec81319daea39e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D electric field non-optimized gathering routine  <a href="#ab93a0f4d8c25f1ff4ec81319daea39e2">More...</a><br /></td></tr>
 <tr class="separator:ab93a0f4d8c25f1ff4ec81319daea39e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ef609cbdc09685a5b9d25cbd474cefd"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a5ef609cbdc09685a5b9d25cbd474cefd">pxr_gete2dxz_energy_conserving_scalar_3_3</a> (np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                               nxguard, nzguard, exg, eyg, ezg, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a5ef609cbdc09685a5b9d25cbd474cefd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scalar subroutine for the cartesian electric field gathering in 2D.  <a href="#a5ef609cbdc09685a5b9d25cbd474cefd">More...</a><br /></td></tr>
+<tr class="separator:a5ef609cbdc09685a5b9d25cbd474cefd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a648309863f3cb8275194e515781497a3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a648309863f3cb8275194e515781497a3">pxr_gete2dxz_energy_conserving_vect_1_1</a> (np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                           nxguard, nzguard, exg, eyg, ezg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a648309863f3cb8275194e515781497a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering cartesian in 2D for the electric field at order 1.  <a href="#a648309863f3cb8275194e515781497a3">More...</a><br /></td></tr>
+<tr class="separator:a648309863f3cb8275194e515781497a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e30aa1e650fe0c61382d066dde2e3f3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a8e30aa1e650fe0c61382d066dde2e3f3">pxr_gete2dxz_energy_conserving_vect_2_2</a> (np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                           nxguard, nzguard, exg, eyg, ezg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a8e30aa1e650fe0c61382d066dde2e3f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering cartesian in 2D for the electric field at order 2.  <a href="#a8e30aa1e650fe0c61382d066dde2e3f3">More...</a><br /></td></tr>
+<tr class="separator:a8e30aa1e650fe0c61382d066dde2e3f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a419fb25a20aa69b7d3e11655fe89eb44"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a419fb25a20aa69b7d3e11655fe89eb44">pxr_gete2dxz_energy_conserving_vect_3_3</a> (np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                           nxguard, nzguard, exg, eyg, ezg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a419fb25a20aa69b7d3e11655fe89eb44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering cartesian in 2D for the electric field.  <a href="#a419fb25a20aa69b7d3e11655fe89eb44">More...</a><br /></td></tr>
+<tr class="separator:a419fb25a20aa69b7d3e11655fe89eb44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa70004798c24521d5eb8c929aa0d556b"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#aa70004798c24521d5eb8c929aa0d556b">pxr_getb2dxz_n_energy_conserving</a> (np, xp, yp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz, nxguard, nzguard,                                                                                                                                                       nox, noz, bxg, byg, bzg, l4symtry, l_2drz, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:aa70004798c24521d5eb8c929aa0d556b"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D magnetic field gathering routine  <a href="#aa70004798c24521d5eb8c929aa0d556b">More...</a><br /></td></tr>
+<tr class="memdesc:aa70004798c24521d5eb8c929aa0d556b"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D magnetic field gathering routine for arbitrary orders  <a href="#aa70004798c24521d5eb8c929aa0d556b">More...</a><br /></td></tr>
 <tr class="separator:aa70004798c24521d5eb8c929aa0d556b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac842cd53f1a2f6a52d1374176622815a"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#ac842cd53f1a2f6a52d1374176622815a">pxr_gete2dxz_energy_conserving_3_3</a> (np, xp, zp, ex, ey, ez, xmin, zmin, dx, dz, nx, nz,                                                                                                           nxguard, nzguard, exg, eyg, ezg, l_lower_order_in_v)</td></tr>
-<tr class="memdesc:ac842cd53f1a2f6a52d1374176622815a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering cartesian in 2D for the electric field.  <a href="#ac842cd53f1a2f6a52d1374176622815a">More...</a><br /></td></tr>
-<tr class="separator:ac842cd53f1a2f6a52d1374176622815a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2717b1bd0676de944fad842e8169a3a9"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a2717b1bd0676de944fad842e8169a3a9">pxr_getb2dxz_energy_conserving_3_3</a> (np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, l_lower_order_in_v)</td></tr>
-<tr class="separator:a2717b1bd0676de944fad842e8169a3a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab95a62b0f83e1ea4e5b626d47ab576ec"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#ab95a62b0f83e1ea4e5b626d47ab576ec">pxr_getb2dxz_energy_conserving_scalar_3_3</a> (np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:ab95a62b0f83e1ea4e5b626d47ab576ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scalar Cartesian subroutine for the magnetic field gathering in 2D at order 3.  <a href="#ab95a62b0f83e1ea4e5b626d47ab576ec">More...</a><br /></td></tr>
+<tr class="separator:ab95a62b0f83e1ea4e5b626d47ab576ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21c413b3ee03c30a4a0333c74bbf223f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a21c413b3ee03c30a4a0333c74bbf223f">pxr_getb2dxz_energy_conserving_vect_1_1</a> (np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a21c413b3ee03c30a4a0333c74bbf223f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering cartesian in 2D for the magnetic field at order 1.  <a href="#a21c413b3ee03c30a4a0333c74bbf223f">More...</a><br /></td></tr>
+<tr class="separator:a21c413b3ee03c30a4a0333c74bbf223f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5390182034479ecd8e7a2050b8124f30"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a5390182034479ecd8e7a2050b8124f30">pxr_getb2dxz_energy_conserving_vect_2_2</a> (np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a5390182034479ecd8e7a2050b8124f30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering cartesian in 2D for the magnetic field at order 2.  <a href="#a5390182034479ecd8e7a2050b8124f30">More...</a><br /></td></tr>
+<tr class="separator:a5390182034479ecd8e7a2050b8124f30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a415f9b1053a57ec62f536d8d165af5cf"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering__2d_8_f90.html#a415f9b1053a57ec62f536d8d165af5cf">pxr_getb2dxz_energy_conserving_vect_3_3</a> (np, xp, zp, bx, by, bz, xmin, zmin, dx, dz, nx, nz,                                                                       nxguard, nzguard, bxg, byg, bzg, lvect, l_lower_order_in_v)</td></tr>
+<tr class="memdesc:a415f9b1053a57ec62f536d8d165af5cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering cartesian in 2D for the magnetic field at order 3.  <a href="#a415f9b1053a57ec62f536d8d165af5cf">More...</a><br /></td></tr>
+<tr class="separator:a415f9b1053a57ec62f536d8d165af5cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a class="anchor" id="a6d4781dd6cacd0867443a1d9ff142ad7"></a>
+<a class="anchor" id="a5c6ac50abbe5706b3f8f33afa68a23a5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -335,7 +354,13 @@ Functions/Subroutines</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">logical(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>field_gathe_algo</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -348,15 +373,33 @@ Functions/Subroutines</h2></td></tr>
 <p>General subroutines for the 2D cartesian field gathering. </p>
 <dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>electric field particle arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>magnetic field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l4symetry</td><td></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">field_gathe_algo</td><td>Gathering algorithm </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a class="anchor" id="a2717b1bd0676de944fad842e8169a3a9"></a>
+<a class="anchor" id="ab95a62b0f83e1ea4e5b626d47ab576ec"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine pxr_getb2dxz_energy_conserving_3_3 </td>
+          <td class="memname">subroutine pxr_getb2dxz_energy_conserving_scalar_3_3 </td>
           <td>(</td>
           <td class="paramtype">integer(idp)&#160;</td>
           <td class="paramname"><em>np</em>, </td>
@@ -470,6 +513,465 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Scalar Cartesian subroutine for the magnetic field gathering in 2D at order 3. </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>magnetic field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a21c413b3ee03c30a4a0333c74bbf223f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxr_getb2dxz_energy_conserving_vect_1_1 </td>
+          <td>(</td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>np</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>xp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>zp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>bx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>by</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>bz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>xmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>zmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nxguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nzguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>bxg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>byg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>bzg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>lvect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical(idp)&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Field gathering cartesian in 2D for the magnetic field at order 1. </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>magnetic field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>the vector length of the block of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a5390182034479ecd8e7a2050b8124f30"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxr_getb2dxz_energy_conserving_vect_2_2 </td>
+          <td>(</td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>np</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>xp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>zp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>bx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>by</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>bz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>xmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>zmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nxguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nzguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>bxg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>byg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>bzg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>lvect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical(idp)&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Field gathering cartesian in 2D for the magnetic field at order 2. </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>magnetic field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>the vector length of the block of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a415f9b1053a57ec62f536d8d165af5cf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxr_getb2dxz_energy_conserving_vect_3_3 </td>
+          <td>(</td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>np</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>xp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>zp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>bx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>by</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>bz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>xmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>zmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nxguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nzguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>bxg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>byg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>bzg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>lvect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical(idp)&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Field gathering cartesian in 2D for the magnetic field at order 3. </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bx,by,bz</td><td>magnetic field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bxg,byg,bzg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>the vector length of the block of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -623,16 +1125,16 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>2D magnetic field gathering routine </p>
+<p>2D magnetic field gathering routine for arbitrary orders </p>
 
 </div>
 </div>
-<a class="anchor" id="ac842cd53f1a2f6a52d1374176622815a"></a>
+<a class="anchor" id="a5ef609cbdc09685a5b9d25cbd474cefd"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine pxr_gete2dxz_energy_conserving_3_3 </td>
+          <td class="memname">subroutine pxr_gete2dxz_energy_conserving_scalar_3_3 </td>
           <td>(</td>
           <td class="paramtype">integer(idp)&#160;</td>
           <td class="paramname"><em>np</em>, </td>
@@ -747,8 +1249,464 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Scalar subroutine for the cartesian electric field gathering in 2D. </p>
+<p>This function is not vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>electric field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a648309863f3cb8275194e515781497a3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxr_gete2dxz_energy_conserving_vect_1_1 </td>
+          <td>(</td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>np</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>xp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>zp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ey</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ez</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>xmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>zmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nxguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nzguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>exg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>eyg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>ezg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>lvect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical(idp)&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Field gathering cartesian in 2D for the electric field at order 1. </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>electric field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for the block of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a8e30aa1e650fe0c61382d066dde2e3f3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxr_gete2dxz_energy_conserving_vect_2_2 </td>
+          <td>(</td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>np</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>xp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>zp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ey</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ez</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>xmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>zmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nxguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nzguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>exg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>eyg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>ezg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>lvect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical(idp)&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Field gathering cartesian in 2D for the electric field at order 2. </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>electric field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for the block of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a419fb25a20aa69b7d3e11655fe89eb44"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine pxr_gete2dxz_energy_conserving_vect_3_3 </td>
+          <td>(</td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>np</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>xp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>zp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ey</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(np)&#160;</td>
+          <td class="paramname"><em>ez</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>xmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>zmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num)&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nxguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>nzguard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>exg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>eyg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard)&#160;</td>
+          <td class="paramname"><em>ezg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(idp)&#160;</td>
+          <td class="paramname"><em>lvect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical(idp)&#160;</td>
+          <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
 <p>Field gathering cartesian in 2D for the electric field. </p>
-<p>This function is vectorized </p>
+<p>This function is vectorized </p><dl class="section author"><dt>Author</dt><dd>Mathieu Lobet </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>12/01/2016 </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>electric field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for the block of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -902,7 +1860,22 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>2D electric field gathering routine </p>
+<p>2D electric field non-optimized gathering routine </p>
+<p>This function is similar to what is implemented in WARP </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">np</td><td>Number of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xp,zp</td><td>particle position arrays </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ex,ey,ez</td><td>electric field particle arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmin,zmin</td><td>tile boundaries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dz</td><td>space steps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nx,nz</td><td>space discretization </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nxguard,nzguard</td><td>number of guard cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exg,eyg,ezg</td><td>field arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lvect</td><td>vector size for the block of particles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_lower_order_in_v</td><td>flag to determine if we interpolate at a lower order </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -181,10 +181,10 @@ Functions/Subroutines</h2></td></tr>
 
 <p>Main subroutine for the field subroutine + particle pusher called in the main loop (in <a class="el" href="submain_8_f90.html">submain.F90</a>) </p>
 <p>This routine calls the subroutines for the different particle pusher + field gathering algorithms:</p><ul>
-<li><a class="el" href="particles__push__2d_8_f90.html#a1498d53375cbc1abc8366bb22720df98">field_gathering_plus_particle_pusher_sub_2d()</a></li>
+<li><a class="el" href="particles__push__2d_8_f90.html#a1498d53375cbc1abc8366bb22720df98" title="This subroutine is the 2D version of the particle pusher + field gathering. ">field_gathering_plus_particle_pusher_sub_2d()</a></li>
 <li><a class="el" href="particles__push_8_f90.html#ac0c9813b939a0ef799437c54d49cc947" title="Particle pusher in 3D called by the main function push_particle. ">field_gathering_plus_particle_pusher_sub()</a></li>
 <li><a class="el" href="particles__push_8_f90.html#a59d6ed8231bfda3a4c6d828c848b18ff" title="Particle pusher in 3D called by the main function push_particle for the subroutines with cache blocki...">field_gathering_plus_particle_pusher_cacheblock_sub()</a></li>
-<li><a class="el" href="field__gathering_8_f90.html#a3048fd8eb5e48d87fa67d382d260b22f" title="This subroutine performs the field gathering in 3D only. ">field_gathering_sub()</a></li>
+<li><a class="el" href="field__gathering_8_f90.html#a331d1bcb6c50afc68081f4c9842d2aea" title="This subroutine performs the field gathering in 3D only. ">field_gathering_sub()</a></li>
 </ul>
 <p>Choice of the method is done via the parameter fg_p_pp_separated </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>Creation 2015 Revision 10.06.2015 </dd></dl>
@@ -414,7 +414,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical(isp)&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
         </tr>
         <tr>
@@ -674,7 +674,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical(isp)&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
         </tr>
         <tr>
@@ -934,7 +934,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical(isp)&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
         </tr>
         <tr>
@@ -1110,7 +1110,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v_in</em>&#160;</td>
         </tr>
         <tr>
@@ -1280,7 +1280,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v_in</em>&#160;</td>
         </tr>
         <tr>
@@ -1450,7 +1450,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v_in</em>&#160;</td>
         </tr>
         <tr>
@@ -2082,13 +2082,13 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical(idp), intent(in)&#160;</td>
+          <td class="paramtype">logical(lp), intent(in)&#160;</td>
           <td class="paramname"><em>l4symtry_in</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical(idp), intent(in)&#160;</td>
+          <td class="paramtype">logical(lp), intent(in)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v_in</em>&#160;</td>
         </tr>
         <tr>

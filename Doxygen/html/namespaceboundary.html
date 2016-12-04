@@ -168,10 +168,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a1789d63402ac897697791a2fca4fa8e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI Boundary condition routine on particles.  <a href="#a1789d63402ac897697791a2fca4fa8e6">More...</a><br /></td></tr>
 <tr class="separator:a1789d63402ac897697791a2fca4fa8e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac32f7f65f1998963706f9d5776d29d2"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceboundary.html#aac32f7f65f1998963706f9d5776d29d2">particle_bcs_mpi_non_blocking</a></td></tr>
-<tr class="memdesc:aac32f7f65f1998963706f9d5776d29d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI Boundary condition routine on particles.  <a href="#aac32f7f65f1998963706f9d5776d29d2">More...</a><br /></td></tr>
+<tr class="memdesc:aac32f7f65f1998963706f9d5776d29d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI Boundary condition routine on particles with non blocking mpi communication subroutine.  <a href="#aac32f7f65f1998963706f9d5776d29d2">More...</a><br /></td></tr>
 <tr class="separator:aac32f7f65f1998963706f9d5776d29d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3293856926030dfea9e8ca05c61e1a5a"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceboundary.html#a3293856926030dfea9e8ca05c61e1a5a">particle_bcs_mpi_non_blocking_2d</a></td></tr>
-<tr class="memdesc:a3293856926030dfea9e8ca05c61e1a5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI Boundary condition routine on particles in 2D.  <a href="#a3293856926030dfea9e8ca05c61e1a5a">More...</a><br /></td></tr>
+<tr class="memdesc:a3293856926030dfea9e8ca05c61e1a5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI Boundary condition routine for particles in 2D x,z geometry.  <a href="#a3293856926030dfea9e8ca05c61e1a5a">More...</a><br /></td></tr>
 <tr class="separator:a3293856926030dfea9e8ca05c61e1a5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac117306978e83b787afba90c3ac038f4"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceboundary.html#ac117306978e83b787afba90c3ac038f4">particle_bcs_tiles_and_mpi_3d</a></td></tr>
 <tr class="memdesc:ac117306978e83b787afba90c3ac038f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This subroutine combined in a single routine the particle communications between tiles and between MPI domains for 3D.  <a href="#ac117306978e83b787afba90c3ac038f4">More...</a><br /></td></tr>
@@ -476,7 +476,10 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>MPI Boundary condition routine on particles. </p>
+<p>MPI Boundary condition routine on particles with non blocking mpi communication subroutine. </p>
+<dl class="section author"><dt>Author</dt><dd>Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2015 Revision 11/2016</dd></dl>
+<p>Modifications: Mathieu - 11/09/2016 - add use mpi for compatibility with my version of mpi </p>
 
 </div>
 </div>
@@ -493,7 +496,10 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>MPI Boundary condition routine on particles in 2D. </p>
+<p>MPI Boundary condition routine for particles in 2D x,z geometry. </p>
+<dl class="section author"><dt>Author</dt><dd>Mathieu Lobet Henri Vincenti </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>Creation 2015 </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Need to add reflecting boundary conditions to be consistent with other MPI particle exchange routines </dd></dl>
 
 </div>
 </div>

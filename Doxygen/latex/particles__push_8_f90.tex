@@ -52,7 +52,7 @@ This routine calls the subroutines for the different particle pusher + field gat
 \item \hyperlink{particles__push__2d_8_f90_a1498d53375cbc1abc8366bb22720df98}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub\+\_\+2d()}
 \item \hyperlink{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+sub()}
 \item \hyperlink{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{field\+\_\+gathering\+\_\+plus\+\_\+particle\+\_\+pusher\+\_\+cacheblock\+\_\+sub()}
-\item \hyperlink{field__gathering_8_f90_a3048fd8eb5e48d87fa67d382d260b22f}{field\+\_\+gathering\+\_\+sub()}
+\item \hyperlink{field__gathering_8_f90_a331d1bcb6c50afc68081f4c9842d2aea}{field\+\_\+gathering\+\_\+sub()}
 \end{DoxyItemize}
 
 Choice of the method is done via the parameter fg\+\_\+p\+\_\+pp\+\_\+separated \begin{DoxyAuthor}{Author}
@@ -101,7 +101,7 @@ Creation 2015 Revision 10.\+06.\+2015
 \item[{real(num)}]{q, }
 \item[{real(num)}]{m, }
 \item[{integer(idp)}]{lvect, }
-\item[{logical(isp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_af9cba768132f6e7e5d6a39108c2c4118}{}\label{particles__push_8_f90_af9cba768132f6e7e5d6a39108c2c4118}
 
@@ -187,7 +187,7 @@ Creation 2016 Revision 10.\+06.\+2015
 \item[{real(num)}]{q, }
 \item[{real(num)}]{m, }
 \item[{integer(idp)}]{lvect, }
-\item[{logical(isp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}{}\label{particles__push_8_f90_ac04a46dfecd1ade015d3bf1ff801159a}
 
@@ -273,7 +273,7 @@ Creation 2016 Revision 10.\+06.\+2015
 \item[{real(num)}]{q, }
 \item[{real(num)}]{m, }
 \item[{integer(idp)}]{lvect, }
-\item[{logical(isp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}{}\label{particles__push_8_f90_a87ad05cb46ac948188f2738ca82ab6a3}
 
@@ -345,7 +345,7 @@ Creation 2016 Revision 10.\+06.\+2015
 \item[{real(num), intent(in)}]{dyy, }
 \item[{real(num), intent(in)}]{dzz, }
 \item[{real(num), intent(in)}]{dtt, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}{}\label{particles__push_8_f90_a59d6ed8231bfda3a4c6d828c848b18ff}
 
@@ -405,7 +405,7 @@ Creation 2015 Revision 10.\+06.\+2015
 \item[{real(num), intent(in)}]{dyy, }
 \item[{real(num), intent(in)}]{dzz, }
 \item[{real(num), intent(in)}]{dtt, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}{}\label{particles__push_8_f90_ac0c9813b939a0ef799437c54d49cc947}
 
@@ -465,7 +465,7 @@ Creation 2015 Revision 10.\+06.\+2015
 \item[{real(num), intent(in)}]{dyy, }
 \item[{real(num), intent(in)}]{dzz, }
 \item[{real(num), intent(in)}]{dtt, }
-\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\item[{logical(lp)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}{}\label{particles__push_8_f90_ab54fd25981abe6f64d5a146a1a933d24}
 
@@ -738,8 +738,8 @@ This subroutine is wrapper for \hyperlink{particles__push_8_f90_af540a0f57e31e83
 \item[{real(num), intent(in)}]{dyy, }
 \item[{real(num), intent(in)}]{dzz, }
 \item[{real(num), intent(in)}]{dtt, }
-\item[{logical(idp), intent(in)}]{l4symtry\+\_\+in, }
-\item[{logical(idp), intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
+\item[{logical(lp), intent(in)}]{l4symtry\+\_\+in, }
+\item[{logical(lp), intent(in)}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v\+\_\+in}
 \end{DoxyParamCaption}
 )}\hypertarget{particles__push_8_f90_af540a0f57e31e83e106a01e492318462}{}\label{particles__push_8_f90_af540a0f57e31e83e106a01e492318462}
 

@@ -12,9 +12,9 @@ integer(idp), parameter \hyperlink{namespaceparticle__properties_a9a2b5f32261035
 \item 
 integer(idp), parameter \hyperlink{namespaceparticle__properties_a9661ac258a1ee308b3cad93e5da3c579}{wpid} =1
 \item 
-logical \hyperlink{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bfa9}{l\+\_\+initongrid} = .F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a1467b26440f0e3d53bb841a3ad51de21}{l\+\_\+initongrid} = .F\+A\+L\+S\+E.
 \item 
-logical \hyperlink{namespaceparticle__properties_a886a9f7d338c6c8fc14d80df9ac732ae}{l\+\_\+particles\+\_\+weight} = .F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a65c15e57d5eda084b47f9832fa67d19d}{l\+\_\+particles\+\_\+weight} = .F\+A\+L\+S\+E.
 \item 
 integer(idp) \hyperlink{namespaceparticle__properties_ab885434a8bf6905c7fbd9108e77175f4}{particle\+\_\+pusher} = 0
 \begin{DoxyCompactList}\small\item\em Particle pusher type (0\+: Boris, 1\+: Vay, Default\+: 0) \end{DoxyCompactList}\item 
@@ -36,9 +36,9 @@ real(num) \hyperlink{namespaceparticle__properties_a6edaa2cc58de2c03d2f9da281f25
 \item 
 real(num) \hyperlink{namespaceparticle__properties_a7826780fb51369556dcbf7bd63f1ef81}{vthz} =0.\+0\+\_\+num
 \item 
-logical \hyperlink{namespaceparticle__properties_a3dcd8fa47e189305bb2534a72c4a8d5c}{l\+\_\+species\+\_\+allocated} =.F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a28560b71636b1cc7340564a08847511f}{l\+\_\+species\+\_\+allocated} =.F\+A\+L\+S\+E.
 \item 
-logical \hyperlink{namespaceparticle__properties_a5ab16464c3ac1b31175817e811763fe1}{l\+\_\+pdumps\+\_\+allocated} =.F\+A\+L\+S\+E.
+logical(lp) \hyperlink{namespaceparticle__properties_a7b33d0ccf5fa671ec3287c0243fc4b69}{l\+\_\+pdumps\+\_\+allocated} =.F\+A\+L\+S\+E.
 \end{DoxyCompactItemize}
 
 
@@ -54,16 +54,16 @@ Module containing useful properties for the particles.
 \subsubsection[{\texorpdfstring{fdzrand}{fdzrand}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) particle\+\_\+properties\+::fdzrand =0.\+0\+\_\+num}\hypertarget{namespaceparticle__properties_ac28362a40a4b808ff8ede4d94c4423f3}{}\label{namespaceparticle__properties_ac28362a40a4b808ff8ede4d94c4423f3}
 \index{particle\+\_\+properties@{particle\+\_\+properties}!l\+\_\+initongrid@{l\+\_\+initongrid}}
 \index{l\+\_\+initongrid@{l\+\_\+initongrid}!particle\+\_\+properties@{particle\+\_\+properties}}
-\subsubsection[{\texorpdfstring{l\+\_\+initongrid}{l_initongrid}}]{\setlength{\rightskip}{0pt plus 5cm}logical particle\+\_\+properties\+::l\+\_\+initongrid = .F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bfa9}{}\label{namespaceparticle__properties_ac2f3b846a4154ff9b4cccadaffe4bfa9}
+\subsubsection[{\texorpdfstring{l\+\_\+initongrid}{l_initongrid}}]{\setlength{\rightskip}{0pt plus 5cm}logical(lp) particle\+\_\+properties\+::l\+\_\+initongrid = .F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_a1467b26440f0e3d53bb841a3ad51de21}{}\label{namespaceparticle__properties_a1467b26440f0e3d53bb841a3ad51de21}
 \index{particle\+\_\+properties@{particle\+\_\+properties}!l\+\_\+particles\+\_\+weight@{l\+\_\+particles\+\_\+weight}}
 \index{l\+\_\+particles\+\_\+weight@{l\+\_\+particles\+\_\+weight}!particle\+\_\+properties@{particle\+\_\+properties}}
-\subsubsection[{\texorpdfstring{l\+\_\+particles\+\_\+weight}{l_particles_weight}}]{\setlength{\rightskip}{0pt plus 5cm}logical particle\+\_\+properties\+::l\+\_\+particles\+\_\+weight = .F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_a886a9f7d338c6c8fc14d80df9ac732ae}{}\label{namespaceparticle__properties_a886a9f7d338c6c8fc14d80df9ac732ae}
+\subsubsection[{\texorpdfstring{l\+\_\+particles\+\_\+weight}{l_particles_weight}}]{\setlength{\rightskip}{0pt plus 5cm}logical(lp) particle\+\_\+properties\+::l\+\_\+particles\+\_\+weight = .F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_a65c15e57d5eda084b47f9832fa67d19d}{}\label{namespaceparticle__properties_a65c15e57d5eda084b47f9832fa67d19d}
 \index{particle\+\_\+properties@{particle\+\_\+properties}!l\+\_\+pdumps\+\_\+allocated@{l\+\_\+pdumps\+\_\+allocated}}
 \index{l\+\_\+pdumps\+\_\+allocated@{l\+\_\+pdumps\+\_\+allocated}!particle\+\_\+properties@{particle\+\_\+properties}}
-\subsubsection[{\texorpdfstring{l\+\_\+pdumps\+\_\+allocated}{l_pdumps_allocated}}]{\setlength{\rightskip}{0pt plus 5cm}logical particle\+\_\+properties\+::l\+\_\+pdumps\+\_\+allocated =.F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_a5ab16464c3ac1b31175817e811763fe1}{}\label{namespaceparticle__properties_a5ab16464c3ac1b31175817e811763fe1}
+\subsubsection[{\texorpdfstring{l\+\_\+pdumps\+\_\+allocated}{l_pdumps_allocated}}]{\setlength{\rightskip}{0pt plus 5cm}logical(lp) particle\+\_\+properties\+::l\+\_\+pdumps\+\_\+allocated =.F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_a7b33d0ccf5fa671ec3287c0243fc4b69}{}\label{namespaceparticle__properties_a7b33d0ccf5fa671ec3287c0243fc4b69}
 \index{particle\+\_\+properties@{particle\+\_\+properties}!l\+\_\+species\+\_\+allocated@{l\+\_\+species\+\_\+allocated}}
 \index{l\+\_\+species\+\_\+allocated@{l\+\_\+species\+\_\+allocated}!particle\+\_\+properties@{particle\+\_\+properties}}
-\subsubsection[{\texorpdfstring{l\+\_\+species\+\_\+allocated}{l_species_allocated}}]{\setlength{\rightskip}{0pt plus 5cm}logical particle\+\_\+properties\+::l\+\_\+species\+\_\+allocated =.F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_a3dcd8fa47e189305bb2534a72c4a8d5c}{}\label{namespaceparticle__properties_a3dcd8fa47e189305bb2534a72c4a8d5c}
+\subsubsection[{\texorpdfstring{l\+\_\+species\+\_\+allocated}{l_species_allocated}}]{\setlength{\rightskip}{0pt plus 5cm}logical(lp) particle\+\_\+properties\+::l\+\_\+species\+\_\+allocated =.F\+A\+L\+S\+E.}\hypertarget{namespaceparticle__properties_a28560b71636b1cc7340564a08847511f}{}\label{namespaceparticle__properties_a28560b71636b1cc7340564a08847511f}
 \index{particle\+\_\+properties@{particle\+\_\+properties}!npid@{npid}}
 \index{npid@{npid}!particle\+\_\+properties@{particle\+\_\+properties}}
 \subsubsection[{\texorpdfstring{npid}{npid}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp), parameter particle\+\_\+properties\+::npid =1}\hypertarget{namespaceparticle__properties_a9a2b5f322610353c06693336b21439f7}{}\label{namespaceparticle__properties_a9a2b5f322610353c06693336b21439f7}

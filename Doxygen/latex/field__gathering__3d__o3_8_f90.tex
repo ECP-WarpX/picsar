@@ -11,8 +11,10 @@ subroutine \hyperlink{field__gathering__3d__o3_8_f90_ae26c3ade4bf6bf1835b6f0ddae
 \item 
 subroutine \hyperlink{field__gathering__3d__o3_8_f90_af2124c863ea5023482442eca03daff98}{getb3d\+\_\+energy\+\_\+conserving\+\_\+linear\+\_\+3\+\_\+3\+\_\+3} (np, xp, yp, zp, bx, by, bz, xmin, ymin, zmin,                                                                                                                                                           dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                   bxg, byg, bzg, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
 \item 
-subroutine \hyperlink{field__gathering__3d__o3_8_f90_a72706be607c4bf29818ef38111a720a2}{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3} (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
-\begin{DoxyCompactList}\small\item\em Field gathering (order 3) with gathering of E and B merged in a single loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
+subroutine \hyperlink{field__gathering__3d__o3_8_f90_aa5a8d5eebf404fdfb772d90bf39cd947}{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec\+\_\+3\+\_\+3\+\_\+3} (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\begin{DoxyCompactList}\small\item\em Field gathering by block at order 3 with gathering of E and B splited in several small subloops. \end{DoxyCompactList}\item 
+subroutine \hyperlink{field__gathering__3d__o3_8_f90_aa724510149f9ad46a950d576006e248f}{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec2\+\_\+3\+\_\+3\+\_\+3} (np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)
+\begin{DoxyCompactList}\small\item\em Field gathering by block at order 3 with gathering of E and B splited in several small subloops, version 2. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Function/\+Subroutine Documentation}
@@ -132,9 +134,9 @@ subroutine \hyperlink{field__gathering__3d__o3_8_f90_a72706be607c4bf29818ef38111
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
 )}\hypertarget{field__gathering__3d__o3_8_f90_aafcef6faa8aa6d61b950249a1285c258}{}\label{field__gathering__3d__o3_8_f90_aafcef6faa8aa6d61b950249a1285c258}
-\index{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90}!geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3}}
-\index{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3}!field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90}}
-\subsubsection[{\texorpdfstring{geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{geteb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb3d\+\_\+energy\+\_\+conserving\+\_\+vec\+\_\+3\+\_\+3\+\_\+3 (
+\index{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90}!geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec2\+\_\+3\+\_\+3\+\_\+3@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec2\+\_\+3\+\_\+3\+\_\+3}}
+\index{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec2\+\_\+3\+\_\+3\+\_\+3@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec2\+\_\+3\+\_\+3\+\_\+3}!field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90}}
+\subsubsection[{\texorpdfstring{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec2\+\_\+3\+\_\+3\+\_\+3(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{geteb3d_energy_conserving_blockvec2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec2\+\_\+3\+\_\+3\+\_\+3 (
 \begin{DoxyParamCaption}
 \item[{integer(idp)}]{np, }
 \item[{real(num), dimension(np)}]{xp, }
@@ -167,12 +169,94 @@ subroutine \hyperlink{field__gathering__3d__o3_8_f90_a72706be607c4bf29818ef38111
 \item[{integer(idp)}]{lvect, }
 \item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
 \end{DoxyParamCaption}
-)}\hypertarget{field__gathering__3d__o3_8_f90_a72706be607c4bf29818ef38111a720a2}{}\label{field__gathering__3d__o3_8_f90_a72706be607c4bf29818ef38111a720a2}
+)}\hypertarget{field__gathering__3d__o3_8_f90_aa724510149f9ad46a950d576006e248f}{}\label{field__gathering__3d__o3_8_f90_aa724510149f9ad46a950d576006e248f}
 
 
-Field gathering (order 3) with gathering of E and B merged in a single loop. 
+Field gathering by block at order 3 with gathering of E and B splited in several small subloops, version 2. 
 
-This function is vectorized  
+This function is vectorized and is the version 2 using a more optimized gathering method more efficient for the vectorization. \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+12/03/2016 
+\end{DoxyDate}
+\begin{DoxyWarning}{Warning}
+Only l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v=True is implemented 
+\end{DoxyWarning}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em np} & number of particles \\
+\hline
+\mbox{\tt in}  & {\em xp,yp,zp} & particle position \\
+\hline
+\mbox{\tt in,out}  & {\em ex,ey,ez} & particle electric field \\
+\hline
+\mbox{\tt in,out}  & {\em bx,by,bz} & particle magnetic field \\
+\hline
+\mbox{\tt in}  & {\em xmin,ymin,zmin} & tile minimum grid position \\
+\hline
+\mbox{\tt in}  & {\em dx,dy,dz} & space step \\
+\hline
+\mbox{\tt in}  & {\em dt} & time step \\
+\hline
+\mbox{\tt in}  & {\em nx,ny,nz} & number of grid points in each direction \\
+\hline
+\mbox{\tt in}  & {\em nxguard,nyguard,nzguard} & number of guard cells in each direction \\
+\hline
+\mbox{\tt in}  & {\em exg,eyg,ezg} & electric field grid \\
+\hline
+\mbox{\tt in}  & {\em bxg,byg,bzg} & magnetic field grid \\
+\hline
+\mbox{\tt in}  & {\em lvect} & vector size for cache blocking \mbox{[}in\mbox{]} l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v decrease the interpolation order if True \\
+\hline
+\end{DoxyParams}
+\index{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90}!geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec\+\_\+3\+\_\+3\+\_\+3@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec\+\_\+3\+\_\+3\+\_\+3}}
+\index{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec\+\_\+3\+\_\+3\+\_\+3@{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec\+\_\+3\+\_\+3\+\_\+3}!field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90@{field\+\_\+gathering\+\_\+3d\+\_\+o3.\+F90}}
+\subsubsection[{\texorpdfstring{geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec\+\_\+3\+\_\+3\+\_\+3(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v)}{geteb3d_energy_conserving_blockvec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by, bz,                                                                                                                                                                       xmin, ymin, zmin,                                                                                                                                                                                               dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                                       exg, eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine geteb3d\+\_\+energy\+\_\+conserving\+\_\+blockvec\+\_\+3\+\_\+3\+\_\+3 (
+\begin{DoxyParamCaption}
+\item[{integer(idp)}]{np, }
+\item[{real(num), dimension(np)}]{xp, }
+\item[{real(num), dimension(np)}]{yp, }
+\item[{real(num), dimension(np)}]{zp, }
+\item[{real(num), dimension(np)}]{ex, }
+\item[{real(num), dimension(np)}]{ey, }
+\item[{real(num), dimension(np)}]{ez, }
+\item[{real(num), dimension(np)}]{bx, }
+\item[{real(num), dimension(np)}]{by, }
+\item[{real(num), dimension(np)}]{bz, }
+\item[{real(num)}]{xmin, }
+\item[{real(num)}]{ymin, }
+\item[{real(num)}]{zmin, }
+\item[{real(num)}]{dx, }
+\item[{real(num)}]{dy, }
+\item[{real(num)}]{dz, }
+\item[{integer(idp)}]{nx, }
+\item[{integer(idp)}]{ny, }
+\item[{integer(idp)}]{nz, }
+\item[{integer(idp)}]{nxguard, }
+\item[{integer(idp)}]{nyguard, }
+\item[{integer(idp)}]{nzguard, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{exg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{eyg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{ezg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bxg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{byg, }
+\item[{real(num), dimension(-\/nxguard\+:nx+nxguard,-\/nyguard\+:ny+nyguard,-\/nzguard\+:nz+nzguard)}]{bzg, }
+\item[{integer(idp)}]{lvect, }
+\item[{logical}]{l\+\_\+lower\+\_\+order\+\_\+in\+\_\+v}
+\end{DoxyParamCaption}
+)}\hypertarget{field__gathering__3d__o3_8_f90_aa5a8d5eebf404fdfb772d90bf39cd947}{}\label{field__gathering__3d__o3_8_f90_aa5a8d5eebf404fdfb772d90bf39cd947}
+
+
+Field gathering by block at order 3 with gathering of E and B splited in several small subloops. 
+
+This function is vectorized \begin{DoxyAuthor}{Author}
+Mathieu Lobet 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Creation 2016 
+\end{DoxyDate}
+
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\tt in}  & {\em np} & number of particles \\
 \hline

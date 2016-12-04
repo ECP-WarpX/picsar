@@ -40,7 +40,7 @@ subroutine \hyperlink{namespacetiling_aaa407b13d58fff3e54b191fa9a8962c0}{resize\
 subroutine \hyperlink{namespacetiling_ad65e35a84d2268ef2b6b4f97f38b18bc}{resize\+\_\+1d\+\_\+array\+\_\+real} (arr, old\+\_\+size, new\+\_\+size)
 \item 
 subroutine \hyperlink{namespacetiling_afa3d754a121460dce786357819629421}{resize\+\_\+2d\+\_\+array\+\_\+real} (arr, nx\+\_\+old, nx\+\_\+new, ny\+\_\+old, ny\+\_\+new)
-\item 
+\begin{DoxyCompactList}\small\item\em Resize a 2D array of real. \end{DoxyCompactList}\item 
 subroutine \hyperlink{namespacetiling_af9f6fdf5c755688f10dc74ed3c363d85}{get\+\_\+local\+\_\+number\+\_\+of\+\_\+part} (npart)
 \item 
 subroutine \hyperlink{namespacetiling_a875e1671637fb100355fe099ef2a4f63}{point\+\_\+to\+\_\+tile} (ispecies, ix, iy, iz)
@@ -255,6 +255,10 @@ Initialize the particle properties (positions and velocities) according to the s
 \item[{integer(idp), intent(in)}]{ny\+\_\+new}
 \end{DoxyParamCaption}
 )}\hypertarget{namespacetiling_afa3d754a121460dce786357819629421}{}\label{namespacetiling_afa3d754a121460dce786357819629421}
+
+
+Resize a 2D array of real. 
+
 \index{tiling@{tiling}!resize\+\_\+particle\+\_\+arrays@{resize\+\_\+particle\+\_\+arrays}}
 \index{resize\+\_\+particle\+\_\+arrays@{resize\+\_\+particle\+\_\+arrays}!tiling@{tiling}}
 \subsubsection[{\texorpdfstring{resize\+\_\+particle\+\_\+arrays(curr, old\+\_\+size, new\+\_\+size)}{resize_particle_arrays(curr, old_size, new_size)}}]{\setlength{\rightskip}{0pt plus 5cm}subroutine tiling\+::resize\+\_\+particle\+\_\+arrays (
@@ -314,7 +318,7 @@ Initialize the particle properties (positions and velocities) according to the s
 \item[{integer(idp), intent(in)}]{ixt, }
 \item[{integer(idp), intent(in)}]{iyt, }
 \item[{integer(idp), intent(in)}]{izt, }
-\item[{logical(idp), dimension (\+:), intent(in)}]{mask}
+\item[{logical(lp), dimension (\+:), intent(in)}]{mask}
 \end{DoxyParamCaption}
 )}\hypertarget{namespacetiling_ad4f03c522071b6b40bc01c16b5aa1bdd}{}\label{namespacetiling_ad4f03c522071b6b40bc01c16b5aa1bdd}
 \index{tiling@{tiling}!set\+\_\+are\+\_\+tiles\+\_\+reallocated@{set\+\_\+are\+\_\+tiles\+\_\+reallocated}}

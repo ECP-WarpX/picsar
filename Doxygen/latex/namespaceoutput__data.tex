@@ -95,9 +95,11 @@ integer(idp) \hyperlink{namespaceoutput__data_a2f4ce5fdd4011f5db5c6b9de97cf133a}
 \item 
 real(num), dimension(\+:), allocatable \hyperlink{namespaceoutput__data_a034b19d2c3a5211b1fd96df24cd28dd1}{temdiag\+\_\+array}
 \begin{DoxyCompactList}\small\item\em Big array containing all the temporal diag at a given iteration. \end{DoxyCompactList}\item 
-logical \hyperlink{namespaceoutput__data_abc6cc1ed098892996b0f0dd858e410d1}{dive\+\_\+computed}
+logical(lp) \hyperlink{namespaceoutput__data_adcce4470ad25c02f78f99f1a71fc9371}{dive\+\_\+computed}
 \item 
-integer(idp) \hyperlink{namespaceoutput__data_a4dbfde333a6a2225527c27d33472032e}{npdumps}
+logical(lp) \hyperlink{namespaceoutput__data_a8b8e6968d2063ddada37b5d050b011b4}{particle\+\_\+dump\+\_\+activated}
+\item 
+integer(lp) \hyperlink{namespaceoutput__data_a1a9d2dcc12c89a8aaeb60ab9501f1008}{npdumps}
 \item 
 type(\hyperlink{structoutput__data_1_1particle__dump}{particle\+\_\+dump}), dimension(\+:), allocatable, target \hyperlink{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}{particle\+\_\+dumps}
 \begin{DoxyCompactList}\small\item\em Object for the particle dumping. \end{DoxyCompactList}\end{DoxyCompactItemize}
@@ -142,7 +144,7 @@ Module for the outputs.
 \subsubsection[{\texorpdfstring{c\+\_\+output\+\_\+rho}{c_output_rho}}]{\setlength{\rightskip}{0pt plus 5cm}integer(kind=4) output\+\_\+data\+::c\+\_\+output\+\_\+rho = 0}\hypertarget{namespaceoutput__data_afab9a486a2aff0dc3d89dbbcc7bb3007}{}\label{namespaceoutput__data_afab9a486a2aff0dc3d89dbbcc7bb3007}
 \index{output\+\_\+data@{output\+\_\+data}!dive\+\_\+computed@{dive\+\_\+computed}}
 \index{dive\+\_\+computed@{dive\+\_\+computed}!output\+\_\+data@{output\+\_\+data}}
-\subsubsection[{\texorpdfstring{dive\+\_\+computed}{dive_computed}}]{\setlength{\rightskip}{0pt plus 5cm}logical output\+\_\+data\+::dive\+\_\+computed}\hypertarget{namespaceoutput__data_abc6cc1ed098892996b0f0dd858e410d1}{}\label{namespaceoutput__data_abc6cc1ed098892996b0f0dd858e410d1}
+\subsubsection[{\texorpdfstring{dive\+\_\+computed}{dive_computed}}]{\setlength{\rightskip}{0pt plus 5cm}logical(lp) output\+\_\+data\+::dive\+\_\+computed}\hypertarget{namespaceoutput__data_adcce4470ad25c02f78f99f1a71fc9371}{}\label{namespaceoutput__data_adcce4470ad25c02f78f99f1a71fc9371}
 \index{output\+\_\+data@{output\+\_\+data}!endsim@{endsim}}
 \index{endsim@{endsim}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{endsim}{endsim}}]{\setlength{\rightskip}{0pt plus 5cm}real(num) output\+\_\+data\+::endsim =0.\+0\+\_\+num}\hypertarget{namespaceoutput__data_a1ed464801538daa68f0f138d06be9c8a}{}\label{namespaceoutput__data_a1ed464801538daa68f0f138d06be9c8a}
@@ -181,7 +183,7 @@ Module for the outputs.
 \subsubsection[{\texorpdfstring{filerho}{filerho}}]{\setlength{\rightskip}{0pt plus 5cm}character(len=string\+\_\+length) output\+\_\+data\+::filerho =\textquotesingle{}rho\textquotesingle{}}\hypertarget{namespaceoutput__data_abd9468ccde074971628171196a7873f2}{}\label{namespaceoutput__data_abd9468ccde074971628171196a7873f2}
 \index{output\+\_\+data@{output\+\_\+data}!npdumps@{npdumps}}
 \index{npdumps@{npdumps}!output\+\_\+data@{output\+\_\+data}}
-\subsubsection[{\texorpdfstring{npdumps}{npdumps}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::npdumps}\hypertarget{namespaceoutput__data_a4dbfde333a6a2225527c27d33472032e}{}\label{namespaceoutput__data_a4dbfde333a6a2225527c27d33472032e}
+\subsubsection[{\texorpdfstring{npdumps}{npdumps}}]{\setlength{\rightskip}{0pt plus 5cm}integer(lp) output\+\_\+data\+::npdumps}\hypertarget{namespaceoutput__data_a1a9d2dcc12c89a8aaeb60ab9501f1008}{}\label{namespaceoutput__data_a1a9d2dcc12c89a8aaeb60ab9501f1008}
 \index{output\+\_\+data@{output\+\_\+data}!output\+\_\+frequency@{output\+\_\+frequency}}
 \index{output\+\_\+frequency@{output\+\_\+frequency}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{output\+\_\+frequency}{output_frequency}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::output\+\_\+frequency = -\/1}\hypertarget{namespaceoutput__data_aa9299257a58dc37dd6c11e96a637459a}{}\label{namespaceoutput__data_aa9299257a58dc37dd6c11e96a637459a}
@@ -191,6 +193,9 @@ Module for the outputs.
 \index{output\+\_\+data@{output\+\_\+data}!output\+\_\+step\+\_\+min@{output\+\_\+step\+\_\+min}}
 \index{output\+\_\+step\+\_\+min@{output\+\_\+step\+\_\+min}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{output\+\_\+step\+\_\+min}{output_step_min}}]{\setlength{\rightskip}{0pt plus 5cm}integer(idp) output\+\_\+data\+::output\+\_\+step\+\_\+min = 0}\hypertarget{namespaceoutput__data_aea2eeeb3470d4377a87117bb1aeb2ae4}{}\label{namespaceoutput__data_aea2eeeb3470d4377a87117bb1aeb2ae4}
+\index{output\+\_\+data@{output\+\_\+data}!particle\+\_\+dump\+\_\+activated@{particle\+\_\+dump\+\_\+activated}}
+\index{particle\+\_\+dump\+\_\+activated@{particle\+\_\+dump\+\_\+activated}!output\+\_\+data@{output\+\_\+data}}
+\subsubsection[{\texorpdfstring{particle\+\_\+dump\+\_\+activated}{particle_dump_activated}}]{\setlength{\rightskip}{0pt plus 5cm}logical(lp) output\+\_\+data\+::particle\+\_\+dump\+\_\+activated}\hypertarget{namespaceoutput__data_a8b8e6968d2063ddada37b5d050b011b4}{}\label{namespaceoutput__data_a8b8e6968d2063ddada37b5d050b011b4}
 \index{output\+\_\+data@{output\+\_\+data}!particle\+\_\+dumps@{particle\+\_\+dumps}}
 \index{particle\+\_\+dumps@{particle\+\_\+dumps}!output\+\_\+data@{output\+\_\+data}}
 \subsubsection[{\texorpdfstring{particle\+\_\+dumps}{particle_dumps}}]{\setlength{\rightskip}{0pt plus 5cm}type({\bf particle\+\_\+dump}), dimension(\+:), allocatable, target output\+\_\+data\+::particle\+\_\+dumps}\hypertarget{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}{}\label{namespaceoutput__data_a5fbbbcc739158cb15a4a02aa8bc63399}

@@ -243,39 +243,17 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 ! Developer's functions (experimental or under development)
 #if defined(DEV)
 
-    CASE(6)
-
-      IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-        !!! --- Gather electric fields on particles
-        CALL gete3d_energy_conserving_vect2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,LVEC_fieldgathe,l_lower_order_in_v)
-        !!! --- Gather magnetic fields on particles
-        CALL getb3d_energy_conserving_vect2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
-      ELSE
-        !!! --- Gather electric field on particles
-        CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
-                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                     nox,noy,noz,exg,eyg,ezg,ll4symtry,l_lower_order_in_v)
-        !!! --- Gather magnetic fields on particles
-        CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
-                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                     nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
-      ENDIF
-
     ! ______________________________________
     ! Vectorized field gathering subroutines, separated E and B functions
     CASE(5)
 
       IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
         !!! --- Gather electric fields on particles
-        CALL gete3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
+        CALL gete3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,LVEC_fieldgathe,l_lower_order_in_v)
         !!! --- Gather magnetic fields on particles
-        CALL getb3d_energy_conserving_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
+        CALL getb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
       ELSE
@@ -295,7 +273,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 
       IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
         !!! --- Gather electric and magnetic fields on particles
-        CALL geteb3d_energy_conserving_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+        CALL geteb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
       ELSE
@@ -389,17 +367,23 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
   CASE DEFAULT
 
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
+    
       CALL geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
+    
       CALL geteb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-      CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+    
+      CALL geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      
     ! Arbitrary order
     ELSE
       !!! --- Gather electric field on particles
