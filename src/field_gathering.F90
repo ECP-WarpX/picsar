@@ -245,6 +245,32 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 #if defined(DEV)
 
     ! ______________________________________
+    ! Vectorized non efficient field gathering subroutines
+    CASE(6)
+    
+      IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
+        !!! --- Gather electric fields on particles
+        CALL geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+
+      ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+        !!! --- Gather electric fields on particles
+        CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+      ELSE
+        !!! --- Gather electric field on particles
+        CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,exg,eyg,ezg,ll4symtry,l_lower_order_in_v)
+        !!! --- Gather magnetic fields on particles
+        CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
+      ENDIF
+
+    ! ______________________________________
     ! Vectorized field gathering subroutines, separated E and B functions
     CASE(5)
 
@@ -369,7 +395,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
     
-      CALL geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+      CALL geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
                       

@@ -6020,7 +6020,7 @@ END SUBROUTINE
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
-!> @paramn[in] l_lower_order_in_v decrease the interpolation order if True
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &
@@ -6657,7 +6657,7 @@ END SUBROUTINE
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
-!> @paramn[in] l_lower_order_in_v decrease the interpolation order if True
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &

@@ -1022,7 +1022,7 @@ END SUBROUTINE
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
-!> @paramn[in] l_lower_order_in_v decrease the interpolation order if True
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -1543,6 +1543,322 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   ENDDO
   
   RETURN 
+END SUBROUTINE
+
+! ________________________________________________________________________________________
+!> @brief
+!> Field gathering CIC (order 1) with gathering of E and B merged in a single loop
+!
+!> @details
+!> This function is vectorized.
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!> Revison 12/04/2016
+!
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle position
+!> @param[inout] ex,ey,ez particle electric field
+!> @param[inout] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile minimum grid position
+!> @param[in] dx,dy,dz space step
+!> @param[in] dt time step
+!> @param[in] nx,ny,nz number of grid points in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] lvect vector size for cache blocking
+!> @param[in] l_lower_order_in_v decrease the interpolation order if True
+!
+SUBROUTINE geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+! ________________________________________________________________________________________
+
+  USE omp_lib
+  USE constants
+  USE params
+  IMPLICIT NONE
+  
+  ! __ Parameter declaration _____________________________________________________
+  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp)                         :: lvect
+  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  LOGICAL                              :: l_lower_order_in_v
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(isp)                         :: ip, j, k, l
+  INTEGER(isp)                         :: nn,n
+  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z
+  REAL(num)                            :: xint, yint, zint
+  REAL(num)                            :: a
+  REAL(num), DIMENSION(lvect,0:1)      :: sx, sx0
+  REAL(num), DIMENSION(lvect,0:1)      :: sy, sy0
+  REAL(num), DIMENSION(lvect,0:1)      :: sz, sz0
+  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
+
+  sx=0.0_num
+  sy=0.0_num
+  sz=0.0_num
+  sx0=0.0_num
+  sy0=0.0_num
+  sz0=0.0_num
+
+IF (l_lower_order_in_v) THEN
+
+  sx0(:,0) = 1.0_num
+  sy0(:,0) = 1.0_num
+  sz0(:,0) = 1.0_num
+
+  ! ___ Loop on partciles _______________________
+  DO ip=1,np,lvect
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+  !$OMP SIMD 
+#endif 
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD 
+#endif
+#if defined __INTEL_COMPILER 
+  !DIR$ IVDEP
+! !DIR DISTRIBUTE POINT
+#endif
+
+    ! Loop over the particles inside a block
+    DO n=1,MIN(lvect,np-ip+1)
+
+      nn=ip+n-1
+  
+      x = (xp(nn)-xmin)*dxi
+      y = (yp(nn)-ymin)*dyi
+      z = (zp(nn)-zmin)*dzi
+    
+      ! Compute index of particle
+    
+      j=floor(x)
+      j0=floor(x)
+      k=floor(y)
+      k0=floor(y)
+      l=floor(z)
+      l0=floor(z)
+    
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      sx(n, 0) = 1.0_num-xint
+      sx(n, 1) = xint
+      sy(n, 0) = 1.0_num-yint
+      sy(n, 1) = yint
+      sz(n, 0) = 1.0_num-zint
+      sz(n, 1) = zint
+    
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+    
+      ! Compute Ex on particle
+      a = (sy(n,0)*exg(j0,k,l)   + sy(n,1)*exg(j0,k+1,l))*sz(n,0)  &
+       + (sy(n,0)*exg(j0,k,l+1) + sy(n,1)*exg(j0,k+1,l+1))*sz(n,1)
+      ex(nn) = ex(nn) + a*sx0(n,0)
+
+      ! Compute Ey on particle
+      a = (sx(n,0)*eyg(j,k0,l) + sx(n,1)*eyg(j+1,k0,l))*sz(n,0) &
+       + (sx(n,0)*eyg(j,k0,l+1) + sx(n,1)*eyg(j+1,k0,l+1))*sz(n,1)
+      ey(nn) = ey(nn) + a*sy0(n,0)
+
+      ! Compute Ez on particle
+      a = (sx(n,0)*ezg(j,k,l0) + sx(n,1)*ezg(j+1,k,l0))*sy(n,0) &
+        + (sx(n,0)*ezg(j,k+1,l0) + sx(n,1)*ezg(j+1,k+1,l0))*sy(n,1)
+      ez(nn) = ez(nn) + a*sz0(n,0)
+
+      ! Compute Bx on particle
+      a = (sx(n,0)*bxg(j,k0,l0) + sx(n,1)*bxg(j+1,k0,l0))*sy0(n,0)
+      bx(nn) = bx(nn) + a*sz0(n,0)
+    
+      ! Compute By on particle
+      a = (sy(n,0)*byg(j0,k,l0) + sy(n,1)*byg(j0,k+1,l0))*sx0(n,0)
+      by(nn) = by(nn) + a*sz0(n,0)
+    
+      ! Compute Bz on particle
+      a = (sz(n,0)*bzg(j0,k0,l) + sz(n,1)*bzg(j0,k0,l+1))*sx0(n,0)
+      bz(nn) = bz(nn) + a*sy0(n,0)
+
+    END DO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+  !$OMP END SIMD 
+#endif  
+#endif
+  ENDDO
+
+ELSE
+
+
+  ! ___ Loop on partciles _______________________
+  DO ip=1,np,lvect
+#if defined __INTEL_COMPILER 
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
+#endif 
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+  !$OMP SIMD 
+#endif  
+#elif defined __IBMBGQ__
+      !IBM* ALIGN(64,xp,yp,zp)
+      !IBM* ALIGN(64,ex,ey,ez)
+      !IBM* ALIGN(64,bx,by,bz)
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER 
+      !DIR$ SIMD
+#endif
+#if defined __INTEL_COMPILER 
+  !DIR$ IVDEP
+! !DIR DISTRIBUTE POINT
+#endif
+
+    ! Loop over the particles inside a block
+    DO n=1,MIN(lvect,np-ip+1)
+
+      nn=ip+n-1
+
+      x = (xp(nn)-xmin)*dxi
+      y = (yp(nn)-ymin)*dyi
+      z = (zp(nn)-zmin)*dzi
+    
+      ! Compute index of particle
+      j=floor(x)
+      j0=floor(x-0.5_num)
+      k=floor(y)
+      k0=floor(y-0.5_num)
+      l=floor(z)
+      l0=floor(z-0.5_num)
+      xint=x-j
+      yint=y-k
+      zint=z-l
+    
+      ! Compute shape factors
+      sx(n, 0) = 1.0_num-xint
+      sx(n, 1) = xint
+      sy(n, 0) = 1.0_num-yint
+      sy(n, 1) = yint
+      sz(n, 0) = 1.0_num-zint
+      sz(n, 1) = zint
+      
+      xint=x-0.5_num-j0
+      yint=y-0.5_num-k0
+      zint=z-0.5_num-l0
+      
+      sx0(n, 0) = 1.0_num-xint
+      sx0(n, 1) = xint
+      sy0(n, 0) = 1.0_num-yint
+      sy0(n, 1) = yint
+      sz0(n, 0) = 1.0_num-zint
+      sz0(n, 1) = zint
+    
+      ! Compute Ex on particle
+      a = (sx0(n,0)*exg(j0,k,l) &
+          + sx0(n,1)*exg(j0+1,k,l))*sy(n,0)
+      a = a + (sx0(n,0)*exg(j0,k+1,l) &
+          + sx0(n,1)*exg(j0+1,k+1,l))*sy(n,1)
+      ex(nn) = ex(nn) + a*sz(n,0)
+      a = (sx0(n,0)*exg(j0,k,l+1) &
+          + sx0(n,1)*exg(j0+1,k,l+1))*sy(n,0)
+      a = a + (sx0(n,0)*exg(j0,k+1,l+1) &
+          + sx0(n,1)*exg(j0+1,k+1,l+1))*sy(n,1)
+      ex(nn) = ex(nn) + a*sz(n,1)
+
+      ! Compute Ey on particle
+      a = (sx(n,0)*eyg(j,k0,l) &
+          + sx(n,1)*eyg(j+1,k0,l))*sy0(n,0)
+      a = a + (sx(n,0)*eyg(j,k0+1,l) &
+          + sx(n,1)*eyg(j+1,k0+1,l))*sy0(n,1)
+      ey(nn) = ey(nn) + a*sz(n,0)
+      a = (sx(n,0)*eyg(j,k0,l+1) &
+          + sx(n,1)*eyg(j+1,k0,l+1))*sy0(n,0)
+      a = a + (sx(n,0)*eyg(j,k0+1,l+1) &
+          + sx(n,1)*eyg(j+1,k0+1,l+1))*sy0(n,1)
+      ey(nn) = ey(nn) + a*sz(n,1)
+
+      ! Compute Ez on particle
+      a = (sx(n,0)*ezg(j,k,l0) &
+          + sx(n,1)*ezg(j+1,k,l0))*sy(n,0)
+      a = a + (sx(n,0)*ezg(j,k+1,l0) &
+          + sx(n,1)*ezg(j+1,k+1,l0))*sy(n,1)
+      ez(nn) = ez(nn) + a*sz0(n,0)
+      a = (sx(n,0)*ezg(j,k,l0+1) &
+          + sx(n,1)*ezg(j+1,k,l0+1))*sy(n,0)
+      a = a + (sx(n,0)*ezg(j,k+1,l0+1) &
+          + sx(n,1)*ezg(j+1,k+1,l0+1))*sy(n,1)
+      ez(nn) = ez(nn) + a*sz0(n,1)
+
+      ! Compute Bx on particle
+      a = (sx(n,0)*bxg(j,k0,l0) &
+          + sx(n,1)*bxg(j+1,k0,l0))*sy0(n,0)
+      a = a + (sx(n,0)*bxg(j,k0+1,l0) &
+          + sx(n,1)*bxg(j+1,k0+1,l0))*sy0(n,1)
+      bx(nn) = bx(nn) + a*sz0(n,0)
+      a = (sx(n,0)*bxg(j,k0,l0+1) &
+          + sx(n,1)*bxg(j+1,k0,l0+1))*sy0(n,0)
+      a = a + (sx(n,0)*bxg(j,k0+1,l0+1) &
+          + sx(n,1)*bxg(j+1,k0+1,l0+1))*sy0(n,1)
+      bx(nn) = bx(nn) + a*sz0(n,1)
+    
+      ! Compute By on particle
+      a = (sx0(n,0)*byg(j0,k,l0) &
+          + sx0(n,1)*byg(j0+1,k,l0))*sy(n,0)
+      a = a + (sx0(n,0)*byg(j0,k+1,l0) &
+          + sx0(n,1)*byg(j0+1,k+1,l0))*sy(n,1)
+      by(nn) = by(nn) + a*sz0(n,0)
+      a = (sx0(n,0)*byg(j0,k,l0+1) &
+          + sx0(n,1)*byg(j0+1,k,l0+1))*sy(n,0)
+      a = a + (sx0(n,0)*byg(j0,k+1,l0+1) &
+          + sx0(n,1)*byg(j0+1,k+1,l0+1))*sy(n,1)
+      by(nn) = by(nn) + a*sz0(n,1)
+    
+      ! Compute Bz on particle
+      a = (sx0(n,0)*bzg(j0,k0,l) &
+          + sx0(n,1)*bzg(j0+1,k0,l))*sy0(n,0)
+      a = a + (sx0(n,0)*bzg(j0,k0+1,l) &
+          + sx0(n,1)*bzg(j0+1,k0+1,l))*sy0(n,1)
+      bz(nn) = bz(nn) + a*sz(n,0)
+      a = (sx0(n,0)*bzg(j0,k0,l+1) &
+          + sx0(n,1)*bzg(j0+1,k0,l+1))*sy0(n,0)
+      a = a + (sx0(n,0)*bzg(j0,k0+1,l+1) &
+          + sx0(n,1)*bzg(j0+1,k0+1,l+1))*sy0(n,1)
+      bz(nn) = bz(nn) + a*sz(n,1)
+
+    END DO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+  !$OMP END SIMD 
+#endif 
+#endif
+  ENDDO
+ENDIF
+RETURN
 END SUBROUTINE
 
 #if defined (DEV)
