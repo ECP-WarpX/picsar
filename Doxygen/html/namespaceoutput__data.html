@@ -217,10 +217,12 @@ Variables</h2></td></tr>
 <tr class="memitem:a034b19d2c3a5211b1fd96df24cd28dd1"><td class="memItemLeft" align="right" valign="top">real(num), dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoutput__data.html#a034b19d2c3a5211b1fd96df24cd28dd1">temdiag_array</a></td></tr>
 <tr class="memdesc:a034b19d2c3a5211b1fd96df24cd28dd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Big array containing all the temporal diag at a given iteration.  <a href="#a034b19d2c3a5211b1fd96df24cd28dd1">More...</a><br /></td></tr>
 <tr class="separator:a034b19d2c3a5211b1fd96df24cd28dd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc6cc1ed098892996b0f0dd858e410d1"><td class="memItemLeft" align="right" valign="top">logical&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoutput__data.html#abc6cc1ed098892996b0f0dd858e410d1">dive_computed</a></td></tr>
-<tr class="separator:abc6cc1ed098892996b0f0dd858e410d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4dbfde333a6a2225527c27d33472032e"><td class="memItemLeft" align="right" valign="top">integer(idp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoutput__data.html#a4dbfde333a6a2225527c27d33472032e">npdumps</a></td></tr>
-<tr class="separator:a4dbfde333a6a2225527c27d33472032e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcce4470ad25c02f78f99f1a71fc9371"><td class="memItemLeft" align="right" valign="top">logical(lp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoutput__data.html#adcce4470ad25c02f78f99f1a71fc9371">dive_computed</a></td></tr>
+<tr class="separator:adcce4470ad25c02f78f99f1a71fc9371"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b8e6968d2063ddada37b5d050b011b4"><td class="memItemLeft" align="right" valign="top">logical(lp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoutput__data.html#a8b8e6968d2063ddada37b5d050b011b4">particle_dump_activated</a></td></tr>
+<tr class="separator:a8b8e6968d2063ddada37b5d050b011b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a9d2dcc12c89a8aaeb60ab9501f1008"><td class="memItemLeft" align="right" valign="top">integer(lp)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoutput__data.html#a1a9d2dcc12c89a8aaeb60ab9501f1008">npdumps</a></td></tr>
+<tr class="separator:a1a9d2dcc12c89a8aaeb60ab9501f1008"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5fbbbcc739158cb15a4a02aa8bc63399"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structoutput__data_1_1particle__dump.html">particle_dump</a>), dimension(:), allocatable, target&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoutput__data.html#a5fbbbcc739158cb15a4a02aa8bc63399">particle_dumps</a></td></tr>
 <tr class="memdesc:a5fbbbcc739158cb15a4a02aa8bc63399"><td class="mdescLeft">&#160;</td><td class="mdescRight">Object for the particle dumping.  <a href="#a5fbbbcc739158cb15a4a02aa8bc63399">More...</a><br /></td></tr>
 <tr class="separator:a5fbbbcc739158cb15a4a02aa8bc63399"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -360,12 +362,12 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="abc6cc1ed098892996b0f0dd858e410d1"></a>
+<a class="anchor" id="adcce4470ad25c02f78f99f1a71fc9371"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">logical output_data::dive_computed</td>
+          <td class="memname">logical(lp) output_data::dive_computed</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -516,12 +518,12 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a4dbfde333a6a2225527c27d33472032e"></a>
+<a class="anchor" id="a1a9d2dcc12c89a8aaeb60ab9501f1008"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">integer(idp) output_data::npdumps</td>
+          <td class="memname">integer(lp) output_data::npdumps</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -558,6 +560,18 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">integer(idp) output_data::output_step_min = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8b8e6968d2063ddada37b5d050b011b4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">logical(lp) output_data::particle_dump_activated</td>
         </tr>
       </table>
 </div><div class="memdoc">

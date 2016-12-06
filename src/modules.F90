@@ -621,9 +621,6 @@ MODULE shared_data
 	REAL(num) :: z_grid_min, z_grid_max
 	REAL(num) :: z_grid_min_local, z_grid_max_local
 
-  !> Moving window offset z-position
-  REAL(num) :: zgrid =0.
-
 	!> Total charge density
 	REAL(num), POINTER, DIMENSION(:,:,:) :: rho
 	!> Electric Field divergence

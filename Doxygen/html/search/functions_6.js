@@ -23,15 +23,14 @@ var searchData=
   ['get_5fprojected_5fload_5fon_5fz',['get_projected_load_on_z',['../namespaceload__balance.html#a7808443cfc827402ff6fdc18042a7325',1,'load_balance']]],
   ['get_5ftot_5fnumber_5fof_5fparticles',['get_tot_number_of_particles',['../namespacediagnostics.html#ab628191e427157162f167691267d0d1f',1,'diagnostics']]],
   ['get_5ftot_5fnumber_5fof_5fparticles_5ffrom_5fspecies',['get_tot_number_of_particles_from_species',['../namespacediagnostics.html#a00e54b5beba626e955d8e3e946962f1d',1,'diagnostics']]],
-  ['getb3d_5fenergy_5fconserving_5flinear_5f3_5f3_5f3',['getb3d_energy_conserving_linear_3_3_3',['../field__gathering__3d__o3_8_f90.html#af2124c863ea5023482442eca03daff98',1,'field_gathering_3d_o3.F90']]],
   ['getb3d_5fenergy_5fconserving_5fscalar_5f1_5f1_5f1',['getb3d_energy_conserving_scalar_1_1_1',['../field__gathering__3d__o1_8_f90.html#a35b7fbf406b705b1a34472523046d1b1',1,'field_gathering_3d_o1.F90']]],
   ['getb3d_5fenergy_5fconserving_5fscalar_5f3_5f3_5f3',['getb3d_energy_conserving_scalar_3_3_3',['../field__gathering__3d__o3_8_f90.html#a521bd3732f843934943ef8a923d5da72',1,'field_gathering_3d_o3.F90']]],
-  ['gete3d_5fenergy_5fconserving_5flinear_5f3_5f3_5f3',['gete3d_energy_conserving_linear_3_3_3',['../field__gathering__3d__o3_8_f90.html#ae26c3ade4bf6bf1835b6f0ddae56ff5d',1,'field_gathering_3d_o3.F90']]],
   ['gete3d_5fenergy_5fconserving_5fscalar_5f1_5f1_5f1',['gete3d_energy_conserving_scalar_1_1_1',['../field__gathering__3d__o1_8_f90.html#a13e24ff5639b3dcf1e9cd8e51a1caf53',1,'field_gathering_3d_o1.F90']]],
   ['gete3d_5fenergy_5fconserving_5fscalar_5f3_5f3_5f3',['gete3d_energy_conserving_scalar_3_3_3',['../field__gathering__3d__o3_8_f90.html#aafcef6faa8aa6d61b950249a1285c258',1,'field_gathering_3d_o3.F90']]],
-  ['geteb2dxz_5fenergy_5fconserving',['geteb2dxz_energy_conserving',['../field__gathering__2d_8_f90.html#a6d4781dd6cacd0867443a1d9ff142ad7',1,'field_gathering_2d.F90']]],
+  ['geteb2dxz_5fenergy_5fconserving',['geteb2dxz_energy_conserving',['../field__gathering__2d_8_f90.html#a5c6ac50abbe5706b3f8f33afa68a23a5',1,'field_gathering_2d.F90']]],
   ['geteb3d_5fenergy_5fconserving',['geteb3d_energy_conserving',['../field__gathering_8_f90.html#a02f8f275e2b38a13c4de92719714b016',1,'field_gathering.F90']]],
+  ['geteb3d_5fenergy_5fconserving_5fblockvec2_5f3_5f3_5f3',['geteb3d_energy_conserving_blockvec2_3_3_3',['../field__gathering__3d__o3_8_f90.html#aa724510149f9ad46a950d576006e248f',1,'field_gathering_3d_o3.F90']]],
+  ['geteb3d_5fenergy_5fconserving_5fblockvec_5f3_5f3_5f3',['geteb3d_energy_conserving_blockvec_3_3_3',['../field__gathering__3d__o3_8_f90.html#aa5a8d5eebf404fdfb772d90bf39cd947',1,'field_gathering_3d_o3.F90']]],
   ['geteb3d_5fenergy_5fconserving_5fvec_5f1_5f1_5f1',['geteb3d_energy_conserving_vec_1_1_1',['../field__gathering__3d__o1_8_f90.html#a3788d4a011335c931d314bc69f969508',1,'field_gathering_3d_o1.F90']]],
-  ['geteb3d_5fenergy_5fconserving_5fvec_5f2_5f2_5f2',['geteb3d_energy_conserving_vec_2_2_2',['../field__gathering__3d__o2_8_f90.html#a84aaeb40b8a194f218668fd7723de670',1,'field_gathering_3d_o2.F90']]],
-  ['geteb3d_5fenergy_5fconserving_5fvec_5f3_5f3_5f3',['geteb3d_energy_conserving_vec_3_3_3',['../field__gathering__3d__o3_8_f90.html#a72706be607c4bf29818ef38111a720a2',1,'field_gathering_3d_o3.F90']]]
+  ['geteb3d_5fenergy_5fconserving_5fvec_5f2_5f2_5f2',['geteb3d_energy_conserving_vec_2_2_2',['../field__gathering__3d__o2_8_f90.html#a84aaeb40b8a194f218668fd7723de670',1,'field_gathering_3d_o2.F90']]]
 ];

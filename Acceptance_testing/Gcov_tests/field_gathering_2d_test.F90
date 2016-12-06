@@ -57,7 +57,7 @@ PROGRAM field_gathering_3d_test
   ny = 100
   nz = 100
   
-  lvect = 512
+  lvect = 64
   
   nxguard = 3
   nyguard = 3
@@ -207,6 +207,40 @@ PROGRAM field_gathering_3d_test
   !write(0,*) sum(ex),sum(ey),sum(ez)
 
 
+	namee(i) = 'pxr_gete2dxz_energy_conserving_vect_1_1'
+	nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_1_1'
+	ex = 0
+	ey = 0
+	ez = 0
+	bx = 0
+	by = 0
+	bz = 0
+  t0 = MPI_WTIME()
+	CALL pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+																			 dx,dz,nx,nz,nxguard,nzguard, &
+																			 exg,eyg,ezg,lvect,l_lower_order_in_v)
+  te(i) = MPI_WTIME() - t0
+  t0 = MPI_WTIME()
+	CALL pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,   &
+																			 dx,dz,nx,nz,nxguard,nzguard, &
+																			 bxg,byg,bzg,lvect,l_lower_order_in_v)
+  tb(i) = MPI_WTIME() - t0
+	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+	errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+	errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+	errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+	i = i + 1
+
 	
 	n = i-1
 	write(0,*)
@@ -263,6 +297,41 @@ PROGRAM field_gathering_3d_test
 	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
 	i = i + 1
 
+
+	namee(i) = 'pxr_gete2dxz_energy_conserving_vect_2_2'
+	nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_2_2'
+	ex = 0
+	ey = 0
+	ez = 0
+	bx = 0
+	by = 0
+	bz = 0
+  t0 = MPI_WTIME()
+	CALL pxr_gete2dxz_energy_conserving_vect_2_2(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+																			 dx,dz,nx,nz,nxguard,nzguard, &
+																			 exg,eyg,ezg,lvect,l_lower_order_in_v)
+  te(i) = MPI_WTIME() - t0
+  t0 = MPI_WTIME()
+	CALL pxr_getb2dxz_energy_conserving_vect_2_2(np,xp,zp,bx,by,bz,xmin,zmin,   &
+																			 dx,dz,nx,nz,nxguard,nzguard, &
+																			 bxg,byg,bzg,lvect,l_lower_order_in_v)
+  tb(i) = MPI_WTIME() - t0
+	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+	errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+	errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+	errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+	i = i + 1
+
 	n = i-1
 	write(0,*)
   write(0,'(" Results Electric field order 2")')	
@@ -305,7 +374,6 @@ PROGRAM field_gathering_3d_test
   i = 1
 
   i = 1
-  !write(0,*) 'test reference: pxr_gete3d_n_energy_conserving'
   namee(i) = 'pxr_gete3d_n_energy_conserving'
   nameb(i) = 'pxr_getb3d_n_energy_conserving'
   t0 = MPI_WTIME()
@@ -320,9 +388,8 @@ PROGRAM field_gathering_3d_test
 	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
 	i = i + 1
 	
-  !write(0,*) 'test 1: gete3d_energy_conserving_1_1_1'
-	namee(i) = 'pxr_gete2dxz_energy_conserving_3_3'
-	nameb(i) = 'pxr_getb2dxz_energy_conserving_3_3'
+	namee(i) = 'pxr_gete2dxz_energy_conserving_scalar_3_3'
+	nameb(i) = 'pxr_getb2dxz_energy_conserving_scalar_3_3'
 	ex = 0
 	ey = 0
 	ez = 0
@@ -330,12 +397,12 @@ PROGRAM field_gathering_3d_test
 	by = 0
 	bz = 0
   t0 = MPI_WTIME()
-	CALL pxr_gete2dxz_energy_conserving_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+	CALL pxr_gete2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
 																			 dx,dz,nx,nz,nxguard,nzguard, &
 																			 exg,eyg,ezg,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
-	CALL pxr_getb2dxz_energy_conserving_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
+	CALL pxr_getb2dxz_energy_conserving_scalar_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
 																			 dx,dz,nx,nz,nxguard,nzguard, &
 																			 bxg,byg,bzg,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
@@ -355,6 +422,41 @@ PROGRAM field_gathering_3d_test
 	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
 	i = i + 1
   !write(0,*) sum(ex),sum(ey),sum(ez)
+
+
+	namee(i) = 'pxr_gete2dxz_energy_conserving_vect_3_3'
+	nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_3_3'
+	ex = 0
+	ey = 0
+	ez = 0
+	bx = 0
+	by = 0
+	bz = 0
+  t0 = MPI_WTIME()
+	CALL pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+																			 dx,dz,nx,nz,nxguard,nzguard, &
+																			 exg,eyg,ezg,lvect,l_lower_order_in_v)
+  te(i) = MPI_WTIME() - t0
+  t0 = MPI_WTIME()
+	CALL pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
+																			 dx,dz,nx,nz,nxguard,nzguard, &
+																			 bxg,byg,bzg,lvect,l_lower_order_in_v)
+  tb(i) = MPI_WTIME() - t0
+	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+	errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+	errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+	errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+	i = i + 1
 
 	n = i-1
 	write(0,*)

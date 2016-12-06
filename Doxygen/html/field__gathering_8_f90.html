@@ -122,9 +122,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a967586c463fd968e31a929a61e6e2b65"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#a967586c463fd968e31a929a61e6e2b65">field_gathering</a></td></tr>
 <tr class="memdesc:a967586c463fd968e31a929a61e6e2b65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field gathering main subroutine in 3D called in the main loop when not coupled with the particle pusher.  <a href="#a967586c463fd968e31a929a61e6e2b65">More...</a><br /></td></tr>
 <tr class="separator:a967586c463fd968e31a929a61e6e2b65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3048fd8eb5e48d87fa67d382d260b22f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#a3048fd8eb5e48d87fa67d382d260b22f">field_gathering_sub</a> (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)</td></tr>
-<tr class="memdesc:a3048fd8eb5e48d87fa67d382d260b22f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This subroutine performs the field gathering in 3D only.  <a href="#a3048fd8eb5e48d87fa67d382d260b22f">More...</a><br /></td></tr>
-<tr class="separator:a3048fd8eb5e48d87fa67d382d260b22f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a331d1bcb6c50afc68081f4c9842d2aea"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#a331d1bcb6c50afc68081f4c9842d2aea">field_gathering_sub</a> (exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,                   nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz,               dxx, dyy, dzz, dtt, l_lower_order_in_v_in)</td></tr>
+<tr class="memdesc:a331d1bcb6c50afc68081f4c9842d2aea"><td class="mdescLeft">&#160;</td><td class="mdescRight">This subroutine performs the field gathering in 3D only.  <a href="#a331d1bcb6c50afc68081f4c9842d2aea">More...</a><br /></td></tr>
+<tr class="separator:a331d1bcb6c50afc68081f4c9842d2aea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02f8f275e2b38a13c4de92719714b016"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="field__gathering_8_f90.html#a02f8f275e2b38a13c4de92719714b016">geteb3d_energy_conserving</a> (np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard,                                                                                                                                                       nox, noy, noz, exg, eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, field_gathe_algo)</td></tr>
 <tr class="memdesc:a02f8f275e2b38a13c4de92719714b016"><td class="mdescLeft">&#160;</td><td class="mdescRight">General subroutines for the 3D field gathering.  <a href="#a02f8f275e2b38a13c4de92719714b016">More...</a><br /></td></tr>
 <tr class="separator:a02f8f275e2b38a13c4de92719714b016"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -158,7 +158,7 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a3048fd8eb5e48d87fa67d382d260b22f"></a>
+<a class="anchor" id="a331d1bcb6c50afc68081f4c9842d2aea"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -297,7 +297,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v_in</em>&#160;</td>
         </tr>
         <tr>
@@ -505,13 +505,13 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical, intent(in)&#160;</td>
+          <td class="paramtype">logical(lp), intent(in)&#160;</td>
           <td class="paramname"><em>ll4symtry</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical, intent(in)&#160;</td>
+          <td class="paramtype">logical(lp), intent(in)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>, </td>
         </tr>
         <tr>
@@ -529,7 +529,7 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>General subroutines for the 3D field gathering. </p>
-<p>This subroutine controls the different algorithms for the field gathering Choice of an algorithm is done using the argument field_gathe_algo. This subroutine is called in the subroutine <a class="el" href="field__gathering_8_f90.html#a3048fd8eb5e48d87fa67d382d260b22f" title="This subroutine performs the field gathering in 3D only. ">field_gathering_sub()</a>. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
+<p>This subroutine controls the different algorithms for the field gathering Choice of an algorithm is done using the argument field_gathe_algo. This subroutine is called in the subroutine <a class="el" href="field__gathering_8_f90.html#a331d1bcb6c50afc68081f4c9842d2aea" title="This subroutine performs the field gathering in 3D only. ">field_gathering_sub()</a>. </p><dl class="section author"><dt>Author</dt><dd>Henri Vincenti Mathieu Lobet </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2015-2016 </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -710,13 +710,13 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l4symtry</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
         </tr>
         <tr>
@@ -889,13 +889,13 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l4symtry</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
         </tr>
         <tr>
@@ -1068,7 +1068,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
         </tr>
         <tr>
@@ -1238,7 +1238,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical&#160;</td>
+          <td class="paramtype">logical(lp)&#160;</td>
           <td class="paramname"><em>l_lower_order_in_v</em>&#160;</td>
         </tr>
         <tr>
