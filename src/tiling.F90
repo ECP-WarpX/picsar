@@ -747,9 +747,9 @@ CONTAINS
 
                 ENDIF
             END DO ! END LOOP ON SPECIES
-        ENDIF
+
         !!! --- Sets-up particle space distribution (random space distribution)
-        IF (pdistr .EQ. 2) THEN
+        ELSE IF (pdistr .EQ. 2) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
                 jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
@@ -790,6 +790,52 @@ CONTAINS
                     END DO
                 END DO
             END DO ! END LOOP ON SPECIES
+            
+
+        !!! --- Sets-up particle space distribution (random space with a given velocity)
+        ELSE IF (pdistr .EQ. 3) THEN
+            DO ispecies=1,nspecies
+                curr=>species_parray(ispecies)
+                jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
+                jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
+                kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
+                kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
+                lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
+                lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+                DO l=lmin,lmax-1
+                    DO k=kmin,kmax-1
+                        DO j=jmin,jmax-1
+                            DO ipart=1,curr%nppcell
+                                CALL RANDOM_NUMBER(rng(1:6))
+                                ! Sets positions and weight
+                                partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
+                                party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
+                                partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
+                                partw = nc*dx*dy*dz/(curr%nppcell)
+                                
+                                ! Sets velocity
+                                v=MAX(1e-10_num,rng(4))
+                                th=2*pi*rng(5)
+                                phi=2*pi*rng(6)
+
+                                partvx= curr%vdrift_x + curr%vth_x*COS(th)*COS(phi)
+                                partvy= curr%vdrift_y + curr%vth_x*COS(th)*SIN(phi)
+                                partvz= curr%vdrift_z + curr%vth_x*SIN(th)
+
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                                partux = partvx /gaminv
+                                partuy = partvy /gaminv
+                                partuz = partvz /gaminv
+
+                                ! Adds particle to array of tiles of current species
+                                CALL add_particle_to_species(curr, partx, party, partz, &
+                                partux, partuy, partuz, gaminv, partw)
+                            END DO
+                        END DO
+                    END DO
+                END DO
+            END DO ! END LOOP ON SPECIES
+            
         ENDIF
 
         ! Collects total number of particles from other subdomains (useful for statistics)
