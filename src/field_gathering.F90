@@ -368,6 +368,10 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
       CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                         bxg,byg,bzg,l_lower_order_in_v)
+                                        
+    ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
+      !!! --- Gather electric field on particles
+            !!! --- Gather magnetic fields on particles
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
       !!! --- Gather electric field on particles
       CALL gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
@@ -805,6 +809,7 @@ sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
 DO ip=1,np
+
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
