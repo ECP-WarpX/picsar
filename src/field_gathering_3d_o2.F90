@@ -1797,6 +1797,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 END SUBROUTINE
 #endif
 
+#if defined(DEV)
 ! ________________________________________________________________________________________
 !
 !> @brief
@@ -2112,6 +2113,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   
   RETURN 
 END SUBROUTINE
+#endif
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -2188,7 +2190,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
@@ -2386,7 +2390,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
+      !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
