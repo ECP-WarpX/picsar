@@ -12,9 +12,9 @@
 from numpy import *
 
 # Parameters
-nox=1 # order of gathering
-noy=1
-noz=1
+nox=2 # order of gathering
+noy=2
+noz=2
 l_lower_order_in_v=False
 filename="gathering_routines_vec_"+str(nox)+"_"+str(noy)+"_"+str(noz)+".F90"
 subroutine_b_field="getb3d_energy_conserving_vec_"+str(nox)+"_"+str(noy)+"_"+str(noz)

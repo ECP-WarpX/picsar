@@ -254,6 +254,12 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
 
+      ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
+        !!! --- Gather electric fields on particles
+        CALL geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+
       ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
         !!! --- Gather electric fields on particles
         CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
@@ -371,7 +377,13 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
                                         
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
       !!! --- Gather electric field on particles
-            !!! --- Gather magnetic fields on particles
+      CALL gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        exg,eyg,ezg,l_lower_order_in_v)
+      !!! --- Gather magnetic fields on particles
+      CALL getb3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        bxg,byg,bzg,l_lower_order_in_v)
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
       !!! --- Gather electric field on particles
       CALL gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
@@ -405,7 +417,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
                       
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
     
-      CALL geteb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+      CALL geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
                       
