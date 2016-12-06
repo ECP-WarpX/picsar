@@ -148,6 +148,8 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
 
       DO ll = izmin, izmax+1
           DO kk = iymin, iymax+1
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
               DO jj = ixmin0, ixmax0
                   ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)
               END DO
@@ -156,6 +158,8 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
 
       DO ll = izmin, izmax+1
           DO kk = iymin0, iymax0
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
               DO jj = ixmin, ixmax+1
                   ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)
               END DO
@@ -164,6 +168,8 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
 
       DO ll = izmin0, izmax0
           DO kk = iymin, iymax+1
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
               DO jj = ixmin, ixmax+1
                   ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
               END DO
