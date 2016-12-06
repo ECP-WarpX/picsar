@@ -5085,7 +5085,13 @@ IF (l_lower_order_in_v ) THEN
 #if defined __INTEL_COMPILER 
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+      !!DIR PREFETCH ex:1:1
+      !!DIR PREFETCH ey:1:1
+      !!DIR PREFETCH ez:1:1
+      !!DIR PREFETCH bx:1:1
+      !!DIR PREFETCH by:1:1
+      !!DIR PREFETCH bz:1:1 
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
