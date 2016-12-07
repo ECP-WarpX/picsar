@@ -12,13 +12,13 @@
 from numpy import *
 
 # Parameters
-nox=3 # order of gathering
-noy=3
-noz=3
+nox=2 # order of gathering
+noy=2
+noz=2
 l_lower_order_in_v=False
-filename="gathering_routines_"+str(nox)+"_"+str(noy)+"_"+str(noz)+".F90"
-subroutine_b_field="getb3d_energy_conserving_"+str(nox)+"_"+str(noy)+"_"+str(noz)
-subroutine_e_field="gete3d_energy_conserving_"+str(nox)+"_"+str(noy)+"_"+str(noz)
+filename="gathering_routines_vec_"+str(nox)+"_"+str(noy)+"_"+str(noz)+".F90"
+subroutine_b_field="getb3d_energy_conserving_vec_"+str(nox)+"_"+str(noy)+"_"+str(noz)
+subroutine_e_field="gete3d_energy_conserving_vec_"+str(nox)+"_"+str(noy)+"_"+str(noz)
 indent_cont_1="                                      "
 indent_cont_2="              "
 indent_1="  "
@@ -148,38 +148,38 @@ fh.write(indent_2+"zint=z-l\n");
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute shape factors\n")
 if(nox==1):
-    fh.write(indent_2+"sx( 0) = 1.0_num-xint\n");
-    fh.write(indent_2+"sx( 1) = xint\n");
+    fh.write(indent_2+"sx(n, 0) = 1.0_num-xint\n");
+    fh.write(indent_2+"sx(n, 1) = xint\n");
 if(nox==2):
     fh.write(indent_2+"xintsq = xint*xint\n");
-    fh.write(indent_2+"sx(-1) = 0.5_num*(0.5_num-xint)**2\n");
-    fh.write(indent_2+"sx( 0) = 0.75_num-xintsq\n");
-    fh.write(indent_2+"sx( 1) = 0.5_num*(0.5_num+xint)**2\n");
+    fh.write(indent_2+"sx(n,-1) = 0.5_num*(0.5_num-xint)**2\n");
+    fh.write(indent_2+"sx(n, 0) = 0.75_num-xintsq\n");
+    fh.write(indent_2+"sx(n, 1) = 0.5_num*(0.5_num+xint)**2\n");
 if (nox==3):
     fh.write(indent_2+"oxint = 1.0_num-xint\n");
     fh.write(indent_2+"xintsq = xint*xint\n");
     fh.write(indent_2+"oxintsq = oxint*oxint\n");
-    fh.write(indent_2+"sx(-1) = onesixth*oxintsq*oxint\n");
-    fh.write(indent_2+"sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)\n");
-    fh.write(indent_2+"sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)\n");
-    fh.write(indent_2+"sx( 2) = onesixth*xintsq*xint\n");
+    fh.write(indent_2+"sx(n,-1) = onesixth*oxintsq*oxint\n");
+    fh.write(indent_2+"sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)\n");
+    fh.write(indent_2+"sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)\n");
+    fh.write(indent_2+"sx(n, 2) = onesixth*xintsq*xint\n");
 
 if (noy==1):
-    fh.write(indent_2+"sy( 0) = 1.0_num-yint\n");
-    fh.write(indent_2+"sy( 1) = yint\n");
+    fh.write(indent_2+"sy(n, 0) = 1.0_num-yint\n");
+    fh.write(indent_2+"sy(n, 1) = yint\n");
 if(noy==2):
     fh.write(indent_2+"yintsq = yint*yint\n");
-    fh.write(indent_2+"sy(-1) = 0.5_num*(0.5_num-yint)**2\n");
-    fh.write(indent_2+"sy( 0) = 0.75_num-yintsq\n");
-    fh.write(indent_2+"sy( 1) = 0.5_num*(0.5_num+yint)**2\n");
+    fh.write(indent_2+"sy(n,-1) = 0.5_num*(0.5_num-yint)**2\n");
+    fh.write(indent_2+"sy(n, 0) = 0.75_num-yintsq\n");
+    fh.write(indent_2+"sy(n, 1) = 0.5_num*(0.5_num+yint)**2\n");
 if(noy==3):
     fh.write(indent_2+"oyint = 1.0_num-yint\n");
     fh.write(indent_2+"yintsq = yint*yint\n");
     fh.write(indent_2+"oyintsq = oyint*oyint\n");
-    fh.write(indent_2+"sy(-1) = onesixth*oyintsq*oyint\n");
-    fh.write(indent_2+"sy( 0) = twothird-yintsq*(1.0_num-yint/2.0_num)\n");
-    fh.write(indent_2+"sy( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)\n");
-    fh.write(indent_2+"sy( 2) = onesixth*yintsq*yint\n");
+    fh.write(indent_2+"sy(n,-1) = onesixth*oyintsq*oyint\n");
+    fh.write(indent_2+"sy(n, 0) = twothird-yintsq*(1.0_num-yint/2.0_num)\n");
+    fh.write(indent_2+"sy(n, 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)\n");
+    fh.write(indent_2+"sy(n, 2) = onesixth*yintsq*yint\n");
 
 
 if(noz==1):
@@ -272,42 +272,42 @@ else:
         fh.write(indent_2+"sy0( 2) = onesixth*yintsq*yint\n");
         
     if(noz==1):
-        fh.write(indent_2+"sz0( 0) = 1.0_num-zint\n");
-        fh.write(indent_2+"sz0( 1) = zint\n");
+        fh.write(indent_2+"sz0(n, 0) = 1.0_num-zint\n");
+        fh.write(indent_2+"sz0(n, 1) = zint\n");
     if(noz==2):
         fh.write(indent_2+"zintsq = zint*zint\n");
-        fh.write(indent_2+"sz0(-1) = 0.5_num*(0.5_num-zint)**2\n");
-        fh.write(indent_2+"sz0( 0) = 0.75_num-zintsq\n");
-        fh.write(indent_2+"sz0( 1) = 0.5_num*(0.5_num+zint)**2\n");
+        fh.write(indent_2+"sz0(n,-1) = 0.5_num*(0.5_num-zint)**2\n");
+        fh.write(indent_2+"sz0(n, 0) = 0.75_num-zintsq\n");
+        fh.write(indent_2+"sz0(n, 1) = 0.5_num*(0.5_num+zint)**2\n");
     if(noz==3):
         fh.write(indent_2+"ozint = 1.0_num-zint\n");
         fh.write(indent_2+"zintsq = zint*zint\n");
         fh.write(indent_2+"ozintsq = ozint*ozint\n");
-        fh.write(indent_2+"sz0(-1) = onesixth*ozintsq*ozint\n");
-        fh.write(indent_2+"sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
-        fh.write(indent_2+"sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
-        fh.write(indent_2+"sz0( 2) = onesixth*zintsq*zint\n");
+        fh.write(indent_2+"sz0(n,-1) = onesixth*ozintsq*ozint\n");
+        fh.write(indent_2+"sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
+        fh.write(indent_2+"sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
+        fh.write(indent_2+"sz0(n, 2) = onesixth*zintsq*zint\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Bx on particle\n")
 for ll in range(izmin0, izmax0+1):
     for kk in range(iymin0, iymax0+1):
         for jj in range(ixmin, ixmax+2):
-            fh.write(indent_2+"bx(ip) = bx(ip) + sx("+str(jj)+")*sy0("+str(kk)+")*sz0("+str(ll)+")*bxg(j"+plusi(jj)+",k0"+plusi(kk)+",l0"+plusi(ll)+")\n");
+            fh.write(indent_2+"bx(nn) = bx(nn) + sx(n,"+str(jj)+")*sy0(n,"+str(kk)+")*sz0(n,"+str(ll)+")*bxg(j"+plusi(jj)+",k0"+plusi(kk)+",l0"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute By on particle\n")
 for ll in range(izmin0, izmax0+1):
     for kk in range(iymin, iymax+2):
         for jj in range(ixmin0, ixmax0+1):
-            fh.write(indent_2+"by(ip) = by(ip) + sx0("+str(jj)+")*sy("+str(kk)+")*sz0("+str(ll)+")*byg(j0"+plusi(jj)+",k"+plusi(kk)+",l0"+plusi(ll)+")\n");
+            fh.write(indent_2+"by(nn) = by(nn) + sx0(n,"+str(jj)+")*sy(n,"+str(kk)+")*sz0(n,"+str(ll)+")*byg(j0"+plusi(jj)+",k"+plusi(kk)+",l0"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Bz on particle\n")
 for ll in range(izmin, izmax+2):
     for kk in range(iymin0, iymax0+1):
         for jj in range(ixmin0, ixmax0+1):
-            fh.write(indent_2+"bz(ip) = bz(ip) + sx0("+str(jj)+")*sy0("+str(kk)+")*sz("+str(ll)+")*bzg(j0"+plusi(jj)+",k0"+plusi(kk)+",l"+plusi(ll)+")\n");
+            fh.write(indent_2+"bz(nn) = bz(nn) + sx0(n,"+str(jj)+")*sy0(n,"+str(kk)+")*sz(n,"+str(ll)+")*bzg(j0"+plusi(jj)+",k0"+plusi(kk)+",l"+plusi(ll)+")\n");
 
 fh.write(indent_1+"END DO\n");
 fh.write(indent_1+"!!$OMP END PARALLEL DO\n");
@@ -558,31 +558,31 @@ else:
         fh.write(indent_2+"ozint = 1.0_num-zint\n");
         fh.write(indent_2+"zintsq = zint*zint\n");
         fh.write(indent_2+"ozintsq = ozint*ozint\n");
-        fh.write(indent_2+"sz0(-1) = onesixth*ozintsq*ozint\n");
-        fh.write(indent_2+"sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
-        fh.write(indent_2+"sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
-        fh.write(indent_2+"sz0( 2) = onesixth*zintsq*zint\n");
+        fh.write(indent_2+"sz0(n,-1) = onesixth*ozintsq*ozint\n");
+        fh.write(indent_2+"sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)\n");
+        fh.write(indent_2+"sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
+        fh.write(indent_2+"sz0(n, 2) = onesixth*zintsq*zint\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ex on particle\n")
 for ll in range(izmin, izmax+2):
     for kk in range(iymin, iymax+2):
         for jj in range(ixmin0, ixmax0+1):
-            fh.write(indent_2+"ex(ip) = ex(ip) + sx0("+str(jj)+")*sy("+str(kk)+")*sz("+str(ll)+")*exg(j0"+plusi(jj)+",k"+plusi(kk)+",l"+plusi(ll)+")\n");
+            fh.write(indent_2+"ex(nn) = ex(nn) + sx0(n,"+str(jj)+")*sy(n,"+str(kk)+")*sz(n,"+str(ll)+")*exg(j0"+plusi(jj)+",k"+plusi(kk)+",l"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ey on particle\n")
 for ll in range(izmin, izmax+2):
     for kk in range(iymin0, iymax0+1):
         for jj in range(ixmin, ixmax+2):
-            fh.write(indent_2+"ey(ip) = ey(ip) + sx("+str(jj)+")*sy0("+str(kk)+")*sz("+str(ll)+")*eyg(j"+plusi(jj)+",k0"+plusi(kk)+",l"+plusi(ll)+")\n");
+            fh.write(indent_2+"ey(nn) = ey(nn) + sx(n,"+str(jj)+")*sy0(n,"+str(kk)+")*sz(n,"+str(ll)+")*eyg(j"+plusi(jj)+",k0"+plusi(kk)+",l"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ez on particle\n")
 for ll in range(izmin0, izmax0+1):
     for kk in range(iymin, iymax+2):
         for jj in range(ixmin, ixmax+2):
-            fh.write(indent_2+"ez(ip) = ez(ip) + sx("+str(jj)+")*sy("+str(kk)+")*sz0("+str(ll)+")*ezg(j"+plusi(jj)+",k"+plusi(kk)+",l0"+plusi(ll)+")\n");
+            fh.write(indent_2+"ez(nn) = ez(nn) + sx(n,"+str(jj)+")*sy(n,"+str(kk)+")*sz0(n,"+str(ll)+")*ezg(j"+plusi(jj)+",k"+plusi(kk)+",l0"+plusi(ll)+")\n");
 
 
 fh.write("END DO\n");

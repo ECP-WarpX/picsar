@@ -2,6 +2,10 @@
 !
 ! FIELD_GATHERING.F90
 !
+! DEveloperoption:
+! - DEV: activates developer's secret subroutines
+! - DEBUG: activates DEBUG prints and outputs
+!
 ! List of subroutines:
 !
 ! - field_gathering
@@ -13,9 +17,9 @@
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
+!> @brief
 !> Field gathering main subroutine in 3D called in the main loop when not coupled
 !> with the particle pusher.
-!> @brief
 SUBROUTINE field_gathering
 ! ________________________________________________________________________________________
   USE fields
@@ -29,7 +33,7 @@ SUBROUTINE field_gathering
 #endif
 
   CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-	 nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
 
 
 #if defined(DEBUG)
@@ -40,11 +44,11 @@ END SUBROUTINE field_gathering
 
 
 ! ________________________________________________________________________________________
-!> This subroutine performs the field gathering in 3D only
 !> @brief
+!> This subroutine performs the field gathering in 3D only
 SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,&
-			dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
+      nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,&
+      dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
 ! ________________________________________________________________________________________
   USE particles
   USE constants
@@ -62,7 +66,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   ! ___ Parameter declaration ________________________________________
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-  LOGICAL(lp)                   :: l_lower_order_in_v_in
+  LOGICAL(lp)              :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -96,7 +100,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
-  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,zgrid,fieldgathe) &
+  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,fieldgathe) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -135,31 +139,32 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
             DO ispecies=1, nspecies ! LOOP ON SPECIES
               ! - Get current tile properties
               ! - Init current tile variables
-					curr=>species_parray(ispecies)
-					curr_tile=>curr%array_of_tiles(ix,iy,iz)
-					count=curr_tile%np_tile(1)
-					IF (count .EQ. 0) CYCLE
-					curr_tile%part_ex(1:count) = 0.0_num
-					curr_tile%part_ey(1:count) = 0.0_num
-					curr_tile%part_ez(1:count) = 0.0_num
-					curr_tile%part_bx(1:count)=0.0_num
-					curr_tile%part_by(1:count)=0.0_num
-					curr_tile%part_bz(1:count)=0.0_num
-					!!! ---- Loop by blocks over particles in a tile (blocking)
-					!!! --- Gather electric field on particles
 
-						!!! --- Gather electric and magnetic fields on particles
-						CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,            &
-											  curr_tile%part_z, curr_tile%part_ex,                                   &
-											  curr_tile%part_ey,curr_tile%part_ez,                   			           &
-											  curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			         &
-											  curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                   &
-											  curr_tile%z_grid_tile_min+zgrid, dxx,dyy,dzz,curr_tile%nx_cells_tile,  &
-											  curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             &
-											  nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					               &
-											  currg%eztile,                                          			           &
-											  currg%bxtile,currg%bytile,currg%bztile                 			           &
-											  ,.FALSE._lp,l_lower_order_in_v_in,fieldgathe)
+              curr=>species_parray(ispecies)
+              curr_tile=>curr%array_of_tiles(ix,iy,iz)
+              count=curr_tile%np_tile(1)
+              IF (count .EQ. 0) CYCLE
+              curr_tile%part_ex(1:count) = 0.0_num
+              curr_tile%part_ey(1:count) = 0.0_num
+              curr_tile%part_ez(1:count) = 0.0_num
+              curr_tile%part_bx(1:count)=0.0_num
+              curr_tile%part_by(1:count)=0.0_num
+              curr_tile%part_bz(1:count)=0.0_num
+              !!! ---- Loop by blocks over particles in a tile (blocking)
+              !!! --- Gather electric field on particles
+
+              !!! --- Gather electric and magnetic fields on particles
+              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,            &
+                          curr_tile%part_z, curr_tile%part_ex,                                   &
+                          curr_tile%part_ey,curr_tile%part_ez,                                    &
+                          curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,                &
+                          curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                   &
+                          curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,  &
+                          curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             &
+                          nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                          &
+                          currg%eztile,                                                           &
+                          currg%bxtile,currg%bytile,currg%bztile                                  &
+                          ,.FALSE._lp,l_lower_order_in_v_in,fieldgathe)
 
                 END DO! END LOOP ON SPECIES
             ENDIF
@@ -184,13 +189,13 @@ END SUBROUTINE field_gathering_sub
 
 
 ! ________________________________________________________________________________________
-!> General subroutines for the 3D field gathering
 !> @brief
+!> General subroutines for the 3D field gathering
 !
+!> @details
 !> This subroutine controls the different algorithms for the field gathering
 !> Choice of an algorithm is done using the argument field_gathe_algo.
 !> This subroutine is called in the subroutine field_gathering_sub().
-!> @details
 !
 !> @author
 !> Henri Vincenti
@@ -213,6 +218,7 @@ END SUBROUTINE field_gathering_sub
 !> @param[in] ll4symtry
 !> @param[in] l_lower_order_in_v
 !> @param[in] field_gathe_algo gathering algorithm
+!
 SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                        nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,ll4symtry,l_lower_order_in_v,field_gathe_algo)
 ! ________________________________________________________________________________________
@@ -222,7 +228,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
   USE params
   implicit none
 
-	integer(idp)             :: field_gathe_algo
+  integer(idp)             :: field_gathe_algo
   integer(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
   LOGICAL(lp) , intent(in)      :: ll4symtry,l_lower_order_in_v
   real(num), dimension(np) :: xp,yp,zp,ex,ey,ez,bx,by,bz
@@ -234,36 +240,112 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
 
   SELECT CASE(field_gathe_algo)
   
-  	CASE(3)
+! ________________________________________________________________________________________
+! Developer's functions (experimental or under development)
+#if defined(DEV)
 
-    IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
-      !!! --- Gather electric field on particles
-      CALL gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
-                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                        exg,eyg,ezg,l_lower_order_in_v)
-      !!! --- Gather magnetic fields on particles
-      CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
-                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                        bxg,byg,bzg,l_lower_order_in_v)
-    ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-      !!! --- Gather electric field on particles
-      CALL gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
-                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                        exg,eyg,ezg,l_lower_order_in_v)
-      !!! --- Gather magnetic fields on particles
-      CALL getb3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
-                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                        bxg,byg,bzg,l_lower_order_in_v)
-    ELSE
-    !!! --- Gather electric field on particles
-    CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
-                                 dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                 nox,noy,noz,exg,eyg,ezg,ll4symtry,l_lower_order_in_v)
-    !!! --- Gather magnetic fields on particles
-    CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
-                                 dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                 nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
-    ENDIF
+    ! ______________________________________
+    ! Vectorized non efficient field gathering subroutines
+    CASE(6)
+    
+      IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
+        !!! --- Gather electric fields on particles
+        CALL geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+
+      ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
+        !!! --- Gather electric fields on particles
+        CALL geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+
+      ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+        !!! --- Gather electric fields on particles
+        CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+      ELSE
+        !!! --- Gather electric field on particles
+        CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,exg,eyg,ezg,ll4symtry,l_lower_order_in_v)
+        !!! --- Gather magnetic fields on particles
+        CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
+      ENDIF
+
+    ! ______________________________________
+    ! Vectorized field gathering subroutines, separated E and B functions
+    CASE(5)
+
+      IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+        !!! --- Gather electric fields on particles
+        CALL gete3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      exg,eyg,ezg,LVEC_fieldgathe,l_lower_order_in_v)
+        !!! --- Gather magnetic fields on particles
+        CALL getb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
+                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                      bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+      ELSE
+        !!! --- Gather electric field on particles
+        CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,exg,eyg,ezg,ll4symtry,l_lower_order_in_v)
+        !!! --- Gather magnetic fields on particles
+        CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
+      ENDIF
+
+    ! ______________________________________
+    ! Vectorized field gathering subroutine by block splited into smaller loops
+    CASE(4)
+
+      IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+        !!! --- Gather electric and magnetic fields on particles
+        CALL geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                      xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+      ELSE
+        !!! --- Gather electric field on particles
+        CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,exg,eyg,ezg,ll4symtry,l_lower_order_in_v)
+        !!! --- Gather magnetic fields on particles
+        CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
+      ENDIF
+  
+    ! ______________________________________
+    ! Linearized field gathering subroutines
+    CASE(3)
+
+      IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+        !!! --- Gather electric field on particles
+        CALL gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                          dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                          exg,eyg,ezg,l_lower_order_in_v)
+        !!! --- Gather magnetic fields on particles
+        CALL getb3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                          dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                          bxg,byg,bzg,l_lower_order_in_v)
+      ELSE
+        !!! --- Gather electric field on particles
+        CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,exg,eyg,ezg,ll4symtry,l_lower_order_in_v)
+        !!! --- Gather magnetic fields on particles
+        CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,&
+                                     dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
+      ENDIF
+
+#endif
+! ________________________________________________________________________________________
 
   ! ______________________________________________
   ! Arbitrary order, non-optimized subroutines
@@ -292,6 +374,16 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
       CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                         bxg,byg,bzg,l_lower_order_in_v)
+                                        
+    ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
+      !!! --- Gather electric field on particles
+      CALL gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        exg,eyg,ezg,l_lower_order_in_v)
+      !!! --- Gather magnetic fields on particles
+      CALL getb3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
+                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                        bxg,byg,bzg,l_lower_order_in_v)
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
       !!! --- Gather electric field on particles
       CALL gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
@@ -316,19 +408,25 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
   ! ________________________________________
   ! Optimized subroutines, E and B in the same vectorized loop, default
   CASE DEFAULT
-  
+
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
-			CALL geteb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
-			                xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-			                exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+    
+      CALL geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                      xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
-			CALL geteb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
-			                xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-			                exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+    
+      CALL geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                      xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-			CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
-			                xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-			                exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+    
+      CALL geteb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                      xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      
     ! Arbitrary order
     ELSE
       !!! --- Gather electric field on particles
@@ -367,20 +465,20 @@ USE omp_lib
 USE constants
 IMPLICIT NONE
 
-	INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-	REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-	LOGICAL(lp)  :: l4symtry,l_lower_order_in_v
-	REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-	REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-	INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-	ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-	REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-	xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
-	REAL(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
-	REAL(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
-	REAL(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-	REAL(num), dimension(:), allocatable :: sx0,sy0,sz0
-	REAL(num), parameter :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+  INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
+  LOGICAL(lp)  :: l4symtry,l_lower_order_in_v
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+  REAL(num) :: xmin,ymin,zmin,dx,dy,dz
+  INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+  ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+  REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+  xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
+  REAL(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
+  REAL(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
+  REAL(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
+  REAL(num), dimension(:), allocatable :: sx0,sy0,sz0
+  REAL(num), parameter :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
 
 
 dxi = 1.0_num/dx
@@ -723,6 +821,7 @@ sz0=0.0_num
 !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
 !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
 DO ip=1,np
+
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
@@ -974,34 +1073,34 @@ END SUBROUTINE pxrgetb3d_n_energy_conserving
 subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                        nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v)
 ! ________________________________________________________________________________________
-	use constants
-	implicit none
+  use constants
+  implicit none
 
-	integer(idp)                     :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-	real(num), dimension(np)         :: xp,yp,zp,bx,by,bz
-	LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
-	real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
-	real(num) :: xmin,ymin,zmin,dx,dy,dz
-	integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-									ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-	real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-									xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
-	real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
-	real(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
-	real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-	real(num), dimension(:), allocatable :: sx0,sy0,sz0
-	real(num), parameter :: onesixth=1./6.,twothird=2./3.
+  integer(idp)                     :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  real(num), dimension(np)         :: xp,yp,zp,bx,by,bz
+  LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
+  real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
+  real(num) :: xmin,ymin,zmin,dx,dy,dz
+  integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+                  ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+  real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+                  xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
+  real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
+  real(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
+  real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
+  real(num), dimension(:), allocatable :: sx0,sy0,sz0
+  real(num), parameter :: onesixth=1./6.,twothird=2./3.
 
-	dxi = 1./dx
-	dyi = 1./dy
-	dzi = 1./dz
+  dxi = 1./dx
+  dyi = 1./dy
+  dzi = 1./dz
 
-	ixmin = -int(nox/2)
-	ixmax =  int((nox+1)/2)-1
-	iymin = -int(noy/2)
-	iymax =  int((noy+1)/2)-1
-	izmin = -int(noz/2)
-	izmax =  int((noz+1)/2)-1
+  ixmin = -int(nox/2)
+  ixmax =  int((nox+1)/2)-1
+  iymin = -int(noy/2)
+  iymax =  int((noy+1)/2)-1
+  izmin = -int(noz/2)
+  izmax =  int((noz+1)/2)-1
 
 
       if (l_lower_order_in_v) then
@@ -1302,23 +1401,23 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
   subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                        nox,noy,noz,exg,eyg,ezg,l4symtry,l_lower_order_in_v)
 ! ________________________________________________________________________________________
-		use constants
-		USE params
-		implicit none
-		integer(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-		real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-		LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
-		real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-		real(num) :: xmin,ymin,zmin,dx,dy,dz
-		integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-										ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-		real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-										xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
-		real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
-		real(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
-		real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-		real(num), dimension(:), allocatable :: sx0,sy0,sz0
-		real(num), parameter :: onesixth=1./6.,twothird=2./3.
+    use constants
+    USE params
+    implicit none
+    integer(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+    real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
+    LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
+    real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+    real(num) :: xmin,ymin,zmin,dx,dy,dz
+    integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
+                    ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
+    real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
+                    xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
+    real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
+    real(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
+    real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
+    real(num), dimension(:), allocatable :: sx0,sy0,sz0
+    real(num), parameter :: onesixth=1./6.,twothird=2./3.
 
       dxi = 1./dx
       dyi = 1./dy

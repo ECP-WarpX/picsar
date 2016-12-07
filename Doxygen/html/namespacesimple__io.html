@@ -130,11 +130,13 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:a2100e8a4cfe3bc3c9e2dcc93988d6551"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a506cc0f775048e27bb5ccd9e936592d3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesimple__io.html#a506cc0f775048e27bb5ccd9e936592d3">write_single_array_to_file</a> (filename, array, nxg, nyg, nzg, nx_local, ny_local, nz_local, offset, err)</td></tr>
 <tr class="separator:a506cc0f775048e27bb5ccd9e936592d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02b043d1424f1b2d25e47a55e697a5aa"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesimple__io.html#a02b043d1424f1b2d25e47a55e697a5aa">write_particles_to_file</a> (it, <a class="el" href="submain_8_f90.html#ae0a3ce7909f5d34b3684e226b780a075">step</a>)</td></tr>
-<tr class="separator:a02b043d1424f1b2d25e47a55e697a5aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63ed0844b45f6a3402a846a10456fdb7"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesimple__io.html#a63ed0844b45f6a3402a846a10456fdb7">write_particles_to_file</a></td></tr>
+<tr class="memdesc:a63ed0844b45f6a3402a846a10456fdb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">This subroutine dumps the particle properties in a file.  <a href="#a63ed0844b45f6a3402a846a10456fdb7">More...</a><br /></td></tr>
+<tr class="separator:a63ed0844b45f6a3402a846a10456fdb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb3c1220ac70ea28fcbce1cd9c03b294"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesimple__io.html#abb3c1220ac70ea28fcbce1cd9c03b294">get_particles_to_dump</a> (idump, mask, narr, ndump)</td></tr>
 <tr class="separator:abb3c1220ac70ea28fcbce1cd9c03b294"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97c3b871fecd4b1341301fa6cf00a8fa"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesimple__io.html#a97c3b871fecd4b1341301fa6cf00a8fa">concatenate_particle_variable</a> (idump, var, arr, narr, mask, nmask)</td></tr>
+<tr class="memdesc:a97c3b871fecd4b1341301fa6cf00a8fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">This subroutine creates a new array of particles (narr) from the current particle array (arr) and a list of flags (mask) for filtering.  <a href="#a97c3b871fecd4b1341301fa6cf00a8fa">More...</a><br /></td></tr>
 <tr class="separator:a97c3b871fecd4b1341301fa6cf00a8fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad8ee8298c20d69fabcd6eb5a8b7b620"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesimple__io.html#aad8ee8298c20d69fabcd6eb5a8b7b620">write_particle_variable</a> (fh, array, narr, mpitype, err, offset)</td></tr>
 <tr class="separator:aad8ee8298c20d69fabcd6eb5a8b7b620"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,7 +179,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical(isp), dimension(nmask), intent(in)&#160;</td>
+          <td class="paramtype">logical(lp), dimension(nmask), intent(in)&#160;</td>
           <td class="paramname"><em>mask</em>, </td>
         </tr>
         <tr>
@@ -193,6 +195,8 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>This subroutine creates a new array of particles (narr) from the current particle array (arr) and a list of flags (mask) for filtering. </p>
 
 </div>
 </div>
@@ -224,7 +228,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">logical(isp), dimension(narr), intent(inout)&#160;</td>
+          <td class="paramtype">logical(lp), dimension(narr), intent(inout)&#160;</td>
           <td class="paramname"><em>mask</em>, </td>
         </tr>
         <tr>
@@ -460,29 +464,20 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a02b043d1424f1b2d25e47a55e697a5aa"></a>
+<a class="anchor" id="a63ed0844b45f6a3402a846a10456fdb7"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">subroutine simple_io::write_particles_to_file </td>
           <td>(</td>
-          <td class="paramtype">character(len=*), intent(in)&#160;</td>
-          <td class="paramname"><em>it</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">integer(idp), intent(in)&#160;</td>
-          <td class="paramname"><em>step</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>This subroutine dumps the particle properties in a file. </p>
 
 </div>
 </div>

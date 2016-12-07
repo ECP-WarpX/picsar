@@ -14,6 +14,7 @@
 MODULE diagnostics
 !!!! --- This module contains useful diagnostics to test code correctness
     USE constants
+    USE mpi
     IMPLICIT NONE
 
 

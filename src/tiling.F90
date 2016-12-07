@@ -239,7 +239,7 @@ CONTAINS
         ! Get particle index in array of tile
 		    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
 		    iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
-		    iztile = MIN(FLOOR((partz-(z_min_local+zgrid)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+		    iztile = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
@@ -747,9 +747,9 @@ CONTAINS
 
                 ENDIF
             END DO ! END LOOP ON SPECIES
-        ENDIF
+
         !!! --- Sets-up particle space distribution (random space distribution)
-        IF (pdistr .EQ. 2) THEN
+        ELSE IF (pdistr .EQ. 2) THEN
             DO ispecies=1,nspecies
                 curr=>species_parray(ispecies)
                 jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
@@ -790,6 +790,52 @@ CONTAINS
                     END DO
                 END DO
             END DO ! END LOOP ON SPECIES
+            
+
+        !!! --- Sets-up particle space distribution (random space with a given velocity)
+        ELSE IF (pdistr .EQ. 3) THEN
+            DO ispecies=1,nspecies
+                curr=>species_parray(ispecies)
+                jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
+                jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
+                kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
+                kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
+                lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
+                lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+                DO l=lmin,lmax-1
+                    DO k=kmin,kmax-1
+                        DO j=jmin,jmax-1
+                            DO ipart=1,curr%nppcell
+                                CALL RANDOM_NUMBER(rng(1:6))
+                                ! Sets positions and weight
+                                partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
+                                party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
+                                partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
+                                partw = nc*dx*dy*dz/(curr%nppcell)
+                                
+                                ! Sets velocity
+                                v=MAX(1e-10_num,rng(4))
+                                th=2*pi*rng(5)
+                                phi=2*pi*rng(6)
+
+                                partvx= curr%vdrift_x + curr%vth_x*COS(th)*COS(phi)
+                                partvy= curr%vdrift_y + curr%vth_x*COS(th)*SIN(phi)
+                                partvz= curr%vdrift_z + curr%vth_x*SIN(th)
+
+                                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                                partux = partvx /gaminv
+                                partuy = partvy /gaminv
+                                partuz = partvz /gaminv
+
+                                ! Adds particle to array of tiles of current species
+                                CALL add_particle_to_species(curr, partx, party, partz, &
+                                partux, partuy, partuz, gaminv, partw)
+                            END DO
+                        END DO
+                    END DO
+                END DO
+            END DO ! END LOOP ON SPECIES
+            
         ENDIF
 
         ! Collects total number of particles from other subdomains (useful for statistics)
@@ -955,48 +1001,51 @@ CONTAINS
 
     END SUBROUTINE point_to_tile
 
-    ! _____________________________________________________________________________
-    SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
+		! _____________________________________________________________________________
+		SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
 		vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start)
-		!
-    ! This subroutine returns pointer arrays on a given tile
-    ! of a given species (USED mainly by python interface)
-		! ______________________________________________________________________________
-        IMPLICIT NONE
-        INTEGER(idp), INTENT(IN) :: nsp, nppc
-		REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
-		CHARACTER(LEN=*), INTENT(IN) :: sname
-        TYPE(particle_species), POINTER  :: currsp
-        INTEGER(idp) :: sorting_period, sorting_start
+			!
+			! This subroutine returns pointer arrays on a given tile
+			! of a given species (USED mainly by python interface)
+			! ______________________________________________________________________________
+			IMPLICIT NONE
+			INTEGER(idp), INTENT(IN) :: nsp, nppc
+			REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
+			CHARACTER(LEN=*), INTENT(IN) :: sname
+			TYPE(particle_species), POINTER  :: currsp
+			INTEGER(idp) :: sorting_period, sorting_start
 
-        currsp=> species_parray(nsp)
-		currsp%charge=chrg
-		currsp%mass=mss
-		currsp%x_min=xsmin
-		currsp%y_min=ysmin
-		currsp%z_min=zsmin
-		currsp%x_max=xsmax
-		currsp%y_max=ysmax
-		currsp%z_max=zsmax
-		currsp%vdrift_x=vdxs
-		currsp%vdrift_y=vdys
-		currsp%vdrift_z=vdzs
-		currsp%vth_x=vthxs
-		currsp%vth_y=vthys
-		currsp%vth_z=vthzs
-		currsp%nppcell=nppc
-		currsp%name=sname
-		currsp%sorting_period=sorting_period
-		currsp%sorting_start=sorting_start
-		IF (rank .EQ. 0) THEN
-			PRINT *, "species name: ", trim(adjustl(sname))
-			PRINT *, "species mass: ", mss
-			PRINT *, "species charge: ", chrg
-			PRINT *, "sorting period: ", currsp%sorting_period
-			PRINT *, "sorting start: ", currsp%sorting_start
-			PRINT *, ""
-		ENDIF
-    END SUBROUTINE set_particle_species_properties
+			currsp=> species_parray(nsp)
+			currsp%charge=chrg
+			currsp%mass=mss
+			currsp%x_min=xsmin
+			currsp%y_min=ysmin
+			currsp%z_min=zsmin
+			currsp%x_max=xsmax
+			currsp%y_max=ysmax
+			currsp%z_max=zsmax
+			currsp%vdrift_x=vdxs
+			currsp%vdrift_y=vdys
+			currsp%vdrift_z=vdzs
+			currsp%vth_x=vthxs
+			currsp%vth_y=vthys
+			currsp%vth_z=vthzs
+			currsp%nppcell=nppc
+			currsp%name=sname
+			currsp%sorting_period=sorting_period
+			currsp%sorting_start=sorting_start
+			
+			! this part poses problems for the python version compiled on Cori
+			!IF (rank .EQ. 0) THEN
+			!	PRINT *, "species name: ", trim(adjustl(sname))
+			!	PRINT *, "species mass: ", mss
+			!	PRINT *, "species charge: ", chrg
+			!	PRINT *, "sorting period: ", currsp%sorting_period
+			!	PRINT *, "sorting start: ", currsp%sorting_start
+			!	PRINT *, ""
+			!ENDIF
+			
+		END SUBROUTINE set_particle_species_properties
 
     !!! --- Add particle to array of tiles
     SUBROUTINE py_add_particles_to_species(nsp, npart, partx, party, partz, &

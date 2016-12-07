@@ -196,7 +196,7 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
 	CALL current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
 	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*),'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
+	WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
   DEALLOCATE(jxcells,jycells,jzcells)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -277,7 +277,7 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
 	CALL current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
 	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*),'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
+	WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
   DEALLOCATE(jxcells,jycells,jzcells)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -359,7 +359,7 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
 	CALL current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
 	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*),'Sum jxcells:',sum(jxcells),'Sum jycells:',sum(jycells),'Sum jzcells',sum(jzcells)
+	WRITE(0,*)'Sum jxcells:',sum(jxcells),'Sum jycells:',sum(jycells),'Sum jzcells',sum(jzcells)
   DEALLOCATE(jxcells,jycells,jzcells)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))

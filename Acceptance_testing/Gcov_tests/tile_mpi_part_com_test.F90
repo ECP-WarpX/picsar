@@ -64,9 +64,9 @@ PROGRAM tile_mpi_part_com_test
 	nprocz=2
 	
 	! --- Domain size
-	nx_global_grid=100
-	ny_global_grid=100
-	nz_global_grid=100
+	nx_global_grid=50
+	ny_global_grid=50
+	nz_global_grid=50
 	
 	! --- Domain extension
 	xmin=0
@@ -77,9 +77,9 @@ PROGRAM tile_mpi_part_com_test
 	zmax=1e-6
 
 	! --- Init particle tiling split
-	ntilex = 20
-	ntiley = 10
-	ntilez = 10
+	ntilex = 10
+	ntiley = 5
+	ntilez = 5
 	
 	! --- Vector length field gathering
 	LVEC_fieldgathe = 256
