@@ -16,7 +16,7 @@ nox=3 # order of gathering
 noy=3
 noz=3
 
-l_lower_order_in_v=True
+l_lower_order_in_v=False
   
 filename="gathering_routines_vec2_2d_"+str(nox)+"_"+str(noz)+".F90"
 subroutine_b_field="getb2dxz_energy_conserving_vec2_"+str(nox)+"_"+str(noz)
@@ -188,10 +188,10 @@ if (noz==3):
 fh.write(indent_4+"\n")
 fh.write(indent_4+"! Compute Bx on particle\n")
 for ll in range(izmin0, izmax0+1):
-        if (ll==izmin0):
-          fh.write(indent_2+"a = (")
-        else:
-          fh.write(indent_2+"a = a + (")
+        #if (ll==izmin0):
+        fh.write(indent_2+"a = (")
+        #else:
+        #  fh.write(indent_2+"a = a + (")
         for jj in range(ixmin, ixmax+2):
             if (jj==ixmin):
               fh.write("sx(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n");
@@ -204,28 +204,28 @@ for ll in range(izmin0, izmax0+1):
 fh.write(indent_4+"\n")
 fh.write(indent_4+"! Compute By on particle\n")
 for ll in range(izmin0, izmax0+1):
-        if (ll==izmin0):
-          fh.write(indent_2+"a = (")
-        else:
-          fh.write(indent_2+"a = a + (")
+        #if (ll==izmin0):
+        fh.write(indent_2+"a = (")
+        #else:
+        #  fh.write(indent_2+"a = a + (")
         for jj in range(ixmin0, ixmax0+1):
             if (jj==ixmin0):
-              fh.write("sx0(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n");
+              fh.write("sx0(n,"+str(jj)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+") &\n");
             elif (jj==ixmax0):
-              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+"))\n");
+              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+"))\n");
             else:
-              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n"); 
+              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+") &\n"); 
         fh.write(indent_4+"by(nn) = by(nn) + a*sz0(n,"+str(ll)+")\n");
 
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Bz on particle\n")
-if ((ixmax0+1 - ixmin0)  > (izmax+2 - izmin)):
+if ((ixmax0+1 - ixmin0)  >= (izmax+2 - izmin)):
   for ll in range(izmin, izmax+2):
-          if (ll==izmin0):
-            fh.write(indent_2+"a = (")
-          else:
-            fh.write(indent_2+"a = a + (")
+          #if (ll==izmin0):
+          fh.write(indent_2+"a = (")
+          #else:
+          #  fh.write(indent_2+"a = a + (")
           for jj in range(ixmin0, ixmax0+1):
               if (jj==ixmin0):
                 fh.write("sx0(n,"+str(jj)+")*bzg(j0"+plusi(jj)+",1,l"+plusi(ll)+") &\n");
@@ -236,10 +236,10 @@ if ((ixmax0+1 - ixmin0)  > (izmax+2 - izmin)):
           fh.write(indent_4+"bx(nn) = bx(nn) + a*sz(n,"+str(ll)+")\n");
 else:
   for jj in range(ixmin0, ixmax0+1):
-          if (ll==ixmin0):
-            fh.write(indent_2+"a = (")
-          else:
-            fh.write(indent_2+"a = a + (")
+          #if (ll==ixmin0):
+          fh.write(indent_2+"a = (")
+          #else:
+          #  fh.write(indent_2+"a = a + (")
           for ll in range(izmin, izmax+2):
               if (ll==izmin):
                 fh.write("sz(n,"+str(ll)+")*bzg(j0"+plusi(jj)+",1,l"+plusi(ll)+") &\n");
@@ -365,10 +365,10 @@ if(noz==3):
 fh.write(indent_4+"\n")
 fh.write(indent_4+"! Compute Bx on particle\n")
 for ll in range(izmin0, izmax0+1):
-        if (ll==izmin0):
-          fh.write(indent_2+"a = (")
-        else:
-          fh.write(indent_2+"a = a + (")
+        #if (ll==izmin0):
+        fh.write(indent_2+"a = (")
+        #else:
+        #  fh.write(indent_2+"a = a + (")
         for jj in range(ixmin, ixmax+2):
             if (jj==ixmin):
               fh.write("sx(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n");
@@ -381,29 +381,29 @@ for ll in range(izmin0, izmax0+1):
 fh.write(indent_4+"\n")
 fh.write(indent_4+"! Compute By on particle\n")
 for ll in range(izmin0, izmax0+1):
-        if (ll==izmin0):
-          fh.write(indent_2+"a = (")
-        else:
-          fh.write(indent_2+"a = a + (")
+        #if (ll==izmin0):
+        fh.write(indent_2+"a = (")
+        #else:
+        #  fh.write(indent_2+"a = a + (")
         for jj in range(ixmin0, ixmax0+1):
             if (jj==ixmin0):
-              fh.write("sx0(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n");
+              fh.write("sx0(n,"+str(jj)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+") &\n");
             elif (jj==ixmax0):
-              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+"))\n");
+              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+"))\n");
             else:
-              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*bxg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n"); 
+              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+") &\n"); 
         fh.write(indent_4+"by(nn) = by(nn) + a*sz0(n,"+str(ll)+")\n");
         
-#fh.write(indent_4+"by(nn) = by(nn) + sx0(n,"+str(jj)+")*sz0(n,"+str(ll)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+")\n");
+#fh.write(indent_2+"by(nn) = by(nn) + sx0(n,"+str(jj)+")*sz0(n,"+str(ll)+")*byg(j0"+plusi(jj)+",1,l0"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Bz on particle\n")
-if ((ixmax0+1 - ixmin0)  > (izmax+2 - izmin)):
+if ((ixmax0+1 - ixmin0)  >= (izmax+2 - izmin)):
   for ll in range(izmin, izmax+2):
-          if (ll==izmin0):
-            fh.write(indent_2+"a = (")
-          else:
-            fh.write(indent_2+"a = a + (")
+          #if (ll==izmin0):
+          fh.write(indent_2+"a = (")
+          #else:
+          #  fh.write(indent_2+"a = a + (")
           for jj in range(ixmin0, ixmax0+1):
               if (jj==ixmin0):
                 fh.write("sx0(n,"+str(jj)+")*bzg(j0"+plusi(jj)+",1,l"+plusi(ll)+") &\n");
@@ -414,10 +414,10 @@ if ((ixmax0+1 - ixmin0)  > (izmax+2 - izmin)):
           fh.write(indent_4+"bx(nn) = bx(nn) + a*sz(n,"+str(ll)+")\n");
 else:
   for jj in range(ixmin0, ixmax0+1):
-          if (ll==ixmin0):
-            fh.write(indent_2+"a = (")
-          else:
-            fh.write(indent_2+"a = a + (")
+          #if (ll==ixmin0):
+          fh.write(indent_2+"a = (")
+          #else:
+          #  fh.write(indent_2+"a = a + (")
           for ll in range(izmin, izmax+2):
               if (ll==izmin):
                 fh.write("sz(n,"+str(ll)+")*bzg(j0"+plusi(jj)+",1,l"+plusi(ll)+") &\n");
@@ -621,23 +621,61 @@ else:
         fh.write(indent_2+"sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)\n");
         fh.write(indent_2+"sz0(n, 2) = onesixth*zintsq*zint\n");
 
+
+
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ex on particle\n")
 for ll in range(izmin, izmax+2):
+        #if (ll==izmin):
+        fh.write(indent_2+"a = (")
+        #else:
+        #  fh.write(indent_2+"a = a + (")
         for jj in range(ixmin0, ixmax0+1):
-            fh.write(indent_2+"ex(nn) = ex(nn) + sx0(n,"+str(jj)+")*sz(n,"+str(ll)+")*exg(j0"+plusi(jj)+",1,l"+plusi(ll)+")\n");
+            if (jj==ixmin0):
+              fh.write("sx0(n,"+str(jj)+")*exg(j0"+plusi(jj)+",1,l"+plusi(ll)+") &\n");
+            elif (jj==ixmax0):
+              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*exg(j0"+plusi(jj)+",1,l"+plusi(ll)+"))\n");
+            else:
+              fh.write(indent_2+"    + sx0(n,"+str(jj)+")*exg(j0"+plusi(jj)+",1,l"+plusi(ll)+") &\n"); 
+        fh.write(indent_4+"ex(nn) = ex(nn) + a*sz(n,"+str(ll)+")\n");
+
+#fh.write(indent_2+"ex(nn) = ex(nn) + sx0(n,"+str(jj)+")*exg(j0"+plusi(jj)+",1,l"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ey on particle\n")
 for ll in range(izmin, izmax+2):
+        #if (ll==izmin):
+        fh.write(indent_2+"a = (")
+        #else:
+        #  fh.write(indent_2+"a = a + (")
         for jj in range(ixmin, ixmax+2):
-            fh.write(indent_2+"ey(nn) = ey(nn) + sx(n,"+str(jj)+")*sz(n,"+str(ll)+")*eyg(j"+plusi(jj)+",1,l"+plusi(ll)+")\n");
+            if (jj==ixmin):
+              fh.write("sx(n,"+str(jj)+")*eyg(j"+plusi(jj)+",1,l"+plusi(ll)+") &\n");
+            elif (jj==ixmax+1):
+              fh.write(indent_2+"    + sx(n,"+str(jj)+")*eyg(j"+plusi(jj)+",1,l"+plusi(ll)+"))\n");
+            else:
+              fh.write(indent_2+"    + sx(n,"+str(jj)+")*eyg(j"+plusi(jj)+",1,l"+plusi(ll)+") &\n"); 
+        fh.write(indent_4+"ey(nn) = ey(nn) + a*sz(n,"+str(ll)+")\n");
+        
+#fh.write(indent_2+"ey(nn) = ey(nn) + sx(n,"+str(jj)+")*eyg(j"+plusi(jj)+",1,l"+plusi(ll)+")\n");
 
 fh.write(indent_2+"\n")
 fh.write(indent_2+"! Compute Ez on particle\n")
 for ll in range(izmin0, izmax0+1):
+        #if (ll==izmin0):
+        fh.write(indent_2+"a = (")
+        #else:
+        #  fh.write(indent_2+"a = a + (")
         for jj in range(ixmin, ixmax+2):
-            fh.write(indent_2+"ez(nn) = ez(nn) + sx(n,"+str(jj)+")*sz0(n,"+str(ll)+")*ezg(j"+plusi(jj)+",1,l0"+plusi(ll)+")\n");          
+            if (jj==ixmin):
+              fh.write("sx(n,"+str(jj)+")*ezg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n");
+            elif (jj==ixmax+1):
+              fh.write(indent_2+"    + sx(n,"+str(jj)+")*ezg(j"+plusi(jj)+",1,l0"+plusi(ll)+"))\n");
+            else:
+              fh.write(indent_2+"    + sx(n,"+str(jj)+")*ezg(j"+plusi(jj)+",1,l0"+plusi(ll)+") &\n"); 
+        fh.write(indent_4+"ez(nn) = ez(nn) + a*sz0(n,"+str(ll)+")\n");
+        
+#fh.write(indent_2+"ez(nn) = ez(nn) + sx(n,"+str(jj)+")*ezg(j"+plusi(jj)+",1,l0"+plusi(ll)+")\n");          
 
 fh.write("END DO\n");
 fh.write("END DO\n");
