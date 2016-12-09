@@ -51,11 +51,11 @@ PROGRAM field_gathering_3d_test
   ! _________________________________________________________________
   ! Parameter initialization
   
-  np = 100000
+  np = 10000
   
-  nx = 100
-  ny = 100
-  nz = 100
+  nx = 50
+  ny = 50
+  nz = 50
   
   lvect = 64
   
@@ -491,7 +491,6 @@ PROGRAM field_gathering_3d_test
   ENDDO
 
 
-  n = i
   write(0,*)
   write(0,'(" Results Magnetic field order 3")')  
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(bx)", "sum(by)", "sum(bz)", "err eb", "err by", "err bz", "time (s)"

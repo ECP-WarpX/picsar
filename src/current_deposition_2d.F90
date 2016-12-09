@@ -4,11 +4,29 @@
 !
 ! List of subroutines
 ! - pxrdepose_currents_on_grid_jxjyjz_2d
+! - pxr_depose_jxjyjz_esirkepov2d_n
+! - pxr_depose_jxjyjz_esirkepov2d_1_1
+! - pxr_depose_jxjyjz_esirkepov2d_2_2
+! - pxr_depose_jxjyjz_esirkepov2d_3_3
+! - pxr_depose_jxjyjz_esirkepov2d_svec_3_3
+! - pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
-!> Main subroutine for the current deposition called in submain for the 2d
 !> @brief
+!> Main subroutine for the current deposition called in submain in 2d.
+
+!> @details
+!> This subroutine determines which model and algorithm to use depending on the parameter
+!> currdepo and the interpolation order.
+
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+
+!> @date
+!> Creation 2016
+
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 ! ________________________________________________________________________________________
   USE fields
@@ -126,7 +144,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Esirkepov general order subroutine
   IF (currdepo.EQ.2) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	       nox,noy,noz,dx,dy,dz,dt)
+         nox,noy,noz,dx,dy,dz,dt)
   ! _______________________________________________________
   ! Esirkepov OpenMP/tiling version non-vectorized but more optimized than the general order subroutine
   ELSE IF (currdepo.EQ.1) THEN
@@ -146,11 +164,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     ! Order n
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	       nox,noy,noz,dx,dy,dz,dt)
-	  ENDIF
+         nox,noy,noz,dx,dy,dz,dt)
+    ENDIF
 
   ! _______________________________________________________
-	! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
+  ! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE
 
     ! Order 1
@@ -168,9 +186,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     ! Order n
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-	       nox,noy,noz,dx,dy,dz,dt)
-	  ENDIF
-	    
+         nox,noy,noz,dx,dy,dz,dt)
+    ENDIF
+      
   ENDIF
 
 ! Stop Vtune/SDE analysis
@@ -192,13 +210,20 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 
 
 ! ________________________________________________________________________________________
-!> Deposit current in each tile with Esirkepov method in 2D
 !> @brief
+!> Deposit current in each tile with Esirkepov method in 2D
 !
+!> @details
 !> This subroutine is called from Fortran main program and contains an interface argument 
 !> OpenMP version. Avoids conflict while reducing tile currents in the global 
 !> current array. 
-!> @details
+
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+
+!> @date
+!> Creation 2016
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_sub,jxg,jyg,jzg,&
                 nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvect)
 ! ________________________________________________________________________________________
@@ -258,12 +283,12 @@ tdeb=MPI_WTIME()
 !$OMP DO COLLAPSE(2) SCHEDULE(runtime)
 DO iz=1,ntilez
         DO ix=1,ntilex
-        	curr => species_parray(1)
+          curr => species_parray(1)
             curr_tile=>curr%array_of_tiles(ix,1,iz)
             nxjg=curr_tile%nxg_tile
             nzjg=curr_tile%nzg_tile
             jmin=curr_tile%nx_tile_min
-        	  jmax=curr_tile%nx_tile_max
+            jmax=curr_tile%nx_tile_max
             kmin=curr_tile%ny_tile_min
             kmax=curr_tile%ny_tile_max
             lmin=curr_tile%nz_tile_min
@@ -271,26 +296,26 @@ DO iz=1,ntilez
             nxc=curr_tile%nx_cells_tile;
             nyc=curr_tile%ny_cells_tile
             nzc=curr_tile%nz_cells_tile         
-			      currg=>aofgrid_tiles(ix,1,iz)
+            currg=>aofgrid_tiles(ix,1,iz)
             currg%jxtile=0.
             currg%jytile=0.
             currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
-           	    curr => species_parray(ispecies)
+                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,1,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .EQ. 0) THEN 
-                	CYCLE
+                  CYCLE
                 ELSE 
-                	isdeposited=.TRUE.
+                  isdeposited=.TRUE.
                 ENDIF 
  
                 ! Depose current in jtile                
                 CALL curr_depo_sub(currg%jxtile,currg%jytile,                              &
-                currg%jztile,count,                              									       &
-                curr_tile%part_x,curr_tile%part_z,     						           &
-                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,  			   &
+                currg%jztile,count,                                                       &
+                curr_tile%part_x,curr_tile%part_z,                            &
+                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,           &
                 curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     &
                 curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,                                     &
                 nxjg,nzjg,noxx,nozz,lvect,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp) 
@@ -298,9 +323,9 @@ DO iz=1,ntilez
                 
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
-            	jxg(jmin:jmax,0,lmin:lmax)=jxg(jmin:jmax,0,lmin:lmax)+currg%jxtile(0:nxc,0,0:nzc)
-            	jyg(jmin:jmax,0,lmin:lmax)=jyg(jmin:jmax,0,lmin:lmax)+currg%jytile(0:nxc,0,0:nzc)
-            	jzg(jmin:jmax,0,lmin:lmax)=jzg(jmin:jmax,0,lmin:lmax)+currg%jztile(0:nxc,0,0:nzc)
+              jxg(jmin:jmax,0,lmin:lmax)=jxg(jmin:jmax,0,lmin:lmax)+currg%jxtile(0:nxc,0,0:nzc)
+              jyg(jmin:jmax,0,lmin:lmax)=jyg(jmin:jmax,0,lmin:lmax)+currg%jytile(0:nxc,0,0:nzc)
+              jzg(jmin:jmax,0,lmin:lmax)=jzg(jmin:jmax,0,lmin:lmax)+currg%jztile(0:nxc,0,0:nzc)
             ENDIF
         END DO
 END DO!END LOOP ON TILES
@@ -311,7 +336,7 @@ END DO!END LOOP ON TILES
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-        	isdeposited=.FALSE.
+          isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -319,9 +344,9 @@ DO iz=1,ntilez
                 IF (count .GT. 0) isdeposited=.TRUE.  
             END DO
             IF (isdeposited) THEN 
-            	currg=>aofgrid_tiles(ix,iy,iz)
+              currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+               curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -371,9 +396,9 @@ DO iz=1,ntilez
                 IF (count .GT. 0) isdeposited=.TRUE.  
             END DO
             IF (isdeposited) THEN 
-            	currg=>aofgrid_tiles(ix,iy,iz)
+              currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+               curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -423,9 +448,9 @@ DO iz=1,ntilez
                 IF (count .GT. 0) isdeposited=.TRUE.  
             END DO
             IF (isdeposited) THEN 
-            	currg=>aofgrid_tiles(ix,iy,iz)
+              currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-           		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+               curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -469,33 +494,41 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp
 
 
 ! ________________________________________________________________________________________
-!> 2D Current deposition esirkepov n order (from 0 to 3)
 !> @brief
+!> 2D Current deposition esirkepov n order (from 0 to 3)
 !
+!> @details
 !> This subroutine is adapted from the version of WARP.
 !> This subroutine is called in pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp().
-!> @details
+
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+
+!> @date
+!> Creation 2016
+
+! Input parameters:
+!> @param[inout] jx,jy,jz current arrays
+!> @param[in] np number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse of the gamma factor
+!> @param[in] w weight
+!> @param[in] q charge
+!> @param[in] xmin,zmin minimal boundaries of the tile
+!> @param[in] dt, dx, dz time and space discretization
+!> @param[in] nx,nz tile grid size
+!> @param[in] nxguard, nzguard guard cell numbers
+!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
+!> @param[in] l_particles_weight to take into account the particle weight
+!> @param[in] l4symtry (useless here bur kept for common interface)
+!> @param[in] l_2drz  (useless here bur kept for common interface)
+!> @param[in] type_rz_depose (useless here bur kept for common interface)
+!
 subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
-!
-! Input parameters:
-! - jx,jy,jz: current arrays
-! - np: number of particles
-! - xp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse of the gamma factor
-! - w: weight
-! - q: charge
-! - xmin,zmin: minimal boundaries of the tile
-! - dt, dx, dz: time and space discretization
-! - nx,nz: tile grid size
-! - nxguard, nzguard: guard cell numbers
-! - nox, noz: shape factor order (useless here but kept for common interface)
-! - l_particles_weight: to take into account the particle weight
-! - l4symtry (useless here bur kept for common interface)
-! - l_2drz  (useless here bur kept for common interface)
-! - type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
    use constants
    implicit none
@@ -807,32 +840,42 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
 end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 
 ! ________________________________________________________________________________________
+!> @brief
+!> 2D Current deposition with the method of Esirkepov at order 1
+!
+!> @details
+!> This function is not optimized but provides better performances than 
+!> using the abitrary order function
+
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+
+!> @date
+!> Creation 2016
+
+! Input parameters:
+!> @param[inout] jx,jy,jz current arrays
+!> @param[in] np number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse of the gamma factor
+!> @param[in] w weight
+!> @param[in] q charge
+!> @param[in] xmin,zmin minimal boundaries of the tile
+!> @param[in] dt, dx, dz time and space discretization
+!> @param[in] nx,nz tile grid size
+!> @param[in] nxguard, nzguard guard cell numbers
+!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
+!> @param[in] lvect: vector length (useless since not vectorized)
+!> @param[in] l_particles_weight to take into account the particle weight
+!> @param[in] l4symtry (useless here bur kept for common interface)
+!> @param[in] l_2drz  (useless here bur kept for common interface)
+!> @param[in] type_rz_depose (useless here bur kept for common interface)
+!
 SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
-!
-! 2D Current deposition with the method of Esirkepov at order 1
-! This function is not optimized but provides better performances than 
-! using the abitrary order function
-!
-! Input parameters:
-! - jx,jy,jz: current arrays
-! - np: number of particles
-! - xp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse of the gamma factor
-! - w: weight
-! - q: charge
-! - xmin,zmin: minimal boundaries of the tile
-! - dt, dx, dz: time and space discretization
-! - nx,nz: tile grid size
-! - nxguard, nzguard: guard cell numbers
-! - nox, noz: shape factor order (useless here but kept for common interface)
-! - lvect: vector length (useless since not vectorized)
-! - l_particles_weight: to take into account the particle weight
-! - l4symtry (useless here bur kept for common interface)
-! - l_2drz  (useless here bur kept for common interface)
-! - type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1463,11 +1506,11 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+    !$OMP SIMD 
 #elif defined __IBMBGQ__
-		!IBM* SIMD_LEVEL
+    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+    !$DIR SIMD 
 #endif
 
     ! Inner loop on particle
@@ -1903,11 +1946,11 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
         !IBM* ALIGN(64,ICELL)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+    !$OMP SIMD 
 #elif defined __IBMBGQ__
-		!IBM* SIMD_LEVEL
+    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+    !$DIR SIMD 
 #endif
 
     ! Inner loop on particle
@@ -2216,11 +2259,11 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif 
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+      !$OMP SIMD 
 #elif defined __IBMBGQ__
-			!IBM* SIMD_LEVEL
+      !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-			!$DIR SIMD 
+      !$DIR SIMD 
 #endif
       DO nv=1,8
 
@@ -2249,7 +2292,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
                                       
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+         !$OMP END SIMD
 #endif
     ENDDO
   ENDDO
@@ -2259,11 +2302,11 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
   ! Reduction of jxcells,jycells,jzcells in jx,jy,jz
   DO iz=1, ncz-2
 #if defined _OPENMP && _OPENMP>=201307
-			!$OMP SIMD 
+      !$OMP SIMD 
 #elif defined __IBMBGQ__
-			!IBM* SIMD_LEVEL
+      !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-			!$DIR SIMD 
+      !$DIR SIMD 
 #endif
       DO ix=1,ncx-8 !! VECTOR (take ncx multiple of vector length)
       
@@ -2305,7 +2348,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
                 
       END DO
 #if defined _OPENMP && _OPENMP>=201307
-       	!$OMP END SIMD
+         !$OMP END SIMD
 #endif
   ENDDO  
   
