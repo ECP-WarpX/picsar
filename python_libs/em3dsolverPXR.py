@@ -1333,7 +1333,7 @@ class EM3DPXR(EM3DFFT):
                   print("Optimal load balancing already achieved by current implementation")
             else:
               if(pxr.rank==0):
-                  print("trying to load balance the simulation, imbalance=", imbalance)
+                print("trying to load balance the simulation, imbalance=", imbalance)
                 ## --- Compute limits for all procs
                 ix1old=np.zeros(pxr.nproc,dtype="i8"); ix2old=np.zeros(pxr.nproc,dtype="i8")
                 iy1old=np.zeros(pxr.nproc,dtype="i8"); iy2old=np.zeros(pxr.nproc,dtype="i8")
