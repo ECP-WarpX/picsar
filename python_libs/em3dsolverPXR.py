@@ -1285,7 +1285,7 @@ class EM3DPXR(EM3DFFT):
             if (imbalance>self.dlb_threshold):
               if (self.l_2dxz):
                   self.load_balance_2d(str(imbalance)+"%")
-                else:
+              else:
                     self.load_balance_3d(str(imbalance)+"%")
         # Try to Load balance at init
         if ((top.it==self.it_dlb_init) & self.dlb_at_init & self.dload_balancing):
