@@ -3,39 +3,46 @@ from warp.field_solvers.em3dsolverFFT import *
 from warp.particles.species import *
 
 try:
+    from mpi4py import MPI
+except:
+    print 'Error cannot import mpi4py'
+
+try:
     #import warp.field_solvers.GPSTD as gpstd
 	import GPSTDPXR as gpstd
+  print 'Import GPSTDPXR as gpstd'
 except:
 	#import GPSTDPXR as gpstd
     import warp.field_solvers.GPSTD as gpstd
+
 try:
     import picsarpy as pxrpy
+    print 'Import picsarpy as pxrpy'
     pxr = pxrpy.picsar
     l_pxr=True
 except:
     l_pxr=False
-try:
-    from mpi4py import MPI
-except:
-    print 'Error cannot import mpi4py'
+
 try:
     import os as os
+    print 'Import os as os'
 except:
     print 'Error cannot import os'
+
 try:
     # Try to import fortran wrapper of FFTW
     # import pyfftw
     # fft = pyfftw.interfaces.numpy_fft
     import fastfftforpy as fftpy
+    print 'Import fastfftforpy as fftpy'
     import fastfftpy as fstpy
+    print 'Import fastfftpy as fstpy'
     fst=fstpy.fastfft
     fft=fftpy
     l_fftw=True
 except:
     fft = np.fft
     l_fftw=False
-
-
 
 class EM3DPXR(EM3DFFT):
 
