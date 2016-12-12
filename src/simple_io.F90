@@ -6,6 +6,8 @@
 !> This module contains subroutines for the outputs.
 ! 
 ! ________________________________________________________________________________________
+
+
 MODULE simple_io
 
   USE mpi_derived_types
@@ -422,105 +424,105 @@ CONTAINS
   END SUBROUTINE write_single_array_to_file
 
 
-	! ______________________________________________________________________________________
-	!> @brief 
-	!> This subroutine dumps the particle properties in a file.
-	!>
-	!>
-	SUBROUTINE write_particles_to_file
+  ! ______________________________________________________________________________________
+  !> @brief 
+  !> This subroutine dumps the particle properties in a file.
+  !>
+  !>
+  SUBROUTINE write_particles_to_file
 
-		USE particles
-		USE constants
-		USE params
-		USE time_stat
+    USE particles
+    USE constants
+    USE params
+    USE time_stat
 
-		REAL(num), ALLOCATABLE, DIMENSION(:)    :: arr 
-		LOGICAL(lp) , ALLOCATABLE, DIMENSION(:) :: mask 
-		INTEGER(idp)                            :: narr, idump, ncurr, ndump 
-		INTEGER(isp)                            :: fh
-		INTEGER(idp)                            :: offset 
-		TYPE(particle_species), POINTER         :: curr
-		TYPE(particle_dump), POINTER            :: dp 
-		REAL(num)                               :: tmptime, tottime, t0
-		CHARACTER(LEN=5)                        :: strit
+    REAL(num), ALLOCATABLE, DIMENSION(:)    :: arr 
+    LOGICAL(lp) , ALLOCATABLE, DIMENSION(:) :: mask 
+    INTEGER(idp)                            :: narr, idump, ncurr, ndump 
+    INTEGER(isp)                            :: fh
+    INTEGER(idp)                            :: offset 
+    TYPE(particle_species), POINTER         :: curr
+    TYPE(particle_dump), POINTER            :: dp 
+    REAL(num)                               :: tmptime, tottime, t0
+    CHARACTER(LEN=5)                        :: strit
 
-		t0 = MPI_WTIME()
+    t0 = MPI_WTIME()
 
-		WRITE(strit,'(I5)') it
+    WRITE(strit,'(I5)') it
 
-		tottime = 0_num  
-		DO idump = 1, npdumps
-		
-			! POINT TOWARDS CURRENT SPECIES 
-			dp => particle_dumps(idump)
-			
-			IF (dp%diag_period .lt.1) CYCLE
-			IF (MOD(it,dp%diag_period) .NE. 0) CYCLE
+    tottime = 0_num  
+    DO idump = 1, npdumps
+    
+      ! POINT TOWARDS CURRENT SPECIES 
+      dp => particle_dumps(idump)
+      
+      IF (dp%diag_period .lt.1) CYCLE
+      IF (MOD(it,dp%diag_period) .NE. 0) CYCLE
 
-			tmptime = MPI_WTIME()
+      tmptime = MPI_WTIME()
 
-			curr => species_parray(dp%ispecies)
-			narr = curr%species_npart
+      curr => species_parray(dp%ispecies)
+      narr = curr%species_npart
 
-			! GET TOTAL NUMBER OF PART TO DUMP 
-			ALLOCATE(mask(narr))
-			CALL get_particles_to_dump(idump,mask,narr,ndump) 
-		
-			CALL MPI_ALLREDUCE(ndump,ncurr,1_isp, MPI_INTEGER8, MPI_SUM, comm, errcode)
+      ! GET TOTAL NUMBER OF PART TO DUMP 
+      ALLOCATE(mask(narr))
+      CALL get_particles_to_dump(idump,mask,narr,ndump) 
+    
+      CALL MPI_ALLREDUCE(ndump,ncurr,1_isp, MPI_INTEGER8, MPI_SUM, comm, errcode)
 
-			! OPENING INPUT FILE 
-			CALL MPI_FILE_OPEN(comm, TRIM('./RESULTS/'//TRIM(ADJUSTL(curr%name))//'_it_'// &
-			TRIM(ADJUSTL(strit))),MPI_MODE_CREATE + MPI_MODE_WRONLY, MPI_INFO_NULL, fh, errcode) 
+      ! OPENING INPUT FILE 
+      CALL MPI_FILE_OPEN(comm, TRIM('./RESULTS/'//TRIM(ADJUSTL(curr%name))//'_it_'// &
+      TRIM(ADJUSTL(strit))),MPI_MODE_CREATE + MPI_MODE_WRONLY, MPI_INFO_NULL, fh, errcode) 
 
-			ALLOCATE(arr(ndump))
+      ALLOCATE(arr(ndump))
 
-			! WRITE - X 
-			offset = 0 
-			CALL concatenate_particle_variable(idump, 1_idp, arr, ndump, mask, narr)
-			CALL write_particle_variable(fh, arr,ndump, mpidbl, errcode, offset)
-			! WRITE - Y
+      ! WRITE - X 
+      offset = 0 
+      CALL concatenate_particle_variable(idump, 1_idp, arr, ndump, mask, narr)
+      CALL write_particle_variable(fh, arr,ndump, mpidbl, errcode, offset)
+      ! WRITE - Y
 
-			offset = offset + ndump* SIZEOF(arr(1))
-			CALL concatenate_particle_variable(idump, 2_idp,  arr, ndump, mask, narr)
-			CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
-			! WRITE - Z
-			offset = offset + ndump * SIZEOF(arr(1))
-			CALL concatenate_particle_variable(idump, 3_idp,  arr, ndump, mask, narr)
-			CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+      offset = offset + ndump* SIZEOF(arr(1))
+      CALL concatenate_particle_variable(idump, 2_idp,  arr, ndump, mask, narr)
+      CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+      ! WRITE - Z
+      offset = offset + ndump * SIZEOF(arr(1))
+      CALL concatenate_particle_variable(idump, 3_idp,  arr, ndump, mask, narr)
+      CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
 
-			! WRITE - Ux
-			offset = offset + ndump * SIZEOF(arr(1))
-			CALL concatenate_particle_variable(idump, 4_idp,  arr, ndump, mask, narr)
-			CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+      ! WRITE - Ux
+      offset = offset + ndump * SIZEOF(arr(1))
+      CALL concatenate_particle_variable(idump, 4_idp,  arr, ndump, mask, narr)
+      CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
 
-			! WRITE - Uy
-			offset = offset + ndump * SIZEOF(arr(1))
-			CALL concatenate_particle_variable(idump, 5_idp,  arr, ndump, mask, narr)
-			CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+      ! WRITE - Uy
+      offset = offset + ndump * SIZEOF(arr(1))
+      CALL concatenate_particle_variable(idump, 5_idp,  arr, ndump, mask, narr)
+      CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
 
-			! WRITE - Uz
-			offset = offset + ndump * SIZEOF(arr(1))
-			CALL concatenate_particle_variable(idump, 6_idp,  arr, ndump, mask, narr)
-			CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+      ! WRITE - Uz
+      offset = offset + ndump * SIZEOF(arr(1))
+      CALL concatenate_particle_variable(idump, 6_idp,  arr, ndump, mask, narr)
+      CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
 
-			! WRITE - Weight
-			offset = offset + ndump * SIZEOF(arr(1))
-			CALL concatenate_particle_variable(idump, 7_idp,  arr, ndump, mask, narr)
-			CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
+      ! WRITE - Weight
+      offset = offset + ndump * SIZEOF(arr(1))
+      CALL concatenate_particle_variable(idump, 7_idp,  arr, ndump, mask, narr)
+      CALL write_particle_variable(fh, arr, ndump, mpidbl, errcode, offset)
 
-			DEALLOCATE(arr, mask)
+      DEALLOCATE(arr, mask)
 
-			CALL MPI_FILE_CLOSE(fh, errcode)
-			tottime = MPI_WTIME()-tmptime
-			IF (rank .EQ. 0) WRITE(0,'(" Total part dump time ", F12.5 , " (s) for species ",A10)') tottime, species_parray(dp%ispecies)%name
-		END DO ! END LOOP ON SPECIES 
-		
-		! Global time statistics
-		IF (it.ge.timestat_itstart) THEN
-			localtimes(9) = localtimes(9) + ( MPI_WTIME() - t0 )
-		ENDIF
+      CALL MPI_FILE_CLOSE(fh, errcode)
+      tottime = MPI_WTIME()-tmptime
+      IF (rank .EQ. 0) WRITE(0,'(" Total part dump time ", F12.5 , " (s) for species ",A10)') tottime, species_parray(dp%ispecies)%name
+    END DO ! END LOOP ON SPECIES 
+    
+    ! Global time statistics
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(9) = localtimes(9) + ( MPI_WTIME() - t0 )
+    ENDIF
 
-	END SUBROUTINE write_particles_to_file
+  END SUBROUTINE write_particles_to_file
 
 
   SUBROUTINE get_particles_to_dump(idump,mask,narr,ndump) 
