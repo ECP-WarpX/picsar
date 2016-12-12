@@ -514,7 +514,8 @@ CONTAINS
 
       CALL MPI_FILE_CLOSE(fh, errcode)
       tottime = MPI_WTIME()-tmptime
-      IF (rank .EQ. 0) WRITE(0,'(" Total part dump time ", F12.5 , " (s) for species ",A10)') tottime, species_parray(dp%ispecies)%name
+      IF (rank .EQ. 0) WRITE(0,'(" Total part dump time ", F12.5 , &
+" (s) for species ",A10)') tottime, species_parray(dp%ispecies)%name
     END DO ! END LOOP ON SPECIES 
     
     ! Global time statistics
