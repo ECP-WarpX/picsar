@@ -226,7 +226,7 @@ PROGRAM current_deposition_3d_test
 
 	n = i-1
 	write(0,*)
-  write(0,'(" Current deposition order 1")')	
+  write(0,'(" Current deposition order 2")')	
   write(0,'(A40, 7(A13))') "Subroutines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz","time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
@@ -272,7 +272,7 @@ PROGRAM current_deposition_3d_test
 
 	n = i-1
 	write(0,*)
-  write(0,'(" Current deposition order 1")')	
+  write(0,'(" Current deposition order 3")')	
   write(0,'(A40, 7(A13))') "Subroutines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz","time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n

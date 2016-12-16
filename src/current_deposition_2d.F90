@@ -4,12 +4,12 @@
 !
 ! List of subroutines
 ! - pxrdepose_currents_on_grid_jxjyjz_2d
+!
 ! - pxr_depose_jxjyjz_esirkepov2d_n
 ! - pxr_depose_jxjyjz_esirkepov2d_1_1
 ! - pxr_depose_jxjyjz_esirkepov2d_2_2
 ! - pxr_depose_jxjyjz_esirkepov2d_3_3
-! - pxr_depose_jxjyjz_esirkepov2d_svec_3_3
-! - pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3
+!
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
@@ -26,6 +26,7 @@
 
 !> @date
 !> Creation 2016
+
 
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 ! ________________________________________________________________________________________
@@ -102,6 +103,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   END SUBROUTINE
 
+#if defined(DEV)
   subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,&
                                                    gaminv,w,q,xmin,zmin, &
                                                    dt,dx,dz,nx,nz,nxguard,nzguard, &
@@ -117,6 +119,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     real(num)                             :: q,dt,dx,dz,xmin,zmin
     LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   END SUBROUTINE
+#endif
   
   END INTERFACE
   ! ___________________________________________________________________________
@@ -192,9 +195,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ENDIF
 
 ! Stop Vtune/SDE analysis
-#if PROFILING==2                     
-  CALL stop_collection()            
-#endif                               
+#if PROFILING==2
+  CALL stop_collection() 
+#endif
 
   ! For time statistics
   tend = MPI_WTIME()
@@ -273,15 +276,15 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   END INTERFACE
   
   
-tdeb=MPI_WTIME()
-!$OMP PARALLEL DEFAULT(NONE)                                                              &
-!$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
-!$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim,lvect)      &
-!$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
-!$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
-!! Current deposition
-!$OMP DO COLLAPSE(2) SCHEDULE(runtime)
-DO iz=1,ntilez
+  tdeb=MPI_WTIME()
+  !$OMP PARALLEL DEFAULT(NONE)                                                              &
+  !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
+  !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim,lvect)      &
+  !$OMP PRIVATE(ix,iy,iz,ispecies,curr,currg, curr_tile,count,jmin,jmax,kmin,kmax,lmin,     &
+  !$OMP lmax,jminc,jmaxc,kminc,kmaxc,lminc,lmaxc,nxc,nyc,nzc, nxjg, nyjg, nzjg, isdeposited)
+  !! Current deposition
+  !$OMP DO COLLAPSE(2) SCHEDULE(runtime)
+  DO iz=1,ntilez
         DO ix=1,ntilex
           curr => species_parray(1)
             curr_tile=>curr%array_of_tiles(ix,1,iz)
@@ -514,12 +517,12 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp
 !> @param[in] xp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
 !> @param[in] gaminv inverse of the gamma factor
-!> @param[in] w weight
-!> @param[in] q charge
+!> @param[in] w particle weight
+!> @param[in] q particle charge
 !> @param[in] xmin,zmin minimal boundaries of the tile
 !> @param[in] dt, dx, dz time and space discretization
 !> @param[in] nx,nz tile grid size
-!> @param[in] nxguard, nzguard guard cell numbers
+!> @param[in] nxguard,nzguard guard cell numbers
 !> @param[in] nox, noz shape factor order (useless here but kept for common interface)
 !> @param[in] l_particles_weight to take into account the particle weight
 !> @param[in] l4symtry (useless here bur kept for common interface)
@@ -854,18 +857,19 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !> @date
 !> Creation 2016
 
+!
 ! Input parameters:
 !> @param[inout] jx,jy,jz current arrays
 !> @param[in] np number of particles
 !> @param[in] xp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
 !> @param[in] gaminv inverse of the gamma factor
-!> @param[in] w weight
-!> @param[in] q charge
+!> @param[in] w particle weight
+!> @param[in] q particle charge
 !> @param[in] xmin,zmin minimal boundaries of the tile
 !> @param[in] dt, dx, dz time and space discretization
 !> @param[in] nx,nz tile grid size
-!> @param[in] nxguard, nzguard guard cell numbers
+!> @param[in] nxguard,nzguard guard cell numbers
 !> @param[in] nox, noz shape factor order (useless here but kept for common interface)
 !> @param[in] lvect: vector length (useless since not vectorized)
 !> @param[in] l_particles_weight to take into account the particle weight
@@ -1027,32 +1031,38 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 
 ! ________________________________________________________________________________________
+! @brief 
+!> 2D Current deposition with the method of Esirkepov at order 2
+!> This function is not optimized but provides better performances than 
+!> using the abitrary order function
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+! Input parameters:
+!> @param[inout] jx,jy,jz current arrays
+!> @param[in] np number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse of the gamma factor
+!> @param[in] w particle weight
+!> @param[in] q particle charge
+!> @param[in] xmin,zmin minimal boundaries of the tile
+!> @param[in] dt, dx, dz time and space discretization
+!> @param[in] nx,nz tile grid size
+!> @param[in] nxguard,nzguard guard cell numbers
+!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
+!> @param[in] l_particles_weight to take into account the particle weight
+!> @param[in] l4symtry (useless here bur kept for common interface)
+!> @param[in] l_2drz  (useless here bur kept for common interface)
+!> @param[in] type_rz_depose (useless here bur kept for common interface)
+!
 SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
-!
-! 2D Current deposition with the method of Esirkepov at order 2
-! This function is not optimized but provides better performances than 
-! using the abitrary order function
-!
-! Input parameters:
-! - jx,jy,jz: current arrays
-! - np: number of particles
-! - xp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse of the gamma factor
-! - w: weight
-! - q: charge
-! - xmin,zmin: minimal boundaries of the tile
-! - dt, dx, dz: time and space discretization
-! - nx,nz: tile grid size
-! - nxguard, nzguard: guard cell numbers
-! - nox, noz: shape factor order (useless here but kept for common interface)
-! - lvect: vector length (useless since not vectorized)
-! - l_particles_weight: to take into account the particle weight
-! - l4symtry (useless here bur kept for common interface)
-! - l_2drz  (useless here bur kept for common interface)
-! - type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1214,32 +1224,38 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
 End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 
 ! ________________________________________________________________________________________
+!> @brief
+!> 2D Current deposition with the method of Esirkepov at order 3
+!> This function is not optimized but provides better performances than 
+!> using the abitrary order function
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+! Input parameters:
+!> @param[inout] jx,jy,jz current arrays
+!> @param[in] np number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse of the gamma factor
+!> @param[in] w particle weight
+!> @param[in] q particle charge
+!> @param[in] xmin,zmin minimal boundaries of the tile
+!> @param[in] dt, dx, dz time and space discretization
+!> @param[in] nx,nz tile grid size
+!> @param[in] nxguard,nzguard guard cell numbers
+!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
+!> @param[in] l_particles_weight to take into account the particle weight
+!> @param[in] l4symtry (useless here bur kept for common interface)
+!> @param[in] l_2drz  (useless here bur kept for common interface)
+!> @param[in] type_rz_depose (useless here bur kept for common interface)
+!
 subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
-!
-! 2D Current deposition with the method of Esirkepov at order 3
-! This function is not optimized but provides better performances than 
-! using the abitrary order function
-!
-! Input parameters:
-! - jx,jy,jz: current arrays
-! - np: number of particles
-! - xp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse of the gamma factor
-! - w: weight
-! - q: charge
-! - xmin,zmin: minimal boundaries of the tile
-! - dt, dx, dz: time and space discretization
-! - nx,nz: tile grid size
-! - nxguard, nzguard: guard cell numbers
-! - nox, noz: shape factor order (useless here but kept for common interface)
-! - lvect: vector length (useless since not vectorized)
-! - l_particles_weight: to take into account the particle weight
-! - l4symtry (useless here bur kept for common interface)
-! - l_2drz  (useless here bur kept for common interface)
-! - type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1425,32 +1441,41 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
 End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3
 
 
+#if defined(DEV)
 ! ________________________________________________________________________________________
+!> @brief
+!> 2D Current deposition with the method of Esirkepov at order 3
+!> This function is semi-vectorized: only the first part
+!> with the computation of indexes is vectorized
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+! Input parameters:
+!> @param[inout] jx,jy,jz current arrays
+!> @param[in] np number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse of the gamma factor
+!> @param[in] w particle weight
+!> @param[in] q particle charge
+!> @param[in] xmin,zmin minimal boundaries of the tile
+!> @param[in] dt, dx, dz time and space discretization
+!> @param[in] nx,nz tile grid size
+!> @param[in] nxguard,nzguard guard cell numbers
+!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
+!> @param[in] lvect vector length for vectorization
+!> @param[in] l_particles_weight to take into account the particle weight
+!> @param[in] l4symtry (useless here bur kept for common interface)
+!> @param[in] l_2drz  (useless here bur kept for common interface)
+!> @param[in] type_rz_depose (useless here bur kept for common interface)
+!
 subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
-!
-! 2D Current deposition with the method of Esirkepov at order 3
-! This function is semi-vectorized: only the first part with the computation of indexes is vectorized
-!
-! Input parameters:
-! - jx,jy,jz: current arrays
-! - np: number of particles
-! - xp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse of the gamma factor
-! - w: weight
-! - q: charge
-! - xmin,zmin: minimal boundaries of the tile
-! - dt, dx, dz: time and space discretization
-! - nx,nz: tile grid size
-! - nxguard, nzguard: guard cell numbers
-! - nox, noz: shape factor order (useless here but kept for common interface)
-! - lvect: vector length (useless since not vectorized)
-! - l_particles_weight: to take into account the particle weight
-! - l4symtry (useless here bur kept for common interface)
-! - l_2drz  (useless here bur kept for common interface)
-! - type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -1834,35 +1859,41 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
   DEALLOCATE(sdx,sdz,sx,sx0,dsx,sz,sz0,dsz)
 
 End subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3
+#endif
 
-
+#if defined(DEV)
 ! ________________________________________________________________________________________
+!> @brief
+!> Vectorized 2D Current deposition with the method of Esirkepov at order 3.
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+! Input parameters:
+!> @param[inout] jx,jy,jz current arrays
+!> @param[in] np number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse of the gamma factor
+!> @param[in] w particle weight
+!> @param[in] q particle charge
+!> @param[in] xmin,zmin minimal boundaries of the tile
+!> @param[in] dt, dx, dz time and space discretization
+!> @param[in] nx,nz tile grid size
+!> @param[in] nxguard,nzguard guard cell numbers
+!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
+!> @param[in] lvect vector length for vectorization
+!> @param[in] l_particles_weight to take into account the particle weight
+!> @param[in] l4symtry (useless here bur kept for common interface)
+!> @param[in] l_2drz  (useless here bur kept for common interface)
+!> @param[in] type_rz_depose (useless here bur kept for common interface)
 subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,&
           gaminv,w,q,xmin,zmin, &
           dt,dx,dz,nx,nz,nxguard,nzguard,&
           nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose) !#do not parse
-!
-! 2D Current deposition with the method of Esirkepov at order 3
-! Vectorized subroutine
-!
-! Input parameters:
-! - jx,jy,jz: current arrays
-! - np: number of particles
-! - xp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse of the gamma factor
-! - w: weight
-! - q: charge
-! - xmin,zmin: minimal boundaries of the tile
-! - dt, dx, dz: time and space discretization
-! - nx,nz: tile grid size
-! - nxguard, nzguard: guard cell numbers
-! - nox, noz: shape factor order (useless here but kept for common interface)
-! - lvect: vector length
-! - l_particles_weight: to take into account the particle weight
-! - l4symtry (useless here bur kept for common interface)
-! - l_2drz  (useless here bur kept for common interface)
-! - type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 
   USE omp_lib
@@ -2358,4 +2389,4 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
   !print*,'finished'
   
 End subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3
-
+#endif
