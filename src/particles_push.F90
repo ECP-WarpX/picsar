@@ -668,8 +668,16 @@ SUBROUTINE pxrpush_particles_part1
   USE params
   IMPLICIT NONE
 
+#if defined(DEBUG)
+  WRITE(0,*) "pxrpush_particles_part1: start"
+#endif
+
   CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry,l_lower_order_in_v)
+
+#if defined(DEBUG)
+  WRITE(0,*) "pxrpush_particles_part1: stop"
+#endif
 
 END SUBROUTINE pxrpush_particles_part1
 
@@ -868,6 +876,10 @@ TYPE(particle_tile), POINTER :: curr_tile
 REAL(num) :: tdeb, tend
 INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
 
+#if defined(DEBUG)
+  WRITE(0,*) "pxrpush_particles_part2: start"
+#endif
+
 IF (nspecies .EQ. 0_idp) RETURN
 tdeb=MPI_WTIME()
 !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -927,6 +939,11 @@ END DO! END LOOP ON TILES
 !$OMP END PARALLEL DO
 tend=MPI_WTIME()
 pushtime=pushtime+(tend-tdeb)
+
+#if defined(DEBUG)
+  WRITE(0,*) "pxrpush_particles_part2: stop"
+#endif
+
 END SUBROUTINE pxrpush_particles_part2
 
 

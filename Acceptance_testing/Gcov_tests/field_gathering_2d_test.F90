@@ -51,11 +51,11 @@ PROGRAM field_gathering_3d_test
   ! _________________________________________________________________
   ! Parameter initialization
   
-  np = 100000
+  np = 10000
   
-  nx = 100
-  ny = 100
-  nz = 100
+  nx = 50
+  ny = 50
+  nz = 50
   
   lvect = 64
   
@@ -183,82 +183,82 @@ PROGRAM field_gathering_3d_test
   CALL pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
                                        1_idp,1_idp,bxg,byg,bzg,.FALSE._idp,.FALSE._idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
-	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
-	i = i + 1
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
+  i = i + 1
   !write(0,*) sum(ex),sum(ey),sum(ez)  
 
   !write(0,*) 'test 1: gete3d_energy_conserving_1_1_1'
-! 	name(i) = 'gete3d_energy_conserving_1_1_1'
-! 	ex = 0
-! 	ey = 0
-! 	ez = 0
-! 	CALL gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
-! 																			 dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-! 																			 exg,eyg,ezg,l_lower_order_in_v)
-! 	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-! 	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
-! 	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
-! 	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
-! 	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
-! 	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
-! 	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
-! 	i = i + 1
+!   name(i) = 'gete3d_energy_conserving_1_1_1'
+!   ex = 0
+!   ey = 0
+!   ez = 0
+!   CALL gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
+!                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+!                                        exg,eyg,ezg,l_lower_order_in_v)
+!   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+!   errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+!   errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+!   errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+!   IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+!   IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+!   IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+!   i = i + 1
   !write(0,*) sum(ex),sum(ey),sum(ez)
 
 
-	namee(i) = 'pxr_gete2dxz_energy_conserving_vect_1_1'
-	nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_1_1'
-	ex = 0
-	ey = 0
-	ez = 0
-	bx = 0
-	by = 0
-	bz = 0
+  namee(i) = 'pxr_gete2dxz_energy_conserving_vect_1_1'
+  nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_1_1'
+  ex = 0
+  ey = 0
+  ez = 0
+  bx = 0
+  by = 0
+  bz = 0
   t0 = MPI_WTIME()
-	CALL pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 exg,eyg,ezg,lvect,l_lower_order_in_v)
+  CALL pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
-	CALL pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 bxg,byg,bzg,lvect,l_lower_order_in_v)
+  CALL pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
-	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
-	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
-	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
-	errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
-	errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
-	errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
-	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+  errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+  errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+  errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+  errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+  errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+  IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
-	
-	n = i-1
-	write(0,*)
-  write(0,'(" Results Electric field order 1")')	
+  
+  n = i-1
+  write(0,*)
+  write(0,'(" Results Electric field order 1")')  
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') namee(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), te(i)
-	ENDDO
+    write(0,'(A40,7(X,E12.5))') namee(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), te(i)
+  ENDDO
 
-	n = i-1
-	write(0,*)
-  write(0,'(" Results Magnetic field order 1")')	
+  n = i-1
+  write(0,*)
+  write(0,'(" Results Magnetic field order 1")')  
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(bx)", "sum(by)", "sum(bz)", "err eb", "err by", "err bz", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') nameb(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tb(i)
-	ENDDO
+    write(0,'(A40,7(X,E12.5))') nameb(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tb(i)
+  ENDDO
 
   ! __ Electric and magnetic field Order 2 ______________________________________
   sumex = 0
@@ -279,7 +279,7 @@ PROGRAM field_gathering_3d_test
   bx = 0
   by = 0
   bz = 0  
-	write(0,*)
+  write(0,*)
 
   i = 1
   !write(0,*) 'test reference: pxr_gete3d_n_energy_conserving'
@@ -293,62 +293,62 @@ PROGRAM field_gathering_3d_test
   CALL pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
                                        2_idp,2_idp,bxg,byg,bzg,.FALSE._idp,.FALSE._idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
-	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
-	i = i + 1
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
+  i = i + 1
 
 
-	namee(i) = 'pxr_gete2dxz_energy_conserving_vect_2_2'
-	nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_2_2'
-	ex = 0
-	ey = 0
-	ez = 0
-	bx = 0
-	by = 0
-	bz = 0
+  namee(i) = 'pxr_gete2dxz_energy_conserving_vect_2_2'
+  nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_2_2'
+  ex = 0
+  ey = 0
+  ez = 0
+  bx = 0
+  by = 0
+  bz = 0
   t0 = MPI_WTIME()
-	CALL pxr_gete2dxz_energy_conserving_vect_2_2(np,xp,zp,ex,ey,ez,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 exg,eyg,ezg,lvect,l_lower_order_in_v)
+  CALL pxr_gete2dxz_energy_conserving_vect_2_2(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
-	CALL pxr_getb2dxz_energy_conserving_vect_2_2(np,xp,zp,bx,by,bz,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 bxg,byg,bzg,lvect,l_lower_order_in_v)
+  CALL pxr_getb2dxz_energy_conserving_vect_2_2(np,xp,zp,bx,by,bz,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
-	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
-	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
-	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
-	errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
-	errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
-	errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
-	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+  errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+  errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+  errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+  errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+  errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+  IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
-	n = i-1
-	write(0,*)
-  write(0,'(" Results Electric field order 2")')	
+  n = i-1
+  write(0,*)
+  write(0,'(" Results Electric field order 2")')  
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') namee(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), te(i)
-	ENDDO
+    write(0,'(A40,7(X,E12.5))') namee(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), te(i)
+  ENDDO
 
-	n = i-1
-	write(0,*)
-  write(0,'(" Results Magnetic field order 2")')	
+  n = i-1
+  write(0,*)
+  write(0,'(" Results Magnetic field order 2")')  
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(bx)", "sum(by)", "sum(bz)", "err eb", "err by", "err bz", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') nameb(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tb(i)
-	ENDDO
+    write(0,'(A40,7(X,E12.5))') nameb(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tb(i)
+  ENDDO
 
   ! __ Electric field Order 3 ______________________________________
   
@@ -370,8 +370,8 @@ PROGRAM field_gathering_3d_test
   ex = 0
   ey = 0
   ez = 0
-	write(0,*)
-  i = 1
+  write(0,*)
+
 
   i = 1
   namee(i) = 'pxr_gete3d_n_energy_conserving'
@@ -384,111 +384,133 @@ PROGRAM field_gathering_3d_test
   CALL pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
                                        3_idp,3_idp,bxg,byg,bzg,.FALSE._idp,.FALSE._idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
-	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
-	i = i + 1
-	
-	namee(i) = 'pxr_gete2dxz_energy_conserving_scalar_3_3'
-	nameb(i) = 'pxr_getb2dxz_energy_conserving_scalar_3_3'
-	ex = 0
-	ey = 0
-	ez = 0
-	bx = 0
-	by = 0
-	bz = 0
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
+  
+  i = i + 1
+  namee(i) = 'pxr_gete2dxz_energy_conserving_scalar_3_3'
+  nameb(i) = 'pxr_getb2dxz_energy_conserving_scalar_3_3'
+  ex = 0
+  ey = 0
+  ez = 0
+  bx = 0
+  by = 0
+  bz = 0
   t0 = MPI_WTIME()
-	CALL pxr_gete2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 exg,eyg,ezg,l_lower_order_in_v)
+  CALL pxr_gete2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       exg,eyg,ezg,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
-	CALL pxr_getb2dxz_energy_conserving_scalar_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 bxg,byg,bzg,l_lower_order_in_v)
+  CALL pxr_getb2dxz_energy_conserving_scalar_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       bxg,byg,bzg,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
-	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
-	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
-	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
-	errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
-	errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
-	errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
-	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
-  !write(0,*) sum(ex),sum(ey),sum(ez)
-
-
-	namee(i) = 'pxr_gete2dxz_energy_conserving_vect_3_3'
-	nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_3_3'
-	ex = 0
-	ey = 0
-	ez = 0
-	bx = 0
-	by = 0
-	bz = 0
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+  errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+  errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+  errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+  errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+  errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+  IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  
+  i = i + 1
+  namee(i) = 'pxr_gete2dxz_energy_conserving_vect_3_3'
+  nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_3_3'
+  ex = 0
+  ey = 0
+  ez = 0
+  bx = 0
+  by = 0
+  bz = 0
   t0 = MPI_WTIME()
-	CALL pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 exg,eyg,ezg,lvect,l_lower_order_in_v)
+  CALL pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
-	CALL pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
-																			 dx,dz,nx,nz,nxguard,nzguard, &
-																			 bxg,byg,bzg,lvect,l_lower_order_in_v)
+  CALL pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-	sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-	sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
-	errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
-	errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
-	errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
-	errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
-	errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
-	errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
-	IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+  errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+  errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+  errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+  errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+  errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+  IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
 
-	n = i-1
-	write(0,*)
-  write(0,'(" Results Electric field order 3")')	
+  i = i + 1
+  namee(i) = 'pxr_geteb2dxz_energy_conserving_vect_3_3'
+  nameb(i) = 'pxr_geteb2dxz_energy_conserving_vect_3_3'
+  ex = 0 ; ey = 0 ; ez = 0
+  bx = 0 ; by = 0 ; bz = 0
+  t0 = MPI_WTIME()
+  CALL pxr_geteb2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,bx,by,bz,xmin,zmin,   &
+                                       dx,dz,nx,nz,nxguard,nzguard, &
+                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+  te(i) = MPI_WTIME() - t0
+  tb(i) = te(i)
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
+  errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
+  errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
+  errbx(i) = abs((sumbx(i) - sumbx(1)))/sumbx(1)
+  errby(i) = abs((sumby(i) - sumby(1)))/sumby(1)
+  errbz(i) = abs((sumbz(i) - sumbz(1)))/sumbz(1)
+  IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
+
+  n = i
+  write(0,*)
+  write(0,'(" Results Electric field order 3")')  
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') namee(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), te(i)
-	ENDDO
+    write(0,'(A40,7(X,E12.5))') namee(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), te(i)
+  ENDDO
 
 
-	n = i-1
-	write(0,*)
-  write(0,'(" Results Magnetic field order 3")')	
+  write(0,*)
+  write(0,'(" Results Magnetic field order 3")')  
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(bx)", "sum(by)", "sum(bz)", "err eb", "err by", "err bz", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,7(X,E12.5))') nameb(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tb(i)
-	ENDDO
+    write(0,'(A40,7(X,E12.5))') nameb(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tb(i)
+  ENDDO
 
   ! __ Check results ___________
   
-	write(0,*)
+  write(0,*)
   IF (passed) THEN
-		!write(0,'("\033[32m **** TEST PASSED **** \033[0m")')	
-		!CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
-		CALL system('printf "\e[32m ********** TEST FIELD GATHERING 2D PASSED **********  \e[0m \n"')
+    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')  
+    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
+    CALL system('printf "\e[32m ********** TEST FIELD GATHERING 2D PASSED **********  \e[0m \n"')
   ELSE
-		!write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
-		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
-		CALL system('printf "\e[31m ********** TEST FIELD GATHERING 2D FAILED **********  \e[0m \n"')
-		CALL EXIT(9)
+    !write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
+    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")     
+    CALL system('printf "\e[31m ********** TEST FIELD GATHERING 2D FAILED **********  \e[0m \n"')
+    CALL EXIT(9)
   ENDIF
   
   write(0,'(" ____________________________________________________________________________")')
@@ -505,53 +527,53 @@ END PROGRAM
 ! subroutine init_random_seed()
 ! https://gcc.gnu.org/onlinedocs/gfortran/RANDOM_005fSEED.html#RANDOM_005fSEED
 ! ________________________________________________________________________________________
-! 	use iso_fortran_env, only: int64
-! 	implicit none
-! 	integer, allocatable :: seed(:)
-! 	integer :: i, n, un, istat, dt(8), pid
-! 	integer(int64) :: t
+!   use iso_fortran_env, only: int64
+!   implicit none
+!   integer, allocatable :: seed(:)
+!   integer :: i, n, un, istat, dt(8), pid
+!   integer(int64) :: t
 ! 
-! 	call random_seed(size = n)
-! 	allocate(seed(n))
-	! First try if the OS provides a random number generator
-! 	open(newunit=un, file="/dev/urandom", access="stream", &
-! 			 form="unformatted", action="read", status="old", iostat=istat)
-! 	if (istat == 0) then
-! 		 read(un) seed
-! 		 close(un)
-! 	else
-		 ! Fallback to XOR:ing the current time and pid. The PID is
-		 ! useful in case one launches multiple instances of the same
-		 ! program in parallel.
-! 		 call system_clock(t)
-! 		 if (t == 0) then
-! 				call date_and_time(values=dt)
-! 				t = (dt(1) - 1970) * 365_int64 * 24 * 60 * 60 * 1000 &
-! 						 + dt(2) * 31_int64 * 24 * 60 * 60 * 1000 &
-! 						 + dt(3) * 24_int64 * 60 * 60 * 1000 &
-! 						 + dt(5) * 60 * 60 * 1000 &
-! 						 + dt(6) * 60 * 1000 + dt(7) * 1000 &
-! 						 + dt(8)
-! 		 end if
-! 		 pid = getpid()
-! 		 t = ieor(t, int(pid, kind(t)))
-! 		 do i = 1, n
-! 				seed(i) = lcg(t)
-! 		 end do
-! 	end if
-! 	call random_seed(put=seed)
+!   call random_seed(size = n)
+!   allocate(seed(n))
+  ! First try if the OS provides a random number generator
+!   open(newunit=un, file="/dev/urandom", access="stream", &
+!        form="unformatted", action="read", status="old", iostat=istat)
+!   if (istat == 0) then
+!      read(un) seed
+!      close(un)
+!   else
+     ! Fallback to XOR:ing the current time and pid. The PID is
+     ! useful in case one launches multiple instances of the same
+     ! program in parallel.
+!      call system_clock(t)
+!      if (t == 0) then
+!         call date_and_time(values=dt)
+!         t = (dt(1) - 1970) * 365_int64 * 24 * 60 * 60 * 1000 &
+!              + dt(2) * 31_int64 * 24 * 60 * 60 * 1000 &
+!              + dt(3) * 24_int64 * 60 * 60 * 1000 &
+!              + dt(5) * 60 * 60 * 1000 &
+!              + dt(6) * 60 * 1000 + dt(7) * 1000 &
+!              + dt(8)
+!      end if
+!      pid = getpid()
+!      t = ieor(t, int(pid, kind(t)))
+!      do i = 1, n
+!         seed(i) = lcg(t)
+!      end do
+!   end if
+!   call random_seed(put=seed)
 ! contains
-	! This simple PRNG might not be good enough for real work, but is
-	! sufficient for seeding a better PRNG.
-! 	function lcg(s)
-! 		integer :: lcg
-! 		integer(int64) :: s
-! 		if (s == 0) then
-! 			 s = 104729
-! 		else
-! 			 s = mod(s, 4294967296_int64)
-! 		end if
-! 		s = mod(s * 279470273_int64, 4294967291_int64)
-! 		lcg = int(mod(s, int(huge(0), int64)), kind(0))
-! 	end function lcg
+  ! This simple PRNG might not be good enough for real work, but is
+  ! sufficient for seeding a better PRNG.
+!   function lcg(s)
+!     integer :: lcg
+!     integer(int64) :: s
+!     if (s == 0) then
+!        s = 104729
+!     else
+!        s = mod(s, 4294967296_int64)
+!     end if
+!     s = mod(s * 279470273_int64, 4294967291_int64)
+!     lcg = int(mod(s, int(huge(0), int64)), kind(0))
+!   end function lcg
 ! end subroutine init_random_seed

@@ -2,26 +2,40 @@
 !
 ! DIAGS.F90
 !
+!
+! Brief description:
+!> @brief
+!> Module containing routines for processing the diagnostics
+!
 !>@author
 !>Henri Vincenti,
 !>Mathieu Lobet
-!>
-! Brief description:
-!> Module containing routines for processing the diagnostics
-!> @brief
+!
 ! ________________________________________________________________________________________
 
+
+! ________________________________________________________________________________________
+!> @brief
+!> This module contains useful diagnostics to test code correctness
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
 MODULE diagnostics
-!!!! --- This module contains useful diagnostics to test code correctness
-    USE constants
-    USE mpi
-    IMPLICIT NONE
+! ________________________________________________________________________________________
+
+  USE constants
+  USE mpi
+  IMPLICIT NONE
 
 
-CONTAINS
+  CONTAINS
 
-    !!! --- Computes derived physical quantities from simulation
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Computes derived physical quantities from simulation
     SUBROUTINE calc_diags
+    ! ____________________________________________________________________________________
         USE fields
         USE boundary
         USE particles
@@ -72,9 +86,9 @@ CONTAINS
     END SUBROUTINE calc_diags
     
     ! ____________________________________________________________________________________
+    !> @brief
+    !> Computes field divergence
     SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
-    !
-    ! Computes field divergence
     ! ____________________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp) ::  j,k,l
@@ -101,11 +115,11 @@ CONTAINS
 
     END SUBROUTINE calc_field_div
 
-    ! _____________________________________________________
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Initialization of the different diags
     SUBROUTINE init_diags
-    ! Initialization of the different diags
-    !
-    ! _____________________________________________________
+    ! ____________________________________________________________________________________
         USE shared_data
         IMPLICIT NONE
 
@@ -289,9 +303,9 @@ CONTAINS
     END SUBROUTINE
 
     ! ____________________________________________________________________________________
+    !> @brief
+    !> Initialize outputs of the time statistics
     SUBROUTINE init_time_stat_output
-    ! Initialize outputs of the time statistics
-    !
     ! ____________________________________________________________________________________
       USE time_stat
       USE shared_data
@@ -321,11 +335,16 @@ CONTAINS
     END SUBROUTINE
 
     ! ____________________________________________________________________________________
-    SUBROUTINE get_tot_number_of_particles_from_species(is,nptot)
-    ! This subroutine determine the total number of particles in the domain
-    ! from species is
+    !> @brief
+    !> This subroutine determine the total number of particles in the domain
+    !> from species of index is.
     !
-    ! Mathieu Lobet May 2016
+    !> @author
+    !> Mathieu Lobet
+    !
+    !> @creation
+    !> May 2016
+    SUBROUTINE get_tot_number_of_particles_from_species(is,nptot)
     ! ____________________________________________________________________________________
         USE particle_tilemodule
         USE particle_speciesmodule
@@ -371,10 +390,15 @@ CONTAINS
     END SUBROUTINE
 
     ! ____________________________________________________________________________________
-    SUBROUTINE get_tot_number_of_particles(nptot)
-    ! This subroutine determine the total number of particles all species included
+    !> @brief
+    !> This subroutine determine the total number of particles all species included
     !
-    ! Mathieu Lobet May 2016
+    !> @author
+    !> Mathieu Lobet
+    !
+    !> @creation
+    !> May 2016
+    SUBROUTINE get_tot_number_of_particles(nptot)
     ! ____________________________________________________________________________________
         USE particle_tilemodule
         USE particle_speciesmodule
@@ -398,9 +422,11 @@ CONTAINS
 
     END SUBROUTINE
 
-
-    !!! --- Determine the local kinetic energy for the species ispecies
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Determine the local kinetic energy for the species ispecies
     SUBROUTINE get_loc_kinetic_energy(ispecies,kinetic_energy_loc)
+    ! ____________________________________________________________________________________
         USE particle_tilemodule
         USE particle_speciesmodule
         USE tile_params
@@ -457,9 +483,9 @@ CONTAINS
 #if defined _OPENMP && _OPENMP>=201307
                         !$OMP SIMD SAFELEN(LVEC2)
 #elif defined __IBMBGQ__
-			            !IBM* SIMD_LEVEL
+                  !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-			            !$DIR SIMD
+                  !$DIR SIMD
 #endif
                         DO n=1,MIN(LVEC2,np-ip+1)
 
@@ -482,8 +508,11 @@ CONTAINS
 
     end subroutine
 
-    !!! --- Determine the total kinetic energy for the species ispecies
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Determine the total kinetic energy for the species ispecies.
     SUBROUTINE get_kinetic_energy(ispecies,total_kinetic_energy)
+    ! ____________________________________________________________________________________
         USE particle_tilemodule
         USE particle_speciesmodule
         USE tile_params
@@ -527,9 +556,9 @@ CONTAINS
 #if defined _OPENMP && _OPENMP>=201307
                         !$OMP SIMD SAFELEN(LVEC2)
 #elif defined __IBMBGQ__
-			            !IBM* SIMD_LEVEL
+                  !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-			            !$DIR SIMD
+                  !$DIR SIMD
                   !DIR ASSUME_ALIGNED partgaminv:64
 #endif
                         DO n=1,MIN(LVEC2,np-ip+1)
@@ -556,9 +585,9 @@ CONTAINS
     END SUBROUTINE get_kinetic_energy
 
     ! ____________________________________________________________________________________
+    !> @brief
+    !> Determine the local field energy for the given field in 2d.
     SUBROUTINE get_loc_field_energy_2d(field,nx2,nz2,dx2,dz2,nxguard,nzguard,field_energy)
-    !
-    ! Determine the local field energy for the given field in 2d
     ! ____________________________________________________________________________________
         USE constants
         IMPLICIT NONE
@@ -588,8 +617,11 @@ CONTAINS
 
     END SUBROUTINE
 
-    !!! --- Determine the local field energy for the given field
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Determine the local field energy for the given field.
     SUBROUTINE get_loc_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
+    ! ____________________________________________________________________________________
         USE constants
         IMPLICIT NONE
         INTEGER(idp)     :: nx2,ny2,nz2
@@ -620,9 +652,9 @@ CONTAINS
     END SUBROUTINE
 
     ! ____________________________________________________________________________________
+    !> @brief
+    !> Determine the total field energy for the given field
     SUBROUTINE get_field_energy_2d(field,nx2,nz2,dx2,dz2,nxguard,nzguard,field_energy)
-    !
-    ! Determine the total field energy for the given field
     ! ____________________________________________________________________________________
         USE constants
         USE mpi_derived_types
@@ -667,11 +699,11 @@ CONTAINS
     !> Mathieu Lobet
     !
     !> @date
-    !> 09.29.2016
+    !> Creation 09.29.2016
     !
-    !> @param[in] field: array for a given field component
-    !> @param[in] nx2,ny2,nz2: number of cells
-    !> @param[in] nxguard,nyguard,nzguard: number of guard cells
+    !> @param[in] field array for a given field component
+    !> @param[in] nx2,ny2,nz2 number of cells
+    !> @param[in] nxguard,nyguard,nzguard number of guard cells
     !
     SUBROUTINE get_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
     ! ____________________________________________________________________________________
