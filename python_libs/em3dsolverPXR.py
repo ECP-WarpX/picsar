@@ -1155,6 +1155,7 @@ class EM3DPXR(EM3DFFT):
         else:
             if l_pxr:
                 # Particle pusher
+                if (self.l_debug): print("Call pxr.field_gathering_plus_particle_pusher()")
                 tdebpart=MPI.Wtime()
                 #pxr.push_particles()
                 pxr.field_gathering_plus_particle_pusher()
@@ -1163,6 +1164,7 @@ class EM3DPXR(EM3DFFT):
                 self.time_stat_loc_array[0] += (tendpart-tdebpart)
 
                 # Particle boundary conditions
+                if (self.l_debug): print("Call pxr.particle_bcs()")
                 tdebpart=MPI.Wtime()
                 pxr.particle_bcs()
                 tendpart=MPI.Wtime()
