@@ -145,6 +145,11 @@ SUBROUTINE pxrdepose_rho_on_grid
   ! ______________________________________
   ! Parameters
 
+! For debugging    
+#if defined(DEBUG)
+  WRITE(0,*) "pxrdepose_rho_on_grid: start"
+#endif
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
@@ -217,6 +222,11 @@ SUBROUTINE pxrdepose_rho_on_grid
   IF (it.ge.timestat_itstart) THEN
   localtimes(12) = localtimes(12) + (MPI_WTIME() - tmptime)
   ENDIF
+
+! For debugging    
+#if defined(DEBUG)
+  WRITE(0,*) "pxrdepose_rho_on_grid: stop"
+#endif
 
 END SUBROUTINE pxrdepose_rho_on_grid
 

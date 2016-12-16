@@ -2055,6 +2055,8 @@ class EM3DPXR(EM3DFFT):
              # ___________________________________
              # Depose currents in PXR
 
+             if (self.l_debug): print("Call pxr.pxrdepose_currents_on_grid_jxjyjz()")
+
              t0 = MPI.Wtime()
 
              pxr.jx = self.fields.Jx
@@ -2077,15 +2079,19 @@ class EM3DPXR(EM3DFFT):
              self.time_stat_loc_array[2] += (t1-t0)
 
              # ___________________________________
-              # Depose charge density in PXR if required
+             # Depose charge density in PXR if required
               
              if self.l_getrho : # Depose Rho in PXR
+             
+             if (self.l_debug): print("Call pxr.pxrdepose_rho_on_grid_sub_openmp()")
              
                t0 = MPI.Wtime()
              
                if pxr.c_dim == 2:
 
-                 pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
+                 pxr.rho = self.fields.Rho
+                 pxr.pxrdepose_rho_on_grid()
+                 #pxr.pxrdepose_rho_on_grid_sub_openmp_2d(f.Rho,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,0)
 
                elif pxr.c_dim ==3:
 
