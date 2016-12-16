@@ -2083,7 +2083,7 @@ class EM3DPXR(EM3DFFT):
               
              if self.l_getrho : # Depose Rho in PXR
              
-             if (self.l_debug): print("Call pxr.pxrdepose_rho_on_grid_sub_openmp()")
+               if (self.l_debug): print("Call pxr.pxrdepose_rho_on_grid_sub_openmp()")
              
                t0 = MPI.Wtime()
              
