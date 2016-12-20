@@ -41,12 +41,15 @@
 !> @param[in] l4symetry
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !> @param[in] field_gathe_algo Gathering algorithm
+!> @param[in] lvect vector length
 !
 SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
                                        xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
                                        nxguard,nyguard,nzguard, &
                                        nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,&
-                                       l4symtry,l_lower_order_in_v,field_gathe_algo)
+                                       l4symtry,l_lower_order_in_v,&
+                                       lvect, &
+                                       field_gathe_algo)
 !_________________________________________________________________________________________
 
   USE constants
@@ -55,6 +58,7 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
 
   integer(idp)                  :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
   integer(idp)                  :: field_gathe_algo
+  integer(idp)                  :: lvect
   logical(idp), intent(in)      :: l4symtry,l_lower_order_in_v
   real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg    
@@ -126,18 +130,19 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
       !!! --- Gather electric field on particles
       CALL pxr_gete2dxz_energy_conserving_vect_2_2(np,xp,zp,ex,ey,ez,xmin,zmin,   &
                                             dx,dz,nx,nz,nxguard,nzguard, &
-                                            exg,eyg,ezg,LVEC_fieldgathe,l_lower_order_in_v)
+                                            exg,eyg,ezg,lvect,l_lower_order_in_v)
       !!! --- Gather magnetic fields on particles
       CALL pxr_getb2dxz_energy_conserving_vect_2_2(np,xp,zp,bx,by,bz,xmin,zmin,   &
                                             dx,dz,nx,nz,nxguard,nzguard, &
-                                            bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v) 
+                                            bxg,byg,bzg,lvect,l_lower_order_in_v) 
 
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
 
       !!! --- Gather electric and magnetic field on particles
       CALL pxr_geteb2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,bx,by,bz,xmin,zmin,   &
                                             dx,dz,nx,nz,nxguard,nzguard, &
-                                            exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                                            exg,eyg,ezg,bxg,byg,bzg,lvect, &
+                                            l_lower_order_in_v)
   
     ! Arbitrary order
     ELSE
