@@ -8,7 +8,7 @@
 !> @brief
 !> This subroutine is the 2D version of the particle pusher + field gathering
 SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-			nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+      nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 ! ________________________________________________________________________________________
   USE particles
   USE constants
@@ -50,7 +50,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg,bxg,byg,bzg,n
   !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
-  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,fieldgathe) &
+  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,fieldgathe,LVEC_fieldgathe) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -99,22 +99,24 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg,bxg,byg,bzg,n
           !!! ---- Loop by blocks over particles in a tile (blocking)
           !!! --- Gather electric field on particles
                     
-          !!! --- Gather electric and magnetic fields on particles				  
-          CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,     			&
-                      curr_tile%part_z, curr_tile%part_ex,                            	&
-                      curr_tile%part_ey,curr_tile%part_ez,                   			&
-                      curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz, 			&
+          !!! --- Gather electric and magnetic fields on particles          
+          CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,           &
+                      curr_tile%part_z, curr_tile%part_ex,                              &
+                      curr_tile%part_ey,curr_tile%part_ez,                         &
+                      curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,       &
                       curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
                       curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
                       curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
-                      nzjg,noxx,noyy,nozz,currg%extile,currg%eytile, 					&
-                      currg%eztile,                                          			&
-                      currg%bxtile,currg%bytile,currg%bztile                 			&
-                      ,.FALSE.,.TRUE.,fieldgathe)
+                      nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,           &
+                      currg%eztile,                                                &
+                      currg%bxtile,currg%bytile,currg%bztile                       &
+                      ,.FALSE.,.TRUE., &
+                      LVEC_fieldgathe, &
+                      fieldgathe)
 
           !! --- Push velocity with E half step
           CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-          curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, 					    &
+          curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,               &
           curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
           !! --- Set gamma of particles 
           CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
@@ -185,11 +187,11 @@ SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
 
 
 #if defined _OPENMP && _OPENMP>=201307
-		!$OMP SIMD 
+    !$OMP SIMD 
 #elif defined __IBMBGQ__
-		!IBM* SIMD_LEVEL
+    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER 
-		!$DIR SIMD 
+    !$DIR SIMD 
 #endif  
   DO ip=1,np
       xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt

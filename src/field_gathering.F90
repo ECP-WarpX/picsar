@@ -100,7 +100,8 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,&
-  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,fieldgathe) &
+  !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,fieldgathe, &
+  !$OMP LVEC_fieldgathe) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -164,7 +165,8 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
                           nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                          &
                           currg%eztile,                                                           &
                           currg%bxtile,currg%bytile,currg%bztile                                  &
-                          ,.FALSE._lp,l_lower_order_in_v_in,fieldgathe)
+                          ,.FALSE._lp,l_lower_order_in_v_in,LVEC_fieldgathe, &
+                          fieldgathe)
 
                 END DO! END LOOP ON SPECIES
             ENDIF
@@ -218,9 +220,18 @@ END SUBROUTINE field_gathering_sub
 !> @param[in] ll4symtry
 !> @param[in] l_lower_order_in_v
 !> @param[in] field_gathe_algo gathering algorithm
+!> @param[in] lvect vector length
 !
-SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                       nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,ll4symtry,l_lower_order_in_v,field_gathe_algo)
+SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                                     xmin,ymin,zmin,          &
+                                     dx,dy,dz,nx,ny,nz,       &
+                                     nxguard,nyguard,nzguard, &
+                                     nox,noy,noz,             &
+                                     exg,eyg,ezg,bxg,byg,bzg, &
+                                     ll4symtry,               &
+                                     l_lower_order_in_v,      &
+                                     lvect,                   &
+                                     field_gathe_algo)
 ! ________________________________________________________________________________________
 
   USE constants
@@ -228,11 +239,12 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
   USE params
   implicit none
 
-  integer(idp)             :: field_gathe_algo
-  integer(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  integer(idp)                  :: field_gathe_algo
+  integer(idp)                  :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
   LOGICAL(lp) , intent(in)      :: ll4symtry,l_lower_order_in_v
-  real(num), dimension(np) :: xp,yp,zp,ex,ey,ez,bx,by,bz
-  real(num)                :: xmin,ymin,zmin,dx,dy,dz
+  real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  real(num)                     :: xmin,ymin,zmin,dx,dy,dz
+  integer(idp)                  :: lvect
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 
@@ -413,19 +425,19 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmi
     
       CALL geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
                       
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
     
       CALL geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
                       
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
     
       CALL geteb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                      exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
                       
     ! Arbitrary order
     ELSE
