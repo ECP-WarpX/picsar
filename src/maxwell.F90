@@ -106,21 +106,21 @@ ENDIF
 
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-	CALL pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-			clight**2*dt/dx,clight**2*dt/dy,                           &
-			clight**2*dt/dz,nx,ny,nz,                                          &
-			nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
-			l_nodalgrid)
-			
-	ELSE
+  CALL pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
+      clight**2*dt/dx,clight**2*dt/dy,                           &
+      clight**2*dt/dz,nx,ny,nz,                                          &
+      nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
+      l_nodalgrid)
+      
+  ELSE
   ! Yee scheme arbitrary order
-	CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-			clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
-			clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
-			norderx,nordery,norderz,                                                   &
-			nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
-			l_nodalgrid)
-	ENDIF
+  CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
+      clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
+      clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
+      norderx,nordery,norderz,                                                   &
+      nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
+      l_nodalgrid)
+  ENDIF
 
 IF (it.ge.timestat_itstart) THEN
   localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
@@ -298,7 +298,7 @@ k = 0
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ex(j,k,l) = Ex(j,k,l) - mudt  * Jx(j,k,l)
-			Ex(j,k,l) = Ex(j,k,l) - dtsdz * (By(j,k,l+1-ist)   - By(j,k  ,l-1))
+      Ex(j,k,l) = Ex(j,k,l) - dtsdz * (By(j,k,l+1-ist)   - By(j,k  ,l-1))
         end do
 end do
 !$OMP END DO
@@ -308,8 +308,8 @@ end do
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ey(j,k,l) = Ey(j,k,l) - mudt  * Jy(j,k,l)
-			Ey(j,k,l) = Ey(j,k,l) - dtsdx * (Bz(j+1-ist,k,l)   - Bz(j-1,k,l))
-			Ey(j,k,l) = Ey(j,k,l) + dtsdz * (Bx(j,k,l+1-ist)   - Bx(j,k,l-1))
+      Ey(j,k,l) = Ey(j,k,l) - dtsdx * (Bz(j+1-ist,k,l)   - Bz(j-1,k,l))
+      Ey(j,k,l) = Ey(j,k,l) + dtsdz * (Bx(j,k,l+1-ist)   - Bx(j,k,l-1))
     end do
 end do
 !$OMP END DO
@@ -319,7 +319,7 @@ end do
 do l = -nzs, nz+nzs
         do j = -nxs, nx+nxs
             Ez(j,k,l) = Ez(j,k,l) - mudt  * Jz(j,k,l)
-			Ez(j,k,l) = Ez(j,k,l) + dtsdx * (By(j+1-ist,k,l) - By(j-1,k  ,l))
+      Ez(j,k,l) = Ez(j,k,l) + dtsdx * (By(j+1-ist,k,l) - By(j-1,k  ,l))
         end do
 end do
 !$OMP END DO

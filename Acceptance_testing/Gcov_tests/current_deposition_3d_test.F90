@@ -149,38 +149,38 @@ PROGRAM current_deposition_3d_test
   !print*,trim(adjustl(name(i))) 
   CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	i = i + 1
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  i = i + 1
   
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
   name(i) = 'depose_jxjyjz_scalar_1_1_1'
-	CALL depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+  CALL depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) 
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
-	
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) 
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
+  
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
   name(i) = 'depose_jxjyjz_vecHVv2_1_1_1'
   CALL depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
@@ -191,30 +191,30 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
   ncells = ncx*ncy*ncz
   ALLOCATE(jxcells(8,ncells),jycells(8,ncells),jzcells(8,ncells))
   jxcells = 0 ; jycells = 0; jzcells = 0
-	CALL depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
+  CALL depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-	CALL current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
-	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
+  CALL current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
+                               nxguard,nyguard,nzguard,ncx,ncy,ncz)
+  WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
   DEALLOCATE(jxcells,jycells,jzcells)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1	
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1  
 
-	n = i-1
-	write(0,*)
-  write(0,'(" Current deposition order 1")')	
+  n = i-1
+  write(0,*)
+  write(0,'(" Current deposition order 1")')  
   write(0,'(A40, 6(A10))') "Subrtouines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
-	ENDDO
+    write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
+  ENDDO
 
   ! __ Order 2 __________________________________________________
 
@@ -226,40 +226,40 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
   !print*,trim(adjustl(name(i))) 
   CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	i = i + 1
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  i = i + 1
 
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
   name(i) = 'depose_jxjyjz_scalar_2_2_2'
-	CALL depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+  CALL depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) ;
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
-	
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) ;
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
+  
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
   name(i) = 'depose_jxjyjz_vecHVv2_2_2_2'
   CALL depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
@@ -272,30 +272,30 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   ncells = ncx*ncy*ncz
   ALLOCATE(jxcells(8,ncells),jycells(8,ncells),jzcells(8,ncells))
   jxcells = 0 ; jycells = 0; jzcells = 0
-	CALL depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
+  CALL depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-	CALL current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
-	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
+  CALL current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
+                               nxguard,nyguard,nzguard,ncx,ncy,ncz)
+  WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
   DEALLOCATE(jxcells,jycells,jzcells)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1	
-	
-	n = i-1
-	write(0,*)
-  write(0,'(" Current deposition order 1")')	
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1  
+  
+  n = i-1
+  write(0,*)
+  write(0,'(" Current deposition order 1")')  
   write(0,'(A40, 6(A10))') "Subrtouines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
-	ENDDO
+    write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
+  ENDDO
 
   ! __ Order 3 __________________________________________________
 
@@ -307,24 +307,24 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   !print*,trim(adjustl(name(i))) 
   CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	i = i + 1
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  i = i + 1
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.  
   name(i) = 'depose_jxjyjz_scalar_3_3_3'
   !print*,trim(adjustl(name(i))) 
-	CALL depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+  CALL depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
@@ -333,14 +333,14 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE
   !print*,trim(adjustl(name(i))) 
   CALL depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
@@ -354,42 +354,42 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE
   ncells = ncx*ncy*ncz
   ALLOCATE(jxcells(8,ncells),jycells(8,ncells),jzcells(8,ncells))
   jxcells = 0 ; jycells = 0; jzcells = 0
-	CALL depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
+  CALL depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-	CALL current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
-	                             nxguard,nyguard,nzguard,ncx,ncy,ncz)
-	WRITE(0,*)'Sum jxcells:',sum(jxcells),'Sum jycells:',sum(jycells),'Sum jzcells',sum(jzcells)
+  CALL current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
+                               nxguard,nyguard,nzguard,ncx,ncy,ncz)
+  WRITE(0,*)'Sum jxcells:',sum(jxcells),'Sum jycells:',sum(jycells),'Sum jzcells',sum(jzcells)
   DEALLOCATE(jxcells,jycells,jzcells)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1	
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1  
 
-	n = i-1
-	write(0,*)
-  write(0,'(" Current deposition order 3")')	
+  n = i-1
+  write(0,*)
+  write(0,'(" Current deposition order 3")')  
   write(0,'(A40, 6(A10))') "Subrtouines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
-	ENDDO
+    write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
+  ENDDO
 
   ! __ Check results ___________
   
-	write(0,*)
+  write(0,*)
   IF (passed) THEN
-		!write(0,'("\033[32m **** TEST PASSED **** \033[0m")')	
-		!CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
-		CALL system('printf "\e[32m ********** TEST CURRENT DEPOSITION 3D PASSED **********  \e[0m \n"')
+    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')  
+    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
+    CALL system('printf "\e[32m ********** TEST CURRENT DEPOSITION 3D PASSED **********  \e[0m \n"')
   ELSE
-		!write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
-		!CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'") 		
-		CALL system('printf "\e[31m ********** TEST CURRENT DEPOSITION 3D FAILED **********  \e[0m \n"')
+    !write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
+    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")     
+    CALL system('printf "\e[31m ********** TEST CURRENT DEPOSITION 3D FAILED **********  \e[0m \n"')
   ENDIF
   
   write(0,'(" ____________________________________________________________________________")')
@@ -403,53 +403,53 @@ END PROGRAM
 ! subroutine init_random_seed()
 ! https://gcc.gnu.org/onlinedocs/gfortran/RANDOM_005fSEED.html#RANDOM_005fSEED
 ! ________________________________________________________________________________________
-! 	use iso_fortran_env, only: int64
-! 	implicit none
-! 	integer, allocatable :: seed(:)
-! 	integer :: i, n, un, istat, dt(8), pid
-! 	integer(int64) :: t
+!   use iso_fortran_env, only: int64
+!   implicit none
+!   integer, allocatable :: seed(:)
+!   integer :: i, n, un, istat, dt(8), pid
+!   integer(int64) :: t
 ! 
-! 	call random_seed(size = n)
-! 	allocate(seed(n))
-	! First try if the OS provides a random number generator
-! 	open(newunit=un, file="/dev/urandom", access="stream", &
-! 			 form="unformatted", action="read", status="old", iostat=istat)
-! 	if (istat == 0) then
-! 		 read(un) seed
-! 		 close(un)
-! 	else
-		 ! Fallback to XOR:ing the current time and pid. The PID is
-		 ! useful in case one launches multiple instances of the same
-		 ! program in parallel.
-! 		 call system_clock(t)
-! 		 if (t == 0) then
-! 				call date_and_time(values=dt)
-! 				t = (dt(1) - 1970) * 365_int64 * 24 * 60 * 60 * 1000 &
-! 						 + dt(2) * 31_int64 * 24 * 60 * 60 * 1000 &
-! 						 + dt(3) * 24_int64 * 60 * 60 * 1000 &
-! 						 + dt(5) * 60 * 60 * 1000 &
-! 						 + dt(6) * 60 * 1000 + dt(7) * 1000 &
-! 						 + dt(8)
-! 		 end if
-! 		 pid = getpid()
-! 		 t = ieor(t, int(pid, kind(t)))
-! 		 do i = 1, n
-! 				seed(i) = lcg(t)
-! 		 end do
-! 	end if
-! 	call random_seed(put=seed)
+!   call random_seed(size = n)
+!   allocate(seed(n))
+  ! First try if the OS provides a random number generator
+!   open(newunit=un, file="/dev/urandom", access="stream", &
+!        form="unformatted", action="read", status="old", iostat=istat)
+!   if (istat == 0) then
+!      read(un) seed
+!      close(un)
+!   else
+     ! Fallback to XOR:ing the current time and pid. The PID is
+     ! useful in case one launches multiple instances of the same
+     ! program in parallel.
+!      call system_clock(t)
+!      if (t == 0) then
+!         call date_and_time(values=dt)
+!         t = (dt(1) - 1970) * 365_int64 * 24 * 60 * 60 * 1000 &
+!              + dt(2) * 31_int64 * 24 * 60 * 60 * 1000 &
+!              + dt(3) * 24_int64 * 60 * 60 * 1000 &
+!              + dt(5) * 60 * 60 * 1000 &
+!              + dt(6) * 60 * 1000 + dt(7) * 1000 &
+!              + dt(8)
+!      end if
+!      pid = getpid()
+!      t = ieor(t, int(pid, kind(t)))
+!      do i = 1, n
+!         seed(i) = lcg(t)
+!      end do
+!   end if
+!   call random_seed(put=seed)
 ! contains
-	! This simple PRNG might not be good enough for real work, but is
-	! sufficient for seeding a better PRNG.
-! 	function lcg(s)
-! 		integer :: lcg
-! 		integer(int64) :: s
-! 		if (s == 0) then
-! 			 s = 104729
-! 		else
-! 			 s = mod(s, 4294967296_int64)
-! 		end if
-! 		s = mod(s * 279470273_int64, 4294967291_int64)
-! 		lcg = int(mod(s, int(huge(0), int64)), kind(0))
-! 	end function lcg
+  ! This simple PRNG might not be good enough for real work, but is
+  ! sufficient for seeding a better PRNG.
+!   function lcg(s)
+!     integer :: lcg
+!     integer(int64) :: s
+!     if (s == 0) then
+!        s = 104729
+!     else
+!        s = mod(s, 4294967296_int64)
+!     end if
+!     s = mod(s * 279470273_int64, 4294967291_int64)
+!     lcg = int(mod(s, int(huge(0), int64)), kind(0))
+!   end function lcg
 ! end subroutine init_random_seed

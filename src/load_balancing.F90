@@ -1269,7 +1269,7 @@ END DO
 ! ----- SYNC THE NUMBER OF PARTICLES BEFORE RECEIVING DATA
 count=nsend+nrecv
 IF (count .GT. 0) THEN 
-	CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+  CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
 ENDIF
 requests=0_isp
 nsdat=0
@@ -1281,7 +1281,7 @@ ALLOCATE(recvbuff(nmax,nrecv))
 DO i=1, nrecv
     count=nvar*SUM(npart_recv(:,i))
     IF (count .GT. 0) THEN 
-	nrdat=nrdat+1
+  nrdat=nrdat+1
         CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),MPI_ANY_TAG, &
                                 comm, requests(nrdat),errcode)
     ENDIF
@@ -1291,7 +1291,7 @@ END DO
 DO i=1, nsend
     count=nvar*SUM(npart_send(:,i))
     IF (count .GT. 0) THEN 
-	nsdat=nsdat+1
+  nsdat=nsdat+1
         CALL MPI_ISEND(sendbuff(1:count,i), count,  MPI_DOUBLE_PRECISION, send_rank(i), mpitag,    &
                             comm, requests(nrdat+nsdat), errcode)    
     ENDIF
@@ -1300,7 +1300,7 @@ END DO
 ! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
 count=nrdat+nsdat
 IF (count .GT. 0_isp) THEN 
-	CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+  CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
 ENDIF
 
 ! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
@@ -1489,7 +1489,7 @@ END DO
 ! ----- SYNC THE NUMBER OF PARTICLES BEFORE RECEIVING DATA
 count=nsend+nrecv
 IF (count .GT. 0) THEN 
-	CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+  CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
 ENDIF
 requests=0_isp
 nsdat=0
@@ -1501,7 +1501,7 @@ ALLOCATE(recvbuff(nmax,nrecv))
 DO i=1, nrecv
     count=nvar*SUM(npart_recv(:,i))
     IF (count .GT. 0) THEN 
-	nrdat=nrdat+1
+  nrdat=nrdat+1
         CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),MPI_ANY_TAG, &
                                 comm, requests(nrdat),errcode)
     ENDIF
@@ -1511,7 +1511,7 @@ END DO
 DO i=1, nsend
     count=nvar*SUM(npart_send(:,i))
     IF (count .GT. 0) THEN 
-	nsdat=nsdat+1
+  nsdat=nsdat+1
         CALL MPI_ISEND(sendbuff(1:count,i), count,  MPI_DOUBLE_PRECISION, send_rank(i), mpitag,    &
                             comm, requests(nrdat+nsdat), errcode)    
     ENDIF
@@ -1520,7 +1520,7 @@ END DO
 ! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
 count=nrdat+nsdat
 IF (count .GT. 0_isp) THEN 
-	CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+  CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
 ENDIF
 
 ! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
