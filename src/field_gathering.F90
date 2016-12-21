@@ -457,12 +457,12 @@ END SUBROUTINE
 
 
 !=================================================================================
+!> @brief
 !> Gathering of electric field from Yee grid ("energy conserving") on particles
 !> at arbitrary order. WARNING: Highly unoptimized routine
-!> @brief
 !
-!> This subroutine is inherited from Warp
 !> @details
+!> This subroutine is inherited from Warp
 !
 !> @author
 !> From Warp
@@ -477,9 +477,11 @@ USE omp_lib
 USE constants
 IMPLICIT NONE
 
-  INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  INTEGER(idp)             :: np,nx,ny,nz
+  INTEGER(idp)             :: nox,noy,noz
+  INTEGER(idp)             :: nxguard,nyguard,nzguard
   REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-  LOGICAL(lp)  :: l4symtry,l_lower_order_in_v
+  LOGICAL(lp)              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num) :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -493,16 +495,16 @@ IMPLICIT NONE
   REAL(num), parameter :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
 
 
-dxi = 1.0_num/dx
-dyi = 1.0_num/dy
-dzi = 1.0_num/dz
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
 
-ixmin = -int(nox/2)
-ixmax =  int((nox+1)/2)-1
-iymin = -int(noy/2)
-iymax =  int((noy+1)/2)-1
-izmin = -int(noz/2)
-izmax =  int((noz+1)/2)-1
+  ixmin = -int(nox/2)
+  ixmax =  int((nox+1)/2)-1
+  iymin = -int(noy/2)
+  iymax =  int((noy+1)/2)-1
+  izmin = -int(noz/2)
+  izmax =  int((noz+1)/2)-1
 
 IF (l_lower_order_in_v) THEN
     ixmin0 = -int((nox-1)/2)

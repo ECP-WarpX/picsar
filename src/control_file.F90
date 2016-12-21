@@ -1,17 +1,33 @@
 ! ________________________________________________________________________________________
+!
 ! CONTROL_FILE.F90
 !
-!>@author
-!>Henri Vincenti,
-!>Mathieu Lobet
+! This file contains subroutines for reading input files and interpreting 
+! command line arguments.
 !
-! Brief description:
-!> Module containing routines for the default initialization, for reading the input file and the command line arguments
-!> @brief
+! Author
+! Henri Vincenti
+! Mathieu Lobet
 !
-!> @date 2015-2016
+! date
+! Creation 2015
 ! ________________________________________________________________________________________
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> Module containing routines for the default initialization, for reading 
+!> the input file and the command line arguments.
+!
+!> @author
+!> Henri Vincenti,
+!> Mathieu Lobet
+!
+!> @date 
+!> 2015-2016
+!
 MODULE control_file
+! ________________________________________________________________________________________
 
   USE shared_data
   USE params
@@ -27,9 +43,19 @@ MODULE control_file
   CHARACTER(LEN=string_length) :: buffer
   CHARACTER(LEN=string_length) :: section_name
 
-CONTAINS
-    ! Routine that proceeds to default init
+  CONTAINS
+
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that proceeds to default init
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE default_init
+    ! ____________________________________________________________________________________
     
         ! --- Dimension
         c_dim = 3
@@ -163,10 +189,20 @@ CONTAINS
 
     END SUBROUTINE default_init
 
-    !> Routine that reads command line arguments
+    ! ____________________________________________________________________________________
     !> @brief
-    !> Useful for parametric studies
+    !> Routine that reads command line arguments.
+    !
+    !> @details
+    !> this is useful for parametric studies.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_from_cl
+    ! ____________________________________________________________________________________
         INTEGER :: i
         DO i = 1, COMMAND_ARGUMENT_COUNT()-1,2
             CALL GETARG(i, buffer)
@@ -256,8 +292,17 @@ CONTAINS
         RETURN
     END SUBROUTINE read_from_cl
 
-    ! Routine that reads simulation parameters from input file
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads simulation parameters from input file.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_input_file
+    ! ____________________________________________________________________________________
         INTEGER :: ix = 0
         ! --- OPENS INPUT FILE
         OPEN(fh_input, file='input_file.pixr')
@@ -294,8 +339,18 @@ CONTAINS
         RETURN
     END SUBROUTINE read_input_file
 
-
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads the cpu configuration in the input file
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_cpusplit_section
+    ! ____________________________________________________________________________________
+    
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -351,7 +406,18 @@ CONTAINS
         RETURN
     END SUBROUTINE read_cpusplit_section
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads the plasma main properties in the input file
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_plasma_section
+    ! ____________________________________________________________________________________
+    
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -380,7 +446,18 @@ CONTAINS
         RETURN
     END SUBROUTINE read_plasma_section
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads the solver parameters in the input file
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_solver_section
+    ! ____________________________________________________________________________________
+    
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -433,7 +510,18 @@ CONTAINS
         RETURN
     END SUBROUTINE read_solver_section
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads the particle sorting parameters in the input file
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_sorting_section
+    ! ____________________________________________________________________________________
+
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -474,7 +562,18 @@ CONTAINS
         RETURN
     END SUBROUTINE read_sorting_section
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads the time statistics parameters
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_timestat_section
+    ! ____________________________________________________________________________________
+    
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -498,7 +597,7 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') timestat_perit 
             ELSE IF (INDEX(buffer,'buffersize') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat                                        
+                READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat 
             ELSE IF (INDEX(buffer,'end::timestat') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -506,7 +605,19 @@ CONTAINS
         RETURN
     END SUBROUTINE read_timestat_section 
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads the general parameters including the domain extension, 
+    !> the discretization, the tiling, the guard cells.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_main_section
+    ! ____________________________________________________________________________________
+    
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS GRID SECTION OF INPUT FILE
@@ -593,7 +704,7 @@ CONTAINS
                 READ(buffer(ix+1:string_length), '(i10)') nyjguards   
             ELSE IF (INDEX(buffer,'njguardsz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nzjguards                                                                         
+                READ(buffer(ix+1:string_length), '(i10)') nzjguards
             ELSE IF (INDEX(buffer,'end::main') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -601,7 +712,18 @@ CONTAINS
         RETURN
     END SUBROUTINE read_main_section
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads the species properties.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_species_section
+    ! ____________________________________________________________________________________
+    
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section
         TYPE(particle_species), POINTER :: curr
@@ -708,7 +830,18 @@ CONTAINS
         RETURN
     END SUBROUTINE read_species_section
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads parameters for particle dumps.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_particle_dumps_section
+    ! ____________________________________________________________________________________
+    
         INTEGER                      :: ix = 0, ispecies
         LOGICAL(lp)                       :: end_section
         TYPE(particle_dump), POINTER :: dp
@@ -803,8 +936,17 @@ CONTAINS
     END SUBROUTINE read_particle_dumps_section
 
 
-
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads parameters for field outputs.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_output_section
+    ! ____________________________________________________________________________________
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS GRID SECTION OF INPUT FILE
@@ -863,7 +1005,19 @@ CONTAINS
         RETURN
     END SUBROUTINE read_output_section
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Routine that reads parameters for temporal diagnistics. 
+    !> Temporal diagnostics are the temporal evolution of some quantities 
+    !> such as the particle energies and the field energies.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE read_temporal_output_section
+    ! ____________________________________________________________________________________
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.    
 
@@ -914,15 +1068,23 @@ CONTAINS
         RETURN
     END SUBROUTINE
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Initialization of the species section and arrays.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
     SUBROUTINE init_species_section
-        ! INIT SPECIES SECTION 
+    ! ____________________________________________________________________________________
+    
         IF (.NOT. l_species_allocated) THEN
             nspecies=0
             ALLOCATE(species_parray(1:nspecies_max))
             l_species_allocated=.TRUE.
         ENDIF
     END SUBROUTINE init_species_section
-    
-    
     
 END MODULE control_file

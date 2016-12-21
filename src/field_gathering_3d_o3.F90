@@ -321,9 +321,9 @@ RETURN
 END SUBROUTINE
 
 ! ________________________________________________________________________________________
-! @brief
-! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving")
-!  on particles at order 3
+!> @brief
+!> Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving")
+!>  on particles at order 3
 !
 !> @details
 !> This function is NOT vectorized but performs better than general order subroutines.
@@ -5054,7 +5054,6 @@ SUBROUTINE geteb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                           :: ip, j, k, l 
-  INTEGER(idp)                           :: jj, kk, ll
   INTEGER(idp)                           :: j0, k0, l0
   REAL(num)                              :: dxi, dyi, dzi, x, y, z, xint, yint, zint
   REAL(num)                              :: xintsq,oxint,yintsq,oyint,zintsq
