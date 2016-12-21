@@ -10,6 +10,7 @@
 !> Main subroutine for the field subroutine + particle pusher called
 !> in the main loop (in submain.F90)
 !
+!> @details
 !> This routine calls the subroutines for the different 
 !> particle pusher + field gathering algorithms:
 !> * field_gathering_plus_particle_pusher_sub_2d()
@@ -47,8 +48,10 @@ SUBROUTINE field_gathering_plus_particle_pusher
     CASE (2)
 
       ! Particle advance (one time step)
-      CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-       nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+      CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz, &
+                                                       nxguards,nyguards,nzguards, &
+                                                       nxjguards,nyjguards,nzjguards,&
+                                                       nox,noy,noz,dx,dy,dz,dt)
 
     ! ___________________________________________________________
     ! 3D CASE
@@ -85,6 +88,7 @@ SUBROUTINE field_gathering_plus_particle_pusher
 END SUBROUTINE field_gathering_plus_particle_pusher
 
 ! ________________________________________________________________________________________
+!> @brief
 !> Particle pusher in 3D called by the main function push_particle
 
 !> @author
@@ -491,7 +495,10 @@ END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 ! ________________________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle
-
+!
+!> @author
+!> Henri Vincenti
+!
 !> @date
 !> Creation 2015
 !> Revision 10.06.2015
@@ -664,6 +671,12 @@ END SUBROUTINE particle_pusher_sub
 !
 !> @details
 !> This subroutine is wrapper for pxrpush_particles_part1_sub()
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 SUBROUTINE pxrpush_particles_part1
 ! ________________________________________________________________________________________
   USE fields
@@ -685,11 +698,11 @@ SUBROUTINE pxrpush_particles_part1
 END SUBROUTINE pxrpush_particles_part1
 
 ! ________________________________________________________________________________________
-!> Perform the field gathering + (E & B) Push half a time step
 !> @brief
+!> Perform the field gathering + (E & B) Push half a time step
 !
-!> This subroutine is called in pxrpush_particles_part1()
 !> @details
+!> This subroutine is called in pxrpush_particles_part1()
 !
 !> @author
 !> Henri Vincenti
@@ -726,15 +739,14 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   REAL(num), INTENT(IN) :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN) :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-  INTEGER(idp) :: ispecies, ix, iy, iz, count
-  INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+  INTEGER(idp)          :: ispecies, ix, iy, iz, count
+  INTEGER(idp)          :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(particle_tile), POINTER :: curr_tile
-  TYPE(grid_tile), POINTER :: currg
-  REAL(num) :: tdeb, tend
-  INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-  INTEGER(idp) :: nxjg,nyjg,nzjg
-  LOGICAL(lp)  :: isgathered=.FALSE.
+  TYPE(particle_tile), POINTER    :: curr_tile
+  TYPE(grid_tile), POINTER        :: currg
+  INTEGER(idp)                    :: nxc, nyc, nzc
+  INTEGER(idp)                    :: nxjg,nyjg,nzjg
+  LOGICAL(lp)                     :: isgathered=.FALSE.
 
 
   IF (nspecies .EQ. 0_idp) RETURN
@@ -875,9 +887,9 @@ IMPLICIT NONE
 INTEGER(idp) :: ispecies, ix, iy, iz, count
 INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
+TYPE(particle_tile), POINTER    :: curr_tile
+REAL(num)                       :: tdeb, tend
+INTEGER(idp)                    :: nxc, nyc, nzc
 
 #if defined(DEBUG)
   WRITE(0,*) "pxrpush_particles_part2: start"
@@ -1461,16 +1473,12 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   INTEGER(isp)                         :: j0, k0, l0
   INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
   INTEGER(idp)                         :: blocksize
   REAL(num)                            :: dxi, dyi, dzi
   REAL(num)                            :: x,y,z
   REAL(num)                            :: a
   REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
-  REAL(num)                            :: uxppr,uyppr,uzppr
+  REAL(num)                            :: clghtisq,const1
   REAL(num), DIMENSION(lvect,0:1)      :: sx,sy,sz
   REAL(num), DIMENSION(lvect,0:1)      :: sx0,sy0,sz0
 #if defined __INTEL_COMPILER
@@ -1862,19 +1870,14 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
   INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
   INTEGER(idp)                         :: blocksize
   INTEGER(isp)                         :: j, k, l
   INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq
-  REAL(num)                            :: ozint,oxintsq,oyintsq,ozintsq
+  REAL(num)                            :: xintsq,yintsq,zintsq
   REAL(num)                            :: a
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
-  REAL(num)                            :: uxppr,uyppr,uzppr
+  REAL(num)                            :: clghtisq,const1
   REAL(num), DIMENSION(lvect,-1:1)     :: sx,sy,sz
   REAL(num), DIMENSION(lvect,-1:1)     :: sx0,sy0,sz0
 #if defined __INTEL_COMPILER
@@ -2372,17 +2375,13 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   INTEGER(isp)                         :: ip
   INTEGER(idp)                         :: blocksize
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
   INTEGER(isp)                         :: j, k, l
   INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
   REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
+  REAL(num)                            :: clghtisq,const1
   REAL(num)                            :: a
-  REAL(num)                            :: uxppr,uyppr,uzppr
   REAL(num), DIMENSION(lvect,-1:2)     :: sx
   REAL(num), DIMENSION(lvect,-1:2)     :: sy
   REAL(num), DIMENSION(lvect,-1:2)     :: sz
