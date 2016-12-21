@@ -1,4 +1,21 @@
 ! ________________________________________________________________________________________
+!
+! GPSTD.F90
+!
+! Purpose:
+! This file contains subroutines for Matrix and vector multiplication 
+! used for the spectral solvers.
+!
+! Author:
+! Henri Vincenti
+!
+! Date:
+! Creation 2016
+!
+! ________________________________________________________________________________________
+
+
+! ________________________________________________________________________________________
 !> @brief
 !> Module that contains parameter for Matrix data and operations
 !
