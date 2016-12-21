@@ -93,17 +93,15 @@ MODULE sorting
     USE params
     IMPLICIT NONE
 
-    INTEGER(idp) :: ispecies, ix, iy, iz, count
+    INTEGER(idp)                    :: ispecies, ix, iy, iz, count
 
     TYPE(particle_species), POINTER :: curr
-    TYPE(particle_tile), POINTER :: curr_tile
-    TYPE(grid_tile), POINTER :: currg
-    INTEGER(idp) :: nxc, nyc, nzc, np,ip
-    INTEGER(idp) :: nxjg,nyjg,nzjg
-    LOGICAL(lp)  :: isgathered=.FALSE.
-    LOGICAL(lp)  :: verbose=.TRUE.
-    REAL(num) :: sxmin,symin,szmin
-    REAL(num) :: tdeb, tend
+    TYPE(particle_tile), POINTER    :: curr_tile
+    TYPE(grid_tile), POINTER        :: currg
+    INTEGER(idp)                    :: nxc, nyc, nzc
+    INTEGER(idp)                    :: nxjg,nyjg,nzjg
+    LOGICAL(lp)                     :: isgathered=.FALSE.
+    REAL(num)                       :: sxmin,symin,szmin
     
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank, &
@@ -113,23 +111,23 @@ MODULE sorting
     DO iz=1, ntilez ! LOOP ON TILES
       DO iy=1, ntiley
         DO ix=1, ntilex
-					curr=>species_parray(1)
-			    curr_tile=>curr%array_of_tiles(ix,iy,iz)
-			    nxjg=curr_tile%nxg_tile
-			    nyjg=curr_tile%nyg_tile
-			    nzjg=curr_tile%nzg_tile
-			    nxc=curr_tile%nx_cells_tile
-			    nyc=curr_tile%ny_cells_tile
-			    nzc=curr_tile%nz_cells_tile
-			    isgathered=.FALSE.
-			    
-			    
-			    ! Loop over the species
-			    DO ispecies=1, nspecies
-			        curr=>species_parray(ispecies)
+          curr=>species_parray(1)
+          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          nxjg=curr_tile%nxg_tile
+          nyjg=curr_tile%nyg_tile
+          nzjg=curr_tile%nzg_tile
+          nxc=curr_tile%nx_cells_tile
+          nyc=curr_tile%ny_cells_tile
+          nzc=curr_tile%nz_cells_tile
+          isgathered=.FALSE.
+          
+          
+          ! Loop over the species
+          DO ispecies=1, nspecies
+              curr=>species_parray(ispecies)
               curr_tile=>curr%array_of_tiles(ix,iy,iz)
               count=curr_tile%np_tile(1)
-              IF (count .GT. 0) isgathered=.TRUE.                    	
+              IF (count .GT. 0) isgathered=.TRUE.                      
           END DO
           
           !if (rank.eq.0) print*,ix,iy,iz
@@ -137,25 +135,25 @@ MODULE sorting
           IF (isgathered) THEN
             currg=>aofgrid_tiles(ix,iy,iz)
 
-			      ! Loop over the species            
-				    DO ispecies=1, nspecies
+            ! Loop over the species            
+            DO ispecies=1, nspecies
 
-					    curr=>species_parray(ispecies)
-				      
-				      ! If the sorting period > 0 and the current iteration corresponds to a multiple of the period
-				      IF ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
+              curr=>species_parray(ispecies)
+              
+              ! If the sorting period > 0 and the current iteration corresponds to a multiple of the period
+              IF ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it,curr%sorting_period).eq.0)) THEN
 
               
                 !IF ((sorting_verbose).and.(rank.eq.0).and. &
                 !    (iz.eq.1).and.(iy.eq.1).and.(ix.eq.1)) WRITE(0,*) 'Particle sorting, species',ispecies
  
-					      ! - Get current tile properties
-					      ! - Init current tile variables				    
-					      curr_tile=>curr%array_of_tiles(ix,iy,iz)
-					      count=curr_tile%np_tile(1)
-					      
-					      
-					      IF (count .EQ. 0) CYCLE
+                ! - Get current tile properties
+                ! - Init current tile variables            
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                
+                
+                IF (count .EQ. 0) CYCLE
        
                 ! Sorting algorithm inside the tiles
                 
@@ -167,21 +165,21 @@ MODULE sorting
                 szmin = curr_tile%z_tile_min + sorting_shiftz
                 
                 CALL pxr_particle_bin_sorting(count,curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-								curr_tile%part_ux, &
-								curr_tile%part_uy, &
-								curr_tile%part_uz, &
-								curr_tile%part_gaminv,&
-								curr_tile%pid, wpid, &
-								sxmin,symin,szmin, &
-								curr_tile%x_tile_max + sorting_dx, &
-								curr_tile%y_tile_max + sorting_dy, &
-								curr_tile%z_tile_max + sorting_dz, &
-								sorting_dx, sorting_dy, sorting_dz)
+                curr_tile%part_ux, &
+                curr_tile%part_uy, &
+                curr_tile%part_uz, &
+                curr_tile%part_gaminv,&
+                curr_tile%pid, wpid, &
+                sxmin,symin,szmin, &
+                curr_tile%x_tile_max + sorting_dx, &
+                curr_tile%y_tile_max + sorting_dy, &
+                curr_tile%z_tile_max + sorting_dz, &
+                sorting_dx, sorting_dy, sorting_dz)
      
               ENDIF
      
-				    END DO! END LOOP ON SPECIES
-			    ENDIF
+            END DO! END LOOP ON SPECIES
+          ENDIF
         END DO
       END DO
     END DO! END LOOP ON TILES
@@ -223,9 +221,8 @@ MODULE sorting
     implicit none
 
     integer(idp) :: ip,np2
-    integer(idp) :: j,k,ic,nbhc
+    integer(idp) :: k,ic,nbhc
     integer(idp) :: ix,iy,iz
-    integer(idp) :: nx2,ny2,nz2
     integer(idp) :: nx3,ny3,nz3
     
     integer(idp) :: wpid
