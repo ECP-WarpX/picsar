@@ -64,8 +64,8 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
   INTEGER(isp)                         :: ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0
   INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
-  REAL(num)                            :: xint, yint, zint, &
-                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num)                            :: xint, yint, zint
+  REAL(num)                            :: xintsq,yintsq,zintsq
   REAL(num), DIMENSION(-1:1)           :: sx, sx0
   REAL(num), DIMENSION(-1:1)           :: sy, sy0
   REAL(num), DIMENSION(-1:1)           :: sz, sz0
@@ -319,12 +319,12 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
                 ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-  REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-  REAL(num), DIMENSION(-1:1)            :: sx, sx0
-  REAL(num), DIMENSION(-1:1)            :: sy, sy0
-  REAL(num), DIMENSION(-1:1)            :: sz, sz0
-  REAL(num), PARAMETER                  :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint
+  REAL(num)                            :: xintsq,yintsq,zintsq
+  REAL(num), DIMENSION(-1:1)           :: sx, sx0
+  REAL(num), DIMENSION(-1:1)           :: sy, sy0
+  REAL(num), DIMENSION(-1:1)           :: sz, sz0
+  REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -2156,17 +2156,19 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  REAL(num), DIMENSION(np), INTENT(IN)   :: xp,yp,zp
+  REAL(num), DIMENSION(np), INTENT(INOUT):: ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
   LOGICAL                                :: l_lower_order_in_v 
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+                              INTENT(IN) :: exg,eyg,ezg
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+                              INTENT(IN) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                           :: ip, j, k, l 
-  INTEGER(isp)                           :: jj, kk, ll, j0, k0, l0
+  INTEGER(isp)                           :: j0, k0, l0
   REAL(num)                              :: dxi, dyi, dzi, x, y, z, xint, yint, zint
-  REAL(num)                              :: xintsq,oxint,yintsq,oyint,zintsq
-  REAL(num)                              :: ozint,oxintsq,oyintsq,ozintsq
+  REAL(num)                              :: xintsq,yintsq,zintsq
   REAL(num)                              :: a
   INTEGER(isp)                           :: nn,n 
   REAL(num), DIMENSION(lvect,-1:1)       :: sx,sx0
