@@ -560,7 +560,7 @@ MODULE tiling
     SUBROUTINE rm_particle_at_tile_2d(currsp,ixt,izt, index)
   ! ______________________________________________________________________________________
         IMPLICIT NONE
-        INTEGER(idp), INTENT(IN) ::                     :: index, ixt, izt
+        INTEGER(idp), INTENT(IN)                        :: index, ixt, izt
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER                    :: curr
         curr=>currsp%array_of_tiles(ixt,1,izt)
