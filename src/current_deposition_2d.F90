@@ -488,11 +488,11 @@ DO iz=1,ntilez
             END IF
         END DO
     END DO
-END DO!END LOOP ON TILES
-!$OMP END DO
-!$OMP END PARALLEL
-tend=MPI_WTIME()
-dep_curr_time=dep_curr_time+(tend-tdeb)  
+  END DO!END LOOP ON TILES
+  !$OMP END DO
+  !$OMP END PARALLEL
+  tend=MPI_WTIME()
+  dep_curr_time=dep_curr_time+(tend-tdeb)  
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp
 
 
@@ -538,22 +538,22 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gami
    integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
    real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
    real(num), dimension(np) :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
-   real(num) :: q,dt,dx,dz,xmin,zmin
+   real(num)    :: q,dt,dx,dz,xmin,zmin
    LOGICAL(lp)  :: l_particles_weight,l4symtry,l_2drz
 
-   real(num) :: dxi,dzi,dtsdx,dtsdz,xint,yint,zint
+   real(num) :: dxi,dzi,dtsdx,dtsdz,xint,zint
    real(num),dimension(:,:), allocatable :: sdx,sdz
-   real(num) :: xold,yold,zold,rold,xmid,zmid,x,y,z,r,c,s,wq,wqx,wqz, &
-                   tmp,vx,vy,vz,dts2dx,dts2dz, &
-                   s1x,s2x,s1z,s2z,invvol,invdtdx,invdtdz, &
-                   oxint,ozint,xintsq,zintsq,oxintsq,ozintsq, &
-                   dtsdx0,dtsdz0,dts2dx0,dts2dz0
+   real(num) :: xold,yold,zold,rold,x,y,z,r,c,s,wq,wqx,wqz
+   real(num) :: vx,vy,vz,dts2dx,dts2dz
+   real(num) :: invvol,invdtdx,invdtdz
+   real(num) :: oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
+   real(num) :: dtsdx0,dtsdz0,dts2dx0,dts2dz0
    real(num), parameter :: onesixth=1./6.
    real(num), parameter :: twothird=2./3.
    real(num), dimension(:), allocatable :: sx, sx0, dsx, sz, sz0, dsz
-   integer(idp) :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,idx,idz,i,k,ic,kc, &
-                   ixmin, ixmax, izmin, izmax, icell, ncells, ndtodx, ndtodz, &
-                   xl,xu,zl,zu
+   integer(idp) :: iixp0,ikxp0,iixp,ikxp,ip,dix,diz,i,k,ic,kc
+   integer(idp) :: ixmin, ixmax, izmin, izmax, icell, ncells, ndtodx, ndtodz
+   integer(idp) :: xl,xu,zl,zu
 
     ndtodx = int(clight*dt/dx)
     ndtodz = int(clight*dt/dz)
@@ -893,21 +893,18 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
   LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
-  real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
+  real(num)                             :: dxi,dzi,xint,zint
   real(num),dimension(:,:), allocatable :: sdx,sdz
-  real(num)                             :: xold,zold,rold,xmid,zmid,x,z,c,s,wq,wqx,wqz
-  real(num)                             :: tmp,vx,vy,vz,dts2dx,dts2dz
+  real(num)                             :: xold,zold,x,z,wq,wqx,wqz
+  real(num)                             :: vx,vy,vz
   real(num)                             :: invvol,invdtdx,invdtdz
-  real(num)                             :: oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
-  real(num)                             :: dtsdx0,dtsdz0,dts2dx0,dts2dz0
+  real(num)                             :: dtsdx0,dtsdz0
   real(num), parameter                  :: onesixth=1./6.,twothird=2./3.
   real(num), parameter                  :: onethird=1./3.  
   real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
-  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,idx,idz,i,k,ic,kc
+  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,i,k,ic,kc
   integer(isp)                          :: dix,diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
-  integer(idp)                          :: icell, ndtodx, ndtodz
-  integer(idp)                          :: xl,xu,zl,zu
 
   ! __ Parameter initialization ______________________________
   dxi = 1.0_num/dx
@@ -1031,7 +1028,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 
 ! ________________________________________________________________________________________
-! @brief 
+!> @brief 
 !> 2D Current deposition with the method of Esirkepov at order 2
 !> This function is not optimized but provides better performances than 
 !> using the abitrary order function
@@ -1076,21 +1073,19 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
   LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
-  real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
+  real(num)                             :: dxi,dzi,xint,zint
   real(num),dimension(:,:), allocatable :: sdx,sdz
-  real(num)                             :: xold,zold,rold,xmid,zmid,x,z,c,s,wq,wqx,wqz
-  real(num)                             :: tmp,vx,vy,vz,dts2dx,dts2dz
+  real(num)                             :: xold,zold,x,z,wq,wqx,wqz
+  real(num)                             :: vx,vy,vz
   real(num)                             :: invvol,invdtdx,invdtdz
-  real(num)                             :: oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
-  real(num)                             :: dtsdx0,dtsdz0,dts2dx0,dts2dz0
+  real(num)                             :: xintsq,zintsq
+  real(num)                             :: dtsdx0,dtsdz0
   real(num), parameter                  :: onesixth=1./6.,twothird=2./3.
   real(num), parameter                  :: onethird=1./3.  
   real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
-  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,idx,idz,i,k,ic,kc
+  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,i,k,ic,kc
   integer(isp)                          :: dix,diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
-  integer(idp)                          :: icell, ndtodx, ndtodz
-  integer(idp)                          :: xl,xu,zl,zu
 
   ! Parameter initialization
   dxi = 1.0_num/dx
@@ -1269,20 +1264,18 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
   LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
-  real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
+  real(num)                             :: dxi,dzi,xint,zint
   real(num),dimension(:,:), allocatable :: sdx,sdz
-  real(num)                             :: xold,zold,rold,xmid,zmid,x,z,c,s,wq,wqx,wqz
-  real(num)                             :: tmp,vx,vy,vz,dts2dx,dts2dz
+  real(num)                             :: xold,zold,x,z,wq,wqx,wqz
+  real(num)                             :: vx,vy,vz
   real(num)                             :: invvol,invdtdx,invdtdz
   real(num)                             :: oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
-  real(num)                             :: dtsdx0,dtsdz0,dts2dx0,dts2dz0
+  real(num)                             :: dtsdx0,dtsdz0
   real(num), parameter                  :: onesixth=1./6.,twothird=2./3.
   real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
-  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,idx,idz,i,k,ic,kc
-  integer(idp)                          :: icell, ndtodx, ndtodz
+  integer(idp)                          :: iixp0,ikxp0,iixp,ikxp,ip,i,k,ic,kc
   integer(isp)                          :: dix,diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax  
-  integer(idp)                          :: xl,xu,zl,zu
 
   ! Parameter initialization
   dxi = 1.0_num/dx
