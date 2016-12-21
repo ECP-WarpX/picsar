@@ -5232,9 +5232,9 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
   ! Internal parameters
   REAL(num)                            :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
-  REAL(num) :: clghtisq,usq,xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz, &
+  REAL(num) :: clghtisq,usq,xold,yold,zold,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz, &
                                         s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz,         &
-                                        oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
+                                        oxint,oyint,ozint,oxintsq,oyintsq,ozintsq, &
                                         dtsdx0,dtsdy0,dtsdz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
   REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
@@ -6972,18 +6972,19 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
   REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-  REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+  REAL(num) :: dxi,dyi,dzi,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
-  REAL(num) :: clghtisq,usq,xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz, &
-                                      s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz,         &
-                                      oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
-                                      dtsdx0,dtsdy0,dtsdz0
-  REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+  REAL(num) :: clghtisq,xold,yold,zold,x,y,z,wq,wqx,wqy,wqz,vx,vy,vz
+  REAL(num) :: invvol,invdtdx,invdtdy,invdtdz
+  REAL(num) :: xintsq,yintsq,zintsq
+  REAL(num) :: dtsdx0,dtsdy0,dtsdz0
+  REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER :: twothird=2.0_num/3.0_num
   REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
   REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
   REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
-  INTEGER :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
-                                        ixmin, ixmax, iymin, iymax, izmin, izmax
+  INTEGER :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,i,j,k,ic,jc,kc
+  INTEGER :: ixmin, ixmax, iymin, iymax, izmin, izmax
   LOGICAL(lp)  :: l_particles_weight,l4symtry
 
   ! PARAMETER INIT
@@ -8442,15 +8443,15 @@ SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
   REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
   LOGICAL(lp)  :: l_particles_weight,l4symtry
 
-  REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+  REAL(num) :: dxi,dyi,dzi,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
   REAL(num) :: clghtisq,xold,yold,zold
   REAL(num) :: x,y,z,wq,wqx,wqy,wqz,vx,vy,vz
   REAL(num) :: invvol,invdtdx,invdtdy,invdtdz
   REAL(num) :: oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
-  REAL(num) :: dtsdx0,dtsdy0,dtsdz0
+  REAL(num)            :: dtsdx0,dtsdy0,dtsdz0
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-  REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
+  REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
   REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
   REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
   INTEGER :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,i,j,k,ic,jc,kc, &
