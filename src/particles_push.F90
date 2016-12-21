@@ -691,7 +691,8 @@ SUBROUTINE pxrpush_particles_part1
 #endif
 
   CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry,l_lower_order_in_v)
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry, &
+  l_lower_order_in_v, LVEC_fieldgathe, fieldgathe)
 
 #if defined(DEBUG)
   WRITE(0,*) "pxrpush_particles_part1: stop"
@@ -723,7 +724,7 @@ END SUBROUTINE pxrpush_particles_part1
 !>
 SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
       nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy, &
-      dzz,dtt,l4symtry_in, l_lower_order_in_v_in)
+      dzz,dtt,l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
 ! ________________________________________________________________________________________
 
   USE particles
@@ -731,8 +732,10 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   USE tiling
   USE timing
   IMPLICIT NONE
+  
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  INTEGER(idp), INTENT(IN) :: lvect, field_gathe_algo
   LOGICAL(lp) , INTENT(IN) :: l4symtry_in, l_lower_order_in_v_in
   REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -755,7 +758,8 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy, &
-  !$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgathe,particle_pusher) &
+  !$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgathe,particle_pusher, &
+  !$OMP field_gathe_algo, lvect) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -809,30 +813,33 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
             SELECT CASE (c_dim)
             CASE (2) ! 2D CASE
               !!! --- Gather electric and magnetic fields on particles
-              CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,           &
-                    curr_tile%part_z, curr_tile%part_ex,                              &
-                    curr_tile%part_ey,curr_tile%part_ez,                         &
-                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,       &
-                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
-                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
-                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,           &
-                    currg%eztile,                                                &
-                    currg%bxtile,currg%bytile,currg%bztile                       &
-                    ,l4symtry_in,l_lower_order_in_v_in)
+              CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y, &
+                    curr_tile%part_z, curr_tile%part_ex,                                &
+                    curr_tile%part_ey,curr_tile%part_ez,                                &
+                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
+                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
+                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
+                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
+                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
+                    currg%eztile,                                                       &
+                    currg%bxtile,currg%bytile,currg%bztile                              &
+                    ,l4symtry_in,l_lower_order_in_v_in,                                 &
+                    lvect,                                                              &
+                    field_gathe_algo)
             CASE DEFAULT ! 3D CASE
               !!! --- Gather electric and magnetic fields on particles
-              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                &
-                    curr_tile%part_z, curr_tile%part_ex,                               &
-                    curr_tile%part_ey,curr_tile%part_ez,                              &
-                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,              &
-                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
-                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
-                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,           &
-                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                &
-                    currg%eztile,                                                  &
-                    currg%bxtile,currg%bytile,currg%bztile                         &
-                    ,l4symtry_in,l_lower_order_in_v_in,fieldgathe)
+              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,   &
+                    curr_tile%part_z, curr_tile%part_ex,                                &
+                    curr_tile%part_ey,curr_tile%part_ez,                                &
+                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
+                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
+                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
+                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
+                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
+                    currg%eztile,                                                       &
+                    currg%bxtile,currg%bytile,currg%bztile                              &
+                    ,l4symtry_in,l_lower_order_in_v_in,                                 &
+                    lvect,field_gathe_algo)
             END SELECT
             SELECT CASE (particle_pusher)
             !! Vay pusher -- half push part 1
