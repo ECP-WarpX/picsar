@@ -224,8 +224,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
                           currg%eztile,                                                            &
                           currg%bxtile,currg%bytile,currg%bztile,                                  &
                           .FALSE.,                                                                 &
-                          l_lower_order_in_v_in)
-
+                          l_lower_order_in_v_in,                                                   &
+                          LVEC_fieldgathe,                                                         &
+                          fieldgathe)
+                          
             CASE DEFAULT ! 3D CASE
 
               !!! --- Gather electric and magnetic fields on particles
