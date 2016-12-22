@@ -10,6 +10,7 @@
 !> Main subroutine for the field subroutine + particle pusher called
 !> in the main loop (in submain.F90)
 !
+!> @details
 !> This routine calls the subroutines for the different 
 !> particle pusher + field gathering algorithms:
 !> * field_gathering_plus_particle_pusher_sub_2d()
@@ -47,8 +48,10 @@ SUBROUTINE field_gathering_plus_particle_pusher
     CASE (2)
 
       ! Particle advance (one time step)
-      CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-       nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
+      CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz, &
+                                                       nxguards,nyguards,nzguards, &
+                                                       nxjguards,nyjguards,nzjguards,&
+                                                       nox,noy,noz,dx,dy,dz,dt)
 
     ! ___________________________________________________________
     ! 3D CASE
@@ -85,6 +88,7 @@ SUBROUTINE field_gathering_plus_particle_pusher
 END SUBROUTINE field_gathering_plus_particle_pusher
 
 ! ________________________________________________________________________________________
+!> @brief
 !> Particle pusher in 3D called by the main function push_particle
 
 !> @author
@@ -220,8 +224,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
                           currg%eztile,                                                            &
                           currg%bxtile,currg%bytile,currg%bztile,                                  &
                           .FALSE.,                                                                 &
-                          l_lower_order_in_v_in)
-
+                          l_lower_order_in_v_in,                                                   &
+                          LVEC_fieldgathe,                                                         &
+                          fieldgathe)
+                          
             CASE DEFAULT ! 3D CASE
 
               !!! --- Gather electric and magnetic fields on particles
@@ -491,7 +497,10 @@ END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 ! ________________________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle
-
+!
+!> @author
+!> Henri Vincenti
+!
 !> @date
 !> Creation 2015
 !> Revision 10.06.2015
@@ -664,6 +673,12 @@ END SUBROUTINE particle_pusher_sub
 !
 !> @details
 !> This subroutine is wrapper for pxrpush_particles_part1_sub()
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 SUBROUTINE pxrpush_particles_part1
 ! ________________________________________________________________________________________
   USE fields
@@ -676,7 +691,8 @@ SUBROUTINE pxrpush_particles_part1
 #endif
 
   CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry,l_lower_order_in_v)
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry, &
+  l_lower_order_in_v, LVEC_fieldgathe, fieldgathe)
 
 #if defined(DEBUG)
   WRITE(0,*) "pxrpush_particles_part1: stop"
@@ -685,11 +701,11 @@ SUBROUTINE pxrpush_particles_part1
 END SUBROUTINE pxrpush_particles_part1
 
 ! ________________________________________________________________________________________
-!> Perform the field gathering + (E & B) Push half a time step
 !> @brief
+!> Perform the field gathering + (E & B) Push half a time step
 !
-!> This subroutine is called in pxrpush_particles_part1()
 !> @details
+!> This subroutine is called in pxrpush_particles_part1()
 !
 !> @author
 !> Henri Vincenti
@@ -708,7 +724,7 @@ END SUBROUTINE pxrpush_particles_part1
 !>
 SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
       nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy, &
-      dzz,dtt,l4symtry_in, l_lower_order_in_v_in)
+      dzz,dtt,l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
 ! ________________________________________________________________________________________
 
   USE particles
@@ -716,8 +732,10 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   USE tiling
   USE timing
   IMPLICIT NONE
+  
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  INTEGER(idp), INTENT(IN) :: lvect, field_gathe_algo
   LOGICAL(lp) , INTENT(IN) :: l4symtry_in, l_lower_order_in_v_in
   REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -726,22 +744,22 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   REAL(num), INTENT(IN) :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN) :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
-  INTEGER(idp) :: ispecies, ix, iy, iz, count
-  INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
+  INTEGER(idp)          :: ispecies, ix, iy, iz, count
+  INTEGER(idp)          :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(particle_tile), POINTER :: curr_tile
-  TYPE(grid_tile), POINTER :: currg
-  REAL(num) :: tdeb, tend
-  INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
-  INTEGER(idp) :: nxjg,nyjg,nzjg
-  LOGICAL(lp)  :: isgathered=.FALSE.
+  TYPE(particle_tile), POINTER    :: curr_tile
+  TYPE(grid_tile), POINTER        :: currg
+  INTEGER(idp)                    :: nxc, nyc, nzc
+  INTEGER(idp)                    :: nxjg,nyjg,nzjg
+  LOGICAL(lp)                     :: isgathered=.FALSE.
 
 
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
   !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy, &
-  !$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgathe,particle_pusher) &
+  !$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgathe,particle_pusher, &
+  !$OMP field_gathe_algo, lvect) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
   !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
@@ -795,53 +813,57 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
             SELECT CASE (c_dim)
             CASE (2) ! 2D CASE
               !!! --- Gather electric and magnetic fields on particles
-              CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,           &
-                    curr_tile%part_z, curr_tile%part_ex,                              &
-                    curr_tile%part_ey,curr_tile%part_ez,                         &
-                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,       &
-                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
-                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
-                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,           &
-                    currg%eztile,                                                &
-                    currg%bxtile,currg%bytile,currg%bztile                       &
-                    ,l4symtry_in,l_lower_order_in_v_in)
+              CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y, &
+                    curr_tile%part_z, curr_tile%part_ex,                                &
+                    curr_tile%part_ey,curr_tile%part_ez,                                &
+                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
+                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
+                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
+                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
+                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
+                    currg%eztile,                                                       &
+                    currg%bxtile,currg%bytile,currg%bztile                              &
+                    ,l4symtry_in,l_lower_order_in_v_in,                                 &
+                    lvect,                                                              &
+                    field_gathe_algo)
             CASE DEFAULT ! 3D CASE
               !!! --- Gather electric and magnetic fields on particles
-              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,                &
-                    curr_tile%part_z, curr_tile%part_ex,                               &
-                    curr_tile%part_ey,curr_tile%part_ez,                              &
-                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,              &
-                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                 &
-                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile, &
-                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,           &
-                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                &
-                    currg%eztile,                                                  &
-                    currg%bxtile,currg%bytile,currg%bztile                         &
-                    ,l4symtry_in,l_lower_order_in_v_in,fieldgathe)
+              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,   &
+                    curr_tile%part_z, curr_tile%part_ex,                                &
+                    curr_tile%part_ey,curr_tile%part_ez,                                &
+                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
+                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
+                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
+                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
+                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
+                    currg%eztile,                                                       &
+                    currg%bxtile,currg%bytile,currg%bztile                              &
+                    ,l4symtry_in,l_lower_order_in_v_in,                                 &
+                    lvect,field_gathe_algo)
             END SELECT
             SELECT CASE (particle_pusher)
             !! Vay pusher -- half push part 1
 
-          CASE (1_idp)
-              CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
-              curr_tile%part_ey,                                                  &
-              curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
+            CASE (1_idp)
+              CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,  &
+              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,          &
+              curr_tile%part_ey,                                                   &
+              curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,              &
               curr_tile%part_bz,curr%charge,curr%mass,dtt,1_idp)
               !! Boris pusher -- half push part 1
             CASE DEFAULT
               !! --- Push velocity with E half step
-              CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,               &
+              CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,        &
+              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,            &
               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
               !! --- Set gamma of particles
-              CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
+              CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,      &
               curr_tile%part_uz, curr_tile%part_gaminv)
               !! --- Push velocity with B half step
-              CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                   &
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,  &
-              curr_tile%part_bz, curr%charge,curr%mass,dtt*0.5_num)
+              CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,        &
+              curr_tile%part_uz,curr_tile%part_gaminv,                            &
+              curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz,            &
+              curr%charge,curr%mass,dtt*0.5_num)
             END SELECT
           END DO! END LOOP ON SPECIES
         ENDIF
@@ -875,9 +897,9 @@ IMPLICIT NONE
 INTEGER(idp) :: ispecies, ix, iy, iz, count
 INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
 TYPE(particle_species), POINTER :: curr
-TYPE(particle_tile), POINTER :: curr_tile
-REAL(num) :: tdeb, tend
-INTEGER(idp) :: nxc, nyc, nzc, ipmin,ipmax, np,ip
+TYPE(particle_tile), POINTER    :: curr_tile
+REAL(num)                       :: tdeb, tend
+INTEGER(idp)                    :: nxc, nyc, nzc
 
 #if defined(DEBUG)
   WRITE(0,*) "pxrpush_particles_part2: start"
@@ -1461,16 +1483,12 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   INTEGER(isp)                         :: j0, k0, l0
   INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
   INTEGER(idp)                         :: blocksize
   REAL(num)                            :: dxi, dyi, dzi
   REAL(num)                            :: x,y,z
   REAL(num)                            :: a
   REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
-  REAL(num)                            :: uxppr,uyppr,uzppr
+  REAL(num)                            :: clghtisq,const1
   REAL(num), DIMENSION(lvect,0:1)      :: sx,sy,sz
   REAL(num), DIMENSION(lvect,0:1)      :: sx0,sy0,sz0
 #if defined __INTEL_COMPILER
@@ -1862,19 +1880,14 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
   INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
   INTEGER(idp)                         :: blocksize
   INTEGER(isp)                         :: j, k, l
   INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq
-  REAL(num)                            :: ozint,oxintsq,oyintsq,ozintsq
+  REAL(num)                            :: xintsq,yintsq,zintsq
   REAL(num)                            :: a
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
-  REAL(num)                            :: uxppr,uyppr,uzppr
+  REAL(num)                            :: clghtisq,const1
   REAL(num), DIMENSION(lvect,-1:1)     :: sx,sy,sz
   REAL(num), DIMENSION(lvect,-1:1)     :: sx0,sy0,sz0
 #if defined __INTEL_COMPILER
@@ -2372,17 +2385,13 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   INTEGER(isp)                         :: ip
   INTEGER(idp)                         :: blocksize
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll
   INTEGER(isp)                         :: j, k, l
   INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
   REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-  REAL(num)                            :: clghtisq,const1,const2,usq
-  REAL(num)                            :: tx,ty,tz,tsqi
-  REAL(num)                            :: wx,wy,wz
+  REAL(num)                            :: clghtisq,const1
   REAL(num)                            :: a
-  REAL(num)                            :: uxppr,uyppr,uzppr
   REAL(num), DIMENSION(lvect,-1:2)     :: sx
   REAL(num), DIMENSION(lvect,-1:2)     :: sy
   REAL(num), DIMENSION(lvect,-1:2)     :: sz

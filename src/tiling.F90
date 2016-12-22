@@ -1,70 +1,113 @@
+! ________________________________________________________________________________________
+!
+! TILING.F90
+!
+! Purpose:
+! This file contains useful subroutines for the tiling.
+!
+! Authors:
+! Henri Vincenti
+!
+! Date
+! Creation 2015
+! ________________________________________________________________________________________
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> Module that contains subroutines for the tiling.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation: 2015
 MODULE tiling
+! ________________________________________________________________________________________
 
-	!!!! --- This module contains useful diagnostics to test code correctness
-	USE constants
-	USE particles
-	USE shared_data
-	USE fields
-	USE params
-	IMPLICIT NONE
+  USE constants
+  USE particles
+  USE shared_data
+  USE fields
+  USE params
+  IMPLICIT NONE
 
-CONTAINS
+  CONTAINS
 
-	SUBROUTINE set_tile_split()
-	IMPLICIT NONE
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Main subroutine that split the particles into tiles.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  SUBROUTINE set_tile_split()
+  ! ______________________________________________________________________________________
+  
+  IMPLICIT NONE
+  
+    ! Set tile split for species arrays
+    CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
+         x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
 
-	
-		! Set tile split for species arrays
-		CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
-		     x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+    ! ALLOCATE grid tile arrays
+    ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
+    
+  END SUBROUTINE set_tile_split
 
 
-		! ALLOCATE grid tile arrays
-		ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
-		
-	END SUBROUTINE set_tile_split
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine sets particle tile split in space.
+  !> It is called by set_tile_split().
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
+             xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
+  ! ______________________________________________________________________________________
+  
+    IMPLICIT NONE
+    INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
+    INTEGER(idp), INTENT(IN OUT)    ::  ntx, nty, ntz
+    REAL(num), INTENT(IN)           :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
+    TYPE(particle_species), INTENT(IN OUT), TARGET, DIMENSION(nspec) :: species_array
+    INTEGER(idp)                    :: ix, iy, iz, ispecies
+    INTEGER(idp)                    :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+    INTEGER(idp)                    :: nx0_last_tile, ny0_last_tile, nz0_last_tile
+    TYPE(particle_species), POINTER :: curr_sp
+    TYPE(particle_tile), POINTER    :: curr
 
+    ! Tile-split
+    nx0_grid_tile = nxgrid / ntx
+    ny0_grid_tile = nygrid / nty
+    nz0_grid_tile = nzgrid / ntz
 
-	!!! --- Set particle tile split in space
-	SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
-			       xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
-
-		IMPLICIT NONE
-		INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
-		INTEGER(idp), INTENT(IN OUT)    ::  ntx, nty, ntz
-		REAL(num), INTENT(IN)           :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
-		TYPE(particle_species), INTENT(IN OUT), TARGET, DIMENSION(nspec) :: species_array
-		INTEGER(idp)                    :: ix, iy, iz, ispecies
-		INTEGER(idp)                    :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-		INTEGER(idp)                    :: nx0_last_tile, ny0_last_tile, nz0_last_tile
-		TYPE(particle_species), POINTER :: curr_sp
-		TYPE(particle_tile), POINTER    :: curr
-
-		! Tile-split
-		nx0_grid_tile = nxgrid / ntx
-		ny0_grid_tile = nygrid / nty
-		nz0_grid_tile = nzgrid / ntz
-
-		! Some sanity check
-		IF (nx0_grid_tile .LT. 4) THEN
-				IF (rank .EQ. 0) PRINT *, "number of tiles in X is too high, settting back to default value 1"
-				ntx=1
-		END IF
-		IF (ny0_grid_tile .LT. 4) THEN
-			IF(c_dim .EQ. 3) THEN 
-					IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
-				ENDIF
-				nty=1
-		END IF
-		IF (nz0_grid_tile .LT. 4) THEN
-				IF (rank .EQ. 0) PRINT *, "number of tiles in Z is too high, setting back to default value 1"
-				ntz=1
-		END IF
-		!-- N.B: If the number of grid points cannot be equally divided between
-		!-- tiles then give remaining points to last tile in each dimension
-		nx0_last_tile= nx0_grid_tile+(nxgrid-nx0_grid_tile*ntx)
-		ny0_last_tile= ny0_grid_tile+(nygrid-ny0_grid_tile*nty)
-		nz0_last_tile= nz0_grid_tile+(nzgrid-nz0_grid_tile*ntz)
+    ! Some sanity check
+    IF (nx0_grid_tile .LT. 4) THEN
+        IF (rank .EQ. 0) PRINT *, "number of tiles in X is too high, settting back to default value 1"
+        ntx=1
+    END IF
+    IF (ny0_grid_tile .LT. 4) THEN
+      IF(c_dim .EQ. 3) THEN 
+          IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
+        ENDIF
+        nty=1
+    END IF
+    IF (nz0_grid_tile .LT. 4) THEN
+        IF (rank .EQ. 0) PRINT *, "number of tiles in Z is too high, setting back to default value 1"
+        ntz=1
+    END IF
+    !-- N.B: If the number of grid points cannot be equally divided between
+    !-- tiles then give remaining points to last tile in each dimension
+    nx0_last_tile= nx0_grid_tile+(nxgrid-nx0_grid_tile*ntx)
+    ny0_last_tile= ny0_grid_tile+(nygrid-ny0_grid_tile*nty)
+    nz0_last_tile= nz0_grid_tile+(nzgrid-nz0_grid_tile*ntz)
 
         !- Allocate object array of tiles for particles
         DO ispecies =1, nspecies
@@ -81,18 +124,18 @@ CONTAINS
                     DO ix=1,ntx
                         curr=> curr_sp%array_of_tiles(ix,iy,iz)
                         !------------- X- DIRECTION
-						! FIRST TILE in X DIRECTION
+            ! FIRST TILE in X DIRECTION
                         IF (ix .EQ. 1) THEN
-							curr%subdomain_bound = .TRUE.
-							curr%nx_grid_tile=nx0_grid_tile
-							curr%nx_cells_tile=curr%nx_grid_tile-1
-							curr%x_grid_tile_min=xminlocal
-							curr%x_grid_tile_max=curr%x_grid_tile_min+(nx0_grid_tile-1)*dx
-							curr%x_tile_min=curr%x_grid_tile_min
-							curr%x_tile_max=curr%x_grid_tile_max+dx/2.0_num
-							curr%nx_tile_min = (ix-1)*nx0_grid_tile
-							curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
-						ENDIF
+              curr%subdomain_bound = .TRUE.
+              curr%nx_grid_tile=nx0_grid_tile
+              curr%nx_cells_tile=curr%nx_grid_tile-1
+              curr%x_grid_tile_min=xminlocal
+              curr%x_grid_tile_max=curr%x_grid_tile_min+(nx0_grid_tile-1)*dx
+              curr%x_tile_min=curr%x_grid_tile_min
+              curr%x_tile_max=curr%x_grid_tile_max+dx/2.0_num
+              curr%nx_tile_min = (ix-1)*nx0_grid_tile
+              curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
+            ENDIF
                         IF ((ix .LT. ntx) .AND. (ix .GT. 1)) THEN
                             curr%nx_grid_tile=nx0_grid_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
@@ -100,11 +143,11 @@ CONTAINS
                             curr%x_grid_tile_max=curr%x_grid_tile_min+curr%nx_cells_tile*dx
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
-							curr%x_tile_min= curr%x_grid_tile_min-dx/2.0_num
-							curr%x_tile_max= curr%x_grid_tile_max+dx/2.0_num
+              curr%x_tile_min= curr%x_grid_tile_min-dx/2.0_num
+              curr%x_tile_max= curr%x_grid_tile_max+dx/2.0_num
                         END IF
-						! LAST TILE in X DIRECTION
-						IF (ix .EQ. ntx) THEN
+            ! LAST TILE in X DIRECTION
+            IF (ix .EQ. ntx) THEN
                             curr%subdomain_bound= .TRUE.
                             curr%nx_grid_tile=nx0_last_tile
                             curr%nx_cells_tile=curr%nx_grid_tile-1
@@ -112,22 +155,22 @@ CONTAINS
                             curr%x_grid_tile_max=curr%x_grid_tile_min+curr%nx_cells_tile*dx
                             curr%nx_tile_min = (ix-1)*nx0_grid_tile
                             curr%nx_tile_max = curr%nx_tile_min+curr%nx_cells_tile
-							curr%x_tile_min= curr%x_grid_tile_min-dx/2.0_num
-							curr%x_tile_max= xmaxlocal
+              curr%x_tile_min= curr%x_grid_tile_min-dx/2.0_num
+              curr%x_tile_max= xmaxlocal
                         ENDIF
                         !------------- Y- DIRECTION
-						! FIRST TILE in Y DIRECTION
+            ! FIRST TILE in Y DIRECTION
                         IF (iy .EQ. 1) THEN
                             IF (c_dim .EQ. 3) curr%subdomain_bound = .TRUE.
-							curr%ny_grid_tile=ny0_grid_tile
-							curr%ny_cells_tile=curr%ny_grid_tile-1
-							curr%y_grid_tile_min=yminlocal
-							curr%y_grid_tile_max=curr%y_grid_tile_min+(ny0_grid_tile-1)*dy
-							curr%y_tile_min=curr%y_grid_tile_min
-							curr%y_tile_max=curr%y_grid_tile_max+dy/2.0_num
-							curr%ny_tile_min = (iy-1)*ny0_grid_tile
-							curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
-						ENDIF
+              curr%ny_grid_tile=ny0_grid_tile
+              curr%ny_cells_tile=curr%ny_grid_tile-1
+              curr%y_grid_tile_min=yminlocal
+              curr%y_grid_tile_max=curr%y_grid_tile_min+(ny0_grid_tile-1)*dy
+              curr%y_tile_min=curr%y_grid_tile_min
+              curr%y_tile_max=curr%y_grid_tile_max+dy/2.0_num
+              curr%ny_tile_min = (iy-1)*ny0_grid_tile
+              curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
+            ENDIF
                         IF ((iy .LT. nty) .AND. (iy .GT. 1)) THEN
                             curr%ny_grid_tile=ny0_grid_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
@@ -135,11 +178,11 @@ CONTAINS
                             curr%y_grid_tile_max=curr%y_grid_tile_min+curr%ny_cells_tile*dy
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
-							curr%y_tile_min= curr%y_grid_tile_min-dy/2.0_num
-							curr%y_tile_max= curr%y_grid_tile_max+dy/2.0_num
+              curr%y_tile_min= curr%y_grid_tile_min-dy/2.0_num
+              curr%y_tile_max= curr%y_grid_tile_max+dy/2.0_num
                         END IF
-						! LAST TILE in Y DIRECTION
-						IF (iy .EQ. nty) THEN
+            ! LAST TILE in Y DIRECTION
+            IF (iy .EQ. nty) THEN
                             IF (c_dim .EQ. 3) curr%subdomain_bound = .TRUE.
                             curr%ny_grid_tile=ny0_last_tile
                             curr%ny_cells_tile=curr%ny_grid_tile-1
@@ -147,22 +190,22 @@ CONTAINS
                             curr%y_grid_tile_max=curr%y_grid_tile_min+curr%ny_cells_tile*dy
                             curr%ny_tile_min = (iy-1)*ny0_grid_tile
                             curr%ny_tile_max = curr%ny_tile_min+curr%ny_cells_tile
-							curr%y_tile_min= curr%y_grid_tile_min-dy/2.0_num
-							curr%y_tile_max= ymaxlocal
+              curr%y_tile_min= curr%y_grid_tile_min-dy/2.0_num
+              curr%y_tile_max= ymaxlocal
                         ENDIF
                         !------------- Z- DIRECTION
-						! FIRST TILE in Z DIRECTION
+            ! FIRST TILE in Z DIRECTION
                         IF (iz .EQ. 1) THEN
-							curr%subdomain_bound = .TRUE.
-							curr%nz_grid_tile=nz0_grid_tile
-							curr%nz_cells_tile=curr%nz_grid_tile-1
-							curr%z_grid_tile_min=zminlocal
-							curr%z_grid_tile_max=curr%z_grid_tile_min+(nz0_grid_tile-1)*dz
-							curr%z_tile_min=curr%z_grid_tile_min
-							curr%z_tile_max=curr%z_grid_tile_max+dz/2.0_num
-							curr%nz_tile_min = (iz-1)*nz0_grid_tile
-							curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
-						ENDIF
+              curr%subdomain_bound = .TRUE.
+              curr%nz_grid_tile=nz0_grid_tile
+              curr%nz_cells_tile=curr%nz_grid_tile-1
+              curr%z_grid_tile_min=zminlocal
+              curr%z_grid_tile_max=curr%z_grid_tile_min+(nz0_grid_tile-1)*dz
+              curr%z_tile_min=curr%z_grid_tile_min
+              curr%z_tile_max=curr%z_grid_tile_max+dz/2.0_num
+              curr%nz_tile_min = (iz-1)*nz0_grid_tile
+              curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
+            ENDIF
                         IF ((iz .LT. ntz) .AND. (iz .GT. 1)) THEN
                             curr%nz_grid_tile=nz0_grid_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
@@ -170,11 +213,11 @@ CONTAINS
                             curr%z_grid_tile_max=curr%z_grid_tile_min+curr%nz_cells_tile*dz
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
-							curr%z_tile_min= curr%z_grid_tile_min-dz/2.0_num
-							curr%z_tile_max= curr%z_grid_tile_max+dz/2.0_num
+              curr%z_tile_min= curr%z_grid_tile_min-dz/2.0_num
+              curr%z_tile_max= curr%z_grid_tile_max+dz/2.0_num
                         END IF
-						! LAST TILE in Z DIRECTION
-						IF (iz .EQ. ntz) THEN
+            ! LAST TILE in Z DIRECTION
+            IF (iz .EQ. ntz) THEN
                             curr%subdomain_bound= .TRUE.
                             curr%nz_grid_tile=nz0_last_tile
                             curr%nz_cells_tile=curr%nz_grid_tile-1
@@ -182,8 +225,8 @@ CONTAINS
                             curr%z_grid_tile_max=curr%z_grid_tile_min+curr%nz_cells_tile*dz
                             curr%nz_tile_min = (iz-1)*nz0_grid_tile
                             curr%nz_tile_max = curr%nz_tile_min+curr%nz_cells_tile
-							curr%z_tile_min= curr%z_grid_tile_min-dz/2.0_num
-							curr%z_tile_max= zmaxlocal
+              curr%z_tile_min= curr%z_grid_tile_min-dz/2.0_num
+              curr%z_tile_max= zmaxlocal
                         ENDIF
                     END DO
                 END DO
@@ -191,15 +234,25 @@ CONTAINS
         END DO ! END DO SPECIES
     END SUBROUTINE set_tile_split_for_species
 
-    !!! --- Add particle to array of tiles
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine adds particle of given species to the corresponding 
+  !> tile particle array depending on the particle position in 2D.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
     SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, &
                partux, partuy, partuz, gaminv, partw)
+  ! ______________________________________________________________________________________
+  
         IMPLICIT NONE
         REAL(num) :: partx, partz, partux, partuy, partuz, partw, gaminv
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER :: curr
-        INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, nptile
-        INTEGER(idp) :: ixtile, iytile, iztile
+        INTEGER(idp) :: nx0_grid_tile, nz0_grid_tile
+        INTEGER(idp) :: ixtile, iztile
 
 
         ! Get first tiles dimensions (may be different from last tile)
@@ -207,8 +260,8 @@ CONTAINS
         nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
 
         ! Get particle index in array of tile
-	    	ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
-		    iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+        ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+        iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
@@ -220,14 +273,25 @@ CONTAINS
         currsp%species_npart=currsp%species_npart+1
     END SUBROUTINE add_particle_to_species_2d
 
-    !!! --- Add particle to array of tiles
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine adds particle of given species to the corresponding 
+  !> tile particle array depending on the particle position in 3D.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
     SUBROUTINE add_particle_to_species(currsp, partx, party, partz, &
                partux, partuy, partuz, gaminv, partw)
+  ! ______________________________________________________________________________________
         IMPLICIT NONE
-        REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+        REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz
+        REAL(num), INTENT(IN) :: partw, gaminv
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER :: curr
-        INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, nptile
+        INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
         INTEGER(idp) :: ixtile, iytile, iztile
 
 
@@ -237,9 +301,9 @@ CONTAINS
         nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
 
         ! Get particle index in array of tile
-		    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
-		    iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
-		    iztile = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+        ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
+        iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
+        iztile = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
 
 
         ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
@@ -252,18 +316,25 @@ CONTAINS
         currsp%species_npart=currsp%species_npart+1
     END SUBROUTINE add_particle_to_species
 
-    ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> In 2D, add a particle with its properties to the list of particles
+  !> inside the tile. This subroutine is called in add_particle_to_species_2d().
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
     SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, &
                 partux, partuy, partuz, gaminv, partw)
-    !
-    ! In 2D, add a particle with its properties to the list of particles
-    ! inside the tile
-    ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
         IMPLICIT NONE
 
         ! ___ Arguments _________________________________________________________
         INTEGER(idp) :: count, nmax, ixt, izt
-        REAL(num)    :: partx, partz, partux, partuy, partuz, gaminv, partw
+        REAL(num), INTENT(IN)    :: partx, partz, partux, partuy, partuz
+        REAL(num), INTENT(IN)    :: gaminv, partw
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER                    :: curr
 
@@ -278,7 +349,7 @@ CONTAINS
         nmax  = curr%npmax_tile
         IF (count .GT. nmax) THEN
         ! Resize particle tile arrays if tile is full
-        	currsp%are_tiles_reallocated(ixt,1,izt)=1
+          currsp%are_tiles_reallocated(ixt,1,izt)=1
             CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
         ENDIF
         ! Finally, add particle to tile
@@ -299,15 +370,24 @@ CONTAINS
     END SUBROUTINE add_particle_at_tile_2d
 
 
-    ! __________________________________________________________________________
-    SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
-                partux, partuy, partuz, gaminv, partw)
-    !
-    ! Add a particle with its properties to the list of particles inside the tile
-    ! __________________________________________________________________________
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> In 3D, add a particle with its properties to the list of particles
+  !> inside the tile. This subroutine is called in add_particle_to_species().
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
+              partux, partuy, partuz, gaminv, partw)
+  ! ______________________________________________________________________________________
+
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt
-        REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
+        REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz
+        REAL(num), INTENT(IN) :: gaminv, partw
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
 
@@ -322,7 +402,7 @@ CONTAINS
         nmax  = curr%npmax_tile
         IF (count .GT. nmax) THEN
         ! Resize particle tile arrays if tile is full
-        	currsp%are_tiles_reallocated(ixt,iyt,izt)=1
+          currsp%are_tiles_reallocated(ixt,iyt,izt)=1
             CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
         ENDIF
         ! Finally, add particle to tile
@@ -343,12 +423,20 @@ CONTAINS
         curr%part_bz(count)  = 0._num
     END SUBROUTINE add_particle_at_tile
 
-    ! __________________________________________________________________________
-    SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, partx, party, &
-            partz, partux, partuy, partuz, gaminv, partw)
-    !
-    ! Add a particle with its properties to the list of particles inside the tile
-    ! __________________________________________________________________________
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> In 3D, add a group of particles with their properties to the list of particles
+  !> inside the tile.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, partx, party, &
+          partz, partux, partuy, partuz, gaminv, partw)
+  ! ______________________________________________________________________________________
+  
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew
         REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
@@ -367,7 +455,7 @@ CONTAINS
         nmax  = curr%npmax_tile
         IF (npnew .GT. nmax) THEN
         ! Resize particle tile arrays if tile is full
-        	currsp%are_tiles_reallocated(ixt,iyt,izt)=1
+          currsp%are_tiles_reallocated(ixt,iyt,izt)=1
             CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
         ENDIF
         ! Finally, add particle to tile
@@ -388,9 +476,21 @@ CONTAINS
         curr%part_bz(count+1:npnew)  = 0._num
     END SUBROUTINE add_group_of_particles_at_tile
 
-    !!! --- Remove particles from tile using a mask variable
-    !!! --- This technique avoids packing or reallocating arrays
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Remove particles from tile using a mask variable. 
+  !> This technique avoids packing or reallocating arrays.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  !
     SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt,mask)
+  ! ______________________________________________________________________________________
+  
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         LOGICAL(lp) , DIMENSION (:), INTENT(IN) :: mask
         INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
@@ -407,7 +507,18 @@ CONTAINS
         ENDDO
     END SUBROUTINE rm_particles_from_species_with_mask
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Remove a particle in a given tile from species currsp in 2D.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  !
     SUBROUTINE rm_particles_from_species_2d(currsp, ixt, izt, ipart)
+  ! ______________________________________________________________________________________
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         INTEGER(idp), INTENT(IN) :: ipart, ixt, izt
 
@@ -415,8 +526,19 @@ CONTAINS
         currsp%species_npart=currsp%species_npart-1
     END SUBROUTINE rm_particles_from_species_2d
 
-    !!! --- Remove a particle in a given tile from species currsp
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Remove a particle in a given tile from species currsp.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  !
     SUBROUTINE rm_particles_from_species(currsp, ixt, iyt, izt, ipart)
+  ! ______________________________________________________________________________________
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         INTEGER(idp), INTENT(IN) :: ipart, ixt, iyt, izt
 
@@ -424,9 +546,21 @@ CONTAINS
         currsp%species_npart=currsp%species_npart-1
     END SUBROUTINE rm_particles_from_species
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Remove a particle in a given tile from species currsp in 2D.
+  !> This subroutine is called in rm_particles_from_species_2d.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  !
     SUBROUTINE rm_particle_at_tile_2d(currsp,ixt,izt, index)
+  ! ______________________________________________________________________________________
         IMPLICIT NONE
-        INTEGER(idp)                                    :: index, ixt, izt
+        INTEGER(idp), INTENT(IN)                        :: index, ixt, izt
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER                    :: curr
         curr=>currsp%array_of_tiles(ixt,1,izt)
@@ -452,18 +586,30 @@ CONTAINS
         ! Reduce array size if # of particles in array lower than
         ! 30% of array size
         IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN
-        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
-        		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
-        		currsp%are_tiles_reallocated(ixt,1,izt)=1
-        	ENDIF
+          IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
+            CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
+            currsp%are_tiles_reallocated(ixt,1,izt)=1
+          ENDIF
         ENDIF
     END SUBROUTINE rm_particle_at_tile_2d
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Remove a particle in a given tile from species currsp.
+  !> This subroutine is called in rm_particles_from_species.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  !
     SUBROUTINE rm_particle_at_tile(currsp,ixt,iyt,izt, index)
+  ! ______________________________________________________________________________________
         IMPLICIT NONE
-        INTEGER(idp) :: index, ixt, iyt, izt
+        INTEGER(idp), INTENT(IN)                        :: index, ixt, iyt, izt
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-        TYPE(particle_tile), POINTER :: curr
+        TYPE(particle_tile), POINTER                    :: curr
         curr=>currsp%array_of_tiles(ixt,iyt,izt)
 
         IF (index .EQ. curr%np_tile(1)) THEN
@@ -488,21 +634,31 @@ CONTAINS
         ! Reduce array size if # of particles in array lower than
         ! 30% of array size
         IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN
-        	IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
-        		CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
-        		currsp%are_tiles_reallocated(ixt,iyt,izt)=1
-        	ENDIF
+          IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
+            CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
+            currsp%are_tiles_reallocated(ixt,iyt,izt)=1
+          ENDIF
         ENDIF
     END SUBROUTINE rm_particle_at_tile
 
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Allocate arrays in curr_tile for particles.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  !
     SUBROUTINE allocate_tile_arrays(curr_tile)
+  ! ______________________________________________________________________________________
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr_tile
-        INTEGER(idp) :: nmax, nxc, nyc, nzc
-        INTEGER(idp) :: nxjg,nyjg,nzjg
+        INTEGER(idp) :: nmax
         ! ALLOCATE PARTICLE ARRAYS
         nmax = curr_tile%npmax_tile
-        ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),    	   &
+        ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),         &
                  curr_tile%part_z(1:nmax), curr_tile%part_ux(1:nmax),          &
                  curr_tile%part_uy(1:nmax), curr_tile%part_uz(1:nmax),         &
                  curr_tile%pid(1:nmax,1:npid), curr_tile%part_ex(1:nmax),      &
@@ -513,12 +669,25 @@ CONTAINS
 
     END SUBROUTINE allocate_tile_arrays
 
-	SUBROUTINE init_tile_arrays()
-	IMPLICIT NONE
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Main subroutine to init arrays of tiles and species for tiling.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation: 2015
+  !
+  SUBROUTINE init_tile_arrays()
+  ! ______________________________________________________________________________________
+  
+  IMPLICIT NONE
 
-		CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
+    CALL init_tile_arrays_for_species(nspecies, species_parray, &
+                                      aofgrid_tiles, ntilex, ntiley, ntilez)
 
-	END SUBROUTINE init_tile_arrays
+  END SUBROUTINE init_tile_arrays
 
 
     ! ____________________________________________________________________________________
@@ -528,16 +697,20 @@ CONTAINS
     !> @brief
     !
     !> @details
-    !> This subroutine also allocates the local field arrays contained in aofgrid_tiles for each tile.
+    !> This subroutine also allocates the local field arrays contained 
+    !> in aofgrid_tiles for each tile.
     !
     !> @author
     !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
     SUBROUTINE init_tile_arrays_for_species(nspec2,species_array,aofgtiles,ntx2,nty2,ntz2)
     ! ____________________________________________________________________________________
     
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
-        TYPE(grid_tile), DIMENSION(ntx2,nty2,ntz2), INTENT(IN OUT) :: aofgtiles
+        TYPE(grid_tile), DIMENSION(ntx2,nty2,ntz2), INTENT(IN OUT)        :: aofgtiles
         TYPE(particle_species), DIMENSION(nspec2), TARGET, INTENT(IN OUT) :: species_array
         
         INTEGER(idp)                    :: ispecies, ix, iy, iz
@@ -563,19 +736,19 @@ CONTAINS
                         curr_tile%np_tile(1)=0
                         ! Set number of guard cells for each tile
                         IF ((ix .GT. 1) .AND. (ix .LT. ntx2)) THEN
-                        	curr_tile%nxg_tile=MAX(nox+1,2_idp)
+                          curr_tile%nxg_tile=MAX(nox+1,2_idp)
                         ELSE
-                        	curr_tile%nxg_tile=nxjguards
+                          curr_tile%nxg_tile=nxjguards
                         END IF
                         IF ((iy .GT. 1) .AND. (iy .LT. nty2) .AND. (c_dim .EQ. 3)) THEN
-                        	curr_tile%nyg_tile=MAX(noy+1,2_idp)
+                          curr_tile%nyg_tile=MAX(noy+1,2_idp)
                         ELSE
-                        	curr_tile%nyg_tile=nyjguards
+                          curr_tile%nyg_tile=nyjguards
                         END IF
                         IF ((iz .GT. 1) .AND. (iz .LT. ntz2)) THEN
-                        	curr_tile%nzg_tile=MAX(noz+1,2_idp)
+                          curr_tile%nzg_tile=MAX(noz+1,2_idp)
                         ELSE
-                        	curr_tile%nzg_tile=nzjguards
+                          curr_tile%nzg_tile=nzjguards
                         END IF
                         ! - Allocate arrays of current tile
                        CALL allocate_tile_arrays(curr_tile)
@@ -620,10 +793,10 @@ CONTAINS
         !$OMP END PARALLEL DO
         ! Allocate grid tile arrays
         curr=>species_array(1)
-		    DO iz=1, ntz2 ! LOOP ON TILES
+        DO iz=1, ntz2 ! LOOP ON TILES
             DO iy=1, nty2
                 DO ix=1, ntx2
-                   		curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                       curr_tile=>curr%array_of_tiles(ix,iy,iz)
                         ! - Max size of particle arrays of current ile
                         n1=curr_tile%nx_cells_tile
                         n2=curr_tile%ny_cells_tile
@@ -646,26 +819,29 @@ CONTAINS
         END DO! END LOOP ON TILES
     END SUBROUTINE init_tile_arrays_for_species
 
-    ! _____________________________________________________________________
-    !
+    ! ____________________________________________________________________________________
+    !> @brief
     !> Initialize the particle properties (positions and velocities) according to
     !> the specified distribution.
-    !> @brief
     !
-    !>
-    !> @details
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE load_particles
-    ! _____________________________________________________________________
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
         TYPE(particle_species), POINTER :: curr
         INTEGER(idp) :: ispecies, l, k, j, ipart
         INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
         REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-        REAL(num) :: phi, th, v, usq, clightsq,partvx,partvy,partvz
+        REAL(num) :: phi, th, v, clightsq,partvx,partvy,partvz
         INTEGER(idp) :: npart
         INTEGER(isp) :: err
         REAL(num), DIMENSION(6) :: rng=0_num
-		    clightsq=1/clight**2
+        clightsq=1/clight**2
         !!! --- Sets-up particle space distribution (homogeneous case, uniform space distribution - default)
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
@@ -853,7 +1029,18 @@ CONTAINS
         RETURN
     END SUBROUTINE load_particles
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Resize particle arrays when they reach a threshold.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE resize_particle_arrays(curr, old_size, new_size)
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
 
         TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
@@ -876,7 +1063,18 @@ CONTAINS
         CALL resize_1D_array_real(curr%part_bz, old_size, new_size)
     END SUBROUTINE resize_particle_arrays
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Resize a 1D array of reals.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE resize_1D_array_real(arr, old_size, new_size)
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
         REAL(num), DIMENSION(:),ALLOCATABLE, INTENT(IN OUT) :: arr
         REAL(num), DIMENSION(:),ALLOCATABLE :: temp
@@ -885,21 +1083,28 @@ CONTAINS
         ALLOCATE(temp(1:new_size))
         ! reshape array
         IF (new_size .GT. old_size) THEN
-        	temp(1:old_size)=arr(1:old_size)
+          temp(1:old_size)=arr(1:old_size)
         ELSE
-        	temp(1:new_size)=arr(1:new_size)
+          temp(1:new_size)=arr(1:new_size)
         ENDIF
         DEALLOCATE(arr)
         ALLOCATE(arr(1:new_size))
-		arr=temp
+        arr=temp
         DEALLOCATE(temp)
     END SUBROUTINE resize_1D_array_real
 
     ! ____________________________________________________________________________________
     !> @brief
-    !> Resize a 2D array of real
+    !> Resize a 2D array of reals.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
     !
     SUBROUTINE resize_2D_array_real(arr, nx_old,nx_new,ny_old,ny_new)
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
         REAL(num), DIMENSION(:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
         INTEGER(idp),INTENT(IN) :: nx_old,ny_old,nx_new,ny_new
@@ -908,41 +1113,67 @@ CONTAINS
         ALLOCATE(temp(1:nx_new,1:ny_new))
         ! reshape array
         IF (nx_new .GT. nx_old) THEN
-        	IF (ny_new .GT. ny_old) THEN
-       		   temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
-        	ELSE
-        		temp(1:nx_old,1:ny_new) = arr(1:nx_old,1:ny_new)
-        	ENDIF
+          IF (ny_new .GT. ny_old) THEN
+              temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
+          ELSE
+            temp(1:nx_old,1:ny_new) = arr(1:nx_old,1:ny_new)
+          ENDIF
         ELSE
-        	IF (ny_new .GT. ny_old) THEN
-        		temp(1:nx_new,1:ny_old) = arr(1:nx_new,1:ny_old)
-        	ELSE
-        		temp(1:nx_new,1:ny_new) = arr(1:nx_new,1:ny_new)
-        	ENDIF
+          IF (ny_new .GT. ny_old) THEN
+            temp(1:nx_new,1:ny_old) = arr(1:nx_new,1:ny_old)
+          ELSE
+            temp(1:nx_new,1:ny_new) = arr(1:nx_new,1:ny_new)
+          ENDIF
         ENDIF
         DEALLOCATE(arr)
         ALLOCATE(arr(1:nx_new,1:ny_new))
-		arr=temp
+        arr=temp
         DEALLOCATE(temp)
     END SUBROUTINE resize_2D_array_real
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Return the local number of particles (of all species) in the tile.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE get_local_number_of_part(npart)
-    	INTEGER(idp), INTENT(IN OUT) :: npart
-    	INTEGER(idp) :: ispecies
-    	TYPE(particle_species), POINTER :: curr
+    ! ____________________________________________________________________________________
+      INTEGER(idp), INTENT(IN OUT) :: npart
+      INTEGER(idp) :: ispecies
+      TYPE(particle_species), POINTER :: curr
 
-    	npart=0
-		DO ispecies=1, nspecies ! LOOP ON SPECIES
-			curr=> species_parray(ispecies)
-			npart=npart+curr%species_npart
-		END DO ! END LOOP ON SPECIES
+      npart=0
+      DO ispecies=1, nspecies ! LOOP ON SPECIES
+        curr=> species_parray(ispecies)
+        npart=npart+curr%species_npart
+      END DO ! END LOOP ON SPECIES
 
     END SUBROUTINE get_local_number_of_part
-    ! ----- SUBROUTINES DEDICATED FOR PYTHON INTERFACE
+    
+    ! ____________________________________________________________________________________
+    !
+    !      SUBROUTINES DEDICATED FOR PYTHON INTERFACE
+    !
+    ! ____________________________________________________________________________________
 
-    !This subroutine returns pointer arrays on a given tile
-    ! of a given species (USED mainly by python interface)
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> This subroutine returns pointer arrays on a given tile
+    !> of a given species (USED mainly by python interface)
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE point_to_tile(ispecies, ix, iy, iz)
+    ! ____________________________________________________________________________________
         USE python_pointers
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: ix,iy,iz,ispecies
@@ -951,38 +1182,38 @@ CONTAINS
 
         currsp=> species_parray(ispecies)
         curr_tile=>currsp%array_of_tiles(ix,iy,iz)
-		! Tile extent and dimension
-		nxtg=curr_tile%nxg_tile
-		nytg=curr_tile%nyg_tile
-		nztg=curr_tile%nzg_tile
-		nxgt=curr_tile%nx_grid_tile
-		nygt=curr_tile%ny_grid_tile
-		nzgt=curr_tile%nz_grid_tile
-		nxct=curr_tile%nx_cells_tile
-		nyct=curr_tile%ny_cells_tile
-		nzct=curr_tile%nz_cells_tile
-		nxmin=curr_tile%nx_tile_min
-		nxmax=curr_tile%nx_tile_max
-		nymin=curr_tile%ny_tile_min
-		nymax=curr_tile%ny_tile_max
-		nzmin=curr_tile%nz_tile_min
-		nzmax=curr_tile%nz_tile_max
-		xtmin=curr_tile%x_tile_min
-		xtmax=curr_tile%x_tile_max
-		ytmin=curr_tile%y_tile_min
-		ytmax=curr_tile%y_tile_max
-		ztmin=curr_tile%z_tile_min
-		ztmax=curr_tile%z_tile_max
-		xgtmin=curr_tile%x_grid_tile_min
-		xgtmax=curr_tile%x_grid_tile_max
-		ygtmin=curr_tile%y_grid_tile_min
-		ygtmax=curr_tile%y_grid_tile_max
-		zgtmin=curr_tile%z_grid_tile_min
-		zgtmax=curr_tile%z_grid_tile_max
-		! Number of particles in the tile
-		partn => curr_tile%np_tile
-		partnmax = curr_tile%npmax_tile
-		! Particle arrays in the tile
+        ! Tile extent and dimension
+        nxtg=curr_tile%nxg_tile
+        nytg=curr_tile%nyg_tile
+        nztg=curr_tile%nzg_tile
+        nxgt=curr_tile%nx_grid_tile
+        nygt=curr_tile%ny_grid_tile
+        nzgt=curr_tile%nz_grid_tile
+        nxct=curr_tile%nx_cells_tile
+        nyct=curr_tile%ny_cells_tile
+        nzct=curr_tile%nz_cells_tile
+        nxmin=curr_tile%nx_tile_min
+        nxmax=curr_tile%nx_tile_max
+        nymin=curr_tile%ny_tile_min
+        nymax=curr_tile%ny_tile_max
+        nzmin=curr_tile%nz_tile_min
+        nzmax=curr_tile%nz_tile_max
+        xtmin=curr_tile%x_tile_min
+        xtmax=curr_tile%x_tile_max
+        ytmin=curr_tile%y_tile_min
+        ytmax=curr_tile%y_tile_max
+        ztmin=curr_tile%z_tile_min
+        ztmax=curr_tile%z_tile_max
+        xgtmin=curr_tile%x_grid_tile_min
+        xgtmax=curr_tile%x_grid_tile_max
+        ygtmin=curr_tile%y_grid_tile_min
+        ygtmax=curr_tile%y_grid_tile_max
+        zgtmin=curr_tile%z_grid_tile_min
+        zgtmax=curr_tile%z_grid_tile_max
+        ! Number of particles in the tile
+        partn => curr_tile%np_tile
+        partnmax = curr_tile%npmax_tile
+        ! Particle arrays in the tile
         partx=>curr_tile%part_x
         party=>curr_tile%part_y
         partz=>curr_tile%part_z
@@ -998,58 +1229,77 @@ CONTAINS
         partby=>curr_tile%part_by
         partbz=>curr_tile%part_bz
 
-
     END SUBROUTINE point_to_tile
 
-		! _____________________________________________________________________________
-		SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
-		vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start)
-			!
-			! This subroutine returns pointer arrays on a given tile
-			! of a given species (USED mainly by python interface)
-			! ______________________________________________________________________________
-			IMPLICIT NONE
-			INTEGER(idp), INTENT(IN) :: nsp, nppc
-			REAL(num), INTENT(IN) :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax,vdxs,vdys,vdzs,vthxs,vthys,vthzs
-			CHARACTER(LEN=*), INTENT(IN) :: sname
-			TYPE(particle_species), POINTER  :: currsp
-			INTEGER(idp) :: sorting_period, sorting_start
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> This subroutine returns pointer arrays on a given tile
+    !> of a given species (USED mainly by python interface)
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
+    SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
+    vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start)
+    ! ____________________________________________________________________________________
+      IMPLICIT NONE
+      INTEGER(idp), INTENT(IN) :: nsp, nppc
+      REAL(num), INTENT(IN)    :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax
+      REAL(num), INTENT(IN)    :: vdxs,vdys,vdzs,vthxs,vthys,vthzs
+      CHARACTER(LEN=*), INTENT(IN) :: sname
+      TYPE(particle_species), POINTER  :: currsp
+      INTEGER(idp) :: sorting_period, sorting_start
 
-			currsp=> species_parray(nsp)
-			currsp%charge=chrg
-			currsp%mass=mss
-			currsp%x_min=xsmin
-			currsp%y_min=ysmin
-			currsp%z_min=zsmin
-			currsp%x_max=xsmax
-			currsp%y_max=ysmax
-			currsp%z_max=zsmax
-			currsp%vdrift_x=vdxs
-			currsp%vdrift_y=vdys
-			currsp%vdrift_z=vdzs
-			currsp%vth_x=vthxs
-			currsp%vth_y=vthys
-			currsp%vth_z=vthzs
-			currsp%nppcell=nppc
-			currsp%name=sname
-			currsp%sorting_period=sorting_period
-			currsp%sorting_start=sorting_start
-			
-			! this part poses problems for the python version compiled on Cori
-			!IF (rank .EQ. 0) THEN
-			!	PRINT *, "species name: ", trim(adjustl(sname))
-			!	PRINT *, "species mass: ", mss
-			!	PRINT *, "species charge: ", chrg
-			!	PRINT *, "sorting period: ", currsp%sorting_period
-			!	PRINT *, "sorting start: ", currsp%sorting_start
-			!	PRINT *, ""
-			!ENDIF
-			
-		END SUBROUTINE set_particle_species_properties
+      currsp=> species_parray(nsp)
+      currsp%charge=chrg
+      currsp%mass=mss
+      currsp%x_min=xsmin
+      currsp%y_min=ysmin
+      currsp%z_min=zsmin
+      currsp%x_max=xsmax
+      currsp%y_max=ysmax
+      currsp%z_max=zsmax
+      currsp%vdrift_x=vdxs
+      currsp%vdrift_y=vdys
+      currsp%vdrift_z=vdzs
+      currsp%vth_x=vthxs
+      currsp%vth_y=vthys
+      currsp%vth_z=vthzs
+      currsp%nppcell=nppc
+      currsp%name=sname
+      currsp%sorting_period=sorting_period
+      currsp%sorting_start=sorting_start
+      
+      ! this part poses problems for the python version compiled on Cori
+      !IF (rank .EQ. 0) THEN
+      !  PRINT *, "species name: ", trim(adjustl(sname))
+      !  PRINT *, "species mass: ", mss
+      !  PRINT *, "species charge: ", chrg
+      !  PRINT *, "sorting period: ", currsp%sorting_period
+      !  PRINT *, "sorting start: ", currsp%sorting_start
+      !  PRINT *, ""
+      !ENDIF
+      
+    END SUBROUTINE set_particle_species_properties
 
-    !!! --- Add particle to array of tiles
+
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Add particle to array of tiles
+    !> (USED mainly by python interface)
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE py_add_particles_to_species(nsp, npart, partx, party, partz, &
                partux, partuy, partuz, gaminv, partw)
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nsp, npart
         REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
@@ -1063,8 +1313,19 @@ CONTAINS
         END DO
     END SUBROUTINE py_add_particles_to_species
 
-    !!! --- Get logical array are_tiles_reallocated for a given species
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Get logical array are_tiles_reallocated for a given species
+    !> (USED mainly by python interface)
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE get_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nsp, ntx,nty,ntz
         INTEGER(idp), DIMENSION(ntx,nty,ntz), INTENT(IN OUT) :: atrealloc
@@ -1075,8 +1336,19 @@ CONTAINS
 
     END SUBROUTINE get_are_tiles_reallocated
 
-     !!! --- Set logical array are_tiles_reallocated for a given species
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Set logical array are_tiles_reallocated for a given species
+    !> (USED mainly by python interface)
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE set_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
+    ! ____________________________________________________________________________________
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN) :: nsp, ntx,nty,ntz
         INTEGER(idp), DIMENSION(ntx,nty,ntz), INTENT(IN) :: atrealloc
@@ -1087,12 +1359,18 @@ CONTAINS
 
     END SUBROUTINE set_are_tiles_reallocated
 
-! ________________________________________________________________________________________
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Estimate the memory that will be used in the simulation.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2015
+    !
     SUBROUTINE estimate_memory_consumption
-!
-! Estimate the memory that will be used in the simulation
-!
-! ________________________________________________________________________________________
+    ! ____________________________________________________________________________________
       USE shared_data
       USE constants
       USE particles
@@ -1107,7 +1385,7 @@ CONTAINS
       INTEGER(idp)                    :: ispecies, ix, iy, iz, nbp
       INTEGER(idp)                    :: nxc,nyc,nzc
       INTEGER(idp)                    :: nxg,nyg,nzg      
-      REAL(num)                       :: nctot,ncloc
+      REAL(num)                       :: ncloc
       REAL(num)                       :: mpipartsize
       REAL(num)                       :: tilepartsize
       REAL(num)                       :: tilefieldsize

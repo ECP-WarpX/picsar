@@ -42,7 +42,7 @@ INTEGER, PARAMETER :: c_dir_z = 3
 LOGICAL(lp):: l_smooth_compensate
 !> string length parameter for some outputs
 INTEGER, PARAMETER :: string_length = 264
-! Error handling
+!> Error handling
 INTEGER, PARAMETER :: c_err_bad_value = 2**4
 !> Vector length for some vectorized loops
 INTEGER(idp), PARAMETER :: LVEC = 8
