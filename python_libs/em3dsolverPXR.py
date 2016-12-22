@@ -2204,6 +2204,20 @@ class EM3DPXR(EM3DFFT):
         processlostpart(pg,js+1,top.clearlostpart,top.time+top.dt*pg.ndts[js],top.zbeam)
         if self.l_verbose:print me,'enter apply_bnd_conditions'
 
+    def get_total_particle_number(self,**kw):
+        """
+        Get the total number of particles from all species
+
+        output:
+        - total number of particles
+        """
+        
+        nbptot = zeros(1)
+        
+        pxr.get_tot_number_of_particles(nbtot)
+        
+        return nbptot[0]
+        
     def get_kinetic_energy(self,sp,**kw):
         """
         Get the total kinetic energy of the species sp using PICSAR fortran subroutines
