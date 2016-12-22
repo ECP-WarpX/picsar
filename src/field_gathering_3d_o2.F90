@@ -56,7 +56,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
   
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-  logical                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -314,7 +314,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,
 
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-  logical                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
@@ -570,7 +570,7 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
   INTEGER(idp)                         :: nxguard,nyguard,nzguard
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-  LOGICAL                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -955,7 +955,7 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-  LOGICAL                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -1321,7 +1321,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL                                :: l_lower_order_in_v 
+  LOGICAL(lp)                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
@@ -1841,7 +1841,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL                                :: l_lower_order_in_v 
+  LOGICAL(lp)                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
@@ -2159,7 +2159,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   REAL(num), DIMENSION(np), INTENT(IN)   :: xp,yp,zp
   REAL(num), DIMENSION(np), INTENT(INOUT):: ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL                                :: l_lower_order_in_v 
+  LOGICAL(lp)                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
                               INTENT(IN) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
