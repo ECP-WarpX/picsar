@@ -844,25 +844,26 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
             SELECT CASE (particle_pusher)
             !! Vay pusher -- half push part 1
 
-          CASE (1_idp)
-              CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
-              curr_tile%part_ey,                                                  &
-              curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
+            CASE (1_idp)
+              CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,  &
+              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,          &
+              curr_tile%part_ey,                                                   &
+              curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,              &
               curr_tile%part_bz,curr%charge,curr%mass,dtt,1_idp)
               !! Boris pusher -- half push part 1
             CASE DEFAULT
               !! --- Push velocity with E half step
-              CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,               &
+              CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,        &
+              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,            &
               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
               !! --- Set gamma of particles
-              CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
+              CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,      &
               curr_tile%part_uz, curr_tile%part_gaminv)
               !! --- Push velocity with B half step
-              CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                   &
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,  &
-              curr_tile%part_bz, curr%charge,curr%mass,dtt*0.5_num)
+              CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,        &
+              curr_tile%part_uz,curr_tile%part_gaminv,                            &
+              curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz,            &
+              curr%charge,curr%mass,dtt*0.5_num)
             END SELECT
           END DO! END LOOP ON SPECIES
         ENDIF
