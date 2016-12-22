@@ -2,25 +2,26 @@
 !
 ! DIAGS.F90
 !
+! Purpose:
+! This file contains routines for processing the diagnostics
 !
-! Brief description:
-!> @brief
-!> Module containing routines for processing the diagnostics
-!
-!>@author
-!>Henri Vincenti,
-!>Mathieu Lobet
+! Authors
+! Henri Vincenti,
+! Mathieu Lobet
 !
 ! ________________________________________________________________________________________
 
 
 ! ________________________________________________________________________________________
 !> @brief
-!> This module contains useful diagnostics to test code correctness
+!> This module contains useful diagnostics to test code correctness.
 !
 !> @author
 !> Henri Vincenti
 !> Mathieu Lobet
+!
+!> @date
+!> Creation 2015
 MODULE diagnostics
 ! ________________________________________________________________________________________
 
@@ -34,6 +35,14 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     !> @brief
     !> Computes derived physical quantities from simulation
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE calc_diags
     ! ____________________________________________________________________________________
         USE fields
@@ -87,7 +96,15 @@ MODULE diagnostics
     
     ! ____________________________________________________________________________________
     !> @brief
-    !> Computes field divergence
+    !> Computes field divergence.
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard, nzguard, dx, dy, dz)
     ! ____________________________________________________________________________________
         IMPLICIT NONE
@@ -117,7 +134,15 @@ MODULE diagnostics
 
     ! ____________________________________________________________________________________
     !> @brief
-    !> Initialization of the different diags
+    !> Initialization of the different diags.
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE init_diags
     ! ____________________________________________________________________________________
         USE shared_data
@@ -144,8 +169,19 @@ MODULE diagnostics
 
     END SUBROUTINE
 
-    !!! --- Init temporal diags
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Init temporal diags
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE init_temp_diags
+    ! ____________________________________________________________________________________
         USE output_data
         USE particle_properties
         USE shared_data
@@ -305,6 +341,14 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     !> @brief
     !> Initialize outputs of the time statistics
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE init_time_stat_output
     ! ____________________________________________________________________________________
       USE time_stat
@@ -424,7 +468,15 @@ MODULE diagnostics
 
     ! ____________________________________________________________________________________
     !> @brief
-    !> Determine the local kinetic energy for the species ispecies
+    !> Determine the local kinetic energy for the species ispecies.
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE get_loc_kinetic_energy(ispecies,kinetic_energy_loc)
     ! ____________________________________________________________________________________
         USE particle_tilemodule
@@ -511,6 +563,14 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     !> @brief
     !> Determine the total kinetic energy for the species ispecies.
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE get_kinetic_energy(ispecies,total_kinetic_energy)
     ! ____________________________________________________________________________________
         USE particle_tilemodule
@@ -587,6 +647,14 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     !> @brief
     !> Determine the local field energy for the given field in 2d.
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE get_loc_field_energy_2d(field,nx2,nz2,dx2,dz2,nxguard,nzguard,field_energy)
     ! ____________________________________________________________________________________
         USE constants
@@ -620,6 +688,14 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     !> @brief
     !> Determine the local field energy for the given field.
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE get_loc_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
     ! ____________________________________________________________________________________
         USE constants
@@ -654,6 +730,14 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     !> @brief
     !> Determine the total field energy for the given field
+    !
+    !> @author
+    !> Henri Vincenti
+    !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2015
+    !
     SUBROUTINE get_field_energy_2d(field,nx2,nz2,dx2,dz2,nxguard,nzguard,field_energy)
     ! ____________________________________________________________________________________
         USE constants
@@ -703,7 +787,9 @@ MODULE diagnostics
     !
     !> @param[in] field array for a given field component
     !> @param[in] nx2,ny2,nz2 number of cells
+    !> @param[in] dx2,dy2,dz2 space step in each direction
     !> @param[in] nxguard,nyguard,nzguard number of guard cells
+    !> @param[out] field_energy energy og the corresponding field
     !
     SUBROUTINE get_field_energy(field,nx2,ny2,nz2,dx2,dy2,dz2,nxguard,nyguard,nzguard,field_energy)
     ! ____________________________________________________________________________________
@@ -749,6 +835,9 @@ MODULE diagnostics
     !
     !> @author
     !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2016
     SUBROUTINE get_loc_norm_divErho(divee2,rho2,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm)
     ! ____________________________________________________________________________________
         USE mpi_derived_types
@@ -786,6 +875,9 @@ MODULE diagnostics
     !
     !> @author
     !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2016
     SUBROUTINE get_loc_norm_2(array,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm)
     ! ____________________________________________________________________________________
         USE mpi_derived_types
@@ -823,6 +915,9 @@ MODULE diagnostics
     !
     !> @author
     !> Mathieu Lobet
+    !
+    !> @date
+    !> Creation 2016
     SUBROUTINE get_norm_divErho(divee2,rho2,nx2, ny2, nz2, nxguard, nyguard, nzguard,norm)
     ! ____________________________________________________________________________________
         USE mpi_derived_types
