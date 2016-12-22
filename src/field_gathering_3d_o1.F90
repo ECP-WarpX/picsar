@@ -13,7 +13,11 @@
 ! - gete3d_energy_conserving_vec_1_1_1
 ! - getb3d_energy_conserving_vec_1_1_1
 ! 
-! - geteb3d_energy_conserving_vec_1_1_1
+! - geteb3d_energy_conserving_vecV1_1_1_1
+! - geteb3d_energy_conserving_vecV2_1_1_1
+! - geteb3d_energy_conserving_vecV3_1_1_1
+! - geteb3d_energy_conserving_vec_1_1_1_v2
+! - geteb3d_energy_conserving_vec_1_1_1_sub
 !
 ! ________________________________________________________________________________________
 
@@ -55,7 +59,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
-  logical                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -63,8 +67,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
   INTEGER(isp)                         :: ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0
   INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
-  REAL(num)                            :: xint, yint, zint, &
-                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num)                            :: xint, yint, zint
   REAL(num), DIMENSION(0:1)            :: sx, sx0
   REAL(num), DIMENSION(0:1)            :: sy, sy0
   REAL(num), DIMENSION(0:1)            :: sz, sz0
@@ -296,13 +299,12 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,
 
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-  logical                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
                 ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-  REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-                xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
+  REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint
   REAL(num), DIMENSION(0:1)            :: sx, sx0
   REAL(num), DIMENSION(0:1)            :: sy, sy0
   REAL(num), DIMENSION(0:1)            :: sz, sz0
@@ -521,7 +523,7 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp)                           :: lvect
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez
-  LOGICAL                                :: l_lower_order_in_v
+  LOGICAL(lp)                                :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                           :: ip, j, k, l
@@ -744,12 +746,12 @@ END SUBROUTINE
 
 #if defined(DEV)
 ! ________________________________________________________________________________________
+!> @brief
 !> Gathering of Magnetic field from Yee grid ("energy conserving") on particles
 !> at order 1.
-!> @brief
 !
-! This function is vectorized.
 !> @details
+!> This function is vectorized.
 !
 !> @author
 !> Mathieu Lobet
@@ -782,7 +784,7 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
-  LOGICAL                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -1038,12 +1040,12 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz
-  LOGICAL                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
   REAL(num), DIMENSION(lvect,0:1)      :: sx, sx0
@@ -1349,7 +1351,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   INTEGER(idp)                           :: nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL                                :: l_lower_order_in_v 
+  LOGICAL(lp)                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx, dy, dz
@@ -1362,7 +1364,6 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
 #if defined __INTEL_COMPILER 
     !dir$ attributes align:64 :: j0,k0,l0
 #endif    
-  INTEGER(idp)                           :: jj, kk, ll
   REAL(num)                              :: x, y, z, xint, yint, zint
   REAL(num)                              :: dxi, dyi, dzi 
   INTEGER(isp)                           :: n,ip,nn 
@@ -1584,15 +1585,18 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   IMPLICIT NONE
   
   ! __ Parameter declaration _____________________________________________________
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz
-  LOGICAL                              :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
+  INTEGER(idp), intent(in)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), intent(in)                         :: lvect
+  REAL(num), DIMENSION(np), intent(in)             :: xp,yp,zp
+  REAL(num), DIMENSION(np), intent(inout)          :: ex,ey,ez,bx,by,bz
+  LOGICAL(lp), intent(in)                          :: l_lower_order_in_v
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+                                        intent(in) :: exg,eyg,ezg,bxg,byg,bzg
+                                        
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: nn,n
-  INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
+  INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
   REAL(num)                            :: a
@@ -1903,7 +1907,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL                                :: l_lower_order_in_v 
+  LOGICAL(lp)                                :: l_lower_order_in_v 
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
