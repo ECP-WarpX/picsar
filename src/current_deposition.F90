@@ -53,11 +53,11 @@
 
 
 ! ________________________________________________________________________________________
-!> Main subroutine for managing the current deposition
 !> @brief
+!> Main subroutine for managing the current deposition
 !
-!> This subroutine is called in submain.F90 in step().
 !> @details
+!> This subroutine is called in submain.F90 in step().
 !
 !> @author
 !> Henri Vincenti
@@ -550,20 +550,26 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
 
 
-!=========================================================================================
-!> Deposit current in each tile with the classical method using an external given function
+! ________________________________________________________________________________________
 !> @brief
+!> Deposit current in each tile with the classical method using an external given function
 !
+!> @details
 !> OpenMP version. Avoids conflict while reducing tile currents in the global
 !> current array.
 !> This subroutine uses an external function represented by the argument func_order
 !> for the current deposition method.
-!> @details
 !
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2015
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,&
   jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
   noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-!=========================================================================================
+! ________________________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -600,7 +606,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
   TYPE(grid_tile), POINTER        :: currg
-  REAL(num)                       :: tdeb, tend
   INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)                     :: isdeposited=.FALSE.
 
@@ -823,18 +828,19 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 
 
-!=========================================================================================
+! ________________________________________________________________________________________
+!> @brief
 !> Deposit current in each tile with the classical method with an external given function.
 !> In this second version, the transient current arrays are reduced
 !> after the current deposition for all species and not for each species.
-!> @brief
 !
+!> @details
 !> OpenMP version. Avoids conflict while reducing tile currents in the global
 !> current array.
-!> @details
 !
 !> @author
 !> Mathieu Lobet
+!> Henri Vincenti
 !
 !> @date
 !> 2016
@@ -850,7 +856,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2(&
 curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
   noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvect)
-!=========================================================================================
+! ________________________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -1160,15 +1166,21 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
 
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 
-!=========================================================================================
-!> Deposit current in each tile with the classical method version 3
-!> @brief
+! ________________________________________________________________________________________
 !
+!> @brief
+!> Deposit current in each tile with the classical method version 3
+!
+!> @details
 !> OpenMP version. Avoids conflict while reducing tile currents in the global
 !> current array.
 !> In this second version, the transient current arrays are reduced
 !> after the current deposition for all species and not for each species.
 !> The loop over the species is also firt loop and not inside the tile loops.
+!
+!> @author
+!> Mathieu Lobet
+!> Henri Vincenti
 !
 !> @param[in] func_order represent the subroutine to be used for current deposition depending on the selected order
 !> @param[in] curr_reduc_sub subroutine to be used for the reduction
@@ -1182,7 +1194,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3(&
 curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
   noxx,noyy,nozz,dxx,dyy,dzz,dtt,lvect)
-!=========================================================================================
+! ________________________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -1493,14 +1505,14 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
 
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3
 
-!=========================================================================================
-!> Deposit current in each tile with Esirkepov method
+! ________________________________________________________________________________________
 !> @brief
+!> Deposit current in each tile with Esirkepov method
 !
+!> @details
 !> This subroutine is called from Fortram main program and contains an interface argument
 !> OpenMP version. Avoids conflict while reducing tile currents in the global
 !> current array.
-!> @details
 !
 !> @author
 !> Mathieu Lobet
@@ -1508,9 +1520,10 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3
 !> @date
 !> 2016
 !
-!=========================================================================================
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-  noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,&
+                                     jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
+                                     noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+  ! ________________________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -1775,17 +1788,25 @@ tend=MPI_WTIME()
 dep_curr_time=dep_curr_time+(tend-tdeb)
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 
-!=========================================================================================
-!> Deposit current in each tile with Esirkepov method
+! ________________________________________________________________________________________
 !> @brief
+!> Deposit current in each tile with Esirkepov method
 !
+!> @details
 !> This subroutine is called from Python and does not have interface arguments
 !> OpenMP version. Avoids conflict while reducing tile currents in the global
 !> current array.
-!> @details
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-  noxx,noyy,nozz,dxx,dyy,dzz,dtt)
-!=========================================================================================
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2015
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz, &
+                                                     nxjguard,nyjguard,nzjguard, &
+                                                     noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+! ________________________________________________________________________________________
 USE particles
 USE constants
 USE tiling
@@ -2043,8 +2064,16 @@ dep_curr_time=dep_curr_time+(tend-tdeb)
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 
 ! ________________________________________________________________________________________
-!> Deposit current in each tile sequentially
 !> @brief
+!> Deposit current in each tile sequentially
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2015
+!
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order,jxg,jyg,jzg,&
 nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
 noxx,noyy,nozz,dxx,dyy,dzz,dtt)
@@ -2060,16 +2089,13 @@ noxx,noyy,nozz,dxx,dyy,dzz,dtt)
   REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
-  INTEGER(idp) :: ispecies, ix, iy, iz, count
-  INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-  INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
+  INTEGER(idp)                    :: ispecies, ix, iy, iz, count
+  INTEGER(idp)                    :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(particle_tile), POINTER :: curr_tile
-  TYPE(grid_tile), POINTER :: currg
-  REAL(num) :: tdeb, tend
-  INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
-  LOGICAL(lp)  :: isdeposited=.FALSE.
+  TYPE(particle_tile), POINTER    :: curr_tile
+  TYPE(grid_tile), POINTER        :: currg
+  INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
+  LOGICAL(lp)                     :: isdeposited=.FALSE.
 
 INTERFACE
   SUBROUTINE func_order(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, & !#do not parse
@@ -2138,11 +2164,20 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
 
 
 ! ________________________________________________________________________________________
+!> @brief
 !> Deposit current in each tile
 !> Sequential version
-!> @brief
-SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard, &
-  noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+!
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2015
+SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg,jyg,jzg,nxx,nyy,nzz, &
+                                                            nxjguard,nyjguard,nzjguard, &
+                                                           noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 ! ________________________________________________________________________________________
 
   USE particles
@@ -2156,14 +2191,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg,jyg,jzg,nxx,n
   REAL(num), INTENT(IN OUT) :: jxg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jyg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
   REAL(num), INTENT(IN OUT) :: jzg(-nxjguard:nxx+nxjguard,-nyjguard:nyy+nyjguard,-nzjguard:nzz+nzjguard)
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jxp, jyp, jzp
   INTEGER(idp) :: ispecies, ix, iy, iz, count
   INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-  INTEGER(idp) :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER :: curr_tile
   TYPE(grid_tile), POINTER :: currg
-  REAL(num) :: tdeb, tend
   INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)  :: isdeposited=.FALSE.
 
@@ -2220,14 +2252,15 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq
 
 
 ! ________________________________________________________________________________________
-!> @author
-!> Henri Vincenti
-!
-! DESCRIPTION:
-!> Brief description of routine.
 !> @brief
 !> Order 1 3D scalar direct current deposition routine (rho*v)
 !> This version does not vectorize on SIMD architectures
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 !
 !> @param[in] np Number of particles
 !> @param[in] xp 1D array of x-coordinates of particles
@@ -2256,6 +2289,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq
 !> @param[inout] jy y-current component (3D array)
 !> @param[inout] jz z-current component (3D array)
 !> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
+!
 SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________
@@ -2267,8 +2301,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
   REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-  REAL(num)                :: dxi,dyi,dzi,xint,yint,zint, &
-                 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+  REAL(num)                :: dxi,dyi,dzi,xint,yint,zint
   REAL(num)                :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz
   REAL(num)                :: wq, wqx, wqy, wqz, clightsq
   REAL(num), DIMENSION(2)  :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
@@ -2383,16 +2416,16 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 
 
 ! ________________________________________________________________________________________
-! - depose_jxjyjz_vecHVv2_1_1_1
-!> @author
-!> Henri Vincenti
-!
-! DESCRIPTION:
-!> Brief description of routine.
 !> @brief
 !> Order 1 3D vector direct current deposition routine (rho*v)
 !> This versions have good performances on SIMD architectures
 !> Providing that OpenMP 4.0 is available (Directive SIMD)
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 !
 !> @param[in] np Number of particles
 !> @param[in] xp 1D array of x-coordinates of particles
@@ -2421,6 +2454,7 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 !> @param[inout] jy y-current component (3D array)
 !> @param[inout] jz z-current component (3D array)
 !> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
+!
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________
@@ -2435,11 +2469,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
   REAL(num), DIMENSION(:,:), ALLOCATABLE:: jxcells,jycells,jzcells
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, gaminv, w
   REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-  REAL(num)                :: dxi,dyi,dzi,xint,yint,zint, &
-                 oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+  REAL(num)                :: dxi,dyi,dzi
   REAL(num)                :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
 
-  REAL(num)                       :: clightsq
   INTEGER(idp)                    :: j,k,l,j0,k0,l0,ip, NCELLS, ic
   INTEGER(idp)                    :: nnx, nnxy, n,nn,nv
   INTEGER(idp)                    :: moff(1:8)
@@ -2652,14 +2684,14 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 
 ! ________________________________________________________________________________________
-!> Order 1 3D vector current deposition routine (rho*v) with no reduction
 !> @brief
+!> Order 1 3D vector current deposition routine (rho*v) with no reduction
 !
+!> @details
 !> This versions have good performances on SIMD architectures
 !> Providing that OpenMP 4.0 is available (Directive SIMD)
 !> This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1
 !> without the reduction process at the end
-!> @details
 !
 !> @author
 !> Mathieu Lobet
@@ -2667,24 +2699,34 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 !> @date
 !> 2016
 !
-! Inputs:
-! - jxcells, jycells, jzcells: transient current arrays
-! - np: particle number
-! - ncells: number of cells in the tile
-! - xp,yp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse Lorentz factor arrays
-! - w: particle wight arrays
-! - q: charge
-! - xmin,ymin,zmin: tile minimum positions
-! - dt,dx,dy,dz: time and space steps
-! - nx,ny,nz: tile cell numbers in each direction
-! - nxguard,nyguard,nzguard: guard cells
-! - ncx,ncy,ncz: tile cell extended number (depends on the order)
-! - lvec: vector length
+!> @param[inout] jxcells,jycells,jzcells temporary current arrays
+!> @param[in] np Number of particles
+!> @param[in] ncells number of cells in the tile
+!> @param[in] xp 1D array of x-coordinates of particles
+!> @param[in] yp 1D array of x-coordinates of particles
+!> @param[in] zp 1D array of x-coordinates of particles
+!> @param[in] uxp 1D array of ux-velocity components of particles
+!> @param[in] uyp 1D array of ux-velocity components of particles
+!> @param[in] uzp 1D array of ux-velocity components of particles
+!> @param[in] gaminv 1D array of the inverse 1/gamma-factor of particles
+!> @param[in] w 1D array of the weghts of particles
+!> @param[in] q charge of current species (scalar)
+!> @param[in] xmin x-minimum boundary of current tile
+!> @param[in] ymin y-minimum boundary of current tile
+!> @param[in] zmin z-minimum boundary of current tile
+!> @param[in] dt time step (scalar)
+!> @param[in] dx mesh size along x (scalar)
+!> @param[in] dy mesh size along y (scalar)
+!> @param[in] dz mesh size along z (scalar)
+!> @param[in] nx number of cells along x (scalar)
+!> @param[in] ny number of cells along y (scalar)
+!> @param[in] nz number of cells along z (scalar)
+!> @param[in] nxguard number of guard cells along x (scalar)
+!> @param[in] nyguard number of guard cells along y (scalar)
+!> @param[in] nzguard number of guard cells along z (scalar)
+!> @param[in] ncx,ncy,ncz tile cell extended number (depends on the order)
+!> @param[in] lvect vector length
 !
-! Ouputs:
-! - jxcells, jycells, jzcells updated
 SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
@@ -2699,11 +2741,10 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num), DIMENSION(8,ncells), INTENT(INOUT) :: jxcells,jycells,jzcells
     REAL(num), DIMENSION(np), INTENT(IN)          :: xp,yp,zp
     REAL(num), DIMENSION(np), INTENT(IN)          :: uxp,uyp,uzp,gaminv,w
-    REAL(num), INTENT(IN) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    REAL(num)                                     :: xint,yint,zint
+    REAL(num), INTENT(IN)                         :: q,dt,dx,dy,dz,xmin,ymin,zmin
     REAL(num)                                     :: x,y,z,xmid,ymid,zmid
 
-    INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip,NCELLS,ic
+    INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip,NCELLS
     INTEGER(isp)                                  :: n,nn,nv
     REAL(num)                                     :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
     REAL(num)                                     :: invvol,dxi,dyi,dzi
@@ -2714,7 +2755,6 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num) :: wwx,wwy,wwz, wq,vx,vy,vz, wx,wx0, wy,wy0, wz,wz0
     INTEGER(isp)                                  :: jorig, korig, lorig
     INTEGER(isp)                                  :: ncx, ncy, ncxy, ncz
-    INTEGER(isp)                                  :: ix,iy,iz
 
     ! _____________________________________________
     ! Computation of the parameters
@@ -2863,18 +2903,31 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
 END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 
 
-!!! --- Order 2 3D scalar current deposition routine (jx*v)
-!!! This version does not vectorize on SIMD architectures
-SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
+!> @brief
+!> Order 2 3D scalar current deposition routine (jx*v)
+!
+!> @details
+!> This version does not vectorize on SIMD architectures
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> 2015
+!
+SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,& 
+                                      xmin,ymin,zmin, &
+                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
     USE constants
     IMPLICIT NONE
     INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, gaminv, w
     REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
-                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+    REAL(num) :: dxi,dyi,dzi,xint,yint,zint
+    REAL(num) :: xintsq,yintsq,zintsq
     REAL(num) :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz
     REAL(num) :: wq, wqx, wqy, wqz, clightsq
     REAL(num), DIMENSION(3) :: sx(-1:1), sy(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1)
@@ -3049,16 +3102,18 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 
 
 ! ________________________________________________________________________________________
-! - depose_jxjyjz_vecHVv2_2_2_2
+!> @brief
+!> Order 2 3D vector direct current deposition routine (rho*v)
+!
+!> @details
+!> This versions have good performances on SIMD architectures
+!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!
 !> @author
 !> Henri Vincenti
 !
-! DESCRIPTION:
-!> Brief description of routine.
-!> @brief
-!> Order 2 3D vector direct current deposition routine (rho*v)
-!> This versions have good performances on SIMD architectures
-!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!> @date
+!> Creation 2015
 !
 !> @param[in] np Number of particles
 !> @param[in] xp 1D array of x-coordinates of particles
@@ -3087,8 +3142,10 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 !> @param[inout] jy y-current component (3D array)
 !> @param[inout] jz z-current component (3D array)
 !> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
-SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+!
+SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q, &
+                                       xmin,ymin,zmin, &
+                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ________________________________________________________________________________________
     USE constants
     IMPLICIT NONE
@@ -3103,10 +3160,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     REAL(num), DIMENSION(:,:), ALLOCATABLE :: jxcells,jycells,jzcells
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
     REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    REAL(num)                :: xint,yint,zint, &
-                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+    REAL(num)                :: xint,yint,zint
+    REAL(num)                :: xintsq,yintsq,zintsq
     REAL(num)                :: x,y,z,xmid,ymid,zmid
-    REAL(num)                :: wqx,wqy,wqz,ww, wwx, wwy, wwz
+    REAL(num)                :: wqx,wqy,wqz,wwx, wwy, wwz
     REAL(num)                :: invvol,dxi,dyi,dzi
     REAL(num)                :: dts2dx,dts2dy,dts2dz
     REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
@@ -3464,14 +3521,14 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 ! ________________________________________________________________________________________
 ! depose_jxjyjz_vecHV_vnr_2_2_2
 !
-!> Order 2 3D vector current deposition routine (rho*v) with no reduction
 !> @brief
+!> Order 2 3D vector current deposition routine (rho*v) with no reduction
 !
+!> @details
 !> This versions have good performances on SIMD architectures
 !> providing that OpenMP 4.0 is available (Directive SIMD).
 !> This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1
 !> without the reduction process at the end.
-!> @details
 !
 !> @author
 !> Mathieu Lobet
@@ -3496,7 +3553,6 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-
 ! ________________________________________________________________________________________
     USE constants
     IMPLICIT NONE
@@ -3511,14 +3567,14 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num), DIMENSION(np)                      :: xp,yp,zp,uxp,uyp,uzp, gaminv, w
     REAL(num)                                     :: q,dt,dx,dy,dz,xmin,ymin,zmin
 
-    REAL(num)                                     :: xint,yint,zint, &
-                   oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+    REAL(num)                                     :: xint,yint,zint
+    REAL(num)                                     :: xintsq,yintsq,zintsq
     REAL(num)                                     :: x,y,z,xmid,ymid,zmid
-    REAL(num)                                     ::   wqx,wqy,wqz,ww, wwx, wwy, wwz
+    REAL(num)                                     ::   wqx,wqy,wqz, wwx, wwy, wwz
     REAL(num)                                     :: invvol,dxi,dyi,dzi
     REAL(num)                                     :: dts2dx,dts2dy,dts2dz
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-    INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip, ic
+    INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip
     INTEGER(isp)                                  :: nnx, nnxy, n,nn,nv
     INTEGER(isp), DIMENSION(LVECT,3)              :: ICELL, IG
     REAL(num)                                     :: vx,vy,vz
@@ -3529,8 +3585,8 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num)                                     :: sx00(LVECT),sx01(LVECT),sx02(LVECT)
     REAL(num)                                     :: sy0,sy1,sy2,sy00,sy01,sy02
     REAL(num)                                     :: sz0,sz1,sz2,sz00,sz01,sz02, syz
-    INTEGER(isp)                                  :: igrid,orig, jorig, korig, lorig
-    INTEGER(isp)                                  :: ncxy, ix,iy,iz
+    INTEGER(isp)                                  :: orig, jorig, korig, lorig
+    INTEGER(isp)                                  :: ncxy
     INTEGER(isp)                                  :: ngridx, ngridy, ngx, ngxy
 
     ! __________________________________________________________
@@ -3785,10 +3841,22 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
 END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 
 
-!!! --- Order 3 3D scalar current deposition routine (rho*v)
-!!! This version does not vectorize on SIMD architectures
-SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
+!> @brief
+!> Order 3 3D scalar current deposition routine (rho*v)
+!
+!> @details
+!> This version does not vectorize on SIMD architectures
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q, &
+                                      xmin,ymin,zmin, &
+                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+! ________________________________________________________________________________________
 
     USE constants
     IMPLICIT NONE
@@ -4105,10 +4173,19 @@ END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 
 #if defined (DEV)
 !  _______________________________________________________________________________________
-! --- Order 3 3D vector current deposition routine (rho*v)
-! This versions have good performances on SIMD architectures
-! Providing that OpenMP 4.0 is available (Directive SIMD)
-! Use with nox=4
+!> @brief
+!> Order 3 3D vector current deposition routine (rho*v)
+!
+!> @details
+!> This versions have good performances on SIMD architectures
+!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!> Use with nox=4
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 !  _______________________________________________________________________________________
@@ -4454,7 +4531,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
 !> @details
 !> This versions have good performances on SIMD architectures
 !> Providing that OpenMP 4.0 is available (Directive SIMD)
-!>Use with nox=3
+!> Use with nox=3
 !>
 !> @author
 !> Henri Vincenti
@@ -4493,19 +4570,19 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &
                  oxint,oyint,ozint,xintsq,yintsq,zintsq, oxintsq,oyintsq, ozintsq
     REAL(num) :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
-    REAL(num) ::   ww, wwx, wwy, wwz, clightsq
+    REAL(num) ::   clightsq
     REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
     INTEGER(idp) :: j,k,l,j0,k0,l0,ip, NCELLS, ic, ix, iy, iz
     INTEGER(idp) :: nnx, nnxy,ngridx, ngridy, n,nn,nv
     INTEGER(idp) :: moff(1:8)
     INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
     REAL(num), DIMENSION(LVEC) :: vx,vy,vz
-    REAL(num) ::  wwwx(LVEC,16), wwwy(LVEC,16),wwwz(LVEC,16), wq
+    REAL(num) :: wq
     REAL(num) :: sx1(LVEC),sx2(LVEC),sx3(LVEC),sx4(LVEC)
     REAL(num) :: sx01(LVEC),sx02(LVEC),sx03(LVEC),sx04(LVEC)
     REAL(num) :: sy1,sy2,sy3,sy4,sz1,sz2,sz3,sz4
     REAL(num) :: sy01,sy02,sy03,sy04,sz01,sz02,sz03,sz04
-    REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
+    REAL(num), DIMENSION(4) :: h1, h11, h12, sgn
     REAL(num):: wwwx1(LVEC,8),wwwx2(LVEC,8),wwwy1(LVEC,8),wwwy2(LVEC,8),wwwz1(LVEC,8),wwwz2(LVEC,8)
     REAL(num):: wx1,wx2,wy1,wy2,wz1,wz2
     INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
@@ -4836,32 +4913,41 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 
 ! ________________________________________________________________________________________
+!> @brief
+!> Order 3 3D vector current deposition routine (rho*v).
+!
+!> @details
+!> This versions have good performances on SIMD architectures
+!> Providing that OpenMP 4.0 is available (Directive SIMD)
+!> This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1
+!> without the reduction process at the end
+!
+!> @author
+!> Mathieu Lobet
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
+!
+! Input / output arguments:
+!> @param[inout] jxcells,jycells,jzcells temporary current arrays
+!> @param[in] np particle number
+!> @param[in] ncells number of cells in the tile
+!> @param[in] xp,yp,zp particle position arrays
+!> @param[in] uxp,uyp,uzp particle momentum arrays
+!> @param[in] gaminv inverse Lorentz factor arrays
+!> @param[in] w particle wight arrays
+!> @param[in] q charge
+!> @param[in] xmin,ymin,zmin tile minimum positions
+!> @param[in] dt,dx,dy,dz time and space steps
+!> @param[in] nx,ny,nz tile cell numbers in each direction
+!> @param[in] nxguard,nyguard,nzguard guard cells
+!> @param[in] ncx,ncy,ncz tile cell extended number (depends on the order)
+!> @param[in] lvect vector size
+!
 SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
-! Order 3 3D vector current deposition routine (rho*v)
-! This versions have good performances on SIMD architectures
-! Providing that OpenMP 4.0 is available (Directive SIMD)
-! This subroutine is similar to depose_jxjyjz_vecHVv2_1_1_1
-! without the reduction process at the end
-!
-! Inputs:
-! - jxcells, jycells, jzcells: transient current arrays
-! - np: particle number
-! - ncells: number of cells in the tile
-! - xp,yp,zp: particle position arrays
-! - uxp,uyp,uzp: particle momentum arrays
-! - gaminv: inverse Lorentz factor arrays
-! - w: particle wight arrays
-! - q: charge
-! - xmin,ymin,zmin: tile minimum positions
-! - dt,dx,dy,dz: time and space steps
-! - nx,ny,nz: tile cell numbers in each direction
-! - nxguard,nyguard,nzguard: guard cells
-! - ncx,ncy,ncz: tile cell extended number (depends on the order)
-!
-! Ouputs:
-! - jxcells, jycells, jzcells updated
 ! ________________________________________________________________________________________
     USE constants
     IMPLICIT NONE
@@ -4877,28 +4963,26 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num)                                     :: xint,yint,zint, &
                  oxint,oyint,ozint,xintsq,yintsq,zintsq, oxintsq,oyintsq, ozintsq
     REAL(num)                                     :: x,y,z,xmid,ymid,zmid
-    REAL(num)                                     :: ww, wwx, wwy, wwz
     REAL(num), PARAMETER                          :: onesixth=1.0_num/6.0_num
     REAL(num), PARAMETER                          :: twothird=2.0_num/3.0_num
     REAL(num)                                     :: invvol,dxi,dyi,dzi
     REAL(num)                                     :: dts2dx,dts2dy,dts2dz
     INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip
-    INTEGER(isp)                                  :: NCELLS, ic, ix, iy, iz
+    INTEGER(isp)                                  :: NCELLS
     INTEGER(isp)                                  :: nnx, nnxy,ngridx, ngridy
     INTEGER(isp)                                  :: n,nn,nv
     INTEGER(isp), DIMENSION(lvect,3)              :: ICELL
     REAL(num), DIMENSION(lvect)                   :: vx,vy,vz
-    REAL(num)                                     :: wwwx(lvect,16), wwwy(lvect,16),wwwz(lvect,16)
     REAL(num)                                     :: wq
     REAL(num)                                     :: sx1(lvect),sx2(lvect),sx3(lvect),sx4(lvect)
     REAL(num) :: sx01(lvect),sx02(lvect),sx03(lvect),sx04(lvect)
     REAL(num) :: sy1,sy2,sy3,sy4,sz1,sz2,sz3,sz4
     REAL(num) :: sy01,sy02,sy03,sy04,sz01,sz02,sz03,sz04
-    REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
+    REAL(num), DIMENSION(4)                       :: h1, h11, h12, sgn
     REAL(num):: wwwx1(lvect,8),wwwx2(lvect,8),wwwy1(lvect,8),wwwy2(lvect,8),wwwz1(lvect,8),wwwz2(lvect,8)
     REAL(num)                                     :: wx1,wx2,wy1,wy2,wz1,wz2
     INTEGER(isp)                                  :: orig, ncxy, ngx, ngxy
-    INTEGER(isp)                                  :: igrid, jorig, korig, lorig
+    INTEGER(isp)                                  :: jorig, korig, lorig
 
     ! ___________________________________________________________
     ! Parameters
@@ -5185,7 +5269,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 
 
 
-!=========================================================================================
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov scalar current deposition algorithm at order 1 in x, y, z (nox=noy=noz=1)
 !>
@@ -5217,7 +5301,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
-!=========================================================================================
+! ________________________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -5230,19 +5314,18 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
   LOGICAL(lp)              :: l_particles_weight,l4symtry
 
   ! Internal parameters
-  REAL(num)                            :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+  REAL(num)                                :: dxi,dyi,dzi,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
-  REAL(num) :: clghtisq,usq,xold,yold,zold,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz, &
-                                        s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz,         &
-                                        oxint,oyint,ozint,oxintsq,oyintsq,ozintsq, &
-                                        dtsdx0,dtsdy0,dtsdz0
+  REAL(num)                                :: clghtisq,xold,yold,zold,x,y,z,wq,wqx,wqy,wqz,vx,vy,vz
+  REAL(num)                                :: invvol,invdtdx,invdtdy,invdtdz
+  REAL(num)                                :: dtsdx0,dtsdy0,dtsdz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
   REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
   REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
   REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
   INTEGER(idp)                         :: iixp0,ijxp0,ikxp0
   INTEGER(idp)                         :: iixp,ijxp,ikxp
-  INTEGER(idp)                         :: ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+  INTEGER(idp)                         :: ip,dix,diy,diz,i,j,k,ic,jc,kc, &
                                         ixmin, ixmax, iymin, iymax, izmin, izmax
   REAL(num), PARAMETER :: onethird = 1.0_num/3.0_num
 
@@ -5387,18 +5470,20 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 
 #if defined (DEV)
 ! ________________________________________________________________________________________
-!> Esirkepov current deposition optimized at order 1
 !> @brief
+!> Esirkepov current deposition optimized at order 1
 !
+!> @details
 !> This function gives slightly better performances with AVX512 vector registers.
 !> We can expect 30% speedup on KNL however performances are bad with small vector registers.
-!> @details
 !
 !> @author
 !> Mathieu Lobet
 !
-!> @date 2016
+!> @date 
+!> Creation 2016
 !
+!> @warning
 !> PROBLEM: CORRECTION REQUIRED
 !> DO NOT USE
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
@@ -6277,17 +6362,26 @@ END SUBROUTINE
 
 ! __ Developer zone _________
 #if defined(DEV)
-! _________________________________________________________________
+! ________________________________________________________________________________________
+!> @brief
+!> Esirkepov current deposition at order 1
+!
+!> @details
+!> This function is a test of optimization but does not give good performance
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+!> @warning
+!> DO NOT USE
 SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
-!
-!
-! Esirkepov current deposition at order 1
-! This function is a test of optimization but does not give good performance
-!
-! DO NOT USE
-! _________________________________________________________________
+! ________________________________________________________________________________________
+
 USE constants
 USE precomputed
 IMPLICIT NONE
@@ -6933,7 +7027,8 @@ IMPLICIT NONE
 END SUBROUTINE
 #endif
 
-!=========================================================================================
+! ________________________________________________________________________________________
+!> @brief
 !> Esirkepov scalar current deposition algorithm at order 2 in x, y, z (nox=noy=noz=2)
 !>
 !> @detail
@@ -6964,7 +7059,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
-!=========================================================================================
+! ________________________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -7121,17 +7216,25 @@ END SUBROUTINE depose_jxjyjz_esirkepov_2_2_2
 
 #if defined (DEV)
 ! ________________________________________________________________________________________
+!> @brief
+!> Current deposition with the Esirkepov method
+!
+!> @details
+!> Implementation is based on Vincenti's method used for the classical current deposition.
+!> Despite vectorization, this subroutine does not exhibit gain in performance
+!> with AVX512 architecture.
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2015
+!
+!> @warning
+!> PROBLEM: CORRECTION REQUIRED
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
-!
-! Current deposition with the Esirkepov method
-!
-! Implementation is based on Vincenti's method used for the classical current deposition.
-! Despite vectorization, this subroutine does not exhibit gain in performance
-! with AVX512 architecture.
-!
-! PROBLEM: CORRECTION REQUIRED
 ! ________________________________________________________________________________________
   USE omp_lib
   USE constants
@@ -8400,7 +8503,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
 END SUBROUTINE
 #endif
 
-! _________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov scalar current deposition at order 3 in x, y, z (nox=noy=noz=3)
 !>
@@ -8432,7 +8535,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
-! _________________________________________________________________
+! ________________________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -8610,9 +8713,10 @@ END SUBROUTINE depose_jxjyjz_esirkepov_3_3_3
 
 
 ! ________________________________________________________________________________________
-!> Esirkepov current deposition algorithm for linear, quadratic or cubic splines
 !> @brief
+!> Esirkepov current deposition algorithm for linear, quadratic or cubic splines
 !
+!> @details
 !> This subroutine can be used for several orders
 !> WARNING: Highly unoptimized routine ---> USE INLINED ROUTINE
 !
@@ -8621,9 +8725,10 @@ END SUBROUTINE depose_jxjyjz_esirkepov_3_3_3
 !
 !> @date
 !> 2016
-SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-  nox,noy,noz,l_particles_weight,l4symtry)
+SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q, &
+                                         xmin,ymin,zmin, &
+                                         dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+                                         nox,noy,noz,l_particles_weight,l4symtry)
 ! ________________________________________________________________________________________
 
   USE constants
@@ -8636,15 +8741,15 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
 
   REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
-  REAL(num) :: xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz,dts2dx,dts2dy,dts2dz, &
-  s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz, &
-  oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
-  dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
+  REAL(num) :: xold,yold,zold,x,y,z,wq,wqx,wqy,wqz,vx,vy,vz,dts2dx,dts2dy,dts2dz
+  REAL(num) :: invvol,invdtdx,invdtdy,invdtdz
+  REAL(num) :: oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq
+  REAL(num) :: dtsdx0,dtsdy0,dtsdz0,dts2dx0,dts2dy0,dts2dz0
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
   REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
   REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
   REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
-  INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+  INTEGER(idp) :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,i,j,k,ic,jc,kc, &
   ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells, ndtodx, ndtody, ndtodz, &
   xl,xu,yl,yu,zl,zu
   LOGICAL(lp)  :: l_particles_weight,l4symtry
@@ -8967,14 +9072,20 @@ RETURN
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
 
 #if defined (DEV)
-! ===========================================
-! warp_depose_jxjyjz_esirkepov_n
+! ________________________________________________________________________________________
+!> @brief
+!> Warp fonction for esirkepov
 !
-! Warp fonction for esirkepov
-! ===========================================
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 subroutine warp_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,w,q,xmin,ymin,zmin, &
                                                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                                  nox,noy,noz,l_particles_weight,l4symtry)
+! ________________________________________________________________________________________
+
    use constants
    implicit none
    integer(8) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
@@ -9324,10 +9435,19 @@ end subroutine warp_depose_jxjyjz_esirkepov_n
 #endif
 
 #if defined (DEV)
-! ======================================================
+! ________________________________________________________________________________________
+!> @brief
+!> Warp fonction for esirkepov
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 subroutine picsar_depose_jxjyjz_esirkepov_n(cj,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                                  nox,noy,noz,l_particles_weight,l4symtry)
+! ________________________________________________________________________________________
    use constants
    implicit none
    integer(8) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
@@ -9676,9 +9796,11 @@ end subroutine picsar_depose_jxjyjz_esirkepov_n
 
 
 ! ________________________________________________________________________________________
-!> This subroutine performs the reduction of jxcellx, jycells and jzcells into jx,jy and jz.
 !> @brief
+!> This subroutine performs the reduction of jxcellx, jycells and jzcells 
+!> into jx,jy and jz.
 !
+!> @details
 !> This subroutine is called after the loop on particles where
 !> depose_jxjyjz_vecHV_vnr_1_1_1() is performed for each species
 !
@@ -9688,18 +9810,15 @@ end subroutine picsar_depose_jxjyjz_esirkepov_n
 !> @date
 !> 2016
 !
-! Inputs:
+!> @param[inout] jx,jy,jz global current grids
+!> @param[in] jxcells,jycells,jzcells temporary current arrays
+!> @param[in] ncells tile cell numbers
+!> @param[in] nx,ny,nz: tile cell numbers in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells
+!> @param[in] ncx,ncy,ncz 
 !
-!> param[inout] jx,jy,jz global current grids
-! - jxcells,jycells,jzcells: transient current arrays
-! - ncells: tile cell numbers
-! - nx,ny,nz: tile cell numbers in each direction
-! - nxguard,nyguard,nzguard
-! - ncx,ncy,ncz
-!
-! Outputs:
-! - jx,jy,jz updated
-SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz)
+SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz, &
+                                   nxguard,nyguard,nzguard,ncx,ncy,ncz)
 ! ________________________________________________________________________________________
     USE constants
     USE precomputed
@@ -9795,21 +9914,27 @@ END SUBROUTINE current_reduction_1_1_1
 
 
 ! ________________________________________________________________________________________
+!> @brief
+!> This subroutine performs the reduction of jxcellx, jycells 
+!> and jzcells into jx,jy and jz.
+!
+!> @details
+!> This subroutine is called after the loop on particles where
+!> depose_jxjyjz_vecHV_vnr_2_2_2 is performed for each species
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+!> @param[inout] jx,jy,jz global current grids
+!> @param[in] jxcells,jycells,jzcells temporary current arrays
+!> @param[in] ncells tile cell numbers
+!> @param[in] nx,ny,nz: tile cell numbers in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells
+!> @param[in] ncx,ncy,ncz 
 SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz)
-! This subroutine performs the reduction of jxcellx, jycells and jzcells into jx,jy and jz.
-! This subroutine is called after the loop on particles where
-! depose_jxjyjz_vecHV_vnr_2_2_2 is performed for each species
-!
-! Inputs:
-! - jx,jy,jz
-! - jxcells,jycells,jzcells: transient current arrays
-! - ncells: tile cell numbers
-! - nx,ny,nz: tile cell numbers in each direction
-! - nxguard,nyguard,nzguard
-! - ncx,ncy,ncz
-!
-! Outputs:
-! - jx,jy,jz updated
 ! ________________________________________________________________________________________
     USE constants
     USE precomputed
@@ -9901,22 +10026,28 @@ SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
 END SUBROUTINE
 
 ! ________________________________________________________________________________________
+!> @brief
+!> This subroutine performs the reduction of jxcellx, jycells and jzcells 
+!> into jx,jy and jz.
+!
+!> @details
+!> This subroutine is called after the loop on particles where
+!> depose_jxjyjz_vecHV_vnr_3_3_3 is performed for each species
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+!> @param[inout] jx,jy,jz global current grids
+!> @param[in] jxcells,jycells,jzcells temporary current arrays
+!> @param[in] ncells tile cell numbers
+!> @param[in] nx,ny,nz: tile cell numbers in each direction
+!> @param[in] nxguard,nyguard,nzguard number of guard cells
+!> @param[in] ncx,ncy,ncz 
 SUBROUTINE current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,&
                                    nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz)
-! This subroutine performs the reduction of jxcellx, jycells and jzcells into jx,jy and jz.
-! This subroutine is called after the loop on particles where
-! depose_jxjyjz_vecHV_vnr_3_3_3 is performed for each species
-!
-! Inputs:
-! - jx,jy,jz
-! - jxcells,jycells,jzcells: transient current arrays
-! - ncells: tile cell numbers
-! - nx,ny,nz: tile cell numbers in each direction
-! - nxguard,nyguard,nzguard
-! - ncx,ncy,ncz
-!
-! Outputs:
-! - jx,jy,jz updated
 ! ________________________________________________________________________________________
     USE constants
     USE precomputed
