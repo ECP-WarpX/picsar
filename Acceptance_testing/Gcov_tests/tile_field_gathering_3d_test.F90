@@ -499,10 +499,8 @@ SUBROUTINE check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesum
   ! ___ Parameter declaration ________________________________________
   REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumex,tilesumey,tilesumez
   REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumbx,tilesumby,tilesumbz
-  INTEGER(idp)             :: ispecies, ix, iy, iz, count
-  INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
+  INTEGER(idp)                    :: ispecies, ix, iy, iz, count
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
 
   DO iz=1, ntilez ! LOOP ON TILES
