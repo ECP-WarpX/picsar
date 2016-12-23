@@ -2214,7 +2214,7 @@ class EM3DPXR(EM3DFFT):
         
         nbptot = zeros(1)
         
-        pxr.get_tot_number_of_particles(nbtot)
+        pxr.get_tot_number_of_particles(nbptot)
         
         return nbptot[0]
         
