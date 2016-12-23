@@ -2212,7 +2212,7 @@ class EM3DPXR(EM3DFFT):
         - total number of particles
         """
         
-        nbptot = zeros(1)
+        nbptot = zeros(1,dtype=int)
         
         pxr.get_tot_number_of_particles(nbptot)
         
