@@ -440,8 +440,8 @@ MODULE diagnostics
     !> @author
     !> Mathieu Lobet
     !
-    !> @creation
-    !> May 2016
+    !> @date
+    !> Creation: May 2016
     SUBROUTINE get_tot_number_of_particles(nptot)
     ! ____________________________________________________________________________________
         USE particle_tilemodule
@@ -454,7 +454,7 @@ MODULE diagnostics
         IMPLICIT NONE
 
         INTEGER(idp), INTENT(OUT) :: nptot
-        INTEGER(idp) :: is, nptottmp
+        INTEGER(idp)              :: is, nptottmp
 
         nptot = 0
 

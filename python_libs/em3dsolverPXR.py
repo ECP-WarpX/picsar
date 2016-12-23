@@ -25,6 +25,11 @@ except:
     l_pxr=False
 
 try:
+    import numpy as numpy
+except:
+    print 'Error cannot import numpy'
+
+try:
     import os as os
     print 'Import os as os'
 except:
@@ -2212,7 +2217,7 @@ class EM3DPXR(EM3DFFT):
         - total number of particles
         """
         
-        nbptot = zeros(1,dtype=int)
+        nbptot = zeros(1,dtype=numpy.int64)
         
         pxr.get_tot_number_of_particles(nbptot)
         

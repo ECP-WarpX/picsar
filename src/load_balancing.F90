@@ -1,10 +1,28 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ________________________________________________________________________________________
+!
+!     LOAD_BALANCING.F90
+!
 ! MODULE FOR LOAD BALANCING 3D EM PIC SIMULATIONS
-! WRITTEN BY H. VINCENTI 
+!
+! Author:
+! Henri Vincenti
+!
+! Date
 ! v 1.0 March 16 2016 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ________________________________________________________________________________________
 
+! ________________________________________________________________________________________
+!> @brief
+!> This module is dedicated to the load balancing. It contains subroutines to determine 
+!> the load imbalance and improve the load between the MPI domains.
+!
+!> @author
+!> Henri vincenti
+!
+!> @date
+!> Creation 2016
 MODULE load_balance 
+! ________________________________________________________________________________________
 USE fields 
 USE shared_data
 USE tiling 
@@ -12,7 +30,17 @@ IMPLICIT NONE
 
 CONTAINS 
 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine needs a description.
+!
+!> @author
+!> Henri vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE compute_currproc_array_dimensions(nnew,ncmin,ncmax,np,mpi_rank)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN OUT) :: nnew
     INTEGER(idp), INTENT(IN) :: np,mpi_rank
@@ -22,8 +50,18 @@ SUBROUTINE compute_currproc_array_dimensions(nnew,ncmin,ncmax,np,mpi_rank)
 
 END SUBROUTINE compute_currproc_array_dimensions
 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine needs a description.
+!
+!> @author
+!> Henri vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, & 
                                     cxmax,cymax,czmax,npx,npy,npz,np,l_cart_comm)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, np
     LOGICAL(lp)  :: l_cart_comm
@@ -51,8 +89,18 @@ SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, &
                                     
 END SUBROUTINE get_1Darray_proclimits
 
-
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine converts indexes of a rank in a rank number. 
+!
+!> @author
+!> Henri vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
+! ________________________________________________________________________________________
+
     IMPLICIT NONE 
     INTEGER(isp), INTENT(IN) :: mpi_comm_in
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix,iy,iz
@@ -81,13 +129,22 @@ SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_car
 END SUBROUTINE pxr_convertindtoproc
 
 
-! Remap fields based on new split 
+! ________________________________________________________________________________________
+!> @brief
+!> Remap fields based on new split
+!
+!> @author
+!> Henri vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE mpi_remap_2D_field_component(field_new,nx_new,nz_new,        &
                                         field_old,nx_old,nz_old,        &
                                         nxg,nzg,                        &
                                         ix1old, ix2old, iz1old, iz2old, &
                                         ix1new, ix2new, iz1new, iz2new, & 
                                         iproc, np)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg,1,-nzg:nz_new+nzg) :: field_new
     REAL(num), INTENT(IN), DIMENSION(-nxg:nx_old+nxg,1,-nzg:nz_old+nzg) :: field_old
@@ -104,13 +161,22 @@ SUBROUTINE mpi_remap_2D_field_component(field_new,nx_new,nz_new,        &
                            iproc,np,comm,errcode)
 END SUBROUTINE mpi_remap_2D_field_component
 
-! Remap fields based on new split 
+! ________________________________________________________________________________________
+!> @brief
+!> Remap fields based on new split
+!
+!> @author
+!> Henri vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE mpi_remap_3D_field_component(field_new,nx_new,ny_new,nz_new,                 &
                                         field_old,nx_old,ny_old,nz_old,                 &
                                         nxg,nyg,nzg,                                    &
                                         ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
                                         ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
                                         iproc, np)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg,-nyg:ny_new+nyg,-nzg:nz_new+nzg) :: field_new
     REAL(num), INTENT(IN), DIMENSION(-nxg:nx_old+nxg,-nyg:ny_old+nyg,-nzg:nz_old+nzg) :: field_old
@@ -128,16 +194,22 @@ SUBROUTINE mpi_remap_3D_field_component(field_new,nx_new,ny_new,nz_new,         
 END SUBROUTINE mpi_remap_3D_field_component
 
 
-
-
-
-! This subroutine remaps emfield_old in emfield_new and 
-! takes care of all MPI exchanges between different MPI_PROCESSES
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine remaps emfield_old in emfield_new and 
+!> takes care of all MPI exchanges between different MPI_PROCESSES
+!
+!> @author
+!> Henri vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                            ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
                            emfield_new,nxnew,nynew,nznew,nxg,nyg,nzg,     &
                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
                            iproc, nprocs, communicator, ierrcode)
+! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxold, nyold, nzold, nxnew, nynew,nznew, iproc, nprocs
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
