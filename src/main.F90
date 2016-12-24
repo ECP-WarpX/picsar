@@ -2,49 +2,53 @@
 !
 ! PICSAR
 ! 
-!>version 2.0
-!>09/15/2015
+! version 2.0
+! Creation date: 09/15/2015
 !
-!>@author
-!>Henri Vincenti
-!>Mathieu Lobet
-!
-!>@section Presentation
-!
+! Developers:
+!  Henri Vincenti
+!  Mathieu Lobet
+!  Remi Lehe
+!  Jean-Luc Vay
+!  Guillaume Blaclard
 !
 ! INCLUDES: 
 ! - Arbitrary order field solver (Maxwell.F90)
 ! - High order current deposition/field gathering routines (current_deposition.F90, field_gathering.F90)
-! - MPI-parallelization (mpi_subtype_control.F90, mpi_routines.F90, boundary.F90)
+! - MPI-domain decomposition (mpi_subtype_control.F90, mpi_routines.F90, boundary.F90)
+! - Tiling of particles for better memory locality (tiling.F90)
+! - OpenMP Hybrid Parallelization (current_deposition.F90, field_gathering.F90, particle_push.F90, Maxwell.F90)
 ! - MPI-IO outputs
-! - OpenMP Parallelization (current_deposition.F90, field_gathering.F90, particle_push.F90, Maxwell.F90)
-! - Tiling of particles for better memory locality
 
 !===============================================================================
 
 PROGRAM main
 !===============================================================================
-USE constants
-USE fields
-USE particles
-USE params
-USE shared_data
-USE mpi_routines
-USE control_file
-USE time_stat
-USE diagnostics
+
+  USE constants
+  USE fields
+  USE particles
+  USE params
+  USE shared_data
+  USE mpi_routines
+  USE control_file
+  USE time_stat
+  USE diagnostics
+  
+! Vtune profiling
 #if (defined(VTUNE) && VTUNE>0)
-USE ITT_FORTRAN                     
+  USE ITT_FORTRAN
 #endif 
+! SDE profiling
 #if (defined(SDE) && SDE>0)||(defined(DFP))
-USE SDE_FORTRAN                     
+  USE SDE_FORTRAN                     
 #endif   
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
 ! Intel Design Forward project
 #if defined(DFP)
- CALL DFP_INIT_START
+  CALL DFP_INIT_START
 #endif
 
 ! --- default init
@@ -81,24 +85,24 @@ IMPLICIT NONE
 
 ! Intel Design Forward project
 #if defined(DFP)
- CALL DFP_INIT_STOP
+   CALL DFP_INIT_STOP
 #endif
 
-!----------------------------------------------
-! THIS IS THE PIC ALGORITHM TIME LOOP
-!----------------------------------------------
-IF (rank .EQ. 0) startsim=MPI_WTIME()
-CALL step(nsteps)
-IF (rank .EQ. 0) endsim=MPI_WTIME()
-IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim
+  !----------------------------------------------
+  ! THIS IS THE PIC ALGORITHM TIME LOOP
+  !----------------------------------------------
+  IF (rank .EQ. 0) startsim=MPI_WTIME()
+  CALL step(nsteps)
+  IF (rank .EQ. 0) endsim=MPI_WTIME()
+  IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim
 
-CALL time_statistics
+  CALL time_statistics
 
-CALL mpi_close
+  CALL mpi_close
 
 ! Intel Design Forward project
 #if defined(DFP)
- CALL DFP_FINAL_STOP
+   CALL DFP_FINAL_STOP
 #endif
 
 END PROGRAM main
