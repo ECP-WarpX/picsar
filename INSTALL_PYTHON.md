@@ -256,10 +256,8 @@ LDCOM=mpicc -shared
 FCOMP=gfortran
 FCOMPEXEC=mpif90
 FARGS="-O3 -fPIC -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0 -fopenmp"
-#LIBDIR=-L/usr/local/Cellar/open-mpi/1.10.1_1/lib/
-LIBDIR=#-L/bgsys/drivers/V1R2M2/ppc64/comm/lib -L/bgsys/drivers/V1R2M2/ppc64/gnu-linux/powerpc64-bgq-linux/lib/#-L/opt/local/lib/mpich-mp/
+LIBDIR=
 LIBS=-lgomp -lmpifort#-lgomp -lmpich-gcc -lopa-gcc -lmpl-gcc -lpami-gcc #-lmpifort -lgfortran #-lmpi -lmpi_usempif08 -lmpi_mpifh -lgomp
-#LIBS=-lmpifort -lmpi -lpmpi -lgomp
 TESTDIR=example_scripts_python
 export CC=$(CCOMPILER)
 export LDSHARED=$(LDCOM)
