@@ -237,6 +237,35 @@ LIBS=
 TESTDIR=example_scripts_python
 ```
 
+### **On the clusters MIRA/CETUS at ALCF**
+
+For environment configuration and Forthon installation, refer to the `doc/INSTALL_MIRA/INSTALL_MIRA.md` 
+documentation file on the WARP bitbucket repo. 
+
+To use gcc compiler on powerpc arch and compile the python version of PXR use the following options in your own  `Makefile_Forthon` duplicated from `Makefile_Forthon.in`: 
+```
+SRCDIR= src
+BINDIR = python_bin
+APPNAME=picsar
+PYTHON_NAME=picsarpy
+UTIL=utils
+FC=Forthon
+FCARGS=-v --no2underscores  --nowritemodules
+CCOMPILER=/bgsys/drivers/V1R2M2/ppc64/gnu-linux-4.7.2/bin/powerpc64-bgq-linux-gcc -mcmodel=medium
+LDCOM=mpicc -shared
+FCOMP=gfortran
+FCOMPEXEC=mpif90
+FARGS="-O3 -fPIC -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0 -fopenmp"
+#LIBDIR=-L/usr/local/Cellar/open-mpi/1.10.1_1/lib/
+LIBDIR=#-L/bgsys/drivers/V1R2M2/ppc64/comm/lib -L/bgsys/drivers/V1R2M2/ppc64/gnu-linux/powerpc64-bgq-linux/lib/#-L/opt/local/lib/mpich-mp/
+LIBS=-lgomp -lmpifort#-lgomp -lmpich-gcc -lopa-gcc -lmpl-gcc -lpami-gcc #-lmpifort -lgfortran #-lmpi -lmpi_usempif08 -lmpi_mpifh -lgomp
+#LIBS=-lmpifort -lmpi -lpmpi -lgomp
+TESTDIR=example_scripts_python
+export CC=$(CCOMPILER)
+export LDSHARED=$(LDCOM)
+```
+
+
 ## **4. Compiling and installing**
 
 
