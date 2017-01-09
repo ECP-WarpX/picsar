@@ -61,7 +61,7 @@ MODULE mpi_routines
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> Mimimal initialization when using python
+  !> Minimal initialization when using Python.
   !
   !> @author
   !> Henri Vincenti
