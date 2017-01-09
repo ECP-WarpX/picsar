@@ -830,15 +830,25 @@ MODULE output_data !#do not parse
     REAL(num) :: dump_x_min
     !> Maximal particle position in x for dumping
     REAL(num) :: dump_x_max
+    !> Minimal particle position in y for dumping
     REAL(num) :: dump_y_min
+    !> Maximal particle position in y for dumping
     REAL(num) :: dump_y_max
+    !> Minimal particle position in z for dumping
     REAL(num) :: dump_z_min
+    !> Maximal particle position in z for dumping
     REAL(num) :: dump_z_max
+    !> Minimal particle momentum in x for dumping
     REAL(num) :: dump_ux_min
+    !> Maximal particle momentum in x for dumping
     REAL(num) :: dump_ux_max
+    !> Minimal particle momentum in y for dumping
     REAL(num) :: dump_uy_min
+    !> Maximal particle momentum in y for dumping
     REAL(num) :: dump_uy_max
+    !> Minimal particle momentum in z for dumping
     REAL(num) :: dump_uz_min
+    !> Maximal particle momentum in z for dumping
     REAL(num) :: dump_uz_max
   END TYPE particle_dump
 
@@ -856,80 +866,257 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   ! MPI subdomain data
   !----------------------------------------------------------------------------
-  INTEGER(isp) :: errcode, provided, comm, tag
+  !> Error code for MPI
+  INTEGER(isp) :: errcode
+  !> Variable used by MPI
+  INTEGER(isp) :: provided
+  !> Communicator used by MPI
+  INTEGER(isp) :: comm
+  !> Tag variable used by MPI
+  INTEGER(isp) :: tag
+  !> MPI process rank
   INTEGER(idp) :: rank
+  !> MPI process coordinates in a Cartesian topology
   INTEGER(isp) :: coordinates(3)
-  INTEGER (idp) :: neighbour(-1:1, -1:1, -1:1)
-  INTEGER(idp) :: x_coords, proc_x_min, proc_x_max
-  INTEGER(idp):: y_coords, proc_y_min, proc_y_max
-  INTEGER(idp)                        :: z_coords, proc_z_min, proc_z_max
-  INTEGER(idp)                        :: nproc, nprocx, nprocy, nprocz
-  INTEGER(isp)                        :: nprocdir(3)
-  INTEGER(idp), POINTER, DIMENSION(:) :: nx_each_rank, ny_each_rank, nz_each_rank
+  !> MI process neighbors in a Cartesian topology
+  INTEGER(idp) :: neighbour(-1:1, -1:1, -1:1)
+  !> MPI process x coordinate, equivalent of x_coords = coordinates(c_ndims) 
+  !> with a Cartesian topology
+  INTEGER(idp) :: x_coords
+  !> Minimal MPI process topology index in x
+  INTEGER(idp) :: proc_x_min
+  !> Maximal MPI process topology index in x
+  INTEGER(idp) :: proc_x_max
+  !> MPI process y coordinate, equivalent of x_coords = coordinates(c_ndims-1) 
+  !> with a Cartesian topology
+  INTEGER(idp) :: y_coords
+  !> Minimal MPI process topology index in y
+  INTEGER(idp) :: proc_y_min
+  !> Maximal MPI process topology index in y
+  INTEGER(idp) :: proc_y_max
+  !> MPI process y coordinate, equivalent of x_coords = coordinates(c_ndims-1) 
+  !> with a Cartesian topology
+  INTEGER(idp) :: z_coords
+  !> Minimal MPI process topology index in z
+  INTEGER(idp) :: proc_z_min
+  !> Maximal MPI process topology index in z
+  INTEGER(idp) :: proc_z_max
+  !> Number of MPI processes
+  INTEGER(idp) :: nproc
+  !> Number of MPI processes in x
+  INTEGER(idp) :: nprocx
+  !> Number of MPI processes in y
+  INTEGER(idp) :: nprocy
+  !> Number of MPI processes in z
+  INTEGER(idp) :: nprocz
+  !> This parameter is not used
+  INTEGER(isp) :: nprocdir(3)
+
   ! Boundary data
-  LOGICAL(lp)                        :: x_min_boundary, x_max_boundary
-  LOGICAL(lp)                        :: y_min_boundary, y_max_boundary
-  LOGICAL(lp)                        :: z_min_boundary, z_max_boundary
-  INTEGER(idp)                        :: pbound_x_min, pbound_x_max
-  INTEGER(idp)                        :: pbound_y_min, pbound_y_max
-  INTEGER(idp)                        :: pbound_z_min, pbound_z_max
+  !> This flag is true if the MPI rank is at the inferior x boundary
+  LOGICAL(lp)  :: x_min_boundary
+  !> This flag is true if the MPI rank is at the superior x boundary
+  LOGICAL(lp)  :: x_max_boundary
+  !> This flag is true if the MPI rank is at the inferior y boundary
+  LOGICAL(lp)  :: y_min_boundary
+  !> This flag is true if the MPI rank is at the superior y boundary
+  LOGICAL(lp)  :: y_max_boundary
+  !> This flag is true if the MPI rank is at the inferior z boundary
+  LOGICAL(lp)  :: z_min_boundary
+  !> This flag is true if the MPI rank is at the superior z boundary
+  LOGICAL(lp)  :: z_max_boundary
+  
+  !> Type of boundary condition at the inferior x boundary
+  INTEGER(idp) :: pbound_x_min
+  !> Type of boundary condition at the superior x boundary
+  INTEGER(idp) :: pbound_x_max
+  !> Type of boundary condition at the inferior y boundary
+  INTEGER(idp) :: pbound_y_min
+  !> Type of boundary condition at the superior y boundary
+  INTEGER(idp) :: pbound_y_max
+  !> Type of boundary condition at the inferior z boundary
+  INTEGER(idp) :: pbound_z_min
+  !> Type of boundary condition at the superior z boundary
+  INTEGER(idp) :: pbound_z_max
 
   ! The location of the processors
-  INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min, cell_x_max
-  INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min, cell_y_max
-  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_max
-  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min, new_cell_x_max
-  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_y_min, new_cell_y_max
-  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min, new_cell_z_max
-  INTEGER(idp)                        :: nx_global_grid_min, nx_global_grid_max
-  INTEGER(idp)                        :: ny_global_grid_min, ny_global_grid_max
-  INTEGER(idp)                        :: nz_global_grid_min, nz_global_grid_max
+  !> Minimum cell number in x for each MPI process 
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min
+  !> Maximal cell number in x for each MPI process
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_x_max
+  !> Minimum cell number in y for each MPI process
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min
+  !> Maximal cell number in y for each MPI process
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_y_max
+  !> Minimum cell number in z for each MPI process
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min
+  !> Maximal cell number in z for each MPI process
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_max
+  !> Used in em3dsolverPXR.py
+  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min
+  !> Used in em3dsolverPXR.py
+  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_max
+  !> Used in em3dsolverPXR.py
+  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_y_min
+  !> Used in em3dsolverPXR.py
+  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_y_max
+  !> Used in em3dsolverPXR.py
+  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min
+  !> Used in em3dsolverPXR.py
+  INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_max
+  
+  !> Minimum node number in x in the current MPI process
+  INTEGER(idp)                        :: nx_global_grid_min
+  !> Maximal node number in x in the current MPI process
+  INTEGER(idp)                        :: nx_global_grid_max
+  !> Minimum node number in y in the current MPI process
+  INTEGER(idp)                        :: ny_global_grid_min
+  !> Maximal node number in y in the current MPI process
+  INTEGER(idp)                        :: ny_global_grid_max
+  !> Minimum node number in z in the current MPI process
+  INTEGER(idp)                        :: nz_global_grid_min
+  !> Maximal node number in z in the current MPI process
+  INTEGER(idp)                        :: nz_global_grid_max
+  
   ! Domain axis
-  LOGICAL(lp)                        :: l_axis_allocated=.FALSE.
-  REAL(num), DIMENSION(:), POINTER    :: x_global, y_global, z_global
-  REAL(num), DIMENSION(:), POINTER    :: xb_global, yb_global, zb_global
-  REAL(num), DIMENSION(:), POINTER    :: xb_offset_global
-  REAL(num), DIMENSION(:), POINTER    :: yb_offset_global
-  REAL(num), DIMENSION(:), POINTER    :: zb_offset_global
+  !> Flag true when arrays of axis (x, y, z, x_global, y_global, z_global) 
+  !> are allocated (see mpi_routines.F90)
+  LOGICAL(lp)                         :: l_axis_allocated=.FALSE.
+  !> Global x axis cell array with guard cells (-nxguards:nx_global+nxguards)
+  REAL(num), DIMENSION(:), POINTER    :: x_global
+  !> Global y axis cell array with guard cells (-nyguards:ny_global+nyguards)
+  REAL(num), DIMENSION(:), POINTER    :: y_global
+  !> Global z axis cell array with guard cells (-nzguards:nz_global+nzguards)
+  REAL(num), DIMENSION(:), POINTER    :: z_global
+  
   ! domain limits and size
-  !> local number of cells
-  INTEGER(idp)                        :: nx, ny, nz
-  !> local number of grid points
-  INTEGER(idp)                        :: nx_grid, ny_grid, nz_grid
-  !> global number of cells
-  INTEGER(idp)                        :: nx_global, ny_global, nz_global
-  !> global number of grid points
-  INTEGER(idp)                        :: nx_global_grid, ny_global_grid, nz_global_grid
-  REAL(num)                           :: dx, xmin, xmax, length_x
-  REAL(num)                           :: x_min_local, x_max_local
-  REAL(num)                           :: dy, ymin, ymax,length_y
-  REAL(num)                           :: y_min_local, y_max_local
-  REAL(num)                           :: dz, zmin, zmax,length_z
-  REAL(num)                           :: z_min_local, z_max_local
+  !> local number of cells in x
+  INTEGER(idp)                        :: nx
+  !> local number of cells in y
+  INTEGER(idp)                        :: ny
+  !> local number of cells in z
+  INTEGER(idp)                        :: nz
+  !> local number of grid points in x
+  INTEGER(idp)                        :: nx_grid
+  !> local number of grid points in y
+  INTEGER(idp)                        :: ny_grid
+  !> local number of grid points in z
+  INTEGER(idp)                        :: nz_grid
+  !> global number of cells in x
+  INTEGER(idp)                        :: nx_global
+  !> global number of cells in y
+  INTEGER(idp)                        :: ny_global
+  !> global number of cells in z
+  INTEGER(idp)                        :: nz_global
+  !> global number of grid points in x
+  INTEGER(idp)                        :: nx_global_grid
+  !> global number of grid points in y
+  INTEGER(idp)                        :: ny_global_grid
+  !> global number of grid points in z
+  INTEGER(idp)                        :: nz_global_grid
+  
+  !> Space step in x
+  REAL(num)                           :: dx
+  !> Global grid minimal limit in x
+  REAL(num)                           :: xmin
+  !> Global grid maximal limit in x
+  REAL(num)                           :: xmax
+  !> global length in x: xmax - xmin
+  REAL(num)                           :: length_x
+  !> Local minimal grid limit in x
+  REAL(num)                           :: x_min_local
+  !> Local maximal grid limit in x
+  REAL(num)                           :: x_max_local
+  !> Space step in y
+  REAL(num)                           :: dy
+  !> Global grid minimal limit in y
+  REAL(num)                           :: ymin
+  !> Global grid maximal limit in y
+  REAL(num)                           :: ymax
+  !> global length in y: ymax - ymin
+  REAL(num)                           :: length_y
+  !> Local minimal grid limit in y
+  REAL(num)                           :: y_min_local
+  !> Local maximal grid limit in y
+  REAL(num)                           :: y_max_local
+  !> Space step in z
+  REAL(num)                           :: dz
+  !> Global grid minimal limit in z
+  REAL(num)                           :: zmin
+  !> Global grid maximal limit in z
+  REAL(num)                           :: zmax
+  !> global length in z: zmax - zmin
+  REAL(num)                           :: length_z
+  !> Local minimal grid limit in z
+  REAL(num)                           :: z_min_local
+  !> Local maximal grid limit in z
+  REAL(num)                           :: z_max_local
 
   ! Sorting
   !> Activation of the sorting
   INTEGER(idp) :: sorting_activated
-  !> Bin space steps
-  REAL(NUM)    :: sorting_dx, sorting_dy, sorting_dz
-  !> Shift of the sorting grid in respect of the origin
-  REAL(NUM)    :: sorting_shiftx, sorting_shifty, sorting_shiftz
+  !> Bin space step in x for the sorting
+  REAL(NUM)    :: sorting_dx
+  !> Bin space step in y for the sorting
+  REAL(NUM)    :: sorting_dy
+  !> Bin space step in z for the sorting
+  REAL(NUM)    :: sorting_dz
+  !> Shift of the sorting grid in respect of the origin in x
+  REAL(NUM)    :: sorting_shiftx
+  !> Shift of the sorting grid in respect of the origin in x
+  REAL(NUM)    :: sorting_shifty
+  !> Shift of the sorting grid in respect of the origin in x
+  REAL(NUM)    :: sorting_shiftz
   !> verbose for the sorting (depreciated)
-  LOGICAL(lp)      :: sorting_verbose
+  LOGICAL(lp)  :: sorting_verbose
 
   ! Axis
   !> Space dimension
   INTEGER(idp) :: c_dim = 3
-  REAL(num), POINTER, DIMENSION(:) :: x, y, z
-  REAL(num), DIMENSION(:), POINTER :: x_grid_mins, x_grid_maxs
-  REAL(num), DIMENSION(:), POINTER :: y_grid_mins, y_grid_maxs
-  REAL(num), DIMENSION(:), POINTER :: z_grid_mins, z_grid_maxs
-  REAL(num) ::  x_grid_min, x_grid_max
-  REAL(num) :: x_grid_min_local, x_grid_max_local
-  REAL(num) ::  y_grid_min, y_grid_max
-  REAL(num) :: y_grid_min_local, y_grid_max_local
-  REAL(num) :: z_grid_min, z_grid_max
-  REAL(num) :: z_grid_min_local, z_grid_max_local
+  !> Local x axis cell array with guard cells (-nxguards:nx+nxguards)
+  REAL(num), POINTER, DIMENSION(:) :: x
+  !> Local y axis cell array with guard cells (-nyguards:ny+nyguards)
+  REAL(num), POINTER, DIMENSION(:) :: y
+  !> Local z axis cell array with guard cells (-nzguards:nz+nzguards)
+  REAL(num), POINTER, DIMENSION(:) :: z
+  
+  !> Local grid minimum in x for each processor (1:nprocx)
+  REAL(num), DIMENSION(:), POINTER :: x_grid_mins
+  !> Local grid maximum in x for each processor (1:nprocx)
+  REAL(num), DIMENSION(:), POINTER :: x_grid_maxs
+  !> Local grid minimum in y for each processor (1:nprocy)
+  REAL(num), DIMENSION(:), POINTER :: y_grid_mins
+  !> Local grid maximum in y for each processor (1:nprocy)
+  REAL(num), DIMENSION(:), POINTER :: y_grid_maxs
+  !> Local grid minimum in z for each processor (1:nprocz)
+  REAL(num), DIMENSION(:), POINTER :: z_grid_mins
+  !> Local grid maximum in z for each processor (1:nprocz)
+  REAL(num), DIMENSION(:), POINTER :: z_grid_maxs
+  
+  !> Minimal global grid limit in x
+  REAL(num) :: x_grid_min
+  !> Maximal global grid limit in x
+  REAL(num) :: x_grid_max
+  !> Minimal local grid limit in x
+  REAL(num) :: x_grid_min_local
+  !> Maximal local grid limit in x
+  REAL(num) :: x_grid_max_local
+  !> Minimal global grid limit in y
+  REAL(num) :: y_grid_min
+  !> Maximal global grid limit in y
+  REAL(num) :: y_grid_max
+  !> Minimal local grid limit in y
+  REAL(num) :: y_grid_min_local
+  !> Maximal local grid limit in y
+  REAL(num) :: y_grid_max_local
+  !> Minimal global grid limit in z
+  REAL(num) :: z_grid_min
+  !> Maximal global grid limit in z
+  REAL(num) :: z_grid_max
+  !> Minimal local grid limit in z
+  REAL(num) :: z_grid_min_local
+  !> Maximal local grid limit in z
+  REAL(num) :: z_grid_max_local
 
   !> Total charge density
   REAL(num), POINTER, DIMENSION(:,:,:) :: rho
@@ -937,10 +1124,15 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:,:,:) :: dive
 
   ! Values used for load balancing
-  REAL(num) :: mpitime_per_it, max_time_per_it, min_time_per_it
-  REAL(num) :: global_time_per_cell, global_time_per_part
-  REAL(num) :: local_time_cell, local_time_part
-  INTEGER(idp) :: npart_local, npart_global
+  REAL(num) :: mpitime_per_it
+  REAL(num) :: max_time_per_it
+  REAL(num) :: min_time_per_it
+  REAL(num) :: global_time_per_cell
+  REAL(num) :: global_time_per_part
+  REAL(num) :: local_time_cell
+  REAL(num) :: local_time_part
+  INTEGER(idp) :: npart_local
+  INTEGER(idp) :: npart_global
 END MODULE shared_data
 
 !===============================================================================
@@ -948,38 +1140,101 @@ END MODULE shared_data
 MODULE kyee_em3d
 !===============================================================================
   USE constants
-  REAL(num) :: alphax = 0.58333333333333337  ! 7./12.
-  REAL(num) :: betaxy = 0.083333333333333329 ! 1./12.
-  REAL(num) :: betaxz = 0.083333333333333329 ! 1./12.
-  REAL(num) :: gammax = 0.020833333333333332 ! 1./48.
-  REAL(num) :: alphay = 0.58333333333333337  ! 7./12.
-  REAL(num) :: betayx = 0.083333333333333329 ! 1./12.
-  REAL(num) :: betayz = 0.083333333333333329 ! 1./12.
-  REAL(num) :: gammay = 0.020833333333333332 ! 1./48.
-  REAL(num) :: alphaz = 0.58333333333333337  ! 7./12.
-  REAL(num) :: betazx = 0.083333333333333329 ! 1./12.
-  REAL(num) :: betazy = 0.083333333333333329 ! 1./12.
-  REAL(num) :: gammaz = 0.020833333333333332 ! 1./48.
-  REAL(num) :: deltaz = 0.000000000000000000 ! for the lehe solver
+  !> alphax Maxwell coefficient = 7./12.
+  REAL(num) :: alphax = 0.58333333333333337
+  !> alphax Maxwell coefficient = 1./12.
+  REAL(num) :: betaxy = 0.083333333333333329
+  !> alphax Maxwell coefficient = 1./12.
+  REAL(num) :: betaxz = 0.083333333333333329
+  !> gammax Maxwell coefficient = 1./48.
+  REAL(num) :: gammax = 0.020833333333333332
+  !> alphay Maxwell coefficient = 7./12.
+  REAL(num) :: alphay = 0.58333333333333337
+  !> betayx Maxwell coefficient = 1./12.
+  REAL(num) :: betayx = 0.083333333333333329
+  !> betayz Maxwell coefficient = 1./12.
+  REAL(num) :: betayz = 0.083333333333333329
+  !> gammay Maxwell coefficient = 1./48.
+  REAL(num) :: gammay = 0.020833333333333332
+  !> alphaz Maxwell coefficient = 7./12.
+  REAL(num) :: alphaz = 0.58333333333333337 
+  !> betazx Maxwell coefficient = 1./12. 
+  REAL(num) :: betazx = 0.083333333333333329
+  !> betazy Maxwell coefficient = 1./12.
+  REAL(num) :: betazy = 0.083333333333333329 
+  !> gammaz Maxwell coefficient = 1./48.
+  REAL(num) :: gammaz = 0.020833333333333332 
+  !> Coefficient for the lehe solver
+  REAL(num) :: deltaz = 0.000000000000000000
 END MODULE kyee_em3d
 
 !=========================================================================================
-!> Module containing pointer to the python arrays
+!> Module containing pointer to the python arrays (used in em3dsolverPXR.py)
 MODULE python_pointers
 !=========================================================================================
   USE constants
+  !> Equivalent of pg.nps, the number of particles for each species
   INTEGER(idp), POINTER :: partn(:)
+  !> Maximal number of particles, equivalent of pg.npmax in em3dsolverPXR
   INTEGER(idp) :: partnmax
-  INTEGER(idp) :: nxtg, nytg, nztg
-  INTEGER(idp) :: nxgt, nygt, nzgt
-  INTEGER(idp) :: nxct, nyct, nzct
-  INTEGER(idp) :: nxmin, nxmax, nymin, nymax, &
-  nzmin, nzmax
+  !> Number of guard cells in x, equivalent of particle_tile%nxg_tile
+  INTEGER(idp) :: nxtg
+  !> Number of guard cells in y, equivalent of particle_tile%nyg_tile
+  INTEGER(idp) :: nytg
+  !> Number of guard cells in z, equivalent of particle_tile%nzg_tile
+  INTEGER(idp) :: nztg
+  !> Number of nodes in x, equivalent of particle_tile%nx_grid_tile
+  INTEGER(idp) :: nxgt
+  !> Number of nodes in y, equivalent of particle_tile%ny_grid_tile
+  INTEGER(idp) :: nygt
+  !> Number of nodes in z, equivalent of particle_tile%nz_grid_tile
+  INTEGER(idp) :: nzgt
+  !> Number of cells in x, equivalent of particle_tile%nx_cells_tile
+  INTEGER(idp) :: nxct
+  !> Number of cells in y, equivalent of particle_tile%ny_cells_tile
+  INTEGER(idp) :: nyct
+  !> Number of cells in z, equivalent of particle_tile%nz_cells_tile
+  INTEGER(idp) :: nzct
+  
+  !> Minimal cell index in x, equivalent of particle_tile%nx_tile_min
+  INTEGER(idp) :: nxmin
+  !> Maximal cell index in x, equivalent of particle_tile%nx_tile_max
+  INTEGER(idp) :: nxmax
+  !> Minimal cell index in y, equivalent of particle_tile%ny_tile_min
+  INTEGER(idp) :: nymin
+  !> Maximal cell index in y, equivalent of particle_tile%ny_tile_max
+  INTEGER(idp) :: nymax
+  !> Minimal cell index in z, equivalent of particle_tile%nz_tile_min
+  INTEGER(idp) :: nzmin
+  !> Maximal cell index in z, equivalent of particle_tile%nz_tile_max
+  INTEGER(idp) :: nzmax
+  
   ! Tile position
-  REAL(num) :: xtmin, ytmin, ztmin
-  REAL(num) :: xtmax, ytmax, ztmax
-  REAL(num) :: xgtmin, ygtmin, zgtmin
-  REAL(num) :: xgtmax, ygtmax, zgtmax
+  !> Minimal tile limit in x: equivalent of particle_tile%x_tile_min
+  REAL(num) :: xtmin
+  !> Minimal tile limit in y: equivalent of particle_tile%y_tile_min
+  REAL(num) :: ytmin
+  !> Minimal tile limit in z: equivalent of particle_tile%z_tile_min
+  REAL(num) :: ztmin
+  !> Maximal tile limit in x: equivalent of particle_tile%x_tile_max
+  REAL(num) :: xtmax
+  !> Maximal tile limit in y: equivalent of particle_tile%y_tile_max
+  REAL(num) :: ytmax
+  !> Maximal tile limit in z: equivalent of particle_tile%z_tile_max
+  REAL(num) :: ztmax
+  
+  !> Minimal grid tile boundary in x
+  REAL(num) :: xgtmin
+  !> Minimal grid tile boundary in y
+  REAL(num) :: ygtmin
+  !> Minimal grid tile boundary in z
+  REAL(num) :: zgtmin
+  !> Maximal grid tile boundary in x
+  REAL(num) :: xgtmax
+  !> Maximal grid tile boundary in y
+  REAL(num) :: ygtmax
+  !> Maximal grid tile boundary in z
+  REAL(num) :: zgtmax
 
   !> array for particle x position
   REAL(num), DIMENSION(:), POINTER :: partx
@@ -1009,24 +1264,31 @@ MODULE python_pointers
   REAL(num), DIMENSION(:), POINTER :: partgaminv
   !dir$ attributes align:64 :: partgaminv
   !DIR ATTRIBUTES FASTMEM  :: partgaminv
+  !> Array for particle weights and ids
   REAL(num), DIMENSION(:,:), POINTER :: pid
   !dir$ attributes align:64 :: pid
   !DIR ATTRIBUTES FASTMEM  :: pid
+  !> Particle Ex electric field
   REAL(num), DIMENSION(:), POINTER :: partex
   !dir$ attributes align:64 :: partex
   !DIR ATTRIBUTES FASTMEM  :: partex
+  !> Particle Ey electric field
   REAL(num), DIMENSION(:), POINTER :: partey
   !dir$ attributes align:64 :: partey
   !DIR ATTRIBUTES FASTMEM  :: partey
+  !> Particle Ez electric field
   REAL(num), DIMENSION(:), POINTER :: partez
   !dir$ attributes align:64 :: partez
   !DIR ATTRIBUTES FASTMEM  :: partez
+  !> Particle Bx magnetic field
   REAL(num), DIMENSION(:), POINTER :: partbx
   !dir$ attributes align:64 :: partbx
   !DIR ATTRIBUTES FASTMEM  :: partbx
+  !> Particle By magnetic field
   REAL(num), DIMENSION(:), POINTER :: partby
   !dir$ attributes align:64 :: partby
   !DIR ATTRIBUTES FASTMEM  :: partby
+  !> Particle Bz magnetic field
   REAL(num), DIMENSION(:), POINTER :: partbz
   !dir$ attributes align:64 :: partbz
   !DIR ATTRIBUTES FASTMEM  :: partbz
