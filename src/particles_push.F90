@@ -100,7 +100,7 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 !> Revision 10.06.2015
 !
 !> @param[in] exg,eyg,ezg electric field grids
-!> @param[in] bxg,byg,bzg electric field grids
+!> @param[in] bxg,byg,bzg magnetic field grids
 !> @param[in] nxx,nyy,nzz number of cells in each direction for the grids
 !> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction for the grids
 !> @param[in] nxjguard,nyjguard,nzjguard number of guard cells for the current grids

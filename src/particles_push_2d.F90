@@ -1,14 +1,42 @@
 ! ________________________________________________________________________________________
-! PARTICLES_PUSH.F90
+! PARTICLES_PUSH_2D.F90
 !
 ! Subroutines for the particle pusher in 2D
+!
+! Developers:
+! Henri Vincenti
+! Mathieu Lobet
+!
+! Date:
+! Creation 2015
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
 !> @brief
 !> This subroutine is the 2D version of the particle pusher + field gathering
-SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-      nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt)
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+!
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] nxx,nyy,nzz number of cells in each direction for the grids, nyy should be equal to 1.
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction for the grids
+!> @param[in] nxjguard,nyjguard,nzjguard number of guard cells for the current grids
+!> @param[in] noxx,noyy,nozz interpolation orders
+!> @param[in] dxx,dyy,dzz space steps
+!> @param[in] dtt time step
+!
+SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
+                                                       bxg,byg,bzg, &
+                                                       nxx,nyy,nzz, &
+                                                       nxguard,nyguard,nzguard, &
+                                                       nxjguard,nyjguard,nzjguard, &
+                                                       noxx,noyy,nozz,dxx,dyy,dzz,dtt)
 ! ________________________________________________________________________________________
   USE particles
   USE constants
@@ -153,30 +181,58 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg,bxg,byg,bzg,n
 END SUBROUTINE field_gathering_plus_particle_pusher_sub_2d
 
 
-!===============================================================================
-!  Advance particle positions 2D Case
+! ________________________________________________________________________________________
+!> @brief
+!> Advance particle positions 2D Case, serial version.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
+!
+!> @param[in] np number of particles
+!> @param[inout] xp,zp particle position arrays
+!> @param[in] uxp,uzp particle momentum arrays
+!> @param[in] gaminv particle inverse Lorentz factor
+!> @param[in] dt time step
 SUBROUTINE pxr_pushxz(np,xp,zp,uxp,uzp,gaminv,dt)
-!===============================================================================
-USE constants
-USE omp_lib
-IMPLICIT NONE
-INTEGER(idp)   :: np
-REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
-REAL(num) :: dt
-INTEGER(idp)  :: ip
+! ________________________________________________________________________________________
+  USE constants
+  USE omp_lib
+  IMPLICIT NONE
+  INTEGER(idp)   :: np
+  REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
+  REAL(num) :: dt
+  INTEGER(idp)  :: ip
 
-!!$OMP PARALLEL DO PRIVATE(ip)
-DO ip=1,np
-    xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-    zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-ENDDO
-!!$OMP END PARALLEL DO
+  !!$OMP PARALLEL DO PRIVATE(ip)
+  DO ip=1,np
+      xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
+      zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
+  ENDDO
+  !!$OMP END PARALLEL DO
 
-RETURN
+  RETURN
 END SUBROUTINE pxr_pushxz
 
+! ________________________________________________________________________________________
+!> @brief
+!> Advance particle positions 2D Case, vectorized version.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
+!
+!> @param[in] np number of particles
+!> @param[inout] xp,zp particle position arrays
+!> @param[in] uxp,uzp particle momentum arrays
+!> @param[in] gaminv particle inverse Lorentz factor
+!> @param[in] dt time step
 SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
-!===============================================================================
+! ________________________________________________________________________________________
   USE constants
   USE omp_lib
   IMPLICIT NONE
