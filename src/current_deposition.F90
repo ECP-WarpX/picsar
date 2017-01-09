@@ -574,7 +574,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
   USE constants
   USE tiling
   USE omp_lib
-  USE timing
+
   USE time_stat
   IMPLICIT NONE
 
@@ -861,7 +861,6 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   USE constants
   USE tiling
   USE omp_lib
-  USE timing
   USE time_stat
   IMPLICIT NONE
 
@@ -1199,7 +1198,6 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   USE constants
   USE tiling
   USE omp_lib
-  USE timing
   USE time_stat
   IMPLICIT NONE
 
@@ -1528,7 +1526,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,&
   USE constants
   USE tiling
   USE omp_lib
-  USE timing
   USE time_stat
   IMPLICIT NONE
 
@@ -1544,7 +1541,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,&
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER :: curr_tile
   TYPE(grid_tile), POINTER :: currg
-  REAL(num) :: tdeb, tend
   INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)  :: isdeposited=.FALSE.
 
@@ -1567,7 +1563,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,&
 
 IF (nspecies .EQ. 0_idp) RETURN
 
-tdeb=MPI_WTIME()
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
 !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim)            &
@@ -1784,8 +1779,7 @@ DO iz=1,ntilez
 END DO!END LOOP ON TILES
 !$OMP END DO
 !$OMP END PARALLEL
-tend=MPI_WTIME()
-dep_curr_time=dep_curr_time+(tend-tdeb)
+
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 
 ! ________________________________________________________________________________________
@@ -1811,7 +1805,6 @@ USE particles
 USE constants
 USE tiling
 USE omp_lib
-USE timing
 USE time_stat
 IMPLICIT NONE
 
@@ -1827,12 +1820,12 @@ INTEGER(idp)                    :: jminc, jmaxc, kminc, kmaxc, lminc, lmaxc
 TYPE(particle_species), POINTER :: curr
 TYPE(particle_tile), POINTER    :: curr_tile
 TYPE(grid_tile), POINTER        :: currg
-REAL(num)                       :: tdeb, tend
+
 INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
 LOGICAL(lp)                     :: isdeposited=.FALSE.
 
 IF (nspecies .EQ. 0_idp) RETURN
-tdeb=MPI_WTIME()
+
 !$OMP PARALLEL DEFAULT(NONE)                                                              &
 !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
 !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim)            &
@@ -2059,8 +2052,7 @@ DO iz=1,ntilez
 END DO!END LOOP ON TILES
 !$OMP END DO
 !$OMP END PARALLEL
-tend=MPI_WTIME()
-dep_curr_time=dep_curr_time+(tend-tdeb)
+
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 
 ! ________________________________________________________________________________________
@@ -2081,7 +2073,7 @@ noxx,noyy,nozz,dxx,dyy,dzz,dtt)
   USE particles
   USE constants
   USE tiling
-  USE timing
+
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
@@ -2183,7 +2175,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg,jyg,jzg,nxx,n
   USE particles
   USE constants
   USE tiling
-  USE timing
+
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
