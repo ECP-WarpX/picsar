@@ -2,12 +2,26 @@
 !
 ! SIMPLE_IO.F90
 !
+! This file contains subroutines for Picsar outputs.
+!
+! Developers:
+! Henri Vincenti
+! Mathieu Lobet
+!
+! Date:
+! Creation 2015
+! ________________________________________________________________________________________
+
+! ________________________________________________________________________________________
 !> @brief
 !> This module contains subroutines for the outputs.
 ! 
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
 ! ________________________________________________________________________________________
-
-
 MODULE simple_io
 
   USE mpi_derived_types
@@ -17,6 +31,16 @@ MODULE simple_io
 
 CONTAINS
 
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> This subroutine manages all diagnostic outputs.
+    ! 
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
+    ! ____________________________________________________________________________________
     SUBROUTINE output_routines()
         USE shared_data
         USE params
@@ -168,9 +192,17 @@ CONTAINS
         
     END SUBROUTINE output_routines
 
-    ! --------------------------------------------------------------------------
-    ! Output temporal diagnostics
-    ! --------------------------------------------------------------------------
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> This subroutine outputs temporal diagnostics 
+    !> (evolution of integrated quantities as a function of the time)
+    ! 
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation 2015
+    ! ____________________________________________________________________________________
     SUBROUTINE output_temporal_diagnostics
         USE shared_data
         USE params
@@ -343,13 +375,42 @@ CONTAINS
 
 
   ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine writes the field arrays (e.g EM fields, Currents)
+  !> to disk using MPI-IO.
+  !> The files have a header with the main parameters
+  !
+  !> Modification:
+  !> Mathieu Lobet - 2016 - Header with the main parameters
+  !
+  !> @author
+  !> Henri Vincenti
+  !> Mathieu Lobet
+  !
+  !> @date
+  !> Creation 2015
+  !
+  !> @param[in] filename name of the file 
+  !> @param[in] array the array to be output
+  !> @param[in] xmin2 minimum x limit
+  !> @param[in] xmax2 maximum x limit
+  !> @param[in] ymin2 minimum y limit
+  !> @param[in] ymax2 maximum y limit
+  !> @param[in] zmin2 minimum z limit
+  !> @param[in] zmax2 maximum z limit
+  !> @param[in] nxg guard cells in x
+  !> @param[in] nyg guard cells in y
+  !> @param[in] nzg guard cells in z
+  !> @param[in] nx_local local size in x
+  !> @param[in] ny_local local size in y
+  !> @param[in] nz_local local size in z
+  !> @param[in] nx_global2 global size in x
+  !> @param[in] ny_global2 global size in y
+  !> @param[in] nz_global2 global size in z
+  !
   SUBROUTINE write_3d_field_array_to_file(filename, array,     &
              xmin2, xmax2, ymin2, ymax2, zmin2, zmax2, nxg, nyg, nzg, nx_local, &
              ny_local, nz_local, nx_global2, ny_global2, nz_global2)
-  !
-  ! This subroutine writes the field arrays (e.g EM fields, Currents)
-  ! to disk using MPI-IO (H. VINCENTI, M. LOBET)
-  ! The files have a header with the main parameters
   ! ______________________________________________________________________________________
 
     IMPLICIT NONE
@@ -383,11 +444,32 @@ CONTAINS
 
   END SUBROUTINE write_3d_field_array_to_file
 
-  !----------------------------------------------------------------------------
-  ! This subroutine writes a grid quantity (e.g EM fields, Currents)
-  ! to disk using MPI-IO (H. VINCENTI)
-  !----------------------------------------------------------------------------
-  SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, ny_local, nz_local, offset, err)
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine writes a grid quantity (e.g EM fields, Currents)
+  !> to disk using MPI-IO
+  !
+  !> @author
+  !> Henri Vincenti
+  !> Mathieu Lobet
+  !
+  !> @date
+  !> Creation 2015
+  !
+  !> @param[in] filename name of the file 
+  !> @param[in] array the array to be output
+  !> @param[in] nxg guard cells in x
+  !> @param[in] nyg guard cells in y
+  !> @param[in] nzg guard cells in z
+  !> @param[in] nx_local local size in x
+  !> @param[in] ny_local local size in y
+  !> @param[in] nz_local local size in z
+  !> @param[in] offset offset for the header
+  !> @param[inout] err error parameter
+  !
+  SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, &
+                                        nx_local, ny_local, nz_local, offset, err)
+  ! ______________________________________________________________________________________
 
     CHARACTER(LEN=*), INTENT(IN)              :: filename
     INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
@@ -428,9 +510,13 @@ CONTAINS
   !> @brief 
   !> This subroutine dumps the particle properties in a file.
   !>
-  !>
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   SUBROUTINE write_particles_to_file
-
+  ! ______________________________________________________________________________________
     USE particles
     USE constants
     USE params
@@ -525,56 +611,65 @@ CONTAINS
 
   END SUBROUTINE write_particles_to_file
 
-
+  ! ______________________________________________________________________________________
+  !> @brief 
+  !> This subroutine dumps the particle properties in a file.
+  !>
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   SUBROUTINE get_particles_to_dump(idump,mask,narr,ndump) 
-  USE constants
-  USE particles
-  USE tiling 
-  USE output_data
+  ! ______________________________________________________________________________________
   
-  INTEGER(idp), INTENT(IN) :: idump, narr
-  INTEGER(idp), INTENT(IN OUT) :: ndump 
-  LOGICAL(lp) , DIMENSION(narr), INTENT(IN OUT) :: mask 
-  INTEGER(idp) :: ix, iy, iz, count, ip
-  TYPE(particle_species), POINTER :: curr
-  TYPE(particle_dump), POINTER :: dp
-  TYPE(particle_tile), POINTER :: curr_tile
-  REAL(num) :: partx, party, partz, partux, partuy, partuz
-  ndump = 0
-  mask = .FALSE. 
+    USE constants
+    USE particles
+    USE tiling 
+    USE output_data
   
-  dp => particle_dumps(idump)
-  curr => species_parray(dp%ispecies)
-  DO iz=1,ntilez
-      DO iy=1,ntiley
-          DO ix=1,ntilex
-              curr_tile=>curr%array_of_tiles(ix,iy,iz)
-              count=curr_tile%np_tile(1)
-              IF (count .EQ. 0) THEN 
-                CYCLE
-              ELSE 
-                DO ip = 1, count
-                    partx= curr_tile%part_x(ip)
-                    party= curr_tile%part_y(ip)
-                    partz= curr_tile%part_z(ip)
-                    partux= curr_tile%part_ux(ip)
-                    partuy= curr_tile%part_uy(ip)
-                    partuz= curr_tile%part_uz(ip)
-                    IF ((partx .GT. dp%dump_x_min) .AND. (partx .LT. dp%dump_x_max) .AND. &
-                        (party .GT. dp%dump_y_min) .AND. (party .LT. dp%dump_y_max) .AND. &
-                        (partz .GT. dp%dump_z_min) .AND. (partz .LT. dp%dump_z_max) .AND. &
-                        (partux .GT. dp%dump_ux_min) .AND. (partux .LT. dp%dump_ux_max) .AND. &
-                        (partuy .GT. dp%dump_uy_min) .AND. (partuy .LT. dp%dump_uy_max) .AND. &
-                        (partuz .GT. dp%dump_uz_min) .AND. (partuz .LT. dp%dump_uz_max)) THEN 
-                        ndump = ndump+1
-                        mask(ip) = .TRUE. 
-                    ENDIF
-                END DO 
-              ENDIF 
-          END DO
-      END DO
-  END DO!END LOOP ON TILES
+    INTEGER(idp), INTENT(IN) :: idump, narr
+    INTEGER(idp), INTENT(IN OUT) :: ndump 
+    LOGICAL(lp) , DIMENSION(narr), INTENT(IN OUT) :: mask 
+    INTEGER(idp) :: ix, iy, iz, count, ip
+    TYPE(particle_species), POINTER :: curr
+    TYPE(particle_dump), POINTER :: dp
+    TYPE(particle_tile), POINTER :: curr_tile
+    REAL(num) :: partx, party, partz, partux, partuy, partuz
+    ndump = 0
+    mask = .FALSE. 
   
+    dp => particle_dumps(idump)
+    curr => species_parray(dp%ispecies)
+    DO iz=1,ntilez
+        DO iy=1,ntiley
+            DO ix=1,ntilex
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                count=curr_tile%np_tile(1)
+                IF (count .EQ. 0) THEN 
+                  CYCLE
+                ELSE 
+                  DO ip = 1, count
+                      partx= curr_tile%part_x(ip)
+                      party= curr_tile%part_y(ip)
+                      partz= curr_tile%part_z(ip)
+                      partux= curr_tile%part_ux(ip)
+                      partuy= curr_tile%part_uy(ip)
+                      partuz= curr_tile%part_uz(ip)
+                      IF ((partx .GT. dp%dump_x_min) .AND. (partx .LT. dp%dump_x_max) .AND. &
+                          (party .GT. dp%dump_y_min) .AND. (party .LT. dp%dump_y_max) .AND. &
+                          (partz .GT. dp%dump_z_min) .AND. (partz .LT. dp%dump_z_max) .AND. &
+                          (partux .GT. dp%dump_ux_min) .AND. (partux .LT. dp%dump_ux_max) .AND. &
+                          (partuy .GT. dp%dump_uy_min) .AND. (partuy .LT. dp%dump_uy_max) .AND. &
+                          (partuz .GT. dp%dump_uz_min) .AND. (partuz .LT. dp%dump_uz_max)) THEN 
+                          ndump = ndump+1
+                          mask(ip) = .TRUE. 
+                      ENDIF
+                  END DO 
+                ENDIF 
+            END DO
+        END DO
+    END DO!END LOOP ON TILES
   
   END SUBROUTINE get_particles_to_dump
 
@@ -583,7 +678,11 @@ CONTAINS
   !> This subroutine creates a new array of particles (narr) 
   !> from the current particle array (arr) and a list of flags (mask) for filtering.
   !>
-  !>
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   SUBROUTINE concatenate_particle_variable(idump, var, arr, narr, mask, nmask)
   ! ______________________________________________________________________________________
   
@@ -675,9 +774,18 @@ CONTAINS
 
   END SUBROUTINE concatenate_particle_variable
 
- ! -- This subroutine writes a particle array property (e.g x, y,z, px etc.) 
- ! -- in the file  of file handler fh. The array is appended at offset (in bytes) in fh 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine writes a particle array property (e.g x, y,z, px etc.) 
+  !> in the file  of file handler fh. The array is appended at offset (in bytes) in fh.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   SUBROUTINE write_particle_variable(fh, array, narr, mpitype, err, offset)
+  ! ______________________________________________________________________________________
     INTEGER(isp), INTENT(IN) :: fh
     INTEGER(idp), INTENT(IN) :: narr
     REAL(num), DIMENSION(narr), INTENT(IN) :: array
@@ -695,12 +803,18 @@ CONTAINS
     
   END SUBROUTINE write_particle_variable
 
-
-  SUBROUTINE output_time_statistics
-  ! ______________________________________________________
-  ! Output of the time statistics
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Output of the time statistics
   ! 
-  ! ______________________________________________________
+  !> @author
+  !> Mathieu Lobet
+  !
+  !> @date
+  !> Creation 2016
+  SUBROUTINE output_time_statistics
+  ! ______________________________________________________________________________________
+  
     USE time_stat
     USE params
     USE shared_data
@@ -746,11 +860,19 @@ CONTAINS
   END SUBROUTINE
 
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Output of the time statistics at the end of the simulation.
+  !> Purge the buffer.
+  ! 
+  !> @author
+  !> Mathieu Lobet
+  !
+  !> @date
+  !> Creation 2016
   SUBROUTINE final_output_time_statistics
-  ! ______________________________________________________
-  ! Output of the time statistics at the end of the simulation
-  ! Purge the buffer
-  ! ______________________________________________________
+  ! ______________________________________________________________________________________
+
     USE time_stat
     USE params
     USE shared_data
