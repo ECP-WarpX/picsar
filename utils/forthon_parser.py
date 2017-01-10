@@ -1,20 +1,37 @@
-# PARSER FOR FORTHON
-# H. VINCENTI - DEC 7, 2015
-# This function reads a group of Fortran 90 files and produces a FORTHON interface file .v used
-# by the forthon compiler to produce a python module file .so
-# Input arguments: filename
-# Outputs:
-# 1. New fortran file filename_forthon.F90 forthon compliant
-# 2. interface file .v with subroutines/modules declaration
-# NB :
-# - User has to define variables  in a Fortran MODULE
-# - Routines in procedure modules are not treated differently than routines outside modules
-# - Variables in a Module are grouped inside a common "Module" of variables in the .v file
-# - Derived types have to be declared in modules of same name (see FORTHON doc)
-#
-#
-# REVISION:
-# - 08.18.2016: (Mathieu) better management of the directives
+"""
+ _______________________________________________________________________________
+ 
+ PARSER FOR FORTHON
+ H. VINCENTI - DEC 7, 2015
+ 
+ 
+ This function reads a group of Fortran 90 files and produces a FORTHON 
+ interface file .v used by the forthon compiler to produce a python 
+ module file .so
+ 
+ Input arguments: filename
+ 
+ Outputs:
+ 1. New fortran file filename_forthon.F90 forthon compliant
+ 2. interface file .v with subroutines/modules declaration
+ NB :
+ - User has to define variables  in a Fortran MODULE
+ - Routines in procedure modules are not treated differently than routines outside modules
+ - Variables in a Module are grouped inside a common "Module" of variables in the .v file
+ - Derived types have to be declared in modules of same name (see FORTHON doc)
+
+ Developers:
+ Henri Vincenti
+ Mathieu Lobet
+
+ Date:
+ Creation: Dec 7 2015
+
+ REVISION:
+ - Mathieu Lobet - 08.18.2016 - better management of the directives
+
+ _______________________________________________________________________________
+"""
 
 import numpy as np
 import sys

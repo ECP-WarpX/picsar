@@ -1,6 +1,29 @@
 ! ______________________________________________________________________________
 ! 
+! *** Copyright Notice ***
+!
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
+! 2016, The Regents of the University of California, through Lawrence Berkeley 
+! National Laboratory (subject to receipt of any required approvals from the 
+! U.S. Dept. of Energy). All rights reserved.
+!
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+!
+! NOTICE.
+! This Software was developed under funding from the U.S. Department of Energy 
+! and the U.S. Government consequently retains certain rights. As such, the U.S. 
+! Government has been granted for itself and others acting on its behalf a  
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
+! reproduce, distribute copies to the public, prepare derivative works, and 
+! perform publicly and display publicly, and to permit other to do so.
+!
 ! MPI_ROUTINES.F90
+!
+! This file contains functions for MPI.
+! ______________________________________________________________________________
+
+! ______________________________________________________________________________
 !
 !> @brief
 !> This module contains subroutines for MPI
@@ -10,7 +33,7 @@
 !
 !> @date
 !> Creation 2015
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 MODULE mpi_routines
   USE shared_data
   USE fields
@@ -24,7 +47,7 @@ MODULE mpi_routines
 
   CONTAINS
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> This subroutine performs a minimal initialization for MPI.
   !> It calls the MPI init subroutine and determine the ranks 
@@ -36,7 +59,7 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE mpi_minimal_init()
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
   
@@ -59,7 +82,7 @@ MODULE mpi_routines
     !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> Minimal initialization when using Python.
   !
@@ -69,7 +92,7 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE mpi_minimal_init_python(comm_in)
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
     INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in 
@@ -89,7 +112,7 @@ MODULE mpi_routines
 
   END SUBROUTINE mpi_minimal_init_python
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> This subroutine creates the MPI process decomposition 
   !> according to the specified topology and compite the related parameters.
@@ -106,7 +129,7 @@ MODULE mpi_routines
   !>                             topology for efficiency comparison with the MPI 
   !>                             Cartesian topology. 
   SUBROUTINE setup_communicator
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
 
     INTEGER(isp), PARAMETER :: ndims = 3
     INTEGER(idp) :: idim
@@ -478,7 +501,7 @@ MODULE mpi_routines
   END SUBROUTINE setup_communicator
 
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> This subroutine computes the space domain decomposition and 
   !> related parameters for each MPI process.
@@ -490,7 +513,7 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE mpi_initialise
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
 
     INTEGER(isp) :: idim
     INTEGER(isp) :: nx0, nxp
@@ -636,7 +659,7 @@ MODULE mpi_routines
     
   END SUBROUTINE mpi_initialise
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> This subroutine allocates and computes the MPI process local and global 
   !> grid minima and maxima.
@@ -649,7 +672,7 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE compute_simulation_axis()
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, iproc 
     
@@ -691,7 +714,7 @@ MODULE mpi_routines
     
   END SUBROUTINE
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> This subroutine allocates grid quantities such as fields, currents, charge 
   !> and electric field divergence.
@@ -704,7 +727,7 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE allocate_grid_quantities()
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   
       ! --- Allocate grid quantities
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -724,7 +747,7 @@ MODULE mpi_routines
     ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
   END SUBROUTINE 
   
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> This subroutine finalizes MPI with some time information.
   !
   !> @author
@@ -733,7 +756,7 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE mpi_close
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
 
     INTEGER :: seconds, minutes, hours, total
 
@@ -749,7 +772,7 @@ MODULE mpi_routines
 
   END SUBROUTINE mpi_close
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> Subroutine dedicated to the time report at the end of the simulation.
   !> This subroutines gathers time statistics from all processes and print a summary 
@@ -761,7 +784,7 @@ MODULE mpi_routines
   !> @date
   !> Creation 2016
   SUBROUTINE time_statistics
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     USE time_stat
     USE params
     USE omp_lib 
@@ -883,7 +906,7 @@ MODULE mpi_routines
   
   END SUBROUTINE
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> Subroutine dedicated to the time statistics for one iteration
   ! 
@@ -897,7 +920,7 @@ MODULE mpi_routines
   !> @date
   !> 2016
   SUBROUTINE time_statistics_per_iteration
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
 
     USE time_stat
     USE params

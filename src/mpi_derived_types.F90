@@ -1,4 +1,22 @@
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
+!
+! *** Copyright Notice ***
+!
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
+! 2016, The Regents of the University of California, through Lawrence Berkeley 
+! National Laboratory (subject to receipt of any required approvals from the 
+! U.S. Dept. of Energy). All rights reserved.
+!
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+!
+! NOTICE.
+! This Software was developed under funding from the U.S. Department of Energy 
+! and the U.S. Government consequently retains certain rights. As such, the U.S. 
+! Government has been granted for itself and others acting on its behalf a  
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
+! reproduce, distribute copies to the public, prepare derivative works, and 
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! MPI_DERIVED_TYPES.F90
 !
@@ -10,9 +28,9 @@
 !
 ! Date:
 ! Creation 2015
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> This module contains the subroutines which create the subarray used
 !> in boundary exchange for the fields.
@@ -22,7 +40,7 @@
 !
 !> @date
 !> Creation 2015
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 MODULE mpi_derived_types !#do not parse
 
   USE shared_data
@@ -32,7 +50,7 @@ MODULE mpi_derived_types !#do not parse
 CONTAINS
 
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> create_current_field_derived_type - Creates the derived type 
   !> corresponding to the current CPU split.
@@ -43,7 +61,7 @@ CONTAINS
   !> @date
   !> Creation 2015
   FUNCTION create_current_grid_derived_type()
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     INTEGER(isp) :: create_current_grid_derived_type
 
     create_current_grid_derived_type = &
@@ -53,7 +71,7 @@ CONTAINS
   END FUNCTION create_current_grid_derived_type
 
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> Create a subarray from the current grid according to the given parameters.
   !
@@ -63,7 +81,7 @@ CONTAINS
   !> @date
   !> Creation 2015
   FUNCTION create_current_grid_subarray(ngx,ngy,ngz)
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
 
     INTEGER(isp) :: create_current_grid_subarray
     INTEGER(idp), INTENT(IN) :: ngx, ngy, ngz
@@ -79,7 +97,7 @@ CONTAINS
 
   END FUNCTION create_current_grid_subarray
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> create_grid_derived_type - Creates a derived type representing the layout 
   !> of local CPU among the global simulation domain
@@ -91,7 +109,7 @@ CONTAINS
   !> Creation 2015
   FUNCTION create_grid_derived_type(mpitype, nx_local, ny_local, nz_local, &
       cell_start_x_local, cell_start_y_local, cell_start_z_local)
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     INTEGER(isp), INTENT(IN) :: mpitype
     INTEGER(idp), INTENT(IN) :: nx_local
     INTEGER(idp), INTENT(IN) :: ny_local
@@ -117,7 +135,7 @@ CONTAINS
 
   END FUNCTION create_grid_derived_type
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> create_3d_array_derived_type OLD VERSION - USE MPI_TYPE_CREATE_SUBARRAY 
   !> instead
@@ -131,7 +149,7 @@ CONTAINS
   !> Creation 2015
   FUNCTION create_3d_array_derived_type(mpitype, n_local, n_global, start) &
       RESULT(vec3d_sub)
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     INTEGER(isp), INTENT(IN) :: mpitype
     INTEGER(idp), DIMENSION(c_ndims), INTENT(IN) :: n_local
     INTEGER(idp), DIMENSION(c_ndims), INTENT(IN) :: n_global
@@ -183,7 +201,7 @@ CONTAINS
   END FUNCTION create_3d_array_derived_type
 
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   !> @brief
   !> This subroutine creates a subarray from a given grid according 
   !> to the given parameters.
@@ -203,7 +221,7 @@ CONTAINS
   !> @param[in] n3 number of cells in z
   !
   FUNCTION create_grid_subarray(mpitype, ng1, ng2, ng3, n1, n2, n3)
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
 
     INTEGER(isp), INTENT(IN) :: mpitype
     INTEGER(idp),INTENT(IN) :: ng1,ng2,ng3, n1, n2, n3
@@ -228,8 +246,9 @@ CONTAINS
     !      create_3d_array_derived_type(mpitype, n_local, n_global, start)
 
     ! new version 
-    CALL MPI_TYPE_CREATE_SUBARRAY(ndim,INT(n_global,isp),INT(n_local,isp),INT(start-1,isp), MPI_ORDER_FORTRAN, &
-                            mpitype,create_grid_subarray,errcode)
+    CALL MPI_TYPE_CREATE_SUBARRAY(ndim,INT(n_global,isp),INT(n_local,isp), &
+                                  INT(start-1,isp), MPI_ORDER_FORTRAN, &
+                                  mpitype,create_grid_subarray,errcode)
     CALL MPI_TYPE_COMMIT(create_grid_subarray,errcode)
                             
   END FUNCTION create_grid_subarray
