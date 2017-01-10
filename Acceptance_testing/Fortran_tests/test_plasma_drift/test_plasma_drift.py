@@ -21,9 +21,9 @@
  reproduce, distribute copies to the public, prepare derivative works, and 
  perform publicly and display publicly, and to permit other to do so. 
 
- test_homogeneous_plasma.py
+ test_plasma_drift.py
 
- Script to launch the homogeneous plasma test using Fortran
+ Script to launch the plasma drift test using Fortran
  - analysis of the energy
  - analysis of the beam trajectories
  - analysis of divE = rho/eps0, total divergence and total charge
