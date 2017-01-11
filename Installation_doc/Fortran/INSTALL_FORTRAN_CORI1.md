@@ -27,7 +27,7 @@ The makefile will use these compiler flags:
 -O3 -xCORE-AVX2 -qopenmp -align array64byte -qopt-streaming-stores auto
 ```
 
-Here, `-xCORE-AVX2` specifies that we use AVX2 vector register like on KNL.
+Here, `-xCORE-AVX2` specifies that we use AVX2 vector register like on Haswell.
 This is important for vectorization on Haswell.
 
 
@@ -128,7 +128,18 @@ srun -n 1 -c 1 ./tile_curr_depo_3d_test
 ```
 
 Some tests can be run with several OpenMP threads, others need just one MPI 
-rank and a single thread since it only tests vectorized subroutines.
+rank and a single thread since it only tests vectorized subroutines:
+* current_deposition_3d_test: test 3D classical current deposition subroutines
+* esirkepov_2d_test: test 2D Esirkepov current deposition subroutines
+* esirkepov_3d_test: test 3D Esirkepov current deposition subroutines
+* field_gathering_2d_test: test 2D field gathering subroutines
+* field_gathering_test: test 3D field gathering subroutines
+* rho_deposition_3d_test: test 3D charge deposition subroutines
+* tile_curr_depo_3d_test: test the 3D current deposition with the tiling. (you can use several OpenMP threads for this test)
+* tile_field_gathering_3d_test: test the 3D field gathering with the tiling. (you can use several OpenMP threads for this test)
+* tile_mpi_part_com_test.F90: test the particle exchanges between tiles and MPI domain boundaries (you can use several OpenMP threads for this test)
+* tile_particle_push_3d_test: test the 3D particle pusher with the tiling (you can use several OpenMP threads for this test)
+* tile_rho_depo_3d_test: test the 3D charge deposition with the tiling (you can use several OpenMP threads for this test)
 
 For each test, a message will tell you if you pass or fail.
 
