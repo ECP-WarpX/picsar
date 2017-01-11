@@ -6,21 +6,31 @@
 #
 # ______________________________________________________________________________
 
+# Source directory
 SRCDIR= src
+# Binary directory (.so) after compilation
 BINDIR = python_bin
+# Application name
 APPNAME=picsar
+# Python binary name
 PYTHON_NAME=picsarpy
+# Path where the parser is located
 UTIL=utils
+# We use Forthon to interface Fortran and Python
 FC=Forthon
 FCARGS=-v --no2underscores  --nowritemodules
+# Fortran compiler
 FCOMP=gfortran
 FCOMPEXEC=
+# Fortan compilation arguments
 FARGS="-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"
-
+# Library directory
 LIBDIR=
+# Library names
 LIBS=
-
+# Location of the test scripts
 TESTDIR=examples/example_scripts_python
+
 
 all: clean parse build
 test: test1 test2
