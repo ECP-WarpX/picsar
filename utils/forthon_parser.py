@@ -1,20 +1,55 @@
-# PARSER FOR FORTHON
-# H. VINCENTI - DEC 7, 2015
-# This function reads a group of Fortran 90 files and produces a FORTHON interface file .v used
-# by the forthon compiler to produce a python module file .so
-# Input arguments: filename
-# Outputs:
-# 1. New fortran file filename_forthon.F90 forthon compliant
-# 2. interface file .v with subroutines/modules declaration
-# NB :
-# - User has to define variables  in a Fortran MODULE
-# - Routines in procedure modules are not treated differently than routines outside modules
-# - Variables in a Module are grouped inside a common "Module" of variables in the .v file
-# - Derived types have to be declared in modules of same name (see FORTHON doc)
-#
-#
-# REVISION:
-# - 08.18.2016: (Mathieu) better management of the directives
+"""
+ _______________________________________________________________________________
+ 
+  *** Copyright Notice ***
+
+ "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
+ 2016, The Regents of the University of California, through Lawrence Berkeley 
+ National Laboratory (subject to receipt of any required approvals from the 
+ U.S. Dept. of Energy). All rights reserved.
+
+ If you have questions about your rights to use or distribute this software, 
+ please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+
+ NOTICE.
+ This Software was developed under funding from the U.S. Department of Energy 
+ and the U.S. Government consequently retains certain rights. As such, the U.S. 
+ Government has been granted for itself and others acting on its behalf a  
+ paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
+ reproduce, distribute copies to the public, prepare derivative works, and 
+ perform publicly and display publicly, and to permit other to do so. 
+ 
+ PARSER FOR FORTHON
+ H. VINCENTI - DEC 7, 2015
+ 
+ 
+ This function reads a group of Fortran 90 files and produces a FORTHON 
+ interface file .v used by the forthon compiler to produce a python 
+ module file .so
+ 
+ Input arguments: filename
+ 
+ Outputs:
+ 1. New fortran file filename_forthon.F90 forthon compliant
+ 2. interface file .v with subroutines/modules declaration
+ NB :
+ - User has to define variables  in a Fortran MODULE
+ - Routines in procedure modules are not treated differently than routines outside modules
+ - Variables in a Module are grouped inside a common "Module" of variables in the .v file
+ - Derived types have to be declared in modules of same name (see FORTHON doc)
+
+ Developers:
+ Henri Vincenti
+ Mathieu Lobet
+
+ Date:
+ Creation: Dec 7 2015
+
+ REVISION:
+ - Mathieu Lobet - 08.18.2016 - better management of the directives
+
+ _______________________________________________________________________________
+"""
 
 import numpy as np
 import sys

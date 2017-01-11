@@ -1,45 +1,71 @@
-! ________________________________________________________________________________________
-! 
+! ______________________________________________________________________________
+!
+! *** Copyright Notice ***
+!
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
+! 2016, The Regents of the University of California, through Lawrence Berkeley 
+! National Laboratory (subject to receipt of any required approvals from the 
+! U.S. Dept. of Energy). All rights reserved.
+!
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+!
+! NOTICE.
+! This Software was developed under funding from the U.S. Department of Energy 
+! and the U.S. Government consequently retains certain rights. As such, the U.S. 
+! Government has been granted for itself and others acting on its behalf a  
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
+! reproduce, distribute copies to the public, prepare derivative works, and 
+! perform publicly and display publicly, and to permit other to do so. 
+!
 ! SORTING.F90
 !
+! Developer:
+! Mathieu Lobet
 !
-!> Module for the particle sorting
-!> @brief
-!>
-!> This module contains sorting algorithms for the particles
-!> @details
-!>
-!> @author
-!> Mathieu Lobet
-!>
-!> @date
-!> 04/2016
+! This file contains subroutines for the particle sorting.
 !
 ! List of subroutines:
 ! - pxr_particle_sorting
 ! - particle_sorting_sub
 ! - pxr_particle_bin_sorting
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
+
+! ______________________________________________________________________________
+!> @brief
+!> Module for the particle sorting
+!>
+!> @details
+!> This module contains sorting algorithms for the particles
+!>
+!> @author
+!> Mathieu Lobet
+!>
+!> @date
+!> Creation 04/2016
+!
+! ______________________________________________________________________________
 MODULE sorting
 
   IMPLICIT NONE
 
   CONTAINS
 
-    ! ____________________________________________________________________________________
-    !> Main subroutine called to sort the particles in the Fortran PIC loop
+  ! ____________________________________________________________________________
+  !> @brief
+  !> Main subroutine called to sort the particles in the Fortran PIC loop
+  ! 
+  !> @author
+  !> Mathieu Lobet
+  !   
+  !> @details
+  !> This subroutine is called in the main loop of the Fortran kernel.
+  !> This subroutine calls particle_sorting_sub() and times it.
+  ! 
+  !> @date
+  !> 2016
   SUBROUTINE pxr_particle_sorting
-    ! 
-    !> @author
-    !> Mathieu Lobet
-    !   
-    !> @details
-    !> This subroutine is called in the main loop of the Fortran kernel.
-    !> This subroutine calls particle_sorting_sub() and times it.
-    ! 
-    !> @date
-    !> 2016
-    ! ____________________________________________________________________________________
+  ! ____________________________________________________________________________
     USE tiling
     USE shared_data
     USE constants
@@ -68,23 +94,21 @@ MODULE sorting
   
   END SUBROUTINE
 
-  ! ______________________________________________________________________________________!
+  ! ____________________________________________________________________________
   ! particle_sorting_sub
   !
-  !> General subroutine for the particle sorting, used in Python PIC loop
   !> @brief
+  !> General subroutine for the particle sorting, used in Python PIC loop
   !>
-  !> This subroutine is called in pxr_particle_sorting() used in the main loop
   !> @details
+  !> This subroutine is called in pxr_particle_sorting() used in the main loop
   !> 
   !> @author
   !> Mathieu Lobet
   !
   !> @date 2016  
   SUBROUTINE particle_sorting_sub
-  ! 
-  ! 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
     USE tiling
     USE shared_data
     USE constants
@@ -188,35 +212,37 @@ MODULE sorting
   END SUBROUTINE particle_sorting_sub
 
 
-    ! ____________________________________________________________________________________
-    ! pxr_particle_bin_sorting
-    !
-    !>
-    !> @brief
-    !> Particle cell sorting subroutine using the bin sorting algorithm
-    !> @details
-    !> This subroutine uses a bin sorting algorithm to sort particles (including their property arrays).
-    !> Here, the bins corresponds to the cells of a cartesian array.
-    !> The cell size is specified by the user.
-    !>
-    !> @author
-    !> Mathieu Lobet
-    
-    !> @date 2016
-    !
+  ! ____________________________________________________________________________
+  ! pxr_particle_bin_sorting
+  !
+  !>
+  !> @brief
+  !> Particle cell sorting subroutine using the bin sorting algorithm
+  !>
+  !> @details
+  !> This subroutine uses a bin sorting algorithm to sort particles 
+  !> (including their property arrays).
+  !> Here, the bins corresponds to the cells of a cartesian array.
+  !> The cell size is specified by the user.
+  !>
+  !> @author
+  !> Mathieu Lobet
+  !
+  !> @date 2016
+  !
+  !> @param[in] np2 number of particles
+  !> @param[inout] xp,yp,zp particle positions
+  !> @param[inout] ux,uy,uz particle momenta
+  !> @param[inout] gam particle gamma factor
+  !> @param[inout] pid particle id
+  !> @param[inout] wpid particle weight
+  !> @param[in] xmin2,ymin2,zmin2 minimum point position on the local grid 
+  !> @param[in] xmax2,ymax2,zmax2 maximum point position on the local grid
+  !> @param[in] dxf,dyf,dzf bin space steps
+  !
   SUBROUTINE pxr_particle_bin_sorting(np2,xp,yp,zp,ux,uy,uz,gam,pid,wpid,&
             xmin2,ymin2,zmin2,xmax2,ymax2,zmax2,dxf,dyf,dzf)
-    !
-    !> @param[in] np2 number of particles
-    !> @param[inout] xp,yp,zp particle positions
-    !> @param[inout] ux,uy,uz particle momenta
-    !> @param[inout] gam particle gamma factor
-    !> @param[inout] pid particle id
-    !> @param[inout] wpid particle weight
-    !> @param[in] xmin2,ymin2,zmin2 minimum point position on the local grid 
-    !> @param[in] xmax2,ymax2,zmax2 maximum point position on the local grid           
-    !> @param[in] dxf,dyf,dzf bin space steps
-    ! ___________________________________________________________________________________
+  ! ____________________________________________________________________________
     USE constants
     implicit none
 

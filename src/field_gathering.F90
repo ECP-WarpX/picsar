@@ -2,7 +2,7 @@
 !
 ! FIELD_GATHERING.F90
 !
-! DEveloperoption:
+! Developeroption:
 ! - DEV: activates developer's secret subroutines
 ! - DEBUG: activates DEBUG prints and outputs
 !
