@@ -1,9 +1,29 @@
-MODULE mpi_derived_types !#do not parse
+! ________________________________________________________________________________________
+!
+! MPI_DERIVED_TYPES.F90
+!
+! Purpose:
+! This file contains subroutines to create diverse MPI derived types.
+!
+! Authors:
+! Henri Vincenti
+!
+! Date:
+! Creation 2015
+! ________________________________________________________________________________________
 
-  !----------------------------------------------------------------------------
-  ! This module contains the subroutines which create the subarray used
-  ! in boundary exchange for the fields
-  !----------------------------------------------------------------------------
+! ________________________________________________________________________________________
+!> @brief
+!> This module contains the subroutines which create the subarray used
+!> in boundary exchange for the fields.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+MODULE mpi_derived_types !#do not parse
 
   USE shared_data
 
@@ -11,13 +31,19 @@ MODULE mpi_derived_types !#do not parse
 
 CONTAINS
 
-  !----------------------------------------------------------------------------
-  ! create_current_field_derived_type - Creates the derived type 
-  ! corresponding to the current CPU split
-  !----------------------------------------------------------------------------
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> create_current_field_derived_type - Creates the derived type 
+  !> corresponding to the current CPU split.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   FUNCTION create_current_grid_derived_type()
-
+  ! ______________________________________________________________________________________
     INTEGER(isp) :: create_current_grid_derived_type
 
     create_current_grid_derived_type = &
@@ -26,12 +52,18 @@ CONTAINS
 
   END FUNCTION create_current_grid_derived_type
 
-!----------------------------------------------------------------------------
-! create_current_field_derived_type - Creates the derived type
-! corresponding to the current CPU split
-!----------------------------------------------------------------------------
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Create a subarray from the current grid according to the given parameters.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   FUNCTION create_current_grid_subarray(ngx,ngy,ngz)
+  ! ______________________________________________________________________________________
 
     INTEGER(isp) :: create_current_grid_subarray
     INTEGER(idp), INTENT(IN) :: ngx, ngy, ngz
@@ -47,15 +79,19 @@ CONTAINS
 
   END FUNCTION create_current_grid_subarray
 
-
-  !----------------------------------------------------------------------------
-  ! create_grid_derived_type - Creates a derived type representing the layout 
-  ! of local CPU among the global simulation domain
-  !----------------------------------------------------------------------------
-
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> create_grid_derived_type - Creates a derived type representing the layout 
+  !> of local CPU among the global simulation domain
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   FUNCTION create_grid_derived_type(mpitype, nx_local, ny_local, nz_local, &
       cell_start_x_local, cell_start_y_local, cell_start_z_local)
-
+  ! ______________________________________________________________________________________
     INTEGER(isp), INTENT(IN) :: mpitype
     INTEGER(idp), INTENT(IN) :: nx_local
     INTEGER(idp), INTENT(IN) :: ny_local
@@ -81,16 +117,21 @@ CONTAINS
 
   END FUNCTION create_grid_derived_type
 
-  !----------------------------------------------------------------------------
-  ! create_3d_array_derived_type OLD VERSION - USE MPI_TYPE_CREATE_SUBARRAY 
-  ! instead
-  ! - Creates a derived type representing the 
-  ! localization of current CPU among simulation domain
-  !----------------------------------------------------------------------------
-
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> create_3d_array_derived_type OLD VERSION - USE MPI_TYPE_CREATE_SUBARRAY 
+  !> instead
+  !> - Creates a derived type representing the 
+  !> localization of current CPU among simulation domain
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
   FUNCTION create_3d_array_derived_type(mpitype, n_local, n_global, start) &
       RESULT(vec3d_sub)
-
+  ! ______________________________________________________________________________________
     INTEGER(isp), INTENT(IN) :: mpitype
     INTEGER(idp), DIMENSION(c_ndims), INTENT(IN) :: n_local
     INTEGER(idp), DIMENSION(c_ndims), INTENT(IN) :: n_global
@@ -142,8 +183,27 @@ CONTAINS
   END FUNCTION create_3d_array_derived_type
 
 
-
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine creates a subarray from a given grid according 
+  !> to the given parameters.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  !
+  !> @param[in] mpitype MPI type
+  !> @param[in] ng1 guard cells in x
+  !> @param[in] ng2 guard cells in y
+  !> @param[in] ng3 guard cells in z
+  !> @param[in] n1 number of cells in x
+  !> @param[in] n2 number of cells in y
+  !> @param[in] n3 number of cells in z
+  !
   FUNCTION create_grid_subarray(mpitype, ng1, ng2, ng3, n1, n2, n3)
+  ! ______________________________________________________________________________________
 
     INTEGER(isp), INTENT(IN) :: mpitype
     INTEGER(idp),INTENT(IN) :: ng1,ng2,ng3, n1, n2, n3
@@ -158,7 +218,7 @@ CONTAINS
     ng(3)= ng3
     ndim = 3
     DO i = 1, ndim
-      start(i) = 1 + ng(i)                                                                                                                                                             
+      start(i) = 1 + ng(i)
       n_global(i) = n_local(i) + 2 * ng(i)
     ENDDO
     n_local=n_local-1 ! remove last point

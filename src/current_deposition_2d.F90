@@ -234,7 +234,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   USE constants
   USE tiling
   USE omp_lib
-  USE timing
   USE time_stat
   IMPLICIT NONE
 
@@ -252,7 +251,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
   TYPE(grid_tile), POINTER  :: currg
-  REAL(num)                 :: tdeb, tend
   INTEGER(idp)              :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)               :: isdeposited=.FALSE.
 
@@ -275,8 +273,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
 
   END INTERFACE
   
-  
-  tdeb=MPI_WTIME()
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
   !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim,lvect)      &
@@ -491,8 +487,7 @@ DO iz=1,ntilez
   END DO!END LOOP ON TILES
   !$OMP END DO
   !$OMP END PARALLEL
-  tend=MPI_WTIME()
-  dep_curr_time=dep_curr_time+(tend-tdeb)  
+ 
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp
 
 

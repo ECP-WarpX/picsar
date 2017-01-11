@@ -467,13 +467,13 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3(np,xp,zp,ex,ey,ez,xmin,zmin
   use constants
   implicit none
   
-  integer(idp)             :: np,nx,nz,nox,noz,nxguard,nzguard
-  real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
+  integer(idp)             :: np,nx,nz,nxguard,nzguard
+  real(num), dimension(np) :: xp,zp,ex,ey,ez
   logical(idp)             :: l_lower_order_in_v
   real(num)                :: xmin,zmin,dx,dz
   integer(idp)             :: ip, j, l, ixmin, ixmax, izmin, izmax
   integer(idp)             :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
-  real(num)                :: dxi, dzi, x, y, z, xint, zint
+  real(num)                :: dxi, dzi, x, z, xint, zint
   real(num)                :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
   real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: exg,eyg,ezg
   real(num), DIMENSION(-1:2)                       :: sx
@@ -680,19 +680,21 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
   use constants
   implicit none
   
-  integer(idp)                  :: np,nx,nz,nox,noz,nxguard,nzguard
-  integer(idp)                  :: lvect
-  real(num), dimension(np)      :: xp,zp,ex,ey,ez
-  logical(idp)                  :: l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: exg,eyg,ezg
-  real(num)                     :: xmin,zmin,dx,dz
-  integer(isp)                  :: ip, j, l, jj, ll, j0, l0
-  integer(isp)                  :: nn,n
-  real(num)                     :: dxi, dzi, x, z, r, xint, zint
-  real(num)                     :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq,signx
+  integer(idp), intent(in)                :: np,nx,nz,nxguard,nzguard
+  integer(idp), intent(in)                :: lvect
+  real(num), dimension(np), intent(in)    :: xp,zp
+  real(num), dimension(np), intent(inout) :: ex,ey,ez
+  logical(idp)                            :: l_lower_order_in_v
+  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
+                                          :: exg,eyg,ezg
+                                          
+  real(num)                          :: xmin,zmin,dx,dz
+  integer(isp)                       :: ip, j, l, j0, l0
+  integer(isp)                       :: nn,n
+  real(num)                          :: dxi, dzi, x, z, xint, zint
   real(num), DIMENSION(lvect,0:1)    :: sx,sx0
   real(num), DIMENSION(lvect,0:1)    :: sz,sz0
-  real(num), parameter          :: onesixth=1./6.,twothird=2./3.
+  real(num), parameter               :: onesixth=1./6.,twothird=2./3.
   
   dxi = 1./dx
   dzi = 1./dz
@@ -882,16 +884,16 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(np,xp,zp,ex,ey,ez,xmin,zmin,d
   use constants
   implicit none
   
-  integer(idp)                  :: np,nx,nz,nox,noz,nxguard,nzguard
+  integer(idp)                  :: np,nx,nz,nxguard,nzguard
   integer(idp)                  :: lvect
   real(num), dimension(np)      :: xp,zp,ex,ey,ez
   logical(idp)                  :: l_lower_order_in_v
   real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: exg,eyg,ezg
   real(num)                     :: xmin,zmin,dx,dz
-  integer(isp)                  :: ip, j, l, jj, ll, j0, l0
+  integer(isp)                  :: ip, j, l, j0, l0
   integer(isp)                  :: nn,n
-  real(num)                     :: dxi, dzi, x, z, r, xint, zint
-  real(num)                     :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq,signx
+  real(num)                     :: dxi, dzi, x, z, xint, zint
+  real(num)                     :: xintsq,zintsq
   real(num), DIMENSION(lvect,-1:1)    :: sx,sx0
   real(num), DIMENSION(lvect,-1:1)    :: sz,sz0
   real(num), parameter          :: onesixth=1./6.,twothird=2./3.
@@ -1097,11 +1099,11 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(np,xp,zp,ex,ey,ez,xmin,zmin,d
 end subroutine
 
 !_________________________________________________________________________________________
-!> Field gathering cartesian in 2D for the electric field
 !> @brief
+!> Field gathering cartesian in 2D for the electric field
 !
-!> This function is vectorized
 !> @details
+!> This function is vectorized
 !
 !> @author
 !> Mathieu Lobet
@@ -1127,16 +1129,16 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
   implicit none
   
   
-  integer(idp)                  :: np,nx,nz,nox,noz,nxguard,nzguard
+  integer(idp)                  :: np,nx,nz,nxguard,nzguard
   integer(idp)                  :: lvect
   real(num), dimension(np)      :: xp,zp,ex,ey,ez
   logical(idp)                  :: l_lower_order_in_v
   real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: exg,eyg,ezg
   real(num)                     :: xmin,zmin,dx,dz
-  integer(isp)                  :: ip, j, l, jj, ll, j0, l0
+  integer(isp)                  :: ip, j, l, j0, l0
   integer(isp)                  :: nn,n
-  real(num)                     :: dxi, dzi, x, z, r, xint, zint
-  real(num)                     :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq,signx
+  real(num)                     :: dxi, dzi, x, z, xint, zint
+  real(num)                     :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
   real(num), DIMENSION(lvect,-1:2)    :: sx,sx0
   real(num), DIMENSION(lvect,-1:2)    :: sz,sz0
   real(num), parameter          :: onesixth=1./6.,twothird=2./3.
@@ -1407,10 +1409,33 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez,xmin,zmin,d
  end subroutine pxr_gete2dxz_energy_conserving_vect_3_3
 
 
-! ________________________________________________________________________________________
+
+!_________________________________________________________________________________________
 !> @brief
 !> 2D magnetic field gathering routine for arbitrary orders
-
+!
+!> @details
+!> This function is not vectorized and not optimized.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> 12/01/2016
+!
+!> @param[in] np Number of particles
+!> @param[in] xp,zp particle position arrays
+!> @param[inout] ex,ey,ez electric field particle arrays
+!> @param[in] xmin,zmin tile boundaries
+!> @param[in] dx,dz space steps
+!> @param[in] nx,nz space discretization
+!> @param[in] nxguard, nzguard number of guard cells
+!> @param[in] exg, eyg,ezg field arrays
+!> @param[in] nox,noz interpolation order
+!> @param[in] l4symtry
+!> @param[in] l_2drz use the 2d cylindrical geometry system
+!> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
+!
 subroutine pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
                                        nox,noz,bxg,byg,bzg,l4symtry,l_2drz,l_lower_order_in_v)
 ! ________________________________________________________________________________________
@@ -1670,7 +1695,7 @@ return
 
 !_________________________________________________________________________________________
 !> @brief
-!> Scalar Cartesian subroutine for the magnetic field gathering in 2D at order 3
+!> Scalar Cartesian subroutine for the magnetic field gathering in 2D at order 3.
 !
 !> @details
 !> This function is vectorized
@@ -1700,19 +1725,22 @@ subroutine pxr_getb2dxz_energy_conserving_scalar_3_3(np,xp,zp,bx,by,bz,xmin,zmin
   implicit none
 
   ! __ Parameter declaration ___________________________________________
-  integer(idp)             :: np,nx,nz,nox,noz,nxguard,nzguard
-  real(num), dimension(np) :: xp,yp,zp,bx,by,bz
-  logical(idp)             :: l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: bxg,byg,bzg
-  real(num)                :: xmin,zmin,dx,dz
+  integer(idp), intent(in)                :: np,nx,nz,nxguard,nzguard
+  real(num), dimension(np), intent(in)    :: xp,zp
+  real(num), dimension(np), intent(inout) :: bx,by,bz
+  logical(idp), intent(in)                :: l_lower_order_in_v
+  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), &
+                            intent(in)    :: bxg,byg,bzg
+                            
+  real(num)                               :: xmin,zmin,dx,dz
   integer(idp)             :: ip, j, l, ixmin, ixmax, izmin, izmax
   integer(idp)             :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
-  real(num)                :: dxi, dzi, x, y, z, xint, zint
+  real(num)                :: dxi, dzi, x, z, xint, zint
   real(num)                :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
-  real(num), DIMENSION(-1:2) :: sx
-  real(num), DIMENSION(-1:2) :: sz
+  real(num), DIMENSION(-1:2)           :: sx
+  real(num), DIMENSION(-1:2)           :: sz
   real(num), dimension(:), allocatable :: sx0,sz0
-  real(num), parameter :: onesixth=1./6.,twothird=2./3.
+  real(num), parameter                 :: onesixth=1./6.,twothird=2./3.
 
   dxi = 1./dx
   dzi = 1./dz
@@ -1904,8 +1932,9 @@ end subroutine
 !> @param[in] lvect the vector length of the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,&
-                    nxguard,nzguard,bxg,byg,bzg,lvect,l_lower_order_in_v)
+subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,    &
+                                                   dx,dz,nx,nz,                    &
+                                     nxguard,nzguard,bxg,byg,bzg,lvect,l_lower_order_in_v)
 !_________________________________________________________________________________________
 
 
@@ -1913,17 +1942,19 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,d
   implicit none
 
   ! __ Parameter declaration ___________________________________________
-  integer(idp)                       :: np,nx,nz,nox,noz,nxguard,nzguard
-  integer(idp)                       :: lvect
-  real(num), dimension(np)           :: xp,zp,bx,by,bz
-  logical(idp)                       :: l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: bxg,byg,bzg
+  integer(idp), intent(in)                :: np,nx,nz,nxguard,nzguard
+  integer(idp), intent(in)                :: lvect
+  real(num), dimension(np), intent(in)    :: xp,zp
+  real(num), dimension(np), intent(inout) :: bx,by,bz
+  logical(idp), intent(in)                :: l_lower_order_in_v
+  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
+                                          :: bxg,byg,bzg
+  
   real(num)                          :: xmin,zmin,dx,dz
-  integer(idp)                       :: ip, j, l, ixmin, ixmax, izmin, izmax
-  integer(idp)                       :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
+  integer(idp)                       :: ip, j, l
+  integer(idp)                       :: j0, l0
   integer(idp)                       :: n,nn
-  real(num)                          :: dxi, dzi, x, y, z, xint, zint
-  real(num)                          :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
+  real(num)                          :: dxi, dzi, x, z, xint, zint
   real(num), DIMENSION(lvect,0:1)    :: sx, sx0
   real(num), DIMENSION(lvect,0:1)    :: sz, sz0
   real(num), parameter               :: onesixth=1./6.,twothird=2./3.
@@ -2116,17 +2147,17 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(np,xp,zp,bx,by,bz,xmin,zmin,d
   implicit none
 
   ! __ Parameter declaration ___________________________________________
-  integer(idp)                       :: np,nx,nz,nox,noz,nxguard,nzguard
+  integer(idp)                       :: np,nx,nz,nxguard,nzguard
   integer(idp)                       :: lvect
   real(num), dimension(np)           :: xp,zp,bx,by,bz
   logical(idp)                       :: l_lower_order_in_v
   real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: bxg,byg,bzg
   real(num)                          :: xmin,zmin,dx,dz
-  integer(idp)                       :: ip, j, l, ixmin, ixmax, izmin, izmax
-  integer(idp)                       :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
+  integer(idp)                       :: ip, j, l
+  integer(idp)                       :: j0, l0
   integer(idp)                       :: n,nn
-  real(num)                          :: dxi, dzi, x, y, z, xint, zint
-  real(num)                          :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
+  real(num)                          :: dxi, dzi, x, z, xint, zint
+  real(num)                          :: xintsq,zintsq
   real(num), DIMENSION(lvect,-1:1)   :: sx, sx0
   real(num), DIMENSION(lvect,-1:1)   :: sz, sz0
   real(num), parameter               :: onesixth=1./6.,twothird=2./3.
@@ -2360,16 +2391,16 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3(np,xp,zp,bx,by,bz,xmin,zmin,d
   implicit none
 
   ! __ Parameter declaration ___________________________________________
-  integer(idp)                       :: np,nx,nz,nox,noz,nxguard,nzguard
+  integer(idp)                       :: np,nx,nz,nxguard,nzguard
   integer(idp)                       :: lvect
   real(num), dimension(np)           :: xp,zp,bx,by,bz
   logical(idp)                       :: l_lower_order_in_v
   real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: bxg,byg,bzg
   real(num)                          :: xmin,zmin,dx,dz
-  integer(idp)                       :: ip, j, l, ixmin, ixmax, izmin, izmax
-  integer(idp)                       :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
+  integer(idp)                       :: ip, j, l
+  integer(idp)                       :: j0, l0
   integer(idp)                       :: n,nn
-  real(num)                          :: dxi, dzi, x, y, z, xint, zint
+  real(num)                          :: dxi, dzi, x, z, xint, zint
   real(num)                          :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
   real(num), DIMENSION(lvect,-1:2)   :: sx, sx0
   real(num), DIMENSION(lvect,-1:2)   :: sz, sz0
@@ -2683,19 +2714,22 @@ subroutine pxr_geteb2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez, &
   implicit none
 
   ! __ Parameter declaration ___________________________________________
-  integer(idp)                       :: np,nx,nz,nox,noz,nxguard,nzguard
-  integer(idp)                       :: lvect
-  real(num), dimension(np)           :: xp,zp
-  real(num), dimension(np)           :: ex,ey,ez
-  real(num), dimension(np)           :: bx,by,bz
-  logical(idp)                       :: l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: exg,eyg,ezg
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: bxg,byg,bzg
+  integer(idp), intent(in)                :: np,nx,nz,nxguard,nzguard
+  integer(idp), intent(in)                :: lvect
+  real(num), dimension(np), intent(in)    :: xp,zp
+  real(num), dimension(np), intent(inout) :: ex,ey,ez
+  real(num), dimension(np), intent(inout) :: bx,by,bz
+  logical(idp), intent(in)                :: l_lower_order_in_v
+  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
+                                          :: exg,eyg,ezg
+  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
+                                          :: bxg,byg,bzg
+  
   real(num)                          :: xmin,zmin,dx,dz
-  integer(idp)                       :: ip, j, l, ixmin, ixmax, izmin, izmax
-  integer(idp)                       :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
+  integer(idp)                       :: ip, j, l
+  integer(idp)                       :: j0, l0
   integer(idp)                       :: n,nn
-  real(num)                          :: dxi, dzi, x, y, z, xint, zint
+  real(num)                          :: dxi, dzi, x, z, xint, zint
   real(num)                          :: a
   real(num)                          :: xintsq,oxint,zintsq,ozint,oxintsq,ozintsq
   real(num), DIMENSION(lvect,-1:2)   :: sx, sx0

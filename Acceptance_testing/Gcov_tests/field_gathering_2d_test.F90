@@ -43,7 +43,6 @@ PROGRAM field_gathering_3d_test
   REAL(num), dimension(10)                 :: errbx,errby,errbz  
   REAL(num), dimension(10)                 :: te,tb
   CHARACTER(len=64), dimension(10)         :: namee,nameb
-  CHARACTER(len=512)                       :: line  
     
   write(0,'(" ____________________________________________________________________________")')
   write(0,*) 'TEST: field gathering 3D'

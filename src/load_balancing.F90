@@ -1,10 +1,28 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ________________________________________________________________________________________
+!
+!     LOAD_BALANCING.F90
+!
 ! MODULE FOR LOAD BALANCING 3D EM PIC SIMULATIONS
-! WRITTEN BY H. VINCENTI 
+!
+! Author:
+! Henri Vincenti
+!
+! Date
 ! v 1.0 March 16 2016 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ________________________________________________________________________________________
 
+! ________________________________________________________________________________________
+!> @brief
+!> This module is dedicated to the load balancing. It contains subroutines to determine 
+!> the load imbalance and improve the load between the MPI domains.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 MODULE load_balance 
+! ________________________________________________________________________________________
 USE fields 
 USE shared_data
 USE tiling 
@@ -12,7 +30,17 @@ IMPLICIT NONE
 
 CONTAINS 
 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine needs a description.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE compute_currproc_array_dimensions(nnew,ncmin,ncmax,np,mpi_rank)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN OUT) :: nnew
     INTEGER(idp), INTENT(IN) :: np,mpi_rank
@@ -22,8 +50,18 @@ SUBROUTINE compute_currproc_array_dimensions(nnew,ncmin,ncmax,np,mpi_rank)
 
 END SUBROUTINE compute_currproc_array_dimensions
 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine needs a description.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, & 
                                     cxmax,cymax,czmax,npx,npy,npz,np,l_cart_comm)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, np
     LOGICAL(lp)  :: l_cart_comm
@@ -51,8 +89,18 @@ SUBROUTINE get_1Darray_proclimits(ix1,ix2,iy1,iy2,iz1,iz2,cxmin,cymin,czmin, &
                                     
 END SUBROUTINE get_1Darray_proclimits
 
-
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine converts indexes of a rank in a rank number. 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_cart_comm)
+! ________________________________________________________________________________________
+
     IMPLICIT NONE 
     INTEGER(isp), INTENT(IN) :: mpi_comm_in
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix,iy,iz
@@ -81,13 +129,22 @@ SUBROUTINE pxr_convertindtoproc(mpi_comm_in,ix,iy,iz,npx,npy,npz,curr_rank,l_car
 END SUBROUTINE pxr_convertindtoproc
 
 
-! Remap fields based on new split 
+! ________________________________________________________________________________________
+!> @brief
+!> Remap fields based on new split
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE mpi_remap_2D_field_component(field_new,nx_new,nz_new,        &
                                         field_old,nx_old,nz_old,        &
                                         nxg,nzg,                        &
                                         ix1old, ix2old, iz1old, iz2old, &
                                         ix1new, ix2new, iz1new, iz2new, & 
                                         iproc, np)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg,1,-nzg:nz_new+nzg) :: field_new
     REAL(num), INTENT(IN), DIMENSION(-nxg:nx_old+nxg,1,-nzg:nz_old+nzg) :: field_old
@@ -104,13 +161,22 @@ SUBROUTINE mpi_remap_2D_field_component(field_new,nx_new,nz_new,        &
                            iproc,np,comm,errcode)
 END SUBROUTINE mpi_remap_2D_field_component
 
-! Remap fields based on new split 
+! ________________________________________________________________________________________
+!> @brief
+!> Remap fields based on new split
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE mpi_remap_3D_field_component(field_new,nx_new,ny_new,nz_new,                 &
                                         field_old,nx_old,ny_old,nz_old,                 &
                                         nxg,nyg,nzg,                                    &
                                         ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, &
                                         ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, & 
                                         iproc, np)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg,-nyg:ny_new+nyg,-nzg:nz_new+nzg) :: field_new
     REAL(num), INTENT(IN), DIMENSION(-nxg:nx_old+nxg,-nyg:ny_old+nyg,-nzg:nz_old+nzg) :: field_old
@@ -128,16 +194,22 @@ SUBROUTINE mpi_remap_3D_field_component(field_new,nx_new,ny_new,nz_new,         
 END SUBROUTINE mpi_remap_3D_field_component
 
 
-
-
-
-! This subroutine remaps emfield_old in emfield_new and 
-! takes care of all MPI exchanges between different MPI_PROCESSES
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine remaps emfield_old in emfield_new and 
+!> takes care of all MPI exchanges between different MPI_PROCESSES
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
                            ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
                            emfield_new,nxnew,nynew,nznew,nxg,nyg,nzg,     &
                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
                            iproc, nprocs, communicator, ierrcode)
+! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxold, nyold, nzold, nxnew, nynew,nznew, iproc, nprocs
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
@@ -291,14 +363,24 @@ SUBROUTINE remap_em_3Dfields(emfield_old,nxold,nyold,nzold,               &
 
 END SUBROUTINE remap_em_3Dfields
 
-! This subroutine remaps emfield_old in emfield_new and 
-! takes care of all MPI exchanges between different MPI_PROCESSES
-! 2D CASE X-Z
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine remaps emfield_old in emfield_new and 
+!> takes care of all MPI exchanges between different MPI_PROCESSES
+!> 2D CASE X-Z
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE remap_em_2Dfields(emfield_old,nxold,nzold,               &
                            ix1old,ix2old,iz1old,iz2old,             &
                            emfield_new,nxnew,nznew,nxg,nzg,         &
                            ix1new,ix2new,iz1new,iz2new,             &
                            iproc, nprocs, communicator, ierrcode)
+! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxold, nzold, nxnew,nznew, iproc, nprocs
     INTEGER(idp), INTENT(IN) :: nxg, nzg
@@ -448,14 +530,22 @@ SUBROUTINE remap_em_2Dfields(emfield_old,nxold,nzold,               &
 END SUBROUTINE remap_em_2Dfields
 
 
-
-! This subroutine get intersection area between two 3D domains  
-! If no intersection l_is_intersection is .FALSE.
-! Useful to determine wether to send/recv datas bases on new CPU split 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine get intersection area between two 3D domains  
+!> If no intersection l_is_intersection is .FALSE.
+!> Useful to determine wether to send/recv datas bases on new CPU split 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_3Dintersection(ix1min,ix1max,iy1min,iy1max,iz1min,iz1max, & 
                               ix2min,ix2max,iy2min,iy2max,iz2min,iz2max, & 
-                              ix3min,ix3max,iy3min,iy3max,iz3min,iz3max, &                                 
+                              ix3min,ix3max,iy3min,iy3max,iz3min,iz3max, &
                               l_is_intersection)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iy1min, iy1max, iz1min, iz1max
     INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iy2min, iy2max, iz2min, iz2max
@@ -518,13 +608,23 @@ SUBROUTINE get_3Dintersection(ix1min,ix1max,iy1min,iy1max,iz1min,iz1max, &
         
 END SUBROUTINE get_3Dintersection
 
-! This subroutine get intersection area between two 2D domains  
-! If no intersection l_is_intersection is .FALSE.
-! Useful to determine wether to send/recv datas bases on new CPU split 
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine get intersection area between two 2D domains  
+!> If no intersection l_is_intersection is .FALSE.
+!> Useful to determine wether to send/recv datas bases on new CPU split 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_2Dintersection(ix1min,ix1max,iz1min,iz1max, & 
                               ix2min,ix2max,iz2min,iz2max, & 
-                              ix3min,ix3max,iz3min,iz3max, &                                 
+                              ix3min,ix3max,iz3min,iz3max, &
                               l_is_intersection)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iz1min, iz1max
     INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iz2min, iz2max
@@ -570,9 +670,19 @@ SUBROUTINE get_2Dintersection(ix1min,ix1max,iz1min,iz1max, &
         
 END SUBROUTINE get_2Dintersection
 
-! This subroutine computes the total time per part for particle subroutines 
-! (i.e  mainly particle push, field gathering and current deposition)
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine computes the total time per part for particle subroutines 
+!> (i.e  mainly particle push, field gathering and current deposition)
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE compute_time_per_part()
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     REAL(num) :: global_time_part
     CALL get_local_number_of_part(npart_local)
@@ -590,9 +700,19 @@ SUBROUTINE compute_time_per_part()
     ENDIF 
 END SUBROUTINE compute_time_per_part
 
-! This subroutine computes the total time per cell for em field subroutines 
-! (i.e field pusher) 
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine computes the total time per cell for em field subroutines 
+!> (i.e field pusher) 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE compute_time_per_cell()
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     REAL(num) :: global_time_cell
     global_time_cell=0.
@@ -608,8 +728,18 @@ SUBROUTINE compute_time_per_cell()
 END SUBROUTINE compute_time_per_cell
 
 
-
+! ________________________________________________________________________________________
+!> @brief
+!> Get the maximum time of all process per iteration.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_max_time_per_it()
+! ________________________________________________________________________________________
+
     IMPLICIT NONE 
     ! Get max time per it 
     !PRINT *, "rank,  mpitime_per_it", rank, mpitime_per_it
@@ -617,15 +747,34 @@ SUBROUTINE get_max_time_per_it()
 
 END SUBROUTINE get_max_time_per_it 
 
+! ________________________________________________________________________________________
+!> @brief
+!> Get the minimum time of all process per iteration.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_min_time_per_it()
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     ! Get max time per it 
     CALL MPI_ALLREDUCE(mpitime_per_it, min_time_per_it, 1_isp, MPI_REAL8, MPI_MIN, comm, errcode)
 END SUBROUTINE get_min_time_per_it 
 
-
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine needs a better description.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE compute_new_split_2D(tppart,tpcell,nx_glob,nz_glob, &
            ncxmin,ncxmax,nczmin,nczmax, npx,npz)
+! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN) :: tppart, tpcell
     INTEGER(idp), INTENT(IN) :: nx_glob, nz_glob, npx, npz
@@ -646,8 +795,18 @@ SUBROUTINE compute_new_split_2D(tppart,tpcell,nx_glob,nz_glob, &
     
 END SUBROUTINE compute_new_split_2D 
 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine needs a better description.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE compute_new_split(tppart,tpcell,nx_glob,ny_glob,nz_glob, &
            ncxmin,ncxmax,ncymin,ncymax,nczmin,nczmax, npx,npy,npz)
+! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN) :: tppart, tpcell
     INTEGER(idp), INTENT(IN) :: nx_glob, ny_glob, nz_glob, npx, npy, npz
@@ -675,10 +834,19 @@ SUBROUTINE compute_new_split(tppart,tpcell,nx_glob,ny_glob,nz_glob, &
 END SUBROUTINE compute_new_split
 
 
- 
-! This subroutine computes new load in direction dir based on the projected 
-! load_in_dir 
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine computes new load in direction dir based on the projected 
+!> load_in_dir 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirmax)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     REAL(num), DIMENSION(0:ncellmaxdir-1), INTENT(IN) :: load_in_dir
     INTEGER(idp), DIMENSION(0:nproc_in_dir-1), INTENT(IN OUT) :: idirmin, idirmax
@@ -722,8 +890,17 @@ SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirm
 END SUBROUTINE balance_in_dir
 
 
-! This subroutine computes the computational load projected on X-Axis 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine computes the computational load projected on X-Axis
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_projected_load_on_x(nxg,load_on_x,time_per_part,time_per_cell)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) :: nxg
     REAL(num), INTENT(IN OUT), DIMENSION(0:nxg-1) :: load_on_x 
@@ -770,8 +947,18 @@ SUBROUTINE get_projected_load_on_x(nxg,load_on_x,time_per_part,time_per_cell)
     
 END SUBROUTINE get_projected_load_on_x
 
-! This subroutine computes the computational load projected on Y-Axis 
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine computes the computational load projected on Y-Axis 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_projected_load_on_y(nyg,load_on_y,time_per_part,time_per_cell)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) :: nyg
     REAL(num), INTENT(IN OUT), DIMENSION(0:nyg-1) :: load_on_y 
@@ -813,8 +1000,18 @@ SUBROUTINE get_projected_load_on_y(nyg,load_on_y,time_per_part,time_per_cell)
     
 END SUBROUTINE get_projected_load_on_y
 
-! This subroutine computes the computational load projected on Z-Axis 
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine computes the computational load projected on Z-Axis 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_projected_load_on_z(nzg,load_on_z,time_per_part,time_per_cell)
+! ________________________________________________________________________________________
     IMPLICIT NONE 
     INTEGER(idp), INTENT(IN) :: nzg
     REAL(num), INTENT(IN OUT), DIMENSION(0:nzg-1) :: load_on_z 
@@ -862,495 +1059,525 @@ SUBROUTINE get_projected_load_on_z(nzg,load_on_z,time_per_part,time_per_cell)
     
 END SUBROUTINE get_projected_load_on_z
 
-!This subroutine create new array_of_tiles for each species 
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine create new array_of_tiles for each species 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE create_new_tile_split()
-USE omp_lib
-IMPLICIT NONE 
-TYPE(particle_species), DIMENSION(:), ALLOCATABLE, TARGET :: new_species_parray  
-TYPE(particle_species), POINTER :: currsp, currsp_new
-TYPE(particle_tile), POINTER :: curr_tile
-INTEGER(idp)  :: nxmin,nxmax,nymin,nymax,nzmin,nzmax,&
-                            oxmin,oxmax,oymin,oymax,ozmin,ozmax
-INTEGER(idp) :: ix, iy, iz, ip, indx, indy, indz, ispecies, count
-INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
-INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new, nthreads_tot
+! ________________________________________________________________________________________
 
-#ifdef _OPENMP
-nthreads_tot=OMP_GET_MAX_THREADS()
-#else
-nthreads_tot=1
-#endif 
+  USE omp_lib
+  IMPLICIT NONE 
+  TYPE(particle_species), DIMENSION(:), ALLOCATABLE, TARGET :: new_species_parray  
+  TYPE(particle_species), POINTER :: currsp, currsp_new
+  TYPE(particle_tile), POINTER :: curr_tile
+  INTEGER(idp)  :: nxmin,nxmax,nymin,nymax,nzmin,nzmax,&
+                              oxmin,oxmax,oymin,oymax,ozmin,ozmax
+  INTEGER(idp) :: ix, iy, iz, ip, indx, indy, indz, ispecies, count
+  INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
+  REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+  INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new, nthreads_tot
 
-IF (nthreads_tot .GT. 1) THEN 
-    ! Udpate optimal number of tiles 
-    SELECT CASE(c_dim)
-    CASE (2)
-        ntilex_new = MAX(1_idp,nx/35)
-        ntiley_new = 1
-        ntilez_new = MAX(1_idp,nz/35)
-    CASE DEFAULT
-        ntilex_new = MAX(1_idp,nx/10)
-        ntiley_new = MAX(1_idp,ny/10)
-        ntilez_new = MAX(1_idp,nz/10)
-    END SELECT 
-ELSE
-    ntilex_new = 1
-    ntiley_new = 1
-    ntilez_new = 1
-ENDIF 
+  #ifdef _OPENMP
+  nthreads_tot=OMP_GET_MAX_THREADS()
+  #else
+  nthreads_tot=1
+  #endif 
 
-
-! Allocate new species array 
-ALLOCATE(new_species_parray(nspecies))
-! Copy properties of each species from old array to new array 
-DO ispecies=1,nspecies 
-    currsp=>species_parray(ispecies)
-    currsp_new=>new_species_parray(ispecies)
-    currsp_new%charge=currsp%charge
-    currsp_new%mass=currsp%mass
-    currsp_new%x_min=currsp%x_min
-    currsp_new%x_max=currsp%x_max
-    currsp_new%y_min=currsp%y_min
-    currsp_new%y_max=currsp%y_max
-    currsp_new%z_min=currsp%z_min
-    currsp_new%z_max=currsp%z_max
-    currsp_new%vth_x=currsp%vth_x
-    currsp_new%vth_y=currsp%vth_y
-    currsp_new%vth_z=currsp%vth_z
-    currsp_new%vdrift_x=currsp%vdrift_x
-    currsp_new%vdrift_y=currsp%vdrift_y
-    currsp_new%vdrift_z=currsp%vdrift_z
-    currsp_new%nppcell=currsp%nppcell
-END DO
+  IF (nthreads_tot .GT. 1) THEN 
+      ! Udpate optimal number of tiles 
+      SELECT CASE(c_dim)
+      CASE (2)
+          ntilex_new = MAX(1_idp,nx/35)
+          ntiley_new = 1
+          ntilez_new = MAX(1_idp,nz/35)
+      CASE DEFAULT
+          ntilex_new = MAX(1_idp,nx/10)
+          ntiley_new = MAX(1_idp,ny/10)
+          ntilez_new = MAX(1_idp,nz/10)
+      END SELECT 
+  ELSE
+      ntilex_new = 1
+      ntiley_new = 1
+      ntilez_new = 1
+  ENDIF 
 
 
-CALL set_tile_split_for_species(new_species_parray,nspecies,ntilex_new,ntiley_new,ntilez_new,nx_grid,ny_grid,nz_grid, &
-                                x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+  ! Allocate new species array 
+  ALLOCATE(new_species_parray(nspecies))
+  ! Copy properties of each species from old array to new array 
+  DO ispecies=1,nspecies 
+      currsp=>species_parray(ispecies)
+      currsp_new=>new_species_parray(ispecies)
+      currsp_new%charge=currsp%charge
+      currsp_new%mass=currsp%mass
+      currsp_new%x_min=currsp%x_min
+      currsp_new%x_max=currsp%x_max
+      currsp_new%y_min=currsp%y_min
+      currsp_new%y_max=currsp%y_max
+      currsp_new%z_min=currsp%z_min
+      currsp_new%z_max=currsp%z_max
+      currsp_new%vth_x=currsp%vth_x
+      currsp_new%vth_y=currsp%vth_y
+      currsp_new%vth_z=currsp%vth_z
+      currsp_new%vdrift_x=currsp%vdrift_x
+      currsp_new%vdrift_y=currsp%vdrift_y
+      currsp_new%vdrift_z=currsp%vdrift_z
+      currsp_new%nppcell=currsp%nppcell
+  END DO
+
+
+  CALL set_tile_split_for_species(new_species_parray,nspecies,ntilex_new,ntiley_new,ntilez_new,nx_grid,ny_grid,nz_grid, &
+                                  x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
                               
                                 
-! Deallocate former grid tile array/ ALLOCATE new one 
-DEALLOCATE(aofgrid_tiles)
-ALLOCATE(aofgrid_tiles(ntilex_new,ntiley_new,ntilez_new))
+  ! Deallocate former grid tile array/ ALLOCATE new one 
+  DEALLOCATE(aofgrid_tiles)
+  ALLOCATE(aofgrid_tiles(ntilex_new,ntiley_new,ntilez_new))
 
-! Init new tile arrays of new species array 
-CALL init_tile_arrays_for_species(nspecies, new_species_parray, aofgrid_tiles, ntilex_new, ntiley_new, ntilez_new)
+  ! Init new tile arrays of new species array 
+  CALL init_tile_arrays_for_species(nspecies, new_species_parray, aofgrid_tiles, ntilex_new, ntiley_new, ntilez_new)
 
-! Copy particles from former species array to new species array
-DO ispecies=1,nspecies
-    currsp=>species_parray(ispecies)
-    currsp_new=>new_species_parray(ispecies)
-    ! Get first tiles dimensions (may be different from last tile)
-    nx0_grid_tile = currsp_new%array_of_tiles(1,1,1)%nx_grid_tile
-    ny0_grid_tile = currsp_new%array_of_tiles(1,1,1)%ny_grid_tile
-    nz0_grid_tile = currsp_new%array_of_tiles(1,1,1)%nz_grid_tile
-    DO iz=1,ntilez
-        DO iy=1,ntiley
-            DO ix=1,ntilex 
-                curr_tile=>currsp%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                SELECT CASE (c_dim)
-                CASE (2)
-                    DO ip=count,1,-1
-                        partx=curr_tile%part_x(ip)
-                        party=curr_tile%part_y(ip)
-                        partz=curr_tile%part_z(ip)
-                        partux=curr_tile%part_ux(ip)
-                        partuy=curr_tile%part_uy(ip)
-                        partuz=curr_tile%part_uz(ip)
-                        gaminv=curr_tile%part_gaminv(ip)
-                        partw=curr_tile%pid(ip,wpid)
-                        ! CASE 1: particle outside MPI domain temporarily put it 
-                        ! in the first tile of new species array
-                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local) .OR. &
-                            (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN 
-                            CALL add_particle_at_tile(currsp_new, 1_idp,1_idp,1_idp, &
-                                 partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                        ! CASE 2: particle is in the new domain just add it to proper tile of new species array
-                        ELSE 
-                            indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
-                            indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
-                            CALL add_particle_at_tile(currsp_new, indx,1_idp,indz, &
-                                 partx, party, partz, partux, partuy, partuz, gaminv, partw)
+  ! Copy particles from former species array to new species array
+  DO ispecies=1,nspecies
+      currsp=>species_parray(ispecies)
+      currsp_new=>new_species_parray(ispecies)
+      ! Get first tiles dimensions (may be different from last tile)
+      nx0_grid_tile = currsp_new%array_of_tiles(1,1,1)%nx_grid_tile
+      ny0_grid_tile = currsp_new%array_of_tiles(1,1,1)%ny_grid_tile
+      nz0_grid_tile = currsp_new%array_of_tiles(1,1,1)%nz_grid_tile
+      DO iz=1,ntilez
+          DO iy=1,ntiley
+              DO ix=1,ntilex 
+                  curr_tile=>currsp%array_of_tiles(ix,iy,iz)
+                  count=curr_tile%np_tile(1)
+                  SELECT CASE (c_dim)
+                  CASE (2)
+                      DO ip=count,1,-1
+                          partx=curr_tile%part_x(ip)
+                          party=curr_tile%part_y(ip)
+                          partz=curr_tile%part_z(ip)
+                          partux=curr_tile%part_ux(ip)
+                          partuy=curr_tile%part_uy(ip)
+                          partuz=curr_tile%part_uz(ip)
+                          gaminv=curr_tile%part_gaminv(ip)
+                          partw=curr_tile%pid(ip,wpid)
+                          ! CASE 1: particle outside MPI domain temporarily put it 
+                          ! in the first tile of new species array
+                          IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local) .OR. &
+                              (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN 
+                              CALL add_particle_at_tile(currsp_new, 1_idp,1_idp,1_idp, &
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                          ! CASE 2: particle is in the new domain just add it to proper tile of new species array
+                          ELSE 
+                              indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
+                              indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
+                              CALL add_particle_at_tile(currsp_new, indx,1_idp,indz, &
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
                     
-                        ENDIF 
-                        currsp_new%species_npart=currsp_new%species_npart+1
-                        CALL rm_particles_from_species(currsp, ix,iy,iz, ip)
-                    END DO
-                CASE DEFAULT
-                    DO ip=count,1,-1
-                        partx=curr_tile%part_x(ip)
-                        party=curr_tile%part_y(ip)
-                        partz=curr_tile%part_z(ip)
-                        partux=curr_tile%part_ux(ip)
-                        partuy=curr_tile%part_uy(ip)
-                        partuz=curr_tile%part_uz(ip)
-                        gaminv=curr_tile%part_gaminv(ip)
-                        partw=curr_tile%pid(ip,wpid)
-                        ! CASE 1: particle outside MPI domain temporarily put it 
-                        ! in the first tile of new species array
-                        IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local) .OR. &
-                            (party .LT. y_min_local) .OR. (party .GE. y_max_local) .OR. &
-                            (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN 
-                            CALL add_particle_at_tile(currsp_new, 1_idp,1_idp,1_idp, &
-                                 partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                        ! CASE 2: particle is in the new domain just add it to proper tile of new species array
-                        ELSE 
-                            indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
-                            indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley_new)
-                            indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
-                            CALL add_particle_at_tile(currsp_new, indx,indy,indz, &
-                                 partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                        ENDIF 
-                        currsp_new%species_npart=currsp_new%species_npart+1
-                        CALL rm_particles_from_species(currsp, ix, iy,iz, ip)
-                    END DO
-                END SELECT 
-            END DO
-        END DO
-    END DO 
-END DO
+                          ENDIF 
+                          currsp_new%species_npart=currsp_new%species_npart+1
+                          CALL rm_particles_from_species(currsp, ix,iy,iz, ip)
+                      END DO
+                  CASE DEFAULT
+                      DO ip=count,1,-1
+                          partx=curr_tile%part_x(ip)
+                          party=curr_tile%part_y(ip)
+                          partz=curr_tile%part_z(ip)
+                          partux=curr_tile%part_ux(ip)
+                          partuy=curr_tile%part_uy(ip)
+                          partuz=curr_tile%part_uz(ip)
+                          gaminv=curr_tile%part_gaminv(ip)
+                          partw=curr_tile%pid(ip,wpid)
+                          ! CASE 1: particle outside MPI domain temporarily put it 
+                          ! in the first tile of new species array
+                          IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local) .OR. &
+                              (party .LT. y_min_local) .OR. (party .GE. y_max_local) .OR. &
+                              (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN 
+                              CALL add_particle_at_tile(currsp_new, 1_idp,1_idp,1_idp, &
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                          ! CASE 2: particle is in the new domain just add it to proper tile of new species array
+                          ELSE 
+                              indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
+                              indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley_new)
+                              indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
+                              CALL add_particle_at_tile(currsp_new, indx,indy,indz, &
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                          ENDIF 
+                          currsp_new%species_npart=currsp_new%species_npart+1
+                          CALL rm_particles_from_species(currsp, ix, iy,iz, ip)
+                      END DO
+                  END SELECT 
+              END DO
+          END DO
+      END DO 
+  END DO
 
 
-! Update tile sizes 
-ntilex=ntilex_new
-ntiley=ntiley_new
-ntilez=ntilez_new
+  ! Update tile sizes 
+  ntilex=ntilex_new
+  ntiley=ntiley_new
+  ntilez=ntilez_new
 
 
-! Deallocate old array 
-DEALLOCATE(species_parray)
+  ! Deallocate old array 
+  DEALLOCATE(species_parray)
 
-! Reallocate with new dimensions 
-ALLOCATE(species_parray(nspecies))
+  ! Reallocate with new dimensions 
+  ALLOCATE(species_parray(nspecies))
 
-! Copy species properties 
-DO ispecies=1,nspecies 
-    currsp=>species_parray(ispecies)
-    currsp_new=>new_species_parray(ispecies)
-    currsp%charge=currsp_new%charge
-    currsp%mass=currsp_new%mass
-    currsp%x_min=currsp_new%x_min
-    currsp%x_max=currsp_new%x_max
-    currsp%y_min=currsp_new%y_min
-    currsp%y_max=currsp_new%y_max
-    currsp%z_min=currsp_new%z_min
-    currsp%z_max=currsp_new%z_max
-    currsp%vth_x=currsp_new%vth_x
-    currsp%vth_y=currsp_new%vth_y
-    currsp%vth_z=currsp_new%vth_z
-    currsp%vdrift_x=currsp_new%vdrift_x
-    currsp%vdrift_y=currsp_new%vdrift_y
-    currsp%vdrift_z=currsp_new%vdrift_z
-    currsp%nppcell=currsp_new%nppcell
-END DO
+  ! Copy species properties 
+  DO ispecies=1,nspecies 
+      currsp=>species_parray(ispecies)
+      currsp_new=>new_species_parray(ispecies)
+      currsp%charge=currsp_new%charge
+      currsp%mass=currsp_new%mass
+      currsp%x_min=currsp_new%x_min
+      currsp%x_max=currsp_new%x_max
+      currsp%y_min=currsp_new%y_min
+      currsp%y_max=currsp_new%y_max
+      currsp%z_min=currsp_new%z_min
+      currsp%z_max=currsp_new%z_max
+      currsp%vth_x=currsp_new%vth_x
+      currsp%vth_y=currsp_new%vth_y
+      currsp%vth_z=currsp_new%vth_z
+      currsp%vdrift_x=currsp_new%vdrift_x
+      currsp%vdrift_y=currsp_new%vdrift_y
+      currsp%vdrift_z=currsp_new%vdrift_z
+      currsp%nppcell=currsp_new%nppcell
+  END DO
 
 
-! Set tile split for species_parray
-CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
-                                x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+  ! Set tile split for species_parray
+  CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,&
+                                  nx_grid,ny_grid,nz_grid, &
+                                  x_min_local,y_min_local, &
+                                  z_min_local,x_max_local, &
+                                  y_max_local,z_max_local)
                                 
-DEALLOCATE(aofgrid_tiles)
-ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
+  DEALLOCATE(aofgrid_tiles)
+  ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
 
-CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
+  CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles, ntilex, ntiley, ntilez)
 
+  ! Copy particles 
+  ! Copy particles from former tiles in first tile of new species array
+  DO ispecies=1,nspecies
+      currsp=>species_parray(ispecies)
+      currsp_new=>new_species_parray(ispecies)
+      DO iz=1,ntilez
+          DO iy=1,ntiley
+              DO ix=1,ntilex 
+                  curr_tile=>currsp_new%array_of_tiles(ix,iy,iz)
+                  count=curr_tile%np_tile(1)
+                  DO ip=count,1,-1
+                      partx=curr_tile%part_x(ip)
+                      party=curr_tile%part_y(ip)
+                      partz=curr_tile%part_z(ip)
+                      partux=curr_tile%part_ux(ip)
+                      partuy=curr_tile%part_uy(ip)
+                      partuz=curr_tile%part_uz(ip)
+                      gaminv=curr_tile%part_gaminv(ip)
+                      partw=curr_tile%pid(ip,wpid)
+                      CALL add_particle_at_tile(currsp, ix,iy,iz, &
+                           partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                      CALL rm_particles_from_species(currsp_new, ix, iy, iz, ip)
+                      currsp%species_npart=currsp%species_npart+1
+                  END DO
+              END DO
+          END DO
+      END DO 
+  END DO
 
-! Copy particles 
-! Copy particles from former tiles in first tile of new species array
-DO ispecies=1,nspecies
-    currsp=>species_parray(ispecies)
-    currsp_new=>new_species_parray(ispecies)
-    DO iz=1,ntilez
-        DO iy=1,ntiley
-            DO ix=1,ntilex 
-                curr_tile=>currsp_new%array_of_tiles(ix,iy,iz)
-                count=curr_tile%np_tile(1)
-                DO ip=count,1,-1
-                    partx=curr_tile%part_x(ip)
-                    party=curr_tile%part_y(ip)
-                    partz=curr_tile%part_z(ip)
-                    partux=curr_tile%part_ux(ip)
-                    partuy=curr_tile%part_uy(ip)
-                    partuz=curr_tile%part_uz(ip)
-                    gaminv=curr_tile%part_gaminv(ip)
-                    partw=curr_tile%pid(ip,wpid)
-                    CALL add_particle_at_tile(currsp, ix,iy,iz, &
-                         partx, party, partz, partux, partuy, partuz, gaminv, partw)
-                    CALL rm_particles_from_species(currsp_new, ix, iy, iz, ip)
-                    currsp%species_npart=currsp%species_npart+1
-                END DO
-            END DO
-        END DO
-    END DO 
-END DO
-
-
-
-!Deallocate new_species_parray 
-DEALLOCATE(new_species_parray)
+  !Deallocate new_species_parray 
+  DEALLOCATE(new_species_parray)
 
 END SUBROUTINE create_new_tile_split
 
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutines needs a description.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
                            ix1new,ix2new,iy1new,iy2new,iz1new,iz2new,     &
                            ncxmin,ncxmax,ncymin,ncymax,nczmin,nczmax,     &
                            iproc, ncpus,npx, npy,npz, l_cart_comm)
-                           
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npy, npz
-INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
-INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
-INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
-INTEGER(idp), INTENT(IN), DIMENSION(0:npy-1) :: ncymin, ncymax
-INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
-LOGICAL(lp) , INTENT(IN) :: l_cart_comm
-INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies, npcurr
-INTEGER(idp) :: ix3min,ix3max,iy3min,iy3max,iz3min,iz3max
-INTEGER(idp) :: ix1newip, ix2newip, iy1newip, iy2newip, iz1newip, iz2newip
-INTEGER(idp) :: ix1oldip, ix2oldip, iy1oldip, iy2oldip, iz1oldip, iz2oldip
-INTEGER(isp) :: mpitag, count
-INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
-INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
-INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
-INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
-LOGICAL(lp)  :: l_is_intersection
-INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
-REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
-REAL(num), ALLOCATABLE, DIMENSION (:,:) :: recvbuff
-REAL(num) :: part_xyz
-TYPE(particle_species), POINTER :: currsp
-TYPE(particle_tile), POINTER :: curr
+! ________________________________________________________________________________________
 
-mpitag=0_isp
+  IMPLICIT NONE
+  INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npy, npz
+  INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1old, ix2old, iy1old, iy2old, iz1old, iz2old
+  INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1new, ix2new, iy1new, iy2new, iz1new, iz2new
+  INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
+  INTEGER(idp), INTENT(IN), DIMENSION(0:npy-1) :: ncymin, ncymax
+  INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
+  LOGICAL(lp) , INTENT(IN) :: l_cart_comm
+  INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies, npcurr
+  INTEGER(idp) :: ix3min,ix3max,iy3min,iy3max,iz3min,iz3max
+  INTEGER(idp) :: ix1newip, ix2newip, iy1newip, iy2newip, iz1newip, iz2newip
+  INTEGER(idp) :: ix1oldip, ix2oldip, iy1oldip, iy2oldip, iz1oldip, iz2oldip
+  INTEGER(isp) :: mpitag, count
+  INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
+  INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
+  INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
+  LOGICAL(lp)  :: l_is_intersection
+  INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
+  REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
+  REAL(num), ALLOCATABLE, DIMENSION (:,:) :: recvbuff
+  REAL(num) :: part_xyz
+  TYPE(particle_species), POINTER :: currsp
+  TYPE(particle_tile), POINTER :: curr
 
-ALLOCATE(recv_rank(nmax_neighbours), send_rank(nmax_neighbours))
-recv_rank=-1
-send_rank=-1
-nsend=0
-nrecv=0
+  mpitag=0_isp
 
-! ---- INTERSECTION OF NEW DOMAIN PROC WITH OLD DOMAINS =/ PROC
-ix1newip = ix1new(iproc)
-ix2newip = ix2new(iproc)
-iy1newip = iy1new(iproc)
-iy2newip = iy2new(iproc)
-iz1newip = iz1new(iproc)
-iz2newip = iz2new(iproc)
-DO i=0, ncpus-1 
-    CALL get_3Dintersection(ix1newip, ix2newip, iy1newip, iy2newip,         &
-                            iz1newip, iz2newip,                             & 
-                            ix1old(i), ix2old(i), iy1old(i), iy2old(i),     &
-                            iz1old(i), iz2old(i),                           & 
-                            ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
-                            l_is_intersection)
-    ! Case i == iproc cycle
-    IF (i .EQ. iproc) CYCLE 
-    ! Found intersection area between new proc and old adjacent proc 
-    ! Creates RECV TYPE FOR THIS Volume  
-    IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
-        !--- Put rank in "receive from" list
-        nrecv=nrecv+1
-        recv_rank(nrecv)=i
-    ENDIF 
-END DO   
+  ALLOCATE(recv_rank(nmax_neighbours), send_rank(nmax_neighbours))
+  recv_rank=-1
+  send_rank=-1
+  nsend=0
+  nrecv=0
 
-! ---- INTERSECTION OF OLD DOMAIN PROC WITH NEW DOMAINS =/ PROC
-ix1oldip = ix1old(iproc)
-ix2oldip = ix2old(iproc)
-iy1oldip = iy1old(iproc)
-iy2oldip = iy2old(iproc)
-iz1oldip = iz1old(iproc)
-iz2oldip = iz2old(iproc)
-DO i=0, ncpus-1 
-    CALL get_3Dintersection(ix1oldip, ix2oldip, iy1oldip, iy2oldip,         &
-                            iz1oldip, iz2oldip,                             & 
-                            ix1new(i), ix2new(i), iy1new(i), iy2new(i),     &
-                            iz1new(i), iz2new(i),                           & 
-                            ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
-                            l_is_intersection)
-    ! Case i == iproc cycle
-    IF (i .EQ. iproc) CYCLE 
+  ! ---- INTERSECTION OF NEW DOMAIN PROC WITH OLD DOMAINS =/ PROC
+  ix1newip = ix1new(iproc)
+  ix2newip = ix2new(iproc)
+  iy1newip = iy1new(iproc)
+  iy2newip = iy2new(iproc)
+  iz1newip = iz1new(iproc)
+  iz2newip = iz2new(iproc)
+  DO i=0, ncpus-1 
+      CALL get_3Dintersection(ix1newip, ix2newip, iy1newip, iy2newip,         &
+                              iz1newip, iz2newip,                             & 
+                              ix1old(i), ix2old(i), iy1old(i), iy2old(i),     &
+                              iz1old(i), iz2old(i),                           & 
+                              ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
+                              l_is_intersection)
+      ! Case i == iproc cycle
+      IF (i .EQ. iproc) CYCLE 
+      ! Found intersection area between new proc and old adjacent proc 
+      ! Creates RECV TYPE FOR THIS Volume  
+      IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
+          !--- Put rank in "receive from" list
+          nrecv=nrecv+1
+          recv_rank(nrecv)=i
+      ENDIF 
+  END DO   
+
+  ! ---- INTERSECTION OF OLD DOMAIN PROC WITH NEW DOMAINS =/ PROC
+  ix1oldip = ix1old(iproc)
+  ix2oldip = ix2old(iproc)
+  iy1oldip = iy1old(iproc)
+  iy2oldip = iy2old(iproc)
+  iz1oldip = iz1old(iproc)
+  iz2oldip = iz2old(iproc)
+  DO i=0, ncpus-1 
+      CALL get_3Dintersection(ix1oldip, ix2oldip, iy1oldip, iy2oldip,         &
+                              iz1oldip, iz2oldip,                             & 
+                              ix1new(i), ix2new(i), iy1new(i), iy2new(i),     &
+                              iz1new(i), iz2new(i),                           & 
+                              ix3min,ix3max,iy3min,iy3max,iz3min,iz3max,      &          
+                              l_is_intersection)
+      ! Case i == iproc cycle
+      IF (i .EQ. iproc) CYCLE 
                             
-    ! Found intersection area between old proc and new adjacent procs
-    ! Create sendtype for this volume 
-    IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
-        !--- Put rank in "receive from" list
-        nsend=nsend+1
-        send_rank(nsend)=i
-    ENDIF 
-END DO   
+      ! Found intersection area between old proc and new adjacent procs
+      ! Create sendtype for this volume 
+      IF (l_is_intersection .AND. (i .NE. iproc)) THEN 
+          !--- Put rank in "receive from" list
+          nsend=nsend+1
+          send_rank(nsend)=i
+      ENDIF 
+  END DO   
 
 
-ALLOCATE(npart_send(nspecies,nsend), npart_recv(nspecies,nrecv), requests(nsend+nrecv))
-npart_send=0_idp
-npart_recv=0_idp
-requests=0_isp
+  ALLOCATE(npart_send(nspecies,nsend), npart_recv(nspecies,nrecv), requests(nsend+nrecv))
+  npart_send=0_idp
+  npart_recv=0_idp
+  requests=0_isp
 
-! ----- POST IRECV TO GET NUMBER OF PARTICLES 
-DO i=1, nrecv
-    count=nspecies
-    CALL MPI_IRECV(npart_recv(1:count,i), count,  MPI_INTEGER8, recv_rank(i), MPI_ANY_TAG,    &
-                            comm, requests(i), errcode)    
-END DO 
+  ! ----- POST IRECV TO GET NUMBER OF PARTICLES 
+  DO i=1, nrecv
+      count=nspecies
+      CALL MPI_IRECV(npart_recv(1:count,i), count,  MPI_INTEGER8, recv_rank(i), MPI_ANY_TAG,    &
+                              comm, requests(i), errcode)    
+  END DO 
 
-! ----- IDENTIFY PARTICLES TO BE SENT/ PLACE PARTICLES IN SEND BUFFER 
-ALLOCATE(sendbuff(nvar*npart_local,nsend), nptoexch(nsend))
-nptoexch=0
-DO ispecies=1, nspecies !LOOP ON SPECIES
-    ! Init send recv buffers
-    currsp => species_parray(ispecies)
-    DO iztile=1, ntilez !LOOP ON TILES
-        DO iytile=1, ntiley
-            DO ixtile=1, ntilex
-                curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
-                ! If not subdomain border, nothing to do
-                IF (.NOT. curr%subdomain_bound) CYCLE
-                ! search for outbound particles
-                part_xyz=0.
-                ! Identify outbounds particles and compute destination 
-                npcurr=curr%np_tile(1)
-                DO i = npcurr,1,-1 !LOOP ON PARTICLES
-                    iprocx = x_coords
-                    iprocy = y_coords
-                    iprocz = z_coords
-                    part_xyz = curr%part_x(i)
-                    icx=(part_xyz-xmin)/dx
-                    ! Particle has left this processor
-                    IF ((part_xyz .LT. x_min_local) .OR. (part_xyz .GE. x_max_local)) THEN
-                        CALL get_proc_interval(iprocx,icx,ncxmin,ncxmax,npx)
-                    ENDIF
-                    part_xyz = curr%part_y(i)
-                    icy=(part_xyz-ymin)/dy
-                    ! Particle has left this processor
-                    IF (((part_xyz .LT. y_min_local) .OR. (part_xyz .GE. y_max_local))) THEN
-                        CALL get_proc_interval(iprocy,icy,ncymin,ncymax,npy)
-                    ENDIF       
-                    part_xyz = curr%part_z(i)
-                    icz=(part_xyz-zmin)/dz
-                    ! Particle has left this processor
-                    IF ((part_xyz .LT. z_min_local) .OR. (part_xyz .GE. z_max_local)) THEN 
-                        ! Find new proc using bissection algorithm (log(nproc))
-                        CALL get_proc_interval(iprocz,icz,nczmin,nczmax,npz)
-                    ENDIF 
-                    ! Particles has to be sent to another proc 
-                    IF((iprocx .NE. x_coords) .OR. (iprocy .NE. y_coords) .OR. (iprocz .NE. z_coords))  THEN 
-                        ! Finds indices in buffer for curr_rank using a binary search algorithm
-                        CALL pxr_convertindtoproc(comm,iprocx,iprocy,iprocz,npx,npy,npz,curr_rank,l_cart_comm)
-                        CALL binary_search(isend,INT(curr_rank,isp),send_rank(1:nsend),nsend)
-                        ibuff=nvar*nptoexch(isend)+1
-                        sendbuff(ibuff,   isend)    = curr%part_x(i)
-                        sendbuff(ibuff+1, isend)  = curr%part_y(i)
-                        sendbuff(ibuff+2, isend)  = curr%part_z(i)
-                        sendbuff(ibuff+3, isend)  = curr%part_ux(i)
-                        sendbuff(ibuff+4, isend)  = curr%part_uy(i)
-                        sendbuff(ibuff+5, isend)  = curr%part_uz(i)
-                        sendbuff(ibuff+6, isend)  = curr%part_gaminv(i)
-                        sendbuff(ibuff+7, isend)  = curr%pid(i,wpid)
-                        npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
-                        nptoexch(isend)=nptoexch(isend)+1
-                        ! Remove particle of current species from current tile 
-                        CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
-                    ENDIF           
-                ENDDO !END LOOP ON PARTICLES
-              ENDDO
-           ENDDO
-        ENDDO ! END LOOP ON TILES
-END DO ! End loop on species
+  ! ----- IDENTIFY PARTICLES TO BE SENT/ PLACE PARTICLES IN SEND BUFFER 
+  ALLOCATE(sendbuff(nvar*npart_local,nsend), nptoexch(nsend))
+  nptoexch=0
+  DO ispecies=1, nspecies !LOOP ON SPECIES
+      ! Init send recv buffers
+      currsp => species_parray(ispecies)
+      DO iztile=1, ntilez !LOOP ON TILES
+          DO iytile=1, ntiley
+              DO ixtile=1, ntilex
+                  curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+                  ! If not subdomain border, nothing to do
+                  IF (.NOT. curr%subdomain_bound) CYCLE
+                  ! search for outbound particles
+                  part_xyz=0.
+                  ! Identify outbounds particles and compute destination 
+                  npcurr=curr%np_tile(1)
+                  DO i = npcurr,1,-1 !LOOP ON PARTICLES
+                      iprocx = x_coords
+                      iprocy = y_coords
+                      iprocz = z_coords
+                      part_xyz = curr%part_x(i)
+                      icx=(part_xyz-xmin)/dx
+                      ! Particle has left this processor
+                      IF ((part_xyz .LT. x_min_local) .OR. (part_xyz .GE. x_max_local)) THEN
+                          CALL get_proc_interval(iprocx,icx,ncxmin,ncxmax,npx)
+                      ENDIF
+                      part_xyz = curr%part_y(i)
+                      icy=(part_xyz-ymin)/dy
+                      ! Particle has left this processor
+                      IF (((part_xyz .LT. y_min_local) .OR. (part_xyz .GE. y_max_local))) THEN
+                          CALL get_proc_interval(iprocy,icy,ncymin,ncymax,npy)
+                      ENDIF       
+                      part_xyz = curr%part_z(i)
+                      icz=(part_xyz-zmin)/dz
+                      ! Particle has left this processor
+                      IF ((part_xyz .LT. z_min_local) .OR. (part_xyz .GE. z_max_local)) THEN 
+                          ! Find new proc using bissection algorithm (log(nproc))
+                          CALL get_proc_interval(iprocz,icz,nczmin,nczmax,npz)
+                      ENDIF 
+                      ! Particles has to be sent to another proc 
+                      IF((iprocx .NE. x_coords) .OR. (iprocy .NE. y_coords) .OR. (iprocz .NE. z_coords))  THEN 
+                          ! Finds indices in buffer for curr_rank using a binary search algorithm
+                          CALL pxr_convertindtoproc(comm,iprocx,iprocy,iprocz,npx,npy,npz,curr_rank,l_cart_comm)
+                          CALL binary_search(isend,INT(curr_rank,isp),send_rank(1:nsend),nsend)
+                          ibuff=nvar*nptoexch(isend)+1
+                          sendbuff(ibuff,   isend)    = curr%part_x(i)
+                          sendbuff(ibuff+1, isend)  = curr%part_y(i)
+                          sendbuff(ibuff+2, isend)  = curr%part_z(i)
+                          sendbuff(ibuff+3, isend)  = curr%part_ux(i)
+                          sendbuff(ibuff+4, isend)  = curr%part_uy(i)
+                          sendbuff(ibuff+5, isend)  = curr%part_uz(i)
+                          sendbuff(ibuff+6, isend)  = curr%part_gaminv(i)
+                          sendbuff(ibuff+7, isend)  = curr%pid(i,wpid)
+                          npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
+                          nptoexch(isend)=nptoexch(isend)+1
+                          ! Remove particle of current species from current tile 
+                          CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
+                      ENDIF           
+                  ENDDO !END LOOP ON PARTICLES
+                ENDDO
+             ENDDO
+          ENDDO ! END LOOP ON TILES
+  END DO ! End loop on species
 
-! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
-DO i=1, nsend
-    count=nspecies
-    CALL MPI_ISEND(npart_send(1:count,i), count,  MPI_INTEGER8, send_rank(i), mpitag,    &
-                            comm, requests(nrecv+i), errcode)    
-END DO 
-
-
-! ----- SYNC THE NUMBER OF PARTICLES BEFORE RECEIVING DATA
-count=nsend+nrecv
-IF (count .GT. 0) THEN 
-  CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
-ENDIF
-requests=0_isp
-nsdat=0
-nrdat=0
-
-! ----- POST IRECV FOR PARTICLE DATA 
-nmax=nvar*MAXVAL(SUM(npart_recv,1))
-ALLOCATE(recvbuff(nmax,nrecv))
-DO i=1, nrecv
-    count=nvar*SUM(npart_recv(:,i))
-    IF (count .GT. 0) THEN 
-  nrdat=nrdat+1
-        CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),MPI_ANY_TAG, &
-                                comm, requests(nrdat),errcode)
-    ENDIF
-END DO
-
-! ----- POST ISEND FOR PARTICLES DATA 
-DO i=1, nsend
-    count=nvar*SUM(npart_send(:,i))
-    IF (count .GT. 0) THEN 
-  nsdat=nsdat+1
-        CALL MPI_ISEND(sendbuff(1:count,i), count,  MPI_DOUBLE_PRECISION, send_rank(i), mpitag,    &
-                            comm, requests(nrdat+nsdat), errcode)    
-    ENDIF
-END DO 
-
-! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
-count=nrdat+nsdat
-IF (count .GT. 0_isp) THEN 
-  CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
-ENDIF
-
-! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
-DO i =1, nrecv
-    ispec=0
-    DO ispecies=1,nspecies
-        currsp=> species_parray(ispecies) 
-        DO ipart=1,nvar*npart_recv(ispecies,i),nvar
-            ibuff=ispec+ipart 
-            CALL add_particle_to_species(currsp, recvbuff(ibuff,i), recvbuff(ibuff+1,i), recvbuff(ibuff+2,i), &
-            recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
-        END DO 
-        ispec=ispec+nvar*npart_recv(ispecies,i)
-    END DO 
-END DO
+  ! ----- POST ISEND FOR THE NUMBER OF PARTICLES 
+  DO i=1, nsend
+      count=nspecies
+      CALL MPI_ISEND(npart_send(1:count,i), count,  MPI_INTEGER8, send_rank(i), mpitag,    &
+                              comm, requests(nrecv+i), errcode)    
+  END DO 
 
 
-DEALLOCATE(sendbuff,recvbuff,nptoexch,npart_send,npart_recv,requests)
+  ! ----- SYNC THE NUMBER OF PARTICLES BEFORE RECEIVING DATA
+  count=nsend+nrecv
+  IF (count .GT. 0) THEN 
+    CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+  ENDIF
+  requests=0_isp
+  nsdat=0
+  nrdat=0
+
+  ! ----- POST IRECV FOR PARTICLE DATA 
+  nmax=nvar*MAXVAL(SUM(npart_recv,1))
+  ALLOCATE(recvbuff(nmax,nrecv))
+  DO i=1, nrecv
+      count=nvar*SUM(npart_recv(:,i))
+      IF (count .GT. 0) THEN 
+    nrdat=nrdat+1
+          CALL MPI_IRECV(recvbuff(1:count,i),count, MPI_DOUBLE_PRECISION,recv_rank(i),MPI_ANY_TAG, &
+                                  comm, requests(nrdat),errcode)
+      ENDIF
+  END DO
+
+  ! ----- POST ISEND FOR PARTICLES DATA 
+  DO i=1, nsend
+      count=nvar*SUM(npart_send(:,i))
+      IF (count .GT. 0) THEN 
+    nsdat=nsdat+1
+          CALL MPI_ISEND(sendbuff(1:count,i), count,  MPI_DOUBLE_PRECISION, send_rank(i), mpitag,    &
+                              comm, requests(nrdat+nsdat), errcode)    
+      ENDIF
+  END DO 
+
+  ! ----- SYNC MPI EXCHANGES FOR PARTICLE DATA 
+  count=nrdat+nsdat
+  IF (count .GT. 0_isp) THEN 
+    CALL MPI_WAITALL(count,requests, MPI_STATUSES_IGNORE, errcode)
+  ENDIF
+
+  ! ----- ADD PARTICLES FROM RECV BUFF TO SPECIES ARRAY 
+  DO i =1, nrecv
+      ispec=0
+      DO ispecies=1,nspecies
+          currsp=> species_parray(ispecies) 
+          DO ipart=1,nvar*npart_recv(ispecies,i),nvar
+              ibuff=ispec+ipart 
+              CALL add_particle_to_species(currsp, recvbuff(ibuff,i), recvbuff(ibuff+1,i), recvbuff(ibuff+2,i), &
+              recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
+          END DO 
+          ispec=ispec+nvar*npart_recv(ispecies,i)
+      END DO 
+  END DO
+
+
+  DEALLOCATE(sendbuff,recvbuff,nptoexch,npart_send,npart_recv,requests)
 
 END SUBROUTINE remap_particles
 
-
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutines needs a description.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE remap_particles_2D(ix1old,ix2old,iz1old,iz2old,     &
                            ix1new,ix2new,iz1new,iz2new,     &
                            ncxmin,ncxmax,nczmin,nczmax,     &
                            iproc, ncpus,npx,npz, l_cart_comm)
-                           
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npz
-INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1old, ix2old, iz1old, iz2old
-INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1new, ix2new, iz1new, iz2new
-INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
-INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
-LOGICAL(lp) , INTENT(IN) :: l_cart_comm
-INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies, npcurr,npy
-INTEGER(idp) :: ix3min,ix3max,iz3min,iz3max
-INTEGER(idp) :: ix1newip, ix2newip,  iz1newip, iz2newip
-INTEGER(idp) :: ix1oldip, ix2oldip, iz1oldip, iz2oldip
-INTEGER(isp) :: mpitag, count
-INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
-INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
-INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
-INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
-LOGICAL(lp)  :: l_is_intersection
-INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
-REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
-REAL(num), ALLOCATABLE, DIMENSION (:,:) :: recvbuff
-REAL(num) :: part_xyz
-TYPE(particle_species), POINTER :: currsp
-TYPE(particle_tile), POINTER :: curr
+! ________________________________________________________________________________________
+
+  IMPLICIT NONE
+  INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npz
+  INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1old, ix2old, iz1old, iz2old
+  INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ix1new, ix2new, iz1new, iz2new
+  INTEGER(idp), INTENT(IN), DIMENSION(0:npx-1) :: ncxmin, ncxmax
+  INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: nczmin, nczmax
+  LOGICAL(lp) , INTENT(IN) :: l_cart_comm
+  INTEGER(idp) :: i, ipart, ixtile, iytile, iztile, nmax, ispec, ispecies, npcurr,npy
+  INTEGER(idp) :: ix3min,ix3max,iz3min,iz3max
+  INTEGER(idp) :: ix1newip, ix2newip,  iz1newip, iz2newip
+  INTEGER(idp) :: ix1oldip, ix2oldip, iz1oldip, iz2oldip
+  INTEGER(isp) :: mpitag, count
+  INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
+  INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
+  INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
+  LOGICAL(lp)  :: l_is_intersection
+  INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
+  REAL(num), ALLOCATABLE, DIMENSION (:,:) :: sendbuff
+  REAL(num), ALLOCATABLE, DIMENSION (:,:) :: recvbuff
+  REAL(num) :: part_xyz
+  TYPE(particle_species), POINTER :: currsp
+  TYPE(particle_tile), POINTER :: curr
 
 npy=1! 2D CASE 
 mpitag=0_isp
@@ -1543,61 +1770,81 @@ DEALLOCATE(sendbuff,recvbuff,nptoexch,npart_send,npart_recv,requests)
 END SUBROUTINE remap_particles_2D
 
 
-! Finds proc index using binary search algorithm 
+! ________________________________________________________________________________________
+!> @brief
+!> Finds proc index using binary search algorithm 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE get_proc_interval(iproc,ic,ncmin,ncmax,ncpus)
-IMPLICIT NONE 
-INTEGER(idp), INTENT(IN OUT) :: iproc 
-INTEGER(idp), INTENT(IN) :: ic, ncpus
-INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ncmin, ncmax 
-INTEGER(idp) :: imin, imax, imid
-LOGICAL(lp)  :: is_not_found
+! ________________________________________________________________________________________
 
-imin=0
-imax=ncpus-1
-iproc=-1
-is_not_found=.TRUE.
-DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
-    imid=(imax+imin)/2
-    IF((ic .GE. ncmin(imid)) .AND. (ic .LE. ncmax(imid))) THEN 
-        is_not_found=.FALSE. 
-        iproc=imid
-    ELSE
-        IF(ic .LT. ncmin(imid)) THEN 
-            imax=imid-1
-        ELSE 
-            imin=imid+1
-        ENDIF
-    ENDIF
-END DO 
+  IMPLICIT NONE 
+  INTEGER(idp), INTENT(IN OUT) :: iproc 
+  INTEGER(idp), INTENT(IN) :: ic, ncpus
+  INTEGER(idp), INTENT(IN), DIMENSION(0:ncpus-1) :: ncmin, ncmax 
+  INTEGER(idp) :: imin, imax, imid
+  LOGICAL(lp)  :: is_not_found
+
+  imin=0
+  imax=ncpus-1
+  iproc=-1
+  is_not_found=.TRUE.
+  DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
+      imid=(imax+imin)/2
+      IF((ic .GE. ncmin(imid)) .AND. (ic .LE. ncmax(imid))) THEN 
+          is_not_found=.FALSE. 
+          iproc=imid
+      ELSE
+          IF(ic .LT. ncmin(imid)) THEN 
+              imax=imid-1
+          ELSE 
+              imin=imid+1
+          ENDIF
+      ENDIF
+  END DO 
 
 END SUBROUTINE get_proc_interval
 
+! ________________________________________________________________________________________
+!> @brief
+!> Binary search. This subroutine needs a better description.
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
 SUBROUTINE binary_search(isend,crank,arr,narr)
-IMPLICIT NONE 
-INTEGER(idp), INTENT(IN OUT) :: isend
-INTEGER(isp), INTENT(IN) :: crank 
-INTEGER(idp), INTENT(IN) :: narr
-INTEGER(isp), INTENT(IN), DIMENSION(narr) :: arr
-INTEGER(idp) :: imin, imax, imid
-LOGICAL(lp)  :: is_not_found
+! ________________________________________________________________________________________
+  IMPLICIT NONE 
+  INTEGER(idp), INTENT(IN OUT) :: isend
+  INTEGER(isp), INTENT(IN) :: crank 
+  INTEGER(idp), INTENT(IN) :: narr
+  INTEGER(isp), INTENT(IN), DIMENSION(narr) :: arr
+  INTEGER(idp) :: imin, imax, imid
+  LOGICAL(lp)  :: is_not_found
 
-imin=1
-imax=narr
-isend=-1
-is_not_found=.TRUE.
-DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
-    imid=(imax+imin)/2
-    IF(arr(imid) .EQ. crank) THEN 
-        is_not_found=.FALSE. 
-        isend=imid
-    ELSE
-        IF(arr(imid) .GE. crank) THEN 
-            imax=imid-1
-        ELSE 
-            imin=imid+1
-        ENDIF
-    ENDIF
-END DO 
+  imin=1
+  imax=narr
+  isend=-1
+  is_not_found=.TRUE.
+  DO WHILE((is_not_found) .AND. (imax .GE. imin) ) 
+      imid=(imax+imin)/2
+      IF(arr(imid) .EQ. crank) THEN 
+          is_not_found=.FALSE. 
+          isend=imid
+      ELSE
+          IF(arr(imid) .GE. crank) THEN 
+              imax=imid-1
+          ELSE 
+              imin=imid+1
+          ENDIF
+      ENDIF
+  END DO 
 
 END SUBROUTINE binary_search
 
