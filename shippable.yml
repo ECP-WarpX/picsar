@@ -31,6 +31,6 @@ build:
     - make -f Makefile_Forthon
     # Run tests for python
     - cd Acceptance_testing/Python_tests/test_Langmuir_wave
-    - cp -p ../../../example_scripts_python/test_Langmuir_wave_3d.py .
+    - cp -p ../../../examples/example_scripts_python/test_Langmuir_wave_3d.py .
     - export OMP_NUM_THREADS=2
    # - python test_Langmuir_wave_3d.py
