@@ -2368,7 +2368,6 @@ class EM3DPXR(EM3DFFT):
         if self.spectral:
 
             kwGPSTD = {'l_staggered':s.l_spectral_staggered,\
-                     'l_staggered_a_la_brendan':s.l_staggered_a_la_brendan, \
                      'spectral':s.spectral,\
                      'norderx':s.norderx,\
                      'nordery':s.nordery,\
@@ -2413,7 +2412,6 @@ class EM3DPXR(EM3DFFT):
             self.FSpace = self.GPSTDMaxwell
         else:
             kwFS = {'l_staggered':s.l_spectral_staggered,\
-                     'l_staggered_a_la_brendan':s.l_staggered_a_la_brendan, \
                      'spectral':s.spectral,\
                      'norderx':s.norderx,\
                      'nordery':s.nordery,\
