@@ -107,7 +107,7 @@ def test_langmuir_wave(tpath,trun,ttest,tshow):
     if len(tpath)>0:
       os.chdir(path)
     
-    input_file = '../../../example_decks_fortran/langmuir_wave.pixr'
+    input_file = '../../../examples/example_decks_fortran/langmuir_wave.pixr'
     picsar_exe = '../../../fortran_bin/picsar'
     
     # Get the input file from the example

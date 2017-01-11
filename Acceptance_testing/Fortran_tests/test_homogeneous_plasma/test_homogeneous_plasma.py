@@ -94,7 +94,7 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
     if len(tpath)>0:
       os.chdir(tpath)
     
-    input_file = '../../../example_decks_fortran/homogeneous_plasma.pixr'
+    input_file = '../../../examples/example_decks_fortran/homogeneous_plasma.pixr'
     picsar_exe = '../../../fortran_bin/picsar'
     
     # Get the input file from the example
