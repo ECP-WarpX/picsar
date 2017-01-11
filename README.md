@@ -78,7 +78,14 @@ You can also use the GUI frontend. Open `Doxygen/Doxyfile`, go to `Run`, click o
 #### A.  Python installation 
 
 In order to install picsar in the form of a Python module, 
-read detailed instructions in the file `Installation/Python/INSTALL_PYTHON.md`.
+read detailed instructions in the directory `Installation/Python`.
+Then, you can choose instructions depending on your system:
+
+* `INSTALL_PYTHON_MACOS.md`
+* `INSTALL_PYTHON_LINUX.md`
+* `INSTALL_PYTHON_EDISON.md`
+* `INSTALL_PYTHON_CORI.md`
+* `INSTALL_PYTHON_MIRA.md`
 
 #### B.  Fortran installation 
 
