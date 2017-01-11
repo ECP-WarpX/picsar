@@ -23,8 +23,8 @@ build:
     - cd ../test_homogeneous_plasma
     - py.test -s --ttest=1 --trun=1 --tshow=0
     # this last test is very slow on docker and shippable for an unknown reason
-    #- cd ../test_Langmuir_wave
-    #- py.test -s --ttest=1 --trun=1 --tshow=0
+    - cd ../test_Langmuir_wave
+    - py.test -s --ttest=1 --trun=1 --tshow=0
     # Compile Picsar for Python
     - cd ../../..
     - python configure
