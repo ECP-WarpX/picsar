@@ -2,6 +2,10 @@
 
 ## Makefile configuration and compilation
 
+### Requirement
+
+You just need MPI and OpenMP to run PICSAR.
+
 ### Compiling with Gfortran
 
 To compile with Gfortran in production mode (optimization flags, `MODE=prod`), just enter:

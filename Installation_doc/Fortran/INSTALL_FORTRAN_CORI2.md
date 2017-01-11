@@ -1,55 +1,137 @@
-**INSTALLING PICSAR IN FULL FORTRAN 90**
-========================================
+# **Installation of PICSAR in full Fortran 90 on Cori Phase II**
+
+## Makefile configuration and compilation
+
+### Requirement
+
+Cori phase II is a cluster equipped of Intel Xeon Phi KNL processors.
+Specific compiler flags have to be used for this architecture.
+
+We recommend to use the Intel compiler to install PICSAR.
+PICSAR also works fine with GNU.
+
+### Compiling with Intel
+
+To compile with Intel in production mode (optimization flags, `MODE=prod`), you can enter:
+```
+make SYS=cori2 MODE=prod
+```
+
+You can compile in debug mode by entering:
+```
+make SYS=cori2 MODE=debug
+```
+
+The makefile will use these compiler flags:
+```
+-O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+```
+
+Here, `-xMIC-AVX512` specifies that we use AVX512 vector register like on KNL.
+This is important for vectorization.
 
 
-**Makefile config**
--------------------------
+### Other compilers
 
-First edit the file Makefile and indicate the following environment variables:
+In this case, you have to edit the file Makefile and indicate 
+the following environment variables:
 
 * FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),
 
-* FARGS: your compiler arguments (optimization flags etc.). To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). NB: this version of PICSAR requires at least **OpenMP 4.0**. 
+* FARGS: your compiler arguments (optimization flags etc.). 
+To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). 
+NB: this version of PICSAR requires at least **OpenMP 4.0**. 
 
-**Compiling**
--------------------------
+For instance, to use the GNU compiler:
+```
+make CC=cc FC=ftn FARGS='-fPIC -O3 -march=knl -ffast-math -funroll-loops'
+```
 
-To compile, invoke the rule "all": 
+The argument `-march=knl` specifies that we want to compile for KNL 
+architecture which is important for vectorization.
 
-* Make -f Makefile all
+## Testing the code
 
-**Testing**
-_________________________
+To test the code on the cluster, we recommend to use an interactive session 
+on a single KNL node. In this example, we use a knl configured in quadrant 
+cache mode (default mode on Cori Phase II).
 
-Testing the code after compilation is highly recommended.
+```
+salloc -N 1 -t 00:30:00 -p knl -C knl,quad,cache
+```
 
-To test the compilation/execution, you can use the makefile (py.test is required):
+Then you will have to directly go in the test folders.
+Go to `Acceptance_testing/Fortran_tests`.
 
-  For all tests:
-  > make -f Makefile test
+Then, you can run each test one by one entering the different folders:
+* `test_plasma_drift`: drifting beams are propagating in every directions
+* `test_homogeneous_plasma`: an homogeneous plasma with a thermal temperature
+* `test_Langmuir_wave`: The Langmuir oscillation in a hydrogen plasma
 
-  For each test one by one
-  - Drifted plasma:     make -f Makefile test1
-  - Homogeneous plasma: make -f Makefile test2
-  - Langmuir wave:      make -f Makefile test3    
+Copy the Picsar executable:
 
-To test the compilation/execution, you can run test python scripts manually:
+```
+cp ../../../fortran_bin/picsar_cori2 .
+```
 
-* Go the folder Acceptance_testing/Fortran_tests.
+Then, run each test using 4 mpi processes. Use as many OpenMP as you want.
+For instance, you can have until 32 threads per MPI process by doing:
 
-* You can perform each test one by one entering the different folders:
-  - test_plasma_drift
-  - test_homogeneous_plasma
-  - test_Langmuir_wave
-    
-* You can run scripts using py.test: 
-  > py.test -s --trun=1 --ttest=1
-  
-  --trun=0/1: this option enables/disables simulation run
-  --ttest=0/1: this option enables/disables assert tests
-  
-* You can run scripts without py.test:
-  > python <pyhthon_script> -r 1 -t 1
-  
-  -r 0/1: this option enables/disables simulation run
-  -t 0/1: this option enables/disables simulation assert tests 
+```
+export OMP_NUM_THREADS=32
+```
+
+Specify the OpenMP scheduler:
+
+```
+export OMP_SCHEDULE=dynamic
+```
+
+Increase the stack size to avoid unexpected segmentation fault:
+
+```
+export OMP_STACKSIZE=128M
+```
+
+Then, run the test by doing:
+
+```
+srun -n 4 -c 32 ./picsar_cori2
+```
+
+## Unit tests
+
+PICSAR also contains unit tests to run and validate specific algorithms 
+and subroutines of the code.
+
+To compile the unit tests, first clean your installation by doing:
+```
+make clean
+```
+
+You can compile and run each unit test one by one but here we will show you 
+how to compile and run all of them.
+
+Unit tests are located in the directory `Acceptance_testing/Gcov_tests`.
+
+To compile them with Intel on Cori phase II, enter:
+```
+make build_test SYS=cori2
+```
+
+To run them, go directly in the unit test folder:
+
+```
+cd Acceptance_testing/Gcov_tests
+```
+
+Use `srun` to run the test of your choice. For instance:
+```
+srun -n 1 -c 1 ./tile_curr_depo_3d_test
+```
+
+Some tests can be run with several OpenMP threads, others need just one MPI 
+rank and a single thread since it only tests vectorized subroutines.
+
+For each test, a message will tell you if you pass or fail.
+
