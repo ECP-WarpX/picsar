@@ -1109,7 +1109,6 @@ listfiles=["modules.F90", \
            "particle_pushers/vay_pusher/vay_3d.F90", \
            "particle_pushers/particle_pusher_manager_2d.F90", \
            "particle_pushers/particle_pusher_manager_3d.F90", \
-           "particles_push.F90", \
            "current_deposition_2d.F90", \
            "current_deposition.F90", \
            "field_gathering_2d.F90", \
