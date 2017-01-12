@@ -1,18 +1,36 @@
+# ______________________________________________________________________________
+#
+# PICSAR FORTHON Makefile
+#
+# This makefile is for the Python version
+#
+# ______________________________________________________________________________
+
+# Source directory
 SRCDIR= src
+# Binary directory (.so) after compilation
 BINDIR = python_bin
+# Application name
 APPNAME=picsar
+# Python binary name
 PYTHON_NAME=picsarpy
+# Path where the parser is located
 UTIL=utils
+# We use Forthon to interface Fortran and Python
 FC=Forthon
 FCARGS=-v --no2underscores  --nowritemodules
+# Fortran compiler
 FCOMP=gfortran
 FCOMPEXEC=
+# Fortan compilation arguments
 FARGS="-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"
-
+# Library directory
 LIBDIR=
+# Library names
 LIBS=
+# Location of the test scripts
+TESTDIR=examples/example_scripts_python
 
-TESTDIR=example_scripts_python
 
 all: clean parse build
 test: test1 test2
@@ -32,13 +50,13 @@ clean:
 	rm -rf $(BINDIR)
 
 test1:
-	cp -p example_scripts_python/test_drifted_plasmas.py Acceptance_testing/Python_tests/test_drifted_plasmas/
+	cp -p examples/example_scripts_python/test_drifted_plasmas.py Acceptance_testing/Python_tests/test_drifted_plasmas/
 	export OMP_NUM_THREADS=2
 	cd Acceptance_testing/Python_tests/test_drifted_plasmas && \
 	mpirun -np 4 python test_drifted_plasmas.py
 	
 test2:
-	cp -p example_scripts_python/test_Langmuir_wave_3d.py Acceptance_testing/Python_tests/test_Langmuir_wave/
+	cp -p examples/example_scripts_python/test_Langmuir_wave_3d.py Acceptance_testing/Python_tests/test_Langmuir_wave/
 	export OMP_NUM_THREADS=2
 	cd Acceptance_testing/Python_tests/test_Langmuir_wave && \
 	mpirun -np 4 python test_Langmuir_wave_3d.py

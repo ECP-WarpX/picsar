@@ -78,7 +78,14 @@ You can also use the GUI frontend. Open `Doxygen/Doxyfile`, go to `Run`, click o
 #### A.  Python installation 
 
 In order to install picsar in the form of a Python module, 
-read detailed instructions in the file `Installation/Python/INSTALL_PYTHON.md`.
+read detailed instructions in the directory `Installation/Python`.
+Then, you can choose instructions depending on your system:
+
+* `INSTALL_PYTHON_MACOS.md`
+* `INSTALL_PYTHON_LINUX.md`
+* `INSTALL_PYTHON_EDISON.md`
+* `INSTALL_PYTHON_CORI.md`
+* `INSTALL_PYTHON_MIRA.md`
 
 #### B.  Fortran installation 
 
@@ -96,7 +103,8 @@ You will find several instruction files depending where you want to install PICS
 
 #### A.  Python mode
 
-An example of python script `test.py` is provided in `example_scripts_python`. To run this script in parallel, simply type :
+An example of python script `test.py` is provided in `examples/example_scripts_python`. 
+To run this script in parallel, simply type :
 ```
 mpirun -np NMPI python test.py 
 ```
@@ -104,7 +112,10 @@ with NMPI the number of MPI processes.
 
 #### B.  Fortran mode
 
-PICSAR input parameters must be provided in an input file named `input_file.pxr` in the folder where the code is ran. An example (`test.pxr`) of input file is provided in `example_decks_fortran/`. To run the executable on n MPI processes:
+PICSAR input parameters must be provided in an input file named `input_file.pxr` 
+in the folder where the code is ran. An example (`test.pxr`) of input file is 
+provided in `examples/example_decks_fortran/`. 
+To run the executable on n MPI processes:
 ```
 mpirun -np n ./picsar
 ```

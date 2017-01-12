@@ -23,14 +23,14 @@ build:
     - cd ../test_homogeneous_plasma
     - py.test -s --ttest=1 --trun=1 --tshow=0
     # this last test is very slow on docker and shippable for an unknown reason
-    #- cd ../test_Langmuir_wave
-    #- py.test -s --ttest=1 --trun=1 --tshow=0
+    - cd ../test_Langmuir_wave
+    - py.test -s --ttest=1 --trun=1 --tshow=0
     # Compile Picsar for Python
     - cd ../../..
     - python configure
     - make -f Makefile_Forthon
     # Run tests for python
     - cd Acceptance_testing/Python_tests/test_Langmuir_wave
-    - cp -p ../../../example_scripts_python/test_Langmuir_wave_3d.py .
+    - cp -p ../../../examples/example_scripts_python/test_Langmuir_wave_3d.py .
     - export OMP_NUM_THREADS=2
    # - python test_Langmuir_wave_3d.py
