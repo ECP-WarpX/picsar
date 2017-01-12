@@ -1098,7 +1098,7 @@ remove_file(appname+".v")
 
 #LIST ALL .F90 or .F files in current directory
 listfiles=["modules/modules.F90", \
-           "sorting.F90", \
+           "housekeeping/sorting.F90", \
            "field_solvers/Maxwell/maxwell_solver_manager.F90", \
            "field_solvers/Maxwell/yee_solver/yee.F90", \
            "field_solvers/Maxwell/karkainnen_solver/karkainnen.F90", \
@@ -1129,7 +1129,7 @@ listfiles=["modules/modules.F90", \
            "submain.F90", \
            "parallelization/mpi/mpi_routines.F90",\
            "initilization/control_file.F90", \
-           "load_balancing.F90"]
+           "housekeeping/load_balancing.F90"]
 
 
 # Pre-parse all application files in two .F90 files
