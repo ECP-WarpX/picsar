@@ -10,6 +10,10 @@ simple_io_jlvay.F90
 submain_inlined.F90
 *.pxr
 *.o
+src/*.o
+src/*/*.o
+src/*/*/*.o
+src/*/*/*/*.o
 *.mod
 picsar
 python_bin/
