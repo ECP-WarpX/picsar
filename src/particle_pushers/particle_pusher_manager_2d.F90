@@ -1,4 +1,4 @@
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -18,17 +18,11 @@
 ! reproduce, distribute copies to the public, prepare derivative works, and 
 ! perform publicly and display publicly, and to permit other to do so.
 !
-! PARTICLES_PUSH_2D.F90
+! PARTICLE_PUSHER_MANAGER_2D.F90
 !
-! Subroutines for the particle pusher in 2D
-!
-! Developers:
-! Henri Vincenti
-! Mathieu Lobet
-!
-! Date:
-! Creation 2015
-! ________________________________________________________________________________________
+! Subroutines for managing the particle pushers in 2d.
+! ______________________________________________________________________________
+
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -198,5 +192,3 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
   pushtime=pushtime+(tend-tdeb)
   localtimes(1) = localtimes(1) + (tend-tdeb)
 END SUBROUTINE field_gathering_plus_particle_pusher_sub_2d
-
-

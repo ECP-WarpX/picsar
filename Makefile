@@ -257,7 +257,7 @@ FARGS+= $(LARCH)
 # ________________________________________________________
 
 
-$(SRCDIR)/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
+$(SRCDIR)/%.o $(SRCDIR)/*/%.o $(SRCDIR)/*/*/%.o $(SRCDIR)/*/*/*/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 
 $(SRCDIR)/%.o:$(SRCDIR)/%.c
@@ -270,11 +270,16 @@ ifeq ($(MODE),vtune)
 build:$(SRCDIR)/modules.o \
 	$(SRCDIR)/api_fortran_itt.o \
 	$(SRCDIR)/itt_fortran.o \
-	$(SRCDIR)/maxwell.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/tiling.o \
 	$(SRCDIR)/sorting.o \
-	$(SRCDIR)/particles_push_2d.o \
-	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/current_deposition_2d.o \
 	$(SRCDIR)/current_deposition.o \
 	$(SRCDIR)/field_gathering_2d.o \
@@ -291,18 +296,23 @@ build:$(SRCDIR)/modules.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/control_file.o \
 	$(SRCDIR)/main.o 
-	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(LDFLAGS)
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
 else ifeq ($(MODE),sde)
 build:$(SRCDIR)/modules.o \
 	$(SRCDIR)/api_fortran_sde.o \
 	$(SRCDIR)/sde_fortran.o \
-	$(SRCDIR)/maxwell.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/tiling.o \
 	$(SRCDIR)/sorting.o \
-	$(SRCDIR)/particles_push_2d.o \
-	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/current_deposition_2d.o \
 	$(SRCDIR)/current_deposition.o \
 	$(SRCDIR)/field_gathering_2d.o \
@@ -319,16 +329,21 @@ build:$(SRCDIR)/modules.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/control_file.o \
 	$(SRCDIR)/main.o 
-	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(LDFLAGS)
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
 else
 build:$(SRCDIR)/modules.o \
-	$(SRCDIR)/maxwell.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/tiling.o \
 	$(SRCDIR)/sorting.o \
-	$(SRCDIR)/particles_push_2d.o \
-	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/current_deposition_2d.o \
 	$(SRCDIR)/current_deposition.o \
 	$(SRCDIR)/field_gathering_2d.o \
@@ -345,13 +360,16 @@ build:$(SRCDIR)/modules.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/control_file.o \
 	$(SRCDIR)/main.o 
-	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
 endif
 	
 clean: clean_test
 	rm -rf $(SRCDIR)/*.o
+	rm -rf $(SRCDIR)/*/*.o
+	rm -rf $(SRCDIR)/*/*/*.o	
+	rm -rf $(SRCDIR)/*/*/*/*.o	
 	rm -f *.mod
 	rm -f $(BINDIR)/$(APPNAME)
 	rm -rf RESULTS
@@ -458,13 +476,17 @@ build_current_deposition_3d_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/current_deposition_2d.o \
 	$(SRCDIR)/current_deposition.o \
 	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o 
-	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test \
+	 $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
 
 build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
-	$(SRCDIR)/particles_push_2d.o \
-	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
@@ -473,12 +495,17 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/mpi_routines.o \
 	$(SRCDIR)/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o 
-	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test \
+	 $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o \
+	  Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
 
 build_tile_mpi_part_com_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
-	$(SRCDIR)/particles_push_2d.o \
-	$(SRCDIR)/particles_push.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
@@ -489,7 +516,9 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/mpi_routines.o \
 	$(SRCDIR)/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o 
-	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test \
+	$(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o \
+	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 
 build_rho_deposition_3d_test: $(SRCDIR)/modules.o \
 	$(SRCDIR)/tiling.o \
