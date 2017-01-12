@@ -260,7 +260,7 @@ def test_langmuir_wave(tpath,trun,ttest,tshow):
   
   # Analyse of the files
   if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
-      for it in range(0,70,10):
+      for it in range(0,30,10):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
         rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
         F = ((dive.f*eps0-rho.f)) 
