@@ -273,7 +273,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
@@ -290,14 +290,14 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	$(SRCDIR)/diags.o \
 	$(SRCDIR)/simple_io.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
 	$(SRCDIR)/main.o 
@@ -311,7 +311,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
@@ -328,14 +328,14 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	$(SRCDIR)/diags.o \
 	$(SRCDIR)/simple_io.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
 	$(SRCDIR)/main.o 
@@ -347,7 +347,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
@@ -364,14 +364,14 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	$(SRCDIR)/diags.o \
 	$(SRCDIR)/simple_io.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
 	$(SRCDIR)/main.o 
@@ -455,29 +455,29 @@ clean_test:
 	rm -rf Acceptance_testing/Gcov_tests/*.dSYM
 
 build_tile_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o	
 
 build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
@@ -486,7 +486,7 @@ build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/field_gathering_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
@@ -495,7 +495,7 @@ build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/field_gathering_test.o	
 
 build_field_gathering_2d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
@@ -504,7 +504,7 @@ build_field_gathering_2d_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_2d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/field_gathering_2d.o \
 	$(SRCDIR)/field_gathering_3d_o1.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
@@ -513,7 +513,7 @@ build_field_gathering_2d_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
 
 build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
@@ -522,7 +522,7 @@ build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
@@ -532,7 +532,7 @@ build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 
 build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
@@ -543,12 +543,12 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
@@ -559,12 +559,12 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
 
 build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
@@ -575,14 +575,14 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
@@ -593,58 +593,58 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering_3d_o2.o \
 	$(SRCDIR)/field_gathering_3d_o3.o \
 	$(SRCDIR)/field_gathering.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 
 build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	Acceptance_testing/Gcov_tests/rho_deposition_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/rho_deposition_3d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	Acceptance_testing/Gcov_tests/rho_deposition_3d_test.o
 	
 build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o
 
 build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
-	$(SRCDIR)/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
-	$(SRCDIR)/mpi_routines.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test \
@@ -652,7 +652,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o	
 
 build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
@@ -661,7 +661,7 @@ build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/esirkepov_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_3d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
@@ -670,7 +670,7 @@ build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/esirkepov_3d_test.o
 	
 build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
@@ -679,7 +679,7 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/esirkepov_2d_test \
 	$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/tiling.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
