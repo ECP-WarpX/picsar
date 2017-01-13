@@ -1127,11 +1127,11 @@ listfiles=["modules/modules.F90", \
            "parallelization/mpi/mpi_derived_types.F90",\
            "boundary_conditions/field_boundaries.F90", \
            "boundary_conditions/particle_boundaries.F90", \
-           "simple_io.F90", \
+           "ios/simple_io.F90", \
            "particle_deposition/charge_deposition/charge_deposition_2d.F90", \
            "particle_deposition/charge_deposition/charge_deposition_3d.F90", \
            "particle_deposition/charge_deposition/charge_deposition_manager.F90", \
-           "diags.F90", \
+           "diags/diags.F90", \
            "submain.F90", \
            "parallelization/mpi/mpi_routines.F90",\
            "initilization/control_file.F90", \

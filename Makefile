@@ -301,8 +301,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
-	$(SRCDIR)/diags.o \
-	$(SRCDIR)/simple_io.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
@@ -345,8 +345,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
-	$(SRCDIR)/diags.o \
-	$(SRCDIR)/simple_io.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
@@ -387,8 +387,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
-	$(SRCDIR)/diags.o \
-	$(SRCDIR)/simple_io.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
