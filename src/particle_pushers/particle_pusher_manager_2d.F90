@@ -21,6 +21,14 @@
 ! PARTICLE_PUSHER_MANAGER_2D.F90
 !
 ! Subroutines for managing the particle pushers in 2d.
+!
+! Developers:
+! Henri Vincenti
+! Mathieu Lobet
+!
+! Date:
+! Creation 2015
+!
 ! ______________________________________________________________________________
 
 
