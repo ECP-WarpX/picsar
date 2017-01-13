@@ -15,7 +15,7 @@ APPNAME=picsar
 # Python binary name
 PYTHON_NAME=picsarpy
 # Path where the parser is located
-UTIL=utils
+UTIL=utils/forthon_parser
 # We use Forthon to interface Fortran and Python
 FC=Forthon
 FCARGS=-v --no2underscores  --nowritemodules
