@@ -1114,11 +1114,16 @@ listfiles=["modules/modules.F90", \
            "particle_deposition/current_deposition/esirkepov/esirkepov_3d.F90", \
            "particle_deposition/current_deposition/current_deposition_manager_2d.F90", \
            "particle_deposition/current_deposition/current_deposition_manager_3d.F90", \
-           "field_gathering_2d.F90", \
-           "field_gathering.F90", \
-           "field_gathering_3d_o1.F90",\
-           "field_gathering_3d_o2.F90",\
-           "field_gathering_3d_o3.F90",\
+           "field_gathering/field gathering_manager_2d.F90", \
+           "field_gathering/field gathering_manager_3d.F90", \
+           "field_gathering/energy_conserving/field_gathering_on_3d.F90",\
+           "field_gathering/energy_conserving/field_gathering_o1_3d.F90",\
+           "field_gathering/energy_conserving/field_gathering_o2_3d.F90",\
+           "field_gathering/energy_conserving/field_gathering_o3_3d.F90",\
+           "field_gathering/energy_conserving/field_gathering_on_2d.F90",\
+           "field_gathering/energy_conserving/field_gathering_o1_2d.F90",\
+           "field_gathering/energy_conserving/field_gathering_o2_2d.F90",\
+           "field_gathering/energy_conserving/field_gathering_o3_2d.F90",\
            "parallelization/mpi/mpi_derived_types.F90",\
            "boundary.F90", \
            "simple_io.F90", \
