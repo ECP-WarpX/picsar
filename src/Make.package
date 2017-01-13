@@ -1,8 +1,10 @@
 F90EXE_sources += modules/modules.F90
-F90EXE_sources += parallelization/mpi_routines.F90
-F90EXE_sources += parallelization/tiling.F90
-F90EXE_sources += field_solver/Maxwell/maxwell_solver_manager.F90
-F90EXE_sources += field_solver/Maxwell/yee_solver/yee.F90
+
+F90EXE_sources += parallelization/mpi/mpi_routines.F90
+F90EXE_sources += parallelization/tiling/tiling.F90
+
+F90EXE_sources += field_solvers/Maxwell/maxwell_solver_manager.F90
+F90EXE_sources += field_solvers/Maxwell/yee_solver/yee.F90
 
 F90EXE_sources += particle_deposition/charge_deposition/charge_deposition_3d.F90
 F90EXE_sources += particle_deposition/charge_deposition/charge_deposition_2d.F90
@@ -11,8 +13,8 @@ F90EXE_sources += particle_deposition/current_deposition/direct/direct_current_d
 F90EXE_sources += particle_deposition/current_deposition/esirkepov/esirkepov_2d.F90
 F90EXE_sources += particle_deposition/current_deposition/esirkepov/esirkepov_3d.F90
 
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_manager_3d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_manager_2d.F90
+F90EXE_sources += field_gathering/field_gathering_manager_3d.F90
+F90EXE_sources += field_gathering/field_gathering_manager_2d.F90
 F90EXE_sources += field_gathering/energy_conserving/field_gathering_on_3d.F90
 F90EXE_sources += field_gathering/energy_conserving/field_gathering_o1_3d.F90
 F90EXE_sources += field_gathering/energy_conserving/field_gathering_o2_3d.F90
@@ -26,5 +28,5 @@ F90EXE_sources += particle_pushers/boris_pusher/boris_2d.F90
 F90EXE_sources += particle_pushers/boris_pusher/boris_3d.F90
 F90EXE_sources += particle_pushers/vay_pusher/vay_3d.F90
 
-VPATH_LOCATIONS   += $(PICSAR_HOME)/src
-INCLUDE_LOCATIONS += $(PICSAR_HOME)/src
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/
