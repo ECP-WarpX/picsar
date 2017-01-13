@@ -1125,7 +1125,8 @@ listfiles=["modules/modules.F90", \
            "field_gathering/energy_conserving/field_gathering_o2_2d.F90",\
            "field_gathering/energy_conserving/field_gathering_o3_2d.F90",\
            "parallelization/mpi/mpi_derived_types.F90",\
-           "boundary.F90", \
+           "boundary_conditions/field_boundaries.F90", \
+           "boundary_conditions/particle_boundaries.F90", \
            "simple_io.F90", \
            "particle_deposition/charge_deposition/charge_deposition_2d.F90", \
            "particle_deposition/charge_deposition/charge_deposition_3d.F90", \

@@ -56,7 +56,8 @@ SUBROUTINE step(nst)
   USE particles
   USE params
   USE shared_data
-  USE boundary
+  USE field_boundary
+  USE particle_boundary
   USE omp_lib
   USE diagnostics
   USE simple_io
