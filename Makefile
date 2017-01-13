@@ -260,7 +260,7 @@ FARGS+= $(LARCH)
 $(SRCDIR)/%.o $(SRCDIR)/*/%.o $(SRCDIR)/*/*/%.o $(SRCDIR)/*/*/*/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 
-$(SRCDIR)/%.o:$(SRCDIR)/%.c
+$(SRCDIR)/profiling/%.o:$(SRCDIR)/profiling/%.c
 	$(CC) $(CARGS) -c -o $@ $<
 
 all: echo createdir build
@@ -268,8 +268,8 @@ test: test1 test2 test3
 
 ifeq ($(MODE),vtune)
 build:$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/api_fortran_itt.o \
-	$(SRCDIR)/itt_fortran.o \
+	$(SRCDIR)/profiling/api_fortran_itt.o \
+	$(SRCDIR)/profiling/itt_fortran.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
@@ -312,8 +312,8 @@ build:$(SRCDIR)/modules/modules.o \
 	mv $(APPNAME) $(BINDIR)
 else ifeq ($(MODE),sde)
 build:$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/api_fortran_sde.o \
-	$(SRCDIR)/sde_fortran.o \
+	$(SRCDIR)/profiling/api_fortran_sde.o \
+	$(SRCDIR)/profiling/sde_fortran.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
