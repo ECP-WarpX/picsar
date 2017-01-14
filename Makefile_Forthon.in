@@ -50,10 +50,10 @@ clean:
 	rm -rf $(BINDIR)
 
 test1:
-	cp -p examples/example_scripts_python/test_drifted_plasmas.py Acceptance_testing/Python_tests/test_drifted_plasmas/
+	cp -p examples/example_scripts_python/test_drifted_plasmas_3d.py Acceptance_testing/Python_tests/test_drifted_plasmas/
 	export OMP_NUM_THREADS=2
 	cd Acceptance_testing/Python_tests/test_drifted_plasmas && \
-	mpirun -np 4 python test_drifted_plasmas.py
+	mpirun -np 4 python test_drifted_plasmas_3d.py
 	
 test2:
 	cp -p examples/example_scripts_python/test_Langmuir_wave_3d.py Acceptance_testing/Python_tests/test_Langmuir_wave/
