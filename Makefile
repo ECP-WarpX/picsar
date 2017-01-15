@@ -270,7 +270,8 @@ ifeq ($(MODE),vtune)
 build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/profiling/api_fortran_itt.o \
 	$(SRCDIR)/profiling/itt_fortran.o \
-	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee_2d.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee_3d.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -314,7 +315,8 @@ else ifeq ($(MODE),sde)
 build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/profiling/api_fortran_sde.o \
 	$(SRCDIR)/profiling/sde_fortran.o \
-	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee_2d.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee_3d.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -356,7 +358,8 @@ build:$(SRCDIR)/modules/modules.o \
 	mv $(APPNAME) $(BINDIR)
 else
 build:$(SRCDIR)/modules/modules.o \
-	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee_2d.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee_3d.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
