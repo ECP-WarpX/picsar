@@ -1,4 +1,4 @@
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -18,13 +18,13 @@
 ! reproduce, distribute copies to the public, prepare derivative works, and 
 ! perform publicly and display publicly, and to permit other to do so.
 !
-! PARTICLES_PUSH.F90
+! PARTICLE_PUSHER_MANAGER.F90
 !
-! Subroutines for the particle pusher in 3D
-! ________________________________________________________________________________________
+! Subroutines for managing the particle pushers.
+! ______________________________________________________________________________
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Main subroutine for the field subroutine + particle pusher called
 !> in the main loop (in submain.F90)
@@ -48,7 +48,7 @@
 !> Revision 10.06.2015
 
 SUBROUTINE field_gathering_plus_particle_pusher
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -106,7 +106,8 @@ SUBROUTINE field_gathering_plus_particle_pusher
 
 END SUBROUTINE field_gathering_plus_particle_pusher
 
-! ________________________________________________________________________________________
+
+! ______________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle
 
@@ -131,7 +132,7 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
            nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,  &
            nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE particles
   USE constants
@@ -320,7 +321,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 END SUBROUTINE field_gathering_plus_particle_pusher_sub
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle for the subroutines with cache blocking
 !
@@ -344,7 +345,7 @@ END SUBROUTINE field_gathering_plus_particle_pusher_sub
 !>
 SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
       nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE particles
   USE constants
@@ -513,7 +514,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle
 !
@@ -537,7 +538,7 @@ END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
       nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,&
       noxx,noyy,nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -685,8 +686,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 END SUBROUTINE particle_pusher_sub
 
 
-
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !>  Field gathering+ (E & B) Push half a time step
 !
@@ -699,7 +699,7 @@ END SUBROUTINE particle_pusher_sub
 !> @date
 !> Creation 2015
 SUBROUTINE pxrpush_particles_part1
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -719,7 +719,8 @@ SUBROUTINE pxrpush_particles_part1
 
 END SUBROUTINE pxrpush_particles_part1
 
-! ________________________________________________________________________________________
+
+! ______________________________________________________________________________
 !> @brief
 !> Perform the field gathering + (E & B) Push half a time step
 !
@@ -744,7 +745,7 @@ END SUBROUTINE pxrpush_particles_part1
 SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
       nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy, &
       dzz,dtt,l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE particles
   USE constants
@@ -893,7 +894,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 END SUBROUTINE pxrpush_particles_part1_sub
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> (B & E) Push half a time step + XYZ push half a time step
 !>
@@ -904,7 +905,7 @@ END SUBROUTINE pxrpush_particles_part1_sub
 !> Creation 2015
 !> Revision 06.10.2016
 SUBROUTINE pxrpush_particles_part2
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 USE particles
 USE constants
 USE fields
@@ -990,457 +991,7 @@ pushtime=pushtime+(tend-tdeb)
 END SUBROUTINE pxrpush_particles_part2
 
 
-
-! ________________________________________________________________________________________
-!> @brief
-!> Advance particle positions
-!
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-!> Revision 06.10.2016
-!
-!> @param[in] np number of super-particles
-!> @param[in] ux,uy,uz normalized momentum in each direction
-!> @param[in] uxp,uyp,uzp normalized momentum in each direction
-!> @param[in] gaminv particle Lorentz factors
-!> @param[in] dt time step
-SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
-! ________________________________________________________________________________________
-  USE constants
-  USE omp_lib
-  
-  IMPLICIT NONE
-  INTEGER(idp)   :: np
-  REAL(num)      :: xp(np),yp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
-  REAL(num)      :: dt
-  INTEGER(idp)   :: ip
-
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,gaminv)
-#endif
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER
-    !DIR$ SIMD
-#endif
-  DO ip=1,np
-    xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-    yp(ip) = yp(ip) + uyp(ip)*gaminv(ip)*dt
-    zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-  ENDDO
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP END SIMD
-#endif
-#endif
-
-  RETURN
-END SUBROUTINE pxr_pushxyz
-
-
-! ________________________________________________________________________________________
-!> @brief
-!> Push the particle velocity with E field
-!
-!> @details
-!>fast b-field rotation algorithm
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-!> Revision 06.10.2016
-!
-!> @param[in] np number of super-particles
-!> @param[in] uxp,uyp,uzp normalized momentum in each direction
-!> @param[in] gaminv particle Lorentz factors
-!> @param[in] ex,ey,ez particle electric fields in each direction
-!> @param[in] q charge
-!> @param[in] m masse
-!> @param[in] dt time step
-SUBROUTINE pxr_epush_v(np,uxp,uyp,uzp,ex,ey,ez,q,m,dt)
-! ________________________________________________________________________________________
-
-  USE constants
-  IMPLICIT NONE
-  INTEGER(idp) :: np
-  REAL(num)    :: uxp(np),uyp(np),uzp(np)
-  REAL(num)    :: ex(np),ey(np),ez(np)
-  REAL(num)    :: q,m,dt
-  INTEGER(idp) :: ip
-  REAL(num)    :: const
-
-  const = q*dt/m
-
-#if defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-#elif defined __IBMBGQ__
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,ex,ey,ez)
-#endif
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-  !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER
-  !DIR$ SIMD
-#endif
-  DO ip=1,np
-    uxp(ip) = uxp(ip) + ex(ip)*const
-    uyp(ip) = uyp(ip) + ey(ip)*const
-    uzp(ip) = uzp(ip) + ez(ip)*const
-  ENDDO
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP END SIMD
-#endif
-#endif
-  RETURN
-END SUBROUTINE pxr_epush_v
-
-! ________________________________________________________________________________________
-!> @brief
-!> Push the particle velocity with B field (Boris algorithm)
-!
-!> @details
-!>fast b-field rotation algorithm
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-!> Revision 06.10.2016
-!
-!> @param[in] np number of super-particles
-!> @param[in] uxp,uyp,uzp normalized momentum in each direction
-!> @gparam[in] gaminv particle Lorentz factors
-!> @param[in] bx,by,bz particle magnetic fields in each direction
-!> @param[in] q charge
-!> @param[in] m masse
-!> @param[in] dt time step
-SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,gaminv,bx,by,bz,q,m,dt)
-! ________________________________________________________________________________________
-
-  USE constants
-  IMPLICIT NONE
-  INTEGER(idp)   :: np
-  REAL(num)      :: uxp(np), uyp(np), uzp(np), gaminv(np)
-  REAL(num)      :: bx(np), by(np), bz(np)
-  REAL(num)      :: q,m,dt
-  INTEGER(idp)   :: ip
-  REAL(num)      :: const,sx,sy,sz,tx,ty,tz,tsqi,uxppr,uyppr,uzppr
-
-  const = q*dt*0.5_num/m
-
-#if defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-    !DIR$ ASSUME_ALIGNED gaminv:64
-#elif defined __IBMBGQ__
-    !IBM* ALIGN(64,uxp,uyp,uzp)
-    !IBM* ALIGN(64,bx,by,bz)
-    !IBM* ALIGN(64,gaminv)
-#endif
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER
-    !DIR$ SIMD
-#endif
-  DO ip=1,np
-    tx = gaminv(ip)*bx(ip)*const
-    ty = gaminv(ip)*by(ip)*const
-    tz = gaminv(ip)*bz(ip)*const
-    tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-    sx = tx*tsqi
-    sy = ty*tsqi
-    sz = tz*tsqi
-    uxppr = uxp(ip) + uyp(ip)*tz - uzp(ip)*ty
-    uyppr = uyp(ip) + uzp(ip)*tx - uxp(ip)*tz
-    uzppr = uzp(ip) + uxp(ip)*ty - uyp(ip)*tx
-    uxp(ip) = uxp(ip) + uyppr*sz - uzppr*sy
-    uyp(ip) = uyp(ip) + uzppr*sx - uxppr*sz
-    uzp(ip) = uzp(ip) + uxppr*sy - uyppr*sx
-  ENDDO
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP END SIMD
-#endif
-#endif
-
-  RETURN
-
-END SUBROUTINE pxr_bpush_v
-
-
-! ________________________________________________________________________________________
-!> @brief
-!>  Push the particle velocity with B field (Boris algorithm)
-!
-!> @details
-!> fast b-field rotation algorithm
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-!> Revision 06.10.2016
-!
-!> @param[in] np number of super-particles
-!> @param[in] uxp,uyp,uzp normalized momentum in each direction
-!> @param[in] gaminv particle Lorentz factors
-!
-SUBROUTINE pxr_set_gamma(np,uxp,uyp,uzp,gaminv)
-! ________________________________________________________________________________________
-
-  USE constants
-  IMPLICIT NONE
-  INTEGER(idp)   :: ip, np
-  REAL(num) :: uxp(np), uyp(np), uzp(np), gaminv(np)
-  REAL(num) :: clghtisq, usq
-
-  clghtisq = 1.0_num/clight**2
-
-#if defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !DIR$ ASSUME_ALIGNED gaminv:64
-#elif defined __IBMBGQ__
-    !IBM* ALIGN(64,uxp,uyp,uzp)
-    !IBM* ALIGN(64,gaminv)
-#endif
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER
-    !DIR$ SIMD
-#endif
-
-  DO ip=1,np
-    usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
-  END DO
-
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP END SIMD
-#endif
-#endif
-
-RETURN
-
-END SUBROUTINE pxr_set_gamma
-
-
-! ________________________________________________________________________________________
-!> @brief
-!> Push the particle velocity with E and B fields, assuming Vmid = 0.5*(Vold+Vnew),
-!> solving directly for the new gamma.
-!>
-!> @details
-!> This offers better cancellation of E+VxB than the Boris velocity push.
-!> Question: should we recompute gamma from the new u, in order to prevent roundoff errors
-!> to create mismatched values of u and gamma?
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> 2016
-!
-!>
-!> @param[in] np number of super-particles
-!> @param[in] uxp,uyp,uzp normalized momentum in each direction
-!> @param[in] gi
-!> @param[in] exp,eyp,ezp particle electric field values in each direction
-!> @param[in] bxp,byp,bzp particle electric field values in each direction
-!> @param[in] q charge
-!> @param[in] m masse
-!> @param[in] dt time step
-!> @param[in] which algorithm
-!
-SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,which)
-! ________________________________________________________________________________________
-
-  USE constants
-  
-  INTEGER(idp) :: np,which
-  REAL(num)    :: uxp(np),uyp(np),uzp(np),gi(np)
-  REAL(num)    :: exp(np),eyp(np),ezp(np),bxp(np),byp(np),bzp(np)
-  REAL(num)    :: q,m,dt
-  INTEGER(idp) :: ip
-  REAL(num)    :: const,bconst,s,gisq,invclight,invclightsq,gprsq
-  REAL(num)    :: tx,ty,tz,tu,uxpr,uypr,uzpr,bg,vx,vy,vz
-  REAL(num)    :: taux,tauy,tauz,tausq,ust,sigma
-
-  invclight   = 1./clight
-  invclightsq = 1./(clight*clight)
-
-  IF (which==0) THEN
-    !     --- full push
-    const = q*dt/m
-    bconst = 0.5_num*const
-
-
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER
-    !DIR$ SIMD
-#endif
-    DO ip=1,np
-      ! --- get tau
-      taux = bconst*bxp(ip)
-      tauy = bconst*byp(ip)
-      tauz = bconst*bzp(ip)
-      tausq = taux*taux+tauy*tauy+tauz*tauz
-      ! --- get U',gamma'^2
-      uxpr = uxp(ip) + const*exp(ip) + (uyp(ip)*tauz-uzp(ip)*tauy)*gi(ip)
-      uypr = uyp(ip) + const*eyp(ip) + (uzp(ip)*taux-uxp(ip)*tauz)*gi(ip)
-      uzpr = uzp(ip) + const*ezp(ip) + (uxp(ip)*tauy-uyp(ip)*taux)*gi(ip)
-      gprsq = (1._num+(uxpr*uxpr+uypr*uypr+uzpr*uzpr)*invclightsq)
-      !       --- get u*
-      ust = (uxpr*taux+uypr*tauy+uzpr*tauz)*invclight
-      ! --- get new gamma
-      sigma = gprsq-tausq
-      gisq = 2._num/(sigma+sqrt(sigma*sigma+4._num*(tausq+ust*ust)))
-      gi(ip) = sqrt(gisq)
-      !       --- get t,s
-      bg = bconst*gi(ip)
-      tx = bg*bxp(ip)
-      ty = bg*byp(ip)
-      tz = bg*bzp(ip)
-      s = 1._num/(1._num+tausq*gisq)
-      !  --- get t.u'
-      tu = tx*uxpr+ty*uypr+tz*uzpr
-      ! --- get new U
-      uxp(ip) = s*(uxpr+tx*tu+uypr*tz-uzpr*ty)
-      uyp(ip) = s*(uypr+ty*tu+uzpr*tx-uxpr*tz)
-      uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
-    END DO
-
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP END SIMD
-#endif
-#endif
-
-  ELSE IF(which==1) THEN
-  
-    !     --- first half push
-    const = 0.5_num*q*dt/m
-    
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER
-    !DIR$ SIMD
-#endif
-    DO ip=1,np
-      ! --- get new U
-      vx = uxp(ip)*gi(ip)
-      vy = uyp(ip)*gi(ip)
-      vz = uzp(ip)*gi(ip)
-      uxp(ip) = uxp(ip) + const*( exp(ip) + vy*bzp(ip)-vz*byp(ip) )
-      uyp(ip) = uyp(ip) + const*( eyp(ip) + vz*bxp(ip)-vx*bzp(ip) )
-      uzp(ip) = uzp(ip) + const*( ezp(ip) + vx*byp(ip)-vy*bxp(ip) )
-      gi(ip) = 1./sqrt(1.+(uxp(ip)*uxp(ip)+uyp(ip)*uyp(ip)+uzp(ip)*uzp(ip))*invclightsq)
-    ENDDO
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP END SIMD
-#endif
-#endif
-
-
-  ELSE IF(which==2) THEN
-  !     --- second half push
-    const = 0.5_num*q*dt/m
-    bconst = const
-
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
-#endif
-#elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER
-    !DIR$ SIMD
-#endif
-
-    DO ip=1,np
-      !     --- get U'
-      uxpr = uxp(ip) + const*exp(ip)
-      uypr = uyp(ip) + const*eyp(ip)
-      uzpr = uzp(ip) + const*ezp(ip)
-      gprsq = (1_num+(uxpr*uxpr+uypr*uypr+uzpr*uzpr)*invclightsq)
-      !       --- get tau
-      taux = bconst*bxp(ip)
-      tauy = bconst*byp(ip)
-      tauz = bconst*bzp(ip)
-      tausq = taux*taux+tauy*tauy+tauz*tauz
-      !       --- get u*
-      ust = (uxpr*taux+uypr*tauy+uzpr*tauz)*invclight
-      !       --- get new gamma
-      sigma = gprsq-tausq
-      gisq = 2._num/(sigma+sqrt(sigma*sigma+4._num*(tausq+ust*ust)))
-      gi(ip) = sqrt(gisq)
-      !       --- get t,s
-      bg = bconst*gi(ip)
-      tx = bg*bxp(ip)
-      ty = bg*byp(ip)
-      tz = bg*bzp(ip)
-      s = 1._num/(1._num+tausq*gisq)
-      !       --- get t.u'
-      tu = tx*uxpr+ty*uypr+tz*uzpr
-      !       --- get new U
-      uxp(ip) = s*(uxpr+tx*tu+uypr*tz-uzpr*ty)
-      uyp(ip) = s*(uypr+ty*tu+uzpr*tx-uxpr*tz)
-      uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
-      ENDDO
-
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP END SIMD
-#endif
-#endif
-  ENDIF
-  RETURN
-END SUBROUTINE pxr_ebcancelpush3d
-
-
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> This function combined the field gathering and the particle pusher
 !> in 3D for CIC (order 1) shape factor.
@@ -1480,7 +1031,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
                                       ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -1534,13 +1085,13 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   sy0(:,0) = 1.0_num
   sz0(:,0) = 1.0_num
 
-  ! ______________________________________________________________________________________
+  ! ____________________________________________________________________________
   ! Loop on block of particles of size lvect
   DO ip=1,np,lvect
 
     blocksize = MIN(lvect,np-ip+1)
 
-    ! ____________________________________________________________________________________
+    ! __________________________________________________________________________
     ! Field gathering
 
 #if defined __INTEL_COMPILER
@@ -1629,7 +1180,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 #endif
 #endif
 
-    ! ____________________________________________________________________________________
+    ! __________________________________________________________________________
     ! Particle pusher
     
     SELECT CASE (particle_pusher)
@@ -1841,7 +1392,7 @@ RETURN
 END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 !> @brief
 !> This function combined the field gathering and the particle pusher
@@ -1881,7 +1432,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
                                       ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -1934,7 +1485,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     blocksize = MIN(lvect,np-ip+1)
 
-    ! ____________________________________________________________________________________
+    ! __________________________________________________________________________
     ! Field gathering
 
 #if defined __INTEL_COMPILER
@@ -2130,7 +1681,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 #endif
 #endif
 
-    ! ____________________________________________________________________________________
+    ! __________________________________________________________________________
     ! Particle pusher
 
     SELECT CASE (particle_pusher)
@@ -2344,7 +1895,7 @@ RETURN
 END SUBROUTINE field_gathering_plus_particle_pusher_2_2_2
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> This function combined the field gathering and the particle pusher
 !> in 3D for CIC (order 1) shape factor.
@@ -2385,7 +1936,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
                                       ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -2442,7 +1993,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     blocksize = MIN(lvect,np-ip+1)
 
-    ! ____________________________________________________________________________________
+    ! __________________________________________________________________________
     ! Field gathering
 
 #if defined __INTEL_COMPILER
@@ -2822,7 +2373,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 #endif
 #endif
 
-    ! ____________________________________________________________________________________
+    ! __________________________________________________________________________
     ! Particle pusher
 
     SELECT CASE (particle_pusher)

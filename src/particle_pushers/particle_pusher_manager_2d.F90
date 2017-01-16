@@ -1,4 +1,4 @@
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -18,9 +18,9 @@
 ! reproduce, distribute copies to the public, prepare derivative works, and 
 ! perform publicly and display publicly, and to permit other to do so.
 !
-! PARTICLES_PUSH_2D.F90
+! PARTICLE_PUSHER_MANAGER_2D.F90
 !
-! Subroutines for the particle pusher in 2D
+! Subroutines for managing the particle pushers in 2d.
 !
 ! Developers:
 ! Henri Vincenti
@@ -28,7 +28,9 @@
 !
 ! Date:
 ! Creation 2015
-! ________________________________________________________________________________________
+!
+! ______________________________________________________________________________
+
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -198,84 +200,3 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
   pushtime=pushtime+(tend-tdeb)
   localtimes(1) = localtimes(1) + (tend-tdeb)
 END SUBROUTINE field_gathering_plus_particle_pusher_sub_2d
-
-
-! ________________________________________________________________________________________
-!> @brief
-!> Advance particle positions 2D Case, serial version.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2016
-!
-!> @param[in] np number of particles
-!> @param[inout] xp,zp particle position arrays
-!> @param[in] uxp,uzp particle momentum arrays
-!> @param[in] gaminv particle inverse Lorentz factor
-!> @param[in] dt time step
-SUBROUTINE pxr_pushxz(np,xp,zp,uxp,uzp,gaminv,dt)
-! ________________________________________________________________________________________
-  USE constants
-  USE omp_lib
-  IMPLICIT NONE
-  INTEGER(idp)   :: np
-  REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
-  REAL(num) :: dt
-  INTEGER(idp)  :: ip
-
-  !!$OMP PARALLEL DO PRIVATE(ip)
-  DO ip=1,np
-      xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-      zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-  ENDDO
-  !!$OMP END PARALLEL DO
-
-  RETURN
-END SUBROUTINE pxr_pushxz
-
-! ________________________________________________________________________________________
-!> @brief
-!> Advance particle positions 2D Case, vectorized version.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2016
-!
-!> @param[in] np number of particles
-!> @param[inout] xp,zp particle position arrays
-!> @param[in] uxp,uzp particle momentum arrays
-!> @param[in] gaminv particle inverse Lorentz factor
-!> @param[in] dt time step
-SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
-! ________________________________________________________________________________________
-  USE constants
-  USE omp_lib
-  IMPLICIT NONE
-  INTEGER(idp)   :: np
-  REAL(num) :: xp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
-  REAL(num) :: dt
-  INTEGER(idp)  :: ip
-
-
-#if defined _OPENMP && _OPENMP>=201307
-    !$OMP SIMD 
-#elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-    !$DIR SIMD 
-#endif  
-  DO ip=1,np
-      xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-      zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-      
-  ENDDO
-#if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
-#endif  
-
-  RETURN
-END SUBROUTINE pxr_push2dxz

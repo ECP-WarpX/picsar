@@ -1,26 +1,30 @@
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
-! The Regents of the University of California, through Lawrence Berkeley National 
-! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
-! All rights reserved.
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
+! 2016, The Regents of the University of California, through Lawrence Berkeley 
+! National Laboratory (subject to receipt of any required approvals from the 
+! U.S. Dept. of Energy). All rights reserved.
 !
 ! If you have questions about your rights to use or distribute this software, 
-! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy 
 ! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a paid-up, 
-! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute 
-! copies to the public, prepare derivative works, and perform publicly and display 
-! publicly, and to permit other to do so.
+! Government has been granted for itself and others acting on its behalf a  
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
+! reproduce, distribute copies to the public, prepare derivative works, and 
+! perform publicly and display publicly, and to permit other to do so.
 ! 
-! FIELD_GATHERING_3D_O3.F90
+! FIELD_GATHERING_O3_3D.F90
 ! 
 ! Field gathering subroutines in 3D at order 3
+!
+! Developers:
+! - Henri vincenti
+! - Mathieu Lobet
 !
 ! List of subroutines:
 !
@@ -46,9 +50,9 @@
 ! - gete3d_energy_conserving_vecblock2_3_3_3
 ! - getb3d_energy_conserving_vecblock2_3_3_3
 ! 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Scalar version: gathering of electric field from Yee grid ("energy conserving")
 !> on particles at order 3
@@ -76,7 +80,7 @@
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -338,7 +342,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
 RETURN
 END SUBROUTINE
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving")
 !>  on particles at order 3
@@ -366,7 +370,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -611,7 +615,7 @@ RETURN
 END SUBROUTINE
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Scalar version: gathering of electric field from Yee grid ("energy conserving").
 !> on particles at order 3
@@ -639,7 +643,7 @@ END SUBROUTINE
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -1184,7 +1188,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 ! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles
 ! at order 3
@@ -1213,7 +1217,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -1691,7 +1695,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Vectorized Gathering of electric field from Yee grid ("energy conserving") on particles
 !> at order 3.
@@ -1720,7 +1724,7 @@ END SUBROUTINE
 SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -2328,7 +2332,7 @@ END SUBROUTINE
 
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Vectorized gathering of magnetic field from Yee grid ("energy conserving") on particles
 !> at order 3
@@ -2354,7 +2358,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -2901,7 +2905,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Vectorized gathering of the electric fields (version 2) from Yee grid ("energy conserving") 
 !> on particles at order 3.
@@ -2934,7 +2938,7 @@ END SUBROUTINE
 SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -3564,7 +3568,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Vectorized gathering of magnetic field (version 2) from Yee grid ("energy conserving") 
 !> on particles at order 3.
@@ -3597,7 +3601,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   USE omp_lib
   USE constants
@@ -4169,7 +4173,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 !> @brief
 !> Vectorized field gathering at order 3 with gathering of E and B merged in a single loop
@@ -4202,7 +4206,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -5025,7 +5029,7 @@ END SUBROUTINE
 #endif
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 !> @brief
 !> Vectorized field gathering at order 3 with gathering of E and B merged in a single loop
@@ -5058,7 +5062,7 @@ SUBROUTINE geteb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -6017,7 +6021,7 @@ END SUBROUTINE
 
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Field gathering by block at order 3 with gathering of E and B 
 !> splited in several small subloops.
@@ -6049,7 +6053,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -6650,7 +6654,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Field gathering by block at order 3 with gathering of E and B 
 !> splited in several small subloops, version 2.
@@ -6686,7 +6690,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
