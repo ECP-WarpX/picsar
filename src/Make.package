@@ -1,30 +1,73 @@
-F90EXE_sources += modules/modules.F90
-F90EXE_sources += parallelization/mpi_routines.F90
-F90EXE_sources += parallelization/tiling.F90
-F90EXE_sources += field_solver/Maxwell/maxwell_solver_manager.F90
-F90EXE_sources += field_solver/Maxwell/yee_solver/yee.F90
+F90EXE_sources += modules.F90
 
-F90EXE_sources += particle_deposition/charge_deposition/charge_deposition_3d.F90
-F90EXE_sources += particle_deposition/charge_deposition/charge_deposition_2d.F90
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/modules
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/modules 
 
-F90EXE_sources += particle_deposition/current_deposition/direct/direct_current_deposition_3d.F90
-F90EXE_sources += particle_deposition/current_deposition/esirkepov/esirkepov_2d.F90
-F90EXE_sources += particle_deposition/current_deposition/esirkepov/esirkepov_3d.F90
+F90EXE_sources += mpi_routines.F90
 
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_manager_3d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_manager_2d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_on_3d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_o1_3d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_o2_3d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_o3_3d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_on_2d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_o1_2d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_o2_2d.F90
-F90EXE_sources += field_gathering/energy_conserving/field_gathering_o3_2d.F90
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/parallelization/mpi/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/parallelization/mpi/
 
-F90EXE_sources += particle_pushers/boris_pusher/boris_2d.F90
-F90EXE_sources += particle_pushers/boris_pusher/boris_3d.F90
-F90EXE_sources += particle_pushers/vay_pusher/vay_3d.F90
+F90EXE_sources += tiling.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/parallelization/tiling/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/parallelization/tiling/
+
+F90EXE_sources += maxwell_solver_manager.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/
+
+F90EXE_sources += yee.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/yee_solver
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/yee_solver
+
+F90EXE_sources += charge_deposition_3d.F90
+F90EXE_sources += charge_deposition_2d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
+
+F90EXE_sources += direct_current_deposition_3d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/direct
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/direct
+
+F90EXE_sources += esirkepov_2d.F90
+F90EXE_sources += esirkepov_3d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
+
+F90EXE_sources += field_gathering_manager_3d.F90
+F90EXE_sources += field_gathering_manager_2d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_gathering
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_gathering
+
+F90EXE_sources += field_gathering_on_3d.F90
+F90EXE_sources += field_gathering_o1_3d.F90
+F90EXE_sources += field_gathering_o2_3d.F90
+F90EXE_sources += field_gathering_o3_3d.F90
+F90EXE_sources += field_gathering_on_2d.F90
+F90EXE_sources += field_gathering_o1_2d.F90
+F90EXE_sources += field_gathering_o2_2d.F90
+F90EXE_sources += field_gathering_o3_2d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_gathering/energy_conserving
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_gathering/energy_conserving
+
+F90EXE_sources += boris_2d.F90
+F90EXE_sources += boris_3d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_pushers/boris_pusher/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_pushers/boris_pusher/
+
+F90EXE_sources += vay_3d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_pushers/vay_pusher/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_pushers/vay_pusher/
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src
