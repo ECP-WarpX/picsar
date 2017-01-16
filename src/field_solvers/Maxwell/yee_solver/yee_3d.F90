@@ -120,6 +120,88 @@ subroutine pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
 end subroutine pxrpush_em3d_evec_norder
 
 
+
+! ______________________________________________________________________________
+!> @brief
+!> Push magnetic field Yee 3D arbitrary order
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
+                                dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
+                                norderx,nordery,norderz,             &
+                                nxguard,nyguard,nzguard,nxs,nys,nzs, &
+                                l_nodalgrid)
+! ______________________________________________________________________________
+
+  use constants
+  use omp_lib
+  integer(idp)          :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
+  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
+  real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
+  integer(idp)          :: i,j,k,l,ist
+  LOGICAL(lp)                :: l_nodalgrid
+
+  if (l_nodalgrid) then
+  ist = 0
+  else
+  ist = 1
+  end if
+
+  ! advance Bx
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
+  !$OMP DO COLLAPSE(3)
+  do l = -nzs, nz+nzs
+      do k = -nys, ny+nys
+          do j = -nxs, nx+nxs
+              do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
+                  Bx(j,k,l) = Bx(j,k,l) - dtsdy(i) * (Ez(j,k+i,l  ) - Ez(j,k-i+ist,l))
+              end do
+              do i = 1,  MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
+                  Bx(j,k,l) = Bx(j,k,l) + dtsdz(i) * (Ey(j,k,  l+i) - Ey(j,k,l-i+ist))
+              end do
+          end do
+      end do
+  end do
+  !$OMP END DO
+  ! advance By
+  !$OMP DO COLLAPSE(3)
+  do l = -nzs, nz+nzs
+      do k = -nys, ny+nys
+          do j = -nxs, nx+nxs
+              do i = 1,  MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
+                  By(j,k,l) = By(j,k,l) + dtsdx(i) * (Ez(j+i,k,l  ) - Ez(j-i+ist,k,l))
+              end do
+              do i = 1,  MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
+                  By(j,k,l) = By(j,k,l) - dtsdz(i) * (Ex(j  ,k,l+i) - Ex(j,k,l-i+ist))
+              end do
+          end do
+      end do
+  end do
+  !$OMP END DO
+  ! advance Bz
+  !$OMP DO COLLAPSE(3)
+  do l = -nzs, nz+nzs
+      do k = -nys, ny+nys
+          do j = -nxs, nx+nxs
+              do i = 1,  MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
+                  Bz(j,k,l) = Bz(j,k,l) - dtsdx(i) * (Ey(j+i,k,l) - Ey(j-i+ist,k,l))
+              end do
+              do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
+                  Bz(j,k,l) = Bz(j,k,l) + dtsdy(i) * (Ex(j,k+i,l) - Ex(j,k-i+ist,l))
+              end do
+          end do
+      end do
+  end do
+  !$OMP END DO
+  !$OMP END PARALLEL
+  return
+
+end subroutine pxrpush_em3d_bvec_norder
+
 ! ______________________________________________________________________________
 !> @brief
 !> This subroutine pushes the electric field with the 3D Yee FDTD 
@@ -225,6 +307,107 @@ end subroutine warpx_pxr_push_em3d_evec_norder
 
 ! ______________________________________________________________________________
 !> @brief
+!> This subroutine pushes the magnetic field with the 3D Yee FDTD 
+!> scheme at arbitrary order.
+!> This subroutine is adapted for Boxlib and do not contain $OMP parallel 
+!> regions.
+!
+!> @author
+!> Weiqun Zhang
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2015
+subroutine warpx_pxr_push_em3d_bvec_norder( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     bx, bxlo, bxhi, &
+     by, bylo, byhi, &
+     bz, bzlo, bzhi, &
+     mudt,           &
+     norderx,nordery,norderz,    &
+     dtsdx,dtsdy,dtsdz,l_nodalgrid)
+! ______________________________________________________________________________
+
+  use constants
+  use omp_lib
+  
+  integer(idp) :: xlo, xhi, ylo, yhi, zlo, zhi, &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
+       bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3)
+       
+  real(num), intent(IN)    :: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
+  real(num), intent(IN)    :: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
+  real(num), intent(IN)    :: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
+  
+  real(num), intent(INOUT) :: bx(bxlo(1):bxhi(1),bxlo(2):bxhi(2),bxlo(3):bxhi(3))
+  real(num), intent(INOUT) :: by(bylo(1):byhi(1),bylo(2):byhi(2),bylo(3):byhi(3))
+  real(num), intent(INOUT) :: bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2),bzlo(3):bzhi(3))
+  
+  real(num), intent(IN)    :: mudt
+  integer(idp), intent(IN) :: norderx,nordery,norderz
+  real(num), intent(IN)    :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
+  
+  integer(idp)             :: j,k,l,i,ist
+  LOGICAL(lp)              :: l_nodalgrid
+
+  if (l_nodalgrid) then
+  ist = 0
+  else
+  ist = 1
+  end if
+
+  do l = zlo, zhi
+      do k = ylo, yhi
+          do j = xlo, xhi
+              ! Advance Bx
+              do i = 1, nordery/2
+                  Bx(j,k,l) = Bx(j,k,l) - dtsdy(i) * (Ez(j,k+i,l  ) - Ez(j,k-i+ist,l))
+              end do
+              do i = 1, norderz/2
+                  Bx(j,k,l) = Bx(j,k,l) + dtsdz(i) * (Ey(j,k,  l+i) - Ey(j,k,l-i+ist))
+              end do
+          end do
+      end do
+  end do
+
+  do l = zlo, zhi
+      do k = ylo, yhi
+          do j = xlo, xhi
+              ! Advance By
+              do i = 1, norderx/2
+                  By(j,k,l) = By(j,k,l) + dtsdx(i) * (Ez(j+i,k,l  ) - Ez(j-i+ist,k,l))
+              end do
+              do i = 1, norderz/2
+                  By(j,k,l) = By(j,k,l) - dtsdz(i) * (Ex(j  ,k,l+i) - Ex(j,k,l-i+ist))
+              end do
+          end do
+      end do
+  end do
+
+  do l = zlo, zhi
+      do k = ylo, yhi
+          do j = xlo, xhi
+              ! Advance Bz
+              do i = 1, norderx/2
+                  Bz(j,k,l) = Bz(j,k,l) - dtsdx(i) * (Ey(j+i,k,l) - Ey(j-i+ist,k,l))
+              end do
+              do i = 1, nordery/2
+                  Bz(j,k,l) = Bz(j,k,l) + dtsdy(i) * (Ex(j,k+i,l) - Ex(j,k-i+ist,l))
+              end do
+          end do
+      end do
+  end do
+
+  return
+
+end subroutine warpx_pxr_push_em3d_bvec_norder
+
+
+! ______________________________________________________________________________
+!> @brief
 !> Push electric field Yee 3D order 2
 !
 !> @author
@@ -288,6 +471,65 @@ subroutine pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
   return
 end subroutine pxrpush_em3d_evec
 
+
+! ______________________________________________________________________________
+!> @brief
+!> Push magnetic field Yee 3D order 2
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+subroutine pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
+                          dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
+                          nxguard,nyguard,nzguard,nxs,nys,nzs, &
+                          l_nodalgrid)
+! ______________________________________________________________________________
+  use constants
+  integer(idp):: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
+  real(num), intent(IN OUT), &
+  dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
+  integer(idp) :: j,k,l
+  LOGICAL(lp)  :: l_nodalgrid
+
+  ! advance Bx
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
+  !$OMP DO COLLAPSE(3)
+  do l = -nzs, nz+nzs-1
+      do k = -nys, ny+nys-1
+          do j = -nxs, nx+nxs
+              Bx(j,k,l) = Bx(j,k,l) - dtsdy * (Ez(j,k+1,l  ) - Ez(j,k,l)) &
+              + dtsdz * (Ey(j,k,  l+1) - Ey(j,k,l))
+          end do
+      end do
+  end do
+  !$OMP END DO
+  ! advance By
+  !$OMP DO COLLAPSE(3)
+  do l = -nzs, nz+nzs-1
+      do k = -nys, ny+nys
+          do j = -nxs, nx+nxs-1
+              By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k,l  ) - Ez(j,k,l)) &
+              - dtsdz * (Ex(j  ,k,l+1) - Ex(j,k,l))
+          end do
+      end do
+  end do
+  !$OMP END DO
+  ! advance Bz
+  !$OMP DO COLLAPSE(3)
+  do l = -nzs, nz+nzs
+      do k = -nys, ny+nys-1
+          do j = -nxs, nx+nxs-1
+              Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k,l) - Ey(j,k,l)) &
+              + dtsdy * (Ex(j,k+1,l) - Ex(j,k,l))
+          end do
+      end do
+  end do
+  !$OMP END DO
+  !$OMP END PARALLEL
+end subroutine pxrpush_em3d_bvec
 
 ! ______________________________________________________________________________
 !> @brief
@@ -363,148 +605,6 @@ subroutine warpx_pxr_push_em3d_evec( &
   return
 end subroutine warpx_pxr_push_em3d_evec
 
-
-! ______________________________________________________________________________
-!> @brief
-!> Push magnetic field Yee 3D arbitrary order
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
-                                dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
-                                norderx,nordery,norderz,             &
-                                nxguard,nyguard,nzguard,nxs,nys,nzs, &
-                                l_nodalgrid)
-! ______________________________________________________________________________
-
-  use constants
-  use omp_lib
-  integer(idp)          :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
-  real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
-  integer(idp)          :: i,j,k,l,ist
-  LOGICAL(lp)                :: l_nodalgrid
-
-  if (l_nodalgrid) then
-  ist = 0
-  else
-  ist = 1
-  end if
-
-  ! advance Bx
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j,i)
-  !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-      do k = -nys, ny+nys
-          do j = -nxs, nx+nxs
-              do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
-                  Bx(j,k,l) = Bx(j,k,l) - dtsdy(i) * (Ez(j,k+i,l  ) - Ez(j,k-i+ist,l))
-              end do
-              do i = 1,  MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
-                  Bx(j,k,l) = Bx(j,k,l) + dtsdz(i) * (Ey(j,k,  l+i) - Ey(j,k,l-i+ist))
-              end do
-          end do
-      end do
-  end do
-  !$OMP END DO
-  ! advance By
-  !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-      do k = -nys, ny+nys
-          do j = -nxs, nx+nxs
-              do i = 1,  MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
-                  By(j,k,l) = By(j,k,l) + dtsdx(i) * (Ez(j+i,k,l  ) - Ez(j-i+ist,k,l))
-              end do
-              do i = 1,  MIN(MIN(norderz/2, (nz-l)+nzguard),l+nzguard)
-                  By(j,k,l) = By(j,k,l) - dtsdz(i) * (Ex(j  ,k,l+i) - Ex(j,k,l-i+ist))
-              end do
-          end do
-      end do
-  end do
-  !$OMP END DO
-  ! advance Bz
-  !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-      do k = -nys, ny+nys
-          do j = -nxs, nx+nxs
-              do i = 1,  MIN(MIN(norderx/2, (nx-j)+nxguard),j+nxguard)
-                  Bz(j,k,l) = Bz(j,k,l) - dtsdx(i) * (Ey(j+i,k,l) - Ey(j-i+ist,k,l))
-              end do
-              do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard),k+nyguard)
-                  Bz(j,k,l) = Bz(j,k,l) + dtsdy(i) * (Ex(j,k+i,l) - Ex(j,k-i+ist,l))
-              end do
-          end do
-      end do
-  end do
-  !$OMP END DO
-  !$OMP END PARALLEL
-  return
-
-end subroutine pxrpush_em3d_bvec_norder
-
-
-
-! ______________________________________________________________________________
-!> @brief
-!> Push magnetic field Yee 3D order 2
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-subroutine pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
-                          dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
-                          nxguard,nyguard,nzguard,nxs,nys,nzs, &
-                          l_nodalgrid)
-! ______________________________________________________________________________
-  use constants
-  integer(idp):: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
-  real(num), intent(IN OUT), &
-  dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
-  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
-  integer(idp) :: j,k,l
-  LOGICAL(lp)  :: l_nodalgrid
-
-  ! advance Bx
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
-  !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs-1
-      do k = -nys, ny+nys-1
-          do j = -nxs, nx+nxs
-              Bx(j,k,l) = Bx(j,k,l) - dtsdy * (Ez(j,k+1,l  ) - Ez(j,k,l)) &
-              + dtsdz * (Ey(j,k,  l+1) - Ey(j,k,l))
-          end do
-      end do
-  end do
-  !$OMP END DO
-  ! advance By
-  !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs-1
-      do k = -nys, ny+nys
-          do j = -nxs, nx+nxs-1
-              By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k,l  ) - Ez(j,k,l)) &
-              - dtsdz * (Ex(j  ,k,l+1) - Ex(j,k,l))
-          end do
-      end do
-  end do
-  !$OMP END DO
-  ! advance Bz
-  !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-      do k = -nys, ny+nys-1
-          do j = -nxs, nx+nxs-1
-              Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k,l) - Ey(j,k,l)) &
-              + dtsdy * (Ex(j,k+1,l) - Ex(j,k,l))
-          end do
-      end do
-  end do
-  !$OMP END DO
-  !$OMP END PARALLEL
-end subroutine pxrpush_em3d_bvec
 
 
 ! ______________________________________________________________________________
