@@ -1358,7 +1358,7 @@ class EM3DPXR(EM3DFFT):
         """
         if (l_pxr):
         
-            tdeb = MPIWTIME()
+            tdeb = MPI.Wtime()
         
             ## --- Compute time per part and per cell
             pxr.compute_time_per_part()
