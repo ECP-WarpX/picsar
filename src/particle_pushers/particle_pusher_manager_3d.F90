@@ -1065,16 +1065,25 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   USE params
   USE particles
 
-  ! ___ Parameter declaration ____________________________________
   IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(lp)                          :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! ___ Parameter declaration ____________________________________
+  
+  ! Input/Output parameters  
+  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: lvect
+  REAL(num), INTENT(IN)                   :: q,m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
+  REAL(num), &
+  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
 
+  ! Local parameters
   INTEGER(isp)                         :: j, k, l
   INTEGER(isp)                         :: j0, k0, l0
   INTEGER(isp)                         :: ip
@@ -1478,13 +1487,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   USE particles
 
   IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(lp)                          :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Input/Output parameters  
+  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: lvect
+  REAL(num), INTENT(IN)                   :: q,m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
+  REAL(num), &
+  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Local parameters
   INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
   INTEGER(idp)                         :: blocksize
@@ -1993,13 +2011,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   USE particles
 
   IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(lp)                          :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Input/Output parameters  
+  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: lvect
+  REAL(num), INTENT(IN)                   :: q,m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
+  REAL(num), &
+  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Local parameters
   INTEGER(isp)                         :: ip
   INTEGER(idp)                         :: blocksize
   INTEGER(isp)                         :: nn,n
