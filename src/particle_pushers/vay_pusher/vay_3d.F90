@@ -112,6 +112,7 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,w
       uxp(ip) = s*(uxpr+tx*tu+uypr*tz-uzpr*ty)
       uyp(ip) = s*(uypr+ty*tu+uzpr*tx-uxpr*tz)
       uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
+      
     END DO
 
 #if defined _OPENMP && _OPENMP>=201307

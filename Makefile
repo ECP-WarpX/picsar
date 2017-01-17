@@ -847,7 +847,7 @@ tile_field_gathering_3d_test:
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
 
 tile_particle_push_3d_test:
-	export OMP_NUM_THREADS=4
+	export OMP_NUM_THREADS=1
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_particle_push_3d_test
 	
 tile_mpi_part_com_test:

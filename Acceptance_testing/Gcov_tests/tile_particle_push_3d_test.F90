@@ -92,9 +92,9 @@ PROGRAM tile_particle_push_3d_test
   zmax=1e-6
 
   ! --- Init particle tiling split
-  ntilex = 6
-  ntiley = 6
-  ntilez = 6
+  ntilex = 1
+  ntiley = 1
+  ntilez = 1
   
   ! --- Vector length field gathering
   LVEC_fieldgathe = 256
