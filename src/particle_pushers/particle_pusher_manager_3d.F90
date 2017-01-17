@@ -262,7 +262,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
                           currg%eztile,                                                          &
                           currg%bxtile,currg%bytile,currg%bztile                                 &
                           ,.FALSE.,l_lower_order_in_v_in,                                        &
-                          LVEC_fieldgathe,                                                       &
+                          lvec_fieldgathe,                                                       &
                           fieldgathe)
             END SELECT
 
@@ -274,6 +274,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
               curr_tile%part_ey,                                                  &
               curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
               curr_tile%part_bz,curr%charge,curr%mass,dtt,0_idp)
+              
             !! Boris pusher -- Full push
             CASE DEFAULT
             
@@ -1517,7 +1518,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   sy0=0.0_num
   sz0=0.0_num
 
-  ! ___ Loop on partciles _______________________
+  ! ___ Loop on particles _______________________
   DO ip=1,np,lvect
 
     blocksize = MIN(lvect,np-ip+1)
