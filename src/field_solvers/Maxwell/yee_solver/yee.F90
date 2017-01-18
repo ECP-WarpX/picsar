@@ -1,178 +1,39 @@
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
-! The Regents of the University of California, through Lawrence Berkeley National 
-! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
-! All rights reserved.
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
+! 2016, The Regents of the University of California, through Lawrence Berkeley 
+! National Laboratory (subject to receipt of any required approvals from the 
+! U.S. Dept. of Energy). All rights reserved.
 !
 ! If you have questions about your rights to use or distribute this software, 
-! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy 
 ! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a paid-up, 
-! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute 
-! copies to the public, prepare derivative works, and perform publicly and display 
-! publicly, and to permit other to do so.
+! Government has been granted for itself and others acting on its behalf a  
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
+! reproduce, distribute copies to the public, prepare derivative works, and 
+! perform publicly and display publicly, and to permit other to do so. 
 !
-! MAXWELL.F90
+! YEE.F90
 !
 ! Purpose:
-! This file contains subroutines for finite difference Maxwell solvers.
+! This file contains subroutines for the FDTD solver of K, Yee 
+! and the generalization at order n.
 !
 ! Authors:
 ! Henri Vincenti
+! Mathieu Lobet
 !
 ! Date:
 ! Creation 2015
-! ________________________________________________________________________________________
-
-! ________________________________________________________________________________________
-!> @brief
-!> PUSH B field half a time step
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE push_bfield
-! ________________________________________________________________________________________
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
-  IMPLICIT NONE
-
-  REAL(num) :: tmptime
-
-  IF (it.ge.timestat_itstart) THEN
-    tmptime = MPI_WTIME()
-  ENDIF
-
-  ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
-              0.5_num*dt/dx,0.5_num*dt/dy,0.5_num*dt/dz,&
-              nx,ny,nz,nxguards,nyguards,nzguards,nxs,nys,nzs, &
-              l_nodalgrid)
-  ! Yee scheme arbitrary order
-  ELSE
-    CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
-        0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-        nx,ny,nz, norderx,nordery,norderz,                                  &
-        nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-        l_nodalgrid)
-  ENDIF
-
-  IF (it.ge.timestat_itstart) THEN  
-    localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
-  ENDIF
-
-END SUBROUTINE push_bfield
+! ______________________________________________________________________________
 
 
-! ________________________________________________________________________________________
-!> @brief
-!> PUSH B field half a time step in 2D
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE push_bfield_2d
-! ________________________________________________________________________________________
-
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
-  IMPLICIT NONE
-
-  REAL(num) :: tmptime
-  IF (it.ge.timestat_itstart) THEN  
-  tmptime = MPI_WTIME()
-  ENDIF
-
-  ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2)) then
-
-    CALL pxrpush_em2d_bvec(ex,ey,ez,bx,by,bz,                  &
-                           0.5_num*dt/dx,0._num,0.5_num*dt/dz,nx,0_idp,nz,          &
-                           nxguards,0_idp,nzguards,nxs,0_idp,nzs, &
-                           l_nodalgrid)
-
-  ! Yee scheme arbitrary order
-  ELSE
-
-    CALL pxrpush_em2d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
-      0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-      nx,ny,nz, norderx,nordery,norderz,                                  &
-      nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-      l_nodalgrid)
-
-  ENDIF
-
-  IF (it.ge.timestat_itstart) THEN  
-    localtimes(5) = localtimes(5) + (MPI_WTIME() - tmptime)
-  ENDIF
-
-END SUBROUTINE push_bfield_2d
-
-! ________________________________________________________________________________________
-!> @brief
-!> PUSH E field a full  time step
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE push_efield
-! ________________________________________________________________________________________
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
-  IMPLICIT NONE
-
-  REAL(num) :: tmptime
-  IF (it.ge.timestat_itstart) THEN
-    tmptime = MPI_WTIME()
-  ENDIF
-
-  ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-  CALL pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-      clight**2*dt/dx,clight**2*dt/dy,                           &
-      clight**2*dt/dz,nx,ny,nz,                                          &
-      nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
-      l_nodalgrid)
-      
-  ELSE
-  ! Yee scheme arbitrary order
-  CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-      clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
-      clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
-      norderx,nordery,norderz,                                                   &
-      nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
-      l_nodalgrid)
-  ENDIF
-
-  IF (it.ge.timestat_itstart) THEN
-    localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
-  ENDIF
-END SUBROUTINE push_efield
-
-
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D arbitrary order
 !
@@ -186,7 +47,7 @@ subroutine pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  norderx,nordery,norderz,             &
                                  nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                  l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   use constants
   use omp_lib
@@ -258,7 +119,7 @@ subroutine pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
   return
 end subroutine pxrpush_em3d_evec_norder
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push electric field Yee 2D arbitrary order
 !
@@ -272,7 +133,7 @@ subroutine pxrpush_em2d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  norderx,nordery,norderz,             &
                                  nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                  l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   use constants
   integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
@@ -333,7 +194,7 @@ subroutine pxrpush_em2d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
 end subroutine pxrpush_em2d_evec_norder
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push electric field Yee 2D order 2
 !
@@ -346,7 +207,7 @@ subroutine pxrpush_em2d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
                                  nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                  l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   use constants
   integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
@@ -400,7 +261,7 @@ subroutine pxrpush_em2d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
 end subroutine pxrpush_em2d_evec
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D order 2
 !
@@ -413,7 +274,7 @@ subroutine pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
                                  dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
                                  nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                  l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   use constants
 
@@ -466,7 +327,7 @@ subroutine pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
 end subroutine pxrpush_em3d_evec
 
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 3D arbitrary order
 !
@@ -480,7 +341,7 @@ subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
                                 norderx,nordery,norderz,             &
                                 nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                 l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   use constants
   use omp_lib
@@ -547,7 +408,7 @@ subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
 
 end subroutine pxrpush_em3d_bvec_norder
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 2D arbitrary order
 !
@@ -561,7 +422,7 @@ subroutine pxrpush_em2d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
                                 norderx,nordery,norderz,             &
                                 nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                 l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 
   use constants
   integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
@@ -617,7 +478,7 @@ subroutine pxrpush_em2d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
 
 end subroutine pxrpush_em2d_bvec_norder
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 2D order 2
 !
@@ -630,7 +491,7 @@ subroutine pxrpush_em2d_bvec(ex,ey,ez,bx,by,bz,                  &
                                 dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
                                 nxguard,nyguard,nzguard,nxs,nys,nzs, &
                                 l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   use constants
   integer(idp) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
@@ -677,7 +538,7 @@ subroutine pxrpush_em2d_bvec(ex,ey,ez,bx,by,bz,                  &
 
 end subroutine pxrpush_em2d_bvec
 
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 3D order 2
 !
@@ -690,10 +551,11 @@ subroutine pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
                           dtsdx,dtsdy,dtsdz,nx,ny,nz,          &
                           nxguard,nyguard,nzguard,nxs,nys,nzs, &
                           l_nodalgrid)
-! ________________________________________________________________________________________
+! ______________________________________________________________________________
   use constants
   integer(idp):: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
+  real(num), intent(IN OUT), &
+  dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
   real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
   integer(idp) :: j,k,l
   LOGICAL(lp)  :: l_nodalgrid
@@ -734,157 +596,3 @@ subroutine pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
   !$OMP END DO
   !$OMP END PARALLEL
 end subroutine pxrpush_em3d_bvec
-
-
-! ________________________________________________________________________________________
-!> @brief
-!> Push magnetic field Karkainnen 2D/3D
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE pxr_push_em3d_kyeebvec(ex,ey,ez,bx,by,bz,dtsdx,dtsdy,dtsdz,nx,ny,nz, &
-                                  nxguard,nyguard,nzguard,l_2dxz)
-! ________________________________________________________________________________________
-  USE kyee_em3d
-  IMPLICIT NONE
-  INTEGER(idp) :: nx,ny,nz,nxguard,nyguard,nzguard
-  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
-  REAL(num), INTENT(IN) :: dtsdx,dtsdy,dtsdz
-  INTEGER(idp) :: j,k,l
-  LOGICAL(lp)  :: l_2dxz
-
-  IF (.NOT.l_2dxz) THEN
-
-    ! advance Bx
-    !$OMP PARALLEL DEFAULT(NONE) PRIVATE(j,k,l) &
-    !$OMP SHARED(Ex,Ez,Ey,Bx,By,Bz,alphax,alphay,alphaz,betaxy,betaxz,betayx,betayz,betazx, &
-    !$OMP betazy,gammax,gammay,gammaz,dtsdx,dtsdy,dtsdz,nx,ny,nz)
-    !$OMP DO COLLAPSE(3)
-    DO l = 0, nz-1
-     DO k = 0, ny-1
-      DO j = 0, nx
-        Bx(j,k,l) = Bx(j,k,l) - alphay*dtsdy * (Ez(j  ,k+1,l  ) - Ez(j  ,k  ,l  )) &
-                              - betayx*dtsdy * (Ez(j+1,k+1,l  ) - Ez(j+1,k  ,l  ) &
-                                             +  Ez(j-1,k+1,l  ) - Ez(j-1,k  ,l  )) &
-                              - betayz*dtsdy * (Ez(j  ,k+1,l+1) - Ez(j  ,k  ,l+1) &
-                                             +  Ez(j  ,k+1,l-1) - Ez(j  ,k  ,l-1)) &
-                              - gammay*dtsdy * (Ez(j+1,k+1,l+1) - Ez(j+1,k  ,l+1) &
-                                             +  Ez(j-1,k+1,l+1) - Ez(j-1,k  ,l+1) &
-                                             +  Ez(j+1,k+1,l-1) - Ez(j+1,k  ,l-1) &
-                                             +  Ez(j-1,k+1,l-1) - Ez(j-1,k  ,l-1)) &
-                              + alphaz*dtsdz * (Ey(j  ,k  ,l+1) - Ey(j  ,k  ,l  )) &
-                              + betazx*dtsdz * (Ey(j+1,k  ,l+1) - Ey(j+1,k  ,l  ) &
-                                             +  Ey(j-1,k  ,l+1) - Ey(j-1,k  ,l  )) &
-                              + betazy*dtsdz * (Ey(j  ,k+1,l+1) - Ey(j  ,k+1,l  ) &
-                                             +  Ey(j  ,k-1,l+1) - Ey(j  ,k-1,l  )) &
-                              + gammaz*dtsdz * (Ey(j+1,k+1,l+1) - Ey(j+1,k+1,l  ) &
-                                             +  Ey(j-1,k+1,l+1) - Ey(j-1,k+1,l  ) &
-                                             +  Ey(j+1,k-1,l+1) - Ey(j+1,k-1,l  ) &
-                                             +  Ey(j-1,k-1,l+1) - Ey(j-1,k-1,l  )) 
-      END DO
-     END DO 
-    END DO 
-    !$OMP END DO 
-
-    ! advance By
-    !$OMP DO COLLAPSE(3)
-    DO l = 0, nz-1
-     DO k = 0, ny
-      DO j = 0, nx-1
-        By(j,k,l) = By(j,k,l) + alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &  
-                              + betaxy*dtsdx * (Ez(j+1,k+1,l  ) - Ez(j  ,k+1,l  ) &
-                                             +  Ez(j+1,k-1,l  ) - Ez(j  ,k-1,l  )) &
-                              + betaxz*dtsdx * (Ez(j+1,k  ,l+1) - Ez(j  ,k  ,l+1) &
-                                             +  Ez(j+1,k  ,l-1) - Ez(j  ,k  ,l-1)) &
-                              + gammax*dtsdx * (Ez(j+1,k+1,l+1) - Ez(j  ,k+1,l+1) &
-                                             +  Ez(j+1,k-1,l+1) - Ez(j  ,k-1,l+1) &
-                                             +  Ez(j+1,k+1,l-1) - Ez(j  ,k+1,l-1) &
-                                             +  Ez(j+1,k-1,l-1) - Ez(j  ,k-1,l-1)) &
-                              - alphaz*dtsdz * (Ex(j  ,k  ,l+1) - Ex(j  ,k  ,l  )) &
-                              - betazx*dtsdz * (Ex(j+1,k  ,l+1) - Ex(j+1,k  ,l  ) &
-                                             +  Ex(j-1,k  ,l+1) - Ex(j-1,k  ,l  )) &
-                              - betazy*dtsdz * (Ex(j  ,k+1,l+1) - Ex(j  ,k+1,l  ) &
-                                             +  Ex(j  ,k-1,l+1) - Ex(j  ,k-1,l  )) &
-                              - gammaz*dtsdz * (Ex(j+1,k+1,l+1) - Ex(j+1,k+1,l  ) &
-                                             +  Ex(j-1,k+1,l+1) - Ex(j-1,k+1,l  ) &
-                                             +  Ex(j+1,k-1,l+1) - Ex(j+1,k-1,l  ) &
-                                             +  Ex(j-1,k-1,l+1) - Ex(j-1,k-1,l  )) 
-      END DO
-     END DO
-    END DO 
-    !$OMP END DO 
-    ! advance Bz 
-    !$OMP DO COLLAPSE(3)
-    DO l = 0, nz
-     DO k = 0, ny-1
-      DO j = 0, nx-1
-        Bz(j,k,l) = Bz(j,k,l) - alphax*dtsdx * (Ey(j+1,k  ,l  ) - Ey(j  ,k  ,l  )) &
-                              - betaxy*dtsdx * (Ey(j+1,k+1,l  ) - Ey(j  ,k+1,l  ) &
-                                             +  Ey(j+1,k-1,l  ) - Ey(j  ,k-1,l  )) &
-                              - betaxz*dtsdx * (Ey(j+1,k  ,l+1) - Ey(j  ,k  ,l+1) &
-                                             +  Ey(j+1,k  ,l-1) - Ey(j  ,k  ,l-1)) &
-                              - gammax*dtsdx * (Ey(j+1,k+1,l+1) - Ey(j  ,k+1,l+1) &
-                                             +  Ey(j+1,k-1,l+1) - Ey(j  ,k-1,l+1) &
-                                             +  Ey(j+1,k+1,l-1) - Ey(j  ,k+1,l-1) &
-                                             +  Ey(j+1,k-1,l-1) - Ey(j  ,k-1,l-1)) &
-                              + alphay*dtsdy * (Ex(j  ,k+1,l  ) - Ex(j  ,k  ,l  )) &
-                              + betayx*dtsdy * (Ex(j+1,k+1,l  ) - Ex(j+1,k  ,l  ) &
-                                             +  Ex(j-1,k+1,l  ) - Ex(j-1,k  ,l  )) &
-                              + betayz*dtsdy * (Ex(j  ,k+1,l+1) - Ex(j  ,k  ,l+1) &
-                                             +  Ex(j  ,k+1,l-1) - Ex(j  ,k  ,l-1)) &
-                              + gammay*dtsdy * (Ex(j+1,k+1,l+1) - Ex(j+1,k  ,l+1) &
-                                             +  Ex(j-1,k+1,l+1) - Ex(j-1,k  ,l+1) &
-                                             +  Ex(j+1,k+1,l-1) - Ex(j+1,k  ,l-1) &
-                                             +  Ex(j-1,k+1,l-1) - Ex(j-1,k  ,l-1)) 
-      END DO
-     END DO
-    END DO
-    !$OMP END DO 
-    !$OMP END PARALLEL
-  ELSE
-
-    k=0
-    ! advance Bx
-    !$OMP PARALLEL DEFAULT(NONE) PRIVATE(j,l) &
-    !$OMP SHARED(k,Ex,Ey,Ez,Bx,By,Bz,alphax,alphaz,betaxz,betazx, &
-    !$OMP dtsdx,dtsdz,nx,nz)
-    !$OMP DO COLLAPSE(2)
-    DO l = 0, nz-1
-      DO j = 0, nx
-        Bx(j,k,l) = Bx(j,k,l) +    alphaz*dtsdz * (Ey(j  ,k  ,l+1) - Ey(j  ,k  ,l  )) &
-                              +    betazx*dtsdz * (Ey(j+1,k  ,l+1) - Ey(j+1,k  ,l  ) &
-                                                +  Ey(j-1,k  ,l+1) - Ey(j-1,k  ,l  )) 
-      END DO
-    END DO
-    !$OMP END DO 
-    ! advance By
-    !$OMP DO COLLAPSE(2)
-    DO l = 0, nz-1
-      DO j = 0, nx-1
-        By(j,k,l) = By(j,k,l) +    alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &  
-                              +    betaxz*dtsdx * (Ez(j+1,k  ,l+1) - Ez(j  ,k  ,l+1) &
-                                                +  Ez(j+1,k  ,l-1) - Ez(j  ,k  ,l-1)) &
-                              -    alphaz*dtsdz * (Ex(j  ,k  ,l+1) - Ex(j  ,k  ,l  )) &
-                              -    betazx*dtsdz * (Ex(j+1,k  ,l+1) - Ex(j+1,k  ,l  ) &
-                                                +  Ex(j-1,k  ,l+1) - Ex(j-1,k  ,l  )) 
-      END DO
-    END DO
-    !$OMP END DO 
-    ! advance Bz 
-    !$OMP DO COLLAPSE(2)
-    DO l = 0, nz
-      DO j = 0, nx-1
-        Bz(j,k,l) = Bz(j,k,l) -    alphax*dtsdx * (Ey(j+1,k  ,l  ) - Ey(j  ,k  ,l  )) &
-                              -    betaxz*dtsdx * (Ey(j+1,k  ,l+1) - Ey(j  ,k  ,l+1) &
-                                                +  Ey(j+1,k  ,l-1) - Ey(j  ,k  ,l-1)) 
-      END DO
-    END DO
-    !$OMP END DO 
-    !$OMP END PARALLEL
-  END IF
-
-  RETURN
-END SUBROUTINE pxr_push_em3d_kyeebvec

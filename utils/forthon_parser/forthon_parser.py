@@ -1099,8 +1099,10 @@ remove_file(appname+".v")
 #LIST ALL .F90 or .F files in current directory
 listfiles=["modules.F90", \
            "sorting.F90", \
-           "maxwell.F90", \
-           "GPSTD.F90", \
+           "field_solvers/Maxwell/maxwell_solver_manager.F90", \
+           "field_solvers/Maxwell/yee_solver/yee.F90", \
+           "field_solvers/Maxwell/karkainnen_solver/karkainnen.F90", \
+           "field_solvers/Maxwell/GPSTD_solver/GPSTD.F90", \
            "tiling.F90", \
            "particles_push_2d.F90", \
            "particles_push.F90", \
