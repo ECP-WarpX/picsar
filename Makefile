@@ -274,7 +274,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/sorting.o \
+	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
@@ -312,7 +312,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/sorting.o \
+	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
@@ -348,7 +348,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/sorting.o \
+	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
