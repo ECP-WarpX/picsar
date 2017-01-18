@@ -64,7 +64,8 @@ MODULE diagnostics
     SUBROUTINE calc_diags
     ! ____________________________________________________________________________________
         USE fields
-        USE boundary
+        USE field_boundary
+        USE particle_boundary
         USE particles
         USE params
         USE shared_data
