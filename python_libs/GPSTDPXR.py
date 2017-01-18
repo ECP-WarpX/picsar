@@ -3,28 +3,28 @@
 
  *** Copyright Notice ***
 
- "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
- 2016, The Regents of the University of California, through Lawrence Berkeley 
- National Laboratory (subject to receipt of any required approvals from the 
+ "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+ 2016, The Regents of the University of California, through Lawrence Berkeley
+ National Laboratory (subject to receipt of any required approvals from the
  U.S. Dept. of Energy). All rights reserved.
 
- If you have questions about your rights to use or distribute this software, 
+ If you have questions about your rights to use or distribute this software,
  please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 
  NOTICE.
- This Software was developed under funding from the U.S. Department of Energy 
- and the U.S. Government consequently retains certain rights. As such, the U.S. 
- Government has been granted for itself and others acting on its behalf a  
- paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
- reproduce, distribute copies to the public, prepare derivative works, and 
- perform publicly and display publicly, and to permit other to do so. 
+ This Software was developed under funding from the U.S. Department of Energy
+ and the U.S. Government consequently retains certain rights. As such, the U.S.
+ Government has been granted for itself and others acting on its behalf a
+ paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+ reproduce, distribute copies to the public, prepare derivative works, and
+ perform publicly and display publicly, and to permit other to do so.
 
 
- Class for 2D & 3D FFT-based electromagnetic solver 
- 
+ Class for 2D & 3D FFT-based electromagnetic solver
+
  Developers:
  Henri Vincenti
- 
+
  Date:
  Creation 2016
 
@@ -40,49 +40,49 @@ try:
 except:
     l_pxr=False
     print 'PICSAR package not found.'
-try: 
-    from mpi4py import MPI 
-except: 
-    print 'Error cannot import mpi4py'  
-import numpy as np 
+try:
+    from mpi4py import MPI
+except:
+    print 'Error cannot import mpi4py'
+import numpy as np
 
-class GPSTDPXR(GPSTD): 
+class GPSTDPXR(GPSTD):
 
-    def create_fortran_matrix_blocks(self): 
+    def create_fortran_matrix_blocks(self):
         mymat = self.mymat
         nrow=len(mymat)
-        # Allocate new block matrix in Fortran 
-        # And corresponding vector blocks  
+        # Allocate new block matrix in Fortran
+        # And corresponding vector blocks
         pxr.allocate_new_matrix_vector(nrow)
-        # Get Matrix index 
+        # Get Matrix index
         self.matrix_index = pxr.nmatrixes
-        # Alias Fortran blocks to mymat elements 
-        for i in range(1,nrow+1): 
-            for j in range(1,nrow+1): 
+        # Alias Fortran blocks to mymat elements
+        for i in range(1,nrow+1):
+            for j in range(1,nrow+1):
                 mymat[i-1][j-1] = np.asarray(mymat[i-1][j-1])
-                if (mymat[i-1][j-1].ndim == 2): 
+                if (mymat[i-1][j-1].ndim == 2):
                     ki = self.fields_name[i-1]
                     n1=self.fields[ki].shape[0]
                     n2=self.fields[ki].shape[1]
                     n3=self.fields[ki].shape[2]
                     n1mymat=mymat[i-1][j-1].shape[0]
                     n2mymat=mymat[i-1][j-1].shape[1]
-                    if (n1==1): 
+                    if (n1==1):
                         mymat[i-1][j-1]=np.reshape(mymat[i-1][j-1],(1,n1mymat,n2mymat))
-                    elif(n2==1): 
+                    elif(n2==1):
                         mymat[i-1][j-1]=np.reshape(mymat[i-1][j-1],(n1mymat,1,n2mymat))
-                    elif(n3==1): 
+                    elif(n3==1):
                         mymat[i-1][j-1]=np.reshape(mymat[i-1][j-1],(n1mymat,n2mymat,1))
-                else: 
+                else:
                     if (np.size(mymat[i-1][j-1])==1):
                         mymat[i-1][j-1]=np.reshape(mymat[i-1][j-1],(1,1,1))
-                if mymat[i-1][j-1].dtype is not np.dtype('complex128'): 
+                if mymat[i-1][j-1].dtype is not np.dtype('complex128'):
                     mymat[i-1][j-1]=mymat[i-1][j-1].astype(np.complex128)
                 mymat[i-1][j-1]=np.asfortranarray(mymat[i-1][j-1])
                 n1 = mymat[i-1][j-1].shape[0]
                 n2 = mymat[i-1][j-1].shape[1]
                 n3 = mymat[i-1][j-1].shape[2]
-                pxr.point_to_matrix_block_p2f(self.mymat[i-1][j-1],n1,n2,n3,i,j,self.matrix_index)        
+                pxr.point_to_matrix_block_p2f(self.mymat[i-1][j-1],n1,n2,n3,i,j,self.matrix_index)
 
     def get_Ffields(self):
         ixl,ixu,iyl,iyu,izl,izu = self.get_ius()
@@ -93,22 +93,22 @@ class GPSTDPXR(GPSTD):
                 self.Ffields[k]    =self.rfftn(self.fields[k][ixl:ixu,iyl:iyu,izl:izu],plan=self.plan_rfftn[k])
         else:
             for k in self.fields.keys():
-                self.Ffields[k]=self.rfftn(self.fields[k][ixl:ixu,iyl:iyu,izl:izu],field_out=self.Ffields[k],plan=self.plan_rfftn[k])   
-                                 
+                self.Ffields[k]=self.rfftn(self.fields[k][ixl:ixu,iyl:iyu,izl:izu],field_out=self.Ffields[k],plan=self.plan_rfftn[k])
+
     def get_fields(self):
         ixl,ixu,iyl,iyu,izl,izu = self.get_ius()
-        if (self.plan_irfftn=={}): 
+        if (self.plan_irfftn=={}):
             for k in self.fields.keys():
-                    self.plan_irfftn[k] = self.create_plan_irfftn(np.asarray(self.fields_shape))  
+                    self.plan_irfftn[k] = self.create_plan_irfftn(np.asarray(self.fields_shape))
         for k in self.fields.keys():
-            if not self.LSource[k]:       
-                shapek = np.asarray(np.shape(self.fields[k][ixl:ixu,iyl:iyu,izl:izu]))        
+            if not self.LSource[k]:
+                shapek = np.asarray(np.shape(self.fields[k][ixl:ixu,iyl:iyu,izl:izu]))
                 self.fields[k][ixl:ixu,iyl:iyu,izl:izu] = self.irfftn(self.Ffields[k], shapek, field_out=self.fields[k][ixl:ixu,iyl:iyu,izl:izu], plan=self.plan_irfftn[k])
 
     def push_fields(self):
-        
-        # --- Fourier transforming fields 
-        self.get_Ffields() 
+
+        # --- Fourier transforming fields
+        self.get_Ffields()
         # --- filter sources before push
         for k in self.Sfilters.keys():
            self.Ffields[k]*=self.Sfilters[k]
@@ -121,24 +121,24 @@ class GPSTDPXR(GPSTD):
         # --- set dictionary of field flags for update
         updated_fields = {}
         for k in self.Ffields.keys():
-            updated_fields[k] = False        
-        # --- Alias block vectors in Fortran 
-        for i in range(1,n+1): 
+            updated_fields[k] = False
+        # --- Alias block vectors in Fortran
+        for i in range(1,n+1):
             ki = self.fields_name[i-1]
             n1r=self.fields[ki].shape[0]
             n2r=self.fields[ki].shape[1]
             n3r=self.fields[ki].shape[2]
             nfs = self.Ffields[ki].ndim
-            if (nfs < 3): 
+            if (nfs < 3):
                 n1=self.Ffields[ki].shape[0]
                 n2=self.Ffields[ki].shape[1]
-                if(n1r==1): 
+                if(n1r==1):
                     self.Ffields[ki]=np.reshape(self.Ffields[ki],(1,n1,n2))
                     oldfields[ki]=np.reshape(oldfields[ki],(1,n1,n2))
-                elif(n2r==1): 
-                    self.Ffields[ki]=np.reshape(self.Ffields[ki],(n1,1,n2))  
+                elif(n2r==1):
+                    self.Ffields[ki]=np.reshape(self.Ffields[ki],(n1,1,n2))
                     oldfields[ki]=np.reshape(oldfields[ki],(n1,1,n2))
-                elif(n3r==1): 
+                elif(n3r==1):
                     self.Ffields[ki]=np.reshape(self.Ffields[ki],(n1,n2,1))
                     oldfields[ki]=np.reshape(oldfields[ki],(n1,n2,1))
             nn1=self.Ffields[ki].shape[0]
@@ -147,16 +147,16 @@ class GPSTDPXR(GPSTD):
             pxr.point_to_vector_block_p2f(self.Ffields[ki],nn1,nn2,nn3,i, \
                                         self.matrix_index,False,self.LSource[ki])
             pxr.point_to_vector_block_p2f(oldfields[ki],nn1,nn2,nn3,i, \
-                                        self.matrix_index,True,self.LSource[ki])     
-        # --- fields update in FORTRAN 
-        pxr.multiply_mat_vector(self.matrix_index)    
-        
-        # Deleting old copies of the fields    
-        del oldfields             
-        
+                                        self.matrix_index,True,self.LSource[ki])
+        # --- fields update in FORTRAN
+        pxr.multiply_mat_vector(self.matrix_index)
+
+        # Deleting old copies of the fields
+        del oldfields
+
         # --- filter fields after push
         for k in self.Ffilters.keys():
-           self.Ffields[k]*=self.Ffilters[k]            
+           self.Ffields[k]*=self.Ffilters[k]
         # Fourier transforming back fields
         self.get_fields()
         # --- set periodic BC
@@ -172,7 +172,7 @@ class GPSTDPXR(GPSTD):
             ngz = self.nzguard
         else:
             ngz = 0
- 
+
         if self.bc_periodic[0]:
             for k in self.fields.keys():
                 if updated_fields[k]:
@@ -191,9 +191,9 @@ class GPSTDPXR(GPSTD):
                     f = self.fields[k]
                     f[...,-ngz-1:]=f[...,ngz:2*ngz+1]
                     f[...,:ngz]=f[...,-2*ngz-1:-ngz-1]
-  
+
         del updated_fields
-   
+
 class PSATD_Maxwell_PML(GPSTDPXR):
 
     __flaginputs__ = {'syf':None,'l_pushf':False,'l_pushg':False,'clight':299792458.0}
@@ -264,12 +264,12 @@ class PSATD_Maxwell_PML(GPSTDPXR):
             self.add_fields({"fx":syf.fx, \
                              "fy":syf.fy, \
                              "fz":syf.fz})
-            
+
         if self.l_pushg:
             self.add_fields({"gx":syf.gx, \
                              "gy":syf.gy, \
                              "gz":syf.gz})
-        
+
         self.get_Ffields()
 
         m0 = 0.
@@ -278,7 +278,7 @@ class PSATD_Maxwell_PML(GPSTDPXR):
         cdt=dt*self.clight
         C=self.coswdt
         S=self.sinwdt
-            
+
         if self.nx>1:
             axm = j*S*self.kxmn
             axp = j*S*self.kxpn
@@ -417,7 +417,7 @@ class GPSTD_Maxwell(GPSTDPXR):
         GPSTD.__init__(self,kwdict=kw)
 
         j = 1j
-        
+
         self.add_fields({"bx":yf.Bx,"by":yf.By,"bz":yf.Bz, \
                          "ex":yf.Ex,"ey":yf.Ey,"ez":yf.Ez})
         self.add_fields({"rho":yf.Rho},True)
@@ -434,14 +434,14 @@ class GPSTD_Maxwell(GPSTDPXR):
         self.add_fields({"rho":yf.Rho},True)
         self.add_fields({"drho":yf.Rhoold},True)
         self.add_fields({"jx":yf.Jx,"jy":yf.Jy,"jz":yf.Jz},True)
-        
+
         self.get_Ffields()
 
         m0 = 0.
         m1 = 1.
         dt=self.dt/self.ntsub
         cdt=dt*self.clight
-            
+
         if self.nx>1:
             axm = j*dt*self.clight*self.kxm
             axp = j*dt*self.clight*self.kxp
@@ -459,7 +459,7 @@ class GPSTD_Maxwell(GPSTDPXR):
             azp = j*dt*self.clight*self.kzp
         else:
             azm = azp = 0.
-            
+
         if self.nx>1:
             axp0 = 0.5/self.ntsub
             axm0 = 0.65/self.ntsub
@@ -489,7 +489,7 @@ class GPSTD_Maxwell(GPSTDPXR):
         self.mymat = self.getmaxwellmat(axp,ayp,azp,axm,aym,azm,dt,cdt,m0,m1,\
                      self.kx_unmod,self.ky_unmod,self.kz_unmod,l_matref=0,matcompress=matcompress)
         self.create_fortran_matrix_blocks()
-        
+
     def getmaxwellmat(self,axp,ayp,azp,axm,aym,azm,dt,cdt,m0,m1,
                       kx_unmod,ky_unmod,kz_unmod,l_matref=0,
                       matcompress=None):
@@ -594,7 +594,7 @@ class PSATD_Maxwell(GPSTDPXR):
         GPSTD.__init__(self,kwdict=kw)
 
         j = 1j
-        
+
         self.add_fields({"bx":yf.Bx,"by":yf.By,"bz":yf.Bz, \
                          "ex":yf.Ex,"ey":yf.Ey,"ez":yf.Ez})
         if self.l_pushf:
@@ -604,7 +604,7 @@ class PSATD_Maxwell(GPSTDPXR):
         self.add_fields({"rhoold":yf.Rhoold},True)
         self.add_fields({"rhonew":yf.Rho},True)
         self.add_fields({"jx":yf.Jx,"jy":yf.Jy,"jz":yf.Jz},True)
-        
+
         self.get_Ffields()
 
         m0 = 0.
@@ -616,11 +616,11 @@ class PSATD_Maxwell(GPSTDPXR):
         self.sinwdt=np.sin(self.wdt)
         C=self.coswdt
         S=self.sinwdt
-            
+
         self.mymat = self.getmaxwellmat(self.kxpn,self.kypn,self.kzpn,\
                      self.kxmn,self.kymn,self.kzmn,dt,cdt)
         self.create_fortran_matrix_blocks()
-        
+
     def getmaxwellmat(self,kxpn,kypn,kzpn,kxmn,kymn,kzmn,dt,cdt):
 
         j = 1j
@@ -632,7 +632,7 @@ class PSATD_Maxwell(GPSTDPXR):
         Jmult = 1./(self.kmag*self.clight*self.eps0)
 
         EJmult = -self.divsetorig(S,self.kmag*self.clight*self.eps0,self.dt/self.eps0)
-        
+
         ERhomult = j*(-EJmult/dt-1./self.eps0)/self.kmag
         ERhooldmult = j*(C/self.eps0+EJmult/dt) /self.kmag
 
@@ -640,7 +640,7 @@ class PSATD_Maxwell(GPSTDPXR):
 
         FJmult = j*(C-1.)*Jmult
         FRhomult = self.divsetorig(C-1.,dt*self.kmag**2*self.clight*self.eps0,-0.5*self.dt*self.clight/self.eps0)
-        
+
         if self.nx>1:
             axm = j*S*self.kxmn
             axp = j*S*self.kxpn
@@ -702,15 +702,14 @@ class PSATD_Maxwell(GPSTDPXR):
                                     'jx': kxmn*FJmult,'jy': kymn*FJmult,'jz': kzmn*FJmult, \
                                     'rhonew':FRhomult,\
                                     'rhoold':-FRhomult - Soverk/self.eps0})
-            
+
         if self.l_pushg:
             mymat.add_op('g',{'g':C,'bx':axp*c,'by':ayp*c,'bz':azp*c})
 
         return mymat.mat
- 
+
     def push(self):
 
         self.push_fields()
 
         return
-
