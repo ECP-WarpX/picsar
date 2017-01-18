@@ -1109,8 +1109,11 @@ listfiles=["modules.F90", \
            "particle_pushers/vay_pusher/vay_3d.F90", \
            "particle_pushers/particle_pusher_manager_2d.F90", \
            "particle_pushers/particle_pusher_manager_3d.F90", \
-           "current_deposition_2d.F90", \
-           "current_deposition.F90", \
+           "particle_deposition/current_deposition/direct/direct_current_deposition_3d.F90", \
+           "particle_deposition/current_deposition/esirkepov/esirkepov_2d.F90", \
+           "particle_deposition/current_deposition/esirkepov/esirkepov_3d.F90", \
+           "particle_deposition/current_deposition/current_deposition_manager_2d.F90", \
+           "particle_deposition/current_deposition/current_deposition_manager_3d.F90", \
            "field_gathering_2d.F90", \
            "field_gathering.F90", \
            "field_gathering_3d_o1.F90",\
@@ -1119,7 +1122,9 @@ listfiles=["modules.F90", \
            "mpi_derived_types.F90",\
            "boundary.F90", \
            "simple_io.F90", \
-           "charge_deposition.F90", \
+           "particle_deposition/charge_deposition/charge_deposition_2d.F90", \
+           "particle_deposition/charge_deposition/charge_deposition_3d.F90", \
+           "particle_deposition/charge_deposition/charge_deposition_manager.F90", \
            "diags.F90", \
            "submain.F90", \
            "mpi_routines.F90",\
