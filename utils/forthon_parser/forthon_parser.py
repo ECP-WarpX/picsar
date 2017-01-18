@@ -1097,7 +1097,7 @@ remove_file(appname+".F90")
 remove_file(appname+".v")
 
 #LIST ALL .F90 or .F files in current directory
-listfiles=["modules.F90", \
+listfiles=["modules/modules.F90", \
            "sorting.F90", \
            "field_solvers/Maxwell/maxwell_solver_manager.F90", \
            "field_solvers/Maxwell/yee_solver/yee.F90", \
@@ -1128,7 +1128,7 @@ listfiles=["modules.F90", \
            "diags.F90", \
            "submain.F90", \
            "mpi_routines.F90",\
-           "control_file.F90", \
+           "initilization/control_file.F90", \
            "load_balancing.F90"]
 
 
