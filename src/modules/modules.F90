@@ -457,9 +457,19 @@ MODULE particle_properties
 !===============================================================================
   USE constants
   !> Number of elements per particle in the pid particle array
-  INTEGER(idp), PARAMETER :: npid=1
-  !> Dimension corresponding to the weight in pid
+  !> Default is 1 i.e only particle weights are recorded
+  INTEGER(idp)  :: npid=1
+  !> Index in pid array corresponding to particle weights
+  !> Beware: default is wpid=1. Use same in WARP when coupling WARP+PXR
   INTEGER(idp), PARAMETER :: wpid=1
+  !> Index in pid array corresponding to particle ids
+  INTEGER(idp)  :: ssnpid
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp)  :: xoldpid
+  !> Index in pid array corresponding to old y positions of particles
+  INTEGER(idp) :: yoldpid
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp) :: zoldpid
   !> This flag seems to be unused
   LOGICAL(lp) :: l_initongrid = .FALSE.
   !> Flag to activate the use of weight for the particles
@@ -692,7 +702,7 @@ MODULE communications  !#do not parse
       !dir$ attributes align:64 :: part_gaminv
       !DIR ATTRIBUTES FASTMEM  :: part_gaminv
       !> particle weight buffer array
-      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+      REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: pid
       !dir$ attributes align:64 :: pid
       !DIR ATTRIBUTES FASTMEM  :: pid
       !> Number of particles to be exchanged in each direction

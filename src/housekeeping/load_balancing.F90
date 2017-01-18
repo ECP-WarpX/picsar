@@ -1099,7 +1099,8 @@ SUBROUTINE create_new_tile_split()
                               oxmin,oxmax,oymin,oymax,ozmin,ozmax
   INTEGER(idp) :: ix, iy, iz, ip, indx, indy, indz, ispecies, count
   INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
-  REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+  REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
+  REAL(num), DIMENSION(npid) :: partpid
   INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new, nthreads_tot
 
   #ifdef _OPENMP
@@ -1185,19 +1186,19 @@ SUBROUTINE create_new_tile_split()
                           partuy=curr_tile%part_uy(ip)
                           partuz=curr_tile%part_uz(ip)
                           gaminv=curr_tile%part_gaminv(ip)
-                          partw=curr_tile%pid(ip,wpid)
+                          partpid=curr_tile%pid(ip,1:npid)
                           ! CASE 1: particle outside MPI domain temporarily put it
                           ! in the first tile of new species array
                           IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local) .OR. &
                               (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN
                               CALL add_particle_at_tile(currsp_new, 1_idp,1_idp,1_idp, &
-                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partpid)
                           ! CASE 2: particle is in the new domain just add it to proper tile of new species array
                           ELSE
                               indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
                               indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
                               CALL add_particle_at_tile(currsp_new, indx,1_idp,indz, &
-                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partpid)
 
                           ENDIF
                           currsp_new%species_npart=currsp_new%species_npart+1
@@ -1212,21 +1213,21 @@ SUBROUTINE create_new_tile_split()
                           partuy=curr_tile%part_uy(ip)
                           partuz=curr_tile%part_uz(ip)
                           gaminv=curr_tile%part_gaminv(ip)
-                          partw=curr_tile%pid(ip,wpid)
+                          partpid=curr_tile%pid(ip,1:npid)
                           ! CASE 1: particle outside MPI domain temporarily put it
                           ! in the first tile of new species array
                           IF ((partx .LT. x_min_local) .OR. (partx .GE. x_max_local) .OR. &
                               (party .LT. y_min_local) .OR. (party .GE. y_max_local) .OR. &
                               (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN
                               CALL add_particle_at_tile(currsp_new, 1_idp,1_idp,1_idp, &
-                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partpid)
                           ! CASE 2: particle is in the new domain just add it to proper tile of new species array
                           ELSE
                               indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex_new)
                               indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley_new)
                               indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez_new)
                               CALL add_particle_at_tile(currsp_new, indx,indy,indz, &
-                                   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                                   partx, party, partz, partux, partuy, partuz, gaminv, partpid)
                           ENDIF
                           currsp_new%species_npart=currsp_new%species_npart+1
                           CALL rm_particles_from_species(currsp, ix, iy,iz, ip)
@@ -1302,9 +1303,9 @@ SUBROUTINE create_new_tile_split()
                       partuy=curr_tile%part_uy(ip)
                       partuz=curr_tile%part_uz(ip)
                       gaminv=curr_tile%part_gaminv(ip)
-                      partw=curr_tile%pid(ip,wpid)
+                      partpid=curr_tile%pid(ip,1:npid)
                       CALL add_particle_at_tile(currsp, ix,iy,iz, &
-                           partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                           partx, party, partz, partux, partuy, partuz, gaminv, partpid)
                       CALL rm_particles_from_species(currsp_new, ix, iy, iz, ip)
                       currsp%species_npart=currsp%species_npart+1
                   END DO
@@ -1348,7 +1349,8 @@ SUBROUTINE remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
   INTEGER(isp) :: mpitag, count
   INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
   INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
-  INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
+  INTEGER(idp), PARAMETER :: nmax_neighbours=10**3
+  INTEGER(idp) :: nvar
   INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
   LOGICAL(lp)  :: l_is_intersection
   INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
@@ -1359,6 +1361,7 @@ SUBROUTINE remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
   TYPE(particle_tile), POINTER :: curr
 
   mpitag=0_isp
+  nvar=7+npid
 
   ALLOCATE(recv_rank(nmax_neighbours), send_rank(nmax_neighbours))
   recv_rank=-1
@@ -1482,7 +1485,7 @@ SUBROUTINE remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
                           sendbuff(ibuff+4, isend)  = curr%part_uy(i)
                           sendbuff(ibuff+5, isend)  = curr%part_uz(i)
                           sendbuff(ibuff+6, isend)  = curr%part_gaminv(i)
-                          sendbuff(ibuff+7, isend)  = curr%pid(i,wpid)
+                          sendbuff(ibuff+7:ibuff+7+(npid-1), isend)  = curr%pid(i,1:npid)
                           npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
                           nptoexch(isend)=nptoexch(isend)+1
                           ! Remove particle of current species from current tile
@@ -1547,7 +1550,7 @@ SUBROUTINE remap_particles(ix1old,ix2old,iy1old,iy2old,iz1old,iz2old,     &
           DO ipart=1,nvar*npart_recv(ispecies,i),nvar
               ibuff=ispec+ipart
               CALL add_particle_to_species(currsp, recvbuff(ibuff,i), recvbuff(ibuff+1,i), recvbuff(ibuff+2,i), &
-              recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
+              recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7:ibuff+6+npid,i))
           END DO
           ispec=ispec+nvar*npart_recv(ispecies,i)
       END DO
@@ -1587,7 +1590,8 @@ SUBROUTINE remap_particles_2D(ix1old,ix2old,iz1old,iz2old,     &
   INTEGER(isp) :: mpitag, count
   INTEGER(isp), ALLOCATABLE, DIMENSION(:) :: recv_rank, send_rank, requests
   INTEGER(idp), ALLOCATABLE, DIMENSION(:,:) :: npart_recv, npart_send
-  INTEGER(idp), PARAMETER :: nmax_neighbours=10**3, nvar=8
+  INTEGER(idp), PARAMETER :: nmax_neighbours=10**3
+  INTEGER(idp) :: nvar
   INTEGER(idp) :: nsend, nrecv, nsdat,nrdat,ibuff, curr_rank,iprocx,iprocy,iprocz,icx,icy,icz,isend
   LOGICAL(lp)  :: l_is_intersection
   INTEGER(idp), ALLOCATABLE, DIMENSION (:) :: nptoexch
@@ -1599,6 +1603,7 @@ SUBROUTINE remap_particles_2D(ix1old,ix2old,iz1old,iz2old,     &
 
 npy=1! 2D CASE
 mpitag=0_isp
+nvar=npid+7
 
 ALLOCATE(recv_rank(nmax_neighbours), send_rank(nmax_neighbours))
 recv_rank=-1
@@ -1711,7 +1716,7 @@ DO ispecies=1, nspecies !LOOP ON SPECIES
                         sendbuff(ibuff+4, isend)  = curr%part_uy(i)
                         sendbuff(ibuff+5, isend)  = curr%part_uz(i)
                         sendbuff(ibuff+6, isend)  = curr%part_gaminv(i)
-                        sendbuff(ibuff+7, isend)  = curr%pid(i,wpid)
+                        sendbuff(ibuff+7:ibuff+6+npid, isend)  = curr%pid(i,1:npid)
                         npart_send(ispecies, isend)=npart_send(ispecies,isend)+1
                         nptoexch(isend)=nptoexch(isend)+1
                         ! Remove particle of current species from current tile
@@ -1776,7 +1781,7 @@ DO i =1, nrecv
         DO ipart=1,nvar*npart_recv(ispecies,i),nvar
             ibuff=ispec+ipart
             CALL add_particle_to_species(currsp, recvbuff(ibuff,i), recvbuff(ibuff+1,i), recvbuff(ibuff+2,i), &
-            recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7,i))
+            recvbuff(ibuff+3,i), recvbuff(ibuff+4,i), recvbuff(ibuff+5,i), recvbuff(ibuff+6,i),recvbuff(ibuff+7:ibuff+6+npid,i))
         END DO
         ispec=ispec+nvar*npart_recv(ispecies,i)
     END DO

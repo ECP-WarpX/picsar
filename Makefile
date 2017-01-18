@@ -39,7 +39,6 @@ SYS=default
 # - host
 ARCH=
 
-
 # User Compiler Parameters (that can be tuned by the user)
 # Fortan compiler arguments
 FC=mpif90
