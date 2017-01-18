@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! FIELD_BOUNDARIES.F90
@@ -67,7 +67,7 @@ MODULE field_boundary
   CONTAINS
 
   ! ____________________________________________________________________________
-  !> @brief 
+  !> @brief
   !> Exchange field values at processor boundaries and apply field
   !> boundary conditions
   !
@@ -79,7 +79,7 @@ MODULE field_boundary
   !
   SUBROUTINE field_bc(field, nxg, nyg, nzg, nx_local, ny_local, nz_local)
   ! ____________________________________________________________________________
-  
+
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg,-nyg:ny_local+nyg,-nzg:nz_local+nzg), INTENT(INOUT) :: field
@@ -104,7 +104,7 @@ MODULE field_boundary
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, &
              nx_local, ny_local, nz_local)
   ! ____________________________________________________________________________
-  
+
     USE constants
     USE mpi
     IMPLICIT NONE
@@ -265,7 +265,7 @@ MODULE field_boundary
 
   ! ____________________________________________________________________________
   !> @brief
-  !> Routine exchanging guard regions between subdomains (non-blocking version 
+  !> Routine exchanging guard regions between subdomains (non-blocking version
   !> + diagonal trick)
   !
   !> @author
@@ -485,7 +485,7 @@ MODULE field_boundary
 
 
   ! ____________________________________________________________________________
-  !> Routine for adding current contributions fron adjacent subdomains 
+  !> Routine for adding current contributions fron adjacent subdomains
   ! nonblocking version
   !
   !> @author
@@ -496,7 +496,7 @@ MODULE field_boundary
   !
   SUBROUTINE summation_bcs_nonblocking(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
   ! ____________________________________________________________________________
-  
+
     USE mpi
 
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
@@ -802,7 +802,7 @@ MODULE field_boundary
   SUBROUTINE summation_bcs_persistent_jy(array, nxg, nyg, nzg, &
                                          nx_local, ny_local, nz_local)
   ! ____________________________________________________________________________
-  
+
     USE communications
     USE mpi
 
@@ -1151,8 +1151,8 @@ MODULE field_boundary
   !> Creation 2015
   !
   SUBROUTINE efield_bcs
-  ! ____________________________________________________________________________  
-  
+  ! ____________________________________________________________________________
+
     REAL(num) :: tmptime
 #if defined(DEBUG)
   WRITE(0,*) "efield_bcs: start"
@@ -1185,7 +1185,7 @@ MODULE field_boundary
   !
   SUBROUTINE bfield_bcs
   ! ____________________________________________________________________________
-  
+
     REAL(num) :: tmptime
 #if defined(DEBUG)
   WRITE(0,*) "bfield_bcs: start"
@@ -1292,17 +1292,17 @@ END SUBROUTINE charge_bcs
   !> @date
   !> Creation: 2016
   !
-  !> @param[in] dxx,dyy,dzz moving window displacement 
+  !> @param[in] dxx,dyy,dzz moving window displacement
     SUBROUTINE pxr_move_sim_boundaries(dxx,dyy,dzz)
   ! ______________________________________________________________________________
-    IMPLICIT NONE 
-  
+    IMPLICIT NONE
+
     REAL(num), INTENT(IN) :: dxx, dyy, dzz
     INTEGER(idp) :: ispecies, ix, iy, iz
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER    :: curr_tile
 
-    ! MOVE GLOBAL BOUNDARIES 
+    ! MOVE GLOBAL BOUNDARIES
     xmin=xmin+dxx
           xmax=xmax+dxx
           ! Update along Y
@@ -1312,7 +1312,7 @@ END SUBROUTINE charge_bcs
     zmin=zmin+dzz
     zmax=zmax+dzz
 
-    ! MOVE GLOBAL BOUNDARIES 
+    ! MOVE GLOBAL BOUNDARIES
     x_grid_min=x_grid_min+dxx
           x_grid_max=x_grid_max+dxx
           ! Update along Y
@@ -1322,7 +1322,7 @@ END SUBROUTINE charge_bcs
     z_grid_min=z_grid_min+dzz
     z_grid_max=z_grid_max+dzz
 
-    ! MOVE LOCAL BOUNDARIES - MPI 
+    ! MOVE LOCAL BOUNDARIES - MPI
           ! Update along X
     x_min_local=x_min_local+dxx
           x_max_local=x_max_local+dxx
@@ -1333,7 +1333,7 @@ END SUBROUTINE charge_bcs
     z_min_local=z_min_local+dzz
           z_max_local=z_max_local+dzz
 
-    ! MOVE LOCAL BOUNDARIES 
+    ! MOVE LOCAL BOUNDARIES
     x_grid_min_local=x_grid_min_local+dxx
           x_grid_max_local=x_grid_max_local+dxx
           ! Update along Y
@@ -1343,7 +1343,7 @@ END SUBROUTINE charge_bcs
     z_grid_min_local=z_grid_min_local+dzz
     z_grid_max_local=z_grid_max_local+dzz
 
-  ! MOVE TILE BOUNDARIES ALONG X,Y,Z 
+  ! MOVE TILE BOUNDARIES ALONG X,Y,Z
     DO ispecies =1, nspecies
     curr=> species_parray(ispecies)
     DO iz=1, ntilez
@@ -1369,7 +1369,7 @@ END SUBROUTINE charge_bcs
                           ! Update along Z
                           curr_tile%z_tile_min=curr_tile%z_tile_min+dzz
                           curr_tile%z_tile_max=curr_tile%z_tile_max+dzz
-                    END DO 
+                    END DO
                 END DO
           END DO
       END DO

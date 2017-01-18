@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 !
@@ -27,7 +27,7 @@
 !
 ! Brief description:
 ! File containing subroutines to manage the charge deposition.
-! These subroutines use the tiling and call the charge deposition subroutines in 
+! These subroutines use the tiling and call the charge deposition subroutines in
 ! charge_deposition_2d.F90 and charge_deposition_3d.F90.
 !
 ! List of suboutines:
@@ -152,7 +152,7 @@ SUBROUTINE pxrdepose_rho_on_grid
   ! ______________________________________
   ! Parameters
 
-! For debugging    
+! For debugging
 #if defined(DEBUG)
   WRITE(0,*) "pxrdepose_rho_on_grid: start"
 #endif
@@ -230,7 +230,7 @@ SUBROUTINE pxrdepose_rho_on_grid
   localtimes(12) = localtimes(12) + (MPI_WTIME() - tmptime)
   ENDIF
 
-! For debugging    
+! For debugging
 #if defined(DEBUG)
   WRITE(0,*) "pxrdepose_rho_on_grid: stop"
 #endif
@@ -724,7 +724,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
 !> Deposit rho in each tile in 2D
 !
 !> @details
-!> This subroutine perform the charge deposition among the tiles 
+!> This subroutine perform the charge deposition among the tiles
 !> using OpenMP version in 2D.
 !> It avoids conflict while reducing tile charge in the global charge array.
 !

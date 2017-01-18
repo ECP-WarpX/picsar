@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! FIELD_GATHERING_MANAGER.F90
 !
@@ -274,7 +274,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   IF (np .EQ. 0_idp) RETURN
 
   SELECT CASE(field_gathe_algo)
-  
+
 ! ______________________________________________________________________________
 ! Developer's functions (experimental or under development)
 #if defined(DEV)
@@ -282,7 +282,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
     ! ______________________________________
     ! Vectorized non efficient field gathering subroutines
     CASE(6)
-    
+
       IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
         !!! --- Gather electric fields on particles
         CALL geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
@@ -354,7 +354,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                      nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
       ENDIF
-  
+
     ! ______________________________________
     ! Linearized field gathering subroutines
     CASE(3)
@@ -409,7 +409,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
       CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                         dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                         bxg,byg,bzg,l_lower_order_in_v)
-                                        
+
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
       !!! --- Gather electric field on particles
       CALL gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
@@ -445,23 +445,23 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   CASE DEFAULT
 
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
-    
+
       CALL geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
-                      
+
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
-    
+
       CALL geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
-                      
+
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-    
+
       CALL geteb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
-                      
+
     ! Arbitrary order
     ELSE
       !!! --- Gather electric field on particles
@@ -474,5 +474,5 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                    nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
     ENDIF
   END SELECT
-  
+
 END SUBROUTINE

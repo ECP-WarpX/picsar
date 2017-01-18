@@ -2,24 +2,24 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
-! The Regents of the University of California, through Lawrence Berkeley National 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
+! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a paid-up, 
-! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute 
-! copies to the public, prepare derivative works, and perform publicly and display 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a paid-up,
+! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
 ! PICSAR
-! 
+!
 ! version 2.0
 ! Creation date: 09/15/2015
 !
@@ -30,7 +30,7 @@
 !  Jean-Luc Vay
 !  Guillaume Blaclard
 !
-! INCLUDES: 
+! INCLUDES:
 ! - Arbitrary order field solver (Maxwell.F90)
 ! - High order current deposition/field gathering routines (current_deposition.F90, field_gathering.F90)
 ! - MPI-domain decomposition (mpi_subtype_control.F90, mpi_routines.F90, boundary.F90)
@@ -52,15 +52,15 @@ PROGRAM main
   USE control_file
   USE time_stat
   USE diagnostics
-  
+
 ! Vtune profiling
 #if (defined(VTUNE) && VTUNE>0)
   USE ITT_FORTRAN
-#endif 
+#endif
 ! SDE profiling
 #if (defined(SDE) && SDE>0)||(defined(DFP))
-  USE SDE_FORTRAN                     
-#endif   
+  USE SDE_FORTRAN
+#endif
 
   IMPLICIT NONE
 
@@ -98,7 +98,7 @@ PROGRAM main
 ! --- allocates and inits particle distributions (on each subdomain)
   CALL initall
 
-! --- Diagnostics  
+! --- Diagnostics
   CALL init_diags
 
 ! Intel Design Forward project

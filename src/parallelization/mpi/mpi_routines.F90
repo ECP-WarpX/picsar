@@ -1,21 +1,21 @@
 ! ______________________________________________________________________________
-! 
+!
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! MPI_ROUTINES.F90
@@ -50,7 +50,7 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
   !> @brief
   !> This subroutine performs a minimal initialization for MPI.
-  !> It calls the MPI init subroutine and determine the ranks 
+  !> It calls the MPI init subroutine and determine the ranks
   !> and the number of processes.
   !
   !> @author
@@ -62,7 +62,7 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
-  
+
     !print*,'start mpi_minimal_init()'
     !print*,'MPI_INITIALIZED'
     CALL MPI_INITIALIZED(isinitialized,errcode)
@@ -78,7 +78,7 @@ MODULE mpi_routines
     nproc=INT(nproc_comm,idp)
     !print*,'MPI_COMM_RANK'
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-    rank=INT(rank_in_comm,idp)        
+    rank=INT(rank_in_comm,idp)
     !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
 
@@ -95,26 +95,26 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
-    INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in 
-  
+    INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in
+
     CALL MPI_INITIALIZED(isinitialized,errcode)
     IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
-    IF (present(comm_in) .AND. comm_in .GE. 0) THEN 
-      CALL MPI_COMM_DUP(INT(comm_in,isp), comm, errcode)      
+    IF (present(comm_in) .AND. comm_in .GE. 0) THEN
+      CALL MPI_COMM_DUP(INT(comm_in,isp), comm, errcode)
     ELSE
       CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
     ENDIF
     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
     nproc=INT(nproc_comm,idp)
-    
+
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
-    rank=INT(rank_in_comm,idp)        
+    rank=INT(rank_in_comm,idp)
 
   END SUBROUTINE mpi_minimal_init_python
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This subroutine creates the MPI process decomposition 
+  !> This subroutine creates the MPI process decomposition
   !> according to the specified topology and compite the related parameters.
   !
   !> @author
@@ -125,9 +125,9 @@ MODULE mpi_routines
   !> Creation 2015
   !>
   !> Modification:
-  !> Mathieu Lobet - March 2016: implementation of a random and home-made cartesian 
-  !>                             topology for efficiency comparison with the MPI 
-  !>                             Cartesian topology. 
+  !> Mathieu Lobet - March 2016: implementation of a random and home-made cartesian
+  !>                             topology for efficiency comparison with the MPI
+  !>                             Cartesian topology.
   SUBROUTINE setup_communicator
   ! ____________________________________________________________________________
 
@@ -203,7 +203,7 @@ MODULE mpi_routines
 
     periods = .FALSE.
     reorder = .TRUE.
-  
+
     ! Random topology ----------------------------------------
     IF (topology == 2) THEN
 
@@ -212,18 +212,18 @@ MODULE mpi_routines
       ENDIF
 
       allocate(topo_array(0:nprocx-1,0:nprocy-1,0:nprocz-1))
-    
+
       IF (rank.EQ.0) THEN
-      
+
         ! Creation of a random array for the topology
         DO iz=0,nprocz-1
           DO iy=0,nprocy-1
             DO ix=0,nprocx-1
-              topo_array(ix,iy,iz) = INT(ix + (iy)*nprocx + (iz)*nprocy*nprocx,idp) 
+              topo_array(ix,iy,iz) = INT(ix + (iy)*nprocx + (iz)*nprocy*nprocx,idp)
               !print*, ix + (iy)*nprocx + (iz)*nprocy*nprocx
             ENDDO
           ENDDO
-        ENDDO            
+        ENDDO
         DO iz =0,nprocz-1
           DO iy=0,nprocy-1
             DO ix=0,nprocx-1
@@ -240,28 +240,28 @@ MODULE mpi_routines
             ENDDO
           ENDDO
         ENDDO
-      
+
         !print*, 'rank',rank,'topo_array',topo_array
-      
+
       ENDIF
-      
+
       ! Sharing of the topology
       CALL MPI_BCAST(topo_array,INT(nprocx*nprocy*nprocz,isp),MPI_INTEGER8,0_isp,comm,errcode)
-      
+
       !IF (rank==3) print*, 'rank',rank,'topo_array',topo_array
-      
+
       ! Each processor determine their coordinates
       DO iz =0,nprocz-1
         DO iy=0,nprocy-1
-          DO ix=0,nprocx-1      
+          DO ix=0,nprocx-1
 
             IF (rank .EQ. topo_array(ix,iy,iz)) THEN
-            
+
               x_coords = ix
               y_coords = iy
               z_coords = iz
-            
-            ENDIF     
+
+            ENDIF
 
           ENDDO
         ENDDO
@@ -271,7 +271,7 @@ MODULE mpi_routines
       x_max_boundary = .FALSE.
       IF (x_coords .EQ. 0) x_min_boundary = .TRUE.
       IF (x_coords .EQ. nprocx - 1) x_max_boundary = .TRUE.
-      
+
       y_min_boundary = .FALSE.
       y_max_boundary = .FALSE.
       IF (y_coords .EQ. 0) y_min_boundary = .TRUE.
@@ -280,71 +280,71 @@ MODULE mpi_routines
       z_min_boundary = .FALSE.
       z_max_boundary = .FALSE.
       IF (z_coords .EQ. 0) z_min_boundary = .TRUE.
-      IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.   
+      IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.
 
-      neighbour = MPI_PROC_NULL     
+      neighbour = MPI_PROC_NULL
       DO iz = -1, 1
         DO iy = -1, 1
           DO ix = -1, 1
-          
-            IF (x_coords + ix .LT. 0) THEN            
-              x_coords_neight = x_coords + nprocx-1           
-            ELSE IF (x_coords + ix .GT. nprocx-1) THEN              
+
+            IF (x_coords + ix .LT. 0) THEN
+              x_coords_neight = x_coords + nprocx-1
+            ELSE IF (x_coords + ix .GT. nprocx-1) THEN
               x_coords_neight = x_coords - (nprocx-1)
             ELSE
-              x_coords_neight = x_coords + ix          
-            END IF 
-
-            IF (y_coords + iy .LT. 0) THEN            
-              y_coords_neight = y_coords + nprocy-1           
-            ELSE IF (y_coords + iy .GT. nprocy-1) THEN              
-              y_coords_neight = y_coords - (nprocy-1) 
-            ELSE
-              y_coords_neight = y_coords + iy             
+              x_coords_neight = x_coords + ix
             END IF
-            
-            IF (z_coords + iz .LT. 0) THEN            
-              z_coords_neight = z_coords + nprocz-1           
-            ELSE IF (z_coords + iz .GT. nprocz-1) THEN              
-              z_coords_neight = z_coords - (nprocz-1)  
+
+            IF (y_coords + iy .LT. 0) THEN
+              y_coords_neight = y_coords + nprocy-1
+            ELSE IF (y_coords + iy .GT. nprocy-1) THEN
+              y_coords_neight = y_coords - (nprocy-1)
             ELSE
-              z_coords_neight = z_coords + iz                              
-            END IF            
-                 
+              y_coords_neight = y_coords + iy
+            END IF
+
+            IF (z_coords + iz .LT. 0) THEN
+              z_coords_neight = z_coords + nprocz-1
+            ELSE IF (z_coords + iz .GT. nprocz-1) THEN
+              z_coords_neight = z_coords - (nprocz-1)
+            ELSE
+              z_coords_neight = z_coords + iz
+            END IF
+
             neighbour(ix,iy,iz) = topo_array(x_coords_neight,y_coords_neight,z_coords_neight)
-                                
-           !print*,'rank',rank, ix,iy,iz, neighbour(ix,iy,iz) 
-            
+
+           !print*,'rank',rank, ix,iy,iz, neighbour(ix,iy,iz)
+
           ENDDO
         ENDDO
-      ENDDO  
+      ENDDO
 
-      proc_x_max = neighbour(1,0,0)            
+      proc_x_max = neighbour(1,0,0)
       proc_x_min = neighbour(-1,0,0)
-      proc_y_max = neighbour(0,1,0)            
-      proc_y_min = neighbour(0,-1,0) 
-      proc_z_max = neighbour(0,0,1)            
-      proc_z_min = neighbour(0,0,-1)  
-    
+      proc_y_max = neighbour(0,1,0)
+      proc_y_min = neighbour(0,-1,0)
+      proc_z_max = neighbour(0,0,1)
+      proc_z_min = neighbour(0,0,-1)
+
     ! Topology - processors are ordered according to their ranks ---------------
     ELSE IF (topology == 1) THEN
 
       IF (rank .EQ. 0) THEN
         WRITE(0,*) 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
       ENDIF
-    
+
       ! We first fill the x direction, then y and finally z
       x_coords = MOD(rank,nprocx)
       y_coords = MOD((rank-x_coords)/nprocx,nprocy)
       z_coords = (rank-x_coords - y_coords*nprocx)/(nprocx*nprocy)
-      
+
       !print*,'rank:',rank,rankyz,x_coords,y_coords,z_coords
-         
+
       x_min_boundary = .FALSE.
       x_max_boundary = .FALSE.
       IF (x_coords .EQ. 0) x_min_boundary = .TRUE.
       IF (x_coords .EQ. nprocx - 1) x_max_boundary = .TRUE.
-      
+
       y_min_boundary = .FALSE.
       y_max_boundary = .FALSE.
       IF (y_coords .EQ. 0) y_min_boundary = .TRUE.
@@ -353,65 +353,65 @@ MODULE mpi_routines
       z_min_boundary = .FALSE.
       z_max_boundary = .FALSE.
       IF (z_coords .EQ. 0) z_min_boundary = .TRUE.
-      IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.      
+      IF (z_coords .EQ. nprocz - 1) z_max_boundary = .TRUE.
 
-      neighbour = MPI_PROC_NULL     
+      neighbour = MPI_PROC_NULL
       DO iz = -1, 1
         DO iy = -1, 1
           DO ix = -1, 1
-          
-            IF (x_coords + ix .LT. 0) THEN            
-              x_coords_neight = x_coords + nprocx-1           
-            ELSE IF (x_coords + ix .GT. nprocx-1) THEN              
+
+            IF (x_coords + ix .LT. 0) THEN
+              x_coords_neight = x_coords + nprocx-1
+            ELSE IF (x_coords + ix .GT. nprocx-1) THEN
               x_coords_neight = x_coords - (nprocx-1)
             ELSE
-              x_coords_neight = x_coords + ix          
-            END IF 
-
-            IF (y_coords + iy .LT. 0) THEN            
-              y_coords_neight = y_coords + nprocy-1           
-            ELSE IF (y_coords + iy .GT. nprocy-1) THEN              
-              y_coords_neight = y_coords - (nprocy-1) 
-            ELSE
-              y_coords_neight = y_coords + iy             
+              x_coords_neight = x_coords + ix
             END IF
-            
-            IF (z_coords + iz .LT. 0) THEN            
-              z_coords_neight = z_coords + nprocz-1           
-            ELSE IF (z_coords + iz .GT. nprocz-1) THEN              
-              z_coords_neight = z_coords - (nprocz-1)  
+
+            IF (y_coords + iy .LT. 0) THEN
+              y_coords_neight = y_coords + nprocy-1
+            ELSE IF (y_coords + iy .GT. nprocy-1) THEN
+              y_coords_neight = y_coords - (nprocy-1)
             ELSE
-              z_coords_neight = z_coords + iz                              
-            END IF            
-                 
+              y_coords_neight = y_coords + iy
+            END IF
+
+            IF (z_coords + iz .LT. 0) THEN
+              z_coords_neight = z_coords + nprocz-1
+            ELSE IF (z_coords + iz .GT. nprocz-1) THEN
+              z_coords_neight = z_coords - (nprocz-1)
+            ELSE
+              z_coords_neight = z_coords + iz
+            END IF
+
             neighbour(ix,iy,iz) = x_coords_neight + (nprocx)*(y_coords_neight) &
                                 + (nprocx*nprocy)*(z_coords_neight)
-                                
-           print*,'rank',rank, ix,iy,iz, neighbour(ix,iy,iz) 
-            
+
+           print*,'rank',rank, ix,iy,iz, neighbour(ix,iy,iz)
+
           ENDDO
         ENDDO
-      ENDDO  
+      ENDDO
 
-      proc_x_max = neighbour(1,0,0)            
+      proc_x_max = neighbour(1,0,0)
       proc_x_min = neighbour(-1,0,0)
-      proc_y_max = neighbour(0,1,0)            
-      proc_y_min = neighbour(0,-1,0) 
-      proc_z_max = neighbour(0,0,1)            
-      proc_z_min = neighbour(0,0,-1)     
-          
+      proc_y_max = neighbour(0,1,0)
+      proc_y_min = neighbour(0,-1,0)
+      proc_z_max = neighbour(0,0,1)
+      proc_z_min = neighbour(0,0,-1)
+
     ! Default topology - Cartesian topology
     ELSE
-       ! Set boundary to be periodic in x,y,z for particles and fields by default 
+       ! Set boundary to be periodic in x,y,z for particles and fields by default
        periods(c_ndims) = .TRUE.
        periods(c_ndims-1) = .TRUE.
        periods(c_ndims-2) = .TRUE.
-       
+
       ! Create an array of rank corresponding to the current topology
       !ALLOCATE(rank_array(nprocs))
       old_rank = rank
       !old_rank_array(old_rank) = rank
-        
+
       ! Creation of a Cartesian topology by using the original communicator
     old_comm = comm
     CALL MPI_CART_CREATE(old_comm, ndims, dims, periods, reorder, comm, errcode)
@@ -435,12 +435,12 @@ MODULE mpi_routines
         WRITE(0,*) 'Cartesian topology'
         WRITE(0,*) 'Processor subdivision is ', (/nprocx, nprocy, nprocz/)
         WRITE(0,*)
-      ENDIF 
+      ENDIF
 
       ! ------------------------------------------------------------
       ! Checking of the new topology
       CALL MPI_BARRIER(comm,errcode)
-      new_rank = rank     
+      new_rank = rank
       !new_rank_array(old_rank) = rank
       !IF (new_rank.NE.old_rank) WRITE(0,'(A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
       !WRITE(0,'(X,A,I5,A,I5)') 'Rank switched from ',old_rank,' to ',new_rank
@@ -495,7 +495,7 @@ MODULE mpi_routines
           ENDDO
         ENDDO
       ENDDO
-      
+
     ENDIF
 
   END SUBROUTINE setup_communicator
@@ -503,7 +503,7 @@ MODULE mpi_routines
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This subroutine computes the space domain decomposition and 
+  !> This subroutine computes the space domain decomposition and
   !> related parameters for each MPI process.
   !
   !> @author
@@ -521,7 +521,7 @@ MODULE mpi_routines
     INTEGER(isp) :: nz0, nzp
 
     ! Init number of guard cells of subdomains in each dimension
-    
+
     IF (l_smooth_compensate) THEN
         nxguards = nxguards + 1
         nyguards = nyguards + 1
@@ -537,9 +537,9 @@ MODULE mpi_routines
     ALLOCATE(cell_y_min(1:nprocy), cell_y_max(1:nprocy))
     ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
-  ! Split is done on the total number of cells as in WARP 
-  ! Initial WARP split is used with each processor boundary 
-  ! being shared by two adjacent MPI processes 
+  ! Split is done on the total number of cells as in WARP
+  ! Initial WARP split is used with each processor boundary
+  ! being shared by two adjacent MPI processes
     nx0 = nx_global / nprocx
     ny0 = ny_global / nprocy
     nz0 = nz_global / nprocz
@@ -619,8 +619,8 @@ MODULE mpi_routines
     nx=nx_grid-1
     ny=ny_grid-1
     nz=nz_grid-1
-    
-    
+
+
     !!! --- Set up global grid limits
     length_x = xmax - xmin
     dx = length_x / REAL(nx_global, num)
@@ -656,12 +656,12 @@ MODULE mpi_routines
 
     CALL allocate_grid_quantities()
     start_time = MPI_WTIME()
-    
+
   END SUBROUTINE mpi_initialise
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This subroutine allocates and computes the MPI process local and global 
+  !> This subroutine allocates and computes the MPI process local and global
   !> grid minima and maxima.
   !
   !> This subroutine is called in mpi_initialise().
@@ -674,9 +674,9 @@ MODULE mpi_routines
   SUBROUTINE compute_simulation_axis()
   ! ____________________________________________________________________________
     IMPLICIT NONE
-    INTEGER(idp) :: ix, iy, iz, iproc 
-    
-    IF (.NOT. l_axis_allocated) THEN 
+    INTEGER(idp) :: ix, iy, iz, iproc
+
+    IF (.NOT. l_axis_allocated) THEN
       ! Allocate arrays of axis
       ALLOCATE(x(-nxguards:nx+nxguards))
       ALLOCATE(y(-nyguards:ny+nyguards))
@@ -711,12 +711,12 @@ MODULE mpi_routines
         z_grid_mins(iproc) = z_global(cell_z_min(iproc))
         z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
     ENDDO
-    
+
   END SUBROUTINE
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This subroutine allocates grid quantities such as fields, currents, charge 
+  !> This subroutine allocates grid quantities such as fields, currents, charge
   !> and electric field divergence.
   !
   !> This subroutine is called at the end of mpi_initialise().
@@ -728,7 +728,7 @@ MODULE mpi_routines
   !> Creation 2015
   SUBROUTINE allocate_grid_quantities()
   ! ____________________________________________________________________________
-  
+
       ! --- Allocate grid quantities
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -741,12 +741,12 @@ MODULE mpi_routines
     ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ! --- Quantities used by the dynamic load balancer 
+    ! --- Quantities used by the dynamic load balancer
     ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
     ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
     ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
-  END SUBROUTINE 
-  
+  END SUBROUTINE
+
   ! ____________________________________________________________________________
   !> This subroutine finalizes MPI with some time information.
   !
@@ -775,7 +775,7 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
   !> @brief
   !> Subroutine dedicated to the time report at the end of the simulation.
-  !> This subroutines gathers time statistics from all processes and print a summary 
+  !> This subroutines gathers time statistics from all processes and print a summary
   !> of the time spent in each important step of the main PIC loop.
   !
   !> @author
@@ -787,38 +787,38 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
     USE time_stat
     USE params
-    USE omp_lib 
+    USE omp_lib
     IMPLICIT NONE
-        
+
     REAL(num), DIMENSION(20) :: mintimes, init_mintimes
     REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
     REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
     INTEGER(idp)             :: nthreads_tot
-    
+
     ! Total times
     localtimes(20) = sum(localtimes(1:14))
     localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
                      localtimes(8) + localtimes(11) + localtimes(13)
-    localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)                 
-    
+    localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)
+
     init_localtimes(5) = sum(init_localtimes(1:4))
-    
+
     ! Reductions
     ! Maximun times
     CALL MPI_REDUCE(localtimes,maxtimes,20_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)    
+    CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     ! Minimum times
     CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)    
+    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     ! Average
     CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)    
+    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     avetimes = avetimes / nproc
-   
-    ! Percentage 
+
+    ! Percentage
     percenttimes = avetimes / avetimes(20) * 100
-     
+
     IF (rank .EQ. 0) THEN
       WRITE(0,*) '___________________________________________________________________________'
       WRITE(0,'(X,A40,X)') "Time statistics Initialization:"
@@ -837,14 +837,14 @@ MODULE mpi_routines
         percenttimes(1), avetimes(1)/nsteps*1e3
       ELSE
         WRITE(0,'(X,A25,5(X,F8.2))') "Field gathering:",mintimes(14), avetimes(14), maxtimes(14),&
-        percenttimes(14), avetimes(14)/nsteps*1e3    
+        percenttimes(14), avetimes(14)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
         percenttimes(1), avetimes(1)/nsteps*1e3
       ENDIF
       WRITE(0,'(X,A25,5(X,F8.2))') "Particle MPI bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
       percenttimes(2), avetimes(2)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), avetimes(11), maxtimes(11),&
-      percenttimes(11), avetimes(11)/nsteps*1e3    
+      percenttimes(11), avetimes(11)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Current deposition:", mintimes(3), avetimes(3), maxtimes(3),&
       percenttimes(3), avetimes(3)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Current bound. cond.:", mintimes(4), avetimes(4), maxtimes(4),&
@@ -858,22 +858,22 @@ MODULE mpi_routines
       WRITE(0,'(X,A25,5(X,F8.2))') "E field bound. cond.:",mintimes(8), avetimes(8), maxtimes(8),&
       percenttimes(8), avetimes(8)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Sorting:",mintimes(10), avetimes(10), maxtimes(10),&
-      percenttimes(10), avetimes(10)/nsteps*1e3    
+      percenttimes(10), avetimes(10)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Charge deposition:", mintimes(12), avetimes(12), maxtimes(12),&
-      percenttimes(12), avetimes(12)/nsteps*1e3     
+      percenttimes(12), avetimes(12)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Charge bound. cond.:", mintimes(13), avetimes(13), maxtimes(13),&
-      percenttimes(13), avetimes(13)/nsteps*1e3          
+      percenttimes(13), avetimes(13)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Diags:",mintimes(9), avetimes(9), maxtimes(9),&
       percenttimes(9), avetimes(9)/nsteps*1e3
-    
+
       WRITE(0,*) ""
       WRITE(0,'(X,A25,5(X,F8.2))') "Total time Maxwell solver:",mintimes(18), avetimes(18), maxtimes(18), &
-      percenttimes(18), avetimes(18)/nsteps*1e3    
+      percenttimes(18), avetimes(18)/nsteps*1e3
       WRITE(0,'(X,A25,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
       percenttimes(19), avetimes(19)/nsteps*1e3
       WRITE(0,'(X,A25,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
 
-  
+
 #ifdef _OPENMP
   nthreads_tot=OMP_GET_MAX_THREADS()
   CALL OMP_SET_NESTED(.TRUE.)
@@ -882,8 +882,8 @@ MODULE mpi_routines
 #endif
 
       WRITE(0,*) ''
-      IF (fg_p_pp_separated.le.1) THEN    
-        WRITE(0,*) 'For lib_performance python class:' 
+      IF (fg_p_pp_separated.le.1) THEN
+        WRITE(0,*) 'For lib_performance python class:'
         WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",part_mpi_com=",F6.2,&
         ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
         ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")')&
@@ -892,7 +892,7 @@ MODULE mpi_routines
         avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
         avetimes(12),avetimes(13),avetimes(9)
       ELSE
-        WRITE(0,*) 'For lib_performance python class:' 
+        WRITE(0,*) 'For lib_performance python class:'
         WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",partpusher=",F6.2,",part_mpi_com=",F6.2,&
         ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
         ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
@@ -902,17 +902,17 @@ MODULE mpi_routines
         avetimes(12),avetimes(13),avetimes(9)
       ENDIF
 
-    ENDIF    
-  
+    ENDIF
+
   END SUBROUTINE
 
   ! ____________________________________________________________________________
   !> @brief
   !> Subroutine dedicated to the time statistics for one iteration
-  ! 
-  !> This subroutine prints time statistics during the simulation 
+  !
+  !> This subroutine prints time statistics during the simulation
   !> every iterations if timestat_perit > 0.
-  !>  
+  !>
   !
   !> @author
   !> Mathieu Lobet
@@ -924,9 +924,9 @@ MODULE mpi_routines
 
     USE time_stat
     USE params
-    USE omp_lib 
+    USE omp_lib
     IMPLICIT NONE
-        
+
     REAL(num), DIMENSION(20) :: mintimes, init_mintimes
     REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
     REAL(num), DIMENSION(20) :: avetimes, init_avetimes
@@ -940,22 +940,22 @@ MODULE mpi_routines
       localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
                        localtimes(8) + localtimes(11) + localtimes(13)
       localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)
-    
+
       init_localtimes(5) = sum(init_localtimes(1:4))
-    
+
       ! Reductions
       ! Maximun times
       CALL MPI_REDUCE(localtimes,maxtimes,20_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
-      CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)    
+      CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
       ! Minimum times
       CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
-      CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)    
+      CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
       ! Average
       CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
-      CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)    
+      CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
       avetimes = avetimes / nproc
-   
-      ! Percentage 
+
+      ! Percentage
       percenttimes = avetimes / avetimes(20) * 100
 
       IF (rank .EQ. 0) THEN
@@ -967,14 +967,14 @@ MODULE mpi_routines
           percenttimes(1), avetimes(1)/nsteps*1e3
         ELSE
           WRITE(0,'(X,A25,5(X,F8.2))') "Field gathering:",mintimes(14), avetimes(14), maxtimes(14),&
-          percenttimes(14), avetimes(14)/nsteps*1e3    
+          percenttimes(14), avetimes(14)/nsteps*1e3
           WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
           percenttimes(1), avetimes(1)/nsteps*1e3
         ENDIF
         WRITE(0,'(X,A25,5(X,F8.2))') "Particle MPI bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
         percenttimes(2), avetimes(2)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), avetimes(11), maxtimes(11),&
-        percenttimes(11), avetimes(11)/nsteps*1e3    
+        percenttimes(11), avetimes(11)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Current deposition:", mintimes(3), avetimes(3), maxtimes(3),&
         percenttimes(3), avetimes(3)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Current bound. cond.:", mintimes(4), avetimes(4), maxtimes(4),&
@@ -988,22 +988,22 @@ MODULE mpi_routines
         WRITE(0,'(X,A25,5(X,F8.2))') "E field bound. cond.:",mintimes(8), avetimes(8), maxtimes(8),&
         percenttimes(8), avetimes(8)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Sorting:",mintimes(10), avetimes(10), maxtimes(10),&
-        percenttimes(10), avetimes(10)/nsteps*1e3    
+        percenttimes(10), avetimes(10)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Charge deposition:", mintimes(12), avetimes(12), maxtimes(12),&
-        percenttimes(12), avetimes(12)/nsteps*1e3     
+        percenttimes(12), avetimes(12)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Charge bound. cond.:", mintimes(13), avetimes(13), maxtimes(13),&
-        percenttimes(13), avetimes(13)/nsteps*1e3          
+        percenttimes(13), avetimes(13)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Diags:",mintimes(9), avetimes(9), maxtimes(9),&
         percenttimes(9), avetimes(9)/nsteps*1e3
-    
+
         WRITE(0,*) ""
         WRITE(0,'(X,A25,5(X,F8.2))') "Total time Maxwell solver:",mintimes(18), avetimes(18), maxtimes(18), &
-        percenttimes(18), avetimes(18)/nsteps*1e3    
+        percenttimes(18), avetimes(18)/nsteps*1e3
         WRITE(0,'(X,A25,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
         percenttimes(19), avetimes(19)/nsteps*1e3
         WRITE(0,'(X,A25,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
       ENDIF
-      
+
     ENDIF
 
   END SUBROUTINE

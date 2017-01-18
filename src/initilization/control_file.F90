@@ -2,25 +2,25 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
-! The Regents of the University of California, through Lawrence Berkeley National 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
+! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a paid-up, 
-! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute 
-! copies to the public, prepare derivative works, and perform publicly and display 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a paid-up,
+! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
 ! CONTROL_FILE.F90
 !
-! This file contains subroutines for reading input files and interpreting 
+! This file contains subroutines for reading input files and interpreting
 ! command line arguments.
 !
 ! Author
@@ -34,14 +34,14 @@
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Module containing routines for the default initialization, for reading 
+!> Module containing routines for the default initialization, for reading
 !> the input file and the command line arguments.
 !
 !> @author
 !> Henri Vincenti,
 !> Mathieu Lobet
 !
-!> @date 
+!> @date
 !> 2015-2016
 !
 MODULE control_file
@@ -74,10 +74,10 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE default_init
     ! ____________________________________________________________________________________
-    
+
         ! --- Dimension
         c_dim = 3
-    
+
         ! --- Init particle tiling split
         ntilex = 1
         ntiley = 1
@@ -88,7 +88,7 @@ MODULE control_file
         nordery = 2
         norderz = 2
         l_nodalgrid = .FALSE.
-        ! --- Order of current deposition/ field gathering 
+        ! --- Order of current deposition/ field gathering
         ! (default is 2 in x,y,z)
         nox = 1
         noy = 1
@@ -99,44 +99,44 @@ MODULE control_file
         nxjguards=MAX(nox,2_idp)
         nyjguards=MAX(noy,2_idp)
         nzjguards=MAX(noz,2_idp)
-        
+
         ! Topology
         topology = 0
-        
+
         ! MPI communication
         mpicom_curr = 1
-        
+
         ! Current deposition algorithm
         currdepo = 0
-        
+
         ! Charge deposition algorithm
         rhodepo = 0
-        
-        ! Field gathering algorithm 
+
+        ! Field gathering algorithm
         fieldgathe = 0
-        
+
         ! Particle communication routine
         partcom = 0
-        
+
         ! Particle pusher algorithm
         particle_pusher = 0
-        
+
         ! Field gathering + part. pusher
         fg_p_pp_separated = 0
-        
+
         ! Vector length current deposition
         lvec_curr_depo = 8
 
-        ! Vector length charge deposition        
+        ! Vector length charge deposition
         LVEC_charge_depo = 64
-        
+
         ! Vector length field gathering
         LVEC_fieldgathe = 256
-        
+
         ! Size of the particle mpi buffer
         mpi_buf_size = 2000
-        
-        ! Sorting activation (not activated by default)       
+
+        ! Sorting activation (not activated by default)
         sorting_activated = 0
         sorting_dx = 1.
         sorting_dy = 1.
@@ -145,14 +145,14 @@ MODULE control_file
         sorting_shifty = 0.
         sorting_shiftz = 0.
         sorting_verbose = .TRUE.
-         
-        ! Time stats output activation 
+
+        ! Time stats output activation
         timestat_activated = 0
         timestat_period = 0
         timestat_itstart = 0
         timestat_perit = 0
         nbuffertimestat = 1
-        
+
         l_lower_order_in_v = .TRUE.
 
         ! --- sets coefficient multiplying Courant time step
@@ -181,9 +181,9 @@ MODULE control_file
         ! --- Init number of species
         nspecies=0
 
-        ! --- Init number of particle dumps 
+        ! --- Init number of particle dumps
         npdumps = 0
-        
+
         ! --- Particle distribution
         pdistr=1
         ! Init species array
@@ -192,7 +192,7 @@ MODULE control_file
             ALLOCATE(species_parray(1:nspecies_max))
             l_species_allocated=.TRUE.
         ENDIF
-    
+
         ! Particle boundaries (0 - periodic by default)
         pbound_x_min=0
         pbound_y_min=0
@@ -200,7 +200,7 @@ MODULE control_file
         pbound_x_max=0
         pbound_y_max=0
         pbound_z_max=0
-        
+
         ! Temporal output
         temdiag_frequency = 0
         temdiag_format = 0
@@ -244,7 +244,7 @@ MODULE control_file
                 READ(buffer, '(i10)') nprocy
             ELSE IF (INDEX(buffer,'nprocz') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, '(i10)') nprocz  
+                READ(buffer, '(i10)') nprocz
             ELSE IF (INDEX(buffer,'nox') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, '(i10)') nox
@@ -253,31 +253,31 @@ MODULE control_file
                 READ(buffer, '(i10)') noy
             ELSE IF (INDEX(buffer,'noz') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, '(i10)') noz                  
+                READ(buffer, '(i10)') noz
             ELSE IF (INDEX(buffer,'tmax') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) tmax   
+                READ(buffer, *) tmax
             ELSE IF (INDEX(buffer,'dtcoef') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) dtcoef                 
+                READ(buffer, *) dtcoef
             ELSE IF (INDEX(buffer,'nx') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) nx_global_grid   
+                READ(buffer, *) nx_global_grid
             ELSE IF (INDEX(buffer,'ny') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) ny_global_grid   
+                READ(buffer, *) ny_global_grid
             ELSE IF (INDEX(buffer,'nz') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) nz_global_grid   
+                READ(buffer, *) nz_global_grid
             ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) fieldgathe   
+                READ(buffer, *) fieldgathe
             ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) currdepo 
+                READ(buffer, *) currdepo
             ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) rhodepo                 
+                READ(buffer, *) rhodepo
             ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) partcom
@@ -286,25 +286,25 @@ MODULE control_file
                 READ(buffer, *) particle_pusher
             ELSE IF (INDEX(buffer,'sorting') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) sorting_activated     
+                READ(buffer, *) sorting_activated
             ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) lvec_curr_depo      
+                READ(buffer, *) lvec_curr_depo
             ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) lvec_charge_depo
             ELSE IF (INDEX(buffer,'lvec_fieldgathe') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) lvec_fieldgathe   
+                READ(buffer, *) lvec_fieldgathe
             ELSE IF (INDEX(buffer,'mpicom_curr') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) mpicom_curr     
+                READ(buffer, *) mpicom_curr
             ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) mpi_buf_size
             ELSE IF (INDEX(buffer,'c_dim') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
-                READ(buffer, *) c_dim                  
+                READ(buffer, *) c_dim
             END IF
         END DO
         RETURN
@@ -343,11 +343,11 @@ MODULE control_file
                     CALL read_plasma_section
                 CASE('section::temporal')
                     CALL read_temporal_output_section
-                CASE('section::solver')                    
+                CASE('section::solver')
                     CALL read_solver_section
-                CASE('section::timestat')                     
+                CASE('section::timestat')
                     CALL read_timestat_section
-                CASE('section::sorting')      
+                CASE('section::sorting')
                     CALL read_sorting_section
                 CASE('section::particle_dump')
                     CALL read_particle_dumps_section
@@ -368,7 +368,7 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE read_cpusplit_section
     ! ____________________________________________________________________________________
-    
+
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -377,7 +377,7 @@ MODULE control_file
             !WRITE(0,*),TRIM(ADJUSTL(buffer))
             IF (INDEX(buffer,'#') .GT. 0) THEN
                CYCLE
-            ENDIF             
+            ENDIF
             IF (INDEX(buffer,'nprocx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nprocx
@@ -404,7 +404,7 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') particle_pusher
             ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo 
+                READ(buffer(ix+1:string_length), '(i10)') lvec_curr_depo
             ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') lvec_charge_depo
@@ -435,7 +435,7 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE read_plasma_section
     ! ____________________________________________________________________________________
-    
+
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -444,7 +444,7 @@ MODULE control_file
             !WRITE(0,*),TRIM(ADJUSTL(buffer))
             IF (INDEX(buffer,'#') .GT. 0) THEN
                CYCLE
-            ENDIF             
+            ENDIF
             IF (INDEX(buffer,'nlab') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) nlab
@@ -475,7 +475,7 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE read_solver_section
     ! ____________________________________________________________________________________
-    
+
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -484,7 +484,7 @@ MODULE control_file
             !WRITE(0,*),TRIM(ADJUSTL(buffer))
             IF (INDEX(buffer,'#') .GT. 0) THEN
                CYCLE
-            ENDIF             
+            ENDIF
             IF (INDEX(buffer,'norderx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') norderx
@@ -493,10 +493,10 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') nordery
             ELSE IF (INDEX(buffer,'norderz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') norderz 
+                READ(buffer(ix+1:string_length), '(i10)') norderz
             ELSE IF (INDEX(buffer,'nox') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nox  
+                READ(buffer(ix+1:string_length), '(i10)') nox
             ELSE IF (INDEX(buffer,'noy') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') noy
@@ -505,10 +505,10 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') noz
              ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') currdepo        
+                READ(buffer(ix+1:string_length), '(i10)') currdepo
              ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fieldgathe      
+                READ(buffer(ix+1:string_length), '(i10)') fieldgathe
              ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') rhodepo
@@ -517,10 +517,10 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') partcom
             ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size 
+                READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size
             ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated                                              
+                READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated
             ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -548,31 +548,31 @@ MODULE control_file
             !WRITE(0,*),TRIM(ADJUSTL(buffer))
             IF (INDEX(buffer,'#') .GT. 0) THEN
                CYCLE
-            ENDIF                 
+            ENDIF
              IF (INDEX(buffer,'activation') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') sorting_activated 
+                READ(buffer(ix+1:string_length), '(i10)') sorting_activated
              ELSE IF (INDEX(buffer,'dx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_dx 
+                READ(buffer(ix+1:string_length),*) sorting_dx
              ELSE IF (INDEX(buffer,'dy') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_dy  
+                READ(buffer(ix+1:string_length),*) sorting_dy
              ELSE IF (INDEX(buffer,'dz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_dz 
+                READ(buffer(ix+1:string_length),*) sorting_dz
              ELSE IF (INDEX(buffer,'shiftx') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_shiftx                                          
+                READ(buffer(ix+1:string_length),*) sorting_shiftx
              ELSE IF (INDEX(buffer,'shifty') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_shifty 
+                READ(buffer(ix+1:string_length),*) sorting_shifty
              ELSE IF (INDEX(buffer,'shiftz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_shiftz       
+                READ(buffer(ix+1:string_length),*) sorting_shiftz
              ELSE IF (INDEX(buffer,'verbose') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) sorting_verbose                                                                        
+                READ(buffer(ix+1:string_length),*) sorting_verbose
             ELSE IF (INDEX(buffer,'end::sorting') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -591,7 +591,7 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE read_timestat_section
     ! ____________________________________________________________________________________
-    
+
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -600,7 +600,7 @@ MODULE control_file
             !WRITE(0,*),TRIM(ADJUSTL(buffer))
             IF (INDEX(buffer,'#') .GT. 0) THEN
                CYCLE
-            ENDIF             
+            ENDIF
             IF (INDEX(buffer,'activation') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') timestat_activated
@@ -612,20 +612,20 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') timestat_itstart
             ELSE IF (INDEX(buffer,'per_it') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') timestat_perit 
+                READ(buffer(ix+1:string_length), '(i10)') timestat_perit
             ELSE IF (INDEX(buffer,'buffersize') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat 
+                READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat
             ELSE IF (INDEX(buffer,'end::timestat') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
         END DO
         RETURN
-    END SUBROUTINE read_timestat_section 
+    END SUBROUTINE read_timestat_section
 
     ! ____________________________________________________________________________________
     !> @brief
-    !> Routine that reads the general parameters including the domain extension, 
+    !> Routine that reads the general parameters including the domain extension,
     !> the discretization, the tiling, the guard cells.
     !
     !> @author
@@ -635,7 +635,7 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE read_main_section
     ! ____________________________________________________________________________________
-    
+
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section = .FALSE.
         ! READS GRID SECTION OF INPUT FILE
@@ -710,7 +710,7 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') nxguards
              ELSE IF (INDEX(buffer,'nguardsy') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nyguards   
+                READ(buffer(ix+1:string_length), '(i10)') nyguards
             ELSE IF (INDEX(buffer,'nguardsz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nzguards
@@ -719,7 +719,7 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') nxjguards
              ELSE IF (INDEX(buffer,'njguardsy') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') nyjguards   
+                READ(buffer(ix+1:string_length), '(i10)') nyjguards
             ELSE IF (INDEX(buffer,'njguardsz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nzjguards
@@ -741,7 +741,7 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE read_species_section
     ! ____________________________________________________________________________________
-    
+
         INTEGER :: ix = 0
         LOGICAL(lp)  :: end_section
         TYPE(particle_species), POINTER :: curr
@@ -837,10 +837,10 @@ MODULE control_file
                 curr%vth_z=curr%vth_z*clight
             ELSE IF (INDEX(buffer,'sorting_period') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), *) curr%sorting_period 
+                READ(buffer(ix+1:string_length), *) curr%sorting_period
             ELSE IF (INDEX(buffer,'sorting_start') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), *) curr%sorting_start                           
+                READ(buffer(ix+1:string_length), *) curr%sorting_start
             ELSE IF (INDEX(buffer,'end::species') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -859,7 +859,7 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE read_particle_dumps_section
     ! ____________________________________________________________________________________
-    
+
         INTEGER                      :: ix = 0, ispecies
         LOGICAL(lp)                       :: end_section
         TYPE(particle_dump), POINTER :: dp
@@ -869,10 +869,10 @@ MODULE control_file
             npdumps=0
             ALLOCATE(particle_dumps(1:nspecies_max))
             l_pdumps_allocated=.TRUE.
-        ENDIF        
+        ENDIF
         npdumps=npdumps+1
         dp => particle_dumps(npdumps)
-        ! minimal init for filter attributes 
+        ! minimal init for filter attributes
         dp%ispecies   = -1
         dp%dump_x_min = xmin
         dp%dump_x_max = xmax
@@ -904,12 +904,12 @@ MODULE control_file
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) dump_name
                 DO ispecies=1,nspecies
-                    IF (INDEX(dump_name,species_parray(ispecies)%name) .GT. 0) THEN 
+                    IF (INDEX(dump_name,species_parray(ispecies)%name) .GT. 0) THEN
                         dp%ispecies=ispecies
                         EXIT
-                    ENDIF 
+                    ENDIF
                 END DO
-                IF (dp%ispecies .EQ. -1) THEN 
+                IF (dp%ispecies .EQ. -1) THEN
                     WRITE(0,*) "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
 
                 ENDIF
@@ -942,10 +942,10 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), *) dp%dump_uz_min
             ELSEIF (INDEX(buffer,'dump_uz_max') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),*) dp%dump_uz_max      
+                READ(buffer(ix+1:string_length),*) dp%dump_uz_max
             ELSEIF (INDEX(buffer,'diag_period') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length),'(i10)') dp%diag_period                   
+                READ(buffer(ix+1:string_length),'(i10)') dp%diag_period
             ELSE IF (INDEX(buffer,'end::particle_dump') .GT. 0) THEN
                 end_section =.TRUE.
             END IF
@@ -1025,8 +1025,8 @@ MODULE control_file
 
     ! ____________________________________________________________________________________
     !> @brief
-    !> Routine that reads parameters for temporal diagnistics. 
-    !> Temporal diagnostics are the temporal evolution of some quantities 
+    !> Routine that reads parameters for temporal diagnistics.
+    !> Temporal diagnostics are the temporal evolution of some quantities
     !> such as the particle energies and the field energies.
     !
     !> @author
@@ -1037,7 +1037,7 @@ MODULE control_file
     SUBROUTINE read_temporal_output_section
     ! ____________________________________________________________________________________
         INTEGER :: ix = 0
-        LOGICAL(lp)  :: end_section = .FALSE.    
+        LOGICAL(lp)  :: end_section = .FALSE.
 
         DO WHILE((.NOT. end_section) .AND. (ios==0))
             READ(fh_input, '(A)', iostat=ios) buffer
@@ -1050,28 +1050,28 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') temdiag_frequency
             ELSE IF (INDEX(buffer,'format') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_format     
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_format
             ELSE IF (INDEX(buffer,'kinE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(1) 
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(1)
             ELSE IF (INDEX(buffer,'exE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(2)  
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(2)
             ELSE IF (INDEX(buffer,'eyE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(3)  
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(3)
             ELSE IF (INDEX(buffer,'ezE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(4)
             ELSE IF (INDEX(buffer,'bxE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(5)  
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(5)
             ELSE IF (INDEX(buffer,'byE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(6)  
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(6)
             ELSE IF (INDEX(buffer,'bzE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(7)     
+                READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(7)
             ELSE IF (INDEX(buffer,'divE-rho') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(8)
@@ -1081,8 +1081,8 @@ MODULE control_file
             ELSE IF (INDEX(buffer,'divE') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(10)
-            ENDIF            
-        ENDDO    
+            ENDIF
+        ENDDO
         RETURN
     END SUBROUTINE
 
@@ -1097,12 +1097,12 @@ MODULE control_file
     !> Creation 2015
     SUBROUTINE init_species_section
     ! ____________________________________________________________________________________
-    
+
         IF (.NOT. l_species_allocated) THEN
             nspecies=0
             ALLOCATE(species_parray(1:nspecies_max))
             l_species_allocated=.TRUE.
         ENDIF
     END SUBROUTINE init_species_section
-    
+
 END MODULE control_file
