@@ -285,11 +285,16 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
@@ -323,11 +328,16 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
@@ -359,11 +369,16 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
@@ -456,60 +471,90 @@ clean_test:
 
 build_tile_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o	
 
 build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	Acceptance_testing/Gcov_tests/field_gathering_test.o 
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	Acceptance_testing/Gcov_tests/field_gathering_test.o	
 
 build_field_gathering_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_2d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	Acceptance_testing/Gcov_tests/field_gathering_2d_test.o
 
 build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
@@ -538,11 +583,16 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o 
@@ -554,11 +604,16 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
@@ -570,11 +625,16 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
@@ -588,11 +648,16 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
-	$(SRCDIR)/field_gathering_2d.o \
-	$(SRCDIR)/field_gathering_3d_o1.o \
-	$(SRCDIR)/field_gathering_3d_o2.o \
-	$(SRCDIR)/field_gathering_3d_o3.o \
-	$(SRCDIR)/field_gathering.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
