@@ -1103,7 +1103,7 @@ listfiles=["modules/modules.F90", \
            "field_solvers/Maxwell/yee_solver/yee.F90", \
            "field_solvers/Maxwell/karkainnen_solver/karkainnen.F90", \
            "field_solvers/Maxwell/GPSTD_solver/GPSTD.F90", \
-           "tiling.F90", \
+           "parallelization/tiling/tiling.F90", \
            "particle_pushers/boris_pusher/boris_2d.F90", \
            "particle_pushers/boris_pusher/boris_3d.F90", \
            "particle_pushers/vay_pusher/vay_3d.F90", \
@@ -1119,7 +1119,7 @@ listfiles=["modules/modules.F90", \
            "field_gathering_3d_o1.F90",\
            "field_gathering_3d_o2.F90",\
            "field_gathering_3d_o3.F90",\
-           "mpi_derived_types.F90",\
+           "parallelization/mpi/mpi_derived_types.F90",\
            "boundary.F90", \
            "simple_io.F90", \
            "particle_deposition/charge_deposition/charge_deposition_2d.F90", \
@@ -1127,7 +1127,7 @@ listfiles=["modules/modules.F90", \
            "particle_deposition/charge_deposition/charge_deposition_manager.F90", \
            "diags.F90", \
            "submain.F90", \
-           "mpi_routines.F90",\
+           "parallelization/mpi/mpi_routines.F90",\
            "initilization/control_file.F90", \
            "load_balancing.F90"]
 
