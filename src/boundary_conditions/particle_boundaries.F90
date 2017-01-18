@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! PARTICLE_BOUNDARIES.F90
@@ -252,7 +252,7 @@ MODULE particle_boundary
   !> Creation 2015
   SUBROUTINE particle_bcs_2d
   ! ____________________________________________________________________________
-  
+
     USE omp_lib
     USE time_stat
     USE tiling
@@ -340,7 +340,7 @@ MODULE particle_boundary
   !> Creation 2015
   SUBROUTINE particle_bcs_tiles
   ! ____________________________________________________________________________
-  
+
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
@@ -673,7 +673,7 @@ MODULE particle_boundary
   ! Mathieu Lobet, 2016
   SUBROUTINE particle_bsc_openmp_reordering
   ! __________________________________________________________________
-  
+
     USE omp_lib
     USE communications
     IMPLICIT NONE
@@ -1203,7 +1203,7 @@ MODULE particle_boundary
 
 ! ______________________________________________________________________________
 !> @brief
-!> MPI Boundary condition routine on particles with non blocking mpi 
+!> MPI Boundary condition routine on particles with non blocking mpi
 !> communication subroutine
 !
 !> @author
@@ -1772,7 +1772,7 @@ MODULE particle_boundary
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This subroutine combined in a single routine the particle communications 
+  !> This subroutine combined in a single routine the particle communications
   !> between tiles and between MPI domains for 3D
   !
   !> @author
@@ -1783,7 +1783,7 @@ MODULE particle_boundary
   !
   SUBROUTINE particle_bcs_tiles_and_mpi_3d
   ! ____________________________________________________________________________
-  
+
     USE omp_lib
     USE communications
     USE params
@@ -1827,10 +1827,10 @@ MODULE particle_boundary
 !     DO iz=1, ntilez
 !       DO iy=1, ntiley
 !         DO ix=1, ntilex
-!     
+!
 !           curr_tile=>curr%array_of_tiles(ix,iy,iz)
 !           nptile=curr_tile%np_tile(1)
-!           
+!
 !           DO i=1,nptile
 !             partx=curr_tile%part_x(i)
 !             party=curr_tile%part_y(i)
@@ -1840,15 +1840,15 @@ MODULE particle_boundary
 !             partuz=curr_tile%part_uz(i)
 !             gaminv=curr_tile%part_gaminv(i)
 !             partw=curr_tile%pid(i,wpid)
-! 
+!
 !             IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
 !                 (partx .GE. curr_tile%x_tile_max) .OR.   &
 !                 (party .LT. curr_tile%y_tile_min) .OR.   &
 !                 (party .GE. curr_tile%y_tile_max) .OR.  &
 !                 (partz .LT. curr_tile%z_tile_min+zgrid) .OR. &
 !                 (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
-!                 
-!                 
+!
+!
 !                 WRITE(0,'("ERROR: particle outside the domain")')
 !                 WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
 !                 WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
@@ -1856,11 +1856,11 @@ MODULE particle_boundary
 !                 WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
 !                 WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
 !                 WRITE(0,*)
-!                 
+!
 !             ENDIF
-!             
+!
 !           ENDDO
-!     
+!
 !         ENDDO
 !       ENDDO
 !     ENDDO
@@ -1892,7 +1892,7 @@ MODULE particle_boundary
   dxs2 = dx*0.5_num
   dys2 = dy*0.5_num
   dzs2 = dz*0.5_num
-  
+
   ! ___________________________________________________________
   ! Part 1 - Determine the particle to be exchanged with other tiles or with other MPI domains
   !
@@ -1970,7 +1970,7 @@ MODULE particle_boundary
     DO ipz=1,3
       DO ipy=1,3
         DO ipx=1,3
-        
+
 
           !$OMP PARALLEL DO DEFAULT(NONE) &
           !$OMP SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
@@ -2812,10 +2812,10 @@ MODULE particle_boundary
     DO iz=1, ntilez
       DO iy=1, ntiley
         DO ix=1, ntilex
-    
+
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
           nptile=curr_tile%np_tile(1)
-          
+
           DO i=1,nptile
             partx=curr_tile%part_x(i)
             party=curr_tile%part_y(i)
@@ -2832,8 +2832,8 @@ MODULE particle_boundary
                 (party .GE. curr_tile%y_tile_max) .OR.  &
                 (partz .LT. curr_tile%z_tile_min) .OR. &
                 (partz .GE. curr_tile%z_tile_max)) THEN
-                
-                
+
+
                 WRITE(0,'("ERROR: particle outside the domain")')
                 WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
                 WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
@@ -2841,11 +2841,11 @@ MODULE particle_boundary
                 WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
                 WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
                 WRITE(0,*)
-                
+
             ENDIF
-            
+
           ENDDO
-    
+
         ENDDO
       ENDDO
     ENDDO

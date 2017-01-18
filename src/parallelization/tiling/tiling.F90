@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! TILING.F90
 !
@@ -63,16 +63,16 @@ MODULE tiling
   !> Creation: 2015
   SUBROUTINE set_tile_split()
   ! ______________________________________________________________________________________
-  
+
   IMPLICIT NONE
-  
+
     ! Set tile split for species arrays
     CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
          x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
 
     ! ALLOCATE grid tile arrays
     ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
-    
+
   END SUBROUTINE set_tile_split
 
 
@@ -89,7 +89,7 @@ MODULE tiling
   SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
              xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
   ! ______________________________________________________________________________________
-  
+
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
     INTEGER(idp), INTENT(IN OUT)    ::  ntx, nty, ntz
@@ -112,7 +112,7 @@ MODULE tiling
         ntx=1
     END IF
     IF (ny0_grid_tile .LT. 4) THEN
-      IF(c_dim .EQ. 3) THEN 
+      IF(c_dim .EQ. 3) THEN
           IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
         ENDIF
         nty=1
@@ -254,7 +254,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine adds particle of given species to the corresponding 
+  !> This subroutine adds particle of given species to the corresponding
   !> tile particle array depending on the particle position in 2D.
   !
   !> @author
@@ -265,7 +265,7 @@ MODULE tiling
     SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, &
                partux, partuy, partuz, gaminv, partw)
   ! ______________________________________________________________________________________
-  
+
         IMPLICIT NONE
         REAL(num) :: partx, partz, partux, partuy, partuz, partw, gaminv
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
@@ -294,7 +294,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine adds particle of given species to the corresponding 
+  !> This subroutine adds particle of given species to the corresponding
   !> tile particle array depending on the particle position in 3D.
   !
   !> @author
@@ -454,7 +454,7 @@ MODULE tiling
   SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, partx, party, &
           partz, partux, partuy, partuz, gaminv, partw)
   ! ______________________________________________________________________________________
-  
+
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew
         REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
@@ -497,7 +497,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> Remove particles from tile using a mask variable. 
+  !> Remove particles from tile using a mask variable.
   !> This technique avoids packing or reallocating arrays.
   !
   !> @author
@@ -508,7 +508,7 @@ MODULE tiling
   !
     SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt,mask)
   ! ______________________________________________________________________________________
-  
+
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         LOGICAL(lp) , DIMENSION (:), INTENT(IN) :: mask
         INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
@@ -699,7 +699,7 @@ MODULE tiling
   !
   SUBROUTINE init_tile_arrays()
   ! ______________________________________________________________________________________
-  
+
   IMPLICIT NONE
 
     CALL init_tile_arrays_for_species(nspecies, species_parray, &
@@ -715,7 +715,7 @@ MODULE tiling
     !> @brief
     !
     !> @details
-    !> This subroutine also allocates the local field arrays contained 
+    !> This subroutine also allocates the local field arrays contained
     !> in aofgrid_tiles for each tile.
     !
     !> @author
@@ -725,12 +725,12 @@ MODULE tiling
     !> Creation: 2015
     SUBROUTINE init_tile_arrays_for_species(nspec2,species_array,aofgtiles,ntx2,nty2,ntz2)
     ! ____________________________________________________________________________________
-    
+
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
         TYPE(grid_tile), DIMENSION(ntx2,nty2,ntz2), INTENT(IN OUT)        :: aofgtiles
         TYPE(particle_species), DIMENSION(nspec2), TARGET, INTENT(IN OUT) :: species_array
-        
+
         INTEGER(idp)                    :: ispecies, ix, iy, iz
         INTEGER(idp)                    :: n1, n2, n3, ng1, ng2, ng3
         TYPE(particle_tile), POINTER    :: curr_tile
@@ -984,7 +984,7 @@ MODULE tiling
                     END DO
                 END DO
             END DO ! END LOOP ON SPECIES
-            
+
 
         !!! --- Sets-up particle space distribution (random space with a given velocity)
         ELSE IF (pdistr .EQ. 3) THEN
@@ -1006,7 +1006,7 @@ MODULE tiling
                                 party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
                                 partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
                                 partw = nc*dx*dy*dz/(curr%nppcell)
-                                
+
                                 ! Sets velocity
                                 v=MAX(1e-10_num,rng(4))
                                 th=2*pi*rng(5)
@@ -1029,7 +1029,7 @@ MODULE tiling
                     END DO
                 END DO
             END DO ! END LOOP ON SPECIES
-            
+
         ENDIF
 
         ! Collects total number of particles from other subdomains (useful for statistics)
@@ -1172,7 +1172,7 @@ MODULE tiling
       END DO ! END LOOP ON SPECIES
 
     END SUBROUTINE get_local_number_of_part
-    
+
     ! ____________________________________________________________________________________
     !
     !      SUBROUTINES DEDICATED FOR PYTHON INTERFACE
@@ -1290,7 +1290,7 @@ MODULE tiling
       currsp%name=sname
       currsp%sorting_period=sorting_period
       currsp%sorting_start=sorting_start
-      
+
       ! this part poses problems for the python version compiled on Cori
       !IF (rank .EQ. 0) THEN
       !  PRINT *, "species name: ", trim(adjustl(sname))
@@ -1300,7 +1300,7 @@ MODULE tiling
       !  PRINT *, "sorting start: ", currsp%sorting_start
       !  PRINT *, ""
       !ENDIF
-      
+
     END SUBROUTINE set_particle_species_properties
 
 
@@ -1402,7 +1402,7 @@ MODULE tiling
 
       INTEGER(idp)                    :: ispecies, ix, iy, iz, nbp
       INTEGER(idp)                    :: nxc,nyc,nzc
-      INTEGER(idp)                    :: nxg,nyg,nzg      
+      INTEGER(idp)                    :: nxg,nyg,nzg
       REAL(num)                       :: ncloc
       REAL(num)                       :: mpipartsize
       REAL(num)                       :: tilepartsize
@@ -1440,7 +1440,7 @@ MODULE tiling
 
                  mpipartsize = mpipartsize + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
                  ncloc = ncloc + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)
-                 
+
                  tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)*8.
 
               END DO! END LOOP ON SPECIES
@@ -1469,7 +1469,7 @@ MODULE tiling
                  nzc=curr_tile%nz_cells_tile
                  nxg=curr_tile%nxg_tile
                  nzg=curr_tile%nzg_tile
-                 
+
                  mpipartsize = mpipartsize + nbp*8*13 ! 8 for double, 13 for x,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
                  ncloc = ncloc + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)
 
@@ -1552,12 +1552,12 @@ MODULE tiling
       !IF (rank.eq.0) WRITE(0,*)
       IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process per each field component',mpifieldsize,unity
       IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for E and B',mpifieldsize*6.,unity
-      
+
       if (tilefieldsize > 1024.) then
         tilefieldsize = tilefieldsize/1024.
         unity = 'Ko'
       endif
-      
+
       IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity
       IF (rank.eq.0) WRITE(0,*) 'Average tile size for the current',tilefieldsize*3.,unity
 

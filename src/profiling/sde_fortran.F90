@@ -2,27 +2,27 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! SDE_FORTRAN.F90
-! 
+!
 ! Tools to use the profiling tool Intel SDE with Picsar.
 ! This module also contains function for the Intel Design Forward Project.
-! 
+!
 ! Author:
 ! Mathieu Lobet
 !
@@ -32,7 +32,7 @@
 
 
 ! ______________________________________________________________________________
-!> @brief 
+!> @brief
 !> Module that contains interface with C functions used by the profiling
 !> tool SDE.
 !
@@ -54,7 +54,7 @@ INTERFACE
    SUBROUTINE FORTRAN_SDE_STOP() &
       BIND(C, NAME='fortran_sde_stop')
    END SUBROUTINE FORTRAN_SDE_STOP
-   
+
    SUBROUTINE FORTRAN_DFP_INIT_START() &
       BIND(C, NAME='fortran_init_start')
    END SUBROUTINE FORTRAN_DFP_INIT_START
@@ -78,7 +78,7 @@ INTERFACE
    SUBROUTINE FORTRAN_DFP_FINAL_STOP() &
       BIND(C, NAME='fortran_finalize_stop')
    END SUBROUTINE FORTRAN_DFP_FINAL_STOP
-   
+
 END INTERFACE
 
 contains
@@ -115,7 +115,7 @@ contains
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This function used for the Design Forward Project should be called 
+  !> This function used for the Design Forward Project should be called
   !> before the initialization.
   !
   !> @author
@@ -127,10 +127,10 @@ contains
   ! ____________________________________________________________________________
      CALL FORTRAN_DFP_INIT_START()
    end subroutine
-   
+
   ! ____________________________________________________________________________
   !> @brief
-  !> This function used for the Design Forward Project should be called 
+  !> This function used for the Design Forward Project should be called
   !> after the initialization to stop the profiling of this specific part.
   !
   !> @author
@@ -145,7 +145,7 @@ contains
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This function used for the Design Forward Project should be called 
+  !> This function used for the Design Forward Project should be called
   !> before the main loop to start the profiling of this specific part.
   !
   !> @author
@@ -160,7 +160,7 @@ contains
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This function used for the Design Forward Project should be called 
+  !> This function used for the Design Forward Project should be called
   !> after the main loop to stop the profiling of this specific part.
   !
   !> @author
@@ -175,7 +175,7 @@ contains
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This function used for the Design Forward Project should be called 
+  !> This function used for the Design Forward Project should be called
   !> before the finalization to start the profiling of this specific part.
   !
   !> @author
@@ -190,7 +190,7 @@ contains
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This function used for the Design Forward Project should be called 
+  !> This function used for the Design Forward Project should be called
   !> after the finalization to stop the profiling of this specific part.
   !
   !> @author

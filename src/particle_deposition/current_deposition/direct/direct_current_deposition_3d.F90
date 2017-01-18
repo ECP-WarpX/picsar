@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! DIRECT_CURRENT_DEPOSITION_3D.F90
@@ -717,7 +717,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 !> @date
 !> 2015
 !
-SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,& 
+SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,&
                                       xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
 ! ______________________________________________________________________________
@@ -3071,7 +3071,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 
 ! ______________________________________________________________________________
 !> @brief
-!> This subroutine performs the reduction of jxcellx, jycells and jzcells 
+!> This subroutine performs the reduction of jxcellx, jycells and jzcells
 !> into jx,jy and jz.
 !
 !> @details
@@ -3089,7 +3089,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 !> @param[in] ncells tile cell numbers
 !> @param[in] nx,ny,nz: tile cell numbers in each direction
 !> @param[in] nxguard,nyguard,nzguard number of guard cells
-!> @param[in] ncx,ncy,ncz 
+!> @param[in] ncx,ncy,ncz
 !
 SUBROUTINE current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz, &
                                    nxguard,nyguard,nzguard,ncx,ncy,ncz)
@@ -3189,7 +3189,7 @@ END SUBROUTINE current_reduction_1_1_1
 
 ! ______________________________________________________________________________
 !> @brief
-!> This subroutine performs the reduction of jxcellx, jycells 
+!> This subroutine performs the reduction of jxcellx, jycells
 !> and jzcells into jx,jy and jz.
 !
 !> @details
@@ -3207,7 +3207,7 @@ END SUBROUTINE current_reduction_1_1_1
 !> @param[in] ncells tile cell numbers
 !> @param[in] nx,ny,nz: tile cell numbers in each direction
 !> @param[in] nxguard,nyguard,nzguard number of guard cells
-!> @param[in] ncx,ncy,ncz 
+!> @param[in] ncx,ncy,ncz
 SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz)
 ! ______________________________________________________________________________
     USE constants
@@ -3301,7 +3301,7 @@ END SUBROUTINE
 
 ! ______________________________________________________________________________
 !> @brief
-!> This subroutine performs the reduction of jxcellx, jycells and jzcells 
+!> This subroutine performs the reduction of jxcellx, jycells and jzcells
 !> into jx,jy and jz.
 !
 !> @details
@@ -3319,7 +3319,7 @@ END SUBROUTINE
 !> @param[in] ncells tile cell numbers
 !> @param[in] nx,ny,nz: tile cell numbers in each direction
 !> @param[in] nxguard,nyguard,nzguard number of guard cells
-!> @param[in] ncx,ncy,ncz 
+!> @param[in] ncx,ncy,ncz
 SUBROUTINE current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,&
                                    nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz)
 ! ______________________________________________________________________________

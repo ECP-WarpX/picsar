@@ -3,32 +3,32 @@
 
  *** Copyright Notice ***
 
- "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
- 2016, The Regents of the University of California, through Lawrence Berkeley 
- National Laboratory (subject to receipt of any required approvals from the 
+ "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+ 2016, The Regents of the University of California, through Lawrence Berkeley
+ National Laboratory (subject to receipt of any required approvals from the
  U.S. Dept. of Energy). All rights reserved.
 
- If you have questions about your rights to use or distribute this software, 
+ If you have questions about your rights to use or distribute this software,
  please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 
  NOTICE.
- This Software was developed under funding from the U.S. Department of Energy 
- and the U.S. Government consequently retains certain rights. As such, the U.S. 
- Government has been granted for itself and others acting on its behalf a  
- paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
- reproduce, distribute copies to the public, prepare derivative works, and 
- perform publicly and display publicly, and to permit other to do so. 
+ This Software was developed under funding from the U.S. Department of Energy
+ and the U.S. Government consequently retains certain rights. As such, the U.S.
+ Government has been granted for itself and others acting on its behalf a
+ paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+ reproduce, distribute copies to the public, prepare derivative works, and
+ perform publicly and display publicly, and to permit other to do so.
 
- Class for 2D & 3D FFT-based electromagnetic solver 
- 
+ Class for 2D & 3D FFT-based electromagnetic solver
+
  Developers:
  Henri Vincenti
- 
+
  Date:
  Creation 2016
  _______________________________________________________________________________
 """
-from warp.init_tools.plasma_initialization import * 
+from warp.init_tools.plasma_initialization import *
 try:
     import picsarpy as pxrpy
     pxr = pxrpy.picsar
@@ -37,11 +37,11 @@ try:
 except:
     l_pxr=False
     print 'PICSAR package not found.'
-try: 
-    from mpi4py import MPI 
-except: 
-    print 'Error cannot import mpi4py'  
-import numpy as np 
+try:
+    from mpi4py import MPI
+except:
+    print 'Error cannot import mpi4py'
+import numpy as np
 
 class PlasmaInjectorPXR(PlasmaInjector):
     def continuous_injection(self):
@@ -71,7 +71,7 @@ class PlasmaInjectorPXR(PlasmaInjector):
     def load_plasmaPXR( self, z_end_plasma, zmin, zmax ):
         """
         Load plasma between zmin and zmax in PXR.
-        
+
         The positions of the particles along the z axis are of the form
         z = z_end_plasma - i*dz - 0.5*dz
         and satisfy zmin <= z < zmax
@@ -82,7 +82,7 @@ class PlasmaInjectorPXR(PlasmaInjector):
         ----------
         z_end_plasma : float
            Position of the global end of the plasma
-        
+
         zmin, zmax : floats (meters)
            Positions between which the plasma is to be loaded, in the
            local domain
@@ -90,7 +90,7 @@ class PlasmaInjectorPXR(PlasmaInjector):
         # Get 1d array of evenly-spaced positions for the particles along z
         dz = self.w3d.dz / self.p_nz
         # Get the min and max indices i for z = z_end_plasma - i*dz - 0.5*dz
-        i_min = int( (z_end_plasma-zmin)/dz - 0.5 ) 
+        i_min = int( (z_end_plasma-zmin)/dz - 0.5 )
         i_max = int( (z_end_plasma-zmax)/dz + 0.5 )
         i_max = max( i_max, 0 )
         z_reg = z_end_plasma - dz*( np.arange( i_max, i_min+1 ) + 0.5 )
@@ -155,25 +155,25 @@ class PlasmaInjectorPXR(PlasmaInjector):
         if self.elec is not None:
             # Use the random momenta
 
-            # Filter particles outside the box 
+            # Filter particles outside the box
             cond=(x0>=pxr.x_min_local) & (x0<pxr.x_max_local) &\
                  (y0>=pxr.y_min_local) & (y0<pxr.y_max_local) &\
-                 (z0>=pxr.z_min_local+pxr.zgrid) & (z0<pxr.z_max_local+pxr.zgrid) 
+                 (z0>=pxr.z_min_local+pxr.zgrid) & (z0<pxr.z_max_local+pxr.zgrid)
             x0=x0[cond]
             y0=y0[cond]
             z0=z0[cond]
             nps0=np.size(x0)
             #print("size",nps0, np.amax(np.abs(uz)),np.amax(np.abs(uy)),np.amax(np.abs(ux)), \
             #np.amax(z0),np.amax(y0),np.amax(x0),np.amin(z0),np.amin(y0),np.amin(x0))
-            pxr.py_add_particles_to_species(1, nps0, 
-                                            x0, 
-                                            y0, 
-                                            z0, 
-                                            ux*np.ones(nps0)*c, 
-                                            uy*np.ones(nps0)*c, 
+            pxr.py_add_particles_to_species(1, nps0,
+                                            x0,
+                                            y0,
+                                            z0,
+                                            ux*np.ones(nps0)*c,
+                                            uy*np.ones(nps0)*c,
                                             uz*np.ones(nps0)*c,
-                                            gamma_inv*np.ones(nps0), 
-                                            w)     
+                                            gamma_inv*np.ones(nps0),
+                                            w)
         if self.ions is not None:
             # For each element, only add particles to the lowest charge state
             for element in self.ions.keys():
