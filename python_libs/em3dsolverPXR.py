@@ -3,21 +3,21 @@
 
  *** Copyright Notice ***
 
- "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
- 2016, The Regents of the University of California, through Lawrence Berkeley 
- National Laboratory (subject to receipt of any required approvals from the 
+ "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+ 2016, The Regents of the University of California, through Lawrence Berkeley
+ National Laboratory (subject to receipt of any required approvals from the
  U.S. Dept. of Energy). All rights reserved.
 
- If you have questions about your rights to use or distribute this software, 
+ If you have questions about your rights to use or distribute this software,
  please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 
  NOTICE.
- This Software was developed under funding from the U.S. Department of Energy 
- and the U.S. Government consequently retains certain rights. As such, the U.S. 
- Government has been granted for itself and others acting on its behalf a  
- paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
- reproduce, distribute copies to the public, prepare derivative works, and 
- perform publicly and display publicly, and to permit other to do so. 
+ This Software was developed under funding from the U.S. Department of Energy
+ and the U.S. Government consequently retains certain rights. As such, the U.S.
+ Government has been granted for itself and others acting on its behalf a
+ paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+ reproduce, distribute copies to the public, prepare derivative works, and
+ perform publicly and display publicly, and to permit other to do so.
 
 
  Class EM3DPXR for using the PICSAR subroutines in the WARP PIC loop.
@@ -28,7 +28,7 @@
  Jean-Luc Vay
  Mathieu Lobet
  Guillaume Blaclard
- 
+
  Date:
  Creation 2016
 
@@ -175,7 +175,6 @@ class EM3DPXR(EM3DFFT):
           pxr.c_dim=2
         else:
           pxr.c_dim=3
-          
         # Set up PXR MPI Data
         if (self.l_debug): print(" Setup PXR MPI Data")
         pxr.nprocx=top.fsdecomp.nxprocs
@@ -415,7 +414,7 @@ class EM3DPXR(EM3DFFT):
           pxr.lvec_fieldgathe = self.lvec_fieldgathe
         # MPI buffer size for particle exchange
         pxr.mpi_buf_size = self.mpi_buf_size
-        
+
 
         # Type of field gathering
         pxr.l4symtry=w3d.l4symtry
@@ -446,7 +445,6 @@ class EM3DPXR(EM3DFFT):
         # --- allocates array of species
         if (self.l_debug): print(" Allocates array of species")
         pxr.init_species_section()
-
         for i,s in enumerate(self.listofallspecies):
             # Check for sorting
             if (i >= len(self.sorting.periods)):
@@ -459,11 +457,12 @@ class EM3DPXR(EM3DFFT):
                                                 self.sorting.periods[i],self.sorting.starts[i])
             pxr.nspecies+=1
 
+        pxr.npid=top.npid
+        pxr.ssnpid=top.ssnpid
         pxr.set_tile_split()
         pxr.init_tile_arrays()
-
         for i,s in enumerate(self.listofallspecies):
-            pxr.py_add_particles_to_species(i+1, s.nps,
+            pxr.py_add_particles_to_species(i+1, s.nps,top.npid,
                                             s.getx(bcast=0,gather=0),
                                             s.gety(bcast=0,gather=0),
                                             s.getz(bcast=0,gather=0),
@@ -471,8 +470,7 @@ class EM3DPXR(EM3DFFT):
                                             s.getuy(bcast=0,gather=0),
                                             s.getuz(bcast=0,gather=0),
                                             s.getgaminv(bcast=0,gather=0),
-                                            s.getweights(bcast=0,gather=0)  )
-
+                                            s.getpid(id=-1,bcast=0,gather=0))
         top.pgroup.npmax=0
         top.pgroup.ns=1
         top.pgroup.nps=0
@@ -510,7 +508,7 @@ class EM3DPXR(EM3DFFT):
                         pg.uxp = pxr.partux
                         pg.uyp = pxr.partuy
                         pg.uzp = pxr.partuz
-                        pg.pid = fzeros([pg.npmax,top.npid])
+                        #pg.pid = fzeros([pg.npmax,top.npid])
                         pg.pid = pxr.pid
                         pg.gaminv = pxr.partgaminv
                         pg.ex = pxr.partex
@@ -560,7 +558,7 @@ class EM3DPXR(EM3DFFT):
                 pg.uxp = pxr.partux
                 pg.uyp = pxr.partuy
                 pg.uzp = pxr.partuz
-                pg.pid = fzeros([pg.npmax,top.npid])
+                #pg.pid = fzeros([pg.npmax,top.npid])
                 pg.pid = pxr.pid
                 pg.gaminv = pxr.partgaminv
                 pg.ex = pxr.partex
@@ -606,9 +604,9 @@ class EM3DPXR(EM3DFFT):
         """
         Electric field Maxwell solver
         """
-        
+
         tdeb=MPI.Wtime()
-        
+
         dt = dir*top.dt/self.ntsub
         if self.novercycle==1:
             if dir>0.:
@@ -687,7 +685,7 @@ class EM3DPXR(EM3DFFT):
                 self.fields.Ey_inz*=-1.
         if self.refinement is not None:
             self.__class__.__bases__[1].push_e(self.field_coarse,dir)
-            
+
         tend=MPI.Wtime()
         self.time_stat_loc_array[7] += (tend-tdeb)
 
@@ -695,9 +693,9 @@ class EM3DPXR(EM3DFFT):
       """
       Magnetic field solver
       """
-    
+
       tdeb=MPI.Wtime()
-      
+
       dt = dir*top.dt/self.ntsub
       if self.novercycle==1:
         if dir>0.:
@@ -786,7 +784,7 @@ class EM3DPXR(EM3DFFT):
       """
 
       tdeb=MPI.Wtime()
-    
+
       if top.efetch[0] != 4 and (self.refinement is None):self.node2yee3d()
       dt = top.dt/self.ntsub
       if self.ntsub<1.:
@@ -944,10 +942,10 @@ class EM3DPXR(EM3DFFT):
         """
         Current spectral correction
         """
-    
+
         if self.l_pxr:
             tdebcell=MPI.Wtime()
-            
+
         j=1j      # imaginary number
         emK = self.FSpace
         em = self
@@ -1023,15 +1021,15 @@ class EM3DPXR(EM3DFFT):
           tendcell=MPI.Wtime()
           pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
           self.time_stat_loc_array[16] += (tendcell-tdebcell)
-          
+
 
     def exchange_e(self,dir=1.):
         """
         Electric field boundary conditions
         """
-        
+
         t0 = MPI.Wtime()
-        
+
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -1050,7 +1048,7 @@ class EM3DPXR(EM3DFFT):
                 em3d_exchange_e(self.block)
         if self.refinement is not None:
             self.__class__.__bases__[1].exchange_e(self.field_coarse)
-            
+
         t1 = MPI.Wtime()
         self.time_stat_loc_array[8] += (t1-t0)
 
@@ -1058,9 +1056,9 @@ class EM3DPXR(EM3DFFT):
         """
         Magnetic field boundary conditions
         """
-        
+
         t0 = MPI.Wtime()
-        
+
         if self.novercycle==1:
             if dir>0.:
                 doit=True
@@ -1088,7 +1086,7 @@ class EM3DPXR(EM3DFFT):
     def step(self,n=1,freq_print=10,lallspecl=0):
       """
       This function performs a range of Particle-In-Cell iterations
-      
+
       Inputs:
       - n: number of iterations
       - freq_print: print frequency
@@ -1099,7 +1097,7 @@ class EM3DPXR(EM3DFFT):
       stdout_stat=10
       t0=MPI.Wtime()
       tdeb=MPI.Wtime()
-      
+
       for i in range(n):
           if(me==0):
               if top.it%freq_print==0:print 'it = %g time = %g'%(top.it,top.time)
@@ -1114,9 +1112,9 @@ class EM3DPXR(EM3DFFT):
                   l_last=1
               else:
                   l_last=0
-                  
+
           self.onestep(l_first,l_last)
-          
+
           if(l_pxr & (top.it%stdout_stat==0) & (pxr.rank==0)):
               tend=MPI.Wtime()
               mpi_time_per_stat=(tend-tdeb)
@@ -1180,7 +1178,7 @@ class EM3DPXR(EM3DFFT):
                 pxr.particle_bcs()
                 tendpart=MPI.Wtime()
                 self.time_stat_loc_array[1] += (tendpart-tdebpart)
-                
+
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1210,8 +1208,8 @@ class EM3DPXR(EM3DFFT):
                 pxr.particle_bcs()
                 tendpart=MPI.Wtime()
                 self.time_stat_loc_array[1] += (tendpart-tdebpart)
-                
-                
+
+
                 #for i,s in enumerate(self.listofallspecies):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
@@ -1233,7 +1231,7 @@ class EM3DPXR(EM3DFFT):
 
                         tendpart=MPI.Wtime()
                         self.time_stat_loc_array[1] += (tendpart-tdebpart)
-                        
+
 
         # --- Particle sorting
         if (self.l_debug): print("Call Particle Sorting")
@@ -1272,7 +1270,7 @@ class EM3DPXR(EM3DFFT):
         self.loadrho(pgroups=pgroups)
         if (self.l_debug): print("Call loadj")
         self.loadj(pgroups=pgroups)
-    
+
         # Moving window
 
         #tendpart=MPI.Wtime()
@@ -1357,9 +1355,9 @@ class EM3DPXR(EM3DFFT):
         Load balance between MPI domains in 3D
         """
         if (l_pxr):
-        
+
             tdeb = MPIWTIME()
-        
+
             ## --- Compute time per part and per cell
             pxr.compute_time_per_part()
             pxr.compute_time_per_cell()
@@ -1520,7 +1518,7 @@ class EM3DPXR(EM3DFFT):
                 self.fields.ymax = pxr.y_max_local
                 self.fields.zmin = pxr.z_min_local
                 self.fields.zmax = pxr.z_max_local
-                
+
                 # Udpate domain decomposition in WARP
                 top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
                 top.fsdecomp.ny=pxr.cell_y_max-pxr.cell_y_min+1
@@ -1632,7 +1630,7 @@ class EM3DPXR(EM3DFFT):
             # Time statistics
             tend=MPI.Wtime()
             self.time_stat_loc_array[15] += (tend-tdeb)
-                
+
     def load_balance_2d(self,imbalance):
         if (l_pxr):
             ## --- Compute time per part and per cell
@@ -1780,7 +1778,7 @@ class EM3DPXR(EM3DFFT):
                 self.fields.xmax = pxr.x_max_local
                 self.fields.zmin = pxr.z_min_local
                 self.fields.zmax = pxr.z_max_local
-                
+
                 # Udpate domain decomposition in WARP
                 top.fsdecomp.nx=pxr.cell_x_max-pxr.cell_x_min+1
                 top.fsdecomp.nz=pxr.cell_z_max-pxr.cell_z_min+1
@@ -2021,13 +2019,13 @@ class EM3DPXR(EM3DFFT):
     def loadsource(self,lzero=None,lfinalize_rho=None,pgroups=None,**kw):
         '''
         Current and charge deposition, uses particles from top directly.
-        
+
         Inputs:
            - lzero
            - lfinalize_rho
            - pgroups
         '''
-        
+
         # --- Note that the grid location is advanced even if no field solve
         # --- is being done.
         self.advancezgrid()
@@ -2092,7 +2090,7 @@ class EM3DPXR(EM3DFFT):
                                        "Particles in species %d have z below the grid when depositing the source, min z = %e"%(js,z.min())
                                 assert z.max() < self.zmmaxp+self.getzgridndts()[indts],\
                                        "Particles in species %d have z above the grid when depositing the source, max z = %e"%(js,z.max())
-                                       
+
              # ___________________________________
              # Depose currents in PXR
 
@@ -2121,13 +2119,13 @@ class EM3DPXR(EM3DFFT):
 
              # ___________________________________
              # Depose charge density in PXR if required
-              
+
              if self.l_getrho : # Depose Rho in PXR
-             
+
                if (self.l_debug): print("Call pxr.pxrdepose_rho_on_grid_sub_openmp()")
-             
+
                t0 = MPI.Wtime()
-             
+
                if pxr.c_dim == 2:
 
                  pxr.rho = self.fields.Rho
@@ -2149,7 +2147,7 @@ class EM3DPXR(EM3DFFT):
                  pxr.pxrdepose_rho_on_grid_sub_openmp_3d(f.Rhoold_local,pxr.nx,pxr.ny,pxr.nz,pxr.nxjguards,pxr.nyjguards,pxr.nzjguards,pxr.nox,pxr.noy,pxr.noz,pxr.dx,pxr.dy,pxr.dz,pxr.dt,1)
                  t1 = MPI.Wtime()
                  self.time_stat_loc_array[12] += (t1-t0)
-               
+
         else:
 
             for pgroup in pgroups:
@@ -2252,13 +2250,13 @@ class EM3DPXR(EM3DFFT):
         output:
         - total number of particles
         """
-        
+
         nbptot = zeros(1,dtype=numpy.int64)
-        
+
         pxr.get_tot_number_of_particles(nbptot)
-        
+
         return nbptot[0]
-        
+
     def get_kinetic_energy(self,sp,**kw):
         """
         Get the total kinetic energy of the species sp using PICSAR fortran subroutines
