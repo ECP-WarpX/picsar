@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! MPI_DERIVED_TYPES.F90
@@ -52,7 +52,7 @@ CONTAINS
 
   ! ____________________________________________________________________________
   !> @brief
-  !> create_current_field_derived_type - Creates the derived type 
+  !> create_current_field_derived_type - Creates the derived type
   !> corresponding to the current CPU split.
   !
   !> @author
@@ -99,7 +99,7 @@ CONTAINS
 
   ! ____________________________________________________________________________
   !> @brief
-  !> create_grid_derived_type - Creates a derived type representing the layout 
+  !> create_grid_derived_type - Creates a derived type representing the layout
   !> of local CPU among the global simulation domain
   !
   !> @author
@@ -123,11 +123,11 @@ CONTAINS
     n_local = (/nx_local, ny_local, nz_local/)
     n_global = (/nx_global, ny_global, nz_global/)
     start = (/cell_start_x_local, cell_start_y_local, cell_start_z_local/)
-    ! Old version 
+    ! Old version
     !create_grid_derived_type = &
     !    create_3d_array_derived_type(mpitype, n_local, n_global, start)
-    
-    ! New version 
+
+    ! New version
     ndims=c_ndims
     CALL MPI_TYPE_CREATE_SUBARRAY(ndims,n_global,n_local,start, MPI_ORDER_FORTRAN, &
                                 mpitype,create_grid_derived_type,errcode)
@@ -137,9 +137,9 @@ CONTAINS
 
   ! ____________________________________________________________________________
   !> @brief
-  !> create_3d_array_derived_type OLD VERSION - USE MPI_TYPE_CREATE_SUBARRAY 
+  !> create_3d_array_derived_type OLD VERSION - USE MPI_TYPE_CREATE_SUBARRAY
   !> instead
-  !> - Creates a derived type representing the 
+  !> - Creates a derived type representing the
   !> localization of current CPU among simulation domain
   !
   !> @author
@@ -203,7 +203,7 @@ CONTAINS
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This subroutine creates a subarray from a given grid according 
+  !> This subroutine creates a subarray from a given grid according
   !> to the given parameters.
   !
   !> @author
@@ -241,16 +241,16 @@ CONTAINS
     ENDDO
     n_local=n_local-1 ! remove last point
 
-    ! old version 
+    ! old version
     !create_grid_subarray = &
     !      create_3d_array_derived_type(mpitype, n_local, n_global, start)
 
-    ! new version 
+    ! new version
     CALL MPI_TYPE_CREATE_SUBARRAY(ndim,INT(n_global,isp),INT(n_local,isp), &
                                   INT(start-1,isp), MPI_ORDER_FORTRAN, &
                                   mpitype,create_grid_subarray,errcode)
     CALL MPI_TYPE_COMMIT(create_grid_subarray,errcode)
-                            
+
   END FUNCTION create_grid_subarray
 
 END MODULE mpi_derived_types

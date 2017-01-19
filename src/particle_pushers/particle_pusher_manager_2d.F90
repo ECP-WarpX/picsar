@@ -2,25 +2,33 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! PARTICLE_PUSHER_MANAGER_2D.F90
 !
 ! Subroutines for managing the particle pushers in 2d.
+!
+! Developers:
+! Henri Vincenti
+! Mathieu Lobet
+!
+! Date:
+! Creation 2015
+!
 ! ______________________________________________________________________________
 
 
@@ -55,10 +63,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
   USE constants
   USE tiling
   USE time_stat
-  
+
 ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3  
-  USE ITT_SDE_FORTRAN                   
+#if defined(PROFILING) && PROFILING==3
+  USE ITT_SDE_FORTRAN
 #endif
 
   IMPLICIT NONE
@@ -83,9 +91,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
 
   tdeb=MPI_WTIME()
 
-#if PROFILING==3               
-  CALL start_collection()      
-#endif                         
+#if PROFILING==3
+  CALL start_collection()
+#endif
 
 
   !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) &
@@ -128,9 +136,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
           curr=>species_parray(ispecies)
           curr_tile=>curr%array_of_tiles(ix,1,iz)
           count=curr_tile%np_tile(1)
-          
+
           IF (count .EQ. 0) CYCLE
-          
+
           curr_tile%part_ex(1:count) = 0.0_num
           curr_tile%part_ey(1:count) = 0.0_num
           curr_tile%part_ez(1:count) = 0.0_num
@@ -139,8 +147,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
           curr_tile%part_bz(1:count)=0.0_num
           !!! ---- Loop by blocks over particles in a tile (blocking)
           !!! --- Gather electric field on particles
-                    
-          !!! --- Gather electric and magnetic fields on particles          
+
+          !!! --- Gather electric and magnetic fields on particles
           CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,           &
                       curr_tile%part_z, curr_tile%part_ex,                              &
                       curr_tile%part_ey,curr_tile%part_ez,                         &
@@ -159,7 +167,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
           CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
           curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,               &
           curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-          !! --- Set gamma of particles 
+          !! --- Set gamma of particles
           CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
           curr_tile%part_uz, curr_tile%part_gaminv)
           !! --- Push velocity with B half step
@@ -170,23 +178,23 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
           CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                       &
           curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,                        &
           curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-          !! --- Set gamma of particles 
+          !! --- Set gamma of particles
           CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                  &
           curr_tile%part_uz, curr_tile%part_gaminv)
           !!!! --- push particle species positions a time step
           CALL pxr_push2dxz(count,curr_tile%part_x, &
           curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy, &
           curr_tile%part_uz,curr_tile%part_gaminv,dtt)
-                    
+
         END DO! END LOOP ON SPECIES
       ENDIF
     END DO
   END DO! END LOOP ON TILES
   !$OMP END PARALLEL DO
 
-#if PROFILING==3            
-  CALL stop_collection()    
-#endif                      
+#if PROFILING==3
+  CALL stop_collection()
+#endif
 
   tend=MPI_WTIME()
   pushtime=pushtime+(tend-tdeb)

@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! KARKAINNEN.F90
 !
@@ -77,18 +77,18 @@ SUBROUTINE pxr_push_em3d_kyeebvec(ex,ey,ez,bx,by,bz,dtsdx,dtsdy,dtsdz,nx,ny,nz, 
                               + gammaz*dtsdz * (Ey(j+1,k+1,l+1) - Ey(j+1,k+1,l  ) &
                                              +  Ey(j-1,k+1,l+1) - Ey(j-1,k+1,l  ) &
                                              +  Ey(j+1,k-1,l+1) - Ey(j+1,k-1,l  ) &
-                                             +  Ey(j-1,k-1,l+1) - Ey(j-1,k-1,l  )) 
+                                             +  Ey(j-1,k-1,l+1) - Ey(j-1,k-1,l  ))
       END DO
-     END DO 
-    END DO 
-    !$OMP END DO 
+     END DO
+    END DO
+    !$OMP END DO
 
     ! advance By
     !$OMP DO COLLAPSE(3)
     DO l = 0, nz-1
      DO k = 0, ny
       DO j = 0, nx-1
-        By(j,k,l) = By(j,k,l) + alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &  
+        By(j,k,l) = By(j,k,l) + alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &
                               + betaxy*dtsdx * (Ez(j+1,k+1,l  ) - Ez(j  ,k+1,l  ) &
                                              +  Ez(j+1,k-1,l  ) - Ez(j  ,k-1,l  )) &
                               + betaxz*dtsdx * (Ez(j+1,k  ,l+1) - Ez(j  ,k  ,l+1) &
@@ -105,12 +105,12 @@ SUBROUTINE pxr_push_em3d_kyeebvec(ex,ey,ez,bx,by,bz,dtsdx,dtsdy,dtsdz,nx,ny,nz, 
                               - gammaz*dtsdz * (Ex(j+1,k+1,l+1) - Ex(j+1,k+1,l  ) &
                                              +  Ex(j-1,k+1,l+1) - Ex(j-1,k+1,l  ) &
                                              +  Ex(j+1,k-1,l+1) - Ex(j+1,k-1,l  ) &
-                                             +  Ex(j-1,k-1,l+1) - Ex(j-1,k-1,l  )) 
+                                             +  Ex(j-1,k-1,l+1) - Ex(j-1,k-1,l  ))
       END DO
      END DO
-    END DO 
-    !$OMP END DO 
-    ! advance Bz 
+    END DO
+    !$OMP END DO
+    ! advance Bz
     !$OMP DO COLLAPSE(3)
     DO l = 0, nz
      DO k = 0, ny-1
@@ -132,11 +132,11 @@ SUBROUTINE pxr_push_em3d_kyeebvec(ex,ey,ez,bx,by,bz,dtsdx,dtsdy,dtsdz,nx,ny,nz, 
                               + gammay*dtsdy * (Ex(j+1,k+1,l+1) - Ex(j+1,k  ,l+1) &
                                              +  Ex(j-1,k+1,l+1) - Ex(j-1,k  ,l+1) &
                                              +  Ex(j+1,k+1,l-1) - Ex(j+1,k  ,l-1) &
-                                             +  Ex(j-1,k+1,l-1) - Ex(j-1,k  ,l-1)) 
+                                             +  Ex(j-1,k+1,l-1) - Ex(j-1,k  ,l-1))
       END DO
      END DO
     END DO
-    !$OMP END DO 
+    !$OMP END DO
     !$OMP END PARALLEL
   ELSE
 
@@ -150,33 +150,33 @@ SUBROUTINE pxr_push_em3d_kyeebvec(ex,ey,ez,bx,by,bz,dtsdx,dtsdy,dtsdz,nx,ny,nz, 
       DO j = 0, nx
         Bx(j,k,l) = Bx(j,k,l) +    alphaz*dtsdz * (Ey(j  ,k  ,l+1) - Ey(j  ,k  ,l  )) &
                               +    betazx*dtsdz * (Ey(j+1,k  ,l+1) - Ey(j+1,k  ,l  ) &
-                                                +  Ey(j-1,k  ,l+1) - Ey(j-1,k  ,l  )) 
+                                                +  Ey(j-1,k  ,l+1) - Ey(j-1,k  ,l  ))
       END DO
     END DO
-    !$OMP END DO 
+    !$OMP END DO
     ! advance By
     !$OMP DO COLLAPSE(2)
     DO l = 0, nz-1
       DO j = 0, nx-1
-        By(j,k,l) = By(j,k,l) +    alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &  
+        By(j,k,l) = By(j,k,l) +    alphax*dtsdx * (Ez(j+1,k  ,l  ) - Ez(j  ,k  ,l  )) &
                               +    betaxz*dtsdx * (Ez(j+1,k  ,l+1) - Ez(j  ,k  ,l+1) &
                                                 +  Ez(j+1,k  ,l-1) - Ez(j  ,k  ,l-1)) &
                               -    alphaz*dtsdz * (Ex(j  ,k  ,l+1) - Ex(j  ,k  ,l  )) &
                               -    betazx*dtsdz * (Ex(j+1,k  ,l+1) - Ex(j+1,k  ,l  ) &
-                                                +  Ex(j-1,k  ,l+1) - Ex(j-1,k  ,l  )) 
+                                                +  Ex(j-1,k  ,l+1) - Ex(j-1,k  ,l  ))
       END DO
     END DO
-    !$OMP END DO 
-    ! advance Bz 
+    !$OMP END DO
+    ! advance Bz
     !$OMP DO COLLAPSE(2)
     DO l = 0, nz
       DO j = 0, nx-1
         Bz(j,k,l) = Bz(j,k,l) -    alphax*dtsdx * (Ey(j+1,k  ,l  ) - Ey(j  ,k  ,l  )) &
                               -    betaxz*dtsdx * (Ey(j+1,k  ,l+1) - Ey(j  ,k  ,l+1) &
-                                                +  Ey(j+1,k  ,l-1) - Ey(j  ,k  ,l-1)) 
+                                                +  Ey(j+1,k  ,l-1) - Ey(j  ,k  ,l-1))
       END DO
     END DO
-    !$OMP END DO 
+    !$OMP END DO
     !$OMP END PARALLEL
   END IF
 

@@ -175,6 +175,7 @@ class EM3DPXR(EM3DFFT):
           pxr.c_dim=2
         else:
           pxr.c_dim=3
+
         # Set up PXR MPI Data
         if (self.l_debug): print(" Setup PXR MPI Data")
         pxr.nprocx=top.fsdecomp.nxprocs
@@ -1355,8 +1356,7 @@ class EM3DPXR(EM3DFFT):
         Load balance between MPI domains in 3D
         """
         if (l_pxr):
-
-            tdeb = MPIWTIME()
+            tdeb = MPI.Wtime()
 
             ## --- Compute time per part and per cell
             pxr.compute_time_per_part()
