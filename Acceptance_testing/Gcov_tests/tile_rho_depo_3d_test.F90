@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! TILE_RHO_DEPO_3D_TEST.F90
 !
@@ -37,41 +37,42 @@ PROGRAM tile_rho_depo_3d_test
 
   ! ____________________________________________________________________________
   ! Parameters
-  
+
   TYPE(particle_species), POINTER          :: curr
   INTEGER(idp)                             :: jmin, jmax, kmin, kmax, lmin, lmax
   REAL(num)                                :: partx, party, partz
-  REAL(num)                                :: partux, partuy, partuz, partw, gaminv
+  REAL(num)                                :: partux, partuy, partuz, gaminv
+  REAL(num), DIMENSION(:), ALLOCATABLE     :: partpid
   REAL(num)                                :: phi, th, up, clightsq
-  REAL(num)                                :: Ef, Bf  
+  REAL(num)                                :: Ef, Bf
   REAL(num), DIMENSION(6)                  :: rng=0_num
   REAL(num)                                :: epsilon
   REAL(num)                                :: t0
-  LOGICAL                                  :: passed 
+  LOGICAL                                  :: passed
   REAL(num), dimension(10)                 :: t
   CHARACTER(len=64), dimension(10)         :: name
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumrho
   REAL(num), dimension(10)                 :: sumrho
   REAL(num), dimension(10)                 :: errrho
-  CHARACTER(len=64)                        :: title  
+  CHARACTER(len=64)                        :: title
   ! ____________________________________________________________________________
   ! Initialization
   ! --- default init
   CALL default_init
-  
+
   ! --- Dimension
   c_dim = 3
-  
+
   ! --- Number of processors
   nprocx=1
   nprocy=1
   nprocz=1
-  
+
   ! --- Domain size
   nx_global_grid=50
   ny_global_grid=50
   nz_global_grid=50
-  
+
   ! --- Domain extension
   xmin=0
   ymin=0
@@ -84,11 +85,11 @@ PROGRAM tile_rho_depo_3d_test
   ntilex = 6
   ntiley = 6
   ntilez = 6
-  
+
   ! --- Vector length field gathering
   lvec_rho_depo = 64
-        
-  ! --- Interpolation 
+
+  ! --- Interpolation
   l_lower_order_in_v = .TRUE.
 
   ! --- Field properties
@@ -107,7 +108,7 @@ PROGRAM tile_rho_depo_3d_test
       ALLOCATE(species_parray(1:nspecies_max))
       l_species_allocated=.TRUE.
   ENDIF
-  
+
   ! Electrons
   curr => species_parray(1)
   curr%charge = -echarge
@@ -155,14 +156,15 @@ PROGRAM tile_rho_depo_3d_test
 
   ! --- Check domain decomposition / Create Cartesian communicator / Allocate grid arrays
   CALL mpi_initialise
-  
+
   ! --- Set tile split for particles
-  CALL set_tile_split  
+  CALL set_tile_split
 
   ! --- Allocate particle arrays for each tile of each species
   CALL init_tile_arrays
 
   ! --- Init "by hand" of the particle properties
+  ALLOCATE(partpid(npid))
   clightsq=1/clight**2
   DO ispecies=1,nspecies
       curr=>species_parray(ispecies)
@@ -181,30 +183,31 @@ PROGRAM tile_rho_depo_3d_test
                       partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
                       party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
                       partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
-                      partw = nc*dx*dy*dz/(curr%nppcell)
+                      partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                       ! Sets velocity
                       up=rng(4)*200
 
                       th = -0.5*pi + rng(5)*pi
                       phi = rng(6)*2*pi
-                      
+
                       partux = up*cos(th)*cos(phi)
                       partuy = up*cos(th)*sin(phi)
                       partuz = up*sin(th)
-                      
-                      gaminv = 1./sqrt(1.0_num + (partux**2 + partuy**2 + partuz**2)*clightsq)                                
+
+                      gaminv = 1./sqrt(1.0_num + (partux**2 + partuy**2 + partuz**2)*clightsq)
                       ! Adds particle to array of tiles of current species
                       CALL add_particle_to_species(curr, partx, party, partz, &
-                      partux, partuy, partuz, gaminv, partw)
+                      partux, partuy, partuz, gaminv, partpid)
                   END DO
               END DO
           END DO
       END DO
   END DO ! end loop on speciess
 
+  DEALLOCATE(partpid)
   ! Allocate array to check the results
   ALLOCATE(tilesumrho(ntilez,ntiley,ntilex))
-  
+
   ! Time step using the CFL
   dtcoef = 0.5
   dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
@@ -217,7 +220,7 @@ PROGRAM tile_rho_depo_3d_test
   write(0,*) ''
 
   errrho = 0
-  
+
   ! Reference
   i = 1
   name(i) = 'Charge deposition order n'
@@ -226,7 +229,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
   i = i+1
   name(i) = 'Charge deposition scalar'
@@ -235,7 +238,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
   i = i+1
   name(i) = 'Charge deposition vectorized'
@@ -244,7 +247,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
   ! Computation of the relative error
   CALL compute_err(i,sumrho, &
@@ -254,12 +257,12 @@ PROGRAM tile_rho_depo_3d_test
   CALL display_statistics(title,i,name,sumrho, &
            errrho,t)
 
-  ! __ Order 2 __________________     
+  ! __ Order 2 __________________
   write(0,*) ''
 
   errrho = 0
   tilesumrho = 0
-  
+
   i = 1
   name(i) = 'Charge deposition order n'
   rhodepo = 2 ; nox=2 ; noy=2 ; noz=2
@@ -267,7 +270,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
   i = i+1
   name(i) = 'Charge deposition scalar'
@@ -276,7 +279,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
   i = i+1
   name(i) = 'Charge deposition vectorized'
@@ -285,7 +288,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
 
   ! Computation of the relative error
@@ -295,8 +298,8 @@ PROGRAM tile_rho_depo_3d_test
   title = 'Results order 2'
   CALL display_statistics(title,i,name,sumrho, &
            errrho,t)
-           
-  ! __ Order 3 __________________     
+
+  ! __ Order 3 __________________
   write(0,*) ''
 
   errrho = 0
@@ -311,7 +314,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
   i = i+1
   name(i) = 'Charge deposition scalar'
@@ -321,7 +324,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
   i = i+1
   name(i) = 'Charge deposition vectorized'
@@ -331,7 +334,7 @@ PROGRAM tile_rho_depo_3d_test
   CALL pxrdepose_rho_on_grid
   t(i) = MPI_WTIME() - t0
   CALL check(tilesumrho)
-  sumrho(i) = SUM(tilesumrho) 
+  sumrho(i) = SUM(tilesumrho)
 
 
   ! Computation of the relative error
@@ -345,19 +348,19 @@ PROGRAM tile_rho_depo_3d_test
   ! ___ Final exam ____________________________________________
   write(0,*)
   IF (passed) THEN
-    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')  
-    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
+    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')
+    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')
     CALL system('printf "\e[32m ********** TEST TILING CHARGE DEPOSITION 3D PASSED **********  \e[0m \n"')
   ELSE
     !write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
-    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")     
+    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")
     CALL system('printf "\e[31m ********** TEST TILING CHARGE DEPOSITION 3D FAILED **********  \e[0m \n"')
     ! Failure exit
     CALL EXIT(9)
   ENDIF
-  
+
   write(0,'(" ____________________________________________________________________________")')
-  
+
   ! ____________________________________________________________________________
 
 END PROGRAM
@@ -370,7 +373,7 @@ END PROGRAM
 SUBROUTINE check(tilesumrho)
   USE particles
   USE constants
-  USE tiling                              
+  USE tiling
   IMPLICIT NONE
 
   ! ___ Parameter declaration ________________________________________
@@ -386,7 +389,7 @@ SUBROUTINE check(tilesumrho)
       DO ix=1, ntilex
 
         currg=>aofgrid_tiles(ix,iy,iz)
-  
+
         tilesumrho(iz,iy,ix)=SUM(currg%rhotile)
 
       END DO
@@ -398,20 +401,20 @@ SUBROUTINE compute_err(n,sumrho, &
            errrho,epsilon,passed)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(isp)                             :: n
   INTEGER(isp)                             :: i
   REAL(num)                                :: epsilon
   LOGICAL, INTENT(INOUT)                   :: passed
   REAL(num), dimension(10)                 :: sumrho
   REAL(num), dimension(10), INTENT(INOUT)  :: errrho
-  
+
   IF (n.gt.1) THEN
     DO i = 2,n
       errrho(i) = abs((sumrho(i) - sumrho(1)))/abs(sumrho(1))
-    
+
       IF (errrho(i) .gt. epsilon) passed = (passed.and.(.false.))
-      
+
     ENDDO
   ENDIF
 
@@ -422,7 +425,7 @@ SUBROUTINE display_statistics(title,n,name,sumrho, &
            errrho,t)
   USE constants
   IMPLICIT NONE
-  
+
   CHARACTER(len=64)                        :: title
   INTEGER(isp)                             :: n
   REAL(num), dimension(10)                 :: t
@@ -430,9 +433,9 @@ SUBROUTINE display_statistics(title,n,name,sumrho, &
   REAL(num), dimension(10)                 :: sumrho
   REAL(num), dimension(10)                 :: errrho
   INTEGER(isp)                             :: i
-  
+
   write(0,*)
-  write(0,'(A40)') title  
+  write(0,'(A40)') title
   write(0,'(A40)') 'Rho field'
   write(0,'(A50, 7(A13))') "Subroutines", "sum(rho)", "err rho", "time (s)"
   write(0,'(" _____________________________________________________")')

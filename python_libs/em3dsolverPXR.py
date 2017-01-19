@@ -446,7 +446,6 @@ class EM3DPXR(EM3DFFT):
         # --- allocates array of species
         if (self.l_debug): print(" Allocates array of species")
         pxr.init_species_section()
-
         for i,s in enumerate(self.listofallspecies):
             # Check for sorting
             if (i >= len(self.sorting.periods)):
@@ -459,11 +458,12 @@ class EM3DPXR(EM3DFFT):
                                                 self.sorting.periods[i],self.sorting.starts[i])
             pxr.nspecies+=1
 
+        pxr.npid=top.npid
+        pxr.ssnpid=top.ssnpid
         pxr.set_tile_split()
         pxr.init_tile_arrays()
-
         for i,s in enumerate(self.listofallspecies):
-            pxr.py_add_particles_to_species(i+1, s.nps,
+            pxr.py_add_particles_to_species(i+1, s.nps,top.npid,
                                             s.getx(bcast=0,gather=0),
                                             s.gety(bcast=0,gather=0),
                                             s.getz(bcast=0,gather=0),
@@ -471,8 +471,7 @@ class EM3DPXR(EM3DFFT):
                                             s.getuy(bcast=0,gather=0),
                                             s.getuz(bcast=0,gather=0),
                                             s.getgaminv(bcast=0,gather=0),
-                                            s.getweights(bcast=0,gather=0)  )
-
+                                            s.getpid(id=-1,bcast=0,gather=0))
         top.pgroup.npmax=0
         top.pgroup.ns=1
         top.pgroup.nps=0
@@ -510,7 +509,7 @@ class EM3DPXR(EM3DFFT):
                         pg.uxp = pxr.partux
                         pg.uyp = pxr.partuy
                         pg.uzp = pxr.partuz
-                        pg.pid = fzeros([pg.npmax,top.npid])
+                        #pg.pid = fzeros([pg.npmax,top.npid])
                         pg.pid = pxr.pid
                         pg.gaminv = pxr.partgaminv
                         pg.ex = pxr.partex
@@ -560,7 +559,7 @@ class EM3DPXR(EM3DFFT):
                 pg.uxp = pxr.partux
                 pg.uyp = pxr.partuy
                 pg.uzp = pxr.partuz
-                pg.pid = fzeros([pg.npmax,top.npid])
+                #pg.pid = fzeros([pg.npmax,top.npid])
                 pg.pid = pxr.pid
                 pg.gaminv = pxr.partgaminv
                 pg.ex = pxr.partex
@@ -1357,7 +1356,6 @@ class EM3DPXR(EM3DFFT):
         Load balance between MPI domains in 3D
         """
         if (l_pxr):
-        
             tdeb = MPI.Wtime()
 
             ## --- Compute time per part and per cell
