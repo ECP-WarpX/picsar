@@ -620,11 +620,6 @@ class EM3DPXR(EM3DFFT):
             else:
                 doit=False
         if doit:
-            if self.laser_mode==1:
-                self.add_laser(self.fields)
-                if dir<0.:
-                    self.fields.Ex_inz*=-1.
-                    self.fields.Ey_inz*=-1.
             if self.l_verbose:print 'push_e',self,dt,top.it,self.icycle
 
             if self.l_pxr:
@@ -681,9 +676,6 @@ class EM3DPXR(EM3DFFT):
             else:
                 l_pushe=True
             push_em3d_eef(self.block,dt,0,self.l_pushf,self.l_pushpot,l_pushe)
-            if self.laser_mode==1 and dir<0.:
-                self.fields.Ex_inz*=-1.
-                self.fields.Ey_inz*=-1.
         if self.refinement is not None:
             self.__class__.__bases__[1].push_e(self.field_coarse,dir)
 
