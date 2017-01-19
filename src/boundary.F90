@@ -3472,7 +3472,7 @@ END SUBROUTINE charge_bcs
     !
     ! For drifted plasmas, this method is not the most efficient
 
-    ALLOCATE(bufsend(MAXVAL(mpi_npart(:,:)),8,27,nspecies))
+    ALLOCATE(bufsend(MAXVAL(mpi_npart(:,:)),7+npid,27,nspecies))
     !print*,'max part',MAXVAL(mpi_npart(:,:)),MINVAL(mpi_npart(:,:))
     !print*,mpi_npart(:,1)
     !print*
@@ -3784,7 +3784,7 @@ END SUBROUTINE charge_bcs
 
       nrecv_buf_tot = SUM(nrecv_buf(:,is))
       curr=> species_parray(is)
-      ALLOCATE(recvbuf(1:nrecv_buf_tot+1,8))
+      ALLOCATE(recvbuf(1:nrecv_buf_tot+1,7+npid))
 
       ! Multithread version
       IF (.FALSE.) THEN
