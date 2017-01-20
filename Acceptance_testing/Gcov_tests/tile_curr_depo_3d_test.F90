@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! TILE_CURR_DEPO_3D_TEST.F90
 !
@@ -37,41 +37,42 @@ PROGRAM tile_curr_depo_3d_test
 
   ! ____________________________________________________________________________
   ! Parameters
-  
+
   TYPE(particle_species), POINTER :: curr
   INTEGER(idp)                    :: jmin, jmax, kmin, kmax, lmin, lmax
   REAL(num)                                :: partx, party, partz
-  REAL(num)                                :: partux, partuy, partuz, partw, gaminv
+  REAL(num)                                :: partux, partuy, partuz, gaminv
+  REAL(num), DIMENSION(:), ALLOCATABLE     :: partpid
   REAL(num)                                :: phi, th, up, clightsq
-  REAL(num)                                :: Ef, Bf  
+  REAL(num)                                :: Ef, Bf
   REAL(num), DIMENSION(6)                  :: rng=0_num
   REAL(num)                                :: epsilon
   REAL(num)                                :: t0
-  LOGICAL                                  :: passed 
+  LOGICAL                                  :: passed
   REAL(num), dimension(10)                 :: t
   CHARACTER(len=64), dimension(10)         :: name
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumjx,tilesumjy,tilesumjz
   REAL(num), dimension(10)                 :: sumjx,sumjy,sumjz
   REAL(num), dimension(10)                 :: errjx,errjy,errjz
-  CHARACTER(len=64)                        :: title  
+  CHARACTER(len=64)                        :: title
   ! ____________________________________________________________________________
   ! Initialization
   ! --- default init
   CALL default_init
-  
+
   ! --- Dimension
   c_dim = 3
-  
+
   ! --- Number of processors
   nprocx=1
   nprocy=1
   nprocz=1
-  
+
   ! --- Domain size
   nx_global_grid=50
   ny_global_grid=50
   nz_global_grid=50
-  
+
   ! --- Domain extension
   xmin=0
   ymin=0
@@ -84,11 +85,11 @@ PROGRAM tile_curr_depo_3d_test
   ntilex = 6
   ntiley = 6
   ntilez = 6
-  
+
   ! --- Vector length field gathering
   lvec_curr_depo = 8
-        
-  ! --- Interpolation 
+
+  ! --- Interpolation
   l_lower_order_in_v = .TRUE.
 
   ! --- Field properties
@@ -107,7 +108,7 @@ PROGRAM tile_curr_depo_3d_test
       ALLOCATE(species_parray(1:nspecies_max))
       l_species_allocated=.TRUE.
   ENDIF
-  
+
   ! Electrons
   curr => species_parray(1)
   curr%charge = -echarge
@@ -155,14 +156,15 @@ PROGRAM tile_curr_depo_3d_test
 
   ! --- Check domain decomposition / Create Cartesian communicator / Allocate grid arrays
   CALL mpi_initialise
-  
+
   ! --- Set tile split for particles
-  CALL set_tile_split  
+  CALL set_tile_split
 
   ! --- Allocate particle arrays for each tile of each species
   CALL init_tile_arrays
 
   ! --- Init "by hand" of the particle properties
+  ALLOCATE(partpid(npid))
   clightsq=1/clight**2
   DO ispecies=1,nspecies
       curr=>species_parray(ispecies)
@@ -181,32 +183,33 @@ PROGRAM tile_curr_depo_3d_test
                       partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
                       party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
                       partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
-                      partw = nc*dx*dy*dz/(curr%nppcell)
+                      partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                       ! Sets velocity
                       up=rng(4)*200
 
                       th = -0.5*pi + rng(5)*pi
                       phi = rng(6)*2*pi
-                      
+
                       partux = up*cos(th)*cos(phi)
                       partuy = up*cos(th)*sin(phi)
                       partuz = up*sin(th)
-                      
+
                       gaminv = 1./sqrt(1.0_num + (partux**2 + partuy**2 + partuz**2)*clightsq)
                       ! Adds particle to array of tiles of current species
                       CALL add_particle_to_species(curr, partx, party, partz, &
-                      partux, partuy, partuz, gaminv, partw)
+                      partux, partuy, partuz, gaminv, partpid)
                   END DO
               END DO
           END DO
       END DO
   END DO ! END LOOP ON SPECIES
 
+  DEALLOCATE(partpid)
   ! Allocate array to check the results
   ALLOCATE(tilesumjx(ntilez,ntiley,ntilex))
   ALLOCATE(tilesumjy(ntilez,ntiley,ntilex))
   ALLOCATE(tilesumjz(ntilez,ntiley,ntilex))
-  
+
   dtcoef = 0.5
   dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 
@@ -214,13 +217,13 @@ PROGRAM tile_curr_depo_3d_test
   ! ____________________________________________________________________________
   ! Test of the different subroutines with tiling
 
-  ! __ Order 1 __________________     
+  ! __ Order 1 __________________
   write(0,*) ''
 
   errjx = 0
   errjy = 0
   errjz = 0
-  
+
   i = 1
   name(i) = 'Esirkepov order n sequential version'
   currdepo = 2 ; nox=1 ; noy=1 ; noz=1
@@ -283,7 +286,7 @@ PROGRAM tile_curr_depo_3d_test
   CALL display_statistics(title,i,name,sumjx,sumjy,sumjz, &
            errjx,errjy,errjz,t)
 
-  ! __ Order 2 __________________     
+  ! __ Order 2 __________________
   write(0,*) ''
 
   errjx = 0
@@ -292,7 +295,7 @@ PROGRAM tile_curr_depo_3d_test
   tilesumjx = 0
   tilesumjy = 0
   tilesumjz = 0
-  
+
   i = 1
   name(i) = 'Esirkepov order n sequential version'
   currdepo = 2 ; nox=2 ; noy=2 ; noz=2
@@ -354,8 +357,8 @@ PROGRAM tile_curr_depo_3d_test
   title = 'Results order 2'
   CALL display_statistics(title,i,name,sumjx,sumjy,sumjz, &
            errjx,errjy,errjz,t)
-           
-  ! __ Order 3 __________________     
+
+  ! __ Order 3 __________________
   write(0,*) ''
 
   errjx = 0
@@ -435,18 +438,18 @@ PROGRAM tile_curr_depo_3d_test
   ! ___ Final exam ____________________________________________
   write(0,*)
   IF (passed) THEN
-    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')  
-    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
+    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')
+    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')
     CALL system('printf "\e[32m ********** TEST TILING CURRENT DEPOSITION 3D PASSED **********  \e[0m \n"')
   ELSE
     !write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
-    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")     
+    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")
     CALL system('printf "\e[31m ********** TEST TILING CURRENT DEPOSITION 3D FAILED **********  \e[0m \n"')
     CALL EXIT(9)
   ENDIF
-  
+
   write(0,'(" ____________________________________________________________________________")')
-  
+
   ! ____________________________________________________________________________
 
 END PROGRAM
@@ -460,15 +463,15 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
   USE shared_data
   USE params
   USE time_stat
-  
-  IMPLICIT NONE 
+
+  IMPLICIT NONE
   REAL(num) :: tdeb, tend
 
-  
+
   ! ___________________________________________________________________________
   ! Interfaces for func_order
   INTERFACE
-  
+
     ! __________________________________________________________________________
     ! Classical current deposition - non optimized - order 1
     SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
@@ -480,9 +483,9 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
-      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin           
+      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
     END SUBROUTINE
-    
+
     ! Classical current deposition - non optimized - order 2
     SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
@@ -493,7 +496,7 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
-      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin           
+      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
     END SUBROUTINE
 
     ! Classical current deposition - non optimized - order 3
@@ -506,9 +509,9 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
-      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin           
+      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
     END SUBROUTINE
-  
+
     SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
@@ -519,8 +522,8 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1  
-      
+    END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
+
     SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
@@ -531,8 +534,8 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2  
-    
+    END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
+
     SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard) !#do not parse
       USE constants
@@ -554,7 +557,7 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-    END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3 
+    END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 
      ! Interface for subroutine with no reduction - classical deposition order 1
       SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
@@ -586,7 +589,7 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
         INTEGER(idp) :: lvect
       END SUBROUTINE
 
-     ! Interface for subroutine with no reduction - classical deposition order 3    
+     ! Interface for subroutine with no reduction - classical deposition order 3
       SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect) !#do not parse
@@ -598,11 +601,11 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
         REAL(num), DIMENSION(np), INTENT(IN) :: xp,yp,zp,uxp,uyp,uzp, gaminv, w
         REAL(num), INTENT(IN) :: q,dt,dx,dy,dz,xmin,ymin,zmin
         INTEGER(idp) :: ncx, ncy, ncz
-        INTEGER(idp) :: lvect        
+        INTEGER(idp) :: lvect
       END SUBROUTINE
 
-    
-    ! Esirkepov at any order   
+
+    ! Esirkepov at any order
     SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
            nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
@@ -616,7 +619,7 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       LOGICAL(idp) :: l_particles_weight,l4symtry
     END SUBROUTINE
 
-    ! Esirkepov order 1    
+    ! Esirkepov order 1
     SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
            nox,noy,noz,l_particles_weight,l4symtry) !#do not parse
@@ -657,7 +660,7 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
       LOGICAL(idp) :: l_particles_weight,l4symtry
     END SUBROUTINE
-    
+
     ! Esirkepov optimized order 1
     SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -723,10 +726,10 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num),INTENT(IN), DIMENSION(8,ncells):: jxcells,jycells,jzcells
     END SUBROUTINE
-    
+
   END INTERFACE
   ! ___________________________________________________________________________
-    
+
 #if defined(DEBUG)
   WRITE(0,*) "Depose_currents_on_grid: start"
 #endif
@@ -734,13 +737,13 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
   IF (it.ge.timestat_itstart) THEN
     tdeb=MPI_WTIME()
   ENDIF
-  
-#if VTUNE==2              
-  CALL start_vtune_collection()     
-#endif                        
-#if SDE==2              
-  CALL start_vtune_collection()     
-#endif  
+
+#if VTUNE==2
+  CALL start_vtune_collection()
+#endif
+#if SDE==2
+  CALL start_vtune_collection()
+#endif
 
   jx = 0.0_num
   jy = 0.0_num
@@ -750,8 +753,8 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
 
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/no tiling
-  
-  
+
+
   IF (currdepo.EQ.5) THEN
 
     IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
@@ -766,9 +769,9 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
     ENDIF
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/tiling
-    
+
   ELSE IF (currdepo.EQ.4) THEN
- 
+
     IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_scalar_3_3_3, &
       jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
@@ -779,11 +782,11 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_scalar_1_1_1, &
       jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt)
     ENDIF
- 
+
   ! _______________________________________________________
   ! Classical current deposition, parallel, vectorized
   ELSE IF (currdepo.EQ.3) THEN
-  
+
     IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
       ! Old version with reduction for each species
       !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_vecHVv3_3_3_3, &
@@ -811,17 +814,17 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
            jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-           nox,noy,noz,dx,dy,dz,dt)    
+           nox,noy,noz,dx,dy,dz,dt)
     ENDIF
-  ! _______________________________________________________    
-  ! Esirkepov sequential version   
+  ! _______________________________________________________
+  ! Esirkepov sequential version
   ELSE IF (currdepo.EQ.2) THEN
-  
+
     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
   nox,noy,noz,dx,dy,dz,dt)
-  
+
   ! _______________________________________________________
-  ! Esirkepov tiling version 
+  ! Esirkepov tiling version
   ELSE IF (currdepo.EQ.1) THEN
 
     ! Order 1
@@ -839,23 +842,23 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
          nox,noy,noz,dx,dy,dz,dt)
 
     ! Order 3
-    ELSE IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN    
+    ELSE IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
 
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_3_3_3, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-         nox,noy,noz,dx,dy,dz,dt)  
-    
+         nox,noy,noz,dx,dy,dz,dt)
+
     ELSE
 
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
          nox,noy,noz,dx,dy,dz,dt)
-         
+
     ENDIF
-  ! _______________________________________________________  
+  ! _______________________________________________________
   ! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE
-    
+
     ! Order 1
     IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
 
@@ -881,22 +884,22 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
       !CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_vecHV_2_2_2, &
       !   jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
       !   nox,noy,noz,dx,dy,dz,dt)
-         
+
     ! Order 3
-    ELSE IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN    
+    ELSE IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
 
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_esirkepov_3_3_3, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
-         nox,noy,noz,dx,dy,dz,dt)    
-    
+         nox,noy,noz,dx,dy,dz,dt)
+
     ! Arbitrary order
     ELSE
-  
+
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(pxr_depose_jxjyjz_esirkepov_n, &
          jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
          nox,noy,noz,dx,dy,dz,dt)
     END IF
-     
+
   ENDIF
 
 END SUBROUTINE depose_currents_on_grid_jxjyjz
@@ -904,7 +907,7 @@ END SUBROUTINE depose_currents_on_grid_jxjyjz
 SUBROUTINE check(tilesumjx,tilesumjy,tilesumjz)
   USE particles
   USE constants
-  USE tiling                              
+  USE tiling
   IMPLICIT NONE
 
   ! ___ Parameter declaration ________________________________________
@@ -920,7 +923,7 @@ SUBROUTINE check(tilesumjx,tilesumjy,tilesumjz)
       DO ix=1, ntilex
 
         currg=>aofgrid_tiles(ix,iy,iz)
-  
+
         tilesumjx(iz,iy,ix)=SUM(currg%jxtile)
         tilesumjy(iz,iy,ix)=SUM(currg%jytile)
         tilesumjz(iz,iy,ix)=SUM(currg%jztile)
@@ -934,24 +937,24 @@ SUBROUTINE compute_err(n,sumjx,sumjy,sumjz, &
            errjx,errjy,errjz,epsilon,passed)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(isp)                             :: n
   INTEGER(isp)                             :: i
   REAL(num)                                :: epsilon
   LOGICAL, INTENT(INOUT)                   :: passed
   REAL(num), dimension(10)                 :: sumjx,sumjy,sumjz
   REAL(num), dimension(10), INTENT(INOUT)  :: errjx,errjy,errjz
-  
+
   IF (n.gt.1) THEN
     DO i = 2,n
       errjx(i) = abs((sumjx(i) - sumjx(1)))/sumjx(1)
       errjy(i) = abs((sumjy(i) - sumjy(1)))/sumjy(1)
       errjz(i) = abs((sumjz(i) - sumjz(1)))/sumjz(1)
-    
+
       IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-      
+
     ENDDO
   ENDIF
 
@@ -962,7 +965,7 @@ SUBROUTINE display_statistics(title,n,name,sumjx,sumjy,sumjz, &
            errjx,errjy,errjz,t)
   USE constants
   IMPLICIT NONE
-  
+
   CHARACTER(len=64)                        :: title
   INTEGER(isp)                             :: n
   REAL(num), dimension(10)                 :: t
@@ -970,9 +973,9 @@ SUBROUTINE display_statistics(title,n,name,sumjx,sumjy,sumjz, &
   REAL(num), dimension(10)                 :: sumjx,sumjy,sumjz
   REAL(num), dimension(10)                 :: errjx,errjy,errjz
   INTEGER(isp)                             :: i
-  
+
   write(0,*)
-  write(0,'(A40)') title  
+  write(0,'(A40)') title
   write(0,'(A40)') 'Current field'
   write(0,'(A50, 7(A13))') "Subroutines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz", "time (s)"
   write(0,'(" _____________________________________________________")')

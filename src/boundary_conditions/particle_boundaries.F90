@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
-! U.S. Dept. of Energy). All rights reserved.
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
+! The Regents of the University of California, through Lawrence Berkeley National
+! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
+! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software,
+! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! PARTICLE_BOUNDARIES.F90
@@ -252,7 +252,7 @@ MODULE particle_boundary
   !> Creation 2015
   SUBROUTINE particle_bcs_2d
   ! ____________________________________________________________________________
-  
+
     USE omp_lib
     USE time_stat
     USE tiling
@@ -340,14 +340,17 @@ MODULE particle_boundary
   !> Creation 2015
   SUBROUTINE particle_bcs_tiles
   ! ____________________________________________________________________________
-  
+
+
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
+    REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
 
+    ALLOCATE(partpid(1:npid))
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
         ! Get first tiles dimensions (may be different from last tile)
@@ -367,7 +370,7 @@ MODULE particle_boundary
                         partuy=curr_tile%part_uy(i)
                         partuz=curr_tile%part_uz(i)
                         gaminv=curr_tile%part_gaminv(i)
-                        partw=curr_tile%pid(i,wpid)
+                        partpid=curr_tile%pid(i,1:npid)
 
                         ! Case 1: if particle did not leave tile nothing to do
                         IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))             &
@@ -387,12 +390,13 @@ MODULE particle_boundary
                         indz = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
                         CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                         CALL add_particle_at_tile(curr, indx,indy,indz, &
-                             partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                             partx, party, partz, partux, partuy, partuz, gaminv, partpid)
                     END DO !END LOOP ON PARTICLES
                 END DO
             END DO
         END DO ! END LOOP ON TILES
     END DO ! END LOOP ON SPECIES
+    DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles
 
   ! ____________________________________________________________________________
@@ -417,7 +421,8 @@ MODULE particle_boundary
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
+    REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
     INTEGER(idp) :: nthreads_tot, nthreads_loop1, nthreads_loop2
 
 #ifdef _OPENMP
@@ -436,9 +441,10 @@ MODULE particle_boundary
       nthreads_loop2=1
     ENDIF
 
+  ALLOCATE(partpid(npid))
   !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz, &
-  !$OMP partx,party,partz,partux,partuy,partuz,gaminv,partw,indx,indy,indz,nptile,curr_tile) &
-  !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+  !$OMP partx,party,partz,partux,partuy,partuz,gaminv,partpid,indx,indy,indz,nptile,curr_tile) &
+  !$OMP SHARED(nspecies,npid,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1)
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
@@ -449,10 +455,10 @@ MODULE particle_boundary
         DO ipz=1,3
           DO ipy=1,3
             DO ipx=1,3
-          !$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+          !$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,npid,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
           !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
           !$OMP FIRSTPRIVATE(ipx,ipy,ipz) &
-          !$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+          !$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partpid, &
           !$OMP indx,indy,indz) COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
           DO iz=ipz, ntilez,3! LOOP ON TILES
             DO iy=ipy, ntiley,3
@@ -467,7 +473,7 @@ MODULE particle_boundary
                   partuy=curr_tile%part_uy(i)
                   partuz=curr_tile%part_uz(i)
                   gaminv=curr_tile%part_gaminv(i)
-                  partw=curr_tile%pid(i,wpid)
+                  partpid=curr_tile%pid(i,1:npid)
 
                   ! Case 1: if particle did not leave tile nothing to do
                   IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
@@ -487,7 +493,7 @@ MODULE particle_boundary
                   indz = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
                   CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                   CALL add_particle_at_tile(curr, indx,indy,indz, &
-                     partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                     partx, party, partz, partux, partuy, partuz, gaminv, partpid)
                 END DO !END LOOP ON PARTICLES
               END DO
             END DO
@@ -498,6 +504,7 @@ MODULE particle_boundary
         END DO
     END DO ! END LOOP ON SPECIES
     !$OMP END PARALLEL DO
+    DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_openmp
 
   ! ____________________________________________________________________________
@@ -516,8 +523,10 @@ MODULE particle_boundary
     INTEGER(idp) :: nptile, nx0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
+    REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
 
+    ALLOCATE(partpid(npid))
     iy=1
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
@@ -536,7 +545,7 @@ MODULE particle_boundary
           partuy=curr_tile%part_uy(i)
           partuz=curr_tile%part_uz(i)
           gaminv=curr_tile%part_gaminv(i)
-          partw=curr_tile%pid(i,wpid)
+          partpid=curr_tile%pid(i,1:npid)
 
           ! Case 1: if particle did not leave tile nothing to do
           IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
@@ -553,11 +562,12 @@ MODULE particle_boundary
           indz = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
           CALL rm_particle_at_tile(curr,ix,iy,iz,i)
           CALL add_particle_at_tile(curr, indx,iy,indz, &
-             partx, party, partz, partux, partuy, partuz, gaminv, partw)
+             partx, party, partz, partux, partuy, partuz, gaminv, partpid)
         END DO !END LOOP ON PARTICLES
       END DO
         END DO ! END LOOP ON TILES
     END DO ! END LOOP ON SPECIES
+    DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_2d
 
   ! ____________________________________________________________________________
@@ -582,7 +592,8 @@ MODULE particle_boundary
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER :: curr_tile
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
+    REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
     INTEGER(idp) :: nthreads_tot, nthreads_loop1, nthreads_loop2
 
 #ifdef _OPENMP
@@ -599,10 +610,11 @@ MODULE particle_boundary
     nthreads_loop1=1
     nthreads_loop2=1
   ENDIF
+  ALLOCATE(partpid(npid))
   iy=1
   !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipz, &
-  !$OMP partx,party,partz,partux,partuy,partuz,gaminv,partw,indx,indy,indz,curr_tile,nptile)    &
-  !$OMP SHARED(iy,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+  !$OMP partx,party,partz,partux,partuy,partuz,gaminv,partpid,indx,indy,indz,curr_tile,nptile)    &
+  !$OMP SHARED(iy,nspecies,npid,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz) NUM_THREADS(nthreads_loop1)
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
@@ -612,10 +624,10 @@ MODULE particle_boundary
         nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
         DO ipz=1,3
           DO ipx=1,3
-        !$OMP PARALLEL DO DEFAULT(NONE) SHARED(iy,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+        !$OMP PARALLEL DO DEFAULT(NONE) SHARED(iy,curr,npid,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
         !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
         !$OMP FIRSTPRIVATE(ipx,ipz) &
-        !$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+        !$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partpid, &
         !$OMP indx,indy,indz) COLLAPSE(2) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
         DO iz=ipz, ntilez,3! LOOP ON TILES
           DO ix=ipx, ntilex,3
@@ -629,7 +641,7 @@ MODULE particle_boundary
               partuy=curr_tile%part_uy(i)
               partuz=curr_tile%part_uz(i)
               gaminv=curr_tile%part_gaminv(i)
-              partw=curr_tile%pid(i,wpid)
+              partpid=curr_tile%pid(i,1:npid)
 
               ! Case 1: if particle did not leave tile nothing to do
               IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
@@ -647,9 +659,9 @@ MODULE particle_boundary
               !CALL rm_particle_at_tile_2d(curr,ix,iy,iz,i)
               CALL rm_particle_at_tile_2d(curr,ix,iz,i)
               !CALL add_particle_at_tile(curr, indx,iy,indz, &
-              !   partx, party, partz, partux, partuy, partuz, gaminv, partw)
+              !   partx, party, partz, partux, partuy, partuz, gaminv, partpid)
               CALL add_particle_at_tile_2d(curr, indx,indz, &
-                 partx, partz, partux, partuy, partuz, gaminv, partw)
+                 partx, partz, partux, partuy, partuz, gaminv, partpid)
             END DO !END LOOP ON PARTICLES
           END DO
         END DO ! END LOOP ON TILES
@@ -658,6 +670,7 @@ MODULE particle_boundary
         END DO
     END DO ! END LOOP ON SPECIES
     !$OMP END PARALLEL DO
+    DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_2d_openmp
 
 ! Experimental subroutine
@@ -673,7 +686,7 @@ MODULE particle_boundary
   ! Mathieu Lobet, 2016
   SUBROUTINE particle_bsc_openmp_reordering
   ! __________________________________________________________________
-  
+
     USE omp_lib
     USE communications
     IMPLICIT NONE
@@ -682,7 +695,8 @@ MODULE particle_boundary
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER    :: curr_tile, curr_tile_add
-    REAL(num)    :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    REAL(num)    :: partx, party, partz, partux, partuy, partuz, gaminv
+    REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
     INTEGER(idp) :: test =0, nthreads_tot, nthreads_loop1, nthreads_loop2
     INTEGER(idp) :: dirx,diry,dirz
     INTEGER(idp) :: k,ib
@@ -707,11 +721,12 @@ MODULE particle_boundary
   ENDIF
 
   ALLOCATE(buffer(ntilex,ntiley,ntilez,nspecies))
+  ALLOCATE(partpid(npid))
 
     !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,&
-    !$OMP nz0_grid_tile,ipx,ipy,ipz,indx,indy,indz,partw,ib,k,dirx,diry,dirz,&
+    !$OMP nz0_grid_tile,ipx,ipy,ipz,indx,indy,indz,partpid,ib,k,dirx,diry,dirz,&
     !$OMP partx, party, partz, curr_tile,nptile,partux,partuy,partuz) &
-    !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+    !$OMP SHARED(nspecies,npid,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,buffer) NUM_THREADS(nthreads_loop1)
     DO is=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(is)
@@ -722,11 +737,11 @@ MODULE particle_boundary
         DO ipz=1,3
           DO ipy=1,3
             DO ipx=1,3
-          !$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+          !$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,npid,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
           !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, &
           !$OMP buffer, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
           !$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
-          !$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+          !$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partpid, &
           !$OMP indx,indy,indz,dirx,diry,dirz,ib,k) &
           !$OMP COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
           DO iz=ipz, ntilez,3! LOOP ON TILES
@@ -769,7 +784,7 @@ MODULE particle_boundary
                   partuy=curr_tile%part_uy(i)
                   partuz=curr_tile%part_uz(i)
                   gaminv=curr_tile%part_gaminv(i)
-                  partw=curr_tile%pid(i,wpid)
+                  partpid=curr_tile%pid(i,1:npid)
 
 
                   ! Case 1: if particle did not leave tile nothing to do
@@ -843,7 +858,7 @@ MODULE particle_boundary
                   buffer(ix,iy,iz,is)%part_uy(k) = curr_tile%part_uy(i)
                   buffer(ix,iy,iz,is)%part_uz(k) = curr_tile%part_uz(i)
                   buffer(ix,iy,iz,is)%part_gaminv(k) = curr_tile%part_gaminv(i)
-                  buffer(ix,iy,iz,is)%pid(k,1) = curr_tile%pid(i,wpid)
+                  buffer(ix,iy,iz,is)%pid(k,1:npid) = curr_tile%pid(i,1:npid)
 
                   buffer(ix,iy,iz,is)%bin_pos(ib) = &
                   buffer(ix,iy,iz,is)%bin_pos(ib) + 1
@@ -893,7 +908,7 @@ MODULE particle_boundary
     !$OMP PARALLEL DO DEFAULT(NONE) &
     !$OMP PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,&
     !$OMP         ipx,ipy,ipz,ib,indx,indy,indz,nptile,ipmin,ipmax,curr_tile) &
-    !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+    !$OMP SHARED(nspecies,npid,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
     !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz,buffer) NUM_THREADS(nthreads_loop1)
     DO is=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(is)
@@ -904,11 +919,11 @@ MODULE particle_boundary
         DO ipz=1,3
           DO ipy=1,3
             DO ipx=1,3
-          !$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+          !$OMP PARALLEL DO DEFAULT(NONE) SHARED(curr,npid,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
           !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, &
           !$OMP buffer, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
           !$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
-          !$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+          !$OMP PRIVATE(ix,iy,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv, &
           !$OMP indx,indy,indz,ipmin,ipmax,ib) COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
           DO iz=ipz, ntilez,3! LOOP ON TILES
             DO iy=ipy, ntiley,3
@@ -935,7 +950,7 @@ MODULE particle_boundary
                        ipmax = ipmin+buffer(ix,iy,iz,is)%bin_npart(ib)-1
 
                        CALL add_group_of_particles_at_tile(curr,indx,indy,indz, &
-                       buffer(ix,iy,iz,is)%bin_npart(ib),&
+                       buffer(ix,iy,iz,is)%bin_npart(ib),npid,&
                        buffer(ix,iy,iz,is)%part_x(ipmin:ipmax), &
                        buffer(ix,iy,iz,is)%part_y(ipmin:ipmax), &
                        buffer(ix,iy,iz,is)%part_z(ipmin:ipmax), &
@@ -943,7 +958,7 @@ MODULE particle_boundary
                        buffer(ix,iy,iz,is)%part_uy(ipmin:ipmax), &
                        buffer(ix,iy,iz,is)%part_uz(ipmin:ipmax), &
                        buffer(ix,iy,iz,is)%part_gaminv(ipmin:ipmax), &
-                       buffer(ix,iy,iz,is)%pid(ipmin:ipmax,1))
+                       buffer(ix,iy,iz,is)%pid(ipmin:ipmax,1:npid))
 
                       ENDIF
 
@@ -960,7 +975,7 @@ MODULE particle_boundary
         END DO
     END DO ! END LOOP ON SPECIES
     !$OMP END PARALLEL DO
-
+    DEALLOCATE(partpid)
   END SUBROUTINE particle_bsc_openmp_reordering
 #endif
 
@@ -979,7 +994,7 @@ MODULE particle_boundary
 
     USE mpi
 
-    INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
+    INTEGER(isp) :: nvar ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuf
     REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
@@ -996,6 +1011,7 @@ MODULE particle_boundary
     TYPE(particle_species), POINTER :: currsp
     TYPE(particle_tile), POINTER :: curr
 
+    nvar=npid+7
     DO ispecies=1, nspecies !LOOP ON SPECIES
         tdeb=MPI_WTIME()
         ! Init send recv buffers
@@ -1157,7 +1173,7 @@ MODULE particle_boundary
                             sendbuf(xbd,ybd,zbd,ibuff+4)  = curr%part_uy(i)
                             sendbuf(xbd,ybd,zbd,ibuff+5)  = curr%part_uz(i)
                             sendbuf(xbd,ybd,zbd,ibuff+6)  = curr%part_gaminv(i)
-                            sendbuf(xbd,ybd,zbd,ibuff+7)  = curr%pid(i,wpid)
+                            sendbuf(xbd,ybd,zbd,ibuff+7:ibuff+6+npid)  = curr%pid(i,1:npid)
                             nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
                         ENDIF
                     ENDDO !END LOOP ON PARTICLES
@@ -1191,7 +1207,7 @@ MODULE particle_boundary
                             ! Add received particles to particle arrays
                             DO i =1, nrecv_buf, nvar
                                 CALL add_particle_to_species(currsp, recvbuf(i), recvbuf(i+1), recvbuf(i+2), &
-                                recvbuf(i+3), recvbuf(i+4), recvbuf(i+5), recvbuf(i+6),recvbuf(i+7))
+                                recvbuf(i+3), recvbuf(i+4), recvbuf(i+5), recvbuf(i+6),recvbuf(i+7:i+6+npid))
                             END DO
                             DEALLOCATE(recvbuf)
                     ENDDO
@@ -1203,7 +1219,7 @@ MODULE particle_boundary
 
 ! ______________________________________________________________________________
 !> @brief
-!> MPI Boundary condition routine on particles with non blocking mpi 
+!> MPI Boundary condition routine on particles with non blocking mpi
 !> communication subroutine
 !
 !> @author
@@ -1222,7 +1238,7 @@ MODULE particle_boundary
 
     IMPLICIT NONE
 
-    INTEGER(isp), PARAMETER :: nvar=8 ! Simple implementation
+    INTEGER(isp) :: nvar ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1,-1:1) :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:,:) :: sendbuff, recvbuff
     LOGICAL(lp)  :: remove_from_sim
@@ -1245,7 +1261,7 @@ MODULE particle_boundary
 
     npart_recv=0
     npart_send=0
-
+    nvar=7+npid
   ! POST IRECV PARTICLES FROM ADJACENT DOMAINS
   ! ----- POST ISEND FOR THE NUMBER OF PARTICLES
   ireq=1
@@ -1416,7 +1432,7 @@ MODULE particle_boundary
                             sendbuff(ibuff+4,xbd,ybd,zbd)  = curr%part_uy(i)
                             sendbuff(ibuff+5,xbd,ybd,zbd)  = curr%part_uz(i)
                             sendbuff(ibuff+6,xbd,ybd,zbd)  = curr%part_gaminv(i)
-                            sendbuff(ibuff+7,xbd,ybd,zbd)  = curr%pid(i,wpid)
+                            sendbuff(ibuff+7:ibuff+6+npid,xbd,ybd,zbd)  = curr%pid(i,1:npid)
                             npart_send(ispecies, xbd,ybd,zbd)=npart_send(ispecies,xbd,ybd,zbd)+1
                             nptoexch(xbd,ybd,zbd) = nptoexch(xbd,ybd,zbd)+1
                             ! Remove particle of current species from current tile
@@ -1502,7 +1518,7 @@ MODULE particle_boundary
               recvbuff(ibuff+1,ix,iy,iz), recvbuff(ibuff+2,ix,iy,iz),      &
               recvbuff(ibuff+3,ix,iy,iz), recvbuff(ibuff+4,ix,iy,iz),      &
               recvbuff(ibuff+5,ix,iy,iz), recvbuff(ibuff+6,ix,iy,iz),        &
-              recvbuff(ibuff+7,ix,iy,iz))
+              recvbuff(ibuff+7:ibuff+6+npid,ix,iy,iz))
             END DO
             ispec=ispec+nvar*npart_recv(ispecies,ix,iy,iz)
           END DO
@@ -1534,7 +1550,7 @@ MODULE particle_boundary
 
     USE mpi
 
-    INTEGER(isp), PARAMETER                  :: nvar=8 ! Simple implementation
+    INTEGER(isp)                  :: nvar ! Simple implementation
     INTEGER(isp), DIMENSION(-1:1,-1:1)       :: nptoexch
     REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: sendbuff, recvbuff
     INTEGER(isp)                             :: ibuff, nbuff
@@ -1557,6 +1573,7 @@ MODULE particle_boundary
 
     npart_recv=0
     npart_send=0
+    nvar=7+npid
 
   ! POST IRECV PARTICLES FROM ADJACENT DOMAINS
   ! ----- POST ISEND FOR THE NUMBER OF PARTICLES
@@ -1678,7 +1695,7 @@ MODULE particle_boundary
                             sendbuff(ibuff+3,xbd,zbd)  = curr%part_uy(i)
                             sendbuff(ibuff+4,xbd,zbd)  = curr%part_uz(i)
                             sendbuff(ibuff+5,xbd,zbd)  = curr%part_gaminv(i)
-                            sendbuff(ibuff+6,xbd,zbd)  = curr%pid(i,wpid)
+                            sendbuff(ibuff+6:ibuff+5+npid,xbd,zbd)  = curr%pid(i,wpid)
                             npart_send(ispecies, xbd,zbd)=npart_send(ispecies,xbd,zbd)+1
                             nptoexch(xbd,zbd) = nptoexch(xbd,zbd)+1
                             ! Remove particle of current species from current tile
@@ -1758,7 +1775,7 @@ MODULE particle_boundary
               CALL add_particle_to_species_2d(currsp, recvbuff(ibuff,ix,iz), &
               recvbuff(ibuff+1,ix,iz), recvbuff(ibuff+2,ix,iz),      &
               recvbuff(ibuff+3,ix,iz), recvbuff(ibuff+4,ix,iz),      &
-              recvbuff(ibuff+5,ix,iz), recvbuff(ibuff+6,ix,iz))
+              recvbuff(ibuff+5,ix,iz), recvbuff(ibuff+6:ibuff+5+npid,ix,iz))
             END DO
             ispec=ispec+nvar*npart_recv(ispecies,ix,iz)
           END DO
@@ -1772,7 +1789,7 @@ MODULE particle_boundary
 
   ! ____________________________________________________________________________
   !> @brief
-  !> This subroutine combined in a single routine the particle communications 
+  !> This subroutine combined in a single routine the particle communications
   !> between tiles and between MPI domains for 3D
   !
   !> @author
@@ -1783,7 +1800,8 @@ MODULE particle_boundary
   !
   SUBROUTINE particle_bcs_tiles_and_mpi_3d
   ! ____________________________________________________________________________
-  
+
+
     USE omp_lib
     USE communications
     USE params
@@ -1800,7 +1818,8 @@ MODULE particle_boundary
     INTEGER(idp)                    :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER    :: curr_tile
-    REAL(num)                       :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+    REAL(num)                       :: partx, party, partz, partux, partuy, partuz, gaminv
+    REAL(num), DIMENSION(:), ALLOCATABLE      :: partpid
     INTEGER(idp)                                      :: nthreads_tot
     INTEGER(idp)                                      :: nthreads_loop1, nthreads_loop2
     INTEGER(idp), dimension(:,:), ALLOCATABLE         :: mpi_npart
@@ -1827,10 +1846,10 @@ MODULE particle_boundary
 !     DO iz=1, ntilez
 !       DO iy=1, ntiley
 !         DO ix=1, ntilex
-!     
+!
 !           curr_tile=>curr%array_of_tiles(ix,iy,iz)
 !           nptile=curr_tile%np_tile(1)
-!           
+!
 !           DO i=1,nptile
 !             partx=curr_tile%part_x(i)
 !             party=curr_tile%part_y(i)
@@ -1840,15 +1859,15 @@ MODULE particle_boundary
 !             partuz=curr_tile%part_uz(i)
 !             gaminv=curr_tile%part_gaminv(i)
 !             partw=curr_tile%pid(i,wpid)
-! 
+!
 !             IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
 !                 (partx .GE. curr_tile%x_tile_max) .OR.   &
 !                 (party .LT. curr_tile%y_tile_min) .OR.   &
 !                 (party .GE. curr_tile%y_tile_max) .OR.  &
 !                 (partz .LT. curr_tile%z_tile_min+zgrid) .OR. &
 !                 (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
-!                 
-!                 
+!
+!
 !                 WRITE(0,'("ERROR: particle outside the domain")')
 !                 WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
 !                 WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
@@ -1856,11 +1875,11 @@ MODULE particle_boundary
 !                 WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
 !                 WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
 !                 WRITE(0,*)
-!                 
+!
 !             ENDIF
-!             
+!
 !           ENDDO
-!     
+!
 !         ENDDO
 !       ENDDO
 !     ENDDO
@@ -1892,7 +1911,7 @@ MODULE particle_boundary
   dxs2 = dx*0.5_num
   dys2 = dy*0.5_num
   dzs2 = dz*0.5_num
-  
+
   ! ___________________________________________________________
   ! Part 1 - Determine the particle to be exchanged with other tiles or with other MPI domains
   !
@@ -1911,7 +1930,7 @@ MODULE particle_boundary
 
   ALLOCATE(mpi_npart(27,nspecies))
   ALLOCATE(tilebuf(ntilex,ntiley,ntilez,nspecies))
-
+  ALLOCATE(partpid(npid))
 !   DO is=1, nspecies
 !     curr=> species_parray(is)
 !     DO iz=1, ntilez
@@ -1944,9 +1963,9 @@ MODULE particle_boundary
   !$OMP PARALLEL DO DEFAULT(NONE) &
   !$OMP PRIVATE(curr,is,ib,k,nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz,&
   !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,xbd,ybd,zbd,gaminv,&
-  !$OMP partw,indx,indy,indz,partx,party,partz,curr_tile,nptile,partux,partuy,partuz,&
+  !$OMP partpid,indx,indy,indz,partx,party,partz,curr_tile,nptile,partux,partuy,partuz,&
   !$OMP j) &
-  !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+  !$OMP SHARED(npid,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
   !$OMP length_x,length_y,length_z,dxs2,dys2,dzs2, &
   !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary,  &
   !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, &
@@ -1970,17 +1989,17 @@ MODULE particle_boundary
     DO ipz=1,3
       DO ipy=1,3
         DO ipx=1,3
-        
+
 
           !$OMP PARALLEL DO DEFAULT(NONE) &
-          !$OMP SHARED(curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
+          !$OMP SHARED(npid,curr,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
           !$OMP x_max_local,y_max_local,z_max_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile, &
           !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, &
           !$OMP length_x,length_y,length_z,tilebuf,mpi_npart, &
           !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary, &
           !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect)  &
           !$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
-          !$OMP PRIVATE(ix,iy,iz,i,ib,k,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partw, &
+          !$OMP PRIVATE(ix,iy,iz,i,ib,k,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partpid, &
           !$OMP indx,indy,indz,xbd,ybd,zbd,i2,i3,new_mpi_buf_size,old_mpi_buf_size)  &
           !$OMP COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
           ! LOOP ON TILES
@@ -1999,7 +2018,7 @@ MODULE particle_boundary
                   ALLOCATE(tilebuf(ix,iy,iz,is)%part_uy(mpi_buf_size,27))
                   ALLOCATE(tilebuf(ix,iy,iz,is)%part_uz(mpi_buf_size,27))
                   ALLOCATE(tilebuf(ix,iy,iz,is)%part_gaminv(mpi_buf_size,27))
-                  ALLOCATE(tilebuf(ix,iy,iz,is)%pid(mpi_buf_size,27))
+                  ALLOCATE(tilebuf(ix,iy,iz,is)%pid(mpi_buf_size,npid,27))
                 ENDIF
                 tilebuf(ix,iy,iz,is)%npart(1:27) = 0
 
@@ -2021,7 +2040,7 @@ MODULE particle_boundary
                   partuy=curr_tile%part_uy(i)
                   partuz=curr_tile%part_uz(i)
                   gaminv=curr_tile%part_gaminv(i)
-                  partw=curr_tile%pid(i,wpid)
+                  partpid=curr_tile%pid(i,1:npid)
 
                   ! Case 1: if particle did not leave tile nothing to do
                   IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
@@ -2136,7 +2155,7 @@ MODULE particle_boundary
                     tilebuf(ix,iy,iz,is)%part_uy(k,ib) = curr_tile%part_uy(i)
                     tilebuf(ix,iy,iz,is)%part_uz(k,ib) = curr_tile%part_uz(i)
                     tilebuf(ix,iy,iz,is)%part_gaminv(k,ib) = curr_tile%part_gaminv(i)
-                    tilebuf(ix,iy,iz,is)%pid(k,ib) = curr_tile%pid(i,wpid)
+                    tilebuf(ix,iy,iz,is)%pid(k,1:npid,ib) = curr_tile%pid(i,1:npid)
 
                     IF (k.eq.SIZE(tilebuf(ix,iy,iz,is)%part_x,1)) THEN
                       old_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)
@@ -2150,7 +2169,7 @@ MODULE particle_boundary
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uy, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uz, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
                       CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_gaminv, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%pid, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+                      CALL resize_3D_array_real(tilebuf(ix,iy,iz,is)%pid, old_mpi_buf_size,new_mpi_buf_size,npid,npid,27_idp,27_idp)
                     ENDIF
 
                     ! Update of the number of particles
@@ -2185,7 +2204,7 @@ MODULE particle_boundary
                   !ENDIF
 
                   CALL add_particle_at_tile(curr, indx,indy,indz, &
-                     partx, party, partz, partux, partuy, partuz, gaminv, partw)
+                     partx, party, partz, partux, partuy, partuz, gaminv, partpid)
 
 
                   !ENDDO
@@ -2234,7 +2253,7 @@ MODULE particle_boundary
     !
     ! For drifted plasmas, this method is not the most efficient
 
-    ALLOCATE(bufsend(MAXVAL(mpi_npart(:,:)),8,27,nspecies))
+    ALLOCATE(bufsend(MAXVAL(mpi_npart(:,:)),7+npid,27,nspecies))
     !print*,'max part',MAXVAL(mpi_npart(:,:)),MINVAL(mpi_npart(:,:))
     !print*,mpi_npart(:,1)
     !print*
@@ -2246,7 +2265,7 @@ MODULE particle_boundary
     !$OMP PARALLEL DO DEFAULT(NONE) &
     !$OMP PRIVATE(curr,is, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipy,ipz,&
     !$OMP ib,k,j) &
-    !$OMP SHARED(nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez, &
+    !$OMP SHARED(nspecies,npid,nthreads_loop2,species_parray,ntilex,ntiley,ntilez, &
     !$OMP dx,dy,dz,mpi_npart,bufsend,tilebuf) &
     !$OMP NUM_THREADS(nthreads_loop1)
     DO is=1, nspecies ! LOOP ON SPECIES
@@ -2254,7 +2273,7 @@ MODULE particle_boundary
      mpi_npart(:,is) = 0
 
      !$OMP PARALLEL DO DEFAULT(NONE) &
-     !$OMP SHARED(is,tilebuf,mpi_npart,bufsend,ntilez,ntiley,ntilex) &
+     !$OMP SHARED(npid,is,tilebuf,mpi_npart,bufsend,ntilez,ntiley,ntilex) &
      !$OMP PRIVATE(ix,iy,iz,k,xbd,ybd,zbd,j,ib) &
      !$OMP COLLAPSE(3) SCHEDULE(runtime) &
      !$OMP NUM_THREADS(nthreads_loop2)
@@ -2283,7 +2302,7 @@ MODULE particle_boundary
               bufsend(j+1:j+k,5,ib,is) = tilebuf(ix,iy,iz,is)%part_uy(1:k,ib)
               bufsend(j+1:j+k,6,ib,is) = tilebuf(ix,iy,iz,is)%part_uz(1:k,ib)
               bufsend(j+1:j+k,7,ib,is) = tilebuf(ix,iy,iz,is)%part_gaminv(1:k,ib)
-              bufsend(j+1:j+k,8,ib,is) = tilebuf(ix,iy,iz,is)%pid(1:k,ib)
+              bufsend(j+1:j+k,8:7+npid,ib,is) = tilebuf(ix,iy,iz,is)%pid(1:k,1:npid,ib)
               mpi_npart(ib,is) = j + k
 
             ENDDO
@@ -2546,7 +2565,7 @@ MODULE particle_boundary
 
       nrecv_buf_tot = SUM(nrecv_buf(:,is))
       curr=> species_parray(is)
-      ALLOCATE(recvbuf(1:nrecv_buf_tot+1,8))
+      ALLOCATE(recvbuf(1:nrecv_buf_tot+1,7+npid))
 
       ! Multithread version
       IF (.FALSE.) THEN
@@ -2566,7 +2585,7 @@ MODULE particle_boundary
         ENDDO
 
        !$OMP PARALLEL DO DEFAULT(NONE) &
-       !$OMP SHARED(is,mpi_npart,comm,neighbour,nrecv_buf,nrecv_buf_tot,recvbuf_index,MPI_STATUSES_IGNORE, &
+       !$OMP SHARED(is,mpi_npart,npid,comm,neighbour,nrecv_buf,nrecv_buf_tot,recvbuf_index,MPI_STATUSES_IGNORE, &
        !$OMP bufsend,mpidbl,recvbuf) &
        !$OMP FIRSTPRIVATE(tag,status,stats,reqs) &
        !$OMP PRIVATE(ix,iy,iz,k,j,ipx,ipy,ipz,dest,src,ib,ibs,errcode,typebuffer) &
@@ -2586,14 +2605,16 @@ MODULE particle_boundary
               dest = INT(neighbour(ix,iy,iz),isp)
               src  = INT(neighbour(-ix,-iy,-iz),isp)
 
-              CALL MPI_TYPE_VECTOR(8_isp,INT(j,isp),INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION,typebuffer,errcode)
+              CALL MPI_TYPE_VECTOR(7_isp+INT(npid,isp),               &
+              INT(j,isp),INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION, &
+              typebuffer,errcode)
               call MPI_TYPE_COMMIT(typebuffer,errcode)
 
              ! Exchange
              CALL MPI_Irecv(recvbuf(recvbuf_index(ib),1),1_isp, typebuffer,src, &
              INT(ib,isp),comm,reqs(1),errcode)
 
-             CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
+             CALL MPI_Isend(bufsend(1:k,1:7+npid,ib,is),INT((7_idp+npid)*k,isp),mpidbl,dest,INT(ib,isp), &
              comm, reqs(2), errcode)
 
              CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
@@ -2680,12 +2701,14 @@ MODULE particle_boundary
               dest = INT(neighbour(ix,iy,iz),isp)
               src  = INT(neighbour(-ix,-iy,-iz),isp)
 
-              CALL MPI_TYPE_VECTOR(8_isp,INT(j,isp),INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION,typebuffer,errcode)
+              CALL MPI_TYPE_VECTOR(7_isp+INT(npid,isp),INT(j,isp), &
+              INT(nrecv_buf_tot+1,isp),MPI_DOUBLE_PRECISION,typebuffer,errcode)
               call MPI_TYPE_COMMIT(typebuffer,errcode)
               ! Exchange
               CALL MPI_Irecv(recvbuf(npos,1),1_isp, typebuffer,src, &
               INT(ib,isp),comm,reqs(1),errcode)
-              CALL MPI_Isend(bufsend(1:k,1:8,ib,is),INT(8_idp*k,isp),mpidbl,dest,INT(ib,isp), &
+              CALL MPI_Isend(bufsend(1:k,1:7+npid,ib,is),&
+              INT((7_idp+npid)*k,isp),mpidbl,dest,INT(ib,isp), &
               comm, reqs(2), errcode)
               CALL MPI_Waitall(2_isp,reqs,MPI_STATUSES_IGNORE,errcode)
 
@@ -2722,7 +2745,7 @@ MODULE particle_boundary
         ! to it into its own particle array
 
         !$OMP PARALLEL DO DEFAULT(NONE) &
-        !$OMP SHARED(is,ntilez,ntiley,ntilex,nrecv_buf_tot,recvbuf,curr,dxs2,dys2,dzs2, &
+        !$OMP SHARED(is,npid,ntilez,ntiley,ntilex,nrecv_buf_tot,recvbuf,curr,dxs2,dys2,dzs2, &
         !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz, &
         !$OMP x_min_local,y_min_local,z_min_local) &
         !$OMP PRIVATE(ix,iy,iz,i,k,indx,indy,indz,curr_tile,nptile) &
@@ -2774,7 +2797,7 @@ MODULE particle_boundary
               curr_tile%part_uy(nptile) = recvbuf(i,5)
               curr_tile%part_uz(nptile) = recvbuf(i,6)
               curr_tile%part_gaminv(nptile) = recvbuf(i,7)
-              curr_tile%pid(nptile,wpid) = recvbuf(i,8)
+              curr_tile%pid(nptile,1:npid) = recvbuf(i,8:7+npid)
               curr_tile%part_ex(nptile)  = 0._num
               curr_tile%part_ey(nptile)  = 0._num
               curr_tile%part_ez(nptile)  = 0._num
@@ -2812,10 +2835,10 @@ MODULE particle_boundary
     DO iz=1, ntilez
       DO iy=1, ntiley
         DO ix=1, ntilex
-    
+
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
           nptile=curr_tile%np_tile(1)
-          
+
           DO i=1,nptile
             partx=curr_tile%part_x(i)
             party=curr_tile%part_y(i)
@@ -2824,7 +2847,7 @@ MODULE particle_boundary
             partuy=curr_tile%part_uy(i)
             partuz=curr_tile%part_uz(i)
             gaminv=curr_tile%part_gaminv(i)
-            partw=curr_tile%pid(i,wpid)
+            partpid=curr_tile%pid(i,1:npid)
 
             IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
                 (partx .GE. curr_tile%x_tile_max) .OR.   &
@@ -2832,8 +2855,8 @@ MODULE particle_boundary
                 (party .GE. curr_tile%y_tile_max) .OR.  &
                 (partz .LT. curr_tile%z_tile_min) .OR. &
                 (partz .GE. curr_tile%z_tile_max)) THEN
-                
-                
+
+
                 WRITE(0,'("ERROR: particle outside the domain")')
                 WRITE(0,'("Particle id:",I7," of species ",I7)') i,is
                 WRITE(0,'("In tile: ",I3,X,I3,X,I3)') ix,iy,iz
@@ -2841,11 +2864,11 @@ MODULE particle_boundary
                 WRITE(0,'("y:",E12.5,X,E12.5,X,E12.5)') curr_tile%y_tile_min,party,curr_tile%y_tile_max
                 WRITE(0,'("z:",E12.5,X,E12.5,X,E12.5)') curr_tile%z_tile_min,partz,curr_tile%z_tile_max
                 WRITE(0,*)
-                
+
             ENDIF
-            
+
           ENDDO
-    
+
         ENDDO
       ENDDO
     ENDDO
@@ -2853,6 +2876,7 @@ MODULE particle_boundary
   WRITE(0,*) " Checking after particle boundary conditions: stop"
 #endif
 
+  DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_and_mpi_3d
 
 END MODULE particle_boundary

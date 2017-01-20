@@ -2,24 +2,24 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
-! 
+!
 ! FIELD_GATHERING_O1_3D.F90
-! 
+!
 ! Field gathering subroutines in 2D at order 1
 !
 ! List of subroutines:
@@ -56,10 +56,10 @@
 !
 subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz, &
                     nxguard,nzguard,exg,eyg,ezg,lvect,l_lower_order_in_v)
-                    
+
   use constants
   implicit none
-  
+
   integer(idp), intent(in)                :: np,nx,nz,nxguard,nzguard
   integer(idp), intent(in)                :: lvect
   real(num), dimension(np), intent(in)    :: xp,zp
@@ -67,7 +67,7 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
   logical(idp)                            :: l_lower_order_in_v
   real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
                                           :: exg,eyg,ezg
-                                          
+
   real(num)                          :: xmin,zmin,dx,dz
   integer(isp)                       :: ip, j, l, j0, l0
   integer(isp)                       :: nn,n
@@ -75,7 +75,7 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
   real(num), DIMENSION(lvect,0:1)    :: sx,sx0
   real(num), DIMENSION(lvect,0:1)    :: sz,sz0
   real(num), parameter               :: onesixth=1./6.,twothird=2./3.
-  
+
   dxi = 1./dx
   dzi = 1./dz
 
@@ -84,13 +84,13 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
   sx0=0.
   sz0=0.
 
-  ! ___________________________   
+  ! ___________________________
   IF (l_lower_order_in_v) THEN
 
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
 !DIR$ ASSUME_ALIGNED xp:64,zp:64
@@ -100,21 +100,21 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
       DO n=1,MIN(lvect,np-ip+1)
-    
+
         nn=ip+n-1
 
         x = (xp(nn)-xmin)*dxi
         z = (zp(nn)-zmin)*dzi
-    
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -122,45 +122,45 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
         l0=floor(z)
         xint=x-j
         zint=z-l
-    
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-    
+
         xint=x-0.5_num-j0
         zint=z-0.5_num-l0
-    
+
         sx0(n, 0) = 1.0_num
-    
+
         sz0(n, 0) = 1.0_num
-    
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n,0)*sz(n,0)*exg(j0,1,l)
         ex(nn) = ex(nn) + sx0(n,0)*sz(n,1)*exg(j0,1,l+1)
-    
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n,0)*sz(n,0)*eyg(j,1,l)
         ey(nn) = ey(nn) + sx(n,1)*sz(n,0)*eyg(j+1,1,l)
         ey(nn) = ey(nn) + sx(n,0)*sz(n,1)*eyg(j,1,l+1)
         ey(nn) = ey(nn) + sx(n,1)*sz(n,1)*eyg(j+1,1,l+1)
-    
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n,0)*sz0(n,0)*ezg(j,1,l0)
         ez(nn) = ez(nn) + sx(n,1)*sz0(n,0)*ezg(j+1,1,l0)
-        
+
       ENDDO
     ENDDO
 
-  ! ___________________________         
-  ! l_lower_order_in_v is false      
+  ! ___________________________
+  ! l_lower_order_in_v is false
   ELSE
 
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
 !DIR$ ASSUME_ALIGNED xp:64,zp:64
@@ -170,21 +170,21 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
       DO n=1,MIN(lvect,np-ip+1)
-    
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         z = (zp(nn)-zmin)*dzi
-    
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -192,45 +192,45 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,d
         l0=floor(z-0.5_num)
         xint=x-j
         zint=z-l
-    
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-    
+
         xint=x-0.5_num-j0
         zint=z-0.5_num-l0
-    
+
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
-    
+
         sz0(n, 0) = 1.0_num-zint
         sz0(n, 1) = zint
-    
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n,0)*sz(n,0)*exg(j0,1,l)
         ex(nn) = ex(nn) + sx0(n,1)*sz(n,0)*exg(j0+1,1,l)
         ex(nn) = ex(nn) + sx0(n,0)*sz(n,1)*exg(j0,1,l+1)
         ex(nn) = ex(nn) + sx0(n,1)*sz(n,1)*exg(j0+1,1,l+1)
-    
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n,0)*sz(n,0)*eyg(j,1,l)
         ey(nn) = ey(nn) + sx(n,1)*sz(n,0)*eyg(j+1,1,l)
         ey(nn) = ey(nn) + sx(n,0)*sz(n,1)*eyg(j,1,l+1)
         ey(nn) = ey(nn) + sx(n,1)*sz(n,1)*eyg(j+1,1,l+1)
-    
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n,0)*sz0(n,0)*ezg(j,1,l0)
         ez(nn) = ez(nn) + sx(n,1)*sz0(n,0)*ezg(j+1,1,l0)
         ez(nn) = ez(nn) + sx(n,0)*sz0(n,1)*ezg(j,1,l0+1)
         ez(nn) = ez(nn) + sx(n,1)*sz0(n,1)*ezg(j+1,1,l0+1)
-        
+
       ENDDO
     ENDDO
 
   end if
-  
+
 end subroutine
 
 
@@ -275,7 +275,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin, 
   logical(idp), intent(in)                :: l_lower_order_in_v
   real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
                                           :: bxg,byg,bzg
-  
+
   real(num)                          :: xmin,zmin,dx,dz
   integer(idp)                       :: ip, j, l
   integer(idp)                       :: j0, l0
@@ -285,7 +285,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin, 
   real(num), DIMENSION(lvect,0:1)    :: sz, sz0
   real(num), parameter               :: onesixth=1./6.,twothird=2./3.
 
-  ! ___________________________     
+  ! ___________________________
   ! Compute parameters
 
   dxi = 1./dx
@@ -296,13 +296,13 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin, 
   sx0=0.
   sz0=0.
 
-  ! ___________________________   
+  ! ___________________________
   IF (l_lower_order_in_v) THEN
 
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
 !DIR$ ASSUME_ALIGNED xp:64,zp:64
@@ -312,65 +312,65 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin, 
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
       DO n=1,MIN(lvect,np-ip+1)
 
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         z = (zp(nn)-zmin)*dzi
-      
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
-  
+
         l=floor(z)
         l0=floor(z)
-  
+
         xint=x-j
         zint=z-l
-  
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-  
+
         xint=x-0.5_num-j0
         zint=z-0.5_num-l0
-  
+
         sx0(n, 0) = 1.0_num
         sz0(n, 0) = 1.0_num
-  
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n,0)*sz0(n,0)*bxg(j,1,l0)
         bx(nn) = bx(nn) + sx(n,1)*sz0(n,0)*bxg(j+1,1,l0)
-  
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n,0)*sz0(n,0)*byg(j0,1,l0)
-  
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n,0)*sz(n,0)*bzg(j0,1,l)
         bz(nn) = bz(nn) + sx0(n,0)*sz(n,1)*bzg(j0,1,l+1)
-        
+
       ENDDO
     ENDDO
 
-  ! ___________________________ 
+  ! ___________________________
   ! l_lower_order_in_v is false
   ELSE
 
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !!DIR$ IVDEP
 !!DIR$ DISTRIBUTE POINT
 !DIR$ ASSUME_ALIGNED xp:64,zp:64
@@ -380,57 +380,57 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin, 
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
       DO n=1,MIN(lvect,np-ip+1)
 
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         z = (zp(nn)-zmin)*dzi
-      
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
-  
+
         l=floor(z)
         l0=floor(z-0.5_num)
-      
+
         xint=x-j
         zint=z-l
-      
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-      
+
         xint=x-0.5_num-j0
         zint=z-0.5_num-l0
-      
+
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
-      
+
         sz0(n, 0) = 1.0_num-zint
         sz0(n, 1) = zint
-      
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n,0)*sz0(n,0)*bxg(j,1,l0)
         bx(nn) = bx(nn) + sx(n,1)*sz0(n,0)*bxg(j+1,1,l0)
-      
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n,0)*sz0(n,0)*byg(j0,1,l0)
-  
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n,0)*sz(n,0)*bzg(j0,1,l)
         bz(nn) = bz(nn) + sx0(n,0)*sz(n,1)*bzg(j0,1,l+1)
-        
+
       ENDDO
     ENDDO
 
@@ -439,4 +439,3 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin, 
   return
 
 end subroutine
-

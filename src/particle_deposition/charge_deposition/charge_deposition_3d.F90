@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 !
@@ -189,7 +189,7 @@ SUBROUTINE depose_rho_scalar_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
   invvol = dxi*dyi*dzi
   !DIR$ NOVECTOR
   DO ip=1,np
-  
+
         ! --- computes current position in grid units
         x = (xp(ip)-xmin)*dxi
         y = (yp(ip)-ymin)*dyi
@@ -303,7 +303,7 @@ SUBROUTINE depose_rho_scalar_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
   REAL(num) :: sx(-1:2), sy(-1:2), sz(-1:2)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
   INTEGER(idp) :: j,k,l,ip
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -600,7 +600,7 @@ SUBROUTINE depose_rho_vecNOY_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,n
     INTEGER(idp) :: j,k,l,vv,n,ip,jj
     INTEGER(idp), INTENT(IN) :: lvect
     REAL(num), DIMENSION(lvect,8) :: ww
-    
+
     dxi = 1.0_num/dx
     dyi = 1.0_num/dy
     dzi = 1.0_num/dz
@@ -807,7 +807,7 @@ END SUBROUTINE depose_rho_vecHV_1_1_1
 !> Speedup>2 on AVX 256 bits.
 !> The parameter lvect is the vector length and is originally at 64 for order 1.
 !>
-!> @image html charge_deposition_grid.jpg "Description of the rho structure 
+!> @image html charge_deposition_grid.jpg "Description of the rho structure
 !> (2d vision) and internal parameters"
 !>
 !> @author
@@ -1075,7 +1075,7 @@ SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1,np,lvect
 #if defined __INTEL_COMPILER

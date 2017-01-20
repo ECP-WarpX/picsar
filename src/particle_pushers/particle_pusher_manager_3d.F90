@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! PARTICLE_PUSHER_MANAGER.F90
@@ -30,7 +30,7 @@
 !> in the main loop (in submain.F90)
 !
 !> @details
-!> This routine calls the subroutines for the different 
+!> This routine calls the subroutines for the different
 !> particle pusher + field gathering algorithms:
 !> * field_gathering_plus_particle_pusher_sub_2d()
 !> * field_gathering_plus_particle_pusher_sub()
@@ -61,7 +61,7 @@ SUBROUTINE field_gathering_plus_particle_pusher
 #endif
   IF (nspecies .EQ. 0_idp) RETURN
   SELECT CASE (c_dim)
-  
+
     ! ___________________________________________________________
     ! 2D CASE X Z
     CASE (2)
@@ -219,7 +219,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
             curr=>species_parray(ispecies)
             curr_tile=>curr%array_of_tiles(ix,iy,iz)
             count=curr_tile%np_tile(1)
-            
+
             IF (count .EQ. 0) CYCLE
             curr_tile%part_ex(1:count) = 0.0_num
             curr_tile%part_ey(1:count) = 0.0_num
@@ -227,7 +227,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
             curr_tile%part_bx(1:count)=0.0_num
             curr_tile%part_by(1:count)=0.0_num
             curr_tile%part_bz(1:count)=0.0_num
-            
+
             !!! ---- Loop by blocks over particles in a tile (blocking)
             !!! --- Gather electric field on particles
             SELECT CASE (c_dim)
@@ -247,7 +247,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
                           l_lower_order_in_v_in,                                                   &
                           LVEC_fieldgathe,                                                         &
                           fieldgathe)
-                          
+
             CASE DEFAULT ! 3D CASE
 
               !!! --- Gather electric and magnetic fields on particles
@@ -331,7 +331,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
     localtimes(1) = localtimes(1) + (tend-tdeb)
   ENDIF
   pushtime=pushtime+(MPI_WTIME()-tdeb)
-  
+
 END SUBROUTINE field_gathering_plus_particle_pusher_sub
 
 
@@ -766,7 +766,7 @@ END SUBROUTINE pxrpush_particles_part1
 !> @param[in] noxx,noyy,nozz interpolation orders
 !> @param[in] dxx,dyy,dzz space steps
 !> @param[in] dtt time step
-!> @param[in] l4symtry_in 
+!> @param[in] l4symtry_in
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !>
 SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
@@ -778,7 +778,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   USE constants
   USE tiling
   IMPLICIT NONE
-  
+
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
   INTEGER(idp), INTENT(IN) :: lvect, field_gathe_algo
@@ -1200,11 +1200,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       ! Compute Bx on particle
       a = (sx(n,0)*bxg(j,k0,l0) + sx(n,1)*bxg(j+1,k0,l0))*sy0(n,0)
       bx(nn) = bx(nn) + a*sz0(n,0)
-    
+
       ! Compute By on particle
       a = (sy(n,0)*byg(j0,k,l0) + sy(n,1)*byg(j0,k+1,l0))*sx0(n,0)
       by(nn) = by(nn) + a*sz0(n,0)
-    
+
       ! Compute Bz on particle
       a = (sz(n,0)*bzg(j0,k0,l) + sz(n,1)*bzg(j0,k0,l+1))*sx0(n,0)
       bz(nn) = bz(nn) + a*sy0(n,0)
@@ -1218,7 +1218,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 
     ! __________________________________________________________________________
     ! Particle pusher
-    
+
     SELECT CASE (particle_pusher)
     !! Vay pusher -- Full push
     CASE (1_idp)
@@ -1232,7 +1232,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
                                  bx(ip:ip+blocksize-1),  &
                                  by(ip:ip+blocksize-1),  &
                                  bz(ip:ip+blocksize-1),q,m,dt,0_idp)
-        
+
     !! Boris pusher -- Full push
     CASE DEFAULT
 
@@ -1256,10 +1256,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
-!       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-!                                  uyp(ip:ip+blocksize-1),   &
-!                                  uzp(ip:ip+blocksize-1),   &
-!                                  gaminv(ip:ip+blocksize-1))    
+      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+                                 uyp(ip:ip+blocksize-1),   &
+                                 uzp(ip:ip+blocksize-1),   &
+                                 gaminv(ip:ip+blocksize-1))
+
 
       ! ___ Push with B ___
 !       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
@@ -1279,10 +1280,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
-!       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-!                                  uyp(ip:ip+blocksize-1),   &
-!                                  uzp(ip:ip+blocksize-1),   &
-!                                  gaminv(ip:ip+blocksize-1))    
+      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+                                 uyp(ip:ip+blocksize-1),   &
+                                 uzp(ip:ip+blocksize-1),   &
+                                 gaminv(ip:ip+blocksize-1))
+
     END SELECT
     ! ___ Update position ___
     CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
@@ -1316,10 +1318,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       uxp(nn) = uxp(nn) + ex(nn)*const1
 !       uyp(nn) = uyp(nn) + ey(nn)*const1
 !       uzp(nn) = uzp(nn) + ez(nn)*const1
-! 
+!
 !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
 !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-! 
+!
 !     END DO
 ! #if defined __INTEL_COMPILER
 ! #elif defined _OPENMP && _OPENMP>=201307
@@ -1390,7 +1392,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       uxp(nn) = uxp(nn) + ex(nn)*const1
 !       uyp(nn) = uyp(nn) + ey(nn)*const1
 !       uzp(nn) = uzp(nn) + ez(nn)*const1
-! 
+!
 !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
 !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
 !     END DO
@@ -1423,7 +1425,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       xp(nn) = xp(nn) + uxp(nn)*const2
 !       yp(nn) = yp(nn) + uyp(nn)*const2
 !       zp(nn) = zp(nn) + uzp(nn)*const2
-! 
+!
 !     END DO
 ! #if defined __INTEL_COMPILER
 ! #elif defined _OPENMP && _OPENMP>=201307
@@ -1635,7 +1637,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       a = a + (sx0(n,0)*exg(j0,k+1,l+1) &
           + sx0(n,1)*exg(j0+1,k+1,l+1))*sy(n,1)
       ex(nn) = ex(nn) + a*sz(n,1)
-    
+
       ! Compute Ey on particle
       a = (sx(n,-1)*eyg(j-1,k0,l-1) &
           + sx(n,0)*eyg(j,k0,l-1) &
@@ -1658,7 +1660,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
           + sx(n,0)*eyg(j,k0+1,l+1) &
           + sx(n,1)*eyg(j+1,k0+1,l+1))*sy0(n,1)
       ey(nn) = ey(nn) + a*sz(n,1)
-    
+
       ! Compute Ez on particle
       a = (sx(n,-1)*ezg(j-1,k-1,l0) &
           + sx(n,0)*ezg(j,k-1,l0) &
@@ -1680,7 +1682,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
           + sx(n,0)*ezg(j,k+1,l0+1) &
           + sx(n,1)*ezg(j+1,k+1,l0+1))*sy(n,1)
       ez(nn) = ez(nn) + a*sz0(n,1)
-    
+
       ! Compute Bx on particle
       a = (sx(n,-1)*bxg(j-1,k0,l0) &
           + sx(n,0)*bxg(j,k0,l0) &
@@ -1696,7 +1698,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
           + sx(n,0)*bxg(j,k0+1,l0+1) &
           + sx(n,1)*bxg(j+1,k0+1,l0+1))*sy0(n,1)
       bx(nn) = bx(nn) + a*sz0(n,1)
-    
+
       ! Compute By on particle
       a = (sx0(n,0)*byg(j0,k-1,l0) &
           + sx0(n,1)*byg(j0+1,k-1,l0))*sy(n,-1)
@@ -1712,7 +1714,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       a = a + (sx0(n,0)*byg(j0,k+1,l0+1) &
           + sx0(n,1)*byg(j0+1,k+1,l0+1))*sy(n,1)
       by(nn) = by(nn) + a*sz0(n,1)
-    
+
       ! Compute Bz on particle
       a = (sx0(n,0)*bzg(j0,k0,l-1) &
           + sx0(n,1)*bzg(j0+1,k0,l-1))*sy0(n,0)
@@ -1753,7 +1755,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
                                  bx(ip:ip+blocksize-1),  &
                                  by(ip:ip+blocksize-1),  &
                                  bz(ip:ip+blocksize-1),q,m,dt,0_idp)
-        
+
     !! Boris pusher -- Full push
     CASE DEFAULT
 
@@ -1777,10 +1779,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
-!       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-!                                  uyp(ip:ip+blocksize-1),   &
-!                                  uzp(ip:ip+blocksize-1),   &
-!                                  gaminv(ip:ip+blocksize-1))    
+      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+                                 uyp(ip:ip+blocksize-1),   &
+                                 uzp(ip:ip+blocksize-1),   &
+                                 gaminv(ip:ip+blocksize-1))
 
       ! ___ Push with B ___
 !       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
@@ -1800,10 +1802,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
-!       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-!                                  uyp(ip:ip+blocksize-1),   &
-!                                  uzp(ip:ip+blocksize-1),   &
-!                                  gaminv(ip:ip+blocksize-1))    
+      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+                                 uyp(ip:ip+blocksize-1),   &
+                                 uzp(ip:ip+blocksize-1),   &
+                                 gaminv(ip:ip+blocksize-1))
+
     END SELECT
     ! ___ Update position ___
     CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
@@ -1837,10 +1840,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       uxp(nn) = uxp(nn) + ex(nn)*const1
 !       uyp(nn) = uyp(nn) + ey(nn)*const1
 !       uzp(nn) = uzp(nn) + ez(nn)*const1
-! 
+!
 !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
 !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-! 
+!
 !     END DO
 ! #if defined __INTEL_COMPILER
 ! #elif defined _OPENMP && _OPENMP>=201307
@@ -1912,7 +1915,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       uxp(nn) = uxp(nn) + ex(nn)*const1
 !       uyp(nn) = uyp(nn) + ey(nn)*const1
 !       uzp(nn) = uzp(nn) + ez(nn)*const1
-! 
+!
 !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
 !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
 !     END DO
@@ -1945,7 +1948,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       xp(nn) = xp(nn) + uxp(nn)*const2
 !       yp(nn) = yp(nn) + uyp(nn)*const2
 !       zp(nn) = zp(nn) + uzp(nn)*const2
-! 
+!
 !     END DO
 ! #if defined __INTEL_COMPILER
 ! #elif defined _OPENMP && _OPENMP>=201307
@@ -2465,7 +2468,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
                                  bx(ip:ip+blocksize-1),  &
                                  by(ip:ip+blocksize-1),  &
                                  bz(ip:ip+blocksize-1),q,m,dt,0_idp)
-        
+
     !! Boris pusher -- Full push
     CASE DEFAULT
 
@@ -2489,10 +2492,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
-!       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-!                                  uyp(ip:ip+blocksize-1),   &
-!                                  uzp(ip:ip+blocksize-1),   &
-!                                  gaminv(ip:ip+blocksize-1))    
+      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+                                 uyp(ip:ip+blocksize-1),   &
+                                 uzp(ip:ip+blocksize-1),   &
+                                 gaminv(ip:ip+blocksize-1))
 
       ! ___ Push with B ___
 !       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
@@ -2512,10 +2515,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
-!       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-!                                  uyp(ip:ip+blocksize-1),   &
-!                                  uzp(ip:ip+blocksize-1),   &
-!                                  gaminv(ip:ip+blocksize-1))    
+      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
+                                 uyp(ip:ip+blocksize-1),   &
+                                 uzp(ip:ip+blocksize-1),   &
+                                 gaminv(ip:ip+blocksize-1))
+
     END SELECT
     
     ! ___ Update position ___
@@ -2549,10 +2553,10 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       uxp(nn) = uxp(nn) + ex(nn)*const1
 !       uyp(nn) = uyp(nn) + ey(nn)*const1
 !       uzp(nn) = uzp(nn) + ez(nn)*const1
-! 
+!
 !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
 !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-! 
+!
 !     END DO
 ! #if defined __INTEL_COMPILER
 ! #elif defined _OPENMP && _OPENMP>=201307
@@ -2624,7 +2628,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       uxp(nn) = uxp(nn) + ex(nn)*const1
 !       uyp(nn) = uyp(nn) + ey(nn)*const1
 !       uzp(nn) = uzp(nn) + ez(nn)*const1
-! 
+!
 !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
 !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
 !     END DO
@@ -2657,7 +2661,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 !       xp(nn) = xp(nn) + uxp(nn)*const2
 !       yp(nn) = yp(nn) + uyp(nn)*const2
 !       zp(nn) = zp(nn) + uzp(nn)*const2
-! 
+!
 !     END DO
 ! #if defined __INTEL_COMPILER
 ! #elif defined _OPENMP && _OPENMP>=201307

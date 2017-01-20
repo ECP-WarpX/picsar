@@ -2,24 +2,24 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
-! 
+!
 ! FIELD_GATHERING_O1_3D.F90
-! 
+!
 ! Developers:
 ! - Henri vincenti
 ! - Mathieu Lobet
@@ -33,7 +33,7 @@
 !
 ! - gete3d_energy_conserving_vec_1_1_1
 ! - getb3d_energy_conserving_vec_1_1_1
-! 
+!
 ! - geteb3d_energy_conserving_vecV1_1_1_1
 ! - geteb3d_energy_conserving_vecV2_1_1_1
 ! - geteb3d_energy_conserving_vecV3_1_1_1
@@ -64,7 +64,7 @@
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
@@ -123,24 +123,24 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
     izmax0 = 0
 
     DO ip=1,np
-  
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-    
+
       ! Compute index of particle
-    
+
       j=floor(x)
       j0=floor(x)
       k=floor(y)
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-    
+
       xint=x-j
       yint=y-k
       zint=z-l
-    
+
       ! Compute shape factors
       sx( 0) = 1.0_num-xint
       sx( 1) = xint
@@ -148,15 +148,15 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
       sy( 1) = yint
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
-    
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-    
+
       sx0( 0) = 1.0_num
       sy0( 0) = 1.0_num
       sz0( 0) = 1.0_num
-    
+
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -189,13 +189,13 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
   !     IF (it.gt.0) THEN
   !       print*,'ex,ey,ez',ex(ip),ey(ip),ez(ip)
   !       print*,'j',j,k,l
-  !       print*,'j0',j0,k0,l0  
+  !       print*,'j0',j0,k0,l0
   !       print*,'sx',sx(:)
-  !       print*,'sy',sy(:)   
-  !       print*,'sz',sz(:)   
+  !       print*,'sy',sy(:)
+  !       print*,'sz',sz(:)
   !       print*,'sx0',sx0(:)
-  !       print*,'sy0',sy0(:)   
-  !       print*,'sz0',sz0(:)            
+  !       print*,'sy0',sy0(:)
+  !       print*,'sz0',sz0(:)
   !       read*
   !     ENDIF
 
@@ -212,11 +212,11 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
     izmax0 = 1
 
     DO ip=1,np
-    
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-  
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -227,7 +227,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
       xint=x-j
       yint=y-k
       zint=z-l
-  
+
       ! Compute shape factors
       sx( 0) = 1.0_num-xint
       sx( 1) = xint
@@ -244,7 +244,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
       sy0( 1) = yint
       sz0( 0) = 1.0_num-zint
       sz0( 1) = zint
-    
+
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -274,7 +274,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
           end do
         end do
       end do
-      
+
     END DO
   ENDIF
 
@@ -289,7 +289,7 @@ END SUBROUTINE gete3d_energy_conserving_scalar_1_1_1
 !> at order 1
 !
 !> @details
-!> This function is vectorized 
+!> This function is vectorized
 !
 !> @author
 !> Mathieu Lobet
@@ -305,7 +305,7 @@ END SUBROUTINE gete3d_energy_conserving_scalar_1_1_1
 !> @param[in] dx,dy,dz space steps in every directions
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !
@@ -359,11 +359,11 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,
     izmax0 = 0
 
     DO ip=1,np
-  
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-    
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x)
@@ -371,11 +371,11 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-    
+
       xint=x-j
       yint=y-k
       zint=z-l
-    
+
       ! Compute shape factors
       sx( 0) = 1.0_num-xint
       sx( 1) = xint
@@ -383,15 +383,15 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,
       sy( 1) = yint
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
-    
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-    
+
       sx0( 0) = 1.0_num
       sy0( 0) = 1.0_num
       sz0( 0) = 1.0_num
-    
+
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -421,7 +421,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,
           end do
         end do
       end do
-  
+
     END DO
 
   ELSE
@@ -434,11 +434,11 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,
     izmax0 = 1
 
     DO ip=1,np
-    
+
         x = (xp(ip)-xmin)*dxi
         y = (yp(ip)-ymin)*dyi
         z = (zp(ip)-zmin)*dzi
-    
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -446,29 +446,29 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,
         k0=floor(y-0.5_num)
         l=floor(z)
         l0=floor(z-0.5_num)
-    
+
         ! Compute shape factors
         xint=x-j
         yint=y-k
-        zint=z-l    
+        zint=z-l
         sx( 0) = 1.0_num-xint
         sx( 1) = xint
         sy( 0) = 1.0_num-yint
         sy( 1) = yint
         sz( 0) = 1.0_num-zint
         sz( 1) = zint
-    
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-    
+
         sx0( 0) = 1.0_num-xint
         sx0( 1) = xint
         sy0( 0) = 1.0_num-yint
         sy0( 1) = yint
         sz0( 0) = 1.0_num-zint
         sz0( 1) = zint
-    
+
         do ll = izmin0, izmax0
           do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -526,7 +526,7 @@ END SUBROUTINE getb3d_energy_conserving_scalar_1_1_1
 !> @param[in] dx,dy,dz space steps in every directions
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
@@ -569,28 +569,28 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
 
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-#endif 
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
     !IBM* ALIGN(64,xp,yp,zp)
     !IBM* ALIGN(64,ex,ey,ez)
     !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
  !DIR$ IVDEP
 ! !DIR DISTRIBUTE POINT
 #endif
@@ -598,12 +598,12 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
       ! Loop over the particles inside a block
       DO n=1,MIN(lvect,np-ip+1)
 
-        nn=ip+n-1  
+        nn=ip+n-1
 
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-    
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -611,11 +611,11 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-  
+
         xint=x-j
         yint=y-k
         zint=z-l
-    
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -623,27 +623,27 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-    
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-  
+
         sx0(n, 0) = 1.0_num
         sy0(n, 0) = 1.0_num
         sz0(n, 0) = 1.0_num
-  
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0,k,l)
         ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,0)*exg(j0,k+1,l)
         ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,1)*exg(j0,k,l+1)
         ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,1)*exg(j0,k+1,l+1)
-  
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,0)*eyg(j,k0,l)
         ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,0)*eyg(j+1,k0,l)
         ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,1)*eyg(j,k0,l+1)
         ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,1)*eyg(j+1,k0,l+1)
-  
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n,0)*sy(n,0)*sz0(n,0)*ezg(j,k,l0)
         ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,0)*ezg(j+1,k,l0)
@@ -653,33 +653,33 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
     ENDDO
-    
-  ! l_lower_order_in_v false    
+
+  ! l_lower_order_in_v false
   ELSE
 
     ! Loop over the particles by block
     DO ip=1,np,lvect
-    
-#if defined __INTEL_COMPILER 
+
+#if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
     !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-#endif 
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
     !IBM* ALIGN(64,xp,yp,zp)
     !IBM* ALIGN(64,ex,ey,ez)
     !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
  !DIR$ IVDEP
 ! !DIR DISTRIBUTE POINT
 #endif
@@ -687,12 +687,12 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
       ! Loop over the particles inside a block
       DO n=1,MIN(lvect,np-ip+1)
 
-        nn=ip+n-1  
-    
+        nn=ip+n-1
+
           x = (xp(nn)-xmin)*dxi
           y = (yp(nn)-ymin)*dyi
           z = (zp(nn)-zmin)*dzi
-    
+
           ! Compute index of particle
           j=floor(x)
           j0=floor(x-0.5_num)
@@ -703,7 +703,7 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
           xint=x-j
           yint=y-k
           zint=z-l
-    
+
           ! Compute shape factors
           sx(n, 0) = 1.0_num-xint
           sx(n, 1) = xint
@@ -720,7 +720,7 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
           sy0(n, 1) = yint
           sz0(n, 0) = 1.0_num-zint
           sz0(n, 1) = zint
-    
+
           ! Compute Ex on particle
           ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0,k,l)
           ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,0)*exg(j0+1,k,l)
@@ -730,7 +730,7 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
           ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,1)*exg(j0+1,k,l+1)
           ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,1)*exg(j0,k+1,l+1)
           ex(nn) = ex(nn) + sx0(n,1)*sy(n,1)*sz(n,1)*exg(j0+1,k+1,l+1)
-    
+
           ! Compute Ey on particle
           ey(nn) = ey(nn) + sx(n,0)*sy0(n,0)*sz(n,0)*eyg(j,k0,l)
           ey(nn) = ey(nn) + sx(n,1)*sy0(n,0)*sz(n,0)*eyg(j+1,k0,l)
@@ -750,12 +750,12 @@ SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
           ez(nn) = ez(nn) + sx(n,1)*sy(n,0)*sz0(n,1)*ezg(j+1,k,l0+1)
           ez(nn) = ez(nn) + sx(n,0)*sy(n,1)*sz0(n,1)*ezg(j,k+1,l0+1)
           ez(nn) = ez(nn) + sx(n,1)*sy(n,1)*sz0(n,1)*ezg(j+1,k+1,l0+1)
-      
+
         END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
     ENDDO
   ENDIF
@@ -788,7 +788,7 @@ END SUBROUTINE
 !> @param[in] dx,dy,dz space steps in every directions
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
@@ -840,22 +840,22 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-#endif 
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-! #if defined __INTEL_COMPILER 
+! #if defined __INTEL_COMPILER
 ! !DIR IVDEP
 ! !DIR DISTRIBUTE POINT
 ! #endif
@@ -864,11 +864,11 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
       DO n=1,MIN(lvect,np-ip+1)
 
         nn=ip+n-1
-  
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-  
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -876,11 +876,11 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-  
+
         xint=x-j
         yint=y-k
         zint=z-l
-  
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -888,11 +888,11 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-  
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-  
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j,k0,l0)
         bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j+1,k0,l0)
@@ -904,12 +904,12 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0,k0,l)
         bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0,k0,l+1)
-  
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
     ENDDO
 
@@ -918,22 +918,22 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-#endif 
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-! #if defined __INTEL_COMPILER 
+! #if defined __INTEL_COMPILER
 ! !DIR IVDEP
 ! !DIR DISTRIBUTE POINT
 ! #endif
@@ -941,11 +941,11 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
       DO n=1,MIN(lvect,np-ip+1)
 
         nn=ip+n-1
-    
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-    
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -953,29 +953,29 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
         k0=floor(y-0.5_num)
         l=floor(z)
         l0=floor(z-0.5_num)
-    
+
         ! Compute shape factors
         xint=x-j
         yint=y-k
-        zint=z-l    
+        zint=z-l
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
         sy(n, 0) = 1.0_num-yint
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-    
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-    
+
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
         sy0(n, 0) = 1.0_num-yint
         sy0(n, 1) = yint
         sz0(n, 0) = 1.0_num-zint
         sz0(n, 1) = zint
-    
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j,k0,l0)
         bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j+1,k0,l0)
@@ -985,7 +985,7 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
         bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,1)*bxg(j+1,k0,l0+1)
         bx(nn) = bx(nn) + sx(n,0)*sy0(n,1)*sz0(n,1)*bxg(j,k0+1,l0+1)
         bx(nn) = bx(nn) + sx(n,1)*sy0(n,1)*sz0(n,1)*bxg(j+1,k0+1,l0+1)
-    
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0,k,l0)
         by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,0)*byg(j0+1,k,l0)
@@ -995,7 +995,7 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
         by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,1)*byg(j0+1,k,l0+1)
         by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,1)*byg(j0,k+1,l0+1)
         by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,1)*byg(j0+1,k+1,l0+1)
-    
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0,k0,l)
         bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,0)*bzg(j0+1,k0,l)
@@ -1005,12 +1005,12 @@ SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
         bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,1)*bzg(j0+1,k0,l+1)
         bz(nn) = bz(nn) + sx0(n,0)*sy0(n,1)*sz(n,1)*bzg(j0,k0+1,l+1)
         bz(nn) = bz(nn) + sx0(n,1)*sy0(n,1)*sz(n,1)*bzg(j0+1,k0+1,l+1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
     ENDDO
   ENDIF
@@ -1041,7 +1041,7 @@ END SUBROUTINE
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
@@ -1056,7 +1056,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   USE constants
   USE params
   IMPLICIT NONE
-  
+
   ! __ Parameter declaration _____________________________________________________
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp)                         :: lvect
@@ -1094,24 +1094,24 @@ IF (l_lower_order_in_v) THEN
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
-#endif 
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
   !DIR$ IVDEP
 ! !DIR DISTRIBUTE POINT
 #endif
@@ -1120,24 +1120,24 @@ IF (l_lower_order_in_v) THEN
     DO n=1,MIN(lvect,np-ip+1)
 
       nn=ip+n-1
-  
+
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-    
+
       ! Compute index of particle
-    
+
       j=floor(x)
       j0=floor(x)
       k=floor(y)
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-    
+
       xint=x-j
       yint=y-k
       zint=z-l
-    
+
       ! Compute shape factors
       sx(n, 0) = 1.0_num-xint
       sx(n, 1) = xint
@@ -1145,11 +1145,11 @@ IF (l_lower_order_in_v) THEN
       sy(n, 1) = yint
       sz(n, 0) = 1.0_num-zint
       sz(n, 1) = zint
-    
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-    
+
       ! Compute Ex on particle
       ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0,k,l)
       ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,0)*exg(j0,k+1,l)
@@ -1171,11 +1171,11 @@ IF (l_lower_order_in_v) THEN
       ! Compute Bx on particle
       bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j,k0,l0)
       bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j+1,k0,l0)
-    
+
       ! Compute By on particle
       by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0,k,l0)
       by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0,k+1,l0)
-    
+
       ! Compute Bz on particle
       bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0,k0,l)
       bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0,k0,l+1)
@@ -1183,8 +1183,8 @@ IF (l_lower_order_in_v) THEN
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
   ENDDO
 
@@ -1193,24 +1193,24 @@ ELSE
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
-#endif 
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
+#elif defined __INTEL_COMPILER
       !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
   !DIR$ IVDEP
 ! !DIR DISTRIBUTE POINT
 #endif
@@ -1223,7 +1223,7 @@ ELSE
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-    
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -1234,7 +1234,7 @@ ELSE
       xint=x-j
       yint=y-k
       zint=z-l
-    
+
       ! Compute shape factors
       sx(n, 0) = 1.0_num-xint
       sx(n, 1) = xint
@@ -1242,18 +1242,18 @@ ELSE
       sy(n, 1) = yint
       sz(n, 0) = 1.0_num-zint
       sz(n, 1) = zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       sx0(n, 0) = 1.0_num-xint
       sx0(n, 1) = xint
       sy0(n, 0) = 1.0_num-yint
       sy0(n, 1) = yint
       sz0(n, 0) = 1.0_num-zint
       sz0(n, 1) = zint
-    
+
       ! Compute Ex on particle
       ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0,k,l)
       ex(nn) = ex(nn) + sx0(n,1)*sy(n,0)*sz(n,0)*exg(j0+1,k,l)
@@ -1293,7 +1293,7 @@ ELSE
       bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,1)*bxg(j+1,k0,l0+1)
       bx(nn) = bx(nn) + sx(n,0)*sy0(n,1)*sz0(n,1)*bxg(j,k0+1,l0+1)
       bx(nn) = bx(nn) + sx(n,1)*sy0(n,1)*sz0(n,1)*bxg(j+1,k0+1,l0+1)
-    
+
       ! Compute By on particle
       by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0,k,l0)
       by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,0)*byg(j0+1,k,l0)
@@ -1303,7 +1303,7 @@ ELSE
       by(nn) = by(nn) + sx0(n,1)*sy(n,0)*sz0(n,1)*byg(j0+1,k,l0+1)
       by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,1)*byg(j0,k+1,l0+1)
       by(nn) = by(nn) + sx0(n,1)*sy(n,1)*sz0(n,1)*byg(j0+1,k+1,l0+1)
-    
+
       ! Compute Bz on particle
       bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0,k0,l)
       bz(nn) = bz(nn) + sx0(n,1)*sy0(n,0)*sz(n,0)*bzg(j0+1,k0,l)
@@ -1317,8 +1317,8 @@ ELSE
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif 
+  !$OMP END SIMD
+#endif
 #endif
   ENDDO
 ENDIF
@@ -1352,7 +1352,7 @@ END SUBROUTINE
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
@@ -1362,37 +1362,37 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
-! ______________________________________________________________________________                                
+! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
 
   ! ___ Parameter declaration _________________________________________________
-  INTEGER(idp)                           :: np 
+  INTEGER(idp)                           :: np
   INTEGER(idp)                           :: nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                                :: l_lower_order_in_v 
+  LOGICAL(lp)                                :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                              :: xmin,ymin,zmin,dx, dy, dz
-  
+
   INTEGER(isp), DIMENSION(lvect)         :: j, k, l
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j,k,l
-#endif  
+#endif
   INTEGER(isp), DIMENSION(lvect)         :: j0, k0, l0
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j0,k0,l0
-#endif    
+#endif
   REAL(num)                              :: x, y, z, xint, yint, zint
-  REAL(num)                              :: dxi, dyi, dzi 
-  INTEGER(isp)                           :: n,ip,nn 
+  REAL(num)                              :: dxi, dyi, dzi
+  INTEGER(isp)                           :: n,ip,nn
   REAL(num), DIMENSION(lvect,0:1)        :: sx,sy,sz
   REAL(num), DIMENSION(lvect,0:1)        :: sx0,sy0,sz0
-#if defined __INTEL_COMPILER   
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
-#endif    
+#endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
 
@@ -1404,38 +1404,38 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   ! ___ Loop on all the partciles by block of size lvect _______________________
 
   DO ip=1,np,lvect
-  
+
     ! ____________________________________________________________________________________
-    ! Field gathering  
-  
-#if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64   
-      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+    ! Field gathering
+
+#if defined __INTEL_COMPILER
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
-      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
-#endif 
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
       nn=ip+n-1
-  
+
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-  
+
       ! Compute index of particle
       j(n)=floor(x)
       j0(n)=floor(x)
@@ -1443,11 +1443,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
       k0(n)=floor(y)
       l(n)=floor(z)
       l0(n)=floor(z)
-  
+
       xint=x-j(n)
       yint=y-k(n)
       zint=z-l(n)
-  
+
       ! Compute shape factors
       sx(n,0) = 1.0_num-xint
       sx(n,1) = xint
@@ -1455,45 +1455,45 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
       sy(n,1) = yint
       sz(n,0) = 1.0_num-zint
       sz(n,1) = zint
-  
+
       xint=x-0.5_num-j0(n)
       yint=y-0.5_num-k0(n)
       zint=z-0.5_num-l0(n)
-  
+
       sx0(n,0) = 1.0_num
       sy0(n,0) = 1.0_num
       sz0(n,0) = 1.0_num
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
 
-#if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64   
-      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+#if defined __INTEL_COMPILER
+      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
-      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
-#endif 
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1  
-      
+      nn=ip+n-1
+
       ! Compute Ex on particle
       ex(nn) = ex(nn) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0(n),k(n),l(n))
       ex(nn) = ex(nn) + sx0(n,0)*sy(n,1)*sz(n,0)*exg(j0(n),k(n)+1,l(n))
@@ -1515,56 +1515,56 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
 
-#if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
-      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+#if defined __INTEL_COMPILER
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
-      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
-#endif 
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
     DO n=1,MIN(lvect,np-ip+1)
-      nn=ip+n-1    
+      nn=ip+n-1
 
       ! Compute Bx on particle
       bx(nn) = bx(nn) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j(n),k0(n),l0(n))
       bx(nn) = bx(nn) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j(n)+1,k0(n),l0(n))
-    
+
       ! Compute By on particle
       by(nn) = by(nn) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0(n),k(n),l0(n))
       by(nn) = by(nn) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0(n),k(n)+1,l0(n))
-    
+
       ! Compute Bz on particle
       bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0(n),k0(n),l(n))
-      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1) 
+      bz(nn) = bz(nn) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1)
 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
 
   ENDDO
-  
-  RETURN 
+
+  RETURN
 END SUBROUTINE
 
 ! ______________________________________________________________________________
@@ -1589,7 +1589,7 @@ END SUBROUTINE
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
@@ -1604,7 +1604,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   USE constants
   USE params
   IMPLICIT NONE
-  
+
   ! __ Parameter declaration _____________________________________________________
   INTEGER(idp), intent(in)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
   INTEGER(idp), intent(in)                         :: lvect
@@ -1613,7 +1613,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   LOGICAL(lp), intent(in)                          :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
                                         intent(in) :: exg,eyg,ezg,bxg,byg,bzg
-                                        
+
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: nn,n
@@ -1646,24 +1646,24 @@ IF (l_lower_order_in_v) THEN
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
-#endif 
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif 
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
   !DIR$ IVDEP
 ! !DIR DISTRIBUTE POINT
 #endif
@@ -1672,24 +1672,24 @@ IF (l_lower_order_in_v) THEN
     DO n=1,MIN(lvect,np-ip+1)
 
       nn=ip+n-1
-  
+
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-    
+
       ! Compute index of particle
-    
+
       j=floor(x)
       j0=floor(x)
       k=floor(y)
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-    
+
       xint=x-j
       yint=y-k
       zint=z-l
-    
+
       ! Compute shape factors
       sx(n, 0) = 1.0_num-xint
       sx(n, 1) = xint
@@ -1697,11 +1697,11 @@ IF (l_lower_order_in_v) THEN
       sy(n, 1) = yint
       sz(n, 0) = 1.0_num-zint
       sz(n, 1) = zint
-    
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-    
+
       ! Compute Ex on particle
       a = (sy(n,0)*exg(j0,k,l)   + sy(n,1)*exg(j0,k+1,l))*sz(n,0)  &
        + (sy(n,0)*exg(j0,k,l+1) + sy(n,1)*exg(j0,k+1,l+1))*sz(n,1)
@@ -1720,11 +1720,11 @@ IF (l_lower_order_in_v) THEN
       ! Compute Bx on particle
       a = (sx(n,0)*bxg(j,k0,l0) + sx(n,1)*bxg(j+1,k0,l0))*sy0(n,0)
       bx(nn) = bx(nn) + a*sz0(n,0)
-    
+
       ! Compute By on particle
       a = (sy(n,0)*byg(j0,k,l0) + sy(n,1)*byg(j0,k+1,l0))*sx0(n,0)
       by(nn) = by(nn) + a*sz0(n,0)
-    
+
       ! Compute Bz on particle
       a = (sz(n,0)*bzg(j0,k0,l) + sz(n,1)*bzg(j0,k0,l+1))*sx0(n,0)
       bz(nn) = bz(nn) + a*sy0(n,0)
@@ -1732,8 +1732,8 @@ IF (l_lower_order_in_v) THEN
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
+  !$OMP END SIMD
+#endif
 #endif
   ENDDO
 
@@ -1742,24 +1742,24 @@ ELSE
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64      
-#endif 
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
+#elif defined __INTEL_COMPILER
       !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
   !DIR$ IVDEP
 ! !DIR DISTRIBUTE POINT
 #endif
@@ -1772,7 +1772,7 @@ ELSE
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-    
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -1783,7 +1783,7 @@ ELSE
       xint=x-j
       yint=y-k
       zint=z-l
-    
+
       ! Compute shape factors
       sx(n, 0) = 1.0_num-xint
       sx(n, 1) = xint
@@ -1791,18 +1791,18 @@ ELSE
       sy(n, 1) = yint
       sz(n, 0) = 1.0_num-zint
       sz(n, 1) = zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       sx0(n, 0) = 1.0_num-xint
       sx0(n, 1) = xint
       sy0(n, 0) = 1.0_num-yint
       sy0(n, 1) = yint
       sz0(n, 0) = 1.0_num-zint
       sz0(n, 1) = zint
-    
+
       ! Compute Ex on particle
       a = (sx0(n,0)*exg(j0,k,l) &
           + sx0(n,1)*exg(j0+1,k,l))*sy(n,0)
@@ -1850,7 +1850,7 @@ ELSE
       a = a + (sx(n,0)*bxg(j,k0+1,l0+1) &
           + sx(n,1)*bxg(j+1,k0+1,l0+1))*sy0(n,1)
       bx(nn) = bx(nn) + a*sz0(n,1)
-    
+
       ! Compute By on particle
       a = (sx0(n,0)*byg(j0,k,l0) &
           + sx0(n,1)*byg(j0+1,k,l0))*sy(n,0)
@@ -1862,7 +1862,7 @@ ELSE
       a = a + (sx0(n,0)*byg(j0,k+1,l0+1) &
           + sx0(n,1)*byg(j0+1,k+1,l0+1))*sy(n,1)
       by(nn) = by(nn) + a*sz0(n,1)
-    
+
       ! Compute Bz on particle
       a = (sx0(n,0)*bzg(j0,k0,l) &
           + sx0(n,1)*bzg(j0+1,k0,l))*sy0(n,0)
@@ -1878,8 +1878,8 @@ ELSE
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif 
+  !$OMP END SIMD
+#endif
 #endif
   ENDDO
 ENDIF
@@ -1909,7 +1909,7 @@ END SUBROUTINE
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
@@ -1919,7 +1919,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
                                            xmin,ymin,zmin,       &
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
-! ______________________________________________________________________________                                
+! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -1928,13 +1928,13 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
   INTEGER(idp)                           :: np,nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(np)               :: xp,yp,zp,ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                                :: l_lower_order_in_v 
+  LOGICAL(lp)                                :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                           :: ip,ipmax
   INTEGER(idp)                           :: size
-  REAL(num)                              :: dxi, dyi, dzi 
+  REAL(num)                              :: dxi, dyi, dzi
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1954,8 +1954,8 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
     exg,eyg,ezg,bxg,byg,bzg)
 
   ENDDO
-  
-  RETURN 
+
+  RETURN
 END SUBROUTINE
 #endif
 
@@ -1982,7 +1982,7 @@ END SUBROUTINE
 !> @param[in] dxi,dyi,dzi inverse of the space step
 !> @param[in] dt time step
 !> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction 
+!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
 !> @param[in] exg,eyg,ezg electric field grid
 !> @param[in] bxg,byg,bzg magnetic field grid
 !
@@ -1996,51 +1996,51 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
   IMPLICIT NONE
 
   ! ___ Parameter declaration _________________________________________________
-  INTEGER(idp)                           :: size  
+  INTEGER(idp)                           :: size
   INTEGER(idp)                           :: nx,ny,nz,nxguard,nyguard,nzguard
   REAL(num), DIMENSION(size)             :: xp,yp,zp,ex,ey,ez,bx,by,bz
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg  
+  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   REAL(num)                              :: xmin,ymin,zmin,dxi, dyi, dzi
   INTEGER(isp), DIMENSION(size)          :: j, k, l
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j,k,l
-#endif  
+#endif
   INTEGER(isp), DIMENSION(size)         :: j0, k0, l0
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j0,k0,l0
-#endif    
+#endif
   INTEGER(idp)                           :: jj, kk, ll
   REAL(num)                              :: x, y, z, xint, yint, zint
-  INTEGER(isp)                           :: n          
+  INTEGER(isp)                           :: n
   REAL(num), DIMENSION(size,0:1)         :: sx,sy,sz
   REAL(num), DIMENSION(size,0:1)         :: sx0,sy0,sz0
-#if defined __INTEL_COMPILER   
+#if defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
-#endif    
+#endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
 
   ! ___ Computation _________________________________________________
 
-#if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64   
-      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+#if defined __INTEL_COMPILER
+      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
-      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64                           
-#endif 
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
@@ -2049,7 +2049,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
     x = (xp(n)-xmin)*dxi
     y = (yp(n)-ymin)*dyi
     z = (zp(n)-zmin)*dzi
-  
+
     ! Compute index of particle
     j(n)=floor(x)
     j0(n)=floor(x)
@@ -2057,11 +2057,11 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
     k0(n)=floor(y)
     l(n)=floor(z)
     l0(n)=floor(z)
-  
+
     xint=x-j(n)
     yint=y-k(n)
     zint=z-l(n)
-  
+
     ! Compute shape factors
     sx(n,0) = 1.0_num-xint
     sx(n,1) = xint
@@ -2069,88 +2069,88 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
     sy(n,1) = yint
     sz(n,0) = 1.0_num-zint
     sz(n,1) = zint
-  
+
     xint=x-0.5_num-j0(n)
     yint=y-0.5_num-k0(n)
     zint=z-0.5_num-l0(n)
-  
+
     sx0(n,0) = 1.0_num
     sy0(n,0) = 1.0_num
     sz0(n,0) = 1.0_num
-    
+
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
-#endif  
+  !$OMP END SIMD
+#endif
+#endif
 
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
-      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64  
-#endif 
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,ex,ey,ez)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
     DO n=1,size
-      
+
       ! Compute Ex on particle
       ex(n) = ex(n) + sx0(n,0)*sy(n,0)*sz(n,0)*exg(j0(n),k(n),l(n))
       ex(n) = ex(n) + sx0(n,0)*sy(n,1)*sz(n,0)*exg(j0(n),k(n)+1,l(n))
       ex(n) = ex(n) + sx0(n,0)*sy(n,0)*sz(n,1)*exg(j0(n),k(n),l(n)+1)
       ex(n) = ex(n) + sx0(n,0)*sy(n,1)*sz(n,1)*exg(j0(n),k(n)+1,l(n)+1)
-    
+
       ! Compute Ey on particle
       ey(n) = ey(n) + sx(n,0)*sy0(n,0)*sz(n,0)*eyg(j(n),k0(n),l(n))
       ey(n) = ey(n) + sx(n,1)*sy0(n,0)*sz(n,0)*eyg(j(n)+1,k0(n),l(n))
       ey(n) = ey(n) + sx(n,0)*sy0(n,0)*sz(n,1)*eyg(j(n),k0(n),l(n)+1)
       ey(n) = ey(n) + sx(n,1)*sy0(n,0)*sz(n,1)*eyg(j(n)+1,k0(n),l(n)+1)
-    
+
       ! Compute Ez on particle
       ez(n) = ez(n) + sx(n,0)*sy(n,0)*sz0(n,0)*ezg(j(n),k(n),l0(n))
       ez(n) = ez(n) + sx(n,1)*sy(n,0)*sz0(n,0)*ezg(j(n)+1,k(n),l0(n))
       ez(n) = ez(n) + sx(n,0)*sy(n,1)*sz0(n,0)*ezg(j(n),k(n)+1,l0(n))
       ez(n) = ez(n) + sx(n,1)*sy(n,1)*sz0(n,0)*ezg(j(n)+1,k(n)+1,l0(n))
-      
+
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
-#endif  
+  !$OMP END SIMD
+#endif
+#endif
 
-#if defined __INTEL_COMPILER 
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64   
-      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64     
+#if defined __INTEL_COMPILER
+      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+      !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED j:64,k:64,l:64
-      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64         
-#endif 
+      !DIR$ ASSUME_ALIGNED j0:64,k0:64,l0:64
+#endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD 
-#endif  
+  !$OMP SIMD
+#endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,bx,by,bz)
       !IBM* SIMD_LEVEL
-#elif defined __INTEL_COMPILER 
-      !DIR$ SIMD 
+#elif defined __INTEL_COMPILER
+      !DIR$ SIMD
 #endif
-#if defined __INTEL_COMPILER 
+#if defined __INTEL_COMPILER
 !DIR$ IVDEP
 !!DIR DISTRIBUTE POINT
 #endif
@@ -2159,21 +2159,21 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
       ! Compute Bx on particle
       bx(n) = bx(n) + sx(n,0)*sy0(n,0)*sz0(n,0)*bxg(j(n),k0(n),l0(n))
       bx(n) = bx(n) + sx(n,1)*sy0(n,0)*sz0(n,0)*bxg(j(n)+1,k0(n),l0(n))
-    
+
       ! Compute By on particle
       by(n) = by(n) + sx0(n,0)*sy(n,0)*sz0(n,0)*byg(j0(n),k(n),l0(n))
       by(n) = by(n) + sx0(n,0)*sy(n,1)*sz0(n,0)*byg(j0(n),k(n)+1,l0(n))
-    
+
       ! Compute Bz on particle
       bz(n) = bz(n) + sx0(n,0)*sy0(n,0)*sz(n,0)*bzg(j0(n),k0(n),l(n))
-      bz(n) = bz(n) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1) 
+      bz(n) = bz(n) + sx0(n,0)*sy0(n,0)*sz(n,1)*bzg(j0(n),k0(n),l(n)+1)
 
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD 
-#endif  
-#endif 
+  !$OMP END SIMD
+#endif
+#endif
 
 END SUBROUTINE
 #endif

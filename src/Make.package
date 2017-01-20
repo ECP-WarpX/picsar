@@ -1,7 +1,7 @@
 F90EXE_sources += modules.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/modules
-INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/modules 
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/modules
 
 F90EXE_sources += mpi_routines.F90
 

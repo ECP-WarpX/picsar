@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! TILE_PARTICLE_PUSH_3D_TEST.F90
 !
@@ -37,18 +37,19 @@ PROGRAM tile_particle_push_3d_test
 
   ! ______________________________________________________________________________________
   ! Parameters
-  
+
   TYPE(particle_species), POINTER          :: curr
   TYPE(particle_species)                   :: curr0
   INTEGER(idp)                             :: jmin, jmax, kmin, kmax, lmin, lmax
   REAL(num)                                :: partx, party, partz
-  REAL(num)                                :: partux, partuy, partuz, partw, gaminv
+  REAL(num)                                :: partux, partuy, partuz, gaminv
+  REAL(num), DIMENSION(:), ALLOCATABLE     :: partpid
   REAL(num)                                :: phi, th, up, clightsq
-  REAL(num)                                :: Ef, Bf  
+  REAL(num)                                :: Ef, Bf
   REAL(num), DIMENSION(6)                  :: rng=0_num
   REAL(num)                                :: epsilon
   REAL(num)                                :: t0
-  LOGICAL                                  :: passed 
+  LOGICAL                                  :: passed
   REAL(num), dimension(10)                 :: tfg,tpp
   CHARACTER(len=64), dimension(10)         :: name
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumex,tilesumey,tilesumez
@@ -58,31 +59,31 @@ PROGRAM tile_particle_push_3d_test
   REAL(num), dimension(10)                 :: sumex,sumey,sumez
   REAL(num), dimension(10)                 :: sumbx,sumby,sumbz
   REAL(num), dimension(10)                 :: sumx,sumy,sumz
-  REAL(num), dimension(10)                 :: sumpx,sumpy,sumpz    
+  REAL(num), dimension(10)                 :: sumpx,sumpy,sumpz
   REAL(num), dimension(10)                 :: errex,errey,errez
-  REAL(num), dimension(10)                 :: errbx,errby,errbz  
+  REAL(num), dimension(10)                 :: errbx,errby,errbz
   REAL(num), dimension(10)                 :: errx,erry,errz
-  REAL(num), dimension(10)                 :: errpx,errpy,errpz  
-  CHARACTER(len=64)                        :: title  
-  
+  REAL(num), dimension(10)                 :: errpx,errpy,errpz
+  CHARACTER(len=64)                        :: title
+
   ! ______________________________________________________________________________________
   ! Initialization
   ! --- default init
   CALL default_init
-  
+
   ! --- Dimension
   c_dim = 3
-  
+
   ! --- Number of processors
   nprocx=1
   nprocy=1
   nprocz=1
-  
+
   ! --- Domain size
   nx_global_grid=25
   ny_global_grid=25
   nz_global_grid=25
-  
+
   ! --- Domain extension
   xmin=0
   ymin=0
@@ -95,11 +96,11 @@ PROGRAM tile_particle_push_3d_test
   ntilex = 6
   ntiley = 6
   ntilez = 6
-  
+
   ! --- Vector length field gathering
   LVEC_fieldgathe = 256
-  
-  ! --- Interpolation 
+
+  ! --- Interpolation
   l_lower_order_in_v = .TRUE.
 
   ! --- Field properties
@@ -118,7 +119,7 @@ PROGRAM tile_particle_push_3d_test
       ALLOCATE(species_parray(1:nspecies_max))
       l_species_allocated=.TRUE.
   ENDIF
-  
+
   ! Electrons
   curr => species_parray(1)
   curr%charge = -echarge
@@ -166,14 +167,15 @@ PROGRAM tile_particle_push_3d_test
 
   ! --- Check domain decomposition / Create Cartesian communicator / Allocate grid arrays
   CALL mpi_initialise
-  
+
   ! --- Set tile split for particles
-  CALL set_tile_split  
+  CALL set_tile_split
 
   ! --- Allocate particle arrays for each tile of each species
   CALL init_tile_arrays
 
   ! --- Init "by hand" of the particle properties
+  ALLOCATE(partpid(npid))
   clightsq=1/clight**2
   DO ispecies=1,nspecies
       curr=>species_parray(ispecies)
@@ -192,27 +194,28 @@ PROGRAM tile_particle_push_3d_test
                       partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
                       party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
                       partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
-                      partw = nc*dx*dy*dz/(curr%nppcell)
+                      partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                       ! Sets velocity
                       up=rng(4)*200
 
                       th = -0.5*pi + rng(5)*pi
                       phi = rng(6)*2*pi
-                      
+
                       partux = up*cos(th)*cos(phi)
                       partuy = up*cos(th)*sin(phi)
                       partuz = up*sin(th)
-                      
-                      gaminv = 1./sqrt(1.0_num + (partux**2 + partuy**2 + partuz**2)*clightsq)                                
+
+                      gaminv = 1./sqrt(1.0_num + (partux**2 + partuy**2 + partuz**2)*clightsq)
                       ! Adds particle to array of tiles of current species
                       CALL add_particle_to_species(curr, partx, party, partz, &
-                      partux, partuy, partuz, gaminv, partw)
+                      partux, partuy, partuz, gaminv, partpid)
                   END DO
               END DO
           END DO
       END DO
   END DO ! END LOOP ON SPECIES
 
+  DEALLOCATE(partpid)
   ! Allocate array to check the results
   ALLOCATE(tilesumex(ntilez,ntiley,ntilex))
   ALLOCATE(tilesumey(ntilez,ntiley,ntilex))
@@ -227,13 +230,13 @@ PROGRAM tile_particle_push_3d_test
   ALLOCATE(tilesumpy(ntilez,ntiley,ntilex))
   ALLOCATE(tilesumpz(ntilez,ntiley,ntilex))
   ! --- Field init
-  CALL RANDOM_NUMBER(ex)   
-  CALL RANDOM_NUMBER(ey)  
+  CALL RANDOM_NUMBER(ex)
+  CALL RANDOM_NUMBER(ey)
   CALL RANDOM_NUMBER(ez)
-  CALL RANDOM_NUMBER(bx)   
-  CALL RANDOM_NUMBER(by)  
+  CALL RANDOM_NUMBER(bx)
+  CALL RANDOM_NUMBER(by)
   CALL RANDOM_NUMBER(bz)
-  
+
   ex = ex*Ef
   ey = ey*Ef
   ez = ez*Ef
@@ -241,13 +244,13 @@ PROGRAM tile_particle_push_3d_test
   bx = bx*Bf
   by = by*Bf
   bz = bz*Bf
-  
+
   dtcoef = 0.5
   dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
 
   write(0,*) 'dx',dx,'dy',dy,'dz',dz,'dt',dt
   write(0,*) 'sum(ex)',sum(ex),'sum(ey)',sum(ey),'sum(ez)',sum(ez)
-  
+
   curr0 = curr
   ! ______________________________________________________________________________________
   ! Test of the different subroutines with tiling
@@ -266,7 +269,7 @@ PROGRAM tile_particle_push_3d_test
   errpz = 0
   tfg = 0
   tpp = 0
-  
+
   i = 1
   name(i) = 'field_gathering_sub + particle_pusher_sub (Boris)'
   write(0,*) 'Computation of ',name(i)
@@ -279,10 +282,10 @@ PROGRAM tile_particle_push_3d_test
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
   tfg(i) = MPI_WTIME() - t0
   ! Particle pusher then
-  t0 = MPI_WTIME()  
+  t0 = MPI_WTIME()
   CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
-  tpp(i) = MPI_WTIME() - t0  
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -290,7 +293,7 @@ PROGRAM tile_particle_push_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
   sumx(i) = SUM(tilesumx) ; sumy(i) = SUM(tilesumy) ; sumz(i) = SUM(tilesumz)
   sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
-  
+
   curr = curr0
 
   i = i+1
@@ -305,10 +308,10 @@ PROGRAM tile_particle_push_3d_test
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
   tfg(i) = MPI_WTIME() - t0
   ! Particle pusher then
-  t0 = MPI_WTIME()  
+  t0 = MPI_WTIME()
   CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
-  tpp(i) = MPI_WTIME() - t0  
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -329,7 +332,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -350,7 +353,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -371,7 +374,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -392,7 +395,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -417,9 +420,9 @@ PROGRAM tile_particle_push_3d_test
   errx,erry,errz,errpx,errpy,errpz, &
   tfg,tpp)
 
-  ! __ Order 2 __________________     
+  ! __ Order 2 __________________
   write(0,*) ''
-  
+
   errex = 0
   errey = 0
   errez = 0
@@ -449,10 +452,10 @@ PROGRAM tile_particle_push_3d_test
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
   tfg(i) = MPI_WTIME() - t0
   ! Particle pusher then
-  t0 = MPI_WTIME()  
+  t0 = MPI_WTIME()
   CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
-  tpp(i) = MPI_WTIME() - t0  
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -475,10 +478,10 @@ PROGRAM tile_particle_push_3d_test
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
   tfg(i) = MPI_WTIME() - t0
   ! Particle pusher then
-  t0 = MPI_WTIME()  
+  t0 = MPI_WTIME()
   CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
-  tpp(i) = MPI_WTIME() - t0  
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -499,7 +502,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -520,7 +523,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -530,7 +533,7 @@ PROGRAM tile_particle_push_3d_test
   sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
 
   curr = curr0
-  
+
   i = i+1
   name(i) = 'field_gathering_plus_particle_pusher_sub (Boris)'
   write(0,*) 'Computation of ',name(i)
@@ -541,7 +544,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -551,7 +554,7 @@ PROGRAM tile_particle_push_3d_test
   sumpx(i) = SUM(tilesumpx) ; sumpy(i) = SUM(tilesumpy) ; sumpz(i) = SUM(tilesumpz)
 
   curr = curr0
-  
+
   i = i+1
   name(i) = 'field_gathering_plus_particle_pusher_sub (JLVay)'
   write(0,*) 'Computation of ',name(i)
@@ -562,7 +565,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -587,9 +590,9 @@ PROGRAM tile_particle_push_3d_test
   errx,erry,errz,errpx,errpy,errpz, &
   tfg,tpp)
 
-  ! __ Order 3 __________________     
+  ! __ Order 3 __________________
   write(0,*) ''
-  
+
   errex = 0
   errey = 0
   errez = 0
@@ -616,10 +619,10 @@ PROGRAM tile_particle_push_3d_test
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
   tfg(i) = MPI_WTIME() - t0
   ! Particle pusher then
-  t0 = MPI_WTIME()  
+  t0 = MPI_WTIME()
   CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
-  tpp(i) = MPI_WTIME() - t0  
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -642,10 +645,10 @@ PROGRAM tile_particle_push_3d_test
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
   tfg(i) = MPI_WTIME() - t0
   ! Particle pusher then
-  t0 = MPI_WTIME()  
+  t0 = MPI_WTIME()
   CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)  
-  tpp(i) = MPI_WTIME() - t0   
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -665,7 +668,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -685,7 +688,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -705,7 +708,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -725,7 +728,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -745,7 +748,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -765,7 +768,7 @@ PROGRAM tile_particle_push_3d_test
   t0 = MPI_WTIME()
   CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
   nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
-  tpp(i) = MPI_WTIME() - t0  
+  tpp(i) = MPI_WTIME() - t0
   ! Checking
   CALL check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz,&
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
@@ -793,18 +796,18 @@ PROGRAM tile_particle_push_3d_test
   ! ___ Final exam ____________________________________________
   write(0,*)
   IF (passed) THEN
-    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')  
-    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
+    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')
+    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')
     CALL system('printf "\e[32m ********** TEST TILING FIELD GATHERING + PARTICLE PUSHER 3D PASSED **********  \e[0m \n"')
   ELSE
     !write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
-    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")     
+    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")
     CALL system('printf "\e[31m ********** TEST TILING FIELD GATHERING + PARTICLE PUSHER 3D FAILED **********  \e[0m \n"')
     CALL EXIT(9)
   ENDIF
-  
+
   write(0,'(" ____________________________________________________________________________")')
-  
+
   ! ______________________________________________________________________________________
 
   CALL mpi_close
@@ -819,7 +822,7 @@ SUBROUTINE check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz, &
   tilesumx,tilesumy,tilesumz,tilesumpx,tilesumpy,tilesumpz)
   USE particles
   USE constants
-  USE tiling                              
+  USE tiling
   IMPLICIT NONE
 
   ! ___ Parameter declaration ________________________________________
@@ -845,7 +848,7 @@ SUBROUTINE check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz, &
           curr=>species_parray(ispecies)
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
           count=curr_tile%np_tile(1)
-  
+
           tilesumex(iz,iy,ix)=SUM(curr_tile%part_ex(1:count))
           tilesumey(iz,iy,ix)=SUM(curr_tile%part_ey(1:count))
           tilesumez(iz,iy,ix)=SUM(curr_tile%part_ez(1:count))
@@ -874,7 +877,7 @@ SUBROUTINE compute_err(n,&
   epsilon,passed)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(isp)                             :: n
   INTEGER(isp)                             :: i
   REAL(num)                                :: epsilon
@@ -886,8 +889,8 @@ SUBROUTINE compute_err(n,&
   REAL(num), dimension(10),INTENT(INOUT)   :: errex,errey,errez
   REAL(num), dimension(10),INTENT(INOUT)   :: errbx,errby,errbz
   REAL(num), dimension(10),INTENT(INOUT)   :: errx,erry,errz
-  REAL(num), dimension(10),INTENT(INOUT)   :: errpx,errpy,errpz  
-  
+  REAL(num), dimension(10),INTENT(INOUT)   :: errpx,errpy,errpz
+
   IF (n.gt.1) THEN
     DO i = 2,n
       errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
@@ -903,11 +906,11 @@ SUBROUTINE compute_err(n,&
       errpx(i) = abs((sumpx(i) - sumpx(1)))/sumpx(1)
       errpy(i) = abs((sumpy(i) - sumpy(1)))/sumpy(1)
       errpz(i) = abs((sumpz(i) - sumpz(1)))/sumpz(1)
-    
+
       IF (errex(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errey(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errez(i) .gt. epsilon) passed = (passed.and.(.false.))
-      
+
       IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
@@ -915,11 +918,11 @@ SUBROUTINE compute_err(n,&
       IF (errx(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (erry(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errz(i) .gt. epsilon) passed = (passed.and.(.false.))
-      
+
       IF (errpx(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errpy(i) .gt. epsilon) passed = (passed.and.(.false.))
       IF (errpz(i) .gt. epsilon) passed = (passed.and.(.false.))
-      
+
     ENDDO
   ENDIF
 
@@ -934,7 +937,7 @@ SUBROUTINE display_statistics(title,n,name,&
   tfg,tpp)
   USE constants
   IMPLICIT NONE
-  
+
   CHARACTER(len=64)                        :: title
   INTEGER(isp)                             :: n
   REAL(num), dimension(10)                 :: tfg,tpp
@@ -946,25 +949,25 @@ SUBROUTINE display_statistics(title,n,name,&
   REAL(num), dimension(10)                 :: errex,errey,errez
   REAL(num), dimension(10)                 :: errbx,errby,errbz
   REAL(num), dimension(10)                 :: errx,erry,errz
-  REAL(num), dimension(10)                 :: errpx,errpy,errpz  
+  REAL(num), dimension(10)                 :: errpx,errpy,errpz
   INTEGER(isp)                             :: i
-  
+
   write(0,*)
-  write(0,'(A40)') title  
+  write(0,'(A40)') title
   write(0,'(A60)') 'Field gathering, electric field'
   write(0,'(A60, 7(A13))') "Subroutines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
     write(0,'(A60,7(X,E12.5))') name(i), sumex(i), sumey(i), sumez(i), errex(i), errey(i), errez(i), tfg(i)
   ENDDO
-  
+
   write(0,'(A60)') 'Field gathering, electric field, magnetic field'
   write(0,'(A60, 7(A13))') "Subroutines", "sum(bx)", "sum(by)", "sum(bz)", "err bx", "err by", "err bz", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
   write(0,'(A60,7(X,E12.5))') name(i), sumbx(i), sumby(i), sumbz(i), errbx(i), errby(i), errbz(i), tfg(i)
   ENDDO
-  
+
   write(0,'(A40)') 'Particle pusher'
   write(0,'(A60, 7(A13))') "Subroutines", "sum(x)", "sum(y)", "sum(z)", "err x", "err y", "err z", "time (s)"
   write(0,'(A60, 7(A13))') "Subroutines", "sum(px)", "sum(py)", "sum(pz)", "err px", "err py", "err pz"

@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! TILING.F90
 !
@@ -63,16 +63,16 @@ MODULE tiling
   !> Creation: 2015
   SUBROUTINE set_tile_split()
   ! ______________________________________________________________________________________
-  
+
   IMPLICIT NONE
-  
+
     ! Set tile split for species arrays
     CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
          x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
 
     ! ALLOCATE grid tile arrays
     ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
-    
+
   END SUBROUTINE set_tile_split
 
 
@@ -89,7 +89,7 @@ MODULE tiling
   SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
              xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
   ! ______________________________________________________________________________________
-  
+
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
     INTEGER(idp), INTENT(IN OUT)    ::  ntx, nty, ntz
@@ -112,7 +112,7 @@ MODULE tiling
         ntx=1
     END IF
     IF (ny0_grid_tile .LT. 4) THEN
-      IF(c_dim .EQ. 3) THEN 
+      IF(c_dim .EQ. 3) THEN
           IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
         ENDIF
         nty=1
@@ -254,7 +254,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine adds particle of given species to the corresponding 
+  !> This subroutine adds particle of given species to the corresponding
   !> tile particle array depending on the particle position in 2D.
   !
   !> @author
@@ -263,11 +263,12 @@ MODULE tiling
   !> @date
   !> Creation: 2015
     SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, &
-               partux, partuy, partuz, gaminv, partw)
+               partux, partuy, partuz, gaminv, partpid)
   ! ______________________________________________________________________________________
-  
+
         IMPLICIT NONE
-        REAL(num) :: partx, partz, partux, partuy, partuz, partw, gaminv
+        REAL(num) :: partx, partz, partux, partuy, partuz, gaminv
+        REAL(num), DIMENSION(:) :: partpid
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         INTEGER(idp) :: nx0_grid_tile, nz0_grid_tile
         INTEGER(idp) :: ixtile, iztile
@@ -285,7 +286,7 @@ MODULE tiling
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
 
         CALL add_particle_at_tile_2d(currsp,ixtile,iztile, partx, partz, &
-                partux, partuy, partuz, gaminv, partw)
+                partux, partuy, partuz, gaminv, partpid)
 
         ! Update total number of particle species
         currsp%species_npart=currsp%species_npart+1
@@ -294,7 +295,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine adds particle of given species to the corresponding 
+  !> This subroutine adds particle of given species to the corresponding
   !> tile particle array depending on the particle position in 3D.
   !
   !> @author
@@ -303,11 +304,12 @@ MODULE tiling
   !> @date
   !> Creation: 2015
     SUBROUTINE add_particle_to_species(currsp, partx, party, partz, &
-               partux, partuy, partuz, gaminv, partw)
+               partux, partuy, partuz, gaminv, partpid)
   ! ______________________________________________________________________________________
         IMPLICIT NONE
         REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz
-        REAL(num), INTENT(IN) :: partw, gaminv
+        REAL(num), INTENT(IN) :: gaminv
+        REAL(num), DIMENSION(:), INTENT(IN) :: partpid
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
         INTEGER(idp) :: ixtile, iytile, iztile
@@ -328,7 +330,7 @@ MODULE tiling
         !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
 
         CALL add_particle_at_tile(currsp,ixtile,iytile,iztile, partx, party, partz, &
-                partux, partuy, partuz, gaminv, partw)
+                partux, partuy, partuz, gaminv, partpid)
 
         ! Update total number of particle species
         currsp%species_npart=currsp%species_npart+1
@@ -345,14 +347,15 @@ MODULE tiling
   !> @date
   !> Creation: 2015
     SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, &
-                partux, partuy, partuz, gaminv, partw)
+                partux, partuy, partuz, gaminv, partpid)
   ! ______________________________________________________________________________________
         IMPLICIT NONE
 
         ! ___ Arguments _________________________________________________________
         INTEGER(idp) :: count, nmax, ixt, izt
         REAL(num), INTENT(IN)    :: partx, partz, partux, partuy, partuz
-        REAL(num), INTENT(IN)    :: gaminv, partw
+        REAL(num), INTENT(IN)    :: gaminv
+        REAL(num), DIMENSION(:), INTENT(IN) :: partpid
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER                    :: curr
 
@@ -378,7 +381,7 @@ MODULE tiling
         curr%part_uy(count) = partuy
         curr%part_uz(count) = partuz
         curr%part_gaminv(count) = gaminv
-        curr%pid(count,wpid) = partw
+        curr%pid(count,1:npid) = partpid
         curr%part_ex(count)  = 0._num
         curr%part_ey(count)  = 0._num
         curr%part_ez(count)  = 0._num
@@ -399,13 +402,14 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
-              partux, partuy, partuz, gaminv, partw)
+              partux, partuy, partuz, gaminv, partpid)
   ! ______________________________________________________________________________________
 
         IMPLICIT NONE
         INTEGER(idp) :: count, nmax, ixt, iyt, izt
         REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz
-        REAL(num), INTENT(IN) :: gaminv, partw
+        REAL(num), INTENT(IN) :: gaminv
+        REAL(num), DIMENSION(:) :: partpid
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
 
@@ -432,7 +436,7 @@ MODULE tiling
         curr%part_uy(count) = partuy
         curr%part_uz(count) = partuz
         curr%part_gaminv(count) = gaminv
-        curr%pid(count,wpid) = partw
+        curr%pid(count,1:npid) = partpid
         curr%part_ex(count)  = 0._num
         curr%part_ey(count)  = 0._num
         curr%part_ez(count)  = 0._num
@@ -451,13 +455,14 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, partx, party, &
-          partz, partux, partuy, partuz, gaminv, partw)
+  SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np,npiid, partx, party, &
+          partz, partux, partuy, partuz, gaminv, partpid)
   ! ______________________________________________________________________________________
-  
+
         IMPLICIT NONE
-        INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew
-        REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv, partw
+        INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew, npiid
+        REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv
+        REAL(num), DIMENSION(np,npiid) :: partpid
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         TYPE(particle_tile), POINTER :: curr
 
@@ -478,14 +483,14 @@ MODULE tiling
         ENDIF
         ! Finally, add particle to tile
         curr%np_tile(1)=npnew
-        curr%part_x(count+1:npnew)  = partx(:)
+        curr%part_x(count+1:npnew)  = partx
         curr%part_y(count+1:npnew)  = party
         curr%part_z(count+1:npnew)  = partz
         curr%part_ux(count+1:npnew) = partux
         curr%part_uy(count+1:npnew) = partuy
         curr%part_uz(count+1:npnew) = partuz
         curr%part_gaminv(count+1:npnew) = gaminv
-        curr%pid(count+1:npnew,wpid) = partw
+        curr%pid(count+1:npnew,1:npiid) = partpid
         curr%part_ex(count+1:npnew)  = 0._num
         curr%part_ey(count+1:npnew)  = 0._num
         curr%part_ez(count+1:npnew)  = 0._num
@@ -497,7 +502,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> Remove particles from tile using a mask variable. 
+  !> Remove particles from tile using a mask variable.
   !> This technique avoids packing or reallocating arrays.
   !
   !> @author
@@ -508,7 +513,7 @@ MODULE tiling
   !
     SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt,mask)
   ! ______________________________________________________________________________________
-  
+
         TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
         LOGICAL(lp) , DIMENSION (:), INTENT(IN) :: mask
         INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
@@ -699,7 +704,7 @@ MODULE tiling
   !
   SUBROUTINE init_tile_arrays()
   ! ______________________________________________________________________________________
-  
+
   IMPLICIT NONE
 
     CALL init_tile_arrays_for_species(nspecies, species_parray, &
@@ -715,7 +720,7 @@ MODULE tiling
     !> @brief
     !
     !> @details
-    !> This subroutine also allocates the local field arrays contained 
+    !> This subroutine also allocates the local field arrays contained
     !> in aofgrid_tiles for each tile.
     !
     !> @author
@@ -725,12 +730,12 @@ MODULE tiling
     !> Creation: 2015
     SUBROUTINE init_tile_arrays_for_species(nspec2,species_array,aofgtiles,ntx2,nty2,ntz2)
     ! ____________________________________________________________________________________
-    
+
         IMPLICIT NONE
         INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
         TYPE(grid_tile), DIMENSION(ntx2,nty2,ntz2), INTENT(IN OUT)        :: aofgtiles
         TYPE(particle_species), DIMENSION(nspec2), TARGET, INTENT(IN OUT) :: species_array
-        
+
         INTEGER(idp)                    :: ispecies, ix, iy, iz
         INTEGER(idp)                    :: n1, n2, n3, ng1, ng2, ng3
         TYPE(particle_tile), POINTER    :: curr_tile
@@ -854,12 +859,14 @@ MODULE tiling
         TYPE(particle_species), POINTER :: curr
         INTEGER(idp) :: ispecies, l, k, j, ipart
         INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
-        REAL(num) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+        REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
         REAL(num) :: phi, th, v, clightsq,partvx,partvy,partvz
+        REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
         INTEGER(idp) :: npart
         INTEGER(isp) :: err
         REAL(num), DIMENSION(6) :: rng=0_num
         clightsq=1/clight**2
+        ALLOCATE(partpid(npid))
         !!! --- Sets-up particle space distribution (homogeneous case, uniform space distribution - default)
         IF (pdistr .EQ. 1) THEN
             DO ispecies=1,nspecies
@@ -880,7 +887,7 @@ MODULE tiling
                                   partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-0.5_num)
                                   party = y_min_local+k*dy+dy/curr%nppcell*(ipart-0.5_num)
                                   partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-0.5_num)
-                                  partw = nc*dx*dy*dz/(curr%nppcell)
+                                  partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                                   ! Sets velocity
                                   CALL RANDOM_NUMBER(rng(1:3))
                                   v=MAX(1e-10_num,rng(1))
@@ -898,7 +905,7 @@ MODULE tiling
 
                                   ! Adds particle to array of tiles of current species
                                   CALL add_particle_to_species(curr, partx, party, partz, &
-                                  partux, partuy, partuz, gaminv, partw)
+                                  partux, partuy, partuz, gaminv, partpid)
                               END DO
                           END DO
                       END DO
@@ -916,7 +923,7 @@ MODULE tiling
                                   ! Sets positions and weight
                                   partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
                                   partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
-                                  partw = nc*dx*dz/(curr%nppcell)
+                                  partpid(wpid) = nc*dx*dz/(curr%nppcell)
                                   ! Sets velocity
                                   CALL RANDOM_NUMBER(rng(1:3))
                                   v=MAX(1e-10_num,rng(1))
@@ -934,7 +941,7 @@ MODULE tiling
 
                                   ! Adds particle to array of tiles of current species
                                   CALL add_particle_to_species_2d(curr, partx, partz, &
-                                  partux, partuy, partuz, gaminv, partw)
+                                  partux, partuy, partuz, gaminv, partpid)
                               END DO
                       END DO
                   END DO
@@ -961,7 +968,7 @@ MODULE tiling
                                 partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
                                 party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
                                 partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
-                                partw = nc*dx*dy*dz/(curr%nppcell)
+                                partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                                 ! Sets velocity
                                 v=MAX(1e-10_num,rng(4))
                                 th=2*pi*rng(5)
@@ -978,13 +985,13 @@ MODULE tiling
 
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
-                                partux, partuy, partuz, gaminv, partw)
+                                partux, partuy, partuz, gaminv, partpid)
                             END DO
                         END DO
                     END DO
                 END DO
             END DO ! END LOOP ON SPECIES
-            
+
 
         !!! --- Sets-up particle space distribution (random space with a given velocity)
         ELSE IF (pdistr .EQ. 3) THEN
@@ -1005,8 +1012,8 @@ MODULE tiling
                                 partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
                                 party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
                                 partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
-                                partw = nc*dx*dy*dz/(curr%nppcell)
-                                
+                                partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
+
                                 ! Sets velocity
                                 v=MAX(1e-10_num,rng(4))
                                 th=2*pi*rng(5)
@@ -1023,13 +1030,13 @@ MODULE tiling
 
                                 ! Adds particle to array of tiles of current species
                                 CALL add_particle_to_species(curr, partx, party, partz, &
-                                partux, partuy, partuz, gaminv, partw)
+                                partux, partuy, partuz, gaminv, partpid)
                             END DO
                         END DO
                     END DO
                 END DO
             END DO ! END LOOP ON SPECIES
-            
+
         ENDIF
 
         ! Collects total number of particles from other subdomains (useful for statistics)
@@ -1044,6 +1051,7 @@ MODULE tiling
             END IF
         END DO
 
+        DEALLOCATE(partpid)
         RETURN
     END SUBROUTINE load_particles
 
@@ -1126,28 +1134,75 @@ MODULE tiling
         IMPLICIT NONE
         REAL(num), DIMENSION(:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
         INTEGER(idp),INTENT(IN) :: nx_old,ny_old,nx_new,ny_new
+        INTEGER(idp)            :: nx_temp,ny_temp
         REAL(num), DIMENSION(:,:),ALLOCATABLE :: temp
 
         ALLOCATE(temp(1:nx_new,1:ny_new))
         ! reshape array
+        ! reshape array
         IF (nx_new .GT. nx_old) THEN
-          IF (ny_new .GT. ny_old) THEN
-              temp(1:nx_old,1:ny_old)=arr(1:nx_old,1:ny_old)
-          ELSE
-            temp(1:nx_old,1:ny_new) = arr(1:nx_old,1:ny_new)
-          ENDIF
+          nx_temp=nx_old
         ELSE
-          IF (ny_new .GT. ny_old) THEN
-            temp(1:nx_new,1:ny_old) = arr(1:nx_new,1:ny_old)
-          ELSE
-            temp(1:nx_new,1:ny_new) = arr(1:nx_new,1:ny_new)
-          ENDIF
+          nx_temp=nx_new
         ENDIF
+        IF (ny_new .GT. ny_old) THEN
+          ny_temp=ny_old
+        ELSE
+          ny_temp=ny_new
+        ENDIF
+        temp(1:nx_temp,1:ny_temp)= &
+        arr(1:nx_temp,1:ny_temp)
         DEALLOCATE(arr)
         ALLOCATE(arr(1:nx_new,1:ny_new))
         arr=temp
         DEALLOCATE(temp)
     END SUBROUTINE resize_2D_array_real
+
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Resize a 3D array of reals.
+    !
+    !> @author
+    !> Henri Vincenti
+    !
+    !> @date
+    !> Creation: 2017
+    !
+    SUBROUTINE resize_3D_array_real(arr, nx_old,nx_new,ny_old,ny_new, &
+      nz_old,nz_new)
+    ! ____________________________________________________________________________________
+        IMPLICIT NONE
+        REAL(num), DIMENSION(:,:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
+        INTEGER(idp),INTENT(IN) :: nx_old, ny_old, nz_old, &
+                                   nx_new, ny_new, nz_new
+        INTEGER(idp)            :: nx_temp,ny_temp,nz_temp
+        REAL(num), DIMENSION(:,:,:),ALLOCATABLE :: temp
+
+        ALLOCATE(temp(1:nx_new,1:ny_new,1:nz_new))
+        ! reshape array
+        IF (nx_new .GT. nx_old) THEN
+          nx_temp=nx_old
+        ELSE
+          nx_temp=nx_new
+        ENDIF
+        IF (ny_new .GT. ny_old) THEN
+          ny_temp=ny_old
+        ELSE
+          ny_temp=ny_new
+        ENDIF
+        IF (nz_new .GT. nz_old) THEN
+          nz_temp=nz_old
+        ELSE
+          nz_temp=nz_new
+        ENDIF
+        temp(1:nx_temp,1:ny_temp,1:nz_temp)= &
+        arr(1:nx_temp,1:ny_temp,1:nz_temp)
+        DEALLOCATE(arr)
+
+        ALLOCATE(arr(1:nx_new,1:ny_new,1:nz_new))
+        arr=temp
+        DEALLOCATE(temp)
+    END SUBROUTINE resize_3D_array_real
 
     ! ____________________________________________________________________________________
     !> @brief
@@ -1172,7 +1227,7 @@ MODULE tiling
       END DO ! END LOOP ON SPECIES
 
     END SUBROUTINE get_local_number_of_part
-    
+
     ! ____________________________________________________________________________________
     !
     !      SUBROUTINES DEDICATED FOR PYTHON INTERFACE
@@ -1290,7 +1345,7 @@ MODULE tiling
       currsp%name=sname
       currsp%sorting_period=sorting_period
       currsp%sorting_start=sorting_start
-      
+
       ! this part poses problems for the python version compiled on Cori
       !IF (rank .EQ. 0) THEN
       !  PRINT *, "species name: ", trim(adjustl(sname))
@@ -1300,7 +1355,7 @@ MODULE tiling
       !  PRINT *, "sorting start: ", currsp%sorting_start
       !  PRINT *, ""
       !ENDIF
-      
+
     END SUBROUTINE set_particle_species_properties
 
 
@@ -1315,19 +1370,20 @@ MODULE tiling
     !> @date
     !> Creation: 2015
     !
-    SUBROUTINE py_add_particles_to_species(nsp, npart, partx, party, partz, &
-               partux, partuy, partuz, gaminv, partw)
+    SUBROUTINE py_add_particles_to_species(nsp, npart,npiid, partx, party, partz, &
+               partux, partuy, partuz, gaminv, partpid)
     ! ____________________________________________________________________________________
         IMPLICIT NONE
-        INTEGER(idp), INTENT(IN) :: nsp, npart
-        REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, partw, gaminv
+        INTEGER(idp), INTENT(IN) :: nsp, npart, npiid
+        REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, gaminv
+        REAL(num), DIMENSION(npart,npiid), INTENT(IN) :: partpid
         TYPE(particle_species), POINTER :: currsp
         INTEGER(idp) :: i
         currsp=>species_parray(nsp)
 
         DO i=1,npart
             CALL add_particle_to_species(currsp, partx(i), party(i), partz(i), &
-                partux(i), partuy(i), partuz(i), gaminv(i), partw(i))
+                partux(i), partuy(i), partuz(i), gaminv(i), partpid(i,1:npiid))
         END DO
     END SUBROUTINE py_add_particles_to_species
 
@@ -1402,7 +1458,7 @@ MODULE tiling
 
       INTEGER(idp)                    :: ispecies, ix, iy, iz, nbp
       INTEGER(idp)                    :: nxc,nyc,nzc
-      INTEGER(idp)                    :: nxg,nyg,nzg      
+      INTEGER(idp)                    :: nxg,nyg,nzg
       REAL(num)                       :: ncloc
       REAL(num)                       :: mpipartsize
       REAL(num)                       :: tilepartsize
@@ -1440,7 +1496,7 @@ MODULE tiling
 
                  mpipartsize = mpipartsize + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
                  ncloc = ncloc + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)
-                 
+
                  tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)*8.
 
               END DO! END LOOP ON SPECIES
@@ -1469,7 +1525,7 @@ MODULE tiling
                  nzc=curr_tile%nz_cells_tile
                  nxg=curr_tile%nxg_tile
                  nzg=curr_tile%nzg_tile
-                 
+
                  mpipartsize = mpipartsize + nbp*8*13 ! 8 for double, 13 for x,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
                  ncloc = ncloc + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)
 
@@ -1552,12 +1608,12 @@ MODULE tiling
       !IF (rank.eq.0) WRITE(0,*)
       IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process per each field component',mpifieldsize,unity
       IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for E and B',mpifieldsize*6.,unity
-      
+
       if (tilefieldsize > 1024.) then
         tilefieldsize = tilefieldsize/1024.
         unity = 'Ko'
       endif
-      
+
       IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity
       IF (rank.eq.0) WRITE(0,*) 'Average tile size for the current',tilefieldsize*3.,unity
 

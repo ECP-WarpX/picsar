@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
 ! MODULES.F90
@@ -163,7 +163,7 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:) :: ycoeffs
   !> Fonberg coefficients in z
   REAL(num), POINTER, DIMENSION(:) :: zcoeffs
-  
+
 END MODULE fields
 
 ! ________________________________________________________________________________________
@@ -173,7 +173,7 @@ MODULE grid_tilemodule !#do not parse
 ! ________________________________________________________________________________________
 
   USE constants
-  
+
   !> This object contains 3D field grids for one tile
   TYPE grid_tile
       !> Tile Electric field grid in x
@@ -196,7 +196,7 @@ MODULE grid_tilemodule !#do not parse
       REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: jztile
       !> Tile Charge grid
       REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rhotile
-      
+
 ! We declare arrays aligned for vectorization efficiency.
 ! These directives are only understood by the Intel compiler.
 #if defined __INTEL_COMPILER
@@ -225,12 +225,12 @@ MODULE grid_tilemodule !#do not parse
     !!DIR ATTRIBUTES FASTMEM  :: rhotile
 
   END TYPE
-  
+
   !> This array contains a list of tile field grids.
   !> This array is local to each MPI domain.
   !> Tile grids are contained in the object grid_tile (see extile,eytile...).
   TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
-  
+
 END MODULE grid_tilemodule
 
 !===============================================================================
@@ -292,14 +292,14 @@ TYPE particle_tile
     REAL(num) :: y_tile_max
     !> Maximal tile boundary in z
     REAL(num) :: z_tile_max
-    
+
     !> Minimal grid tile boundary in x
     REAL(num) :: x_grid_tile_min
     !> Minimal grid tile boundary in y
     REAL(num) :: y_grid_tile_min
     !> Minimal grid tile boundary in z
     REAL(num) :: z_grid_tile_min
-    
+
     !> Maximal grid tile boundary in x
     REAL(num) :: x_grid_tile_max
     !> Maximal grid tile boundary in y
@@ -421,12 +421,12 @@ MODULE particle_speciesmodule !#do not parse
       !> Sorting period
       INTEGER(idp)   :: sorting_period
       !> Sorting start iteration
-      INTEGER(idp)   :: sorting_start 
+      INTEGER(idp)   :: sorting_start
       !> Flag indicating of the array array_of_tile has been allocated
       LOGICAL(lp)   :: l_arrayoftiles_allocated =.FALSE.
       ! For some stupid reason, cannot use ALLOCATABLE in derived types
       ! in Fortran 90 - Need to use POINTER instead
-      !> List of tiles (of objects particle_tile) in the MPI domain for the 
+      !> List of tiles (of objects particle_tile) in the MPI domain for the
       !> particles of this species.
       TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE :: array_of_tiles
       !> Array indicating if a tile has been reallocated.
@@ -457,9 +457,19 @@ MODULE particle_properties
 !===============================================================================
   USE constants
   !> Number of elements per particle in the pid particle array
-  INTEGER(idp), PARAMETER :: npid=1
-  !> Dimension corresponding to the weight in pid
+  !> Default is 1 i.e only particle weights are recorded
+  INTEGER(idp)  :: npid=1
+  !> Index in pid array corresponding to particle weights
+  !> Beware: default is wpid=1. Use same in WARP when coupling WARP+PXR
   INTEGER(idp), PARAMETER :: wpid=1
+  !> Index in pid array corresponding to particle ids
+  INTEGER(idp)  :: ssnpid
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp)  :: xoldpid
+  !> Index in pid array corresponding to old y positions of particles
+  INTEGER(idp) :: yoldpid
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp) :: zoldpid
   !> This flag seems to be unused
   LOGICAL(lp) :: l_initongrid = .FALSE.
   !> Flag to activate the use of weight for the particles
@@ -555,7 +565,7 @@ USE constants
   INTEGER(idp) :: topology
   !> Type if current MPI communication
   INTEGER(idp) :: mpicom_curr
-  !> Seed for random drawings 
+  !> Seed for random drawings
   INTEGER(isp) :: seed
   !> Current deposition method
   INTEGER(idp) :: currdepo
@@ -584,19 +594,19 @@ MODULE mpi_type_constants !#do not parse
 !===============================================================================
   use mpi
   use constants
-  !> Variable with a short name that contains the double size 
+  !> Variable with a short name that contains the double size
   !> parameter MPI_DOUBLE_PRECISION
   INTEGER(isp)  :: mpidbl = MPI_DOUBLE_PRECISION
   !> Status parameter for MPI
   INTEGER(isp) :: status(MPI_STATUS_SIZE)
   ! Derived types (MPI exchange)
-  !> Unused derived type 
+  !> Unused derived type
   INTEGER(isp) :: derived_type_grid
-  !> Unused derived type 
+  !> Unused derived type
   INTEGER(isp) :: derived_subarray_grid
   !> Array containing a list of different derived types
   INTEGER(isp), DIMENSION(100) :: mpi_dtypes
-  !> List of flags that tells if the corresponding derived type in 
+  !> List of flags that tells if the corresponding derived type in
   !> mpi_dtypes has been initialized
   LOGICAL(lp), DIMENSION(100) :: is_dtype_init = .TRUE.
 END MODULE mpi_type_constants
@@ -606,7 +616,7 @@ END MODULE mpi_type_constants
 MODULE communications  !#do not parse
 !===============================================================================
   use constants
-  
+
   INTEGER(isp) :: reqperjxx(4)
   INTEGER(isp) :: reqperjxy(4)
   INTEGER(isp) :: reqperjxz(4)
@@ -617,9 +627,9 @@ MODULE communications  !#do not parse
   INTEGER(isp) :: reqperjzy(4)
   INTEGER(isp) :: reqperjzz(4)
 
-  !> Structure that contains buffer arrays for particle 
+  !> Structure that contains buffer arrays for particle
   !> exchange between tiles.
-  !> This structure is used by the subroutine 
+  !> This structure is used by the subroutine
   !> particle_bsc_openmp_reordering() in boundary.F90.
   TYPE part_com_buffer
       !> particle x position buffer array
@@ -658,9 +668,9 @@ MODULE communications  !#do not parse
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_pos
   END TYPE
 
-  !> Structure that contains buffer arrays for particle 
+  !> Structure that contains buffer arrays for particle
   !> exchange between tiles and MPI domains.
-  !> This structure is used by the subroutine 
+  !> This structure is used by the subroutine
   !> particle_bcs_tiles_and_mpi_3d() in boundary.F90.
   TYPE mpi_tile_buffer
       !> particle x position buffer array
@@ -692,7 +702,7 @@ MODULE communications  !#do not parse
       !dir$ attributes align:64 :: part_gaminv
       !DIR ATTRIBUTES FASTMEM  :: part_gaminv
       !> particle weight buffer array
-      REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+      REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: pid
       !dir$ attributes align:64 :: pid
       !DIR ATTRIBUTES FASTMEM  :: pid
       !> Number of particles to be exchanged in each direction
@@ -742,7 +752,7 @@ MODULE output_data !#do not parse
   REAL(num) :: endsim =0.0_num
   !> Simulation time at the beginning of the iteration (used in submain.F90)
   REAL(num) :: startit
-  !> Simulation time at the end of the iteration so that timeit-startit 
+  !> Simulation time at the end of the iteration so that timeit-startit
   !> is the iteration time (used in submain.F90)
   REAL(num) :: timeit
   !> Time spent in the pusher
@@ -752,7 +762,7 @@ MODULE output_data !#do not parse
   INTEGER(idp) :: output_frequency = -1 !(Default is no output)
   !> First step for the field diagnostics
   INTEGER(idp) :: output_step_min = 0
-  !> Last step for the field diagnostics  
+  !> Last step for the field diagnostics
   INTEGER(idp) :: output_step_max = 0
 
   ! output quantity flag (Default=False)
@@ -829,7 +839,7 @@ MODULE output_data !#do not parse
   REAL(num), dimension(:),allocatable :: temdiag_array
 
   ! Computation flags
-  !> Flag true if the divergence of the electric field has been 
+  !> Flag true if the divergence of the electric field has been
   !> calculated for the current iteration.
   LOGICAL(lp)  :: divE_computed
 
@@ -898,21 +908,21 @@ MODULE shared_data
   INTEGER(isp) :: coordinates(3)
   !> MI process neighbors in a Cartesian topology
   INTEGER(idp) :: neighbour(-1:1, -1:1, -1:1)
-  !> MPI process x coordinate, equivalent of x_coords = coordinates(c_ndims) 
+  !> MPI process x coordinate, equivalent of x_coords = coordinates(c_ndims)
   !> with a Cartesian topology
   INTEGER(idp) :: x_coords
   !> Minimal MPI process topology index in x
   INTEGER(idp) :: proc_x_min
   !> Maximal MPI process topology index in x
   INTEGER(idp) :: proc_x_max
-  !> MPI process y coordinate, equivalent of x_coords = coordinates(c_ndims-1) 
+  !> MPI process y coordinate, equivalent of x_coords = coordinates(c_ndims-1)
   !> with a Cartesian topology
   INTEGER(idp) :: y_coords
   !> Minimal MPI process topology index in y
   INTEGER(idp) :: proc_y_min
   !> Maximal MPI process topology index in y
   INTEGER(idp) :: proc_y_max
-  !> MPI process y coordinate, equivalent of x_coords = coordinates(c_ndims-1) 
+  !> MPI process y coordinate, equivalent of x_coords = coordinates(c_ndims-1)
   !> with a Cartesian topology
   INTEGER(idp) :: z_coords
   !> Minimal MPI process topology index in z
@@ -943,7 +953,7 @@ MODULE shared_data
   LOGICAL(lp)  :: z_min_boundary
   !> This flag is true if the MPI rank is at the superior z boundary
   LOGICAL(lp)  :: z_max_boundary
-  
+
   !> Type of boundary condition at the inferior x boundary
   INTEGER(idp) :: pbound_x_min
   !> Type of boundary condition at the superior x boundary
@@ -958,7 +968,7 @@ MODULE shared_data
   INTEGER(idp) :: pbound_z_max
 
   ! The location of the processors
-  !> Minimum cell number in x for each MPI process 
+  !> Minimum cell number in x for each MPI process
   INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min
   !> Maximal cell number in x for each MPI process
   INTEGER(idp), DIMENSION(:), POINTER :: cell_x_max
@@ -982,7 +992,7 @@ MODULE shared_data
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min
   !> Used in em3dsolverPXR.py
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_max
-  
+
   !> Minimum node number in x in the current MPI process
   INTEGER(idp)                        :: nx_global_grid_min
   !> Maximal node number in x in the current MPI process
@@ -995,9 +1005,9 @@ MODULE shared_data
   INTEGER(idp)                        :: nz_global_grid_min
   !> Maximal node number in z in the current MPI process
   INTEGER(idp)                        :: nz_global_grid_max
-  
+
   ! Domain axis
-  !> Flag true when arrays of axis (x, y, z, x_global, y_global, z_global) 
+  !> Flag true when arrays of axis (x, y, z, x_global, y_global, z_global)
   !> are allocated (see mpi_routines.F90)
   LOGICAL(lp)                         :: l_axis_allocated=.FALSE.
   !> Global x axis cell array with guard cells (-nxguards:nx_global+nxguards)
@@ -1006,7 +1016,7 @@ MODULE shared_data
   REAL(num), DIMENSION(:), POINTER    :: y_global
   !> Global z axis cell array with guard cells (-nzguards:nz_global+nzguards)
   REAL(num), DIMENSION(:), POINTER    :: z_global
-  
+
   ! domain limits and size
   !> local number of cells in x
   INTEGER(idp)                        :: nx
@@ -1032,7 +1042,7 @@ MODULE shared_data
   INTEGER(idp)                        :: ny_global_grid
   !> global number of grid points in z
   INTEGER(idp)                        :: nz_global_grid
-  
+
   !> Space step in x
   REAL(num)                           :: dx
   !> Global grid minimal limit in x
@@ -1097,7 +1107,7 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:) :: y
   !> Local z axis cell array with guard cells (-nzguards:nz+nzguards)
   REAL(num), POINTER, DIMENSION(:) :: z
-  
+
   !> Local grid minimum in x for each processor (1:nprocx)
   REAL(num), DIMENSION(:), POINTER :: x_grid_mins
   !> Local grid maximum in x for each processor (1:nprocx)
@@ -1110,7 +1120,7 @@ MODULE shared_data
   REAL(num), DIMENSION(:), POINTER :: z_grid_mins
   !> Local grid maximum in z for each processor (1:nprocz)
   REAL(num), DIMENSION(:), POINTER :: z_grid_maxs
-  
+
   !> Minimal global grid limit in x
   REAL(num) :: x_grid_min
   !> Maximal global grid limit in x
@@ -1175,13 +1185,13 @@ MODULE kyee_em3d
   !> gammay Maxwell coefficient = 1./48.
   REAL(num) :: gammay = 0.020833333333333332
   !> alphaz Maxwell coefficient = 7./12.
-  REAL(num) :: alphaz = 0.58333333333333337 
-  !> betazx Maxwell coefficient = 1./12. 
+  REAL(num) :: alphaz = 0.58333333333333337
+  !> betazx Maxwell coefficient = 1./12.
   REAL(num) :: betazx = 0.083333333333333329
   !> betazy Maxwell coefficient = 1./12.
-  REAL(num) :: betazy = 0.083333333333333329 
+  REAL(num) :: betazy = 0.083333333333333329
   !> gammaz Maxwell coefficient = 1./48.
-  REAL(num) :: gammaz = 0.020833333333333332 
+  REAL(num) :: gammaz = 0.020833333333333332
   !> Coefficient for the lehe solver
   REAL(num) :: deltaz = 0.000000000000000000
 END MODULE kyee_em3d
@@ -1213,7 +1223,7 @@ MODULE python_pointers
   INTEGER(idp) :: nyct
   !> Number of cells in z, equivalent of particle_tile%nz_cells_tile
   INTEGER(idp) :: nzct
-  
+
   !> Minimal cell index in x, equivalent of particle_tile%nx_tile_min
   INTEGER(idp) :: nxmin
   !> Maximal cell index in x, equivalent of particle_tile%nx_tile_max
@@ -1226,7 +1236,7 @@ MODULE python_pointers
   INTEGER(idp) :: nzmin
   !> Maximal cell index in z, equivalent of particle_tile%nz_tile_max
   INTEGER(idp) :: nzmax
-  
+
   ! Tile position
   !> Minimal tile limit in x: equivalent of particle_tile%x_tile_min
   REAL(num) :: xtmin
@@ -1240,7 +1250,7 @@ MODULE python_pointers
   REAL(num) :: ytmax
   !> Maximal tile limit in z: equivalent of particle_tile%z_tile_max
   REAL(num) :: ztmax
-  
+
   !> Minimal grid tile boundary in x
   REAL(num) :: xgtmin
   !> Minimal grid tile boundary in y

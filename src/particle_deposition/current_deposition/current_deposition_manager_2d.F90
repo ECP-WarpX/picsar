@@ -2,22 +2,22 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
-! 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
+!
 ! CURRENT_DEPOSITION_MANAGER_2D.F90
 !
 ! Developers
@@ -54,26 +54,26 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   USE shared_data
   USE params
   USE time_stat
-#if defined(PROFILING) && PROFILING==2      
-  USE ITT_SDE_FORTRAN                       
-#endif                                   
-  IMPLICIT NONE 
-  
+#if defined(PROFILING) && PROFILING==2
+  USE ITT_SDE_FORTRAN
+#endif
+  IMPLICIT NONE
+
   ! __ Parameter declaration __________________________________________________
   REAL(num) :: tdeb, tend
-  
+
   ! ___________________________________________________________________________
   ! Interfaces for func_order
   INTERFACE
 
-    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & 
+    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
       USE omp_lib
       USE constants
       implicit none
       integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
-      integer(idp)                          :: lvect      
+      integer(idp)                          :: lvect
       real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
       real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
       real(num)                             :: q,dt,dx,dz,xmin,zmin
@@ -81,7 +81,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
     END SUBROUTINE
 
-    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & 
+    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                             dt,dx,dz,nx,nz,nxguard,nzguard, &
                                             nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
       USE omp_lib
@@ -96,7 +96,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
     END SUBROUTINE
 
-    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & 
+    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                     nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
       USE omp_lib
@@ -119,7 +119,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
      integer(idp)                           :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
      real(num), dimension(np)               :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
      real(num)                              :: q,dt,dx,dz,xmin,zmin
-     LOGICAL(lp)                            :: l_particles_weight,l4symtry,l_2drz     
+     LOGICAL(lp)                            :: l_particles_weight,l4symtry,l_2drz
      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   END SUBROUTINE
 
@@ -140,11 +140,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
   END SUBROUTINE
 #endif
-  
+
   END INTERFACE
   ! ___________________________________________________________________________
 
-! For debugging    
+! For debugging
 #if defined(DEBUG)
   WRITE(0,*) "Depose_currents_on_grid: start"
 #endif
@@ -153,9 +153,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   tdeb=MPI_WTIME()
 
 ! For profiling with Vtune/SDE
-#if PROFILING==2              
-  CALL start_collection()     
-#endif                        
+#if PROFILING==2
+  CALL start_collection()
+#endif
 
   jx = 0.0_num
   jy = 0.0_num
@@ -173,7 +173,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ELSE IF (currdepo.EQ.1) THEN
 
     ! Order 1
-    IF ((nox.eq.1).AND.(noz.eq.1)) THEN 
+    IF ((nox.eq.1).AND.(noz.eq.1)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_1_1,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order 2
@@ -181,7 +181,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_2_2,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order 3
-    ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN 
+    ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_3_3,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order n
@@ -195,7 +195,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ELSE
 
     ! Order 1
-    IF ((nox.eq.1).AND.(noz.eq.1)) THEN 
+    IF ((nox.eq.1).AND.(noz.eq.1)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_1_1,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order 2
@@ -203,7 +203,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_2_2,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order 3
-    ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN 
+    ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_3_3,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order n
@@ -211,19 +211,19 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
          nox,noy,noz,dx,dy,dz,dt)
     ENDIF
-      
+
   ENDIF
 
 ! Stop Vtune/SDE analysis
 #if PROFILING==2
-  CALL stop_collection() 
+  CALL stop_collection()
 #endif
 
   ! For time statistics
   tend = MPI_WTIME()
   localtimes(3)=localtimes(3)+(tend-tdeb)
-  
-! For debugging   
+
+! For debugging
 #if defined(DEBUG)
   WRITE(0,*) "Depose_current_on_grid: stop"
 #endif
@@ -237,9 +237,9 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 !> Deposit current in each tile with Esirkepov method in 2D
 !
 !> @details
-!> This subroutine is called from Fortran main program and contains an interface argument 
-!> OpenMP version. Avoids conflict while reducing tile currents in the global 
-!> current array. 
+!> This subroutine is called from Fortran main program and contains an interface argument
+!> OpenMP version. Avoids conflict while reducing tile currents in the global
+!> current array.
 
 !> @author
 !> Henri Vincenti
@@ -292,7 +292,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
     END SUBROUTINE
 
   END INTERFACE
-  
+
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
   !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,nxjguard,nyjguard,              &
   !$OMP nzjguard,dxx,dyy,dzz,dtt,jxg,jyg,jzg,noxx,noyy,nozz,aofgrid_tiles,c_dim,lvect)      &
@@ -314,7 +314,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
             lmax=curr_tile%nz_tile_max
             nxc=curr_tile%nx_cells_tile;
             nyc=curr_tile%ny_cells_tile
-            nzc=curr_tile%nz_cells_tile         
+            nzc=curr_tile%nz_cells_tile
             currg=>aofgrid_tiles(ix,1,iz)
             currg%jxtile=0.
             currg%jytile=0.
@@ -324,22 +324,22 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
                  curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,1,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .EQ. 0) THEN 
+                IF (count .EQ. 0) THEN
                   CYCLE
-                ELSE 
+                ELSE
                   isdeposited=.TRUE.
-                ENDIF 
- 
-                ! Depose current in jtile                
+                ENDIF
+
+                ! Depose current in jtile
                 CALL curr_depo_sub(currg%jxtile,currg%jytile,                              &
                 currg%jztile,count,                                                       &
                 curr_tile%part_x,curr_tile%part_z,                            &
                 curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,           &
                 curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,     &
                 curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,                                     &
-                nxjg,nzjg,noxx,nozz,lvect,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp) 
-                
-                
+                nxjg,nzjg,noxx,nozz,lvect,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
+
+
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
               jxg(jmin:jmax,0,lmin:lmax)=jxg(jmin:jmax,0,lmin:lmax)+currg%jxtile(0:nxc,0,0:nzc)
@@ -360,9 +360,9 @@ DO iz=1,ntilez
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.  
+                IF (count .GT. 0) isdeposited=.TRUE.
             END DO
-            IF (isdeposited) THEN 
+            IF (isdeposited) THEN
               currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
                curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -412,9 +412,9 @@ DO iz=1,ntilez
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.  
+                IF (count .GT. 0) isdeposited=.TRUE.
             END DO
-            IF (isdeposited) THEN 
+            IF (isdeposited) THEN
               currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
                curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -464,9 +464,9 @@ DO iz=1,ntilez
                 curr => species_parray(ispecies)
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
-                IF (count .GT. 0) isdeposited=.TRUE.  
+                IF (count .GT. 0) isdeposited=.TRUE.
             END DO
-            IF (isdeposited) THEN 
+            IF (isdeposited) THEN
               currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
                curr_tile=>curr%array_of_tiles(ix,iy,iz)
@@ -507,7 +507,5 @@ DO iz=1,ntilez
   END DO!END LOOP ON TILES
   !$OMP END DO
   !$OMP END PARALLEL
- 
+
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp
-
-

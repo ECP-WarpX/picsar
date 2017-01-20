@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! SUBMAIN.F90
 !
@@ -30,7 +30,7 @@
 ! Creation 2015
 !
 ! Modifications:
-! Mathieu Lobet - 2016 - Summary of the main parameters printed 
+! Mathieu Lobet - 2016 - Summary of the main parameters printed
 !                        at the beginning of the simulation.
 ! Mathieu Lobet - 2016 - Creation of a partial 2D loop (does not include all 2d steps)
 ! ________________________________________________________________________________________
@@ -85,7 +85,7 @@ SUBROUTINE step(nst)
 #if SDE==1
   CALL start_sde_collection()
 #endif
-#if ALLINEA==1      
+#if ALLINEA==1
   CALL ALLINEA_START_SAMPLING
 #endif
 ! Intel Design Forward project
@@ -94,7 +94,7 @@ SUBROUTINE step(nst)
 #endif
 
   ! ______________________________________________________________________________________
-  ! 
+  !
   ! Main loop
   ! ______________________________________________________________________________________
 
@@ -104,11 +104,11 @@ SUBROUTINE step(nst)
 
     DO i=1,nst
         IF (rank .EQ. 0) startit=MPI_WTIME()
-    
+
         !!! --- Init iteration variables
         pushtime=0._num
         divE_computed = .False.
-    
+
         !!! --- Field gather & particle push
         !IF (rank .EQ. 0) PRINT *, "#1"
         CALL field_gathering_plus_particle_pusher
@@ -122,7 +122,7 @@ SUBROUTINE step(nst)
         !IF (rank .EQ. 0) PRINT *, "#4"
         !!! --- Deposit current of particle species on the grid
         !write(0,*),'Depose currents'
-        CALL pxrdepose_currents_on_grid_jxjyjz  
+        CALL pxrdepose_currents_on_grid_jxjyjz
         !IF (rank .EQ. 0) PRINT *, "#5"
         !!! --- Boundary conditions for currents
         !write(0,*),'Current_bcs'
@@ -153,7 +153,7 @@ SUBROUTINE step(nst)
         !!! --- Output simulation results
         CALL output_routines
         !IF (rank .EQ. 0) PRINT *, "#14"
-    
+
         it = it+1
         timeit=MPI_WTIME()
 
@@ -199,19 +199,19 @@ SUBROUTINE step(nst)
             " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
         END IF
     END DO
-  
+
   ENDIF
 
 !!! --- Stop Vtune analysis
-#if VTUNE==1            
+#if VTUNE==1
   CALL stop_vtune_collection()
 #endif
-#if SDE==1            
+#if SDE==1
   CALL stop_sde_collection()
-#endif 
-#if ALLINEA==1      
+#endif
+#if ALLINEA==1
   CALL ALLINEA_STOP_SAMPLING
-#endif   
+#endif
 ! Intel Design Forward project
 #if defined(DFP)
   CALL DFP_MAIN_STOP
@@ -253,7 +253,7 @@ SUBROUTINE initall
   INTEGER(idp)                    :: ispecies,i
   REAL(num)                       :: tdeb
   TYPE(particle_species), POINTER :: curr
-  TYPE(particle_dump), POINTER    :: dp 
+  TYPE(particle_dump), POINTER    :: dp
 
   ! Time statistics
   init_localtimes(:) = 0
@@ -268,13 +268,13 @@ SUBROUTINE initall
     ny = 1
   ENDIF
 
-  ! Few calculations and updates      
+  ! Few calculations and updates
   nc    = nlab*g0          ! density (in the simulation frame)
   wlab  = echarge*sqrt(nlab/(emass*eps0)) ! plasma frequency (in the lab frame)
   lambdalab = 2*pi*clight/wlab
   w0_l  = echarge*sqrt(nc/(g0*emass*eps0))    ! "longitudinal" plasma frequency (in the lab frame)
   w0_t  = echarge*sqrt(nc/(g0**3*emass*eps0)) ! "transverse" plasma frequency (in the lab frame)
-  w0    = w0_l 
+  w0    = w0_l
 
   !!! --- Set time step/ it
   IF (c_dim.eq.3) THEN
@@ -324,10 +324,10 @@ SUBROUTINE initall
   IF (rank .EQ. 0) THEN
     write(0,*) ''
     write(0,*) 'SIMULATION PARAMETERS:'
-    write(0,*) 'Dimension:',c_dim  
+    write(0,*) 'Dimension:',c_dim
     write(0,*) 'dx, dy, dz:',dx,dy,dz
     write(0,*) 'dt:',dt,'s',dt*1e15,'fs'
-    write(0,'(" Coefficient on dt determined via the CFL (dtcoef): ",F12.5)')  dtcoef  
+    write(0,'(" Coefficient on dt determined via the CFL (dtcoef): ",F12.5)')  dtcoef
     write(0,*) 'Total time:',tmax,'plasma periods:',tmax/w0_l,'s'
     write(0,*) 'Number of steps:',nsteps
     write(0,*) 'Tiles:',ntilex,ntiley,ntilez
@@ -344,11 +344,11 @@ SUBROUTINE initall
       write(0,'(" Pusher: Boris algorithm (particle_pusher=",I1,")")') particle_pusher
     ENDIF
     write(0,*) 'Maxwell derivative coeff:',xcoeffs
-    write(0,*) 'MPI buffer size:',mpi_buf_size 
+    write(0,*) 'MPI buffer size:',mpi_buf_size
     WRITE(0,*) ''
     WRITE(0,*) 'Vector length current deposition',lvec_curr_depo
     WRITE(0,*) 'Vector length charge deposition',lvec_charge_depo
-    WRITE(0,*) 'Vector length field gathering',lvec_fieldgathe  
+    WRITE(0,*) 'Vector length field gathering',lvec_fieldgathe
     write(0,*) ''
     write(0,*) 'PLASMA PROPERTIES:'
     write(0,*) 'Distribution:',pdistr
@@ -357,29 +357,29 @@ SUBROUTINE initall
     write(0,*) 'Cold plasma frequency in the lab frame:',wlab,'s^-1'
     write(0,*) 'cold plasma wavelength:',lambdalab,'m',lambdalab*1e6,'um'
     write(0,*) ''
-  
-    write(0,'(" MPI domain decomposition")')  
+
+    write(0,'(" MPI domain decomposition")')
     write(0,*) 'Topology:',topology
     write(0,'(" Local number of cells:",I5,X,I5,X,I5)') nx,ny,nz
-    write(0,'(" Local number of grid point:",I5,X,I5,X,I5)') nx_grid,ny_grid,nz_grid  
+    write(0,'(" Local number of grid point:",I5,X,I5,X,I5)') nx_grid,ny_grid,nz_grid
     write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
-    write(0,*) ''  
-    
+    write(0,*) ''
+
     ! Sorting
-    IF (sorting_activated.gt.0) THEN 
+    IF (sorting_activated.gt.0) THEN
       write(0,*) 'Particle sorting activated'
       write(0,*) 'dx:',sorting_dx
       write(0,*) 'dy:',sorting_dy
-      write(0,*) 'dz:',sorting_dz 
+      write(0,*) 'dz:',sorting_dz
       write(0,*) 'shiftx:',sorting_shiftx
       write(0,*) 'shifty:',sorting_shifty
-      write(0,*) 'shiftz:',sorting_shiftz    
-      write(0,*) ''    
+      write(0,*) 'shiftz:',sorting_shiftz
+      write(0,*) ''
     ELSE
       write(0,*) 'Particle sorting non-activated'
-      write(0,*) ''    
+      write(0,*) ''
     ENDIF
-  
+
     ! Species properties
     write(0,*)  'Number of species:',nspecies
     DO ispecies=1,nspecies
@@ -387,35 +387,35 @@ SUBROUTINE initall
       write(0,*) trim(adjustl(curr%name))
       write(0,*) 'Charge:',curr%charge
       write(0,*) 'Drift velocity:',curr%vdrift_x,curr%vdrift_y,curr%vdrift_z
-      write(0,*) 'Sorting period:',curr%sorting_period 
+      write(0,*) 'Sorting period:',curr%sorting_period
       write(0,*) 'Sorting start:',curr%sorting_start
       write(0,*) ''
     end do
-  
+
     ! Diags
-    IF (timestat_activated.gt.0) THEN  
+    IF (timestat_activated.gt.0) THEN
       write(0,*) 'Output of time statistics activated'
       write(0,*) 'Computation of the time statistics starts at',timestat_itstart
       write(0,*) 'Buffer size:',nbuffertimestat
     ELSE
       write(0,*) 'Output of time statistics non-activated'
-      write(0,'(X,"Computation of the time statistics starts at iteration:",I5)') timestat_itstart    
+      write(0,'(X,"Computation of the time statistics starts at iteration:",I5)') timestat_itstart
     ENDIF
-    write(0,*) 
-    
+    write(0,*)
+
     ! Particle Dump
     IF (npdumps.gt.0) THEN
       DO i = 1, npdumps
         dp => particle_dumps(i)
         WRITE(0,'(" Dump number: ",I2)') i
         WRITE(0,'(" species name: ",A10)') species_parray(dp%ispecies)%name
-        WRITE(0,*) 
+        WRITE(0,*)
       ENDDO
     ELSE
       WRITE(0,'(" No particle dump (",I2,")")') npdumps
-      WRITE(0,*) 
+      WRITE(0,*)
     ENDIF
-  
+
   end if
 
   ! ------ INIT PARTICLE DISTRIBUTIONS
@@ -439,7 +439,7 @@ SUBROUTINE initall
 
   init_localtimes(1) = MPI_WTIME() - tdeb
 
-  ! - Estimate tile size 
+  ! - Estimate tile size
   CALL estimate_memory_consumption
 
   ! ----- INIT FIELD ARRAYS
@@ -579,9 +579,9 @@ SUBROUTINE current_debug
   USE fields
   USE shared_data
   IMPLICIT NONE
-  
+
   INTEGER :: i
-  
+
   !jx(1:nx,1:ny,1:nz) = 1.
   !jx(1,1:ny,1:nz) = 0.5
   !jx(nx,ny,nz) = 0.5
