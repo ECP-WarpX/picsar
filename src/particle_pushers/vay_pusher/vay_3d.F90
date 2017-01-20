@@ -51,15 +51,20 @@
 !> @param[in] dt time step
 !> @param[in] which algorithm
 !
-SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,exp,eyp,ezp,bxp,byp,bzp,q,m,dt,which)
+SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
+                              exp,eyp,ezp,bxp,byp,bzp,&
+                              q,m,dt,which)
 ! ______________________________________________________________________________
 
   USE constants
   
-  INTEGER(idp) :: np,which
-  REAL(num)    :: uxp(np),uyp(np),uzp(np),gi(np)
-  REAL(num)    :: exp(np),eyp(np),ezp(np),bxp(np),byp(np),bzp(np)
-  REAL(num)    :: q,m,dt
+  ! Input/Ooutput parameters
+  INTEGER(idp), INTENT(IN) :: np,which
+  REAL(num), INTENT(INOUT) :: uxp(np),uyp(np),uzp(np),gi(np)
+  REAL(num), INTENT(IN)    :: exp(np),eyp(np),ezp(np),bxp(np),byp(np),bzp(np)
+  REAL(num), INTENT(IN)    :: q,m,dt
+  
+  ! Local parameters
   INTEGER(idp) :: ip
   REAL(num)    :: const,bconst,s,gisq,invclight,invclightsq,gprsq
   REAL(num)    :: tx,ty,tz,tu,uxpr,uypr,uzpr,bg,vx,vy,vz
