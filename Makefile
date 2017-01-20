@@ -64,30 +64,33 @@ MODDIR=Modules
 ifeq ($(SYS),cori1)
 	FC=ftn
 	CC=cc
-	APPNAME=picsar_cori
+	APPNAME=picsar_cori1
   ifeq ($(MODE),prod)
+		APPNAME=picsar_cori1
 		COMP=none
 		FARGS= -O3 -xCORE-AVX2 -qopenmp -align array64byte -qopt-streaming-stores auto
 		# -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),debug)
+		APPNAME=picsar_cori1_debug
 		COMP=none
 		FARGS= -g -O3 -xCORE-AVX2 -qopenmp -qopt-report:5 -debug inline-debug-info
 		LARCH=
 	else ifeq ($(MODE),vtune)
-		APPNAME=picsar_cori_vtune
+		APPNAME=picsar_cori1_vtune
 		COMP=none
 		FARGS= -D VTUNE=1 -O3 -g -dynamic -debug inline-debug-info -qopenmp -xCORE-AVX2 -align array64byte
 		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xCORE-AVX2 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
 		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
 		LARCH= 
 	else ifeq ($(MODE),sde)
-		APPNAME=picsar_cori_sde
+		APPNAME=picsar_cori1_sde
 		COMP=none
 		FARGS= -D SDE=1	-g -O3 -xCORE-AVX2  -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
 		CARGS= -D SDE=1 -g -O3 -qopenmp -xCORE-AVX2 
 		LARCH= 	
 	else ifeq ($(MODE),novec)
+		APPNAME=picsar_cori1_novec
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
 		LARCH=	
@@ -114,6 +117,7 @@ else ifeq ($(SYS),edison)
 		CARGS= -D SDE=1 -g -O3 -qopenmp -xAVX 
 		LARCH= 
 	else ifeq ($(MODE),novec)
+		APPNAME=picsar_edison_novec
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
 		LARCH=	
@@ -128,6 +132,7 @@ else ifeq ($(SYS),cori2)
 		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
 		LARCH=
 	else ifeq ($(MODE),debug)
+		APPNAME=picsar_cori2_debug
 		COMP=none
 		FARGS= -g -O3 -D DEBUG=0 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback -qopt-report:5
 		LARCH=
@@ -136,6 +141,7 @@ else ifeq ($(SYS),cori2)
 		FARGS= -O3 -D DEV=0 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto 
 		LARCH=		
 	else ifeq ($(MODE),novec)
+		APPNAME=picsar_cori2_novec
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
 		LARCH=	
