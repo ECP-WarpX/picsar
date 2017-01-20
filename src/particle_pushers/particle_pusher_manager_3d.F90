@@ -145,9 +145,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   IMPLICIT NONE
 
   ! ___ Parameter declaration __________________________________________
+  
+  ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-  LOGICAL(lp)                   :: l_lower_order_in_v_in
+  LOGICAL(lp), INTENT(IN)  :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -155,6 +157,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+  
+  ! Local parameters
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
