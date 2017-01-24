@@ -462,7 +462,13 @@ class EM3DPXR(EM3DFFT):
         pxr.ssnpid=top.ssnpid
         pxr.set_tile_split()
         pxr.init_tile_arrays()
+        # Add all particles of all species to PXR
         for i,s in enumerate(self.listofallspecies):
+            pids=s.getpid(id=-1,bcast=0,gather=0)
+            # In PXR, pid[:,wpid] is the weight of the particle
+            # (but not in WARP so correct it to get good normalization)
+            pids[:,top.wpid-1]*=s.sw
+            # Add particles of species s to PXR
             pxr.py_add_particles_to_species(i+1, s.nps,top.npid,
                                             s.getx(bcast=0,gather=0),
                                             s.gety(bcast=0,gather=0),
@@ -471,7 +477,8 @@ class EM3DPXR(EM3DFFT):
                                             s.getuy(bcast=0,gather=0),
                                             s.getuz(bcast=0,gather=0),
                                             s.getgaminv(bcast=0,gather=0),
-                                            s.getpid(id=-1,bcast=0,gather=0))
+                                            pids)
+        # Removed duplicate species in WARP
         top.pgroup.npmax=0
         top.pgroup.ns=1
         top.pgroup.nps=0
