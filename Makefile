@@ -149,7 +149,18 @@ else ifeq ($(SYS),cori2)
 		FARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xMIC-AVX512 -align array64byte -debug inline-debug-info
 		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xMIC-AVX512 -debug inline-debug-info -I /opt/intel/vtune_amplifier_xe_2017.1.0.486011/include
 		LDFLAGS= /opt/intel/vtune_amplifier_xe_2017.1.0.486011/lib64/libittnotify.a
-		LARCH= 	
+		LARCH= 
+	else ifeq ($(MODE),sde)
+		APPNAME=picsar_cori2_sde
+		COMP=none
+		FARGS= -D SDE=1 -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
+		CARGS= -D SDE=1 -g -O3 -qopenmp -xMIC-AVX512 
+		LARCH= 
+	else ifeq ($(MODE),advisor)
+		APPNAME=picsar_cori2_advisor
+		COMP=none
+		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -Bdynamic -debug inline-debug-info -align array64byte -qopt-streaming-stores auto
+		LARCH=	
 	else ifeq ($(MODE),novec)
 		APPNAME=picsar_cori2_novec
 		COMP=none
@@ -182,7 +193,7 @@ else ifeq ($(SYS),carl)
 		COMP=none
 		FARGS= -D SDE=1	-g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
 		CARGS= -D SDE=1 -g -O3 -qopenmp -xMIC-AVX512 
-		LARCH= 				
+		LARCH= 
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_carl_advisor
 		COMP=none
