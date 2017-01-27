@@ -153,14 +153,14 @@ else ifeq ($(SYS),cori2)
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_cori2_sde
 		COMP=none
-		FARGS= -D SDE=1 -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info
+		FARGS= -D SDE=1 -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -align array64byte
 		#-qopt-streaming-stores auto
 		CARGS= -D SDE=1 -g -O3 -qopenmp -xMIC-AVX512
 		LARCH= 
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_cori2_advisor
 		COMP=none
-		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -Bdynamic -debug inline-debug-info -align array64byte
+		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -dynamic -debug inline-debug-info -align array64byte
 		#-qopt-streaming-stores auto
 		LARCH=
 	else ifeq ($(MODE),novec)
