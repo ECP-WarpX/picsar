@@ -207,7 +207,6 @@ class PSATD_Maxwell_PML(GPSTDPXR):
             pass
 
         self.processdefaultsfromdict(GPSTD_Maxwell_PML.__flaginputs__,kw)
-
         syf=self.syf
         nx = np.max([1,syf.nx])
         ny = np.max([1,syf.ny])
@@ -405,7 +404,6 @@ class GPSTD_Maxwell(GPSTDPXR):
             pass
 
         self.processdefaultsfromdict(GPSTD_Maxwell.__flaginputs__,kw)
-
         yf=self.yf
         nx = np.max([1,yf.nx])
         ny = np.max([1,yf.ny])
@@ -485,9 +483,13 @@ class GPSTD_Maxwell(GPSTDPXR):
         matcompress = getmatcompress(self.mymatref)
 
         self.mymatref = exp_by_squaring_matrixlist(self.mymatref, self.ntsub, matcompress=matcompress)
+        if np.all(self.V_galilean==0.):
+            self.mymat = self.getmaxwellmat(axp,ayp,azp,axm,aym,azm,dt,cdt,m0,m1,\
+                         self.kx_unmod,self.ky_unmod,self.kz_unmod,l_matref=0,matcompress=matcompress)
+        else:
+            self.mymat = self.getmaxwellmat_pseudogalilean(self.kxpn,self.kypn,self.kzpn,\
+                        self.kxmn,self.kymn,self.kzmn,dt,cdt,self.V_pseudogalilean)
 
-        self.mymat = self.getmaxwellmat(axp,ayp,azp,axm,aym,azm,dt,cdt,m0,m1,\
-                     self.kx_unmod,self.ky_unmod,self.kz_unmod,l_matref=0,matcompress=matcompress)
         self.create_fortran_matrix_blocks()
 
     def getmaxwellmat(self,axp,ayp,azp,axm,aym,azm,dt,cdt,m0,m1,
@@ -570,7 +572,9 @@ class PSATD_Maxwell(GPSTDPXR):
                       'l_pushf':False,
                       'l_pushg':False,
                       'clight':299792458.0,
-                      'eps0':8.854187817620389e-12}
+                      'eps0':8.854187817620389e-12,
+                      'V_galilean':np.array([0.,0.,0.]),
+                      'V_pseudogalilean':np.array([0.,0.,0.]),}
 
     def __init__(self,**kw):
         try:
@@ -617,8 +621,20 @@ class PSATD_Maxwell(GPSTDPXR):
         C=self.coswdt
         S=self.sinwdt
 
-        self.mymat = self.getmaxwellmat(self.kxpn,self.kypn,self.kzpn,\
+        if np.all(self.V_galilean==0.) and np.all(self.V_pseudogalilean==0.):
+            self.mymat = self.getmaxwellmat(self.kxpn,self.kypn,self.kzpn,\
                      self.kxmn,self.kymn,self.kzmn,dt,cdt)
+        else:
+            if np.any(self.V_galilean<>0.):
+                self.mymat = self.getmaxwellmat_galilean(self.kxpn,self.kypn, \
+                            self.kzpn, self.kxmn,self.kymn,self.kzmn,dt,cdt, \
+                            self.V_galilean)
+
+            if np.any(self.V_pseudogalilean<>0.):
+                self.mymat = self.getmaxwellmat_pseudogalilean(self.kxpn, \
+                             self.kypn, self.kzpn, self.kxmn,self.kymn, \
+                             self.kzmn,dt,cdt,self.V_pseudogalilean)
+
         self.create_fortran_matrix_blocks()
 
     def getmaxwellmat(self,kxpn,kypn,kzpn,kxmn,kymn,kzmn,dt,cdt):
