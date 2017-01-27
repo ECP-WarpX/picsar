@@ -487,8 +487,8 @@ class GPSTD_Maxwell(GPSTDPXR):
             self.mymat = self.getmaxwellmat(axp,ayp,azp,axm,aym,azm,dt,cdt,m0,m1,\
                          self.kx_unmod,self.ky_unmod,self.kz_unmod,l_matref=0,matcompress=matcompress)
         else:
-            self.mymat = self.getmaxwellmat_pseudogalilean(self.kxpn,self.kypn,self.kzpn,\
-                        self.kxmn,self.kymn,self.kzmn,dt,cdt,self.V_pseudogalilean)
+            self.mymat = self.getmaxwellmat_galilean(self.kxpn,self.kypn,self.kzpn,\
+                        self.kxmn,self.kymn,self.kzmn,dt,cdt,self.V_galilean)
 
         self.create_fortran_matrix_blocks()
 
