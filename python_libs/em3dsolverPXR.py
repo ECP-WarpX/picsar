@@ -111,8 +111,8 @@ class EM3DPXR(EM3DFFT):
                       'lvec_fieldgathe':0,
                       'mpi_buf_size':2000,
                       'sorting':None,
-                      'V_galilean':s.V_galilean,
-                      'V_pseudogalilean':s.V_pseudogalilean,
+                      'V_galilean':V_galilean,
+                      'V_pseudogalilean':V_pseudogalilean,
                       'l_debug':0
                       }
 
