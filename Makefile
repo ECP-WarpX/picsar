@@ -89,6 +89,12 @@ ifeq ($(SYS),cori1)
 		FARGS= -D SDE=1	-g -O3 -xCORE-AVX2  -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
 		CARGS= -D SDE=1 -g -O3 -qopenmp -xCORE-AVX2 
 		LARCH= 	
+	else ifeq ($(MODE),advisor)
+		APPNAME=picsar_cori1_advisor
+		COMP=none
+		FARGS= -g -O3 -xCORE-AVX2 -qopenmp -dynamic -debug inline-debug-info -align array64byte
+		#-qopt-streaming-stores auto
+		LARCH=
 	else ifeq ($(MODE),novec)
 		APPNAME=picsar_cori1_novec
 		COMP=none
