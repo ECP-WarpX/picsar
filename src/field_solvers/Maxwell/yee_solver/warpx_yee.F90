@@ -200,7 +200,6 @@ subroutine warpx_pxr_push_em2d_evec( &
                           - mudt  * jy(j,k)
 
         Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
-                          - dtsdy * (Bx(j,k) - Bx(j  ,k-1)) &
                           - mudt  * jz(j,k)
      end do
   end do
