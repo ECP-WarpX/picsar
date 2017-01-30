@@ -110,11 +110,11 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 ! ______________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle
-
+!
 !> @author
 !> Henri Vincenti
 !> Mathieu Lobet
-
+!
 !> @date
 !> Creation 2015
 !> Revision 10.06.2015
@@ -145,9 +145,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   IMPLICIT NONE
 
   ! ___ Parameter declaration __________________________________________
+  
+  ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
   INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
-  LOGICAL(lp)                   :: l_lower_order_in_v_in
+  LOGICAL(lp), INTENT(IN)  :: l_lower_order_in_v_in
   REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
@@ -155,6 +157,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
   REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+  
+  ! Local parameters
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
@@ -262,7 +266,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
                           currg%eztile,                                                          &
                           currg%bxtile,currg%bytile,currg%bztile                                 &
                           ,.FALSE.,l_lower_order_in_v_in,                                        &
-                          LVEC_fieldgathe,                                                       &
+                          lvec_fieldgathe,                                                       &
                           fieldgathe)
             END SELECT
 
@@ -274,27 +278,41 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
               curr_tile%part_ey,                                                  &
               curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
               curr_tile%part_bz,curr%charge,curr%mass,dtt,0_idp)
+              
             !! Boris pusher -- Full push
             CASE DEFAULT
+            
+              !! Push momentum using the Boris method in a single subroutine
+              
+              CALL pxr_boris_push_u_3d(count, &
+                   curr_tile%part_ux, curr_tile%part_uy,curr_tile%part_uz, &
+                   curr_tile%part_gaminv, &
+                   curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez,&
+                   curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,&
+                   curr%charge,curr%mass,dtt)
+              
+              !! Push momentum using the Boris method with several subroutines
               !! --- Push velocity with E half step
-              CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,      &
-              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
-              curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+!               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,      &
+!               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
+!               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
               !! --- Set gamma of particles
-              CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,    &
-              curr_tile%part_uz, curr_tile%part_gaminv)
+!               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,    &
+!               curr_tile%part_uz, curr_tile%part_gaminv)
               !! --- Push velocity with B half step
-              CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,        &
-              curr_tile%part_by,                                                 &
-              curr_tile%part_bz, curr%charge,curr%mass,dtt)
+!               CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
+!               curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,        &
+!               curr_tile%part_by,                                                 &
+!               curr_tile%part_bz, curr%charge,curr%mass,dtt)
               !!! --- Push velocity with E half step
-              CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
-              curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+!               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
+!               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
+!               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
               !! --- Set gamma of particles
-              CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
-              curr_tile%part_uz, curr_tile%part_gaminv)
+!               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
+!               curr_tile%part_uz, curr_tile%part_gaminv)
+
+              
             END SELECT
             !!!! --- push particle species positions a time step
             CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,          &
@@ -637,25 +655,38 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
                   curr_tile%part_bz,curr%charge,curr%mass,dtt,0_idp)
               !! Boris pusher -- Full push
               CASE DEFAULT
-                !! --- Push velocity with E half step
-                CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
-                curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,               &
-                curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-                !! --- Set gamma of particles
-                CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
-                curr_tile%part_uz, curr_tile%part_gaminv)
-                !! --- Push velocity with B half step
-                CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
-                curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,           &
-                curr_tile%part_by,                                                    &
-                curr_tile%part_bz, curr%charge,curr%mass,dtt)
-                !!! --- Push velocity with E half step
-                CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,          &
-                curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,              &
-                curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
-                !! --- Set gamma of particles
-                CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,        &
-                curr_tile%part_uz, curr_tile%part_gaminv)
+              
+              !! Push momentum using the Boris method in a single subroutine
+              
+              CALL pxr_boris_push_u_3d(count, &
+                   curr_tile%part_ux, curr_tile%part_uy,curr_tile%part_uz, &
+                   curr_tile%part_gaminv, &
+                   curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez,&
+                   curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,&
+                   curr%charge,curr%mass,dtt)
+              
+              !! Push momentum using the Boris method with several subroutines
+              !! --- Push velocity with E half step
+!               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,      &
+!               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
+!               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+              !! --- Set gamma of particles
+!               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,    &
+!               curr_tile%part_uz, curr_tile%part_gaminv)
+              !! --- Push velocity with B half step
+!               CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
+!               curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,        &
+!               curr_tile%part_by,                                                 &
+!               curr_tile%part_bz, curr%charge,curr%mass,dtt)
+              !!! --- Push velocity with E half step
+!               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
+!               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
+!               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+              !! --- Set gamma of particles
+!               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
+!               curr_tile%part_uz, curr_tile%part_gaminv)
+                
+                
               END SELECT
               !!!! --- push particle species positions a time step
               CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,             &
@@ -1038,16 +1069,25 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   USE params
   USE particles
 
-  ! ___ Parameter declaration ____________________________________
   IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(lp)                          :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! ___ Parameter declaration ____________________________________
+  
+  ! Input/Output parameters  
+  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: lvect
+  REAL(num), INTENT(IN)                   :: q,m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
+  REAL(num), &
+  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
 
+  ! Local parameters
   INTEGER(isp)                         :: j, k, l
   INTEGER(isp)                         :: j0, k0, l0
   INTEGER(isp)                         :: ip
@@ -1200,42 +1240,55 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     !! Boris pusher -- Full push
     CASE DEFAULT
 
+      !! Push momentum using the Boris method in a single subroutine
+              
+      CALL pxr_boris_push_u_3d(blocksize, &
+        uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),uzp(ip:ip+blocksize-1), &
+        gaminv(ip:ip+blocksize-1), &
+        ex(ip:ip+blocksize-1),ey(ip:ip+blocksize-1),ez(ip:ip+blocksize-1),&
+        bx(ip:ip+blocksize-1),by(ip:ip+blocksize-1),bz(ip:ip+blocksize-1),&
+        q,m,dt)
+              
+      !! Push momentum using the Boris method with several subroutines
+
       ! ___ Push with E ___
-      CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
-                                 uyp(ip:ip+blocksize-1), &
-                                 uzp(ip:ip+blocksize-1), &
-                                 ex(ip:ip+blocksize-1),  &
-                                 ey(ip:ip+blocksize-1),  &
-                                 ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+!       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+!                                  uyp(ip:ip+blocksize-1), &
+!                                  uzp(ip:ip+blocksize-1), &
+!                                  ex(ip:ip+blocksize-1),  &
+!                                  ey(ip:ip+blocksize-1),  &
+!                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
                                  uyp(ip:ip+blocksize-1),   &
                                  uzp(ip:ip+blocksize-1),   &
                                  gaminv(ip:ip+blocksize-1))
+
 
       ! ___ Push with B ___
-      CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
-                                 uyp(ip:ip+blocksize-1),   &
-                                 uzp(ip:ip+blocksize-1),   &
-                                 gaminv(ip:ip+blocksize-1),&
-                                 bx(ip:ip+blocksize-1),    &
-                                 by(ip:ip+blocksize-1),    &
-                                 bz(ip:ip+blocksize-1),q,m,dt)
+!       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
+!                                  uyp(ip:ip+blocksize-1),   &
+!                                  uzp(ip:ip+blocksize-1),   &
+!                                  gaminv(ip:ip+blocksize-1),&
+!                                  bx(ip:ip+blocksize-1),    &
+!                                  by(ip:ip+blocksize-1),    &
+!                                  bz(ip:ip+blocksize-1),q,m,dt)
 
       ! ___ Push with E ___
-      CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
-                                 uyp(ip:ip+blocksize-1), &
-                                 uzp(ip:ip+blocksize-1), &
-                                 ex(ip:ip+blocksize-1),  &
-                                 ey(ip:ip+blocksize-1),  &
-                                 ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+!       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+!                                  uyp(ip:ip+blocksize-1), &
+!                                  uzp(ip:ip+blocksize-1), &
+!                                  ex(ip:ip+blocksize-1),  &
+!                                  ey(ip:ip+blocksize-1),  &
+!                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
                                  uyp(ip:ip+blocksize-1),   &
                                  uzp(ip:ip+blocksize-1),   &
                                  gaminv(ip:ip+blocksize-1))
+
     END SELECT
     ! ___ Update position ___
     CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
@@ -1440,13 +1493,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   USE particles
 
   IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(lp)                          :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Input/Output parameters  
+  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: lvect
+  REAL(num), INTENT(IN)                   :: q,m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
+  REAL(num), &
+  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Local parameters
   INTEGER(isp)                         :: ip
   INTEGER(isp)                         :: nn,n
   INTEGER(idp)                         :: blocksize
@@ -1480,7 +1542,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   sy0=0.0_num
   sz0=0.0_num
 
-  ! ___ Loop on partciles _______________________
+  ! ___ Loop on particles _______________________
   DO ip=1,np,lvect
 
     blocksize = MIN(lvect,np-ip+1)
@@ -1701,13 +1763,24 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     !! Boris pusher -- Full push
     CASE DEFAULT
 
+      !! Push momentum using the Boris method in a single subroutine
+              
+      CALL pxr_boris_push_u_3d(blocksize, &
+        uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),uzp(ip:ip+blocksize-1), &
+        gaminv(ip:ip+blocksize-1), &
+        ex(ip:ip+blocksize-1),ey(ip:ip+blocksize-1),ez(ip:ip+blocksize-1),&
+        bx(ip:ip+blocksize-1),by(ip:ip+blocksize-1),bz(ip:ip+blocksize-1),&
+        q,m,dt)
+              
+      !! Push momentum using the Boris method with several subroutines
+
       ! ___ Push with E ___
-      CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
-                                 uyp(ip:ip+blocksize-1), &
-                                 uzp(ip:ip+blocksize-1), &
-                                 ex(ip:ip+blocksize-1),  &
-                                 ey(ip:ip+blocksize-1),  &
-                                 ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+!       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+!                                  uyp(ip:ip+blocksize-1), &
+!                                  uzp(ip:ip+blocksize-1), &
+!                                  ex(ip:ip+blocksize-1),  &
+!                                  ey(ip:ip+blocksize-1),  &
+!                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
@@ -1716,27 +1789,28 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
                                  gaminv(ip:ip+blocksize-1))
 
       ! ___ Push with B ___
-      CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
-                                 uyp(ip:ip+blocksize-1),   &
-                                 uzp(ip:ip+blocksize-1),   &
-                                 gaminv(ip:ip+blocksize-1),&
-                                 bx(ip:ip+blocksize-1),    &
-                                 by(ip:ip+blocksize-1),    &
-                                 bz(ip:ip+blocksize-1),q,m,dt)
+!       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
+!                                  uyp(ip:ip+blocksize-1),   &
+!                                  uzp(ip:ip+blocksize-1),   &
+!                                  gaminv(ip:ip+blocksize-1),&
+!                                  bx(ip:ip+blocksize-1),    &
+!                                  by(ip:ip+blocksize-1),    &
+!                                  bz(ip:ip+blocksize-1),q,m,dt)
 
       ! ___ Push with E ___
-      CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
-                                 uyp(ip:ip+blocksize-1), &
-                                 uzp(ip:ip+blocksize-1), &
-                                 ex(ip:ip+blocksize-1),  &
-                                 ey(ip:ip+blocksize-1),  &
-                                 ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+!       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+!                                  uyp(ip:ip+blocksize-1), &
+!                                  uzp(ip:ip+blocksize-1), &
+!                                  ex(ip:ip+blocksize-1),  &
+!                                  ey(ip:ip+blocksize-1),  &
+!                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
                                  uyp(ip:ip+blocksize-1),   &
                                  uzp(ip:ip+blocksize-1),   &
                                  gaminv(ip:ip+blocksize-1))
+
     END SELECT
     ! ___ Update position ___
     CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
@@ -1944,13 +2018,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   USE particles
 
   IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp)                         :: lvect
-  REAL(num)                            :: q,m
-  REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv
-  LOGICAL(lp)                          :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Input/Output parameters  
+  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: lvect
+  REAL(num), INTENT(IN)                   :: q,m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
+  REAL(num), &
+  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
+  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
+  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
+  
+  ! Local parameters
   INTEGER(isp)                         :: ip
   INTEGER(idp)                         :: blocksize
   INTEGER(isp)                         :: nn,n
@@ -2393,13 +2476,24 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     !! Boris pusher -- Full push
     CASE DEFAULT
 
+      !! Push momentum using the Boris method in a single subroutine
+              
+      CALL pxr_boris_push_u_3d(blocksize, &
+        uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),uzp(ip:ip+blocksize-1), &
+        gaminv(ip:ip+blocksize-1), &
+        ex(ip:ip+blocksize-1),ey(ip:ip+blocksize-1),ez(ip:ip+blocksize-1),&
+        bx(ip:ip+blocksize-1),by(ip:ip+blocksize-1),bz(ip:ip+blocksize-1),&
+        q,m,dt)
+              
+      !! Push momentum using the Boris method with several subroutines
+
       ! ___ Push with E ___
-      CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
-                                 uyp(ip:ip+blocksize-1), &
-                                 uzp(ip:ip+blocksize-1), &
-                                 ex(ip:ip+blocksize-1),  &
-                                 ey(ip:ip+blocksize-1),  &
-                                 ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+!       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+!                                  uyp(ip:ip+blocksize-1), &
+!                                  uzp(ip:ip+blocksize-1), &
+!                                  ex(ip:ip+blocksize-1),  &
+!                                  ey(ip:ip+blocksize-1),  &
+!                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
@@ -2408,28 +2502,30 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
                                  gaminv(ip:ip+blocksize-1))
 
       ! ___ Push with B ___
-      CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
-                                 uyp(ip:ip+blocksize-1),   &
-                                 uzp(ip:ip+blocksize-1),   &
-                                 gaminv(ip:ip+blocksize-1),&
-                                 bx(ip:ip+blocksize-1),    &
-                                 by(ip:ip+blocksize-1),    &
-                                 bz(ip:ip+blocksize-1),q,m,dt)
+!       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
+!                                  uyp(ip:ip+blocksize-1),   &
+!                                  uzp(ip:ip+blocksize-1),   &
+!                                  gaminv(ip:ip+blocksize-1),&
+!                                  bx(ip:ip+blocksize-1),    &
+!                                  by(ip:ip+blocksize-1),    &
+!                                  bz(ip:ip+blocksize-1),q,m,dt)
 
       ! ___ Push with E ___
-      CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
-                                 uyp(ip:ip+blocksize-1), &
-                                 uzp(ip:ip+blocksize-1), &
-                                 ex(ip:ip+blocksize-1),  &
-                                 ey(ip:ip+blocksize-1),  &
-                                 ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+!       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+!                                  uyp(ip:ip+blocksize-1), &
+!                                  uzp(ip:ip+blocksize-1), &
+!                                  ex(ip:ip+blocksize-1),  &
+!                                  ey(ip:ip+blocksize-1),  &
+!                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
 
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
                                  uyp(ip:ip+blocksize-1),   &
                                  uzp(ip:ip+blocksize-1),   &
                                  gaminv(ip:ip+blocksize-1))
+
     END SELECT
+    
     ! ___ Update position ___
     CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
                                yp(ip:ip+blocksize-1),  &
