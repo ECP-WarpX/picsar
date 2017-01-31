@@ -95,7 +95,6 @@ subroutine warpx_pxr_push_em3d_bvec( &
      bx, bxlo, bxhi, &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
-     mudt,    &
      dtsdx,dtsdy,dtsdz,&
      norder) bind(c) !#do not parse
 ! ______________________________________________________________________________
@@ -115,7 +114,7 @@ subroutine warpx_pxr_push_em3d_bvec( &
   real(num), intent(INOUT):: by(bylo(1):byhi(1),bylo(2):byhi(2),bylo(3):byhi(3))
   real(num), intent(INOUT):: bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2),bzlo(3):bzhi(3))
   
-  real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 
   integer :: j,k,l
 
@@ -229,7 +228,6 @@ subroutine warpx_pxr_push_em2d_bvec( &
      bx, bxlo, bxhi, &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
-     mudt,    &
      dtsdx,dtsdy,dtsdz,&
      norder) bind(c) !#do not parse
 ! ______________________________________________________________________________
@@ -249,7 +247,7 @@ subroutine warpx_pxr_push_em2d_bvec( &
   real(num), intent(INOUT):: by(bylo(1):byhi(1),bylo(2):byhi(2))
   real(num), intent(INOUT):: bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2))
   
-  real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 
   integer :: j,k
 
