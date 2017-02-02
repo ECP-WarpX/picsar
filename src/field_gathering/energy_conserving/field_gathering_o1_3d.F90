@@ -1938,7 +1938,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
-  INTEGER(isp)                         :: nn,n
+  INTEGER(isp)                         :: nn
   INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint

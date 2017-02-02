@@ -6158,7 +6158,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   REAL(num)                              :: xintsq,oxint,yintsq,oyint,zintsq
   REAL(num)                              :: ozint,oxintsq,oyintsq,ozintsq
   REAL(num)                              :: a
-  INTEGER(isp)                           :: nn, n
+  INTEGER(isp)                           :: nn
   REAL(num), DIMENSION(-1:2)             :: sx,sx0
   REAL(num), DIMENSION(-1:2)             :: sy,sy0
   REAL(num), DIMENSION(-1:2)             :: sz,sz0
@@ -6208,9 +6208,7 @@ IF (l_lower_order_in_v ) THEN
 !!DIR DISTRIBUTE POINT
 #endif
     ! Loop over the particles inside a block
-    DO n=1,MIN(lvect,np-ip+1)
-
-      nn=ip+n-1
+    DO nn=ip,MIN(ip+lvect-1,np)
 
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
@@ -6591,9 +6589,7 @@ ELSE
 !!DIR DISTRIBUTE POINT
 #endif
     ! Loop over the particles inside a block
-    DO n=1,MIN(lvect,np-ip+1)
-
-      nn=ip+n-1
+    DO nn=ip,MIN(ip+lvect-1,np)
 
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi

@@ -2741,7 +2741,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   REAL(num), DIMENSION(np), INTENT(IN)   :: xp,yp,zp
   REAL(num), DIMENSION(np), INTENT(INOUT):: ex,ey,ez,bx,by,bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                                :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
                               INTENT(IN) :: exg,eyg,ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
@@ -2752,7 +2752,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
   REAL(num)                              :: dxi, dyi, dzi, x, y, z, xint, yint, zint
   REAL(num)                              :: xintsq,yintsq,zintsq
   REAL(num)                              :: a
-  INTEGER(isp)                           :: nn,n
+  INTEGER(isp)                           :: nn
   REAL(num), DIMENSION(-1:1)             :: sx,sx0
   REAL(num), DIMENSION(-1:1)             :: sy,sy0
   REAL(num), DIMENSION(-1:1)             :: sz,sz0
@@ -2798,9 +2798,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 #endif
 
     ! Loop over the particles inside a block
-    DO n=1,MIN(lvect,np-ip+1)
-
-      nn=ip+n-1
+    DO nn=ip,MIN(ip+lvect-1,np)
 
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
@@ -2998,9 +2996,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 #endif
 
       ! Loop over the particles inside a block
-      DO n=1,MIN(lvect,np-ip+1)
-
-        nn=ip+n-1
+      DO nn=ip,MIN(ip+lvect-1,np)
 
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
