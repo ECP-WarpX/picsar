@@ -1991,9 +1991,7 @@ IF (l_lower_order_in_v) THEN
 #endif
 
     ! Loop over the particles inside a block
-    DO n=1,MIN(lvect,np-ip+1)
-
-      nn=ip+n-1
+    DO nn=ip,MIN(ip+lvect-1,np)
 
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
@@ -2087,9 +2085,7 @@ ELSE
 #endif
 
     ! Loop over the particles inside a block
-    DO n=1,MIN(lvect,np-ip+1)
-
-      nn=ip+n-1
+    DO nn=ip,MIN(ip-1+lvect,np)
 
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
