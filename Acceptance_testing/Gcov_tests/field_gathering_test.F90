@@ -694,12 +694,12 @@ PROGRAM field_gathering_3d_test
 
   !write(0,*) 'test 3: geteb3d_energy_conserving_1_1_1'
   i = i + 1  
-  namee(i) = 'geteb3d_energy_conserving_vec2_3_3_3'
-  nameb(i) = 'geteb3d_energy_conserving_vec2_3_3_3'
+  namee(i) = 'geteb3d_energy_conserving_vecV2_3_3_3'
+  nameb(i) = 'geteb3d_energy_conserving_vecV2_3_3_3'
   ex = 0 ; ey = 0 ; ez = 0
   bx = 0 ; by = 0 ; bz = 0
   t0 = MPI_WTIME()
-  CALL geteb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
+  CALL geteb3d_energy_conserving_vecV2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() -t0
