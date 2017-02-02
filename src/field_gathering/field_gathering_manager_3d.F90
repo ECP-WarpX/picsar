@@ -298,7 +298,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 
       ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
         !!! --- Gather electric fields on particles
-        CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
+        CALL geteb3d_energy_conserving_vecV3_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
       ELSE
