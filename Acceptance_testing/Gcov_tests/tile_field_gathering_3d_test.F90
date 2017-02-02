@@ -274,7 +274,7 @@ PROGRAM tile_field_gathering_3d_test
 
 
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_vecV3_1_1_1'
+  name(i) = 'geteb3d_energy_conserving_vecV4_1_1_1'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 0 ; nox=1 ; noy=1 ; noz=1
   t0 = MPI_WTIME()
@@ -302,7 +302,7 @@ PROGRAM tile_field_gathering_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_vecV4_1_1_1'
+  name(i) = 'geteb3d_energy_conserving_vecV3_1_1_1'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 7 ; nox=1 ; noy=1 ; noz=1
   t0 = MPI_WTIME()
@@ -361,7 +361,7 @@ PROGRAM tile_field_gathering_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_vecV3_2_2_2'
+  name(i) = 'geteb3d_energy_conserving_vecV4_2_2_2'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 0 ; nox=2 ; noy=2 ; noz=2
   t0 = MPI_WTIME()
@@ -389,7 +389,7 @@ PROGRAM tile_field_gathering_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_vecV4_2_2_2'
+  name(i) = 'geteb3d_energy_conserving_vecV3_2_2_2'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 7 ; nox=2 ; noy=2 ; noz=2
   t0 = MPI_WTIME()
@@ -448,7 +448,7 @@ PROGRAM tile_field_gathering_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_vecV2_3_3_3'
+  name(i) = 'geteb3d_energy_conserving_vecV3_3_3_3'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 0 ; nox=3 ; noy=3 ; noz=3
   t0 = MPI_WTIME()
@@ -500,7 +500,7 @@ PROGRAM tile_field_gathering_3d_test
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 
   i = i+1
-  name(i) = 'geteb3d_energy_conserving_vecV3_3_3_3'
+  name(i) = 'geteb3d_energy_conserving_vecV2_3_3_3'
   write(0,*) 'Computation of ',name(i)
   fieldgathe = 7 ; nox=3 ; noy=3 ; noz=3
   t0 = MPI_WTIME()

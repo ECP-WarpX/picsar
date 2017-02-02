@@ -237,6 +237,11 @@ ifeq ($(COMP),gnu)
 	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize 
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g	
+	else ifeq ($(MODE),devdebug)
+	  FC=mpif90
+	  FARGS= -O3 -D DEV=1 -fopenmp -g -JModules  -Wunused-variable -fcheck=bound -ftree-vectorize 
+	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
+	  #FARGS=-g	
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
 	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules
