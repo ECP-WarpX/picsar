@@ -144,7 +144,8 @@ else ifeq ($(SYS),cori2)
 		LARCH=
 	else ifeq ($(MODE),dev)
 		COMP=none
-		FARGS= -O3 -D DEV=0 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto 
+		FARGS= -O3 -D DEV=0 -xMIC-AVX512 -qopenmp -align array64byte
+		# -qopt-streaming-stores auto 
 		LARCH=
 	else ifeq ($(MODE),vtune)
 		APPNAME=picsar_cori2_vtune

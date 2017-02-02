@@ -1705,29 +1705,29 @@ IF (l_lower_order_in_v) THEN
       ! Compute Ex on particle
       a = (sy(n,0)*exg(j0,k,l)   + sy(n,1)*exg(j0,k+1,l))*sz(n,0)  &
        + (sy(n,0)*exg(j0,k,l+1) + sy(n,1)*exg(j0,k+1,l+1))*sz(n,1)
-      ex(nn) = ex(nn) + a*sx0(n,0)
+      ex(nn) = ex(nn) + a
 
       ! Compute Ey on particle
       a = (sx(n,0)*eyg(j,k0,l) + sx(n,1)*eyg(j+1,k0,l))*sz(n,0) &
        + (sx(n,0)*eyg(j,k0,l+1) + sx(n,1)*eyg(j+1,k0,l+1))*sz(n,1)
-      ey(nn) = ey(nn) + a*sy0(n,0)
+      ey(nn) = ey(nn) + a
 
       ! Compute Ez on particle
       a = (sx(n,0)*ezg(j,k,l0) + sx(n,1)*ezg(j+1,k,l0))*sy(n,0) &
         + (sx(n,0)*ezg(j,k+1,l0) + sx(n,1)*ezg(j+1,k+1,l0))*sy(n,1)
-      ez(nn) = ez(nn) + a*sz0(n,0)
+      ez(nn) = ez(nn) + a
 
       ! Compute Bx on particle
-      a = (sx(n,0)*bxg(j,k0,l0) + sx(n,1)*bxg(j+1,k0,l0))*sy0(n,0)
-      bx(nn) = bx(nn) + a*sz0(n,0)
+      a = (sx(n,0)*bxg(j,k0,l0) + sx(n,1)*bxg(j+1,k0,l0))
+      bx(nn) = bx(nn) + a
 
       ! Compute By on particle
-      a = (sy(n,0)*byg(j0,k,l0) + sy(n,1)*byg(j0,k+1,l0))*sx0(n,0)
-      by(nn) = by(nn) + a*sz0(n,0)
+      a = (sy(n,0)*byg(j0,k,l0) + sy(n,1)*byg(j0,k+1,l0))
+      by(nn) = by(nn) + a
 
       ! Compute Bz on particle
-      a = (sz(n,0)*bzg(j0,k0,l) + sz(n,1)*bzg(j0,k0,l+1))*sx0(n,0)
-      bz(nn) = bz(nn) + a*sy0(n,0)
+      a = (sz(n,0)*bzg(j0,k0,l) + sz(n,1)*bzg(j0,k0,l+1))
+      bz(nn) = bz(nn) + a
 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
@@ -2027,29 +2027,29 @@ IF (l_lower_order_in_v) THEN
       ! Compute Ex on particle
       a = (sy(0)*exg(j0,k,l)   + sy(1)*exg(j0,k+1,l))*sz(0)  &
        + (sy(0)*exg(j0,k,l+1) + sy(1)*exg(j0,k+1,l+1))*sz(1)
-      ex(nn) = ex(nn) + a*sx0(0)
+      ex(nn) = ex(nn) + a
 
       ! Compute Ey on particle
       a = (sx(0)*eyg(j,k0,l) + sx(1)*eyg(j+1,k0,l))*sz(0) &
        + (sx(0)*eyg(j,k0,l+1) + sx(1)*eyg(j+1,k0,l+1))*sz(1)
-      ey(nn) = ey(nn) + a*sy0(0)
+      ey(nn) = ey(nn) + a
 
       ! Compute Ez on particle
       a = (sx(0)*ezg(j,k,l0) + sx(1)*ezg(j+1,k,l0))*sy(0) &
         + (sx(0)*ezg(j,k+1,l0) + sx(1)*ezg(j+1,k+1,l0))*sy(1)
-      ez(nn) = ez(nn) + a*sz0(0)
+      ez(nn) = ez(nn) + a
 
       ! Compute Bx on particle
-      a = (sx(0)*bxg(j,k0,l0) + sx(1)*bxg(j+1,k0,l0))*sy0(0)
-      bx(nn) = bx(nn) + a*sz0(0)
+      a = (sx(0)*bxg(j,k0,l0) + sx(1)*bxg(j+1,k0,l0))
+      bx(nn) = bx(nn) + a
 
       ! Compute By on particle
-      a = (sy(0)*byg(j0,k,l0) + sy(1)*byg(j0,k+1,l0))*sx0(0)
-      by(nn) = by(nn) + a*sz0(0)
+      a = (sy(0)*byg(j0,k,l0) + sy(1)*byg(j0,k+1,l0))
+      by(nn) = by(nn) + a
 
       ! Compute Bz on particle
-      a = (sz(0)*bzg(j0,k0,l) + sz(1)*bzg(j0,k0,l+1))*sx0(0)
-      bz(nn) = bz(nn) + a*sy0(0)
+      a = (sz(0)*bzg(j0,k0,l) + sz(1)*bzg(j0,k0,l+1))
+      bz(nn) = bz(nn) + a
 
     END DO
 #if defined _OPENMP && _OPENMP>=201307
@@ -2071,7 +2071,7 @@ ELSE
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD
+  !$OMP SIMD private(sx,sy,sz,sx0,sy0,sz0)
 #endif
 #elif defined __IBMBGQ__
       !IBM* ALIGN(64,xp,yp,zp)

@@ -301,6 +301,18 @@ PROGRAM tile_field_gathering_3d_test
   sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
   sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
 
+  i = i+1
+  name(i) = 'geteb3d_energy_conserving_vecV4_1_1_1'
+  write(0,*) 'Computation of ',name(i)
+  fieldgathe = 7 ; nox=1 ; noy=1 ; noz=1
+  t0 = MPI_WTIME()
+  CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
+  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+  t(i) = MPI_WTIME() - t0
+  CALL check_field_gathering(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz)
+  sumex(i) = SUM(tilesumex) ; sumey(i) = SUM(tilesumey) ; sumez(i) = SUM(tilesumez)
+  sumbx(i) = SUM(tilesumbx) ; sumby(i) = SUM(tilesumby) ; sumbz(i) = SUM(tilesumbz)
+
 #endif
   ! End test of extra developer's functions
   ! _________________________________________
