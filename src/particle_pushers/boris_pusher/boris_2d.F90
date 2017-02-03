@@ -42,7 +42,7 @@
 SUBROUTINE pxr_pushxz(np,xp,zp,uxp,uzp,gaminv,dt)
 ! ______________________________________________________________________________
   USE constants
-  USE omp_lib
+
   IMPLICIT NONE
   INTEGER(idp)   :: np
   REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
@@ -78,7 +78,7 @@ END SUBROUTINE pxr_pushxz
 SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
 ! ______________________________________________________________________________
   USE constants
-  USE omp_lib
+  
   IMPLICIT NONE
   INTEGER(idp)   :: np
   REAL(num) :: xp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)

@@ -54,7 +54,6 @@ SUBROUTINE pxr_boris_push_u_3d(np,uxp,uyp,uzp,&
                                q,m,dt)
 ! ______________________________________________________________________________
   USE constants
-  USE omp_lib
   
   IMPLICIT NONE
   
@@ -172,7 +171,6 @@ SUBROUTINE pxr_boris_push_u_3d_block(np,uxp,uyp,uzp,&
                                q,m,dt,lvect)
 ! ______________________________________________________________________________
   USE constants
-  USE omp_lib
   
   IMPLICIT NONE
   
@@ -292,7 +290,6 @@ END SUBROUTINE
 SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
 ! ______________________________________________________________________________
   USE constants
-  USE omp_lib
 
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)   :: np

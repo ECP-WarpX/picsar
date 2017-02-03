@@ -268,7 +268,6 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog,nxx,nyy,nzz,nxjguard,nyjgu
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
   IMPLICIT NONE
 
   ! _______________________________________________________________________
@@ -498,7 +497,6 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order,rhog,nxx,nyy,nzz,nxjgu
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
   IMPLICIT NONE
 
   ! _______________________________________________________________________
@@ -747,7 +745,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog,nxx,nyy,nzz,nxjguard,nyjguar
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
+
   IMPLICIT NONE
 
   INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxjguard,nyjguard,nzjguard
@@ -989,7 +987,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog,nxx,nyy,nzz,nxjguard,
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
+
   IMPLICIT NONE
 
   ! _______________________________________________________________________
@@ -1248,7 +1246,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog,nxx,nyy,nzz,nxjguard,n
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
+
   IMPLICIT NONE
 
   ! _______________________________________________________________________

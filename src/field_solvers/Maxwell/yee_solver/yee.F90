@@ -50,7 +50,7 @@ subroutine pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,mudt,    &
 ! ______________________________________________________________________________
 
   use constants
-  use omp_lib
+  
   integer(idp), intent(IN) :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs
   integer(idp), intent(IN) :: norderx,nordery,norderz
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
@@ -344,7 +344,7 @@ subroutine pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                  &
 ! ______________________________________________________________________________
 
   use constants
-  use omp_lib
+  
   integer(idp)          :: nx,ny,nz,nxguard,nyguard,nzguard,nxs,nys,nzs,norderx,nordery,norderz
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz
   real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)

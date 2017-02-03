@@ -423,7 +423,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   implicit none
 
@@ -603,7 +603,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   implicit none
 
@@ -794,7 +794,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   implicit none
 
@@ -1012,7 +1012,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   implicit none
 
@@ -1430,7 +1430,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
           nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose) !#do not parse
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   implicit none
 

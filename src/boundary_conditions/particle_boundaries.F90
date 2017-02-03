@@ -80,7 +80,9 @@ MODULE particle_boundary
   !> last modified: 09/12/2016
   SUBROUTINE particle_bcs
   ! ____________________________________________________________________________
+#ifdef _OPENMP
   USE omp_lib
+#endif
   USE time_stat
   IMPLICIT NONE
 
@@ -253,7 +255,9 @@ MODULE particle_boundary
   SUBROUTINE particle_bcs_2d
   ! ____________________________________________________________________________
 
+#ifdef _OPENMP
     USE omp_lib
+#endif
     USE time_stat
     USE tiling
 
@@ -415,7 +419,9 @@ MODULE particle_boundary
   SUBROUTINE particle_bcs_tiles_openmp()
 ! ______________________________________________________________________________
 
+#ifdef _OPENMP
     USE omp_lib
+#endif
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
@@ -586,7 +592,9 @@ MODULE particle_boundary
   SUBROUTINE particle_bcs_tiles_2d_openmp
   ! ____________________________________________________________________________
 
+#ifdef _OPENMP
     USE omp_lib
+#endif
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz, ipx, ipz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
@@ -687,7 +695,9 @@ MODULE particle_boundary
   SUBROUTINE particle_bsc_openmp_reordering
   ! __________________________________________________________________
 
+#ifdef _OPENMP
     USE omp_lib
+#endif
     USE communications
     IMPLICIT NONE
 
@@ -1801,8 +1811,9 @@ MODULE particle_boundary
   SUBROUTINE particle_bcs_tiles_and_mpi_3d
   ! ____________________________________________________________________________
 
-
+#ifdef _OPENMP
     USE omp_lib
+#endif
     USE communications
     USE params
     USE mpi

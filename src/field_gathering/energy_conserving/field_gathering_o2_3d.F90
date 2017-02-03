@@ -71,7 +71,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
                                       exg,eyg,ezg,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   USE params
   IMPLICIT NONE
@@ -330,7 +330,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,
                                       bxg,byg,bzg,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -584,7 +584,7 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -971,7 +971,7 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -1335,7 +1335,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   USE params
 
@@ -1855,7 +1855,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -2172,7 +2172,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   USE params
 
@@ -2731,8 +2731,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
-
-  USE omp_lib
+ 
   USE constants
   USE params
 

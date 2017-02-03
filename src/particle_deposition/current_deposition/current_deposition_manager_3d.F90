@@ -560,7 +560,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
 
   USE time_stat
   IMPLICIT NONE
@@ -847,7 +846,6 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
   USE time_stat
   IMPLICIT NONE
 
@@ -1184,7 +1182,6 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
   USE time_stat
   IMPLICIT NONE
 
@@ -1512,7 +1509,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order,&
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
   USE time_stat
   IMPLICIT NONE
 
@@ -1791,7 +1787,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg,jyg,jzg,nxx,nyy,nzz,
 USE particles
 USE constants
 USE tiling
-USE omp_lib
 USE time_stat
 IMPLICIT NONE
 

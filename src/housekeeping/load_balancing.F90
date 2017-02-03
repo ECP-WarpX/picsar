@@ -1090,7 +1090,9 @@ END SUBROUTINE get_projected_load_on_z
 SUBROUTINE create_new_tile_split()
 ! ________________________________________________________________________________________
 
+#ifdef _OPENMP
   USE omp_lib
+#endif
   IMPLICIT NONE
   TYPE(particle_species), DIMENSION(:), ALLOCATABLE, TARGET :: new_species_parray
   TYPE(particle_species), POINTER :: currsp, currsp_new
