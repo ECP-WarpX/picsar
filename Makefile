@@ -144,7 +144,8 @@ else ifeq ($(SYS),cori2)
 		LARCH=
 	else ifeq ($(MODE),dev)
 		COMP=none
-		FARGS= -O3 -D DEV=0 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto 
+		FARGS= -O3 -D DEV=0 -xMIC-AVX512 -qopenmp -align array64byte
+		# -qopt-streaming-stores auto 
 		LARCH=
 	else ifeq ($(MODE),vtune)
 		APPNAME=picsar_cori2_vtune
@@ -234,6 +235,11 @@ ifeq ($(COMP),gnu)
 	else ifeq ($(MODE),dev)
 	  FC=mpif90
 	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize 
+	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
+	  #FARGS=-g	
+	else ifeq ($(MODE),devdebug)
+	  FC=mpif90
+	  FARGS= -O3 -D DEV=1 -fopenmp -g -JModules  -Wunused-variable -fcheck=bound -ftree-vectorize 
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g	
 	else ifeq ($(MODE),novec)
