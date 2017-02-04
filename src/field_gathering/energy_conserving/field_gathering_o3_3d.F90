@@ -1769,7 +1769,7 @@ SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif
@@ -2027,7 +2027,7 @@ SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif
@@ -2398,7 +2398,7 @@ SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif
@@ -2605,7 +2605,7 @@ SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif
@@ -2984,7 +2984,7 @@ SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zm
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif
@@ -3253,7 +3253,7 @@ SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zm
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #endif
@@ -3643,7 +3643,7 @@ SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zm
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif
@@ -3860,7 +3860,7 @@ SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zm
     ! Loop over the particles by block
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #endif
@@ -4246,7 +4246,7 @@ IF (l_lower_order_in_v ) THEN
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -4608,7 +4608,7 @@ ELSE
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -5187,7 +5187,7 @@ IF (l_lower_order_in_v ) THEN
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -5576,7 +5576,7 @@ ELSE
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -6180,7 +6180,7 @@ IF (l_lower_order_in_v ) THEN
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -6567,7 +6567,7 @@ ELSE
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -7143,11 +7143,11 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                           :: ip
   INTEGER(isp), DIMENSION(lvect)         :: j, k, l
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j,k,l
 #endif
   INTEGER(isp), DIMENSION(lvect)         :: j0, k0, l0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j0,k0,l0
 #endif
   INTEGER(idp)                           :: jj, kk, ll
@@ -7160,7 +7160,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
   REAL(num), DIMENSION(lvect,-1:1)       :: sx0
   REAL(num), DIMENSION(lvect,-1:1)       :: sy0
   REAL(num), DIMENSION(lvect,-1:1)       :: sz0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
@@ -7180,7 +7180,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7270,7 +7270,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ex:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7351,7 +7351,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ey:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7432,7 +7432,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ez:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7513,7 +7513,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED bx:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7583,7 +7583,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED by:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7652,7 +7652,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,b
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED bz:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7780,11 +7780,11 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                           :: ip
   INTEGER(isp), DIMENSION(lvect)         :: j, k, l
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j,k,l
 #endif
   INTEGER(isp), DIMENSION(lvect)         :: j0, k0, l0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j0,k0,l0
 #endif
   INTEGER(idp)                           :: jj, kk, ll
@@ -7799,7 +7799,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
   REAL(num), DIMENSION(lvect,-1:1)       :: sx0
   REAL(num), DIMENSION(lvect,-1:1)       :: sy0
   REAL(num), DIMENSION(lvect,-1:1)       :: sz0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
@@ -7819,7 +7819,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7909,7 +7909,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ex:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -7995,7 +7995,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ey:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -8082,7 +8082,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ez:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -8169,7 +8169,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED bx:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -8243,7 +8243,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED by:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -8318,7 +8318,7 @@ SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,
 #endif
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED bz:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
