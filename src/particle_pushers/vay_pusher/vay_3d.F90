@@ -78,15 +78,25 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     const = q*dt/m
     bconst = 0.5_num*const
 
-
-#if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
+  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+  !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
+  !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
+  !DIR$ ASSUME_ALIGNED gi:64
+#elif defined __IBMBGQ__
+  !IBM* ALIGN(64,uxp,uyp,uzp)
+  !IBM* ALIGN(64,exp,eyp,ezp)
+  !IBM* ALIGN(64,bxp,byp,bzp)
+  !IBM* ALIGN(64,gi)
 #endif
+#if defined _OPENMP && _OPENMP>=201307
+  !$OMP SIMD
 #elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
+#endif
 #endif
     DO ip=1,np
       ! --- get tau
@@ -131,14 +141,25 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     !     --- first half push
     const = 0.5_num*q*dt/m
 
-#if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
+  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+  !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
+  !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
+  !DIR$ ASSUME_ALIGNED gi:64
+#elif defined __IBMBGQ__
+  !IBM* ALIGN(64,uxp,uyp,uzp)
+  !IBM* ALIGN(64,exp,eyp,ezp)
+  !IBM* ALIGN(64,bxp,byp,bzp)
+  !IBM* ALIGN(64,gi)
 #endif
+#if defined _OPENMP && _OPENMP>=201307
+  !$OMP SIMD
 #elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
+#endif
 #endif
     DO ip=1,np
       ! --- get new U

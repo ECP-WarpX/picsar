@@ -79,7 +79,7 @@ SUBROUTINE pxr_boris_push_u_3d(np,uxp,uyp,uzp,&
   
   ! Loop over the particles
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
       !DIR$ ASSUME_ALIGNED gaminv:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
@@ -201,7 +201,7 @@ SUBROUTINE pxr_boris_push_u_3d_block(np,uxp,uyp,uzp,&
     ! Size of the block
     blocksize = MIN(lvect,np-ip+1)
     
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
       !DIR$ ASSUME_ALIGNED gaminv:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
@@ -300,7 +300,7 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
   ! Local parameters
   INTEGER(idp)               :: ip
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -372,7 +372,7 @@ SUBROUTINE pxr_epush_v(np,uxp,uyp,uzp,ex,ey,ez,q,m,dt)
 
   const = q*dt/m
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #elif defined __IBMBGQ__
@@ -441,7 +441,7 @@ SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,gaminv,bx,by,bz,q,m,dt)
 
   const = q*dt*0.5_num/m
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
     !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
     !DIR$ ASSUME_ALIGNED gaminv:64
@@ -520,7 +520,7 @@ SUBROUTINE pxr_set_gamma(np,uxp,uyp,uzp,gaminv)
 
   clghtisq = 1.0_num/clight**2
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
     !DIR$ ASSUME_ALIGNED gaminv:64
 #elif defined __IBMBGQ__
