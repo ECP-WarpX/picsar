@@ -1056,6 +1056,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
   ! Outer loop on particles with period LVEC
   DO ip=1,np, LVEC
 
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,zp:64,gaminv:64
         !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
@@ -1064,6 +1065,8 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
         !IBM* ALIGN(64,uxp,uyp,uzp)
         !IBM* ALIGN(64,ICELL)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP SIMD
 #elif defined __IBMBGQ__
@@ -1501,6 +1504,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
   ! Outer loop on particles with period LVEC
   DO ip=1,np, LVEC
 
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,zp:64,gaminv:64
         !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
@@ -1510,6 +1514,8 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
         !IBM* ALIGN(64,uxp,uyp,uzp)
         !IBM* ALIGN(64,ICELL)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP SIMD
 #elif defined __IBMBGQ__
@@ -1818,11 +1824,16 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
 
     ! Add weights to nearest vertices
     DO n=1,MIN(LVECT,np-ip+1)
+
+! Alignment
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD
 #elif defined __IBMBGQ__
