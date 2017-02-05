@@ -69,7 +69,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
-      USE omp_lib
       USE constants
       implicit none
       integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
@@ -84,7 +83,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                             dt,dx,dz,nx,nz,nxguard,nzguard, &
                                             nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
-      USE omp_lib
       USE constants
       implicit none
       integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
@@ -99,7 +97,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
                                                  dt,dx,dz,nx,nz,nxguard,nzguard, &
                                     nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
-      USE omp_lib
       USE constants
       implicit none
       integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
@@ -129,7 +126,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
                                                    dt,dx,dz,nx,nz,nxguard,nzguard, &
                                                    nox,noz,lvect,l_particles_weight,&
                                                    l4symtry,l_2drz,type_rz_depose) !#do not parse
-    USE omp_lib
     USE constants
     implicit none
     integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard, type_rz_depose
@@ -253,7 +249,6 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   USE particles
   USE constants
   USE tiling
-  USE omp_lib
   USE time_stat
   IMPLICIT NONE
 

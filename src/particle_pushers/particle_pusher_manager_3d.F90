@@ -1101,7 +1101,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num)                            :: clghtisq,const1
   REAL(num), DIMENSION(0:1)            :: sx,sy,sz
   REAL(num), DIMENSION(0:1)            :: sx0,sy0,sz0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
@@ -1135,7 +1135,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     ! __________________________________________________________________________
     ! Field gathering
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -1300,7 +1300,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
                                gaminv(ip:ip+blocksize-1),dt)
 
     ! ___ Push with E + gamma ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -1335,7 +1335,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Push with B ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -1375,7 +1375,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Push with E + gamma ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -1408,7 +1408,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Update position ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -1521,7 +1521,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num)                            :: clghtisq,const1
   REAL(num), DIMENSION(-1:1)           :: sx,sy,sz
   REAL(num), DIMENSION(-1:1)           :: sx0,sy0,sz0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
@@ -1550,7 +1550,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     ! __________________________________________________________________________
     ! Field gathering
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -1821,7 +1821,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
                                gaminv(ip:ip+blocksize-1),dt)
 
     ! ___ Push with E + gamma ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -1856,7 +1856,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Push with B ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -1896,7 +1896,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Push with E + gamma ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -1930,7 +1930,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Update position ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -2049,7 +2049,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num), DIMENSION(-1:1)           :: sx0
   REAL(num), DIMENSION(-1:1)           :: sy0
   REAL(num), DIMENSION(-1:1)           :: sz0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
@@ -2078,7 +2078,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     ! __________________________________________________________________________
     ! Field gathering
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -2533,7 +2533,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
                                uzp(ip:ip+blocksize-1),  &
                                gaminv(ip:ip+blocksize-1),dt)
     ! ___ Push with E + gamma ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -2568,7 +2568,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Push with B ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -2608,7 +2608,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Push with E + gamma ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64
@@ -2642,7 +2642,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
 ! #endif
 
     ! ___ Update position ___
-! #if defined __INTEL_COMPILER
+! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
 !       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
 !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
 !       !DIR$ ASSUME_ALIGNED gaminv:64

@@ -71,7 +71,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
                                       exg,eyg,ezg,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   USE params
   IMPLICIT NONE
@@ -330,7 +330,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,
                                       bxg,byg,bzg,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -584,7 +584,7 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -623,7 +623,7 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #elif defined __IBMBGQ__
@@ -763,7 +763,7 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmi
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #elif defined __IBMBGQ__
@@ -971,7 +971,7 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
@@ -1007,7 +1007,7 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #elif defined __IBMBGQ__
@@ -1128,7 +1128,7 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmi
 
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #elif defined __IBMBGQ__
@@ -1335,7 +1335,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   USE params
 
@@ -1373,7 +1373,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -1556,7 +1556,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
@@ -1855,7 +1855,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -1869,11 +1869,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   REAL(num)                              :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                           :: ip
   INTEGER(isp), DIMENSION(lvect)         :: j, k, l
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j,k,l
 #endif
   INTEGER(isp), DIMENSION(lvect)         :: j0, k0, l0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: j0,k0,l0
 #endif
   INTEGER(idp)                           :: jj, kk, ll
@@ -1882,7 +1882,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   INTEGER(isp)                           :: nn,n
   REAL(num), DIMENSION(lvect,-1:1)       :: sx,sy,sz
   REAL(num), DIMENSION(lvect,-1:1)       :: sx0,sy0,sz0
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
@@ -1902,7 +1902,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -1974,7 +1974,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
       !$OMP END SIMD
 #endif
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -2062,7 +2062,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
 #endif
 
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
@@ -2172,7 +2172,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  USE omp_lib
+  
   USE constants
   USE params
 
@@ -2214,7 +2214,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -2414,7 +2414,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -2731,8 +2731,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
-
-  USE omp_lib
+ 
   USE constants
   USE params
 
@@ -2774,7 +2773,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
   ! ___ Loop on partciles _______________________
   DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
@@ -2972,7 +2971,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
 
     ! ___ Loop on partciles _______________________
     DO ip=1,np,lvect
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
       !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64

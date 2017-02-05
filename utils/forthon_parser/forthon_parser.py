@@ -873,6 +873,7 @@ def reformat_file(listline):
 ### Remove comments from current line
 def rm_comments(line):
     icomm=line.find("!")
+    icomm_defined=line.find("defined")
     icomm_omp=line.find("!$omp")
     #Problen in the parser with intel directive
     #icomm_intel=line.find("!DIR$")
@@ -881,6 +882,7 @@ def rm_comments(line):
     iparseinstr=line.find("!#do not parse")
     if ((icomm >=0) & \
         (iparseinstr==-1) & \
+        (icomm_defined==-1) & \
         (icomm_omp==-1) & \
         (icomm_intel==-1) &\
          (icomm_ibm==-1)):

@@ -472,22 +472,26 @@ SUBROUTINE depose_rho_vecSH_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx
     moff(8) = nnxy+nnx+1_idp
 
     DO ip=1,np,nblk
+    
+! Alignement
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED w:64,ww:64
 #elif defined __IBMBGQ__
         !IBM* ALIGN(64,ww,xp,yp,zp,w)
 #endif
-        !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-        !DIR$ ASSUME_ALIGNED w:64,ww:64
-#if defined _OPENMP && _OPENMP>=201307
-#ifndef NOVEC
-  !$OMP SIMD
 #endif
+
+! Vectorization
+#ifndef NOVEC
+#if defined _OPENMP && _OPENMP>=201307
+  !$OMP SIMD
 #elif defined __IBMBGQ__
   !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
   !$DIR SIMD
+#endif
 #endif
         DO n=ip,MIN(ip+nblk-1,np) !!!! vector
             nn=n-ip+1
@@ -539,11 +543,15 @@ SUBROUTINE depose_rho_vecSH_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx
 #endif
         ! --- add charge density contributions
         DO m= 1,MIN(nblk,np-ip+1)
+
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED ww:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,ww)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -884,6 +892,8 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
   ! ________________________________________________________________________
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1,np,lvect
+  
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED xp:64
   !DIR$ ASSUME_ALIGNED yp:64
@@ -893,6 +903,8 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 #elif defined __IBMBGQ__
   !IBM* ALIGN(64,xp,yp,zp,w,ICELL)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -930,6 +942,8 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
     DO n=1,MIN(lvect,np-ip+1)
     ! --- add charge density contributions to vertices of the current cell
     ic=ICELL(n)
+    
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED rhocells:64
   !DIR$ ASSUME_ALIGNED sx:64
@@ -938,6 +952,8 @@ SUBROUTINE depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 #elif defined __IBMBGQ__
   !IBM* ALIGN(64,rhocells,sx,sy,sz)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1078,6 +1094,8 @@ SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1,np,lvect
+  
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64, sx0:64,sx1:64,sx2:64
@@ -1085,6 +1103,8 @@ SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,sx0,sx1,sx2,ICELL,IG)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1146,11 +1166,15 @@ SUBROUTINE depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
             ! Current deposition on vertices
             DO n=1,MIN(lvect,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
+
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
                 !DIR$ ASSUME_ALIGNED rhocells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,rhocells)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1296,6 +1320,8 @@ SUBROUTINE depose_rho_vecHVv2_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC2
+        
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64
@@ -1303,6 +1329,8 @@ SUBROUTINE depose_rho_vecHVv2_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,ICELL)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1377,11 +1405,15 @@ SUBROUTINE depose_rho_vecHVv2_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
             DO n=1,MIN(LVEC2,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
+
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
                 !DIR$ ASSUME_ALIGNED rhocells:64
 #elif defined __IBMBGQ__
                 !IBM* ALIGN(64,rhocells)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1412,12 +1444,16 @@ SUBROUTINE depose_rho_vecHVv2_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,
         END DO
         DO nv=1,16
             ind0=off0+moff(nv)
+            
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED rhocells:64
             !DIR$ ASSUME_ALIGNED rho:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,rhocells,rho)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1521,6 +1557,8 @@ END SUBROUTINE depose_rho_vecHVv2_3_3_3
 
         ! FIRST LOOP: computes cell index of particle and their weight on vertices
         DO ip=1,np,LVEC2
+        
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
@@ -1529,6 +1567,8 @@ END SUBROUTINE depose_rho_vecHVv2_3_3_3
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,sx1,sx2,sx3,sx4,sy1,sy2,sy3,sy4,ICELL)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1584,11 +1624,15 @@ END SUBROUTINE depose_rho_vecHVv2_3_3_3
 #endif
 #endif
             DO n=1,MIN(LVEC2,np-ip+1)
+            
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
                 !$DIR ASSUME_ALIGNED www:64, h1:64, h11:64, h12:64, zdec:64, sgn:64, szz:64
 #elif defined __IBMBGQ__
                 !IBM* ALIGN(64,www,h1,h11,h12,zdec,sgn,szz)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1765,6 +1809,8 @@ SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 
 ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1,np,lvect
+
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
             !DIR$ ASSUME_ALIGNED w:64,sx1:64,sx2:64,sx3:64,sx4:64
@@ -1772,6 +1818,8 @@ SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,xp,yp,zp,w,sx1,sx2,sx3,sx4,ICELL,www1,www2)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
@@ -1846,11 +1894,15 @@ SUBROUTINE depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,&
             DO n=1,MIN(lvect,np-ip+1)
                 ! --- add charge density contributions to vertices of the current cell
                 ic=ICELL(n)
+                
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
                 !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
 #elif defined __IBMBGQ__
                 !IBM* ALIGN(64,rhocells,www1,www2)
 #endif
+#endif
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD

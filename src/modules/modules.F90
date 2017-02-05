@@ -199,7 +199,7 @@ MODULE grid_tilemodule !#do not parse
 
 ! We declare arrays aligned for vectorization efficiency.
 ! These directives are only understood by the Intel compiler.
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: extile
     !dir$ attributes align:64 :: eytile
     !dir$ attributes align:64 :: eztile
@@ -337,7 +337,7 @@ TYPE particle_tile
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
     !> Particle weight array
     REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_x
     !dir$ attributes align:64 :: part_y
     !dir$ attributes align:64 :: part_z
@@ -634,34 +634,50 @@ MODULE communications  !#do not parse
   TYPE part_com_buffer
       !> particle x position buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_x
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_x
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_x
       !> particle y position buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_y
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_y
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_y
       !> particle z position buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_z
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_z
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_z
       !> particle x momentum buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_ux
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_ux
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_ux
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uy
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_uy
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_uy
       !> particle z momentum buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_uz
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_uz
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_uz
       !> particle gamma factor buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:) :: part_gaminv
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_gaminv
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_gaminv
       !> particle weight buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: pid
+#endif
       !DIR ATTRIBUTES FASTMEM :: pid
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: boundid
       INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_npart
@@ -675,35 +691,51 @@ MODULE communications  !#do not parse
   TYPE mpi_tile_buffer
       !> particle x position buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_x
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_x
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_x
       !> particle y position buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_y
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_y
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_y
       !> particle z position buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_z
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_z
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_z
       !> particle x momentum buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_ux
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_ux
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_ux
       !> particle y momentum buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uy
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_uy
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_uy
       !> particle z momentum buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uz
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_uz
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_uz
       !> particle gamma factor buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_gaminv
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: part_gaminv
+#endif
       !DIR ATTRIBUTES FASTMEM  :: part_gaminv
       !> particle weight buffer array
       REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: pid
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !dir$ attributes align:64 :: pid
+#endif
       !DIR ATTRIBUTES FASTMEM  :: pid
       !> Number of particles to be exchanged in each direction
       INTEGER(idp), dimension(27) :: npart
@@ -1266,58 +1298,86 @@ MODULE python_pointers
 
   !> array for particle x position
   REAL(num), DIMENSION(:), POINTER :: partx
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partx
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partx
   !> array for particle y position
   REAL(num), DIMENSION(:), POINTER :: party
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: party
+#endif
   !DIR ATTRIBUTES FASTMEM  :: party
   !> array for particle z position
   REAL(num), DIMENSION(:), POINTER :: partz
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partz
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partz
   !> array for particle x momentum
   REAL(num), DIMENSION(:), POINTER :: partux
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partux
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partux
   !> array for particle y momentum
   REAL(num), DIMENSION(:), POINTER :: partuy
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partuy
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partuy
   !> array for particle z momentum
   REAL(num), DIMENSION(:), POINTER :: partuz
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partuz
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partuz
   !> array for the inverse of the particle gamma factor
   REAL(num), DIMENSION(:), POINTER :: partgaminv
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partgaminv
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partgaminv
   !> Array for particle weights and ids
   REAL(num), DIMENSION(:,:), POINTER :: pid
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: pid
+#endif
   !DIR ATTRIBUTES FASTMEM  :: pid
   !> Particle Ex electric field
   REAL(num), DIMENSION(:), POINTER :: partex
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partex
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partex
   !> Particle Ey electric field
   REAL(num), DIMENSION(:), POINTER :: partey
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partey
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partey
   !> Particle Ez electric field
   REAL(num), DIMENSION(:), POINTER :: partez
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partez
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partez
   !> Particle Bx magnetic field
   REAL(num), DIMENSION(:), POINTER :: partbx
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partbx
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partbx
   !> Particle By magnetic field
   REAL(num), DIMENSION(:), POINTER :: partby
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partby
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partby
   !> Particle Bz magnetic field
   REAL(num), DIMENSION(:), POINTER :: partbz
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: partbz
+#endif
   !DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers

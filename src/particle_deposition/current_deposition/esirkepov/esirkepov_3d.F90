@@ -71,7 +71,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
 ! ______________________________________________________________________________
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -1829,7 +1829,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
 ! ______________________________________________________________________________
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
   INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
@@ -2005,7 +2005,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
 ! ______________________________________________________________________________
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 
@@ -3305,7 +3305,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
 ! ______________________________________________________________________________
-  USE omp_lib
+  
   USE constants
   IMPLICIT NONE
 

@@ -316,7 +316,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 
   ! LOOP ON PARTICLES
   DO ip=1,np, LVEC
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
     !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
     !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
@@ -390,7 +390,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
 
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
             !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
 #elif defined __IBMBGQ__
@@ -584,7 +584,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
     ! ____________________________________________
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
         !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
@@ -658,7 +658,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
 #endif
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
             !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
 #elif defined __IBMBGQ__
@@ -1010,7 +1010,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED gaminv:64
         !DIR$ ASSUME_ALIGNED sx0:64,sx1:64,sx2:64
@@ -1164,7 +1164,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #endif
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
@@ -1215,7 +1215,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 
     END DO
         DO n=1,MIN(LVEC,np-ip+1)
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
@@ -1423,7 +1423,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
 
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED sx0:64,sx1:64,sx2:64
         !DIR$ ASSUME_ALIGNED sx00:64,sx01:64,sx02:64
@@ -1567,7 +1567,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp
 #endif
 #endif
         DO n=1,MIN(LVEC,np-ip+1)
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
@@ -2045,7 +2045,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     h11=(/0_num,1_num,1_num,0_num/); h12=(/1_num,0_num,0_num,1_num/)
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC2
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
         !DIR$ ASSUME_ALIGNED sx1:64,sx2:64,sx3:64,sx4:64
@@ -2147,7 +2147,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 #endif
         ! Compute weights
         DO n=1,MIN(LVEC2,np-ip+1)
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED w:64, wwwx:64,wwwy:64,wwwz:64
 #elif defined  __IBMBGQ__
             !IBM* ALIGN(64,w, wwwx,wwwy,wwwz)
@@ -2194,7 +2194,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 
         ! Add weights to nearest vertices
         DO n=1,MIN(LVEC2,np-ip+1)
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
@@ -2414,7 +2414,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
     h11=(/0_num,1_num,1_num,0_num/); h12=(/1_num,0_num,0_num,1_num/)
     ! LOOP ON PARTICLES
     DO ip=1,np, LVEC
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
         !DIR$ ASSUME_ALIGNED gaminv:64
@@ -2580,7 +2580,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w
 
         ! Add weights to nearest vertices
         DO n=1,MIN(LVEC,np-ip+1)
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)
@@ -2816,7 +2816,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
     ! LOOP ON PARTICLES
 
     DO ip=1,np, LVEC
-#if defined __INTEL_COMPILER
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
         !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
         !DIR$ ASSUME_ALIGNED vx:64,vy:64,vz:64
         !DIR$ ASSUME_ALIGNED gaminv:64
@@ -2984,8 +2984,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
         ! Add weights to nearest vertices
 
         DO n=1,MIN(LVEC,np-ip+1)
-#if defined __INTEL_COMPILER
-
+#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
             !IBM* ALIGN(64,jxcells, jycells, jzcells)

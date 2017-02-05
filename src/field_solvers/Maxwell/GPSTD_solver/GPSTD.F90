@@ -311,7 +311,9 @@ SUBROUTINE multiply_mat_vector(matrix_index)
 ! ________________________________________________________________________________________
 
   USE matrix_coefficients
+#ifdef _OPENMP
   USE omp_lib
+#endif
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: matrix_index
   INTEGER(idp) :: irow, icol, nrow, ncol, nthreads_tot, nthreads_loop1, nthreads_loop2
@@ -320,12 +322,12 @@ SUBROUTINE multiply_mat_vector(matrix_index)
   nrow=cc_mat(matrix_index)%nblocks
   ncol=nrow
 
-  #ifdef _OPENMP
+#ifdef _OPENMP
       nthreads_tot=OMP_GET_MAX_THREADS()
       CALL OMP_SET_NESTED(.TRUE.)
-  #else
+#else
       nthreads_tot=1
-  #endif
+#endif
 
   IF (nthreads_tot .GT. 1) THEN
       nthreads_loop2 = 2
@@ -384,7 +386,9 @@ SUBROUTINE multiply_unit_blocks(anew,block1,n1,n2,n3,coeff1,nc1,nc2,nc3,nthreads
 ! ________________________________________________________________________________________
 
   USE constants
+#ifdef _OPENMP
   USE omp_lib
+#endif
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: n1,n2,n3, nc1,nc2,nc3, nthreads
   COMPLEX(cpx), INTENT(IN OUT), DIMENSION(n1,n2,n3) :: anew, block1

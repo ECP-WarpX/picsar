@@ -787,7 +787,9 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
     USE time_stat
     USE params
+#ifdef _OPENMP
     USE omp_lib
+#endif
     IMPLICIT NONE
 
     REAL(num), DIMENSION(20) :: mintimes, init_mintimes
@@ -924,7 +926,9 @@ MODULE mpi_routines
 
     USE time_stat
     USE params
+#ifdef _OPENMP
     USE omp_lib
+#endif
     IMPLICIT NONE
 
     REAL(num), DIMENSION(20) :: mintimes, init_mintimes
