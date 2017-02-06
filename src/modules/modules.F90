@@ -568,21 +568,21 @@ USE constants
   !> Seed for random drawings
   INTEGER(isp) :: seed
   !> Current deposition method
-  INTEGER(idp) :: currdepo
+  INTEGER(idp) :: currdepo = 0
   !> Charge deposition method
-  INTEGER(idp) :: rhodepo
+  INTEGER(idp) :: rhodepo = 0
   !> Field gathering method
-  INTEGER(idp) :: fieldgathe
+  INTEGER(idp) :: fieldgathe = 0
   !> Type of comm routine to use for particles
-  INTEGER(idp) :: partcom
+  INTEGER(idp) :: partcom = 0
   !> Field gathering + part. pusher seperated flag
-  INTEGER(idp) :: fg_p_pp_separated
+  INTEGER(idp) :: fg_p_pp_separated = 0
   !> Vector size for the current deposition
-  INTEGER(idp) :: LVEC_curr_depo
+  INTEGER(idp) :: lvec_curr_depo = 16
   !> Vector size for the charge deposition
-  INTEGER(idp) :: LVEC_charge_depo
+  INTEGER(idp) :: lvec_charge_depo = 16
   !> Vector size for the field gathering
-  INTEGER(idp) :: LVEC_fieldgathe
+  INTEGER(idp) :: lvec_fieldgathe = 16
   !> MPI buffer size
   INTEGER(idp) :: mpi_buf_size
 
