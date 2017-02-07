@@ -393,7 +393,9 @@ class GPSTD_Maxwell(GPSTDPXR):
                       'l_pushf':False,
                       'l_pushg':False,
                       'clight':299792458.0,
-                      'eps0':8.854187817620389e-12}
+                      'eps0':8.854187817620389e-12,
+                       'V_galilean':np.array([0.,0.,0.]),
+                      'V_pseudogalilean':np.array([0.,0.,0.])}
 
     def __init__(self,**kw):
         try:
@@ -560,6 +562,128 @@ class GPSTD_Maxwell(GPSTDPXR):
 
         return self.mymat
 
+    def getmaxwellmat_galilean(self,axp,ayp,azp,axm,aym,azm,dt,cdt,m0,m1,
+                      kx_unmod,ky_unmod,kz_unmod,l_matref=0,
+                      matcompress=None,V_galilean=[0.,0.,0.]):
+
+        # --- equivalent to J constant in lab frame grid when 1
+        # --- equivalent to J constant in moving frame grid when 0
+        l_matpushj = 0
+
+        j=1j
+        c=self.clight
+        V0  = np.sqrt(V_galilean[0]*V_galilean[0]+V_galilean[1]*V_galilean[1]+V_galilean[2]*V_galilean[2])
+        w=self.k*c
+        kV=self.kx_unmod*V_galilean[0]+self.ky_unmod*V_galilean[1]+self.kz_unmod*V_galilean[2]
+        T=np.exp(j*kV*dt)
+        T2=np.exp(j*kV*dt/2)
+
+        Theta=np.exp(j*kV*self.dt)
+        coef = -j*self.divsetorig(j*kV,1.-Theta,-1./self.dt)
+
+        is_singular=(w!=0) & (kV==0)
+        coef[is_singular] = j/self.dt
+        self.cr=coef.copy()
+        self.cro=coef.copy()*Theta
+        coef /= self.kmag
+        self.JxCorRhomult = coef*self.kxpn
+        self.JyCorRhomult = coef*self.kypn
+        self.JzCorRhomult = coef*self.kzpn
+
+        self.JxCorRhooldmult = coef*self.kxpn*Theta
+        self.JyCorRhooldmult = coef*self.kypn*Theta
+        self.JzCorRhooldmult = coef*self.kzpn*Theta
+
+        axp = axp
+        ayp = ayp
+        azp = azp
+        axm = axm
+        aym = aym
+        azm = azm
+
+        if self.l_pushf:
+            matpushrho = GPSTD_Matrix(self.fields)
+    #            matpushrho.add_op('rho',{'rho':T,'jx':-axm/c,'jy':-aym/c,'jz':-azm/c})
+    #            matpushrho.add_op('rho',{'rho':T,'drho':1./self.ntsub})
+            alpha = 0.5*j*kV*dt
+            matpushrho.add_op('rho',{'rho':(1.+alpha)/(1.-alpha),'drho':1./(self.ntsub*(1.-alpha))})
+            matpushdrho = GPSTD_Matrix(self.fields)
+            matpushdrho.add_op('drho',{'drho':T})
+
+        matpushb = GPSTD_Matrix(self.fields)
+        if self.l_pushg:
+            matpushb.add_op('bx',{'bx':T2,'ey': azp*T2/(2*c),'ez':-ayp*T2/(2*c),'g':axm*T2/(2*c)})
+            matpushb.add_op('by',{'by':T2,'ex':-azp*T2/(2*c),'ez': axp*T2/(2*c),'g':aym*T2/(2*c)})
+            matpushb.add_op('bz',{'bz':T2,'ex': ayp*T2/(2*c),'ey':-axp*T2/(2*c),'g':azm*T2/(2*c)})
+        else:
+            matpushb.add_op('bx',{'bx':T2,'ey': azp*T2/(2*c),'ez':-ayp*T2/(2*c)})
+            matpushb.add_op('by',{'by':T2,'ex':-azp*T2/(2*c),'ez': axp*T2/(2*c)})
+            matpushb.add_op('bz',{'bz':T2,'ex': ayp*T2/(2*c),'ey':-axp*T2/(2*c)})
+
+        matpushe = GPSTD_Matrix(self.fields)
+        if self.l_pushf:
+            matpushe.add_op('ex',{'ex':T,'by':-azm*T2*c,'bz': aym*T2*c,'f':axp*T2,'jx':-dt*T/self.eps0})
+            matpushe.add_op('ey',{'ey':T,'bx': azm*T2*c,'bz':-axm*T2*c,'f':ayp*T2,'jy':-dt*T/self.eps0})
+            matpushe.add_op('ez',{'ez':T,'bx':-aym*T2*c,'by': axm*T2*c,'f':azp*T2,'jz':-dt*T/self.eps0})
+        else:
+            matpushe.add_op('ex',{'ex':T,'by':-azm*T2*c,'bz': aym*T2*c,'jx':-dt*T/self.eps0})
+            matpushe.add_op('ey',{'ey':T,'bx': azm*T2*c,'bz':-axm*T2*c,'jy':-dt*T/self.eps0})
+            matpushe.add_op('ez',{'ez':T,'bx':-aym*T2*c,'by': axm*T2*c,'jz':-dt*T/self.eps0})
+
+        if self.l_pushf:
+            matpushf = GPSTD_Matrix(self.fields)
+            matpushf.add_op('f',{'f':T2,'ex':axm*T2/2,'ey':aym*T2/2,'ez':azm*T2/2,'rho':-0.5*cdt/self.eps0})
+
+        if self.l_pushg:
+            matpushg = GPSTD_Matrix(self.fields)
+            matpushg.add_op('g',{'g':T,'bx':axp*T2*c,'by':ayp*T2*c,'bz':azp*T2*c})
+
+        mymat_init = GPSTD_Matrix(self.fields)
+        if l_matpushj:
+            shift_init = np.exp((-0.5+0*0.5/self.ntsub)*j*kV*self.dt)
+        else:
+            shift_init = 1.
+        mymat_init.add_op('jx',{'jx':shift_init})
+        mymat_init.add_op('jy',{'jy':shift_init})
+        mymat_init.add_op('jz',{'jz':shift_init})
+        if self.l_pushf:
+            mymat_init.add_op('rho',{'rhoold':1.})
+            if l_matpushj:
+                mymat_init.add_op('drho',{'rhonew':np.exp(-j*kV*self.dt),'rhoold':-1.})
+            else:
+                mymat_init.add_op('drho',{'rhonew':np.exp(-j*kV*self.dt),'rhoold':-1.})
+
+        matpushj = GPSTD_Matrix(self.fields)
+        matpushj.add_op('jx',{'jx':T})
+        matpushj.add_op('jy',{'jy':T})
+        matpushj.add_op('jz',{'jz':T})
+
+        if self.l_pushf:
+            mymat = multmat(matpushf.mat,matpushb.mat,matcompress=matcompress)
+            mymat = multmat(mymat,matpushe.mat,matcompress=matcompress)
+        else:
+            mymat = multmat(matpushb.mat,matpushe.mat,matcompress=matcompress)
+        if self.l_pushg:mymat = multmat(mymat,matpushg.mat,matcompress=matcompress)
+        if self.l_pushf:mymat = multmat(mymat,matpushdrho.mat,matcompress=matcompress)
+        if self.l_pushf:mymat = multmat(mymat,matpushrho.mat,matcompress=matcompress)
+        if self.l_pushf:mymat = multmat(mymat,matpushf.mat,matcompress=matcompress)
+        mymat = multmat(mymat,matpushb.mat,matcompress=matcompress)
+
+        if l_matpushj:mymat = multmat(mymat,matpushj.mat,matcompress=matcompress)
+
+        mymat = exp_by_squaring_matrixlist(mymat, self.ntsub, matcompress=matcompress)
+
+        self.mymat = multmat(mymat_init.mat,mymat)
+
+        if l_matref:
+            self.matpushb=matpushb
+            self.matpushe=matpushe
+            if self.l_pushf:self.matpushf=matpushf
+            if self.l_pushg:self.matpushg=matpushg
+            if self.l_pushf:self.matpushrho=matpushrho
+
+        return self.mymat
+
     def push(self):
 
         self.push_fields()
@@ -574,7 +698,7 @@ class PSATD_Maxwell(GPSTDPXR):
                       'clight':299792458.0,
                       'eps0':8.854187817620389e-12,
                       'V_galilean':np.array([0.,0.,0.]),
-                      'V_pseudogalilean':np.array([0.,0.,0.]),}
+                      'V_pseudogalilean':np.array([0.,0.,0.])}
 
     def __init__(self,**kw):
         try:
@@ -714,6 +838,293 @@ class PSATD_Maxwell(GPSTDPXR):
             mymat.add_op('ez',{'ez':C,'bx':-aym*c,'by': axm*c,'jz':EJmult,'rhonew':kzpn*ERhomult,'rhoold':kzpn*ERhooldmult})
 
         if self.l_pushf:
+            mymat.add_op('f',{'f':C,'ex':axm,'ey':aym,'ez':azm, \
+                                    'jx': kxmn*FJmult,'jy': kymn*FJmult,'jz': kzmn*FJmult, \
+                                    'rhonew':FRhomult,\
+                                    'rhoold':-FRhomult - Soverk/self.eps0})
+
+        if self.l_pushg:
+            mymat.add_op('g',{'g':C,'bx':axp*c,'by':ayp*c,'bz':azp*c})
+
+        return mymat.mat
+def getmaxwellmat_galilean(self,kxpn,kypn,kzpn,kxmn,kymn,kzmn,dt,cdt,V_galilean=np.array([0.,0.,0.])):
+
+        j = 1j
+        V0 = np.linalg.norm(V_galilean)
+        c=self.clight
+        C=self.coswdt
+        S=self.sinwdt
+        kV=self.kx_unmod*V_galilean[0]+self.ky_unmod*V_galilean[1]+self.kz_unmod*V_galilean[2]
+        Theta=T=np.exp(j*kV*dt)
+        CT = C*Theta
+        ST = S*Theta
+        w = self.k*c
+        kVow = self.divsetorig(kV,self.kmag*c,V0/c)
+        So1mT = self.divsetorig(S,1.-T,j*c/V0)
+        onemCo1mT = self.divsetorig(1.-C,1.-T,0.)
+
+        denom = (w*w-kV*kV)
+        self.denom=denom
+
+        X1 = self.divsetorig(1.-CT+j*kVow*ST, denom, dt**2*0.5)
+        X2 = self.divsetorig(1.+j*kVow*T*So1mT+kVow**2*T*onemCo1mT, denom, dt**2/6)
+        X3 = T*self.divsetorig(C+j*kVow*T*So1mT+kVow**2*onemCo1mT, denom, -dt**2/3)
+
+        #Apply a special limit when kV=0 but w!=0
+        is_singular=(w!=0) & (kV==0)
+        X2[is_singular]=(1.-S[is_singular]/(w[is_singular]*dt))/w[is_singular]**2
+        X3[is_singular] = T[is_singular]*(C[is_singular]-S[is_singular]/(w[is_singular]*dt))/w[is_singular]**2
+
+        Soverk = self.divsetorig(S,self.kmag,self.dt*self.clight)
+        Jmult = 1./(self.kmag*self.clight*self.eps0)
+
+        EJmult = -self.divsetorig(ST,self.kmag*self.clight*self.eps0,dt/self.eps0)+j*X1*kV/self.eps0
+
+        ERhomult = -j*c**2*X2*self.k/self.eps0
+        ERhooldmult = j*c**2*X3*self.k/self.eps0
+
+        BJmult = -self.k*j*X1/self.eps0
+
+        FJmult = j*(C-1.)*Jmult
+        FRhomult = (C-1.)/(dt*self.kmag**2*self.clight*self.eps0)
+
+        coef = -j*self.divsetorig(j*kV,1.-T,-1./dt)
+        coef[is_singular]=j/dt
+        self.CDcoef = coef.copy()*np.exp(0.5*j*kV*dt)
+
+        self.cr=coef.copy()
+        self.cro=coef.copy()*T
+        coef /= self.kmag
+        self.JxCorRhomult = coef*self.kxpn
+        self.JyCorRhomult = coef*self.kypn
+        self.JzCorRhomult = coef*self.kzpn
+
+        self.JxCorRhooldmult = coef*self.kxpn*T
+        self.JyCorRhooldmult = coef*self.kypn*T
+        self.JzCorRhooldmult = coef*self.kzpn*T
+
+        if len(self.dims)==1:
+            FRhomult[0] = -0.5*self.dt*self.clight/self.eps0
+        if len(self.dims)==2:
+            FRhomult[0,0] = -0.5*self.dt*self.clight/self.eps0
+        if len(self.dims)==3:
+            FRhomult[0,0,0] = -0.5*self.dt*self.clight/self.eps0
+
+        if self.nx>1:
+            axm = j*ST*self.kxmn
+            axp = j*ST*self.kxpn
+            kxpn = self.kxpn
+            kxmn = self.kxmn
+        else:
+            axm = axp = 0.
+            bxm = bxp = 0.
+            kxpn = kxmn = 0.
+
+        if self.ny>1:
+            aym = j*ST*self.kymn
+            ayp = j*ST*self.kypn
+            kypn = self.kypn
+            kymn = self.kymn
+        else:
+            aym = ayp = 0.
+            bym = byp = 0.
+            kypn = kymn = 0.
+
+        if self.nz>1:
+            azm = j*ST*self.kzmn
+            azp = j*ST*self.kzpn
+            kzpn = self.kzpn
+            kzmn = self.kzmn
+        else:
+            azm = azp = 0.
+            bzm = bzp = 0.
+            kzpn = kzmn = 0.
+
+        self.BJmult = BJmult
+        self.EJmult = EJmult
+        self.ERhomult = ERhomult
+        self.ERhooldmult = ERhooldmult
+        self.Jmult = Jmult
+        self.Soverk = Soverk
+        self.X1=X1
+        self.X2=X2
+        self.X3=X3
+        self.kVow = kVow
+        self.So1mT = So1mT
+        self.onemCo1mT = onemCo1mT
+        self.kV=kV
+        self.T=T
+        self.CT = CT
+        self.ST = ST
+
+        mymat = GPSTD_Matrix(self.fields)
+        if self.l_pushg:
+            mymat.add_op('bx',{'bx':CT,'ey': azp/c,'ez':-ayp/c,'g':axm/c,'jy': kzpn*BJmult,'jz':-kypn*BJmult})
+            mymat.add_op('by',{'by':CT,'ex':-azp/c,'ez': axp/c,'g':aym/c,'jx':-kzpn*BJmult,'jz': kxpn*BJmult})
+            mymat.add_op('bz',{'bz':CT,'ex': ayp/c,'ey':-axp/c,'g':azm/c,'jx': kypn*BJmult,'jy':-kxpn*BJmult})
+        else:
+            mymat.add_op('bx',{'bx':CT,'ey': azp/c,'ez':-ayp/c,'jy': kzpn*BJmult,'jz':-kypn*BJmult})
+            mymat.add_op('by',{'by':CT,'ex':-azp/c,'ez': axp/c,'jx':-kzpn*BJmult,'jz': kxpn*BJmult})
+            mymat.add_op('bz',{'bz':CT,'ex': ayp/c,'ey':-axp/c,'jx': kypn*BJmult,'jy':-kxpn*BJmult})
+
+        if self.l_pushf:
+            mymat.add_op('ex',{'ex':CT,'by':-azm*c,'bz': aym*c,'jx':EJmult,'f':axp,'rhonew':kxpn*ERhomult,'rhoold':kxpn*ERhooldmult})
+            mymat.add_op('ey',{'ey':CT,'bx': azm*c,'bz':-axm*c,'jy':EJmult,'f':ayp,'rhonew':kypn*ERhomult,'rhoold':kypn*ERhooldmult})
+            mymat.add_op('ez',{'ez':CT,'bx':-aym*c,'by': axm*c,'jz':EJmult,'f':azp,'rhonew':kzpn*ERhomult,'rhoold':kzpn*ERhooldmult})
+        else:
+            mymat.add_op('ex',{'ex':CT,'by':-azm*c,'bz': aym*c,'jx':EJmult,'rhonew':kxpn*ERhomult,'rhoold':kxpn*ERhooldmult})
+            mymat.add_op('ey',{'ey':CT,'bx': azm*c,'bz':-axm*c,'jy':EJmult,'rhonew':kypn*ERhomult,'rhoold':kypn*ERhooldmult})
+            mymat.add_op('ez',{'ez':CT,'bx':-aym*c,'by': axm*c,'jz':EJmult,'rhonew':kzpn*ERhomult,'rhoold':kzpn*ERhooldmult})
+
+        if self.l_pushf:
+            print 'l_pushf not yet implemented in PSATD Galilean'
+            raise
+            mymat.add_op('f',{'f':CT,'ex':axm,'ey':aym,'ez':azm, \
+                                    'jx': kxmn*FJmult,'jy': kymn*FJmult,'jz': kzmn*FJmult, \
+                                    'rhonew':FRhomult,\
+                                    'rhoold':-FRhomult - Soverk/self.eps0})
+
+        if self.l_pushg:
+            print 'l_pushg not yet implemented in PSATD Galilean'
+            raise
+            mymat.add_op('g',{'g':CT,'bx':axp*c,'by':ayp*c,'bz':azp*c})
+
+        return mymat.mat
+
+    def getmaxwellmat_pseudogalilean(self,kxpn,kypn,kzpn,kxmn,kymn,kzmn,dt,cdt,V_galilean=np.array([0.,0.,0.])):
+
+        j = 1j
+        V0 = np.sqrt(V_galilean[0]*V_galilean[0]+V_galilean[1]*V_galilean[1]+V_galilean[2]*V_galilean[2])
+        c=self.clight
+        C=self.coswdt
+        S=self.sinwdt
+        kV=self.kx_unmod*V_galilean[0]+self.ky_unmod*V_galilean[1]+self.kz_unmod*V_galilean[2]
+        Theta=T=np.exp(j*kV*dt)
+        invT = np.exp(-j*kV*dt)
+        CT = C*Theta
+        ST = S*Theta
+        w = self.k*c
+        kVow = self.divsetorig(kV,self.kmag*c,V0/c)
+        So1mT = self.divsetorig(S,1.-T,j*c/V0)
+        onemCo1mT = self.divsetorig(1.-C,1.-T,0.)
+
+        denom = (w*w-kV*kV)
+        self.denom=denom
+
+        X1 = self.divsetorig(1.-CT+j*kVow*ST, denom, dt**2*0.5)
+        X2 = self.divsetorig(1.+j*kVow*T*So1mT+kVow**2*T*onemCo1mT, denom, dt**2/6)
+        X3 = self.divsetorig(C+j*kVow*T*So1mT+kVow**2*onemCo1mT, denom, -dt**2/3)
+
+        #Apply a special limit when kV=0 but w!=0
+        is_singular=(w!=0.) & (kV==0.)
+        X2[is_singular]=(1.-S[is_singular]/(w[is_singular]*dt))/w[is_singular]**2
+        X3[is_singular] = (C[is_singular]-S[is_singular]/(w[is_singular]*dt))/w[is_singular]**2
+
+        X1 *= np.exp(-0.5*j*kV*dt)
+
+        Soverk = self.divsetorig(S,self.kmag,self.dt*self.clight)
+        Jmult = 1./(self.kmag*self.clight*self.eps0)
+
+        EJmult = -np.exp(-0.5*j*kV*dt)*self.divsetorig(ST,self.kmag*self.clight*self.eps0,dt/self.eps0)+j*X1*kV/self.eps0
+
+        ERhomult = -j*c**2*X2*self.k/self.eps0
+        ERhooldmult = j*c**2*X3*self.k/self.eps0
+
+        BJmult = -self.k*j*X1/self.eps0
+
+        FJmult = j*(C-1.)*Jmult
+        FRhomult = (C-1.)/(dt*self.kmag**2*self.clight*self.eps0)
+
+        coef = self.divsetorig(j*kV*dt,T-1.,1.)
+        coef[is_singular]=1.
+
+        self.CDcoef = coef.copy()*np.exp(0.5*j*kV*dt)
+        coef *= j/(dt*self.kmag)
+
+        self.JxCorRhomult = coef*self.kxpn*np.exp(0.5*j*kV*dt)
+        self.JyCorRhomult = coef*self.kypn*np.exp(0.5*j*kV*dt)
+        self.JzCorRhomult = coef*self.kzpn*np.exp(0.5*j*kV*dt)
+
+        self.JxCorRhooldmult = coef*self.kxpn*np.exp(0.5*j*kV*dt)
+        self.JyCorRhooldmult = coef*self.kypn*np.exp(0.5*j*kV*dt)
+        self.JzCorRhooldmult = coef*self.kzpn*np.exp(0.5*j*kV*dt)
+
+        if len(self.dims)==1:
+            FRhomult[0] = -0.5*self.dt*self.clight/self.eps0
+        if len(self.dims)==2:
+            FRhomult[0,0] = -0.5*self.dt*self.clight/self.eps0
+        if len(self.dims)==3:
+            FRhomult[0,0,0] = -0.5*self.dt*self.clight/self.eps0
+
+        if self.nx>1:
+            axm = j*S*self.kxmn
+            axp = j*S*self.kxpn
+            kxpn = self.kxpn
+            kxmn = self.kxmn
+        else:
+            axm = axp = 0.
+            bxm = bxp = 0.
+            kxpn = kxmn = 0.
+
+        if self.ny>1:
+            aym = j*S*self.kymn
+            ayp = j*S*self.kypn
+            kypn = self.kypn
+            kymn = self.kymn
+        else:
+            aym = ayp = 0.
+            bym = byp = 0.
+            kypn = kymn = 0.
+
+        if self.nz>1:
+            azm = j*S*self.kzmn
+            azp = j*S*self.kzpn
+            kzpn = self.kzpn
+            kzmn = self.kzmn
+        else:
+            azm = azp = 0.
+            bzm = bzp = 0.
+            kzpn = kzmn = 0.
+
+        self.BJmult = BJmult
+        self.EJmult = EJmult
+        self.ERhomult = ERhomult
+        self.ERhooldmult = ERhooldmult
+        self.Jmult = Jmult
+        self.Soverk = Soverk
+        self.X1=X1
+        self.X2=X2
+        self.X3=X3
+        self.kVow = kVow
+        self.So1mT = So1mT
+        self.onemCo1mT = onemCo1mT
+        self.kV=kV
+        self.T=T
+        self.CT = CT
+        self.ST = ST
+
+        mymat = GPSTD_Matrix(self.fields)
+        if self.l_pushg:
+            mymat.add_op('bx',{'bx':C,'ey': azp/c,'ez':-ayp/c,'g':axm/c,'jy': kzpn*BJmult,'jz':-kypn*BJmult})
+            mymat.add_op('by',{'by':C,'ex':-azp/c,'ez': axp/c,'g':aym/c,'jx':-kzpn*BJmult,'jz': kxpn*BJmult})
+            mymat.add_op('bz',{'bz':C,'ex': ayp/c,'ey':-axp/c,'g':azm/c,'jx': kypn*BJmult,'jy':-kxpn*BJmult})
+        else:
+            mymat.add_op('bx',{'bx':C,'ey': azp/c,'ez':-ayp/c,'jy': kzpn*BJmult,'jz':-kypn*BJmult})
+            mymat.add_op('by',{'by':C,'ex':-azp/c,'ez': axp/c,'jx':-kzpn*BJmult,'jz': kxpn*BJmult})
+            mymat.add_op('bz',{'bz':C,'ex': ayp/c,'ey':-axp/c,'jx': kypn*BJmult,'jy':-kxpn*BJmult})
+
+        if self.l_pushf:
+            mymat.add_op('ex',{'ex':C,'by':-azm*c,'bz': aym*c,'jx':EJmult,'f':axp,'rhonew':kxpn*ERhomult,'rhoold':kxpn*ERhooldmult})
+            mymat.add_op('ey',{'ey':C,'bx': azm*c,'bz':-axm*c,'jy':EJmult,'f':ayp,'rhonew':kypn*ERhomult,'rhoold':kypn*ERhooldmult})
+            mymat.add_op('ez',{'ez':C,'bx':-aym*c,'by': axm*c,'jz':EJmult,'f':azp,'rhonew':kzpn*ERhomult,'rhoold':kzpn*ERhooldmult})
+        else:
+            mymat.add_op('ex',{'ex':C,'by':-azm*c,'bz': aym*c,'jx':EJmult,'rhonew':kxpn*ERhomult,'rhoold':kxpn*ERhooldmult})
+            mymat.add_op('ey',{'ey':C,'bx': azm*c,'bz':-axm*c,'jy':EJmult,'rhonew':kypn*ERhomult,'rhoold':kypn*ERhooldmult})
+            mymat.add_op('ez',{'ez':C,'bx':-aym*c,'by': axm*c,'jz':EJmult,'rhonew':kzpn*ERhomult,'rhoold':kzpn*ERhooldmult})
+
+        if self.l_pushf:
+            print 'l_pushf not yet implemented in PSATD PseudoGalilean'
+            raise
             mymat.add_op('f',{'f':C,'ex':axm,'ey':aym,'ez':azm, \
                                     'jx': kxmn*FJmult,'jy': kymn*FJmult,'jz': kzmn*FJmult, \
                                     'rhonew':FRhomult,\
