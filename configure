@@ -3,7 +3,7 @@
 This file configures the installation of PICSAR in Python mode.
 
 It reads the file Makefile_Forthon.in and creates a new file
-Makefile_Forthon, where the MPI libraries and flags have been 
+Makefile_Forthon, where the MPI libraries and flags have been
 set to the proper values for the current system.
 
 Usage
@@ -13,7 +13,7 @@ In a terminal, type `./configure` and then `make -f Makefile_Forthon`
 import os, subprocess, re, sys
 
 # Get the name of the host
-try: 
+try:
     host = os.environ['HOST']
 except KeyError:
     host = ''
@@ -23,7 +23,7 @@ print('')
 if host[:6] == 'edison':
     print('Configuring PICSAR on Edison')
     comp = 'ftn'
-    libdir = ''
+    libdir_list = []
     libs = '-lgomp'
     parsed_mpi = True
 else:
@@ -35,18 +35,16 @@ else:
     except OSError:
         print('** Failed to detect mpif90 on your system. Is it installed?')
         parsed_mpi = False
-        libdir = ''
+        libdir_list = []
         libs = ''
     else:
         # Find the library path, using regular expressions
-        path_list = re.findall('\s-L(\S+)', info)
-        if path_list == []:
+        libdir_list = re.findall('\s-L(\S+)', info)
+        if libdir_list == []:
             print('** Failed to detect MPI library location on your system.')
             parsed_mpi = False
-            libdir = ''
         else:
-            libdir = path_list[0]
-            print('MPI library: %s' %libdir)
+            print('MPI library: %s' %(', '.join(libdir_list)) )
 
         # Find the proper flags, using regular expressions
         flag_list = re.findall('\s-l(\S+)', info)
@@ -64,8 +62,9 @@ with open('Makefile_Forthon.in') as f:
     makefile_text = f.read()
 
 # Replace the libraries in the text
-if libdir != '':
-    makefile_text = makefile_text.replace( 'LIBDIR=', 'LIBDIR=-L%s' %libdir )
+if libdir_list != []:
+    makefile_text = makefile_text.replace(
+    'LIBDIR=', 'LIBDIR=-L%s' %(' -L'.join(libdir_list) ) )
 makefile_text = makefile_text.replace( 'LIBS=', 'LIBS=%s' %libs )
 makefile_text = makefile_text.replace( 'COMPEXEC=', 'COMPEXEC=%s' %comp )
 
@@ -84,4 +83,3 @@ else:
     if host[:6] == 'edison':
         print('(First type `module swap PrgEnv-intel PrgEnv-gnu`)')
     sys.exit(0)
-    
