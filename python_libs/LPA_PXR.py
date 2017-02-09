@@ -151,38 +151,67 @@ class PlasmaInjectorPXR(PlasmaInjector):
         if (self.ux_th !=0) or (self.uy_th !=0) or (self.uy_th !=0):
             gamma_inv = 1./np.sqrt( 1 + ux**2 + uy**2 + uz**2 )
 
+
+		# Filter particles outside the box
+        if self.dim == "3d":
+            cond=(x0>=pxr.x_min_local) & (x0<pxr.x_max_local) &\
+                 (y0>=pxr.y_min_local) & (y0<pxr.y_max_local) &\
+                 (z0>=pxr.z_min_local) & (z0<pxr.z_max_local)
+#                 (z0>=pxr.z_min_local+pxr.zgrid) & (z0<pxr.z_max_local+pxr.zgrid)
+        elif self.dim == "2d":
+            cond=(x0>=pxr.x_min_local) & (x0<pxr.x_max_local) &\
+                 (z0>=pxr.z_min_local) & (z0<pxr.z_max_local)
+        elif self.dim == "1d":
+            cond=(z0>=pxr.z_min_local) & (z0<pxr.z_max_local)
+        x0=x0[cond]
+        y0=y0[cond]
+        z0=z0[cond]
+        w=w[cond]
+        nps0=np.size(x0)
+        if nps0==0:return
+        #print("size",nps0, np.amax(np.abs(uz)),np.amax(np.abs(uy)),np.amax(np.abs(ux)), \
+        #np.amax(z0),np.amax(y0),np.amax(x0),np.amin(z0),np.amin(y0),np.amin(x0))
+        pids = np.zeros([nps0,pxr.npid])
+        pids[:,pxr.wpid-1]=w
+
         # Load the electrons and ions (on top of each other)
         if self.elec is not None:
             # Use the random momenta
-
-            # Filter particles outside the box
-            cond=(x0>=pxr.x_min_local) & (x0<pxr.x_max_local) &\
-                 (y0>=pxr.y_min_local) & (y0<pxr.y_max_local) &\
-                 (z0>=pxr.z_min_local+pxr.zgrid) & (z0<pxr.z_max_local+pxr.zgrid)
-            x0=x0[cond]
-            y0=y0[cond]
-            z0=z0[cond]
-            nps0=np.size(x0)
-            #print("size",nps0, np.amax(np.abs(uz)),np.amax(np.abs(uy)),np.amax(np.abs(ux)), \
-            #np.amax(z0),np.amax(y0),np.amax(x0),np.amin(z0),np.amin(y0),np.amin(x0))
-            pxr.py_add_particles_to_species(1, nps0,
-                                            x0,
+#            pxr.py_add_particles_to_species(1, nps0,pxr.npid,
+#                                            x0,
+#                                            y0,
+#                                            z0,
+#                                            ux*np.ones(nps0)*c,
+#                                            uy*np.ones(nps0)*c,
+#                                            uz*np.ones(nps0)*c,
+#                                            gamma_inv*np.ones(nps0),
+#                                            pids*self.elec.sw0)
+            self.elec.addparticles(x0,
                                             y0,
                                             z0,
                                             ux*np.ones(nps0)*c,
                                             uy*np.ones(nps0)*c,
                                             uz*np.ones(nps0)*c,
                                             gamma_inv*np.ones(nps0),
-                                            w)
+                                            w*self.elec.sw0)
         if self.ions is not None:
             # For each element, only add particles to the lowest charge state
             for element in self.ions.keys():
                 # TO BE DONE SEARCH FOR INDEX SPECIES IN LISTOFALLSPECIES
                 # Use only the mean momenta
                 lowest_state_species = self.ions[ element ][0]
-                lowest_state_species.addpart( x=x0, y=y0, z=z0,
-                    vx=c*self.ux_m*self.gamma_inv_m,
-                    vy=c*self.uy_m*self.gamma_inv_m,
-                    vz=c*self.uz_m*self.gamma_inv_m,
-                    gi=self.gamma_inv_m, w=w,
-                    lallindomain=False )
+                pxr.py_add_particles_to_species(2, nps0,pxr.npid,
+												x0,
+												y0,
+												z0,
+												c*self.ux_m*self.gamma_inv_m*np.ones(nps0),
+												c*self.uy_m*self.gamma_inv_m*np.ones(nps0),
+												c*self.uz_m*self.gamma_inv_m*np.ones(nps0),
+												self.gamma_inv_m*np.ones(nps0),
+                                                pids*lowest_state_species.sw0)
+#                lowest_state_species.addpart( x=x0, y=y0, z=z0,
+#                    vx=c*self.ux_m*self.gamma_inv_m,
+#                    vy=c*self.uy_m*self.gamma_inv_m,
+#                    vz=c*self.uz_m*self.gamma_inv_m,
+#                    gi=self.gamma_inv_m, w=w,
+#                    lallindomain=False )
