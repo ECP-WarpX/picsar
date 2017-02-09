@@ -86,6 +86,30 @@ except:
     fft = np.fft
     l_fftw=False
 
+
+def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,lallindomain=False ):
+        nps0 = x.size
+        pids = np.zeros([nps0,pxr.npid])
+        if top.wpid>0:
+            if w is None:w=np.zeros(nps0)+self.sw0
+            pids[:,pxr.wpid-1]=w
+        x = array(x)*ones(nps0,'d')
+        y = array(y)*ones(nps0,'d')
+        z = array(z)*ones(nps0,'d')
+        vx = array(vx)*ones(nps0,'d')
+        vy = array(vy)*ones(nps0,'d')
+        vz = array(vz)*ones(nps0,'d')
+        gi = array(gi)*ones(nps0,'d')
+        pxr.py_add_particles_to_species(self.pxr_species_array, nps0,pxr.npid,
+                                        x,
+                                        y,
+                                        z,
+                                        vx,
+                                        vy,
+                                        vz,
+                                        gi,
+                                        pids)
+
 class EM3DPXR(EM3DFFT):
 
     __em3dpxrinputs__ = []
@@ -148,6 +172,8 @@ class EM3DPXR(EM3DFFT):
           self.allocatefieldarraysPXR()
         else:
           EM3DFFT.finalize(self)
+        
+        Species.addparticles = Species.addpart = addparticlesPXR
 
     def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
       ixt = ix
@@ -164,7 +190,6 @@ class EM3DPXR(EM3DFFT):
       convertindextoproc = ixt + iyt*nx + izt*nx*ny
 
       return convertindextoproc
-
 
     def allocatefieldarraysPXR(self):
 
@@ -483,13 +508,19 @@ class EM3DPXR(EM3DFFT):
         top.pgroup.ns=1
         top.pgroup.nps=0
         top.pgroup.gchange()
-
+            
         # --- mirror PXR tile structure in Warp with list of pgroups
         if (self.l_debug): print(" Mirror PXR tile structure in Warp with list of pgroups")
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]
+            s.sw0=s.sw*1.
+                                            
+        for i,s in enumerate(self.listofallspecies):
+            s.pgroups = []
+            s.jslist = [0]
             s.sw=1.
+            s.pxr_species_array=i+1
             for iz in range(1,self.ntilez+1):
                 xygroup=[]
                 for iy in range(1,self.ntiley+1):
