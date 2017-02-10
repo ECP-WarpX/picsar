@@ -88,7 +88,7 @@ end subroutine warpx_pxr_push_em3d_evec
 !> @date
 !> Creation 2015
 subroutine warpx_pxr_push_em3d_bvec( &
-     lo, hi, &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
      ez,ezlo, ezhi, &
@@ -101,7 +101,7 @@ subroutine warpx_pxr_push_em3d_bvec( &
 
   USE constants
 
-  integer :: lo(3), hi(3), &
+  integer :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
        exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
        bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3),&
        norder
@@ -118,17 +118,31 @@ subroutine warpx_pxr_push_em3d_bvec( &
 
   integer :: j,k,l
 
-  do l       = lo(3), hi(3)
-     do k    = lo(2), hi(2)
-        do j = lo(1), hi(1)           
-              Bx(j,k,l) = Bx(j,k,l) - dtsdy * (Ez(j  ,k+1,l  ) - Ez(j,k,l)) &
-                                    + dtsdz * (Ey(j  ,k  ,l+1) - Ey(j,k,l))
-              By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k  ,l  ) - Ez(j,k,l)) &
-                                    - dtsdz * (Ex(j  ,k  ,l+1) - Ex(j,k,l))
-              Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k  ,l  ) - Ey(j,k,l)) &
-                                    + dtsdy * (Ex(j  ,k+1,l  ) - Ex(j,k,l))
-          end do
-      end do
+  do l       = xlo(3), xhi(3)
+     do k    = xlo(2), xhi(2)
+        do j = xlo(1), xhi(1)           
+           Bx(j,k,l) = Bx(j,k,l) - dtsdy * (Ez(j  ,k+1,l  ) - Ez(j,k,l)) &
+                                 + dtsdz * (Ey(j  ,k  ,l+1) - Ey(j,k,l))
+        end do
+     end do
+  end do
+  
+  do l       = ylo(3), yhi(3)
+     do k    = ylo(2), yhi(2)
+        do j = ylo(1), yhi(1)           
+           By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k  ,l  ) - Ez(j,k,l)) &
+                                 - dtsdz * (Ex(j  ,k  ,l+1) - Ex(j,k,l))
+        end do
+     end do
+  end do
+  
+  do l       = zlo(3), zhi(3)
+     do k    = zlo(2), zhi(2)
+        do j = zlo(1), zhi(1)           
+           Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k  ,l  ) - Ey(j,k,l)) &
+                                 + dtsdy * (Ex(j  ,k+1,l  ) - Ex(j,k,l))
+        end do
+     end do
   end do
 
 end subroutine warpx_pxr_push_em3d_bvec
