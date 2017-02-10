@@ -87,12 +87,18 @@ except:
     l_fftw=False
 
 
-def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,lallindomain=False ):
+def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,lallindomain=False,pidpairs=None):
         nps0 = x.size
         pids = np.zeros([nps0,pxr.npid])
-        if top.wpid>0:
-            if w is None:w=np.zeros(nps0)+self.sw0
-            pids[:,pxr.wpid-1]=w
+        # --- Load in any pid data passed in
+        if pidpairs is None:
+            if top.wpid>0:
+                if w is None:w=np.zeros(nps0)+self.sw0
+                pids[:,pxr.wpid-1]=w
+        else:
+            for id,pp in pidpairs:
+                pids[:,id-1] = pp
+
         x = array(x)*ones(nps0,'d')
         y = array(y)*ones(nps0,'d')
         z = array(z)*ones(nps0,'d')
