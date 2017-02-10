@@ -852,45 +852,50 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE
 
-            curr_tile%part_ex(1:count) = 0.0_num
-            curr_tile%part_ey(1:count) = 0.0_num
-            curr_tile%part_ez(1:count) = 0.0_num
-            curr_tile%part_bx(1:count)=0.0_num
-            curr_tile%part_by(1:count)=0.0_num
-            curr_tile%part_bz(1:count)=0.0_num
+            IF (field_gathe_algo.gt.-1) then
+            
+                curr_tile%part_ex(1:count) = 0.0_num
+                curr_tile%part_ey(1:count) = 0.0_num
+                curr_tile%part_ez(1:count) = 0.0_num
+                curr_tile%part_bx(1:count) = 0.0_num
+                curr_tile%part_by(1:count) = 0.0_num
+                curr_tile%part_bz(1:count) = 0.0_num
 
-            !!! ---- Loop by blocks over particles in a tile (blocking)
-            SELECT CASE (c_dim)
-            CASE (2) ! 2D CASE
-              !!! --- Gather electric and magnetic fields on particles
-              CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y, &
-                    curr_tile%part_z, curr_tile%part_ex,                                &
-                    curr_tile%part_ey,curr_tile%part_ez,                                &
-                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
-                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
-                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
-                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
-                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
-                    currg%eztile,                                                       &
-                    currg%bxtile,currg%bytile,currg%bztile                              &
-                    ,l4symtry_in,l_lower_order_in_v_in,                                 &
-                    lvect,                                                              &
-                    field_gathe_algo)
-            CASE DEFAULT ! 3D CASE
-              !!! --- Gather electric and magnetic fields on particles
-              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,   &
-                    curr_tile%part_z, curr_tile%part_ex,                                &
-                    curr_tile%part_ey,curr_tile%part_ez,                                &
-                    curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
-                    curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
-                    curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
-                    curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
-                    nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
-                    currg%eztile,                                                       &
-                    currg%bxtile,currg%bytile,currg%bztile                              &
-                    ,l4symtry_in,l_lower_order_in_v_in,                                 &
-                    lvect,field_gathe_algo)
-            END SELECT
+                !!! ---- Loop by blocks over particles in a tile (blocking)
+                SELECT CASE (c_dim)
+                CASE (2) ! 2D CASE
+                  !!! --- Gather electric and magnetic fields on particles
+                  CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y, &
+                        curr_tile%part_z, curr_tile%part_ex,                                &
+                        curr_tile%part_ey,curr_tile%part_ez,                                &
+                        curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
+                        curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
+                        curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
+                        curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
+                        nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
+                        currg%eztile,                                                       &
+                        currg%bxtile,currg%bytile,currg%bztile                              &
+                        ,l4symtry_in,l_lower_order_in_v_in,                                 &
+                        lvect,                                                              &
+                        field_gathe_algo)
+                CASE DEFAULT ! 3D CASE
+                  !!! --- Gather electric and magnetic fields on particles
+                  CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,   &
+                        curr_tile%part_z, curr_tile%part_ex,                                &
+                        curr_tile%part_ey,curr_tile%part_ez,                                &
+                        curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
+                        curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
+                        curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
+                        curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
+                        nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
+                        currg%eztile,                                                       &
+                        currg%bxtile,currg%bytile,currg%bztile                              &
+                        ,l4symtry_in,l_lower_order_in_v_in,                                 &
+                        lvect,field_gathe_algo)
+                END SELECT
+            
+            end if
+            
             SELECT CASE (particle_pusher)
             !! Vay pusher -- half push part 1
 

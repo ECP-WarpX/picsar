@@ -1324,24 +1324,25 @@ class EM3DPXR(EM3DFFT):
         #tendcell=MPI.Wtime()
         #pxr.local_time_cell=pxr.local_time_cell+(tendcell-tdebcell)
 
-        if l_pxr:
-            if l_last:
-                tdebpart=MPI.Wtime()
-                if (self.l_debug): print("Call pxr.pxrpush_particles_part1()")
-                pxr.pxrpush_particles_part1()
-                tendpart=MPI.Wtime()
-                pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
-                self.time_stat_loc_array[0] += (tendpart-tdebpart)
-        else:
-            t0=MPI.Wtime()
+        tdebpart=MPI.Wtime()
+        if not l_pxr or (l_pxr and pxr.fieldgathe<0):
             for i,s in enumerate(self.listofallspecies):
                 for pg in s.flatten(s.pgroups):
                     w3d.pgroupfsapi = pg
                     self.fetcheb(0,pg)
-                    if l_last:
-                        self.push_velocity_first_half(0,pg)
-            t1 = MPI.Wtime()
-            self.time_stat_loc_array[0] += (t1-t0)
+
+        if l_last:
+            if l_pxr:
+                if (self.l_debug): print("Call pxr.pxrpush_particles_part1()")
+                pxr.pxrpush_particles_part1()
+            else:
+                for pg in s.flatten(s.pgroups):
+                    w3d.pgroupfsapi = pg
+                    self.push_velocity_first_half(0,pg)
+
+        tendpart=MPI.Wtime()
+        if l_pxr:pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
+        self.time_stat_loc_array[0] += (tendpart-tdebpart)
 
         # --- update time, time counter
         top.time+=top.dt

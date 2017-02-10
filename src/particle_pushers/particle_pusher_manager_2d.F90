@@ -139,29 +139,32 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
 
           IF (count .EQ. 0) CYCLE
 
-          curr_tile%part_ex(1:count) = 0.0_num
-          curr_tile%part_ey(1:count) = 0.0_num
-          curr_tile%part_ez(1:count) = 0.0_num
-          curr_tile%part_bx(1:count)=0.0_num
-          curr_tile%part_by(1:count)=0.0_num
-          curr_tile%part_bz(1:count)=0.0_num
-          !!! ---- Loop by blocks over particles in a tile (blocking)
-          !!! --- Gather electric field on particles
+          IF (fieldgathe.gt.-1) then
+              curr_tile%part_ex(1:count) = 0.0_num
+              curr_tile%part_ey(1:count) = 0.0_num
+              curr_tile%part_ez(1:count) = 0.0_num
+              curr_tile%part_bx(1:count)=0.0_num
+              curr_tile%part_by(1:count)=0.0_num
+              curr_tile%part_bz(1:count)=0.0_num
+              !!! ---- Loop by blocks over particles in a tile (blocking)
+              !!! --- Gather electric field on particles
 
-          !!! --- Gather electric and magnetic fields on particles
-          CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,           &
-                      curr_tile%part_z, curr_tile%part_ex,                              &
-                      curr_tile%part_ey,curr_tile%part_ez,                         &
-                      curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,       &
-                      curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
-                      curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
-                      curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
-                      nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,           &
-                      currg%eztile,                                                &
-                      currg%bxtile,currg%bytile,currg%bztile                       &
-                      ,.FALSE.,.TRUE., &
-                      LVEC_fieldgathe, &
-                      fieldgathe)
+              !!! --- Gather electric and magnetic fields on particles
+              CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,           &
+                          curr_tile%part_z, curr_tile%part_ex,                              &
+                          curr_tile%part_ey,curr_tile%part_ez,                         &
+                          curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,       &
+                          curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,              &
+                          curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,   &
+                          curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,        &
+                          nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,           &
+                          currg%eztile,                                                &
+                          currg%bxtile,currg%bytile,currg%bztile                       &
+                          ,.FALSE.,.TRUE., &
+                          LVEC_fieldgathe, &
+                          fieldgathe)
+
+          end if
 
           !! --- Push velocity with E half step
           CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                    &
