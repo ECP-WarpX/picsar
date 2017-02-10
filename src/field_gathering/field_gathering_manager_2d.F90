@@ -79,7 +79,7 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   real(num)                     :: xmin,ymin,zmin,dx,dy,dz
 
-  IF (field_gathe_algo.eq.-1) return
+  IF (field_gathe_algo.lt.0) return
 
   ! ______________________________________________
   ! Arbitrary order, non-optimized subroutines
