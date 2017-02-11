@@ -111,6 +111,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
       nzjg=curr_tile%nzg_tile
       jmin=curr_tile%nx_tile_min-nxjg
       jmax=curr_tile%nx_tile_max+nxjg
+      kmin=0 ! 2D Case 
+      kmax=0 ! 2D case
       lmin=curr_tile%nz_tile_min-nzjg
       lmax=curr_tile%nz_tile_max+nzjg
       nxc=curr_tile%nx_cells_tile
@@ -124,12 +126,12 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
       END DO
       IF (isgathered) THEN
         currg=>aofgrid_tiles(ix,1,iz)
-        currg%extile=exg(jmin:jmax,0:0,lmin:lmax)
-        currg%eytile=eyg(jmin:jmax,0:0,lmin:lmax)
-        currg%eztile=ezg(jmin:jmax,0:0,lmin:lmax)
-        currg%bxtile=bxg(jmin:jmax,0:0,lmin:lmax)
-        currg%bytile=byg(jmin:jmax,0:0,lmin:lmax)
-        currg%bztile=bzg(jmin:jmax,0:0,lmin:lmax)
+        currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
+        currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
+        currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
+        currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
+        currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
+        currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
         DO ispecies=1, nspecies ! LOOP ON SPECIES
           ! - Get current tile properties
           ! - Init current tile variables
