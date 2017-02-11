@@ -124,12 +124,12 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg,eyg,ezg, &
       END DO
       IF (isgathered) THEN
         currg=>aofgrid_tiles(ix,1,iz)
-        currg%extile=exg(jmin:jmax,1:1,lmin:lmax)
-        currg%eytile=eyg(jmin:jmax,1:1,lmin:lmax)
-        currg%eztile=ezg(jmin:jmax,1:1,lmin:lmax)
-        currg%bxtile=bxg(jmin:jmax,1:1,lmin:lmax)
-        currg%bytile=byg(jmin:jmax,1:1,lmin:lmax)
-        currg%bztile=bzg(jmin:jmax,1:1,lmin:lmax)
+        currg%extile=exg(jmin:jmax,0:0,lmin:lmax)
+        currg%eytile=eyg(jmin:jmax,0:0,lmin:lmax)
+        currg%eztile=ezg(jmin:jmax,0:0,lmin:lmax)
+        currg%bxtile=bxg(jmin:jmax,0:0,lmin:lmax)
+        currg%bytile=byg(jmin:jmax,0:0,lmin:lmax)
+        currg%bztile=bzg(jmin:jmax,0:0,lmin:lmax)
         DO ispecies=1, nspecies ! LOOP ON SPECIES
           ! - Get current tile properties
           ! - Init current tile variables
