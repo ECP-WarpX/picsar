@@ -376,6 +376,8 @@ MODULE tiling
         ! Finally, add particle to tile
         curr%np_tile(1)=count
         curr%part_x(count)  = partx
+	! by default in 2D we set party to 0 
+	curr%part_y(count)  = 0. 
         curr%part_z(count)  = partz
         curr%part_ux(count) = partux
         curr%part_uy(count) = partuy
