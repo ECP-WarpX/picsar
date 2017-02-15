@@ -28,9 +28,11 @@
 !===============================================================================
 ! Contains shared data
 !===============================================================================
+
 !> @brief
-!> Module containing the Picsar constant parameters
-MODULE constants
+!> Module containing precision parameters (double, single, complex etc.)
+!> for declaration of ints, floats etc.
+MODULE PICSAR_precision
 !===============================================================================
 !>
 !> Float precision
@@ -41,8 +43,15 @@ INTEGER, PARAMETER :: isp = 4
 INTEGER, PARAMETER :: idp = 8
 !> logical precision
 INTEGER, PARAMETER :: lp = 8
-
+!> Complex precision
 INTEGER, PARAMETER :: cpx = 8
+END MODULE PICSAR_precision
+
+!> @brief
+!> Module containing the Picsar constant parameters
+MODULE constants
+!===============================================================================
+USE PICSAR_precision
 !> Electron mass
 REAL(num), PARAMETER :: emass   = 9.10938291e-31_num
 !> Proton mass
