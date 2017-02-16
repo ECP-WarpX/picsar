@@ -48,16 +48,17 @@ F90EXE_sources += esirkepov_3d.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
 
-F90EXE_sources += field_gathering_manager_3d.F90
+#F90EXE_sources += field_gathering_manager_3d.F90
 F90EXE_sources += field_gathering_manager_2d.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_gathering
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_gathering
 
-F90EXE_sources += field_gathering_on_3d.F90
-F90EXE_sources += field_gathering_o1_3d.F90
-F90EXE_sources += field_gathering_o2_3d.F90
-F90EXE_sources += field_gathering_o3_3d.F90
+#F90EXE_sources += field_gathering_on_3d.F90
+#F90EXE_sources += field_gathering_o1_3d.F90
+#F90EXE_sources += field_gathering_o2_3d.F90
+#F90EXE_sources += field_gathering_o3_3d.F90
+F90EXE_sources += warpx_field_gathering_on_3d.F90
 F90EXE_sources += field_gathering_on_2d.F90
 F90EXE_sources += field_gathering_o1_2d.F90
 F90EXE_sources += field_gathering_o2_2d.F90
