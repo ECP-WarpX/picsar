@@ -1072,6 +1072,10 @@ MODULE particle_boundary
                                   curr%part_x(i) = part_xyz + dx
                                   curr%part_ux(i) = - curr%part_ux(i)
                                   xbd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_x(i)=2*xmin-curr%part_x(i)
+                                  curr%part_ux(i)=0.
+                                  xbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz + length_x
                                 END SELECT
@@ -1089,6 +1093,10 @@ MODULE particle_boundary
                               CASE (2_idp) ! Reflecting
                                   curr%part_x(i) = part_xyz - dx
                                   curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_x(i)=2*xmax-curr%part_x(i)
+                                  curr%part_ux(i)=0.
                                   xbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz - length_x
@@ -1109,6 +1117,10 @@ MODULE particle_boundary
                                   curr%part_y(i) = part_xyz + dy
                                   curr%part_uy(i) = - curr%part_uy(i)
                                   ybd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_y(i)=2*ymin-curr%part_y(i)
+                                  curr%part_uy(i)=0.
+                                  ybd=0
                               CASE DEFAULT ! periodic
                                    curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -1126,6 +1138,10 @@ MODULE particle_boundary
                               CASE (2_idp) ! Reflecting
                                   curr%part_y(i) = part_xyz - dy
                                   curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_y(i)=2*ymax-curr%part_y(i)
+                                  curr%part_uy(i)=0.
                                   ybd=0
                               CASE DEFAULT ! periodic
                                   curr%part_y(i) = part_xyz - length_y
@@ -1146,6 +1162,10 @@ MODULE particle_boundary
                                 curr%part_z(i) = part_xyz + dz
                                 curr%part_uz(i) = - curr%part_uz(i)
                                 zbd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                curr%part_z(i)=2*zmin-curr%part_z(i)
+                                curr%part_uz(i)=0.
+                                zbd=0
                               CASE DEFAULT ! periodic
                                 curr%part_z(i) = part_xyz + length_z
                               END SELECT
@@ -1164,6 +1184,10 @@ MODULE particle_boundary
                               CASE (2_idp) ! Reflecting
                                   curr%part_z(i) = part_xyz - dz
                                   curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_z(i)=2*zmax-curr%part_z(i)
+                                  curr%part_uz(i)=0.
                                   zbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz - length_z
@@ -1338,6 +1362,10 @@ MODULE particle_boundary
                                   curr%part_x(i) = part_xyz + dx
                                   curr%part_ux(i) = - curr%part_ux(i)
                                   xbd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_x(i)=2*xmin-curr%part_x(i)
+                                  curr%part_ux(i)=0.
+                                  xbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz + length_x
                                 END SELECT
@@ -1353,6 +1381,10 @@ MODULE particle_boundary
                               CASE (2_idp) ! Reflecting
                                   curr%part_x(i) = part_xyz - dx
                                   curr%part_ux(i) = - curr%part_ux(i)
+                                  xbd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_x(i)=2*xmax-curr%part_x(i)
+                                  curr%part_ux(i)=0.
                                   xbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz - length_x
@@ -1372,6 +1404,10 @@ MODULE particle_boundary
                                   curr%part_y(i) = part_xyz + dy
                                   curr%part_uy(i) = - curr%part_uy(i)
                                   ybd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_y(i)=2*ymin-curr%part_y(i)
+                                  curr%part_uy(i)=0.
+                                  ybd=0
                               CASE DEFAULT ! periodic
                                    curr%part_y(i) = part_xyz + length_y
                                 END SELECT
@@ -1388,6 +1424,10 @@ MODULE particle_boundary
                               CASE (2_idp) ! Reflecting
                                   curr%part_y(i) = part_xyz - dy
                                   curr%part_uy(i) = - curr%part_uy(i)
+                                  ybd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_y(i)=2*ymax-curr%part_y(i)
+                                  curr%part_uy(i)=0.
                                   ybd=0
                               CASE DEFAULT ! periodic
                                   curr%part_y(i) = part_xyz - length_y
@@ -1407,6 +1447,10 @@ MODULE particle_boundary
                                   curr%part_z(i) = part_xyz + dz
                                   curr%part_uz(i) = - curr%part_uz(i)
                                   zbd=0
+                                CASE (3_idp) ! Reinjecting (not thermal for now)
+                                    curr%part_z(i)=2*zmin-curr%part_z(i)
+                                    curr%part_uz(i)=0.
+                                    zbd=0
                                 CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz + length_z
                                 END SELECT
@@ -1424,6 +1468,10 @@ MODULE particle_boundary
                               CASE (2_idp) ! Reflecting
                                   curr%part_z(i) = part_xyz - dz
                                   curr%part_uz(i) = - curr%part_uz(i)
+                                  zbd=0
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_z(i)=2*zmax-curr%part_z(i)
+                                  curr%part_uz(i)=0.
                                   zbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz - length_z
@@ -1644,6 +1692,10 @@ MODULE particle_boundary
                                 CALL rm_particles_from_species_2d(currsp, &
                                 ixtile, iztile, i)
                                 CYCLE
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_x(i)=2*xmin-curr%part_x(i)
+                                  curr%part_ux(i)=0.
+                                  xbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz + length_x
                                 END SELECT
@@ -1658,6 +1710,10 @@ MODULE particle_boundary
                                 CALL rm_particles_from_species_2d(currsp, &
                                 ixtile, iztile, i)
                                 CYCLE
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_x(i)=2*xmax-curr%part_x(i)
+                                  curr%part_ux(i)=0.
+                                  xbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz - length_x
                                 END SELECT
@@ -1674,6 +1730,10 @@ MODULE particle_boundary
                                 CALL rm_particles_from_species_2d(currsp, &
                                  ixtile, iztile, i)
                                 CYCLE
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_z(i)=2*zmin-curr%part_z(i)
+                                  curr%part_uz(i)=0.
+                                  zbd=0
                               CASE DEFAULT ! periodic
                                 curr%part_z(i) = part_xyz + length_z
                               END SELECT
@@ -1690,6 +1750,10 @@ MODULE particle_boundary
                                 CALL rm_particles_from_species_2d(currsp, &
                                 ixtile, iztile, i)
                                 CYCLE
+                              CASE (3_idp) ! Reinjecting (not thermal for now)
+                                  curr%part_z(i)=2*zmax-curr%part_z(i)
+                                  curr%part_uz(i)=0.
+                                  zbd=0
                               CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz - length_z
                                 END SELECT

@@ -141,7 +141,8 @@ class EM3DPXR(EM3DFFT):
                       'lvec_fieldgathe':0,
                       'mpi_buf_size':2000,
                       'sorting':None,
-                      'l_debug':0
+                      'l_debug':0,
+                      'l_reinject':1,
                       }
 
     def __init__(self,**kw):
@@ -178,7 +179,7 @@ class EM3DPXR(EM3DFFT):
           self.allocatefieldarraysPXR()
         else:
           EM3DFFT.finalize(self)
-        
+
         Species.addparticles = Species.addpart = addparticlesPXR
 
     def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
@@ -263,17 +264,26 @@ class EM3DPXR(EM3DFFT):
           pxr.pbound_z_min=0
 
         if (top.pboundnz == absorb):
-            pxr.pbound_z_max=1
+            if (self.l_reinject==1):
+                pxr.pbound_z_max=3
+            else:
+                pxr.pbound_z_max=1
         elif(top.pboundnz == reflect):
             pxr.pbound_z_max=2
         else: # Default is periodic
             pxr.pbound_z_max=0
 
         if (top.pboundxy == absorb):
-            pxr.pbound_x_min=1
-            pxr.pbound_x_max=1
-            pxr.pbound_y_min=1
-            pxr.pbound_y_max=1
+            if (self.l_reinject==1):
+                pxr.pbound_x_min=3
+                pxr.pbound_x_max=3
+                pxr.pbound_y_min=3
+                pxr.pbound_y_max=3
+            else:
+                pxr.pbound_x_min=1
+                pxr.pbound_x_max=1
+                pxr.pbound_y_min=1
+                pxr.pbound_y_max=1                
         elif(top.pboundxy == reflect):
             pxr.pbound_x_min=2
             pxr.pbound_x_max=2
@@ -514,14 +524,14 @@ class EM3DPXR(EM3DFFT):
         top.pgroup.ns=1
         top.pgroup.nps=0
         top.pgroup.gchange()
-            
+
         # --- mirror PXR tile structure in Warp with list of pgroups
         if (self.l_debug): print(" Mirror PXR tile structure in Warp with list of pgroups")
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]
             s.sw0=s.sw*1.
-                                            
+
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]
