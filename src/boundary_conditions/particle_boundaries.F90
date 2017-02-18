@@ -622,10 +622,12 @@ MODULE particle_boundary
   ENDIF
   ALLOCATE(partpid(npid))
   iy=1
-  !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile,ipx,ipz, &
-  !$OMP partx,party,partz,partux,partuy,partuz,gaminv,partpid,indx,indy,indz,curr_tile,nptile)    &
-  !$OMP SHARED(iy,nspecies,npid,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local, &
-    !$OMP x_min_local_part,y_min_local_part,z_min_local_part,x_max_local_part,y_max_local_part,z_max_local_part,dx,dy,dz) NUM_THREADS(nthreads_loop1)
+  !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr,ispecies,nx0_grid_tile, &
+  !$OMP ny0_grid_tile,nz0_grid_tile,ipx,ipz,partx,party,partz,partux,partuy, &
+  !$OMP partuz,gaminv,partpid,indx,indy,indz,curr_tile,nptile) SHARED(iy,nspecies,npid,nthreads_loop2,    &
+  !$OMP species_parray,ntilex,ntiley,ntilez,x_min_local,y_min_local,z_min_local,  &
+  !$OMP x_min_local_part,y_min_local_part, z_min_local_part,x_max_local_part, &
+  !$OMP y_max_local_part,z_max_local_part,dx,dy,dz) NUM_THREADS(nthreads_loop1)
     DO ispecies=1, nspecies ! LOOP ON SPECIES
         curr=> species_parray(ispecies)
         ! Get first tiles dimensions (may be different from last tile)
@@ -634,8 +636,10 @@ MODULE particle_boundary
         nz0_grid_tile = curr%array_of_tiles(1,1,1)%nz_grid_tile
         DO ipz=1,3
           DO ipx=1,3
-        !$OMP PARALLEL DO DEFAULT(NONE) SHARED(iy,curr,npid,ntilex,ntiley,ntilez,x_min_local_part,y_min_local_part,z_min_local_part, &
-        !$OMP x_max_local_part,y_max_local_part,z_max_local_part, x_min_local, y_min_local, z_min_local,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
+        !$OMP PARALLEL DO DEFAULT(NONE) SHARED(iy,curr,npid,ntilex,ntiley,ntilez,x_min_local_part, &
+        !$OMP y_min_local_part,z_min_local_part, x_max_local_part,y_max_local_part, &
+        !$OMP z_max_local_part, x_min_local, y_min_local, z_min_local,dx,dy,dz,     &
+        !$OMP nx0_grid_tile,ny0_grid_tile,nz0_grid_tile)  &
         !$OMP FIRSTPRIVATE(ipx,ipz) &
         !$OMP PRIVATE(ix,iz,i,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partpid, &
         !$OMP indx,indy,indz) COLLAPSE(2) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
@@ -2042,8 +2046,9 @@ MODULE particle_boundary
   !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,xbd,ybd,zbd,gaminv,&
   !$OMP partpid,indx,indy,indz,partx,party,partz,curr_tile,nptile,partux,partuy,partuz,&
   !$OMP j) &
-  !$OMP SHARED(npid,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local_part,y_min_local_part,z_min_local_part, &
-  !$OMP length_x_part,length_y_part,length_z_part,dxs2,dys2,dzs2, xmin_part,xmax_part,ymin_part,ymax_part,zmin_part,zmax_part, &
+  !$OMP SHARED(npid,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local_part, &
+  !$OMP y_min_local_part,z_min_local_part,length_x_part,length_y_part,length_z_part,dxs2,dys2,dzs2, &
+  !$OMP xmin_part,xmax_part,ymin_part,ymax_part,zmin_part,zmax_part, &
   !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary,  &
   !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, x_min_local,y_min_local,z_min_local, &
   !$OMP x_max_local_part,y_max_local_part,z_max_local_part,dx,dy,dz,mpi_npart,tilebuf,mpi_buf_size,lvect) &
@@ -2071,8 +2076,10 @@ MODULE particle_boundary
           !$OMP PARALLEL DO DEFAULT(NONE) &
           !$OMP SHARED(npid,curr,ntilex,ntiley,ntilez,x_min_local_part,y_min_local_part,z_min_local_part, &
           !$OMP x_max_local_part,y_max_local_part,z_max_local_part,dx,dy,dz, nx0_grid_tile,ny0_grid_tile,nz0_grid_tile, &
-          !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max,x_min_local,y_min_local,z_min_local, &
-          !$OMP length_x_part,length_y_part,length_z_part,tilebuf,mpi_npart,xmin_part,xmax_part,ymin_part,ymax_part,zmin_part,zmax_part, &
+          !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min, &
+          !$OMP pbound_z_max,x_min_local,y_min_local,z_min_local, &
+          !$OMP length_x_part,length_y_part,length_z_part,tilebuf,mpi_npart, &
+          !$OMP xmin_part,xmax_part,ymin_part,ymax_part,zmin_part,zmax_part, &
           !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary, &
           !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect)  &
           !$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
