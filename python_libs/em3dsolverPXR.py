@@ -261,9 +261,9 @@ class EM3DPXR(EM3DFFT):
         if (self.l_debug): print(" Setup particle boundaries for PXR")
         if (top.pbound0 == absorb):
           if (self.l_reinject):
-              pxr.pbound_z_min=1
-          else:
               pxr.pbound_z_min=3
+          else:
+              pxr.pbound_z_min=1
         elif(top.pbound0 == reflect):
           pxr.pbound_z_min=2
         else: # Default is periodic
@@ -271,9 +271,9 @@ class EM3DPXR(EM3DFFT):
 
         if (top.pboundnz == absorb):
             if (self.l_reinject):
-                pxr.pbound_z_max=1
-            else:
                 pxr.pbound_z_max=3
+            else:
+                pxr.pbound_z_max=1
         elif(top.pboundnz == reflect):
             pxr.pbound_z_max=2
         else: # Default is periodic
@@ -514,7 +514,19 @@ class EM3DPXR(EM3DFFT):
         # MPI buffer size for particle exchange
         pxr.mpi_buf_size = self.mpi_buf_size
 
-
+        print("MIN AND MAX")
+        print("x_min_local,x_max_local",pxr.x_min_local,pxr.x_max_local)
+        print("x_min_local_part,x_max_local_part",pxr.x_min_local_part,pxr.x_max_local_part)
+        print("y_min_local,y_max_local",pxr.y_min_local,pxr.y_max_local)
+        print("y_min_local_part,y_max_local_part",pxr.y_min_local_part,pxr.y_max_local_part)
+        print("z_min_local,z_max_local",pxr.z_min_local,pxr.z_max_local)
+        print("z_min_local_part,z_max_local_part",pxr.z_min_local_part,pxr.z_max_local_part)      
+        print("xmin,xmax",pxr.xmin, pxr.xmax)
+        print("xmin_part,xmax_part",pxr.xmin_part,pxr.xmax_part)      
+        print("ymin,ymax",pxr.ymin, pxr.ymax)
+        print("ymi_part,ymax_part",pxr.ymin_part,pxr.ymax_part) 
+        print("zmin,zmax",pxr.zmin, pxr.zmax)
+        print("zmi_part,zmax_part",pxr.zmin_part,pxr.zmax_part)         
         # Type of field gathering
         pxr.l4symtry=w3d.l4symtry
         pxr.l_lower_order_in_v = self.l_lower_order_in_v

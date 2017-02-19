@@ -377,14 +377,14 @@ MODULE particle_boundary
                         partpid=curr_tile%pid(i,1:npid)
 
                         ! Case 1: if particle did not leave tile nothing to do
-                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))             &
-                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))           &
+                        IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT. curr_tile%x_tile_max))    &
+                        .AND. ((party .GE. curr_tile%y_tile_min) .AND. (party .LT. curr_tile%y_tile_max))  &
                         .AND. ((partz .GE. curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) &
                         CYCLE
 
                         ! Case 2: if particle left MPI domain nothing to do now
-                        IF ((partx .LT. x_min_local_part) .OR. (partx .GE. x_max_local_part))       CYCLE
-                        IF ((party .LT. y_min_local_part) .OR. (party .GE. y_max_local_part))       CYCLE
+                        IF ((partx .LT. x_min_local_part) .OR. (partx .GE. x_max_local_part)) CYCLE
+                        IF ((party .LT. y_min_local_part) .OR. (party .GE. y_max_local_part)) CYCLE
                         IF ((partz .LT. z_min_local_part) .OR. (partz .GE. z_max_local_part)) CYCLE
 
                         ! Case 3: particles changed tile. Tranfer particle to new tile
@@ -1079,9 +1079,17 @@ MODULE particle_boundary
                                   curr%part_ux(i) = - curr%part_ux(i)
                                   xbd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_x(i)=2*xmin_part-curr%part_x(i)
+                                  curr%part_x(i)=2._num*xmin_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
-                                  xbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz + length_x_part
                                 END SELECT
@@ -1101,9 +1109,17 @@ MODULE particle_boundary
                                   curr%part_ux(i) = - curr%part_ux(i)
                                   xbd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_x(i)=2*xmax_part-curr%part_x(i)
+                                  curr%part_x(i)=2._num*xmax_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
-                                  xbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz - length_x_part
                                 END SELECT
@@ -1124,9 +1140,17 @@ MODULE particle_boundary
                                   curr%part_uy(i) = - curr%part_uy(i)
                                   ybd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_y(i)=2*ymin_part-curr%part_y(i)
+                                  curr%part_y(i)=2._num*ymin_part-curr%part_y(i)
                                   curr%part_uy(i)=0.
-                                  ybd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                    curr%part_y(i) = part_xyz + length_y_part
                                 END SELECT
@@ -1146,9 +1170,17 @@ MODULE particle_boundary
                                   curr%part_uy(i) = - curr%part_uy(i)
                                   ybd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_y(i)=2*ymax_part-curr%part_y(i)
+                                  curr%part_y(i)=2._num*ymax_part-curr%part_y(i)
                                   curr%part_uy(i)=0.
-                                  ybd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_y(i) = part_xyz - length_y_part
                                 END SELECT
@@ -1169,9 +1201,17 @@ MODULE particle_boundary
                                 curr%part_uz(i) = - curr%part_uz(i)
                                 zbd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                curr%part_z(i)=2*zmin_part-curr%part_z(i)
+                                curr%part_z(i)=2._num*zmin_part-curr%part_z(i)
                                 curr%part_uz(i)=0.
-                                zbd=0
+                                ! Sanity check (keep particle in same tile)
+                                curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                ! Don't remove particle 
+                                CYCLE
                               CASE DEFAULT ! periodic
                                 curr%part_z(i) = part_xyz + length_z_part
                               END SELECT
@@ -1192,9 +1232,17 @@ MODULE particle_boundary
                                   curr%part_uz(i) = - curr%part_uz(i)
                                   zbd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_z(i)=2*zmax_part-curr%part_z(i)
+                                  curr%part_z(i)=2._num*zmax_part-curr%part_z(i)
                                   curr%part_uz(i)=0.
-                                  zbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz - length_z_part
                                 END SELECT
@@ -1371,7 +1419,15 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)=2*xmin_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
-                                  xbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz + length_x_part
                                 END SELECT
@@ -1391,7 +1447,15 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)=2*xmax_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
-                                  xbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz - length_x_part
                                 END SELECT
@@ -1413,7 +1477,15 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_y(i)=2*ymin_part-curr%part_y(i)
                                   curr%part_uy(i)=0.
-                                  ybd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                    curr%part_y(i) = part_xyz + length_y_part
                                 END SELECT
@@ -1434,7 +1506,15 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_y(i)=2*ymax_part-curr%part_y(i)
                                   curr%part_uy(i)=0.
-                                  ybd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_y(i) = part_xyz - length_y_part
                                 END SELECT
@@ -1456,7 +1536,15 @@ MODULE particle_boundary
                                 CASE (3_idp) ! Reinjecting (not thermal for now)
                                     curr%part_z(i)=2*zmin_part-curr%part_z(i)
                                     curr%part_uz(i)=0.
-                                    zbd=0
+                                    ! Sanity check (keep particle in same tile)
+                                    curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                    curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                    curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                    curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                    curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                    curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                               
+                                    ! Don't remove particle 
+                                    CYCLE
                                 CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz + length_z_part
                                 END SELECT
@@ -1478,7 +1566,15 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_z(i)=2*zmax_part-curr%part_z(i)
                                   curr%part_uz(i)=0.
-                                  zbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
+                                  curr%part_y(i)=MAX(curr%part_y(i),curr%y_tile_min+0.5_num*dy)
+                                  curr%part_y(i)=MIN(curr%part_y(i),curr%y_tile_max-0.5_num*dy)                          
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE         
                               CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz - length_z_part
                                 END SELECT
@@ -1699,9 +1795,15 @@ MODULE particle_boundary
                                 ixtile, iztile, i)
                                 CYCLE
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_x(i)=2*xmin_part-curr%part_x(i)
-                                  curr%part_ux(i)=0.
-                                  xbd=0
+                                  curr%part_x(i)=2.0_num*xmin_part-curr%part_x(i)
+                                  curr%part_ux(i)=0.                                 
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)   
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz + length_x_part
                                 END SELECT
@@ -1717,9 +1819,15 @@ MODULE particle_boundary
                                 ixtile, iztile, i)
                                 CYCLE
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_x(i)=2*xmax_part-curr%part_x(i)
+                                  curr%part_x(i)= 2.0_num*xmax_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
-                                  xbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)   
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)       
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_x(i) = part_xyz - length_x_part
                                 END SELECT
@@ -1737,9 +1845,16 @@ MODULE particle_boundary
                                  ixtile, iztile, i)
                                 CYCLE
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_z(i)=2*zmin_part-curr%part_z(i)
+                                  curr%part_z(i)= 2.0_num*zmin_part-curr%part_z(i)
                                   curr%part_uz(i)=0.
-                                  zbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)   
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                 curr%part_z(i) = part_xyz + length_z_part
                               END SELECT
@@ -1757,9 +1872,15 @@ MODULE particle_boundary
                                 ixtile, iztile, i)
                                 CYCLE
                               CASE (3_idp) ! Reinjecting (not thermal for now)
-                                  curr%part_z(i)=2*zmin_part-curr%part_z(i)
+                                  curr%part_z(i)= 2.0_num*zmax_part-curr%part_z(i)
                                   curr%part_uz(i)=0.
-                                  zbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
+                                  curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)   
+                                  curr%part_z(i)=MAX(curr%part_z(i),curr%z_tile_min+0.5_num*dz)
+                                  curr%part_z(i)=MIN(curr%part_z(i),curr%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE
                               CASE DEFAULT ! periodic
                                   curr%part_z(i) = part_xyz - length_z_part
                                 END SELECT
@@ -2150,10 +2271,17 @@ MODULE particle_boundary
                          CASE (1_idp) ! absorbing
                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                        CASE (3_idp) ! Reinjecting (not thermal for now)
-                           curr_tile%part_x(i)=2*xmin_part-curr_tile%part_x(i)
-                           curr_tile%part_ux(i)=0.
-                           xbd=0
-                         CYCLE
+                          curr_tile%part_x(i)=2*xmin_part-curr_tile%part_x(i)
+                          curr_tile%part_ux(i)=0.
+                          ! Sanity check (keep particle in same tile)
+                          curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
+                          curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
+                          curr_tile%part_y(i)=MAX(curr_tile%part_y(i),curr_tile%y_tile_min+0.5_num*dy)
+                          curr_tile%part_y(i)=MIN(curr_tile%part_y(i),curr_tile%y_tile_max-0.5_num*dy)                          
+                          curr_tile%part_z(i)=MAX(curr_tile%part_z(i),curr_tile%z_tile_min+0.5_num*dz)
+                          curr_tile%part_z(i)=MIN(curr_tile%part_z(i),curr_tile%z_tile_max-0.5_num*dz)                                  
+                          ! Don't remove particle 
+                          CYCLE
                          CASE DEFAULT ! periodic
                           curr_tile%part_x(i) = partx + length_x_part
                         END SELECT
@@ -2170,7 +2298,15 @@ MODULE particle_boundary
                           CASE (3_idp) ! Reinjecting (not thermal for now)
                               curr_tile%part_x(i)=2*xmax_part-curr_tile%part_x(i)
                               curr_tile%part_ux(i)=0.
-                              xbd=0
+                              ! Sanity check (keep particle in same tile)
+                              curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
+                              curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
+                              curr_tile%part_y(i)=MAX(curr_tile%part_y(i),curr_tile%y_tile_min+0.5_num*dy)
+                              curr_tile%part_y(i)=MIN(curr_tile%part_y(i),curr_tile%y_tile_max-0.5_num*dy)
+                              curr_tile%part_z(i)=MAX(curr_tile%part_z(i),curr_tile%z_tile_min+0.5_num*dz)
+                              curr_tile%part_z(i)=MIN(curr_tile%part_z(i),curr_tile%z_tile_max-0.5_num*dz)                                  
+                              ! Don't remove particle 
+                              CYCLE
                            CASE DEFAULT ! periodic
                           curr_tile%part_x(i) = partx - length_x_part
                         END SELECT
@@ -2188,7 +2324,15 @@ MODULE particle_boundary
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_y(i)=2*ymin_part-curr_tile%part_y(i)
                             curr_tile%part_uy(i)=0.
-                            ybd=0
+                            ! Sanity check (keep particle in same tile)
+                            curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
+                            curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
+                            curr_tile%part_y(i)=MAX(curr_tile%part_y(i),curr_tile%y_tile_min+0.5_num*dy)
+                            curr_tile%part_y(i)=MIN(curr_tile%part_y(i),curr_tile%y_tile_max-0.5_num*dy)                          
+                            curr_tile%part_z(i)=MAX(curr_tile%part_z(i),curr_tile%z_tile_min+0.5_num*dz)
+                            curr_tile%part_z(i)=MIN(curr_tile%part_z(i),curr_tile%z_tile_max-0.5_num*dz) 
+                            ! Don't remove particle 
+                            CYCLE
                         CASE DEFAULT ! periodic
                           curr_tile%part_y(i) = party + length_y_part
                         END SELECT
@@ -2204,7 +2348,15 @@ MODULE particle_boundary
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_y(i)=2*ymax_part-curr_tile%part_y(i)
                             curr_tile%part_uy(i)=0.
-                            ybd=0
+                            ! Sanity check (keep particle in same tile)
+                            curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
+                            curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
+                            curr_tile%part_y(i)=MAX(curr_tile%part_y(i),curr_tile%y_tile_min+0.5_num*dy)
+                            curr_tile%part_y(i)=MIN(curr_tile%part_y(i),curr_tile%y_tile_max-0.5_num*dy)                          
+                            curr_tile%part_z(i)=MAX(curr_tile%part_z(i),curr_tile%z_tile_min+0.5_num*dz)
+                            curr_tile%part_z(i)=MIN(curr_tile%part_z(i),curr_tile%z_tile_max-0.5_num*dz)
+                            ! Don't remove particle 
+                            CYCLE                            
                         CASE DEFAULT ! periodic
                           curr_tile%part_y(i) = party - length_y_part
                         END SELECT
@@ -2222,7 +2374,15 @@ MODULE particle_boundary
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_z(i)=2*zmin_part-curr_tile%part_z(i)
                             curr_tile%part_uz(i)=0.
-                            zbd=0
+                            ! Sanity check (keep particle in same tile)
+                            curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
+                            curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
+                            curr_tile%part_y(i)=MAX(curr_tile%part_y(i),curr_tile%y_tile_min+0.5_num*dy)
+                            curr_tile%part_y(i)=MIN(curr_tile%part_y(i),curr_tile%y_tile_max-0.5_num*dy)                          
+                            curr_tile%part_z(i)=MAX(curr_tile%part_z(i),curr_tile%z_tile_min+0.5_num*dz)
+                            curr_tile%part_z(i)=MIN(curr_tile%part_z(i),curr_tile%z_tile_max-0.5_num*dz)
+                            ! Don't remove particle 
+                            CYCLE         
                           CASE DEFAULT ! periodic
                             curr_tile%part_z(i) = partz + length_z_part
                           END SELECT
@@ -2239,7 +2399,15 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr_tile%part_z(i)=2*zmax_part-curr_tile%part_z(i)
                                   curr_tile%part_uz(i)=0.
-                                  zbd=0
+                                  ! Sanity check (keep particle in same tile)
+                                  curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
+                                  curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
+                                  curr_tile%part_y(i)=MAX(curr_tile%part_y(i),curr_tile%y_tile_min+0.5_num*dy)
+                                  curr_tile%part_y(i)=MIN(curr_tile%part_y(i),curr_tile%y_tile_max-0.5_num*dy)
+                                  curr_tile%part_z(i)=MAX(curr_tile%part_z(i),curr_tile%z_tile_min+0.5_num*dz)
+                                  curr_tile%part_z(i)=MIN(curr_tile%part_z(i),curr_tile%z_tile_max-0.5_num*dz)                                  
+                                  ! Don't remove particle 
+                                  CYCLE         
                               CASE DEFAULT ! periodic
                                   curr_tile%part_z(i) = partz - length_z_part
                       END SELECT
