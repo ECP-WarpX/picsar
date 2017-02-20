@@ -288,6 +288,9 @@ endif
 
 FARGS+= $(LARCH)
 
+ifeq ($(MODE),library)
+	FARGS += -fPIC
+endif
 # ________________________________________________________
 # Not used for the moment
 #FSOURCE= $(wildcard $(SRCDIR)/*.F90)

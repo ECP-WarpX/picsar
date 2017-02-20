@@ -49,6 +49,11 @@ sections *Compiling* and *Running simulations* below.
 * We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`. 
 * Thanks to Forthon, we are able to access all high performance routines of PICSAR from python. This allows us to use PICSAR routines from WARP and vice-versa. 
 
+#### D. Build Picsar as Library
+* Picsar can be built as a dynamic or static library to provide tools for other PIC codes.
+To compile picsar as a library you need to swith $(MODE) variable in Makefile to "library", then run make with target lib:
+make lib
+both static and dynamic picsar lib are generated in lib/ file.
 
 ## **2. Doxygen documentation**
 
