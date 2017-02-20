@@ -141,7 +141,11 @@ class EM3DPXR(EM3DFFT):
                       'lvec_fieldgathe':0,
                       'mpi_buf_size':2000,
                       'sorting':None,
-                      'l_debug':0
+                      'l_debug':0,
+                      'l_reinject':0,
+                      'offset_x_part_grid':[0.,0.],
+                      'offset_y_part_grid':[0.,0.],
+                      'offset_z_part_grid':[0.,0.],
                       }
 
     def __init__(self,**kw):
@@ -178,7 +182,7 @@ class EM3DPXR(EM3DFFT):
           self.allocatefieldarraysPXR()
         else:
           EM3DFFT.finalize(self)
-        
+
         Species.addparticles = Species.addpart = addparticlesPXR
 
     def convertindtoproc(self,ix,iy,iz,nx,ny,nz):
@@ -256,24 +260,36 @@ class EM3DPXR(EM3DFFT):
         # Particle boundaries for PXR
         if (self.l_debug): print(" Setup particle boundaries for PXR")
         if (top.pbound0 == absorb):
-          pxr.pbound_z_min=1
+          if (self.l_reinject):
+              pxr.pbound_z_min=3
+          else:
+              pxr.pbound_z_min=1
         elif(top.pbound0 == reflect):
           pxr.pbound_z_min=2
         else: # Default is periodic
           pxr.pbound_z_min=0
 
         if (top.pboundnz == absorb):
-            pxr.pbound_z_max=1
+            if (self.l_reinject):
+                pxr.pbound_z_max=3
+            else:
+                pxr.pbound_z_max=1
         elif(top.pboundnz == reflect):
             pxr.pbound_z_max=2
         else: # Default is periodic
             pxr.pbound_z_max=0
 
         if (top.pboundxy == absorb):
-            pxr.pbound_x_min=1
-            pxr.pbound_x_max=1
-            pxr.pbound_y_min=1
-            pxr.pbound_y_max=1
+            if (self.l_reinject):
+                pxr.pbound_x_min=3
+                pxr.pbound_x_max=3
+                pxr.pbound_y_min=3
+                pxr.pbound_y_max=3
+            else:
+                pxr.pbound_x_min=1
+                pxr.pbound_x_max=1
+                pxr.pbound_y_min=1
+                pxr.pbound_y_max=1
         elif(top.pboundxy == reflect):
             pxr.pbound_x_min=2
             pxr.pbound_x_max=2
@@ -311,7 +327,7 @@ class EM3DPXR(EM3DFFT):
         pxr.nyjguards = self.nyguard
         pxr.nzjguards = self.nzguard
 
-        # --- grid dimensions
+        # --- Grid domain extents and dimensions
         pxr.xmin = w3d.xmmin
         pxr.ymin = w3d.ymmin
         pxr.zmin = w3d.zmmin
@@ -342,6 +358,57 @@ class EM3DPXR(EM3DFFT):
         pxr.length_x = pxr.xmax-pxr.xmin
         pxr.length_y = pxr.ymax-pxr.ymin
         pxr.length_z = pxr.zmax-pxr.zmin
+
+        # --- Particle domain extents and dimensions
+        # Set offset Grid/part in PXR:
+        pxr.offset_grid_part_x_min = self.offset_x_part_grid[0]
+        pxr.offset_grid_part_x_max = self.offset_x_part_grid[1]
+        pxr.offset_grid_part_y_min = self.offset_y_part_grid[0]
+        pxr.offset_grid_part_y_max = self.offset_y_part_grid[1]
+        pxr.offset_grid_part_z_min = self.offset_z_part_grid[0]
+        pxr.offset_grid_part_z_max = self.offset_z_part_grid[1]
+
+        # Global part boundaries
+        pxr.xmin_part=pxr.xmin+pxr.offset_grid_part_x_min
+        pxr.ymin_part=pxr.ymin+pxr.offset_grid_part_y_min
+        pxr.zmin_part=pxr.zmin+pxr.offset_grid_part_z_min
+        pxr.xmax_part=pxr.xmax+pxr.offset_grid_part_x_max
+        pxr.ymax_part=pxr.ymax+pxr.offset_grid_part_y_max
+        pxr.zmax_part=pxr.zmax+pxr.offset_grid_part_z_max
+
+        # Local part boundaries
+        # - Along X
+        if (pxr.x_min_boundary):
+            pxr.x_min_local_part = pxr.xmin_part
+        else:
+            pxr.x_min_local_part = pxr.x_min_local
+        if (pxr.x_max_boundary):
+            pxr.x_max_local_part = pxr.xmax_part
+        else:
+            pxr.x_max_local_part = pxr.x_max_local
+        # - Along Y
+        if (pxr.y_min_boundary):
+            pxr.y_min_local_part = pxr.ymin_part
+        else:
+            pxr.y_min_local_part = pxr.y_min_local
+        if (pxr.y_max_boundary):
+            pxr.y_max_local_part = pxr.ymax_part
+        else:
+            pxr.y_max_local_part = pxr.y_max_local
+        # - Along Z
+        if (pxr.z_min_boundary):
+            pxr.z_min_local_part = pxr.zmin_part
+        else:
+            pxr.z_min_local_part = pxr.z_min_local
+        if (pxr.z_max_boundary):
+            pxr.z_max_local_part = pxr.zmax_part
+        else:
+            pxr.z_max_local_part = pxr.z_max_local
+
+        # Particle domain extents
+        pxr.length_x_part = pxr.xmax_part - pxr.xmin_part
+        pxr.length_y_part = pxr.ymax_part - pxr.ymin_part
+        pxr.length_z_part = pxr.zmax_part - pxr.zmin_part
 
         # INIT MPI_DATA FOR PICSAR
         # Init communicator variable in picsar
@@ -447,7 +514,19 @@ class EM3DPXR(EM3DFFT):
         # MPI buffer size for particle exchange
         pxr.mpi_buf_size = self.mpi_buf_size
 
-
+        print("MIN AND MAX")
+        print("x_min_local,x_max_local",pxr.x_min_local,pxr.x_max_local)
+        print("x_min_local_part,x_max_local_part",pxr.x_min_local_part,pxr.x_max_local_part)
+        print("y_min_local,y_max_local",pxr.y_min_local,pxr.y_max_local)
+        print("y_min_local_part,y_max_local_part",pxr.y_min_local_part,pxr.y_max_local_part)
+        print("z_min_local,z_max_local",pxr.z_min_local,pxr.z_max_local)
+        print("z_min_local_part,z_max_local_part",pxr.z_min_local_part,pxr.z_max_local_part)      
+        print("xmin,xmax",pxr.xmin, pxr.xmax)
+        print("xmin_part,xmax_part",pxr.xmin_part,pxr.xmax_part)      
+        print("ymin,ymax",pxr.ymin, pxr.ymax)
+        print("ymi_part,ymax_part",pxr.ymin_part,pxr.ymax_part) 
+        print("zmin,zmax",pxr.zmin, pxr.zmax)
+        print("zmi_part,zmax_part",pxr.zmin_part,pxr.zmax_part)         
         # Type of field gathering
         pxr.l4symtry=w3d.l4symtry
         pxr.l_lower_order_in_v = self.l_lower_order_in_v
@@ -514,14 +593,14 @@ class EM3DPXR(EM3DFFT):
         top.pgroup.ns=1
         top.pgroup.nps=0
         top.pgroup.gchange()
-            
+
         # --- mirror PXR tile structure in Warp with list of pgroups
         if (self.l_debug): print(" Mirror PXR tile structure in Warp with list of pgroups")
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]
             s.sw0=s.sw*1.
-                                            
+
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]

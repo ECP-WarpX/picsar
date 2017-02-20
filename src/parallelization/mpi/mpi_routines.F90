@@ -498,6 +498,8 @@ MODULE mpi_routines
 
     ENDIF
 
+
+
   END SUBROUTINE setup_communicator
 
 
@@ -657,6 +659,57 @@ MODULE mpi_routines
     CALL allocate_grid_quantities()
     start_time = MPI_WTIME()
 
+    ! ----- Set up particle domain extents
+
+
+    ! ---- Set up local boundaries
+    IF (x_min_boundary) THEN
+       x_min_local_part = x_min_local+offset_grid_part_x_min
+    ELSE
+      x_min_local_part = x_min_local
+    ENDIF
+
+    IF (x_max_boundary) THEN
+       x_max_local_part = x_max_local+offset_grid_part_x_max
+    ELSE
+      x_max_local_part = x_max_local
+    ENDIF
+
+    IF (y_min_boundary) THEN
+       y_min_local_part = y_min_local+offset_grid_part_y_min
+    ELSE
+      y_min_local_part = y_min_local
+    ENDIF
+
+    IF (y_max_boundary) THEN
+       y_max_local_part = y_max_local+offset_grid_part_y_max
+    ELSE
+      y_max_local_part = y_max_local
+    ENDIF
+
+    IF (z_min_boundary) THEN
+       z_min_local_part = z_min_local+offset_grid_part_z_min
+    ELSE
+      z_min_local_part = z_min_local
+    ENDIF
+
+    IF (z_max_boundary) THEN
+       z_max_local_part = z_max_local+offset_grid_part_z_max
+    ELSE
+      z_max_local_part = z_max_local
+    ENDIF
+
+    ! ---- set up global boundaries
+    xmin_part=xmin+offset_grid_part_x_min
+    xmax_part=xmax+offset_grid_part_x_max
+    ymin_part=ymin+offset_grid_part_y_min
+    ymax_part=ymax+offset_grid_part_y_max
+    zmin_part=zmin+offset_grid_part_z_min
+    zmax_part=zmax+offset_grid_part_z_max
+
+    length_x_part = xmax_part - xmin_part
+    length_y_part = ymax_part - ymin_part
+    length_z_part = zmax_part - zmin_part
   END SUBROUTINE mpi_initialise
 
   ! ____________________________________________________________________________

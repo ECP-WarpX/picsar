@@ -995,7 +995,7 @@ MODULE shared_data
   !> This flag is true if the MPI rank is at the superior z boundary
   LOGICAL(lp)  :: z_max_boundary
 
-  !> Type of boundary condition at the inferior x boundary
+  !> Type of particle boundary condition at the inferior x boundary
   INTEGER(idp) :: pbound_x_min
   !> Type of boundary condition at the superior x boundary
   INTEGER(idp) :: pbound_x_max
@@ -1007,6 +1007,7 @@ MODULE shared_data
   INTEGER(idp) :: pbound_z_min
   !> Type of boundary condition at the superior z boundary
   INTEGER(idp) :: pbound_z_max
+
 
   ! The location of the processors
   !> Minimum cell number in x for each MPI process
@@ -1120,6 +1121,60 @@ MODULE shared_data
   REAL(num)                           :: z_min_local
   !> Local maximal grid limit in z
   REAL(num)                           :: z_max_local
+
+
+
+  !> Local minimal particle domain limit in x
+  REAL(num)                           :: x_min_local_part
+  !> Local maximal particle domain limit in x
+  REAL(num)                           :: x_max_local_part
+  !> Local minimal particle domain limit in x
+  REAL(num)                           :: y_min_local_part
+  !> Local maximal particle domain limit in x
+  REAL(num)                           :: y_max_local_part
+  !> Local minimal particle domain limit in x
+  REAL(num)                           :: z_min_local_part
+  !> Local maximal particle domain limit in x
+  REAL(num)                           :: z_max_local_part
+
+  !> Global minimal particle domain limit in x
+  REAL(num)                           :: xmin_part
+  !> Global maximal particle domain limit in x
+  REAL(num)                           :: xmax_part
+  !> Global minimal particle domain limit in x
+  REAL(num)                           :: ymin_part
+  !> Global maximal particle domain limit in x
+  REAL(num)                           :: ymax_part
+  !> Global minimal particle domain limit in x
+  REAL(num)                           :: zmin_part
+  !> Global  maximal particle domain limit in x
+  REAL(num)                           :: zmax_part
+
+  !> global particle domain length in x: xmax_part - xmin_part
+  REAL(num)                           :: length_x_part
+  !> global particle domain length in y: ymax_part - ymin_part
+  REAL(num)                           :: length_y_part
+  !> global particle domain length in z: zmax_part - zmin_part
+  REAL(num)                           :: length_z_part
+
+  !> Offset between grid and particle limits (x min bound)
+  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  REAL(num)                           :: offset_grid_part_x_min =0.
+  !> Offset between grid and particle limits (x max bound)
+  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  REAL(num)                           :: offset_grid_part_x_max =0.
+  !> Offset between grid and particle limits (y min bound)
+  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  REAL(num)                           :: offset_grid_part_y_min =0.
+  !> Offset between grid and particle limits (y max bound)
+  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  REAL(num)                           :: offset_grid_part_y_max =0.
+  !> Offset between grid and particle limits (z min bound)
+  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  REAL(num)                           :: offset_grid_part_z_min =0.
+  !> Offset between grid and particle limits (z max bound)
+  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  REAL(num)                           :: offset_grid_part_z_max =0.
 
   ! Sorting
   !> Activation of the sorting
