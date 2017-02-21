@@ -514,19 +514,6 @@ class EM3DPXR(EM3DFFT):
         # MPI buffer size for particle exchange
         pxr.mpi_buf_size = self.mpi_buf_size
 
-        print("MIN AND MAX")
-        print("x_min_local,x_max_local",pxr.x_min_local,pxr.x_max_local)
-        print("x_min_local_part,x_max_local_part",pxr.x_min_local_part,pxr.x_max_local_part)
-        print("y_min_local,y_max_local",pxr.y_min_local,pxr.y_max_local)
-        print("y_min_local_part,y_max_local_part",pxr.y_min_local_part,pxr.y_max_local_part)
-        print("z_min_local,z_max_local",pxr.z_min_local,pxr.z_max_local)
-        print("z_min_local_part,z_max_local_part",pxr.z_min_local_part,pxr.z_max_local_part)      
-        print("xmin,xmax",pxr.xmin, pxr.xmax)
-        print("xmin_part,xmax_part",pxr.xmin_part,pxr.xmax_part)      
-        print("ymin,ymax",pxr.ymin, pxr.ymax)
-        print("ymi_part,ymax_part",pxr.ymin_part,pxr.ymax_part) 
-        print("zmin,zmax",pxr.zmin, pxr.zmax)
-        print("zmi_part,zmax_part",pxr.zmin_part,pxr.zmax_part)         
         # Type of field gathering
         pxr.l4symtry=w3d.l4symtry
         pxr.l_lower_order_in_v = self.l_lower_order_in_v
