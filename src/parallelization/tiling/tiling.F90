@@ -376,8 +376,8 @@ MODULE tiling
         ! Finally, add particle to tile
         curr%np_tile(1)=count
         curr%part_x(count)  = partx
-	! by default in 2D we set party to 0 
-	curr%part_y(count)  = 0. 
+	! by default in 2D we set party to 0
+	curr%part_y(count)  = 0.
         curr%part_z(count)  = partz
         curr%part_ux(count) = partux
         curr%part_uy(count) = partuy
@@ -603,7 +603,7 @@ MODULE tiling
             curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
             curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
             curr%part_gaminv(index)=curr%part_gaminv(curr%np_tile(1))
-            curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
+            curr%pid(index,1:npid)=curr%pid(curr%np_tile(1),1:npid)
             curr%np_tile=curr%np_tile(1)-1
         END IF
 
@@ -651,7 +651,7 @@ MODULE tiling
             curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
             curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
             curr%part_gaminv(index)=curr%part_gaminv(curr%np_tile(1))
-            curr%pid(index,wpid)=curr%pid(curr%np_tile(1),wpid)
+            curr%pid(index,1:npid)=curr%pid(curr%np_tile(1),1:npid)
             curr%np_tile=curr%np_tile(1)-1
         END IF
 
