@@ -23,7 +23,8 @@ COMP=gnu
 # - vtune: vtune profiling
 # - sde: sde profiling
 # - map: Allinea Map profiling
-MODE=library
+# - library: create static and dynamic library
+MODE=prod
 
 # System (SYS)
 # - cori2
@@ -52,7 +53,7 @@ SRCDIR=src
 # Binary directory
 BINDIR=fortran_bin
 # Lib directory
-  LIBDIR=lib
+LIBDIR=lib
 # Application name
 APPNAME=picsar
 # Module (.mod) directory
@@ -350,7 +351,7 @@ build_lib:$(SRCDIR)/modules/modules.o \
         $(SRCDIR)/submain.o \
         $(SRCDIR)/initilization/control_file.o
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
-	$(FC) $(FARGS) -o -shared libpxr.so $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
+	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
 	mv libpxr.so $(LIBDIR)
 

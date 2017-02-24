@@ -12,11 +12,11 @@ build:
     - make test_gcov
     # Compile Picsar as library
     - make clean
-    - set $(MODE) to library into Makefile
+    - sed -i 's/MODE=prod/MODE=library/g' Makefile
     - make lib
     # Add Picsar Dynamic library to LD_LIBRARY_PATH
     - export LD_LIBRARY_PATH=/path_to_libpxr.iso:$LD_LIBRARY_PATH
-    # Compile the Fortran kernel of Picsar      
+    # Compile the Fortran kernel of Picsar
     - make clean
     - make
     # Add path to pythonpath
