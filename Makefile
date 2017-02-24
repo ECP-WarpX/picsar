@@ -82,13 +82,13 @@ ifeq ($(SYS),cori1)
 		FARGS= -D VTUNE=1 -O3 -g -dynamic -debug inline-debug-info -qopenmp -xCORE-AVX2 -align array64byte
 		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xCORE-AVX2 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
 		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
-		LARCH= 
+		LARCH=
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_cori1_sde
 		COMP=none
 		FARGS= -D SDE=1	-g -O3 -xCORE-AVX2  -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
-		CARGS= -D SDE=1 -g -O3 -qopenmp -xCORE-AVX2 
-		LARCH= 	
+		CARGS= -D SDE=1 -g -O3 -qopenmp -xCORE-AVX2
+		LARCH=
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_cori1_advisor
 		COMP=none
@@ -99,7 +99,7 @@ ifeq ($(SYS),cori1)
 		APPNAME=picsar_cori1_novec
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
-		LARCH=	
+		LARCH=
 	endif
 # Edison
 else ifeq ($(SYS),edison)
@@ -115,18 +115,18 @@ else ifeq ($(SYS),edison)
 		APPNAME=picsar_edison_debug
 		COMP=none
 		FARGS= -g -O3 -xAVX -qopt-report:5 -debug inline-debug-info -traceback
-		LARCH=	
+		LARCH=
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_edison_sde
 		COMP=none
 		FARGS= -D SDE=1	-g -O3 -xAVX  -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
-		CARGS= -D SDE=1 -g -O3 -qopenmp -xAVX 
-		LARCH= 
+		CARGS= -D SDE=1 -g -O3 -qopenmp -xAVX
+		LARCH=
 	else ifeq ($(MODE),novec)
 		APPNAME=picsar_edison_novec
 		COMP=none
 		FARGS= -g -O0 -no-simd -no-vec
-		LARCH=	
+		LARCH=
 	endif
 # Cori phase 2 at NERSC
 else ifeq ($(SYS),cori2)
@@ -145,7 +145,7 @@ else ifeq ($(SYS),cori2)
 	else ifeq ($(MODE),dev)
 		COMP=none
 		FARGS= -O3 -D DEV=0 -xMIC-AVX512 -qopenmp -align array64byte
-		# -qopt-streaming-stores auto 
+		# -qopt-streaming-stores auto
 		LARCH=
 	else ifeq ($(MODE),vtune)
 		APPNAME=picsar_cori2_vtune
@@ -156,14 +156,14 @@ else ifeq ($(SYS),cori2)
 		FARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xMIC-AVX512 -align array64byte -debug inline-debug-info
 		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xMIC-AVX512 -debug inline-debug-info -I /opt/intel/vtune_amplifier_xe_2017.1.0.486011/include
 		LDFLAGS= /opt/intel/vtune_amplifier_xe_2017.1.0.486011/lib64/libittnotify.a
-		LARCH= 
+		LARCH=
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_cori2_sde
 		COMP=none
 		FARGS= -D SDE=1 -g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -align array64byte
 		#-qopt-streaming-stores auto
 		CARGS= -D SDE=1 -g -O3 -qopenmp -xMIC-AVX512
-		LARCH= 
+		LARCH=
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_cori2_advisor
 		COMP=none
@@ -196,24 +196,24 @@ else ifeq ($(SYS),carl)
 		FARGS= -D VTUNE=1	-g -Bdynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
 		CARGS= -D VTUNE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
 		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
-		LARCH= 	
+		LARCH=
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_carl_sde
 		COMP=none
 		FARGS= -D SDE=1	-g -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
-		CARGS= -D SDE=1 -g -O3 -qopenmp -xMIC-AVX512 
-		LARCH= 
+		CARGS= -D SDE=1 -g -O3 -qopenmp -xMIC-AVX512
+		LARCH=
 	else ifeq ($(MODE),advisor)
 		APPNAME=picsar_carl_advisor
 		COMP=none
 		FARGS= -g -O3 -xMIC-AVX512 -qopenmp -Bdynamic -debug inline-debug-info -align array64byte -qopt-streaming-stores auto
-		LARCH=	
+		LARCH=
 	else ifeq ($(MODE),novec)
 		APPNAME=picsar_carl_novec
 		COMP=none
 		FARGS= -D NOVEC=0 -g -O3 -xMIC-AVX512 -qopenmp -no-simd -no-vec  -align array64byte -qopt-streaming-stores auto
 		LARCH=
-	else ifeq ($(MODE),nofma)		
+	else ifeq ($(MODE),nofma)
 		APPNAME=picsar_carl_nofma
 		COMP=none
 		FARGS=  -g -O3 -xMIC-AVX512 -qopenmp -no-fma  -align array64byte -qopt-streaming-stores auto
@@ -226,7 +226,7 @@ ifeq ($(COMP),gnu)
 
   ifeq ($(MODE),prod)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize 
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g
 	else ifeq ($(MODE),debug)
@@ -234,24 +234,24 @@ ifeq ($(COMP),gnu)
 	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
 	else ifeq ($(MODE),dev)
 	  FC=mpif90
-	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize 
+	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
-	  #FARGS=-g	
+	  #FARGS=-g
 	else ifeq ($(MODE),devdebug)
 	  FC=mpif90
-	  FARGS= -O3 -D DEV=1 -fopenmp -g -JModules  -Wunused-variable -fcheck=bound -ftree-vectorize 
+	  FARGS= -O3 -D DEV=1 -fopenmp -g -JModules  -Wunused-variable -fcheck=bound -ftree-vectorize
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
-	  #FARGS=-g	
+	  #FARGS=-g
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
 	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules
 	endif
-	
+
 	# ___ Architecture ________
 	ifeq ($(ARCH),hsw)
     ARCH=
   endif
-	
+
 # Intel compiler  ______________________________________________
 else ifeq ($(COMP),intel)
 
@@ -268,22 +268,22 @@ else ifeq ($(COMP),intel)
 	else ifeq ($(MODE),sde)
 	  FC=mpif90
 	  FARGS= -O3 -qopenmp -JModules -check bounds -D DEBUG=1 -qopt-report:5
-	else ifeq ($(MODE),map)			  
+	else ifeq ($(MODE),map)
 	  FC=mpif90
 	  FARGS= -O3 -qopenmp -JModules -check bounds -D DEBUG=1 -qopt-report:5
   endif
-  
+
   # ___ Architecture ________
   ifeq ($(ARCH),host)
-    LARCH= -xHOST 
+    LARCH= -xHOST
   else ifeq ($(ARCH),knl)
     LARCH= -xMIC-AVX512
   else ifeq ($(ARCH),ivy)
-    LARCH= -xAVX  
-  else ifeq ($(ARCH),hsw)   
-    LARCH= -xCORE-AVX2   
+    LARCH= -xAVX
+  else ifeq ($(ARCH),hsw)
+    LARCH= -xCORE-AVX2
   endif
-  
+
 endif
 
 FARGS+= $(LARCH)
@@ -346,7 +346,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
-	$(SRCDIR)/main.o 
+	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
@@ -390,7 +390,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
-	$(SRCDIR)/main.o 
+	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
@@ -432,17 +432,17 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initilization/control_file.o \
-	$(SRCDIR)/main.o 
+	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
 endif
-	
+
 clean: clean_test
 	rm -rf $(SRCDIR)/*.o
 	rm -rf $(SRCDIR)/*/*.o
-	rm -rf $(SRCDIR)/*/*/*.o	
-	rm -rf $(SRCDIR)/*/*/*/*.o	
+	rm -rf $(SRCDIR)/*/*/*.o
+	rm -rf $(SRCDIR)/*/*/*/*.o
 	rm -f *.mod
 	rm -f $(BINDIR)/$(APPNAME)
 	rm -rf RESULTS
@@ -450,7 +450,7 @@ clean: clean_test
 	rm -f $(SRCDIR)/*.mod
 	rm -rf *.dSYM
 	rm -f Doxygen/*.tmp
-	
+
 createdir:
 	mkdir -p $(MODDIR)
 
@@ -469,32 +469,32 @@ COMP=gnu
 help:
 	@echo ' ______________________________________ '
 	@echo ' Makefile information'
-	@echo 
+	@echo
 	@echo ' Targets:'
 	@echo ' - build'
 	@echo ' - clean'
 	@echo ' - buildtest'
-	@echo ' - cleantest' 
+	@echo ' - cleantest'
 	@echo ' - test_gcov'
-	@echo	
+	@echo
 	@echo ' COMP= Compiler type:'
 	@echo ' - gnu: gnu compiler'
 	@echo ' - intel: intel compiler'
-	@echo ' - user: user defined makefile'	
+	@echo ' - user: user defined makefile'
 	@echo
 	@echo ' MODE= Compilation mode'
 	@echo ' - prod: production compilation'
 	@echo ' - debug: debug compilation'
-	@echo ' - novec: disable vectorization'	
-	@echo ' - vtune: vtune analysis'	
+	@echo ' - novec: disable vectorization'
+	@echo ' - vtune: vtune analysis'
 	@echo
-	@echo ' SYS= System'		
-	@echo ' - edison: Edison NERSC'	
+	@echo ' SYS= System'
+	@echo ' - edison: Edison NERSC'
 	@echo ' - carl:   NERSC KNL whitebox'
-	@echo ' - cori1:  Cori phase 1 NERSC'	
+	@echo ' - cori1:  Cori phase 1 NERSC'
 	@echo ' - cori2:  Cori phase 2 NERSC'
 	@echo ' ______________________________________ '
-		
+
 # ________________________________________________________________________________________
 # make tests
 
@@ -502,10 +502,10 @@ help:
 Acceptance_testing/Gcov_tests/%.o:Acceptance_testing/Gcov_tests/%.F90
 	$(FC) -c $(FARGS) -o $@ $<
 
-# Clean files related to the tests	
+# Clean files related to the tests
 clean_test:
 	rm -f Acceptance_testing/Fortran_tests/*/picsar
-	rm -rf Acceptance_testing/Fortran_tests/*/RESULTS	
+	rm -rf Acceptance_testing/Fortran_tests/*/RESULTS
 	rm -f Acceptance_testing/Python_tests/*/*.cgm
 	rm -f Acceptance_testing/Python_tests/*/*.cgmlog
 	rm -f Acceptance_testing/Gcov_tests/*.o
@@ -526,7 +526,7 @@ build_tile_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
-	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o 
+	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -542,7 +542,7 @@ build_tile_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
-	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o	
+	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o
 
 build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -556,7 +556,7 @@ build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
-	Acceptance_testing/Gcov_tests/field_gathering_test.o 
+	Acceptance_testing/Gcov_tests/field_gathering_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/field_gathering_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -570,7 +570,7 @@ build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
-	Acceptance_testing/Gcov_tests/field_gathering_test.o	
+	Acceptance_testing/Gcov_tests/field_gathering_test.o
 
 build_field_gathering_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -607,7 +607,7 @@ build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
-	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o 
+	Acceptance_testing/Gcov_tests/current_deposition_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/current_deposition_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -638,7 +638,7 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
-	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o 
+	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -683,7 +683,7 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
-	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o 
+	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -714,7 +714,7 @@ build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
-	Acceptance_testing/Gcov_tests/rho_deposition_3d_test.o 
+	Acceptance_testing/Gcov_tests/rho_deposition_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/rho_deposition_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -722,7 +722,7 @@ build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	Acceptance_testing/Gcov_tests/rho_deposition_3d_test.o
-	
+
 build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
@@ -733,7 +733,7 @@ build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
-	Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o 
+	Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -759,7 +759,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
-	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o 
+	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -773,7 +773,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/initilization/control_file.o \
-	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o	
+	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o
 
 build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
@@ -792,7 +792,7 @@ build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	Acceptance_testing/Gcov_tests/esirkepov_3d_test.o
-	
+
 build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
@@ -810,8 +810,8 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
-		
-# Compilation of all the tests	
+
+# Compilation of all the tests
 build_test: createdir \
 	build_tile_field_gathering_3d_test \
 	build_field_gathering_3d_test \
@@ -825,17 +825,17 @@ build_test: createdir \
 	build_esirkepov_2d_test \
 	build_tile_mpi_part_com_test
 
-#	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o			
+#	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
 
 # __ Execute Pytest ____________________________________________________
 test1:
 	cd Acceptance_testing/Fortran_tests/test_plasma_drift && \
 	py.test -s --ttest=1 --trun=1
-	
+
 test2:
 	cd Acceptance_testing/Fortran_tests/test_homogeneous_plasma && \
-	py.test -s --ttest=0 --trun=1	
-	
+	py.test -s --ttest=0 --trun=1
+
 test3:
 	cd Acceptance_testing/Fortran_tests/test_Langmuir_wave && \
 	py.test -s --ttest=0 --trun=1
@@ -844,7 +844,7 @@ test_pytest:
 	test1 test2 test3
 
 # __ Execute Gcov test ____________________________________________________
-	
+
 test_gcov: field_gathering_2d_test \
 	field_gathering_3d_test \
 	field_gathering_2d_test \
@@ -861,22 +861,22 @@ test_gcov: field_gathering_2d_test \
 current_deposition_3d_test:
 	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/current_deposition_3d_test
-	
+
 field_gathering_2d_test:
 	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/field_gathering_2d_test
-	
+
 field_gathering_3d_test:
 	export OMP_NUM_THREADS=1
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/field_gathering_3d_test
-	
-esirkepov_2d_test:	
+
+esirkepov_2d_test:
 	export OMP_NUM_THREADS=1
 	./Acceptance_testing/Gcov_tests/esirkepov_2d_test
-	
+
 esirkepov_3d_test:
-	export OMP_NUM_THREADS=1	
-	./Acceptance_testing/Gcov_tests/esirkepov_3d_test	
+	export OMP_NUM_THREADS=1
+	./Acceptance_testing/Gcov_tests/esirkepov_3d_test
 
 rho_deposition_3d_test:
 	export OMP_NUM_THREADS=1
@@ -884,12 +884,12 @@ rho_deposition_3d_test:
 
 tile_field_gathering_3d_test:
 	export OMP_NUM_THREADS=4
-	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test 
+	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test
 
 tile_particle_push_3d_test:
 	export OMP_NUM_THREADS=4
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_particle_push_3d_test
-	
+
 tile_mpi_part_com_test:
 	export OMP_NUM_THREADS=2
 	mpirun -n 4 ./Acceptance_testing/Gcov_tests/tile_mpi_part_com_test
@@ -897,7 +897,7 @@ tile_mpi_part_com_test:
 tile_curr_depo_3d_test:
 	export OMP_NUM_THREADS=4
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test
-	
+
 tile_rho_depo_3d_test:
 	export OMP_NUM_THREADS=4
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test
