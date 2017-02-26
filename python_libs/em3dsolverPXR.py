@@ -1365,9 +1365,10 @@ class EM3DPXR(EM3DFFT):
         ygrid=w3d.ymmin-pxr.ymin
         zgrid=w3d.zmmin-pxr.zmin
 
-        if (xgrid != 0 or ygrid!=0 or zgrid !=0):
+        if (xgrid != 0. or ygrid!=0. or zgrid !=0.):
             pxr.pxr_move_sim_boundaries(xgrid,ygrid,zgrid)
-
+            pxr.particle_bcs()
+            self.aliasparticlearrays()
 
         if (self.l_debug): print("Call loadrho")
         self.loadrho(pgroups=pgroups)
