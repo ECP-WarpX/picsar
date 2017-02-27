@@ -1304,42 +1304,54 @@ END SUBROUTINE charge_bcs
 
     ! MOVE GLOBAL BOUNDARIES
     xmin=xmin+dxx
-          xmax=xmax+dxx
-          ! Update along Y
+    xmax=xmax+dxx
+    xmin_part=xmin_part+dxx
+    xmax_part=xmax_part+dxx
+    ! Update along Y
     ymin=ymin+dyy
-          ymax=ymax+dyy
-          ! Update along Z
+    ymax=ymax+dyy
+    ymin_part=ymin_part+dyy
+    ymax_part=ymax_part+dyy
+    ! Update along Z
     zmin=zmin+dzz
     zmax=zmax+dzz
+    zmin_part=zmin_part+dzz
+    zmax_part=zmax_part+dzz
 
     ! MOVE GLOBAL BOUNDARIES
     x_grid_min=x_grid_min+dxx
-          x_grid_max=x_grid_max+dxx
-          ! Update along Y
+    x_grid_max=x_grid_max+dxx
+    ! Update along Y
     y_grid_min=y_grid_min+dyy
-          y_grid_max=y_grid_max+dyy
-          ! Update along Z
+    y_grid_max=y_grid_max+dyy
+    ! Update along Z
     z_grid_min=z_grid_min+dzz
     z_grid_max=z_grid_max+dzz
 
     ! MOVE LOCAL BOUNDARIES - MPI
-          ! Update along X
+	! Update along X
     x_min_local=x_min_local+dxx
-          x_max_local=x_max_local+dxx
-          ! Update along Y
+    x_max_local=x_max_local+dxx
+    x_min_local_part=x_min_local_part+dxx
+    x_max_local_part=x_max_local_part+dxx
+    ! Update along Y
     y_min_local=y_min_local+dyy
-          y_max_local=y_max_local+dyy
-          ! Update along Z
+    y_max_local=y_max_local+dyy
+    y_min_local_part=y_min_local_part+dyy
+    y_max_local_part=y_max_local_part+dyy
+    ! Update along Z
     z_min_local=z_min_local+dzz
-          z_max_local=z_max_local+dzz
+    z_max_local=z_max_local+dzz
+    z_min_local_part=z_min_local_part+dzz
+    z_max_local_part=z_max_local_part+dzz
 
     ! MOVE LOCAL BOUNDARIES
     x_grid_min_local=x_grid_min_local+dxx
-          x_grid_max_local=x_grid_max_local+dxx
-          ! Update along Y
+    x_grid_max_local=x_grid_max_local+dxx
+    ! Update along Y
     y_grid_min_local=y_grid_min_local+dyy
-          y_grid_max_local=y_grid_max_local+dyy
-          ! Update along Z
+    y_grid_max_local=y_grid_max_local+dyy
+    ! Update along Z
     z_grid_min_local=z_grid_min_local+dzz
     z_grid_max_local=z_grid_max_local+dzz
 
