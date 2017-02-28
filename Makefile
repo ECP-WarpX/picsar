@@ -23,6 +23,7 @@ COMP=gnu
 # - vtune: vtune profiling
 # - sde: sde profiling
 # - map: Allinea Map profiling
+# - library: create static and dynamic library
 MODE=prod
 
 # System (SYS)
@@ -51,6 +52,8 @@ FARGS= -O3 -fopenmp -JModules
 SRCDIR=src
 # Binary directory
 BINDIR=fortran_bin
+# Lib directory
+LIBDIR=lib
 # Application name
 APPNAME=picsar
 # Module (.mod) directory
@@ -245,6 +248,9 @@ ifeq ($(COMP),gnu)
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
 	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules
+        else ifeq ($(MODE),library)
+          FC=mpif90
+          FARGS= -O3 -fopenmp -JModules -ftree-vectorize -fPIC
 	endif
 
 	# ___ Architecture ________
@@ -288,6 +294,9 @@ endif
 
 FARGS+= $(LARCH)
 
+ifeq ($(MODE),library)
+	FARGS += -fPIC
+endif
 # ________________________________________________________
 # Not used for the moment
 #FSOURCE= $(wildcard $(SRCDIR)/*.F90)
@@ -299,12 +308,53 @@ FARGS+= $(LARCH)
 
 $(SRCDIR)/%.o $(SRCDIR)/*/%.o $(SRCDIR)/*/*/%.o $(SRCDIR)/*/*/*/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
-
 $(SRCDIR)/profiling/%.o:$(SRCDIR)/profiling/%.c
 	$(CC) $(CARGS) -c -o $@ $<
-
 all: echo createdir build
 test: test1 test2 test3
+lib: echo createdir build_lib
+build_lib:$(SRCDIR)/modules/modules.o \
+        $(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+        $(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+        $(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+        $(SRCDIR)/parallelization/tiling/tiling.o \
+        $(SRCDIR)/housekeeping/sorting.o \
+        $(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+        $(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+        $(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+        $(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+        $(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
+        $(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
+        $(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+        $(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+        $(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
+        $(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
+        $(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+        $(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+        $(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+        $(SRCDIR)/boundary_conditions/field_boundaries.o \
+        $(SRCDIR)/boundary_conditions/particle_boundaries.o \
+        $(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
+        $(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
+        $(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
+        $(SRCDIR)/diags/diags.o \
+        $(SRCDIR)/ios/simple_io.o \
+        $(SRCDIR)/parallelization/mpi/mpi_routines.o \
+        $(SRCDIR)/submain.o \
+        $(SRCDIR)/initilization/control_file.o
+	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
+	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
+	mv libpxr.a $(LIBDIR)
+	mv libpxr.so $(LIBDIR)
+
 
 ifeq ($(MODE),vtune)
 build:$(SRCDIR)/modules/modules.o \
@@ -451,8 +501,11 @@ clean: clean_test
 	rm -rf *.dSYM
 	rm -f Doxygen/*.tmp
 
+	rm -rf $(LIBDIR)/*
+
 createdir:
 	mkdir -p $(MODDIR)
+	mkdir -p $(LIBDIR)
 
 echo:
 	@echo	''
@@ -839,7 +892,6 @@ test2:
 test3:
 	cd Acceptance_testing/Fortran_tests/test_Langmuir_wave && \
 	py.test -s --ttest=0 --trun=1
-
 test_pytest:
 	test1 test2 test3
 
