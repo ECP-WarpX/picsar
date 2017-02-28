@@ -433,6 +433,9 @@ MODULE particle_speciesmodule !#do not parse
       INTEGER(idp)   :: sorting_start
       !> Flag indicating of the array array_of_tile has been allocated
       LOGICAL(lp)   :: l_arrayoftiles_allocated =.FALSE.
+      !> Flag indicating if this particle species deposit current/charge on
+      !> the grid (useful for test particles). Default is true
+      LOGICAL(lp)   :: ldodepos =.TRUE.
       ! For some stupid reason, cannot use ALLOCATABLE in derived types
       ! in Fortran 90 - Need to use POINTER instead
       !> List of tiles (of objects particle_tile) in the MPI domain for the

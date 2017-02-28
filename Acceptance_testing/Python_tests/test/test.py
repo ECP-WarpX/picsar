@@ -76,7 +76,7 @@ vdriftx=[0.,0.]; vdrifty=[0.,0.]; vdriftz=[0.,0.]
 vthx=[0.,0.]; vthy=[0.,0.]; vthz=[0.,0.]
 sorting_period = [5,5]
 sorting_start = [0,0]
-
+dodepos=[1,1]
 ## Set number of particle species
 pxr.nspecies=len(name)
 
@@ -85,7 +85,7 @@ print " pxr.set_particle_species_properties"
 for i in range(0,pxr.nspecies):
     pxr.set_particle_species_properties(i+1,name[i],mass[i],charge[i],nppcell[i],\
     xmin[i],ymin[i],zmin[i],xmax[i],ymax[i],zmax[i],vdriftx[i],vdrifty[i],vdriftz[i],\
-    vthx[i],vthy[i],vthz[i],sorting_period[i],sorting_start[i])
+    vthx[i],vthy[i],vthz[i],sorting_period[i],sorting_start[i],dodepos[i])
 
 #### MPI INIT
 print " MPI init"
