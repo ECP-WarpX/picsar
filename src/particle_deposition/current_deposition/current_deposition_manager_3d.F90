@@ -626,7 +626,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
               currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
               isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
-                   curr => species_parray(ispecies)
+                  curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   count=curr_tile%np_tile(1)
                   IF (count .EQ. 0) THEN
@@ -658,9 +659,10 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
   DO iz=1,ntilez
       DO iy=1,ntiley
           DO ix=1,ntilex
-            isdeposited=.FALSE.
+              isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   count=curr_tile%np_tile(1)
                   IF (count .GT. 0) isdeposited=.TRUE.
@@ -713,6 +715,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
               isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   count=curr_tile%np_tile(1)
                   IF (count .GT. 0) isdeposited=.TRUE.
@@ -765,6 +768,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(curr_depo_sub,
               isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   count=curr_tile%np_tile(1)
                   IF (count .GT. 0) isdeposited=.TRUE.
@@ -953,7 +957,8 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
               jzcells=0.0_num
 
               DO ispecies=1, nspecies ! LOOP ON SPECIES
-                   curr => species_parray(ispecies)
+                  curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   np=curr_tile%np_tile(1)
                   IF (np .EQ. 0) THEN
@@ -998,6 +1003,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
             isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   np=curr_tile%np_tile(1)
                   IF (np .GT. 0) isdeposited=.TRUE.
@@ -1050,6 +1056,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
               isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   np=curr_tile%np_tile(1)
                   IF (np .GT. 0) isdeposited=.TRUE.
@@ -1102,6 +1109,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
               isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   np=curr_tile%np_tile(1)
                   IF (np .GT. 0) isdeposited=.TRUE.
@@ -1255,6 +1263,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
       DO iy=1,ntiley
           DO ix=1,ntilex
               curr => species_parray(ispecies)
+              IF (.NOT. curr%ldodepos) CYCLE
               curr_tile=>curr%array_of_tiles(ix,iy,iz)
               np=curr_tile%np_tile(1)
               nxjg=curr_tile%nxg_tile
@@ -1335,6 +1344,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
             isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   np=curr_tile%np_tile(1)
                   IF (np .GT. 0) isdeposited=.TRUE.
@@ -1387,6 +1397,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
               isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   np=curr_tile%np_tile(1)
                   IF (np .GT. 0) isdeposited=.TRUE.
@@ -1439,6 +1450,7 @@ curr_depo_sub,curr_reduc_sub,jxg,jyg,jzg,nxx,nyy,nzz,nxjguard,nyjguard,nzjguard,
               isdeposited=.FALSE.
               DO ispecies=1, nspecies ! LOOP ON SPECIES
                   curr => species_parray(ispecies)
+                  IF (.NOT. curr%ldodepos) CYCLE
                   curr_tile=>curr%array_of_tiles(ix,iy,iz)
                   np=curr_tile%np_tile(1)
                   IF (np .GT. 0) isdeposited=.TRUE.
@@ -1562,7 +1574,7 @@ DO iz=1,ntilez
             nyjg=curr_tile%nyg_tile
             nzjg=curr_tile%nzg_tile
             jmin=curr_tile%nx_tile_min
-          jmax=curr_tile%nx_tile_max
+            jmax=curr_tile%nx_tile_max
             kmin=curr_tile%ny_tile_min
             kmax=curr_tile%ny_tile_max
             lmin=curr_tile%nz_tile_min
@@ -1576,7 +1588,8 @@ DO iz=1,ntilez
             currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
-                 curr => species_parray(ispecies)
+                curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .EQ. 0) THEN
@@ -1613,14 +1626,15 @@ DO iz=1,ntilez
           isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .GT. 0) isdeposited=.TRUE.
             END DO
             IF (isdeposited) THEN
-              currg=>aofgrid_tiles(ix,iy,iz)
+                currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-               curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -1665,14 +1679,15 @@ DO iz=1,ntilez
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .GT. 0) isdeposited=.TRUE.
             END DO
             IF (isdeposited) THEN
-              currg=>aofgrid_tiles(ix,iy,iz)
+                currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-               curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -1717,14 +1732,15 @@ DO iz=1,ntilez
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .GT. 0) isdeposited=.TRUE.
             END DO
             IF (isdeposited) THEN
-              currg=>aofgrid_tiles(ix,iy,iz)
+                currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-               curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -1818,13 +1834,13 @@ IF (nspecies .EQ. 0_idp) RETURN
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-          curr => species_parray(1)
+            curr => species_parray(1)
             curr_tile=>curr%array_of_tiles(ix,iy,iz)
             nxjg=curr_tile%nxg_tile
             nyjg=curr_tile%nyg_tile
             nzjg=curr_tile%nzg_tile
             jmin=curr_tile%nx_tile_min
-          jmax=curr_tile%nx_tile_max
+            jmax=curr_tile%nx_tile_max
             kmin=curr_tile%ny_tile_min
             kmax=curr_tile%ny_tile_max
             lmin=curr_tile%nz_tile_min
@@ -1838,7 +1854,8 @@ DO iz=1,ntilez
             currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
-                 curr => species_parray(ispecies)
+                curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .EQ. 0) THEN
@@ -1847,25 +1864,24 @@ DO iz=1,ntilez
                   isdeposited=.TRUE.
                 ENDIF
                 ! Depose current in jtile
-               SELECT CASE (c_dim)
-        CASE (2)
-          CALL pxr_depose_jxjyjz_esirkepov2d_n(currg%jxtile(:,0,:),currg%jytile(:,0,:),              &
-          currg%jztile(:,0,:),count,                                                 &
-          curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                            &
-          curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,           &
-          curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,                    &
-          curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,                                     &
-          nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
-        CASE DEFAULT
-          CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                              &
-          currg%jztile,count,                                                       &
-          curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                            &
-          curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,           &
-          curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,     &
-          curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                               &
-          nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp)
-         END SELECT
-
+                SELECT CASE (c_dim)
+                  CASE (2)
+                    CALL pxr_depose_jxjyjz_esirkepov2d_n(currg%jxtile(:,0,:),currg%jytile(:,0,:),  &
+                    currg%jztile(:,0,:),count,                                                     &
+                    curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                            &
+                    curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,   &
+                    curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,                   &
+                    curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,                                 &
+                    nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
+                  CASE DEFAULT
+                    CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                         &
+                    currg%jztile,count,                                                                   &
+                    curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                                   &
+                    curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,          &
+                    curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,&
+                    curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                &
+                    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp)
+                 END SELECT
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
               jxg(jmin:jmax,kmin:kmax,lmin:lmax)=jxg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jxtile(0:nxc,0:nyc,0:nzc)
@@ -1885,14 +1901,15 @@ DO iz=1,ntilez
           isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .GT. 0) isdeposited=.TRUE.
             END DO
             IF (isdeposited) THEN
-              currg=>aofgrid_tiles(ix,iy,iz)
+                currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-               curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -1937,14 +1954,15 @@ DO iz=1,ntilez
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .GT. 0) isdeposited=.TRUE.
             END DO
             IF (isdeposited) THEN
-              currg=>aofgrid_tiles(ix,iy,iz)
+                currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-               curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -1989,14 +2007,15 @@ DO iz=1,ntilez
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
                 curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .GT. 0) isdeposited=.TRUE.
             END DO
             IF (isdeposited) THEN
-              currg=>aofgrid_tiles(ix,iy,iz)
+                currg=>aofgrid_tiles(ix,iy,iz)
                 curr => species_parray(1)
-               curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 jmin=curr_tile%nx_tile_min; jmax=curr_tile%nx_tile_max
                 kmin=curr_tile%ny_tile_min; kmax=curr_tile%ny_tile_max
                 lmin=curr_tile%nz_tile_min; lmax=curr_tile%nz_tile_max
@@ -2089,26 +2108,27 @@ IF (nspecies .EQ. 0_idp) RETURN
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-          curr => species_parray(1)
+            curr => species_parray(1)
             curr_tile=>curr%array_of_tiles(ix,iy,iz)
             nxjg=curr_tile%nxg_tile
             nyjg=curr_tile%nyg_tile
             nzjg=curr_tile%nzg_tile
             jmin=curr_tile%nx_tile_min-nxjg
-          jmax=curr_tile%nx_tile_max+nxjg
+            jmax=curr_tile%nx_tile_max+nxjg
             kmin=curr_tile%ny_tile_min-nyjg
             kmax=curr_tile%ny_tile_max+nyjg
             lmin=curr_tile%nz_tile_min-nzjg
             lmax=curr_tile%nz_tile_max+nzjg
             nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
             nzc=curr_tile%nz_cells_tile
-      currg=>aofgrid_tiles(ix,iy,iz)
+            currg=>aofgrid_tiles(ix,iy,iz)
             currg%jxtile=0.
             currg%jytile=0.
             currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
-                 curr => species_parray(ispecies)
+                curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .EQ. 0) THEN
@@ -2177,26 +2197,27 @@ IF (nspecies .EQ. 0_idp) RETURN
 DO iz=1,ntilez
     DO iy=1,ntiley
         DO ix=1,ntilex
-          curr => species_parray(1)
+            curr => species_parray(1)
             curr_tile=>curr%array_of_tiles(ix,iy,iz)
             nxjg=curr_tile%nxg_tile
             nyjg=curr_tile%nyg_tile
             nzjg=curr_tile%nzg_tile
             jmin=curr_tile%nx_tile_min-nxjg
-          jmax=curr_tile%nx_tile_max+nxjg
+            jmax=curr_tile%nx_tile_max+nxjg
             kmin=curr_tile%ny_tile_min-nyjg
             kmax=curr_tile%ny_tile_max+nyjg
             lmin=curr_tile%nz_tile_min-nzjg
             lmax=curr_tile%nz_tile_max+nzjg
             nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
             nzc=curr_tile%nz_cells_tile
-      currg=>aofgrid_tiles(ix,iy,iz)
+            currg=>aofgrid_tiles(ix,iy,iz)
             currg%jxtile=0.
             currg%jytile=0.
             currg%jztile=0.!jzg(jmin:jmax,kmin:kmax,lmin:lmax)
             isdeposited=.FALSE.
             DO ispecies=1, nspecies ! LOOP ON SPECIES
-                 curr => species_parray(ispecies)
+                curr => species_parray(ispecies)
+                IF (.NOT. curr%ldodepos) CYCLE
                 curr_tile=>curr%array_of_tiles(ix,iy,iz)
                 count=curr_tile%np_tile(1)
                 IF (count .EQ. 0) THEN

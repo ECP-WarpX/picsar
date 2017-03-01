@@ -1318,13 +1318,14 @@ MODULE tiling
     !> Creation: 2015
     !
     SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
-    vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start)
+    vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start,dodepos)
     ! ____________________________________________________________________________________
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN) :: nsp, nppc
       REAL(num), INTENT(IN)    :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax
       REAL(num), INTENT(IN)    :: vdxs,vdys,vdzs,vthxs,vthys,vthzs
       CHARACTER(LEN=*), INTENT(IN) :: sname
+      LOGICAL(lp)  :: dodepos
       TYPE(particle_species), POINTER  :: currsp
       INTEGER(idp) :: sorting_period, sorting_start
 
@@ -1347,6 +1348,7 @@ MODULE tiling
       currsp%name=sname
       currsp%sorting_period=sorting_period
       currsp%sorting_start=sorting_start
+      currsp%ldodepos=dodepos
 
       ! this part poses problems for the python version compiled on Cori
       !IF (rank .EQ. 0) THEN

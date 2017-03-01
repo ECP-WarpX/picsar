@@ -552,7 +552,9 @@ class EM3DPXR(EM3DFFT):
             pxr.set_particle_species_properties(i+1,s.name,s.mass,s.charge,0, \
                                                 0.,0.,0.,0.,0.,0., \
                                                 0.,0.,0.,0.,0.,0., \
-                                                self.sorting.periods[i],self.sorting.starts[i])
+                                                self.sorting.periods[i], \
+                                                self.sorting.starts[i],  \
+                                                s.pgroup.ldodepos[i])
             pxr.nspecies+=1
 
         pxr.npid=top.npid
