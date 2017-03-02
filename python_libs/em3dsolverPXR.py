@@ -368,13 +368,6 @@ class EM3DPXR(EM3DFFT):
         pxr.offset_grid_part_z_min = self.offset_z_part_grid[0]
         pxr.offset_grid_part_z_max = self.offset_z_part_grid[1]
 
-        pxr.xmin_part=pxr.xmin+pxr.offset_grid_part_x_min
-        pxr.ymin_part=pxr.ymin+pxr.offset_grid_part_y_min
-        pxr.zmin_part=pxr.zmin+pxr.offset_grid_part_z_min
-        pxr.xmax_part=pxr.xmax+pxr.offset_grid_part_x_max
-        pxr.ymax_part=pxr.ymax+pxr.offset_grid_part_y_max
-        pxr.zmax_part=pxr.zmax+pxr.offset_grid_part_z_max
-
         # Global part boundaries
         # Local part boundaries
         # - Xmin
@@ -392,7 +385,7 @@ class EM3DPXR(EM3DFFT):
             pxr.x_min_local_part=pxr.x_min_local
         # - Xmax
         if (pxr.pbound_x_max == 3) or (pxr.pbound_x_max==1): 
-            pxr.xmax_part=pxr.xmin+pxr.offset_grid_part_x_max
+            pxr.xmax_part=pxr.xmax+pxr.offset_grid_part_x_max
             if (pxr.xmax_part >=  pxr.x_min_local) and (pxr.xmax_part < pxr.x_max_local): 
                 pxr.x_max_boundary_part= 1 
                 pxr.x_max_local_part=pxr.xmax_part
@@ -418,7 +411,7 @@ class EM3DPXR(EM3DFFT):
             pxr.y_min_local_part=pxr.y_min_local
         # - Ymax
         if (pxr.pbound_y_max == 3) or (pxr.pbound_y_max==1): 
-            pxr.ymax_part=pxr.ymin+pxr.offset_grid_part_y_max
+            pxr.ymax_part=pxr.ymax+pxr.offset_grid_part_y_max
             if (pxr.ymax_part >=  pxr.y_min_local) and (pxr.ymax_part < pxr.y_max_local): 
                 pxr.y_max_boundary_part= 1 
                 pxr.y_max_local_part=pxr.ymax_part
@@ -444,7 +437,7 @@ class EM3DPXR(EM3DFFT):
             pxr.z_min_local_part=pxr.z_min_local
         # - Zmax
         if (pxr.pbound_z_max == 3) or (pxr.pbound_z_max==1): 
-            pxr.zmax_part=pxr.zmin+pxr.offset_grid_part_z_max
+            pxr.zmax_part=pxr.zmax+pxr.offset_grid_part_z_max
             if (pxr.zmax_part >=  pxr.z_min_local) and (pxr.zmax_part < pxr.z_max_local): 
                 pxr.z_max_boundary_part= 1 
                 pxr.z_max_local_part=pxr.zmax_part
