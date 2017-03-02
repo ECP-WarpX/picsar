@@ -1069,7 +1069,7 @@ MODULE particle_boundary
                         ! Particle has left this processor -x
                         IF (part_xyz .LT. x_min_local_part) THEN
                             xbd = -1
-                            IF (x_min_boundary) THEN
+                            IF (x_min_boundary_part) THEN
                               SELECT CASE (pbound_x_min)
                               CASE (1_idp) ! absorbing
                                 mask(i)=.FALSE.
@@ -1081,6 +1081,8 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)=2._num*xmin_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1099,7 +1101,7 @@ MODULE particle_boundary
                         ! Particle has left this processor +x
                         IF (part_xyz .GE. x_max_local_part) THEN
                             xbd = 1
-                            IF (x_max_boundary) THEN
+                            IF (x_max_boundary_part) THEN
                               SELECT CASE (pbound_x_max)
                               CASE (1_idp) ! absorbing
                                 mask(i)=.FALSE.
@@ -1111,6 +1113,8 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)=2._num*xmax_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1130,7 +1134,7 @@ MODULE particle_boundary
                         ! Particle has left this processor -y
                         IF ((part_xyz .LT. y_min_local_part) .AND. (c_dim .EQ. 3)) THEN
                             ybd = -1
-                            IF (y_min_boundary) THEN
+                            IF (y_min_boundary_part) THEN
                               SELECT CASE (pbound_y_min)! absorbing
                               CASE (1_idp)
                                 mask(i)=.FALSE.
@@ -1141,7 +1145,9 @@ MODULE particle_boundary
                                   ybd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_y(i)=2._num*ymin_part-curr%part_y(i)
+                                  curr%part_ux(i)=0.
                                   curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1160,7 +1166,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF ((part_xyz .GE. y_max_local_part) .AND. (c_dim .EQ. 3)) THEN
                             ybd = 1
-                            IF (y_max_boundary) THEN
+                            IF (y_max_boundary_part) THEN
                               SELECT CASE (pbound_y_max)
                               CASE (1_idp) ! absorbing
                                 mask(i)=.FALSE.
@@ -1171,7 +1177,9 @@ MODULE particle_boundary
                                   ybd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_y(i)=2._num*ymax_part-curr%part_y(i)
+                                  curr%part_ux(i)=0.
                                   curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1191,7 +1199,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF (part_xyz .LT. z_min_local_part) THEN
                             zbd = -1
-                            IF (z_min_boundary) THEN
+                            IF (z_min_boundary_part) THEN
                               SELECT CASE (pbound_z_min)
                               CASE (1_idp) ! absorbing
                                 mask(i)=.FALSE.
@@ -1202,6 +1210,8 @@ MODULE particle_boundary
                                 zbd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                 curr%part_z(i)=2._num*zmin_part-curr%part_z(i)
+                                curr%part_ux(i)=0.
+                                curr%part_uy(i)=0.
                                 curr%part_uz(i)=0.
                                 ! Sanity check (keep particle in same tile)
                                 curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
@@ -1222,7 +1232,7 @@ MODULE particle_boundary
                         IF (part_xyz .GE. z_max_local_part) THEN
                             zbd = 1
                             ! Particle has left the system
-                            IF (z_max_boundary) THEN
+                            IF (z_max_boundary_part) THEN
                               SELECT CASE (pbound_z_max)
                               CASE (1_idp) ! absorbing
                                 mask(i)=.FALSE.
@@ -1233,6 +1243,8 @@ MODULE particle_boundary
                                   zbd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_z(i)=2._num*zmax_part-curr%part_z(i)
+                                  curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
                                   curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
@@ -1408,7 +1420,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF (part_xyz .LT. x_min_local_part) THEN
                             xbd = -1
-                            IF (x_min_boundary) THEN
+                            IF (x_min_boundary_part) THEN
                               SELECT CASE (pbound_x_min)
                               CASE (1_idp) ! absorbing
                                 remove_from_sim=.TRUE.
@@ -1419,6 +1431,8 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)=2*xmin_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1436,7 +1450,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF (part_xyz .GE. x_max_local_part) THEN
                             xbd = 1
-                            IF (x_max_boundary) THEN
+                            IF (x_max_boundary_part) THEN
                               SELECT CASE (pbound_x_max)
                               CASE (1_idp) ! absorbing
                                 remove_from_sim=.TRUE.
@@ -1447,6 +1461,8 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)=2*xmax_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1466,7 +1482,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF ((part_xyz .LT. y_min_local_part) .AND. (c_dim .EQ. 3)) THEN
                             ybd = -1
-                            IF (y_min_boundary) THEN
+                            IF (y_min_boundary_part) THEN
                               SELECT CASE (pbound_y_min)! absorbing
                               CASE (1_idp)
                                 remove_from_sim=.TRUE.
@@ -1476,7 +1492,9 @@ MODULE particle_boundary
                                   ybd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_y(i)=2*ymin_part-curr%part_y(i)
+                                  curr%part_ux(i)=0.
                                   curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1495,7 +1513,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF ((part_xyz .GE. y_max_local_part) .AND. (c_dim .EQ. 3)) THEN
                             ybd = 1
-                            IF (y_max_boundary) THEN
+                            IF (y_max_boundary_part) THEN
                               SELECT CASE (pbound_y_max)
                               CASE (1_idp) ! absorbing
                                 remove_from_sim=.TRUE.
@@ -1505,7 +1523,9 @@ MODULE particle_boundary
                                   ybd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_y(i)=2*ymax_part-curr%part_y(i)
+                                  curr%part_ux(i)=0.
                                   curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1525,7 +1545,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF (part_xyz .LT. z_min_local_part) THEN
                             zbd = -1
-                            IF (z_min_boundary) THEN
+                            IF (z_min_boundary_part) THEN
                                 SELECT CASE (pbound_z_min)
                                 CASE (1_idp) ! absorbing
                                   remove_from_sim=.TRUE.
@@ -1535,6 +1555,8 @@ MODULE particle_boundary
                                   zbd=0
                                 CASE (3_idp) ! Reinjecting (not thermal for now)
                                     curr%part_z(i)=2*zmin_part-curr%part_z(i)
+                                    curr%part_ux(i)=0.
+                                    curr%part_uy(i)=0.
                                     curr%part_uz(i)=0.
                                     ! Sanity check (keep particle in same tile)
                                     curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
@@ -1555,7 +1577,7 @@ MODULE particle_boundary
                         IF (part_xyz .GE. z_max_local_part) THEN
                             zbd = 1
                             ! Particle has left the system
-                            IF (z_max_boundary) THEN
+                            IF (z_max_boundary_part) THEN
                               SELECT CASE (pbound_z_max)
                               CASE (1_idp) ! absorbing
                                 remove_from_sim=.TRUE.
@@ -1565,6 +1587,8 @@ MODULE particle_boundary
                                   zbd=0
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_z(i)=2*zmax_part-curr%part_z(i)
+                                  curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
                                   curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
@@ -1788,7 +1812,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF (part_xyz .LT. x_min_local_part) THEN
                             xbd = -1
-                            IF (x_min_boundary) THEN
+                            IF (x_min_boundary_part) THEN
                               SELECT CASE (pbound_x_min)
                               CASE (1_idp) ! absorbing
                                 CALL rm_particles_from_species_2d(currsp, &
@@ -1797,6 +1821,8 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)=2.0_num*xmin_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1812,7 +1838,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF (part_xyz .GE. x_max_local_part) THEN
                             xbd = 1
-                            IF (x_max_boundary) THEN
+                            IF (x_max_boundary_part) THEN
                               SELECT CASE (pbound_x_max)
                               CASE (1_idp) ! absorbing
                                 CALL rm_particles_from_species_2d(currsp, &
@@ -1821,6 +1847,8 @@ MODULE particle_boundary
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_x(i)= 2.0_num*xmax_part-curr%part_x(i)
                                   curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
+                                  curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
                                   curr%part_x(i)=MIN(curr%part_x(i),curr%x_tile_max-0.5_num*dx)
@@ -1838,7 +1866,7 @@ MODULE particle_boundary
                         ! Particle has left this processor
                         IF (part_xyz .LT. z_min_local_part) THEN
                             zbd = -1
-                            IF (z_min_boundary) THEN
+                            IF (z_min_boundary_part) THEN
                               SELECT CASE (pbound_z_min)
                               CASE (1_idp) ! absorbing
                                 CALL rm_particles_from_species_2d(currsp, &
@@ -1846,6 +1874,8 @@ MODULE particle_boundary
                                 CYCLE
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_z(i)= 2.0_num*zmin_part-curr%part_z(i)
+                                  curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
                                   curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   ! Sanity check (keep particle in same tile)
@@ -1865,7 +1895,7 @@ MODULE particle_boundary
                         IF (part_xyz .GE. z_max_local_part) THEN
                             zbd = 1
                             ! Particle has left the system
-                            IF (z_max_boundary) THEN
+                            IF (z_max_boundary_part) THEN
                               SELECT CASE (pbound_z_max)
                               CASE (1_idp) ! absorbing
                                 CALL rm_particles_from_species_2d(currsp, &
@@ -1873,6 +1903,8 @@ MODULE particle_boundary
                                 CYCLE
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr%part_z(i)= 2.0_num*zmax_part-curr%part_z(i)
+                                  curr%part_ux(i)=0.
+                                  curr%part_uy(i)=0.
                                   curr%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr%part_x(i)=MAX(curr%part_x(i),curr%x_tile_min+0.5_num*dx)
@@ -2170,7 +2202,7 @@ MODULE particle_boundary
   !$OMP SHARED(npid,nspecies,nthreads_loop2,species_parray,ntilex,ntiley,ntilez,x_min_local_part, &
   !$OMP y_min_local_part,z_min_local_part,length_x_part,length_y_part,length_z_part,dxs2,dys2,dzs2, &
   !$OMP xmin_part,xmax_part,ymin_part,ymax_part,zmin_part,zmax_part, &
-  !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary,  &
+  !$OMP x_min_boundary_part,x_max_boundary_part,y_min_boundary_part,y_max_boundary_part,z_min_boundary_part,z_max_boundary_part,  &
   !$OMP pbound_x_min,pbound_x_max,pbound_y_min,pbound_y_max,pbound_z_min,pbound_z_max, x_min_local,y_min_local,z_min_local, &
   !$OMP x_max_local_part,y_max_local_part,z_max_local_part,dx,dy,dz,mpi_npart,tilebuf,mpi_buf_size,lvect) &
   !$OMP NUM_THREADS(nthreads_loop1)
@@ -2201,7 +2233,7 @@ MODULE particle_boundary
           !$OMP pbound_z_max,x_min_local,y_min_local,z_min_local, &
           !$OMP length_x_part,length_y_part,length_z_part,tilebuf,mpi_npart, &
           !$OMP xmin_part,xmax_part,ymin_part,ymax_part,zmin_part,zmax_part, &
-          !$OMP x_min_boundary,x_max_boundary,y_min_boundary,y_max_boundary,z_min_boundary,z_max_boundary, &
+          !$OMP x_min_boundary_part,x_max_boundary_part,y_min_boundary_part,y_max_boundary_part,z_min_boundary_part,z_max_boundary_part, &
           !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect)  &
           !$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
           !$OMP PRIVATE(ix,iy,iz,i,ib,k,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partpid, &
@@ -2266,13 +2298,15 @@ MODULE particle_boundary
                    ! Particle has left this processor -x
                    IF (partx .LT. x_min_local_part) THEN
                      xbd = -1
-                     IF (x_min_boundary) THEN
+                     IF (x_min_boundary_part) THEN
                        SELECT CASE (pbound_x_min)
                          CASE (1_idp) ! absorbing
                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                        CASE (3_idp) ! Reinjecting (not thermal for now)
                           curr_tile%part_x(i)=2*xmin_part-curr_tile%part_x(i)
                           curr_tile%part_ux(i)=0.
+                          curr_tile%part_uy(i)=0.
+                          curr_tile%part_uz(i)=0.
                           ! Sanity check (keep particle in same tile)
                           curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
                           curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
@@ -2290,7 +2324,7 @@ MODULE particle_boundary
                     ! Particle has left this processor +x
                     ELSE IF (partx .GE. x_max_local_part) THEN
                       xbd = 1
-                      IF (x_max_boundary) THEN
+                      IF (x_max_boundary_part) THEN
                         SELECT CASE (pbound_x_max)
                           CASE (1_idp) ! absorbing
                           CALL rm_particle_at_tile(curr,ix,iy,iz,i)
@@ -2298,6 +2332,8 @@ MODULE particle_boundary
                           CASE (3_idp) ! Reinjecting (not thermal for now)
                               curr_tile%part_x(i)=2*xmax_part-curr_tile%part_x(i)
                               curr_tile%part_ux(i)=0.
+                              curr_tile%part_uy(i)=0.
+                              curr_tile%part_uz(i)=0.
                               ! Sanity check (keep particle in same tile)
                               curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
                               curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
@@ -2316,14 +2352,16 @@ MODULE particle_boundary
                     ! Particle has left this processor -y
                     IF ((party .LT. y_min_local_part)) THEN
                       ybd = -1
-                       IF (y_min_boundary) THEN
+                       IF (y_min_boundary_part) THEN
                               SELECT CASE (pbound_y_min)! absorbing
                               CASE (1_idp)
                           CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                           CYCLE
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_y(i)=2*ymin_part-curr_tile%part_y(i)
+                            curr_tile%part_ux(i)=0.
                             curr_tile%part_uy(i)=0.
+                            curr_tile%part_uz(i)=0.
                             ! Sanity check (keep particle in same tile)
                             curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
                             curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
@@ -2340,14 +2378,16 @@ MODULE particle_boundary
                     ! Particle has left this processor +y
                     ELSE IF ((party .GE. y_max_local_part)) THEN
                       ybd = 1
-                      IF (y_max_boundary) THEN
+                      IF (y_max_boundary_part) THEN
                         SELECT CASE (pbound_y_max)
                         CASE (1_idp) ! absorbing
                                 CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                           CYCLE
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_y(i)=2*ymax_part-curr_tile%part_y(i)
+                            curr_tile%part_ux(i)=0.
                             curr_tile%part_uy(i)=0.
+                            curr_tile%part_uz(i)=0.
                             ! Sanity check (keep particle in same tile)
                             curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
                             curr_tile%part_x(i)=MIN(curr_tile%part_x(i),curr_tile%x_tile_max-0.5_num*dx)
@@ -2366,13 +2406,15 @@ MODULE particle_boundary
                     ! Particle has left this processor -z
                     IF (partz .LT. z_min_local_part) THEN
                       zbd = -1
-                      IF (z_min_boundary) THEN
+                      IF (z_min_boundary_part) THEN
                         SELECT CASE (pbound_z_min)
                           CASE (1_idp) ! absorbing
                             CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                           CYCLE
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_z(i)=2*zmin_part-curr_tile%part_z(i)
+                            curr_tile%part_ux(i)=0.
+                            curr_tile%part_uy(i)=0.
                             curr_tile%part_uz(i)=0.
                             ! Sanity check (keep particle in same tile)
                             curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
@@ -2391,13 +2433,15 @@ MODULE particle_boundary
                     ELSE IF (partz .GE. z_max_local_part) THEN
                             zbd = 1
                             ! Particle has left the system
-                            IF (z_max_boundary) THEN
+                            IF (z_max_boundary_part) THEN
                               SELECT CASE (pbound_z_max)
                               CASE (1_idp) ! absorbing
                                 CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                                 CYCLE
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr_tile%part_z(i)=2*zmax_part-curr_tile%part_z(i)
+                                  curr_tile%part_ux(i)=0.
+                                  curr_tile%part_uy(i)=0.
                                   curr_tile%part_uz(i)=0.
                                   ! Sanity check (keep particle in same tile)
                                   curr_tile%part_x(i)=MAX(curr_tile%part_x(i),curr_tile%x_tile_min+0.5_num*dx)
