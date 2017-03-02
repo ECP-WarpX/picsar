@@ -2233,7 +2233,8 @@ MODULE particle_boundary
           !$OMP pbound_z_max,x_min_local,y_min_local,z_min_local, &
           !$OMP length_x_part,length_y_part,length_z_part,tilebuf,mpi_npart, &
           !$OMP xmin_part,xmax_part,ymin_part,ymax_part,zmin_part,zmax_part, &
-          !$OMP x_min_boundary_part,x_max_boundary_part,y_min_boundary_part,y_max_boundary_part,z_min_boundary_part,z_max_boundary_part, &
+          !$OMP x_min_boundary_part,x_max_boundary_part,y_min_boundary_part,y_max_boundary_part, & 
+          !$OMP z_min_boundary_part,z_max_boundary_part, &
           !$OMP nx0_grid_tile_dx,ny0_grid_tile_dy,nz0_grid_tile_dz,dxs2,dys2,dzs2,mpi_buf_size,lvect)  &
           !$OMP FIRSTPRIVATE(ipx,ipy,ipz,is) &
           !$OMP PRIVATE(ix,iy,iz,i,ib,k,curr_tile,nptile,partx,party,partz,partux,partuy,partuz,gaminv,partpid, &
