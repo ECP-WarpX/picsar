@@ -847,7 +847,7 @@ class PSATD_Maxwell(GPSTDPXR):
             mymat.add_op('g',{'g':C,'bx':axp*c,'by':ayp*c,'bz':azp*c})
 
         return mymat.mat
-def getmaxwellmat_galilean(self,kxpn,kypn,kzpn,kxmn,kymn,kzmn,dt,cdt,V_galilean=np.array([0.,0.,0.])):
+    def getmaxwellmat_galilean(self,kxpn,kypn,kzpn,kxmn,kymn,kzmn,dt,cdt,V_galilean=np.array([0.,0.,0.])):
 
         j = 1j
         V0 = np.linalg.norm(V_galilean)

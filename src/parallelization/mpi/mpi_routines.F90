@@ -659,54 +659,101 @@ MODULE mpi_routines
     CALL allocate_grid_quantities()
     start_time = MPI_WTIME()
 
-    ! ----- Set up particle domain extents
+    ! ---- set up global particle domain boundaries
+    ! ----- Set up particle domain external boundaries flags 
+    ! ----- Set up local domain boundaries 
+    ! -- Xmin 
+    IF  ((pbound_x_min .EQ. 3) .OR. (pbound_x_min .EQ. 1)) THEN 
+        xmin_part=xmin+offset_grid_part_x_min
+        IF ((xmin_part .GE. x_min_local) .AND. (xmin_part .LT. x_max_local)) THEN 
+            x_min_boundary_part= .TRUE. 
+            x_min_local_part = xmin_part
+        ELSE
+            x_min_boundary_part= .FALSE.
+            x_min_local_part = x_min_local 
+        ENDIF 
+    ELSE 
+        xmin_part=xmin
+        x_min_boundary_part=x_min_boundary 
+        x_min_local_part=x_min_local 
+    ENDIF 
+    ! -- Xmax 
+    IF  ((pbound_x_max .EQ. 3) .OR. (pbound_x_max .EQ. 1)) THEN 
+        xmax_part=xmax+offset_grid_part_x_max
+        IF ((xmax_part .GE. x_min_local) .AND. (xmax_part .LT. x_max_local)) THEN 
+            x_max_boundary_part= .TRUE. 
+            x_max_local_part = xmax_part
+        ELSE
+            x_max_boundary_part= .FALSE.
+            x_max_local_part = x_max_local 
+        ENDIF 
+    ELSE 
+        xmax_part=xmax
+        x_max_boundary_part=x_max_boundary 
+        x_max_local_part=x_max_local 
+    ENDIF 
+    ! -- Ymin 
+    IF  ((pbound_y_min .EQ. 3) .OR. (pbound_y_min .EQ. 1)) THEN 
+        ymin_part=ymin+offset_grid_part_y_min
+        IF ((ymin_part .GE. y_min_local) .AND. (ymin_part .LT. y_max_local)) THEN 
+            y_min_boundary_part= .TRUE. 
+            y_min_local_part = ymin_part
+        ELSE
+            y_min_boundary_part= .FALSE.
+            y_min_local_part = y_min_local 
+        ENDIF 
+    ELSE 
+        ymin_part=ymin
+        y_min_boundary_part=y_min_boundary 
+        y_min_local_part=y_min_local 
+    ENDIF 
+    ! -- Ymax 
+    IF  ((pbound_y_max .EQ. 3) .OR. (pbound_y_max .EQ. 1)) THEN 
+        ymax_part=ymax+offset_grid_part_y_max
+        IF ((ymax_part .GE. y_min_local) .AND. (ymax_part .LT. y_max_local)) THEN 
+            y_max_boundary_part= .TRUE. 
+            y_max_local_part = ymax_part
+        ELSE
+            y_max_boundary_part= .FALSE.
+            y_max_local_part = y_max_local 
+        ENDIF 
+    ELSE 
+        ymax_part=ymax
+        y_max_boundary_part=y_max_boundary 
+        y_max_local_part=y_max_local 
+    ENDIF 
+    ! -- zmin 
+    IF  ((pbound_z_min .EQ. 3) .OR. (pbound_z_min .EQ. 1)) THEN 
+        zmin_part=zmin+offset_grid_part_z_min
+        IF ((zmin_part .GE. z_min_local) .AND. (zmin_part .LT. z_max_local)) THEN 
+            z_min_boundary_part= .TRUE. 
+            z_min_local_part = zmin_part
+        ELSE
+            z_min_boundary_part= .FALSE.
+            z_min_local_part = z_min_local 
+        ENDIF 
+    ELSE 
+        zmin_part=zmin
+        z_min_boundary_part=z_min_boundary 
+        z_min_local_part=z_min_local 
+    ENDIF 
+    ! -- zmax 
+    IF  ((pbound_z_max .EQ. 3) .OR. (pbound_z_max .EQ. 1)) THEN 
+        zmax_part=zmax+offset_grid_part_z_max
+        IF ((zmax_part .GE. z_min_local) .AND. (zmax_part .LT. z_max_local)) THEN 
+            z_max_boundary_part= .TRUE. 
+            z_max_local_part = zmax_part
+        ELSE
+            z_max_boundary_part= .FALSE.
+            z_max_local_part = z_max_local 
+        ENDIF 
+    ELSE 
+        zmax_part=zmax
+        z_max_boundary_part=z_max_boundary 
+        z_max_local_part=z_max_local 
+    ENDIF 
 
-
-    ! ---- Set up local boundaries
-    IF (x_min_boundary) THEN
-       x_min_local_part = x_min_local+offset_grid_part_x_min
-    ELSE
-      x_min_local_part = x_min_local
-    ENDIF
-
-    IF (x_max_boundary) THEN
-       x_max_local_part = x_max_local+offset_grid_part_x_max
-    ELSE
-      x_max_local_part = x_max_local
-    ENDIF
-
-    IF (y_min_boundary) THEN
-       y_min_local_part = y_min_local+offset_grid_part_y_min
-    ELSE
-      y_min_local_part = y_min_local
-    ENDIF
-
-    IF (y_max_boundary) THEN
-       y_max_local_part = y_max_local+offset_grid_part_y_max
-    ELSE
-      y_max_local_part = y_max_local
-    ENDIF
-
-    IF (z_min_boundary) THEN
-       z_min_local_part = z_min_local+offset_grid_part_z_min
-    ELSE
-      z_min_local_part = z_min_local
-    ENDIF
-
-    IF (z_max_boundary) THEN
-       z_max_local_part = z_max_local+offset_grid_part_z_max
-    ELSE
-      z_max_local_part = z_max_local
-    ENDIF
-
-    ! ---- set up global boundaries
-    xmin_part=xmin+offset_grid_part_x_min
-    xmax_part=xmax+offset_grid_part_x_max
-    ymin_part=ymin+offset_grid_part_y_min
-    ymax_part=ymax+offset_grid_part_y_max
-    zmin_part=zmin+offset_grid_part_z_min
-    zmax_part=zmax+offset_grid_part_z_max
-
+    ! Set particle domain extent 
     length_x_part = xmax_part - xmin_part
     length_y_part = ymax_part - ymin_part
     length_z_part = zmax_part - zmin_part

@@ -985,18 +985,32 @@ MODULE shared_data
   INTEGER(isp) :: nprocdir(3)
 
   ! Boundary data
-  !> This flag is true if the MPI rank is at the inferior x boundary
+  !> This flag is true if the MPI rank is at the inferior x grid boundary
   LOGICAL(lp)  :: x_min_boundary
-  !> This flag is true if the MPI rank is at the superior x boundary
+  !> This flag is true if the MPI rank is at the superior x grid boundary
   LOGICAL(lp)  :: x_max_boundary
-  !> This flag is true if the MPI rank is at the inferior y boundary
+  !> This flag is true if the MPI rank is at the inferior y grid boundary
   LOGICAL(lp)  :: y_min_boundary
-  !> This flag is true if the MPI rank is at the superior y boundary
+  !> This flag is true if the MPI rank is at the superior y grid boundary
   LOGICAL(lp)  :: y_max_boundary
-  !> This flag is true if the MPI rank is at the inferior z boundary
+  !> This flag is true if the MPI rank is at the inferior z grid boundary
   LOGICAL(lp)  :: z_min_boundary
-  !> This flag is true if the MPI rank is at the superior z boundary
+  !> This flag is true if the MPI rank is at the superior z grid boundary
   LOGICAL(lp)  :: z_max_boundary
+
+  !> This flag is true if the MPI rank is at the inferior x part boundary
+  LOGICAL(lp)  :: x_min_boundary_part
+  !> This flag is true if the MPI rank is at the superior x part boundary
+  LOGICAL(lp)  :: x_max_boundary_part
+  !> This flag is true if the MPI rank is at the inferior y part boundary
+  LOGICAL(lp)  :: y_min_boundary_part
+  !> This flag is true if the MPI rank is at the superior y part boundary
+  LOGICAL(lp)  :: y_max_boundary_part
+  !> This flag is true if the MPI rank is at the inferior z part boundary
+  LOGICAL(lp)  :: z_min_boundary_part
+  !> This flag is true if the MPI rank is at the superior z part boundary
+  LOGICAL(lp)  :: z_max_boundary_part
+
 
   !> Type of particle boundary condition at the inferior x boundary
   INTEGER(idp) :: pbound_x_min
@@ -1161,22 +1175,23 @@ MODULE shared_data
   REAL(num)                           :: length_z_part
 
   !> Offset between grid and particle limits (x min bound)
-  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
+  !> particle boundary conditions. Forced to 0 otherwise 
   REAL(num)                           :: offset_grid_part_x_min =0.
-  !> Offset between grid and particle limits (x max bound)
-  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
+  !> particle boundary conditions. Forced to 0 otherwise 
   REAL(num)                           :: offset_grid_part_x_max =0.
-  !> Offset between grid and particle limits (y min bound)
-  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
+  !> particle boundary conditions. Forced to 0 otherwise 
   REAL(num)                           :: offset_grid_part_y_min =0.
-  !> Offset between grid and particle limits (y max bound)
-  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
+  !> particle boundary conditions. Forced to 0 otherwise 
   REAL(num)                           :: offset_grid_part_y_max =0.
-  !> Offset between grid and particle limits (z min bound)
-  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
+  !> particle boundary conditions. Forced to 0 otherwise 
   REAL(num)                           :: offset_grid_part_z_min =0.
-  !> Offset between grid and particle limits (z max bound)
-  !> Default is 0. NB:At present Offset should not execeed extent of MPI domain
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
+  !> particle boundary conditions. Forced to 0 otherwise 
   REAL(num)                           :: offset_grid_part_z_max =0.
 
   ! Sorting
