@@ -377,8 +377,8 @@ class PSATD_Maxwell_PML(GPSTDPXR):
                 f[:self.nxguard,...]=0.
                 f[-self.nxguard/2:,...]=0.
             if self.ny>1:
-                f[...,:self.nyguard,...]=0.
-                f[...,-self.nyguard/2:,...]=0.
+                f[:,:self.nyguard,:]=0.
+                f[:,-self.nyguard/2:,:]=0.
             if self.nz>1:
                 f[...,:self.nzguard/2]=0.
                 f[...,-self.nzguard/2:]=0.
