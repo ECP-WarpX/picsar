@@ -97,7 +97,7 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
         if pidpairs is None:
             if top.wpid>0:
                 if w is None:
-                   w=np.ones(nps0)+self.sw0
+                   w=np.ones(nps0)
                 pids[:,pxr.wpid-1]=w*self.sw0
         else:
             for id,pp in pidpairs:
