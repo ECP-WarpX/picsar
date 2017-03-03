@@ -87,7 +87,10 @@ except:
     l_fftw=False
 
 
-def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,lallindomain=False,pidpairs=None):
+def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
+                         lallindomain=False,
+                         lmomentum=False,
+                         pidpairs=None):
         nps0 = x.size
         pids = np.zeros([nps0,pxr.npid])
         # --- Load in any pid data passed in
@@ -105,10 +108,15 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,lallindom
         x = array(x)*ones(nps0,'d')
         y = array(y)*ones(nps0,'d')
         z = array(z)*ones(nps0,'d')
-        vx = array(vx)*ones(nps0,'d')
-        vy = array(vy)*ones(nps0,'d')
-        vz = array(vz)*ones(nps0,'d')
         gi = array(gi)*ones(nps0,'d')
+        if lmomentum:
+            vx = array(vx)*ones(nps0,'d')
+            vy = array(vy)*ones(nps0,'d')
+            vz = array(vz)*ones(nps0,'d')
+        else:
+            vx = array(vx)*ones(nps0,'d')/gi
+            vy = array(vy)*ones(nps0,'d')/gi
+            vz = array(vz)*ones(nps0,'d')/gi
         pxr.py_add_particles_to_species(self.pxr_species_array, nps0,pxr.npid,
                                         x,
                                         y,
