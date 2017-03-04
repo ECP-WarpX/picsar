@@ -153,7 +153,7 @@ class EM3DPXR(EM3DFFT):
                       'mpi_buf_size':2000,
                       'sorting':None,
                       'l_debug':0,
-                      'l_reinject':[0., 0., 0., 0., 0., 0.],
+                      'l_reinject':[0, 0, 0, 0, 0, 0],
                       'offset_x_part_grid':[0.,0.],
                       'offset_y_part_grid':[0.,0.],
                       'offset_z_part_grid':[0.,0.],
