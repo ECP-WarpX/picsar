@@ -126,6 +126,8 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                                         vz,
                                         gi,
                                         pids)
+                                        
+        if not lallindomain:pxr.particle_bcs()
 
 class EM3DPXR(EM3DFFT):
 
@@ -622,6 +624,7 @@ class EM3DPXR(EM3DFFT):
             # In PXR, pid[:,wpid] is the weight of the particle
             # (but not in WARP so correct it to get good normalization)
             pids[:,top.wpid-1]*=s.sw
+            s.sw0=s.sw*1.
             # Add particles of species s to PXR
             pxr.py_add_particles_to_species(i+1, s.nps,top.npid,
                                             s.getx(bcast=0,gather=0),
@@ -640,11 +643,6 @@ class EM3DPXR(EM3DFFT):
 
         # --- mirror PXR tile structure in Warp with list of pgroups
         if (self.l_debug): print(" Mirror PXR tile structure in Warp with list of pgroups")
-        for i,s in enumerate(self.listofallspecies):
-            s.pgroups = []
-            s.jslist = [0]
-            s.sw0=s.sw*1.
-
         for i,s in enumerate(self.listofallspecies):
             s.pgroups = []
             s.jslist = [0]
