@@ -86,7 +86,6 @@ except:
     fft = np.fft
     l_fftw=False
 
-
 def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                          lallindomain=False,
                          lmomentum=False,
@@ -127,7 +126,50 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                                         gi,
                                         pids)
                                         
-        if not lallindomain:pxr.particle_bcs()
+        if not lallindomain:
+            pxr.particle_bcs()
+            aliasparticlearrays()
+
+def aliasparticlearrays():
+	global listofallspecies
+	# --- Detect if tile arrays have been reallocated in PXR
+	# --- and make proper aliasing in WARP
+
+	isrealloc=zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8'))
+	for i,s in enumerate(listofallspecies):
+		pxr.get_are_tiles_reallocated(i+1, pxr.ntilex, pxr.ntiley, pxr.ntilez,isrealloc)
+		ix,iy,iz=where(isrealloc==1)
+		for il in range(0,len(ix)):
+			pg = s.pgroups[iz[il]][iy[il]][ix[il]]
+			pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
+			pg.npmax = 0
+			pxr.partnmax
+			pg.ns=1
+			pg.npid=top.npid
+			pg.gchange()
+			pg.sq = s.charge
+			pg.sm = s.mass
+			pg.sw = s.sw
+			pg.npmax = pxr.partnmax
+			pg.nps = pxr.partn
+			pg.ins[0] = 1
+			pg.sid[0]=0
+			pg.xp = pxr.partx
+			pg.yp = pxr.party
+			pg.zp = pxr.partz
+			pg.uxp = pxr.partux
+			pg.uyp = pxr.partuy
+			pg.uzp = pxr.partuz
+			#pg.pid = fzeros([pg.npmax,top.npid])
+			pg.pid = pxr.pid
+			pg.gaminv = pxr.partgaminv
+			pg.ex = pxr.partex
+			pg.ey = pxr.partey
+			pg.ez = pxr.partez
+			pg.bx = pxr.partbx
+			pg.by = pxr.partby
+			pg.bz = pxr.partbz
+		pxr.set_are_tiles_reallocated(i+1, pxr.ntilex,pxr.ntiley,pxr.ntilez,zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8')))
 
 class EM3DPXR(EM3DFFT):
 
@@ -695,45 +737,6 @@ class EM3DPXR(EM3DFFT):
         if (self.l_debug): print("End allocatefieldarraysPXR")
 
 #            s.ppzx = ppzx
-    def aliasparticlearrays(self):
-        # --- Detect if tile arrays have been reallocated in PXR
-        # --- and make proper aliasing in WARP
-
-        isrealloc=zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8'))
-        for i,s in enumerate(self.listofallspecies):
-            pxr.get_are_tiles_reallocated(i+1, self.ntilex, self.ntiley, self.ntilez,isrealloc)
-            ix,iy,iz=where(isrealloc==1)
-            for il in range(0,len(ix)):
-                pg = s.pgroups[iz[il]][iy[il]][ix[il]]
-                pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
-                pg.npmax = 0
-                pxr.partnmax
-                pg.ns=1
-                pg.npid=top.npid
-                pg.gchange()
-                pg.sq = s.charge
-                pg.sm = s.mass
-                pg.sw = s.sw
-                pg.npmax = pxr.partnmax
-                pg.nps = pxr.partn
-                pg.ins[0] = 1
-                pg.sid[0]=0
-                pg.xp = pxr.partx
-                pg.yp = pxr.party
-                pg.zp = pxr.partz
-                pg.uxp = pxr.partux
-                pg.uyp = pxr.partuy
-                pg.uzp = pxr.partuz
-                #pg.pid = fzeros([pg.npmax,top.npid])
-                pg.pid = pxr.pid
-                pg.gaminv = pxr.partgaminv
-                pg.ex = pxr.partex
-                pg.ey = pxr.partey
-                pg.ez = pxr.partez
-                pg.bx = pxr.partbx
-                pg.by = pxr.partby
-                pg.bz = pxr.partbz
-            pxr.set_are_tiles_reallocated(i+1, self.ntilex,self.ntiley,self.ntilez,zeros((self.ntilex,self.ntiley,self.ntilez),dtype=dtype('i8')))
 
     def print_nptiles(self,ispecies):
         for iz in range(1,self.ntilez+1):
@@ -1342,7 +1345,7 @@ class EM3DPXR(EM3DFFT):
                 #        particleboundaries3d(pg,-1,False)
                 #pxr.particle_bcs_tiles()
                 if (self.l_debug): print("Call aliasparticlearrays()")
-                self.aliasparticlearrays()
+                aliasparticlearrays()
             else:
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
@@ -1372,7 +1375,7 @@ class EM3DPXR(EM3DFFT):
                 #    for pg in s.flatten(s.pgroups):
                 #        particleboundaries3d(pg,-1,False)
                 #pxr.particle_bcs_tiles()
-                self.aliasparticlearrays()
+                aliasparticlearrays()
 
             else:
                 for i,s in enumerate(self.listofallspecies):
@@ -1423,7 +1426,7 @@ class EM3DPXR(EM3DFFT):
         if (xgrid != 0. or ygrid!=0. or zgrid !=0.):
             pxr.pxr_move_sim_boundaries(xgrid,ygrid,zgrid)
             pxr.particle_bcs()
-            self.aliasparticlearrays()
+            aliasparticlearrays()
 
         if (self.l_debug): print("Call loadrho")
         self.loadrho(pgroups=pgroups)
