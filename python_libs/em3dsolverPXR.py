@@ -86,90 +86,214 @@ except:
     fft = np.fft
     l_fftw=False
 
-def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
+def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,pid=0.,w=None,
+                         ux=None,uy=None,uz=None,
                          lallindomain=False,
+                         xmmin=None,xmmax=None,
+                         ymmin=None,ymmax=None,
+                         zmmin=None,zmmax=None,
                          lmomentum=False,
+                         l2symtry=None,l4symtry=None,lrz=None,
                          pidpairs=None):
-        nps0 = x.size
-        pids = np.zeros([nps0,pxr.npid])
-        # --- Load in any pid data passed in
-        if pidpairs is None:
-            if top.wpid>0:
-                if w is None:
-                   w=np.ones(nps0)
-                pids[:,pxr.wpid-1]=w*self.sw0
-        else:
-            for id,pp in pidpairs:
-                pids[:,id-1] = pp
-                if top.wpid>0:
-                    pids[:,pxr.wpid-1]*=self.sw0
 
-        x = array(x)*ones(nps0,'d')
-        y = array(y)*ones(nps0,'d')
-        z = array(z)*ones(nps0,'d')
-        gi = array(gi)*ones(nps0,'d')
-        if lmomentum:
-            vx = array(vx)*ones(nps0,'d')
-            vy = array(vy)*ones(nps0,'d')
-            vz = array(vz)*ones(nps0,'d')
+    """
+  Adds particles to the simulation (this subroutine replaces Warp's 
+  particles.addparticles function, reproducing most basicvfunctionalities):
+    - x,y,z,vx,vy,vz,gi: particle coordinates and velocities.
+                         Can be arrays or scalars. Scalars are broadcast to all
+                         particles. Any that are unsupplied default to zero,
+                         except gi, which defaults to 1. (gi is 1/gamma, the
+                         relatistic paramter)
+    - ux, uy, uz: Instead of vx,vy,vz, these can be used, passing in momentums.
+                  The flag lmomentum will be set to true.
+    - pid: additional particle information, such as an ID number or weight.
+    - pidpairs=None: Allows setting specific pid columns. Argument must be a
+                     list of lists, each having the format [id,pidvalue].
+                     id is the one-based index returned by nextpid.
+                     The assigment pid[:,id-1] = pidvalue is done.
+    - w=1.: particle weight
+            this is only used if top.wpid > 0 and if lnewparticles is true.
+    - lallindomain=false: Flags whether particles are within the parallel domains
+                          When true, all particles are assumed to be with in the
+                          extent of the domain so particle scraping is not done.
+                          This is automatically set to true when the code is in
+                          slice mode, i.e. after package('wxy'). Except if the
+                          option is explicitly set. If false, the particles that
+                          are outside the parallel domain are not added.
+    - xmmin=top.xpminlocal,xmmax=top.xpmaxlocal
+                       x extent of the domain - should only be set in unusual
+                       circumstances.
+    - ymmin=top.ypminlocal,ymmax=top.ypmaxlocal
+                       y extent of the domain - should only be set in unusual
+                       circumstances.
+    - zmmin=top.zpminlocal+top.zgrid,zmmax=top.zpmaxlocal+top.zgrid:
+                       z extent of the domain - should only be set in unusual
+                       circumstances.
+    - l2symtry,l4symtry,lrz: System symmetries, default to w3d values
+    - lmomentum=false: Flags whether momentum or velocities are being input.
+                       Set to false when velocities are input as velocities, true
+                       when input as massless momentum (as WARP stores them).
+                       Only used when top.lrelativ is true.
+    """
+
+    # --- Get number of particles to add
+    nps0 = x.size
+    if nps0 == 0:return
+
+    # --- Use momentum quantities if specified. These take
+    # --- precedence over vx, vy, and vz.
+    if ux is not None or uy is not None or uz is not None:
+        lmomentum = true
+        if ux is not None: vx = ux
+        if uy is not None: vy = uy
+        if uz is not None: vz = uz
+
+    # --- Convert all to arrays of length maxlen, broadcasting scalars
+    x = array(x)*ones(nps0,'d')
+    y = array(y)*ones(nps0,'d')
+    z = array(z)*ones(nps0,'d')
+    gi = array(gi)*ones(nps0,'d')
+    if lmomentum:
+        vx = array(vx)*ones(nps0,'d')
+        vy = array(vy)*ones(nps0,'d')
+        vz = array(vz)*ones(nps0,'d')
+    else:
+        vx = array(vx)*ones(nps0,'d')/gi
+        vy = array(vy)*ones(nps0,'d')/gi
+        vz = array(vz)*ones(nps0,'d')/gi
+
+    pids = array(pid)*ones([nps0,pxr.npid])
+    # --- Load in any pid data passed in
+    if pidpairs is None:
+        if top.wpid>0:
+            if w is None:
+               w=np.ones(nps0)
+            pids[:,pxr.wpid-1]=w*self.sw0
+    else:
+        for id,pp in pidpairs:
+            pids[:,id-1] = pp
+            if top.wpid>0:
+                pids[:,pxr.wpid-1]*=self.sw0
+
+    # --- Set extent of domain
+    if xmmin is None: xmmin = top.xpminlocal
+    if xmmax is None: xmmax = top.xpmaxlocal
+    if w3d.solvergeom == w3d.XZgeom:
+        if ymmin is None: ymmin = -largepos
+        if ymmax is None: ymmax = +largepos
+    else:
+        if ymmin is None: ymmin = top.ypminlocal
+        if ymmax is None: ymmax = top.ypmaxlocal
+    if zmmin is None: zmmin = top.zpminlocal + top.zgrid
+    if zmmax is None: zmmax = top.zpmaxlocal + top.zgrid
+
+    if l2symtry is None: l2symtry = w3d.l2symtry
+    if l4symtry is None: l4symtry = w3d.l4symtry
+    if lrz is None: lrz = (w3d.solvergeom in [w3d.RZgeom,w3d.Rgeom])
+
+    # --- Do some error checking
+    if not lallindomain:
+        if zmmin == zmmax:
+            print "=================================================================="
+            print "AddparticlesPXR: warning - no particles will be loaded - you should"
+            print "either set lallindomain=true or set zmmin and zmmax so they are"
+            print "different from each other."
+            print "=================================================================="
+        if not lrz and ymmin == ymmax:
+            print "=================================================================="
+            print "AddparticlesPXR: warning - no particles will be loaded - you should"
+            print "either set lallindomain=true or set ymmin and ymmax so they are"
+            print "different from each other."
+            print "=================================================================="
+
+    # --- if lalldomain==False, removes particles outside boundaries
+    if not lallindomain:
+    
+        if lrz:
+            r = sqrt(x*x+y*y)
+            cond = (r>=xmmin) & (r<xmmax) \
+                 & (z>=zmmin) & (z<zmmax)
         else:
-            vx = array(vx)*ones(nps0,'d')/gi
-            vy = array(vy)*ones(nps0,'d')/gi
-            vz = array(vz)*ones(nps0,'d')/gi
-        pxr.py_add_particles_to_species(self.pxr_species_array, nps0,pxr.npid,
-                                        x,
-                                        y,
-                                        z,
-                                        vx,
-                                        vy,
-                                        vz,
-                                        gi,
-                                        pids)
-                                        
-        if not lallindomain:
-            pxr.particle_bcs()
-            aliasparticlearrays()
+            if l4symtry:
+                xc = abs(x)
+                yc = abs(y)
+            else:
+                if l2symtry:
+                    xc = abs(x)
+                    yc = y
+                else:
+                    xc = x
+                    yc = y
+            cond = (xc>=xmmin) & (xc<xmmax) \
+                 & (yc>=ymmin) & (yc<ymmax) \
+                 & (z >=zmmin) & (z <zmmax)
+    
+        if cond.size==0:return
+        
+        x = x[cond]
+        y = y[cond]
+        z = z[cond]
+        vx = vx[cond]
+        vy = vy[cond]
+        vz = vz[cond]
+        gi = gi[cond]
+        pids = compress(cond,pids,0)
+    
+    # --- Call to PICSAR function for adding particles
+    pxr.py_add_particles_to_species(self.pxr_species_array, 
+                                    nps0,
+                                    pxr.npid,
+                                    x,
+                                    y,
+                                    z,
+                                    vx,
+                                    vy,
+                                    vz,
+                                    gi,
+                                    pids)
+                                    
+    aliasparticlearrays()
 
 def aliasparticlearrays():
-	global listofallspecies
-	# --- Detect if tile arrays have been reallocated in PXR
-	# --- and make proper aliasing in WARP
+    global listofallspecies
+    # --- Detect if tile arrays have been reallocated in PXR
+    # --- and make proper aliasing in WARP
 
-	isrealloc=zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8'))
-	for i,s in enumerate(listofallspecies):
-		pxr.get_are_tiles_reallocated(i+1, pxr.ntilex, pxr.ntiley, pxr.ntilez,isrealloc)
-		ix,iy,iz=where(isrealloc==1)
-		for il in range(0,len(ix)):
-			pg = s.pgroups[iz[il]][iy[il]][ix[il]]
-			pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
-			pg.npmax = 0
-			pxr.partnmax
-			pg.ns=1
-			pg.npid=top.npid
-			pg.gchange()
-			pg.sq = s.charge
-			pg.sm = s.mass
-			pg.sw = s.sw
-			pg.npmax = pxr.partnmax
-			pg.nps = pxr.partn
-			pg.ins[0] = 1
-			pg.sid[0]=0
-			pg.xp = pxr.partx
-			pg.yp = pxr.party
-			pg.zp = pxr.partz
-			pg.uxp = pxr.partux
-			pg.uyp = pxr.partuy
-			pg.uzp = pxr.partuz
-			#pg.pid = fzeros([pg.npmax,top.npid])
-			pg.pid = pxr.pid
-			pg.gaminv = pxr.partgaminv
-			pg.ex = pxr.partex
-			pg.ey = pxr.partey
-			pg.ez = pxr.partez
-			pg.bx = pxr.partbx
-			pg.by = pxr.partby
-			pg.bz = pxr.partbz
-		pxr.set_are_tiles_reallocated(i+1, pxr.ntilex,pxr.ntiley,pxr.ntilez,zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8')))
+    isrealloc=zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8'))
+    for i,s in enumerate(listofallspecies):
+        pxr.get_are_tiles_reallocated(i+1, pxr.ntilex, pxr.ntiley, pxr.ntilez,isrealloc)
+        ix,iy,iz=where(isrealloc==1)
+        for il in range(0,len(ix)):
+            pg = s.pgroups[iz[il]][iy[il]][ix[il]]
+            pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
+            pg.npmax = 0
+            pxr.partnmax
+            pg.ns=1
+            pg.npid=top.npid
+            pg.gchange()
+            pg.sq = s.charge
+            pg.sm = s.mass
+            pg.sw = s.sw
+            pg.npmax = pxr.partnmax
+            pg.nps = pxr.partn
+            pg.ins[0] = 1
+            pg.sid[0]=0
+            pg.xp = pxr.partx
+            pg.yp = pxr.party
+            pg.zp = pxr.partz
+            pg.uxp = pxr.partux
+            pg.uyp = pxr.partuy
+            pg.uzp = pxr.partuz
+            #pg.pid = fzeros([pg.npmax,top.npid])
+            pg.pid = pxr.pid
+            pg.gaminv = pxr.partgaminv
+            pg.ex = pxr.partex
+            pg.ey = pxr.partey
+            pg.ez = pxr.partez
+            pg.bx = pxr.partbx
+            pg.by = pxr.partby
+            pg.bz = pxr.partbz
+        pxr.set_are_tiles_reallocated(i+1, pxr.ntilex,pxr.ntiley,pxr.ntilez,zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8')))
 
 class EM3DPXR(EM3DFFT):
 
