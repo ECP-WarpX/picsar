@@ -131,45 +131,45 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
             aliasparticlearrays()
 
 def aliasparticlearrays():
-	global listofallspecies
-	# --- Detect if tile arrays have been reallocated in PXR
-	# --- and make proper aliasing in WARP
+    global listofallspecies
+    # --- Detect if tile arrays have been reallocated in PXR
+    # --- and make proper aliasing in WARP
 
-	isrealloc=zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8'))
-	for i,s in enumerate(listofallspecies):
-		pxr.get_are_tiles_reallocated(i+1, pxr.ntilex, pxr.ntiley, pxr.ntilez,isrealloc)
-		ix,iy,iz=where(isrealloc==1)
-		for il in range(0,len(ix)):
-			pg = s.pgroups[iz[il]][iy[il]][ix[il]]
-			pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
-			pg.npmax = 0
-			pxr.partnmax
-			pg.ns=1
-			pg.npid=top.npid
-			pg.gchange()
-			pg.sq = s.charge
-			pg.sm = s.mass
-			pg.sw = s.sw
-			pg.npmax = pxr.partnmax
-			pg.nps = pxr.partn
-			pg.ins[0] = 1
-			pg.sid[0]=0
-			pg.xp = pxr.partx
-			pg.yp = pxr.party
-			pg.zp = pxr.partz
-			pg.uxp = pxr.partux
-			pg.uyp = pxr.partuy
-			pg.uzp = pxr.partuz
-			#pg.pid = fzeros([pg.npmax,top.npid])
-			pg.pid = pxr.pid
-			pg.gaminv = pxr.partgaminv
-			pg.ex = pxr.partex
-			pg.ey = pxr.partey
-			pg.ez = pxr.partez
-			pg.bx = pxr.partbx
-			pg.by = pxr.partby
-			pg.bz = pxr.partbz
-		pxr.set_are_tiles_reallocated(i+1, pxr.ntilex,pxr.ntiley,pxr.ntilez,zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8')))
+    isrealloc=zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8'))
+    for i,s in enumerate(listofallspecies):
+        pxr.get_are_tiles_reallocated(i+1, pxr.ntilex, pxr.ntiley, pxr.ntilez,isrealloc)
+        ix,iy,iz=where(isrealloc==1)
+        for il in range(0,len(ix)):
+            pg = s.pgroups[iz[il]][iy[il]][ix[il]]
+            pxr.point_to_tile(i+1, ix[il]+1, iy[il]+1, iz[il]+1)
+            pg.npmax = 0
+            pxr.partnmax
+            pg.ns=1
+            pg.npid=top.npid
+            pg.gchange()
+            pg.sq = s.charge
+            pg.sm = s.mass
+            pg.sw = s.sw
+            pg.npmax = pxr.partnmax
+            pg.nps = pxr.partn
+            pg.ins[0] = 1
+            pg.sid[0]=0
+            pg.xp = pxr.partx
+            pg.yp = pxr.party
+            pg.zp = pxr.partz
+            pg.uxp = pxr.partux
+            pg.uyp = pxr.partuy
+            pg.uzp = pxr.partuz
+            #pg.pid = fzeros([pg.npmax,top.npid])
+            pg.pid = pxr.pid
+            pg.gaminv = pxr.partgaminv
+            pg.ex = pxr.partex
+            pg.ey = pxr.partey
+            pg.ez = pxr.partez
+            pg.bx = pxr.partbx
+            pg.by = pxr.partby
+            pg.bz = pxr.partbz
+        pxr.set_are_tiles_reallocated(i+1, pxr.ntilex,pxr.ntiley,pxr.ntilez,zeros((pxr.ntilex,pxr.ntiley,pxr.ntilez),dtype=dtype('i8')))
 
 class EM3DPXR(EM3DFFT):
 
