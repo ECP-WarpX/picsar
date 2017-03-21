@@ -53,20 +53,31 @@
 !> 2015
 SUBROUTINE warpx_pxr_gete3d_n_energy_conserving( &
   np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
-  exg,exlo,exhi,eyg,eylo,eyhi,ezg,ezlo,ezhi,l_lower_order_in_v)
+  exg, ex_nguard, ex_nvalid, &
+  eyg, ey_nguard, ey_nvalid, &
+  ezg, ez_nguard, ez_nvalid, &
+  l_lower_order_in_v)
 ! ______________________________________________________________________________
 USE omp_lib
 USE constants
 IMPLICIT NONE
 
-  INTEGER, INTENT(IN)      :: exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3)
+  INTEGER, INTENT(IN) :: ex_nguard(3),ex_nvalid(3),&
+                         ey_nguard(3),ey_nvalid(3),&
+                         ez_nguard(3),ez_nvalid(3)
   INTEGER(idp)             :: np
   INTEGER(idp)             :: nox,noy,noz
   REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
   LOGICAL(lp)              :: l_lower_order_in_v
-  real(num), intent(IN):: exg(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
-  real(num), intent(IN):: eyg(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
-  real(num), intent(IN):: ezg(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
+  REAL(num), intent(IN):: exg(-ex_nguard(1):ex_nvalid(1)+ex_nguard(1), &
+  	                      -ex_nguard(2):ex_nvalid(2)+ex_nguard(2), &
+                              -ex_nguard(3):ex_nvalid(3)+ex_nguard(3))
+  REAL(num), intent(IN):: eyg(-ey_nguard(1):ey_nvalid(1)+ey_nguard(1), &
+                              -ey_nguard(2):ey_nvalid(2)+ey_nguard(2), &
+                              -ey_nguard(3):ey_nvalid(3)+ey_nguard(3))
+  REAL(num), intent(IN):: ezg(-ez_nguard(1):ez_nvalid(1)+ez_nguard(1), &
+                              -ez_nguard(2):ez_nvalid(2)+ez_nguard(2), &
+                              -ez_nguard(3):ez_nvalid(3)+ez_nguard(3))
   REAL(num) :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
   ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
