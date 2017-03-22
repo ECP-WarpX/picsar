@@ -271,6 +271,82 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 
+  ! Build array of guard cells and valid cells, to pass them to the generic routine
+  integer                       :: nguard(3), nvalid(3)
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
+
+  call geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                                       xmin,ymin,zmin,            &
+                                       dx,dy,dz,nox,noy,noz,      &
+                                       exg,nguard,nvalid,         &
+                                       eyg,nguard,nvalid,         &
+                                       ezg,nguard,nvalid,         &
+                                       bxg,nguard,nvalid,         &
+                                       byg,nguard,nvalid,         &
+                                       bzg,nguard,nvalid,         &
+                                       ll4symtry,                 &
+                                       l_lower_order_in_v,        &
+                                       lvect,                     &
+                                       field_gathe_algo)
+END SUBROUTINE
+
+SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                                     xmin,ymin,zmin,            &
+                                     dx,dy,dz,nox,noy,noz,      &
+                                     exg,exg_nguard,exg_nvalid, &
+                                     eyg,eyg_nguard,eyg_nvalid, &
+                                     ezg,ezg_nguard,ezg_nvalid, &
+                                     bxg,bxg_nguard,bxg_nvalid, &
+                                     byg,byg_nguard,byg_nvalid, &
+                                     bzg,bzg_nguard,bzg_nvalid, &
+                                     ll4symtry,                 &
+                                     l_lower_order_in_v,        &
+                                     lvect,                     &
+                                     field_gathe_algo)
+! ______________________________________________________________________________
+
+  USE constants
+  USE particles
+  USE params
+  implicit none
+
+  integer(idp)                  :: field_gathe_algo
+  integer(idp)                  :: np,nox,noy,noz
+  integer, intent(IN)           :: exg_nguard(3),exg_nvalid(3),&
+                                   eyg_nguard(3),eyg_nvalid(3),&
+                                   ezg_nguard(3),ezg_nvalid(3),&
+                                   bxg_nguard(3),bxg_nvalid(3),&
+                                   byg_nguard(3),byg_nvalid(3),&
+                                   bzg_nguard(3),bzg_nvalid(3)
+  LOGICAL(lp) , intent(in)      :: ll4symtry,l_lower_order_in_v
+  real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  real(num)                     :: xmin,ymin,zmin,dx,dy,dz
+  integer(idp)                  :: lvect
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
+                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
+                              -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
+                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
+                              -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
+                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
+                              -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
+                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
+                              -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
+                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
+                              -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
+                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
+                              -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
+
+! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
+! although they will not be used in the future
+integer(idp) :: nx=0, ny=0, nz=0
+integer(idp) :: nxguard=0, nyguard=0, nzguard=0
+
   IF (np .EQ. 0_idp) RETURN
 
   SELECT CASE(field_gathe_algo)
@@ -312,7 +388,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                      nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
       ENDIF
-    
+
 
     ! ______________________________________
     ! Vectorized non efficient field gathering subroutines
@@ -481,9 +557,15 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 
       IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
         !!! --- Gather electric and magnetic fields on particles
-        CALL geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,  &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+        CALL geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp, &
+            ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz, &
+            exg,exg_nguard,exg_nvalid, &
+            eyg,eyg_nguard,eyg_nvalid, &
+            ezg,ezg_nguard,ezg_nvalid, &
+            bxg,bxg_nguard,bxg_nvalid, &
+            byg,byg_nguard,byg_nvalid, &
+            bzg,bzg_nguard,bzg_nvalid, &
+            lvect,l_lower_order_in_v)
 
       ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
         !!! --- Gather electric and magnetic fields on particles

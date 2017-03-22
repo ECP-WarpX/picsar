@@ -73,7 +73,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,
                                       exg,eyg,ezg,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   USE params
 
@@ -1362,7 +1362,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz, 
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
 ! ______________________________________________________________________________
-  
+
   USE constants
   IMPLICIT NONE
 
@@ -1599,7 +1599,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,x
                                       exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   USE params
   IMPLICIT NONE
@@ -1887,9 +1887,9 @@ END SUBROUTINE
 
 ! ______________________________________________________________________________
 !> @brief
-!> Field gathering CIC (order 1) with gathering of E and B merged 
+!> Field gathering CIC (order 1) with gathering of E and B merged
 !> in a single loop.
-!> this 4th version uses !$OMP SIMD private for sx,sy,sz,sx0,sy0,sz0 
+!> this 4th version uses !$OMP SIMD private for sx,sy,sz,sx0,sy0,sz0
 !> instead of having a new dimension
 !
 !> @details
@@ -1909,31 +1909,61 @@ END SUBROUTINE
 !> @param[in] xmin,ymin,zmin tile minimum grid position
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
-!> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
-!> @param[in] exg,eyg,ezg electric field grid
-!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells
+!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid grid points
+!> @param[in] bxg,byg,bzg electric field grids
+!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells
+!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid grid points
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
-SUBROUTINE geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+SUBROUTINE geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
+                                         xmin,ymin,zmin,dx,dy,dz,   &
+                                         exg,exg_nguard,exg_nvalid, &
+                                         eyg,eyg_nguard,eyg_nvalid, &
+                                         ezg,ezg_nguard,ezg_nvalid, &
+                                         bxg,bxg_nguard,bxg_nvalid, &
+                                         byg,byg_nguard,byg_nvalid, &
+                                         bzg,bzg_nguard,bzg_nvalid, &
+                                         lvect, l_lower_order_in_v)
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   USE params
   IMPLICIT NONE
 
   ! __ Parameter declaration _____________________________________________________
-  INTEGER(idp), intent(in)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  INTEGER(idp), intent(in)                         :: lvect
-  REAL(num), DIMENSION(np), intent(in)             :: xp,yp,zp
-  REAL(num), DIMENSION(np), intent(inout)          :: ex,ey,ez,bx,by,bz
-  LOGICAL(lp), intent(in)                          :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
-                                        intent(in) :: exg,eyg,ezg,bxg,byg,bzg
+  INTEGER(idp), intent(in)                :: np
+  integer, intent(IN)                     :: exg_nguard(3),exg_nvalid(3),&
+                                             eyg_nguard(3),eyg_nvalid(3),&
+                                             ezg_nguard(3),ezg_nvalid(3),&
+                                             bxg_nguard(3),bxg_nvalid(3),&
+                                             byg_nguard(3),byg_nvalid(3),&
+                                             bzg_nguard(3),bzg_nvalid(3)
+  INTEGER(idp), intent(in)                :: lvect
+  REAL(num), DIMENSION(np), intent(in)    :: xp,yp,zp
+  REAL(num), DIMENSION(np), intent(inout) :: ex,ey,ez,bx,by,bz
+  LOGICAL(lp), intent(in)                 :: l_lower_order_in_v
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
+                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
+                              -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
+                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
+                              -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
+                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
+                              -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
+                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
+                              -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
+                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
+                              -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
+                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
+                              -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
 
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
@@ -2239,7 +2269,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_v2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,
                                            dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v )
 ! ______________________________________________________________________________
-  
+
   USE constants
   IMPLICIT NONE
 
@@ -2310,7 +2340,7 @@ SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size,xp,yp,zp,ex,ey,ez,bx,by,
                                            dxi,dyi,dzi,nx,ny,nz,nxguard,nyguard,nzguard, &
                                            exg,eyg,ezg,bxg,byg,bzg)
 ! ______________________________________________________________________________
-  
+
   USE constants
   IMPLICIT NONE
 
