@@ -22,7 +22,7 @@ SUBROUTINE warpx_pxr_depose_jxjyjz_esirkepov_n( &
   USE constants
   IMPLICIT NONE
 
-  INTEGER, INTENT(IN)      :: jx_nguard(3),jy_nguard(3),jz_nguard(3), &
+  INTEGER(idp), INTENT(IN) :: jx_nguard(3),jy_nguard(3),jz_nguard(3), &
   	   		      jx_nvalid(3),jy_nvalid(3),jz_nvalid(3)
   INTEGER(idp)             :: np,nox,noy,noz
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv

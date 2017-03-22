@@ -1936,7 +1936,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
 
   ! __ Parameter declaration _____________________________________________________
   INTEGER(idp), intent(in)                :: np
-  integer, intent(IN)                     :: exg_nguard(3),exg_nvalid(3),&
+  INTEGER(idp), intent(in)                :: exg_nguard(3),exg_nvalid(3),&
                                              eyg_nguard(3),eyg_nvalid(3),&
                                              ezg_nguard(3),ezg_nvalid(3),&
                                              bxg_nguard(3),bxg_nvalid(3),&

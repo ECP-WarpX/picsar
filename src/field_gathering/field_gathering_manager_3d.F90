@@ -272,7 +272,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
 
   ! Build array of guard cells and valid cells, to pass them to the generic routine
-  integer                       :: nguard(3), nvalid(3)
+  integer(idp)                       :: nguard(3), nvalid(3)
   nguard = (/ nxguard, nyguard, nzguard /)
   nvalid = (/ nx+1, ny+1, nz+1 /)
 
@@ -313,7 +313,7 @@ SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 
   integer(idp)                  :: field_gathe_algo
   integer(idp)                  :: np,nox,noy,noz
-  integer, intent(IN)           :: exg_nguard(3),exg_nvalid(3),&
+  integer(idp), intent(IN)      :: exg_nguard(3),exg_nvalid(3),&
                                    eyg_nguard(3),eyg_nvalid(3),&
                                    ezg_nguard(3),ezg_nvalid(3),&
                                    bxg_nguard(3),bxg_nvalid(3),&
