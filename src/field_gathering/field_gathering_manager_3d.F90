@@ -343,9 +343,15 @@ SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                               -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
 
 ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
-! although they will not be used in the future
-integer(idp) :: nx=0, ny=0, nz=0
-integer(idp) :: nxguard=0, nyguard=0, nzguard=0
+! and for compatibility with automated tests, although they will not be used 
+! in the future
+integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
+nx = exg_nvalid(1)-1
+ny = exg_nvalid(2)-1
+nz = exg_nvalid(3)-1
+nxguard = exg_nguard(1)
+nyguard = exg_nguard(2)
+nzguard = exg_nguard(3)
 
   IF (np .EQ. 0_idp) RETURN
 
