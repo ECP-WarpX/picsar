@@ -69,15 +69,15 @@ IMPLICIT NONE
   INTEGER(idp)             :: nox,noy,noz
   REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
   LOGICAL(lp)              :: l_lower_order_in_v
-  REAL(num), intent(IN):: exg(-ex_nguard(1):ex_nvalid(1)+ex_nguard(1), &
-  	                      -ex_nguard(2):ex_nvalid(2)+ex_nguard(2), &
-                              -ex_nguard(3):ex_nvalid(3)+ex_nguard(3))
-  REAL(num), intent(IN):: eyg(-ey_nguard(1):ey_nvalid(1)+ey_nguard(1), &
-                              -ey_nguard(2):ey_nvalid(2)+ey_nguard(2), &
-                              -ey_nguard(3):ey_nvalid(3)+ey_nguard(3))
-  REAL(num), intent(IN):: ezg(-ez_nguard(1):ez_nvalid(1)+ez_nguard(1), &
-                              -ez_nguard(2):ez_nvalid(2)+ez_nguard(2), &
-                              -ez_nguard(3):ez_nvalid(3)+ez_nguard(3))
+  REAL(num), intent(IN):: exg(-ex_nguard(1):ex_nvalid(1)+ex_nguard(1)-1, &
+                              -ex_nguard(2):ex_nvalid(2)+ex_nguard(2)-1, &
+                              -ex_nguard(3):ex_nvalid(3)+ex_nguard(3)-1)
+  REAL(num), intent(IN):: eyg(-ey_nguard(1):ey_nvalid(1)+ey_nguard(1)-1, &
+                              -ey_nguard(2):ey_nvalid(2)+ey_nguard(2)-1, &
+                              -ey_nguard(3):ey_nvalid(3)+ey_nguard(3)-1)
+  REAL(num), intent(IN):: ezg(-ez_nguard(1):ez_nvalid(1)+ez_nguard(1)-1, &
+                              -ez_nguard(2):ez_nvalid(2)+ez_nguard(2)-1, &
+                              -ez_nguard(3):ez_nvalid(3)+ez_nguard(3)-1)
   REAL(num) :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
   ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
@@ -88,7 +88,6 @@ IMPLICIT NONE
   REAL(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
   REAL(num), dimension(:), allocatable :: sx0,sy0,sz0
   REAL(num), parameter :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
-
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -370,19 +369,30 @@ END SUBROUTINE warpx_pxr_gete3d_n_energy_conserving
 !> At arbitrary order. WARNING: Highly unoptimized routine
 SUBROUTINE warpx_pxr_getb3d_n_energy_conserving( &
   np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
-  bxg,bxlo,bxhi,byg,bylo,byhi,bzg,bzlo,bzhi,l_lower_order_in_v)
+  bxg, bx_nguard, bx_nvalid, &
+  byg, by_nguard, by_nvalid, &
+  bzg, bz_nguard, bz_nvalid, &
+  l_lower_order_in_v)
 ! ______________________________________________________________________________
 USE omp_lib
 USE constants
 IMPLICIT NONE
 
-INTEGER, INTENT(IN)      :: bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3)
+INTEGER, INTENT(IN)      :: bx_nguard(3),bx_nvalid(3),&
+                            by_nguard(3),by_nvalid(3),&
+                            bz_nguard(3),bz_nvalid(3)
 INTEGER(idp)             :: np,nox,noy,noz
 REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
 LOGICAL(lp)  :: l_lower_order_in_v
-real(num), intent(IN):: bxg(bxlo(1):bxhi(1),bxlo(2):bxhi(2),bxlo(3):bxhi(3))
-real(num), intent(IN):: byg(bylo(1):byhi(1),bylo(2):byhi(2),bylo(3):byhi(3))
-real(num), intent(IN):: bzg(bzlo(1):bzhi(1),bzlo(2):bzhi(2),bzlo(3):bzhi(3))
+  REAL(num), intent(IN):: bxg(-bx_nguard(1):bx_nvalid(1)+bx_nguard(1)-1, &
+                              -bx_nguard(2):bx_nvalid(2)+bx_nguard(2)-1, &
+                              -bx_nguard(3):bx_nvalid(3)+bx_nguard(3)-1)
+  REAL(num), intent(IN):: byg(-by_nguard(1):by_nvalid(1)+by_nguard(1)-1, &
+                              -by_nguard(2):by_nvalid(2)+by_nguard(2)-1, &
+                              -by_nguard(3):by_nvalid(3)+by_nguard(3)-1)
+  REAL(num), intent(IN):: bzg(-bz_nguard(1):bz_nvalid(1)+bz_nguard(1)-1, &
+                              -bz_nguard(2):bz_nvalid(2)+bz_nguard(2)-1, &
+                              -bz_nguard(3):bz_nvalid(3)+bz_nguard(3)-1)
 REAL(num) :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
               ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
