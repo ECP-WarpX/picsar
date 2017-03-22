@@ -12,21 +12,30 @@
 !> @date
 !> 2016
 SUBROUTINE warpx_pxr_depose_jxjyjz_esirkepov_n( &
-  jx,jxlo,jxhi,jy,jylo,jyhi,jz,jzlo,jzhi,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q, &
+  jx, jx_nguard, jx_nvalid, &
+  jy, jy_nguard, jy_nvalid, &
+  jz, jz_nguard, jz_nvalid, &
+  np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q, &
   xmin,ymin,zmin,dt,dx,dy,dz,nox,noy,noz,l_particles_weight,l4symtry)
 ! ______________________________________________________________________________
 
   USE constants
   IMPLICIT NONE
 
-  INTEGER, INTENT(IN)      :: jxlo(3),jxhi(3),jylo(3),jyhi(3),jzlo(3),jzhi(3)
+  INTEGER, INTENT(IN)      :: jx_nguard(3),jy_nguard(3),jz_nguard(3), &
+  	   		      jx_nvalid(3),jy_nvalid(3),jz_nvalid(3)
   INTEGER(idp)             :: np,nox,noy,noz
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
   REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-  REAL(num), INTENT(IN OUT):: jx(jxlo(1):jxhi(1),jxlo(2):jxhi(2),jxlo(3):jxhi(3))
-  REAL(num), INTENT(IN OUT):: jy(jylo(1):jyhi(1),jylo(2):jyhi(2),jylo(3):jyhi(3))
-  REAL(num), INTENT(IN OUT):: jz(jzlo(1):jzhi(1),jzlo(2):jzhi(2),jzlo(3):jzhi(3))
-
+  REAL(num), INTENT(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+  	     	       	         -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+  	     	       	         -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1)
+  REAL(num), INTENT(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+  	     	       	         -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+  	     	       	         -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1)
+  REAL(num), INTENT(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+  	     	       	         -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+  	     	       	         -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1)
   REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
   REAL(num) :: xold,yold,zold,x,y,z,wq,wqx,wqy,wqz,vx,vy,vz,dts2dx,dts2dy,dts2dz
