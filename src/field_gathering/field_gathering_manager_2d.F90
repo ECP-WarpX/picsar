@@ -57,11 +57,11 @@
 !> @param[in] field_gathe_algo Gathering algorithm
 !> @param[in] lvect vector length
 !
-SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
-                                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
+SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                                       xmin,ymin,zmin,dx,dy,dz,nx,ny,nz, &
                                        nxguard,nyguard,nzguard, &
-                                       nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg,&
-                                       l4symtry,l_lower_order_in_v,&
+                                       nox,noy,noz,exg,eyg,ezg,bxg,byg,bzg, &
+                                       l4symtry,l_lower_order_in_v, &
                                        lvect, &
                                        field_gathe_algo)
 ! ______________________________________________________________________________
@@ -79,6 +79,89 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   real(num)                     :: xmin,ymin,zmin,dx,dy,dz
 
+ ! Build array of guard cells and valid cells, to pass them to the generic routine
+  integer(idp)                       :: nguard(3), nvalid(3)
+  nguard = (/ nxguard, 0_idp, nzguard /)
+  nvalid = (/ nx+1, 1_idp, nz+1 /)
+
+  call geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                                     xmin,ymin,zmin,            &
+                                     dx,dy,dz,nox,noy,noz,      &
+                                     exg,nguard,nvalid,         &
+                                     eyg,nguard,nvalid,         &
+                                     ezg,nguard,nvalid,         &
+                                     bxg,nguard,nvalid,         &
+                                     byg,nguard,nvalid,         &
+                                     bzg,nguard,nvalid,         &
+                                     l4symtry,                 &
+                                     l_lower_order_in_v,        &
+                                     lvect,                     &
+                                     field_gathe_algo)
+  
+END SUBROUTINE
+
+SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+                                     xmin,ymin,zmin,            &
+                                     dx,dy,dz,nox,noy,noz,      &
+                                     exg,exg_nguard,exg_nvalid, &
+                                     eyg,eyg_nguard,eyg_nvalid, &
+                                     ezg,ezg_nguard,ezg_nvalid, &
+                                     bxg,bxg_nguard,bxg_nvalid, &
+                                     byg,byg_nguard,byg_nvalid, &
+                                     bzg,bzg_nguard,bzg_nvalid, &
+                                     l4symtry,                 &
+                                     l_lower_order_in_v,        &
+                                     lvect,                     &
+                                     field_gathe_algo)
+
+! ______________________________________________________________________________
+
+  USE constants
+  USE params
+  implicit none
+
+  integer(idp)                  :: field_gathe_algo
+  integer(idp)                  :: np,nox,noy,noz
+  integer(idp), intent(IN)      :: exg_nguard(3),exg_nvalid(3),&
+                                   eyg_nguard(3),eyg_nvalid(3),&
+                                   ezg_nguard(3),ezg_nvalid(3),&
+                                   bxg_nguard(3),bxg_nvalid(3),&
+                                   byg_nguard(3),byg_nvalid(3),&
+                                   bzg_nguard(3),bzg_nvalid(3)
+  integer(idp)                  :: lvect
+  logical(idp), intent(in)      :: l4symtry,l_lower_order_in_v
+  real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
+                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
+                              -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
+                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
+                              -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
+                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
+                              -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
+                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
+                              -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
+                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
+                              -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
+                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
+                              -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
+  real(num)                     :: xmin,ymin,zmin,dx,dy,dz
+
+! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
+! and for compatibility with automated tests, although they will not be used 
+! in the future
+integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
+nx = exg_nvalid(1)-1
+ny = exg_nvalid(2)-1
+nz = exg_nvalid(3)-1
+nxguard = exg_nguard(1)
+nyguard = exg_nguard(2)
+nzguard = exg_nguard(3)
+  
   IF (field_gathe_algo.lt.0) return
 
   ! ______________________________________________
@@ -173,4 +256,4 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
 
     ENDIF
   ENDIF
-END SUBROUTINE geteb2dxz_energy_conserving
+END SUBROUTINE
