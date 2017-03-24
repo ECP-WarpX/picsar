@@ -291,6 +291,13 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                        field_gathe_algo)
 END SUBROUTINE
 
+! ______________________________________________________________________________
+!> @brief
+!> General subroutines for the 3D field gathering, adapted for field
+!> arrays having different sizes depending on their nodal/cell-centered nature
+!>
+!> @details
+!>
 SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      xmin,ymin,zmin,            &
                                      dx,dy,dz,nox,noy,noz,      &
@@ -303,9 +310,8 @@ SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      ll4symtry,                 &
                                      l_lower_order_in_v,        &
                                      lvect,                     &
-                                     field_gathe_algo)
+                                     field_gathe_algo) !#do not parse
 ! ______________________________________________________________________________
-
   USE constants
   USE particles
   USE params

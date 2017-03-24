@@ -100,6 +100,13 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   
 END SUBROUTINE
 
+! ______________________________________________________________________________
+!> @brief
+!> General subroutines for the 3D field gathering, adapted for field
+!> arrays having different sizes depending on their nodal/cell-centered nature
+!>
+!> @details
+!>
 SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      xmin,ymin,zmin,            &
                                      dx,dy,dz,nox,noy,noz,      &
@@ -112,8 +119,7 @@ SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      l4symtry,                 &
                                      l_lower_order_in_v,        &
                                      lvect,                     &
-                                     field_gathe_algo)
-
+                                     field_gathe_algo) !#do not parse
 ! ______________________________________________________________________________
 
   USE constants
