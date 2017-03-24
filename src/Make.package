@@ -31,6 +31,11 @@ F90EXE_sources += charge_deposition_2d.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
 
+F90EXE_sources += current_deposition_manager_3d.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/
+
 F90EXE_sources += direct_current_deposition_3d.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/direct
