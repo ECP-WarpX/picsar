@@ -59,6 +59,8 @@ PROGRAM current_deposition_3d_test
   CHARACTER(len=64), dimension(10)         :: name
   CHARACTER(len=512)                       :: line
 
+  INTEGER(idp)                             :: nguard(3), nvalid(3)
+
   write(0,'(" ____________________________________________________________________________")')
   write(0,*) 'TEST: current deposition 3D'
 
@@ -174,9 +176,17 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
+
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
   name(i) = 'depose_jxjyjz_scalar_1_1_1'
-  CALL depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+  CALL depose_jxjyjz_scalar_1_1_1( &
+       jx,nguard,nvalid,     &
+       jy,nguard,nvalid,     &
+       jz,nguard,nvalid,     &
+       np,xp,yp,zp,uxp,uyp,uzp,    &
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
   errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
