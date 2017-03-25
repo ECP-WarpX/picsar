@@ -90,14 +90,14 @@ SUBROUTINE depose_jxjyjz_generic(                      &
                                                 jy_nguard(3), jy_nvalid(3), &
                                                 jz_nguard(3), jz_nvalid(3)
      REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
-                                    -jx_nguard(2):jx_nvalid(1)+jx_nguard(2)-1, &
-                                    -jx_nguard(3):jx_nvalid(1)+jx_nguard(3)-1 )
+                                    -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+                                    -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
      REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
-                                    -jy_nguard(2):jy_nvalid(1)+jy_nguard(2)-1, &
-                                    -jy_nguard(3):jy_nvalid(1)+jy_nguard(3)-1 )
+                                    -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+                                    -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
      REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
-                                    -jz_nguard(2):jz_nvalid(1)+jz_nguard(2)-1, &
-                                    -jz_nguard(3):jz_nvalid(1)+jz_nguard(3)-1 )
+                                    -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+                                    -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
 
