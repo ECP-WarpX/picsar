@@ -80,27 +80,36 @@
 !> @param[in] dx mesh size along x (scalar)
 !> @param[in] dy mesh size along y (scalar)
 !> @param[in] dz mesh size along z (scalar)
-!> @param[in] nx number of cells along x (scalar)
-!> @param[in] ny number of cells along y (scalar)
-!> @param[in] nz number of cells along z (scalar)
-!> @param[in] nxguard number of guard cells along x (scalar)
-!> @param[in] nyguard number of guard cells along y (scalar)
-!> @param[in] nzguard number of guard cells along z (scalar)
 !> @param[inout] jx x-current component (3D array)
 !> @param[inout] jy y-current component (3D array)
 !> @param[inout] jz z-current component (3D array)
 !> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
 !
-SUBROUTINE depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+SUBROUTINE depose_jxjyjz_scalar_1_1_1( &
+    jx,jx_nguard,jx_nvalid, &
+    jy,jy_nguard,jy_nvalid, &
+    jz,jz_nguard,jz_nvalid, &
+    np,xp,yp,zp,uxp,uyp,uzp,&
+    gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !# do not parse
 ! ______________________________________________________________________________
 
   USE constants
   IMPLICIT NONE
 
-  INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-  REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+  INTEGER(idp)             :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+                              jy_nguard(3), jy_nvalid(3), &
+                              jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                 -jx_nguard(2):jx_nvalid(1)+jx_nguard(2)-1, &
+                                 -jx_nguard(3):jx_nvalid(1)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                 -jy_nguard(2):jy_nvalid(1)+jy_nguard(2)-1, &
+                                 -jy_nguard(3):jy_nvalid(1)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                 -jz_nguard(2):jz_nvalid(1)+jz_nguard(2)-1, &
+                                 -jz_nguard(3):jz_nvalid(1)+jz_nguard(3)-1 )
+  REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp,w,gaminv
   REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
   REAL(num)                :: dxi,dyi,dzi,xint,yint,zint
   REAL(num)                :: x,y,z,xmid,ymid,zmid,vx,vy,vz,invvol, dts2dx, dts2dy, dts2dz

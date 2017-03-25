@@ -43,11 +43,8 @@
 !> @brief
 !> Generic subroutine for current deposition on one tile
 !>
-!> @details
-!> This routine calls the relevant current deposition routine depending
-!> on the order of the particle shape and the selected algorithm.
 !>
-SUBROUTINE depose_jxjyjz_generic(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+SUBROUTINE depose_jxjyjz(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
            nox,noy,noz,current_depo_algo)
       USE constants
@@ -57,14 +54,75 @@ SUBROUTINE depose_jxjyjz_generic(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmi
       REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
       REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
 
-    SELECT CASE(current_depo_algo)
+      ! Build array of guard cells and valid cells, to pass them to the generic routine
+      integer(idp)                       :: nguard(3), nvalid(3)
+      nguard = (/ nxguard, nyguard, nzguard /)
+      nvalid = (/ nx+1, ny+1, nz+1 /)
+
+      call depose_jxjyjz_generic(                     &
+         jx,nguard,nvalid,                            &
+         jy,nguard,nvalid,                            &
+         jz,nguard,nvalid,                            &
+         np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+         dt,dx,dy,dz,nox,noy,noz,current_depo_algo)
+
+END SUBROUTINE
+
+! ______________________________________________________________________________
+!> @brief
+!> Generic subroutines for current deposition, adapted for field
+!> arrays having different sizes depending on their nodal/cell-centered nature
+!>
+!> @details
+!> This routine calls the relevant current deposition routine depending
+!> on the order of the particle shape and the selected algorithm.
+!>
+SUBROUTINE depose_jxjyjz_generic(                      &
+    jx,jx_nguard,jx_nvalid,                            &
+    jy,jy_nguard,jy_nvalid,                            &
+    jz,jz_nguard,jz_nvalid,                            &
+    np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+    dt,dx,dy,dz,nox,noy,noz,current_depo_algo) !#do not parse
+     USE constants
+     IMPLICIT NONE
+     INTEGER(idp) :: np,nox,noy,noz,current_depo_algo
+     INTEGER(idp), intent(in)                :: jx_nguard(3), jx_nvalid(3), &
+                                                jy_nguard(3), jy_nvalid(3), &
+                                                jz_nguard(3), jz_nvalid(3)
+     REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                    -jx_nguard(2):jx_nvalid(1)+jx_nguard(2)-1, &
+                                    -jx_nguard(3):jx_nvalid(1)+jx_nguard(3)-1 )
+     REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                    -jy_nguard(2):jy_nvalid(1)+jy_nguard(2)-1, &
+                                    -jy_nguard(3):jy_nvalid(1)+jy_nguard(3)-1 )
+     REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                    -jz_nguard(2):jz_nvalid(1)+jz_nguard(2)-1, &
+                                    -jz_nguard(3):jz_nvalid(1)+jz_nguard(3)-1 )
+      REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+
+    ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
+    ! and for compatibility with automated tests, although they will not be used
+    ! in the future
+    integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
+    nx = jx_nvalid(1)-1
+    ny = jx_nvalid(2)-1
+    nz = jx_nvalid(3)-1
+    nxguard = jx_nguard(1)
+    nyguard = jx_nguard(2)
+    nzguard = jx_nguard(3)
+
+    Select CASE(current_depo_algo)
 
     ! Scalar classical current deposition subroutines
     CASE(3)
 
       IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
-        CALL depose_jxjyjz_scalar_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-             dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+        CALL depose_jxjyjz_scalar_1_1_1( &
+            jx,jx_nguard,jx_nvalid,      &
+            jy,jy_nguard,jy_nvalid,      &
+            jz,jz_nguard,jz_nvalid,      &
+            np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
       ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
         CALL depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
              dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
@@ -100,7 +158,7 @@ SUBROUTINE depose_jxjyjz_generic(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmi
 
         CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
              dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-             nox,noy,noz,.TRUE._idp,.TRUE._idp)
+             nox,noy,noz,.TRUE._idp,.FALSE._idp)
 
     ! Optimized Esirkepov
     CASE DEFAULT
@@ -124,7 +182,7 @@ SUBROUTINE depose_jxjyjz_generic(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmi
       ENDIF
 
     END SELECT
-      
+
 END SUBROUTINE
 
 ! ______________________________________________________________________________
@@ -164,7 +222,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
     ! ____________________________________________________________________________________
     ! Generic current deposition routine
-     SUBROUTINE depose_jxjyjz_generic(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+     SUBROUTINE depose_jxjyjz(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
            nox,noy,noz,current_depo_algo) !#do not parse
        USE constants
@@ -174,7 +232,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
        REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
        REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
      END SUBROUTINE
-       
+
      ! Interface for subroutine with no reduction - classical deposition order 1
       SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
@@ -288,34 +346,34 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/no tiling
   IF (currdepo.EQ.5) THEN
-     
+
      IF ((nox.eq.noy).AND.(noy.eq.noz)) THEN
-        CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(depose_jxjyjz_generic, &
+        CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(depose_jxjyjz, &
              jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt, 3_idp)
-        ! The last argument is 3: this means the scalar routines will be used inside `depose_jxjyjz_generic`
+        ! The last argument is 3: this means the scalar routines will be used inside `depose_jxjyjz`
      ELSE
-        CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_generic, &
+        CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, &
              jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
              nox,noy,noz,dx,dy,dz,dt,1_idp)
-        ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz_generic`
+        ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz`
      ENDIF
-  
-  
+
+
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/tiling
   ELSE IF (currdepo.EQ.4) THEN
-     
+
      IF ((nox.eq.noy).AND.(noy.eq.noz)) THEN
-        CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_generic, &
+        CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz, &
              jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt, 3_idp)
-        ! The last argument is 3: this means the scalar routines will be used inside `depose_jxjyjz_generic`
+        ! The last argument is 3: this means the scalar routines will be used inside `depose_jxjyjz`
      ELSE
-        CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_generic, &
+        CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, &
              jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
              nox,noy,noz,dx,dy,dz,dt,1_idp)
-        ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz_generic`
+        ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz`
      ENDIF
-     
+
   ! _______________________________________________________
   ! Classical current deposition, parallel, vectorized
   ELSE IF (currdepo.EQ.3) THEN
@@ -345,7 +403,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       !     depose_jxjyjz_vecHV_vnr_1_1_1, current_reduction_1_1_1,&
       !     jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ELSE
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_generic, &
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, &
            jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
            nox,noy,noz,dx,dy,dz,dt,1_idp)
     ENDIF
@@ -355,32 +413,32 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
          nox,noy,noz,dx,dy,dz,dt)
-    
+
   ! _______________________________________________________
   ! Esirkepov tiling version
   ELSE IF (currdepo.EQ.1) THEN
 
-     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_generic, &
+     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, &
           jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
           nox,noy,noz,dx,dy,dz,dt, 0_idp)
-        ! The last argument is 0: this means the optimized esirkepov routine will be used inside `depose_jxjyjz_generic`
-     
+        ! The last argument is 0: this means the optimized esirkepov routine will be used inside `depose_jxjyjz`
+
   ! _______________________________________________________
   ! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE IF (currdepo .EQ. 0) THEN
 
-     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_generic, &
+     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, &
           jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
           nox,noy,noz,dx,dy,dz,dt, 0_idp)
-     ! The last argument is 1: this means the optimized esirkepov routine will be used inside `depose_jxjyjz_generic`
-     
+     ! The last argument is 1: this means the optimized esirkepov routine will be used inside `depose_jxjyjz`
+
     ! Arbitrary order
   ELSE
 
-     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz_generic, &
+     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, &
           jx,jy,jz,nx,ny,nz,nxjguards,nyjguards,nzjguards, &
           nox,noy,noz,dx,dy,dz,dt, 1_idp)
-     ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz_generic`
+     ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz`
   ENDIF
 
 !!! --- Stop Vtune analysis
