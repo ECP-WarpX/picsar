@@ -2,20 +2,20 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
-! The Regents of the University of California, through Lawrence Berkeley National 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
+! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a paid-up, 
-! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute 
-! copies to the public, prepare derivative works, and perform publicly and display 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a paid-up,
+! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
 ! FIELD_GATHERING_2D_TEST.F90
@@ -30,53 +30,53 @@ PROGRAM field_gathering_3d_test
   USE constants
   USE mpi
   IMPLICIT NONE
-  
+
   ! __________________________________________________________________
   ! Parameter declaration
 
   INTEGER(idp)                             :: i,n
   INTEGER(idp)                             :: np
-  INTEGER(idp)                             :: lvect  
+  INTEGER(idp)                             :: lvect
   INTEGER(idp)                             :: nx,ny,nz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
   INTEGER                                  :: ierr
   LOGICAL(idp)                             :: l_lower_order_in_v
-  LOGICAL                                  :: passed  
+  LOGICAL                                  :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
-  REAL(num)                                :: q,m   
-  REAL(num)                                :: Ef,Bf   
-  REAL(num)                                :: t0  
-  REAL(num)                                :: epsilon   
-  REAL(num)                                :: dx,dy,dz,dt  
-  REAL(num), dimension(:), allocatable     :: xp,yp,zp 
+  REAL(num)                                :: q,m
+  REAL(num)                                :: Ef,Bf
+  REAL(num)                                :: t0
+  REAL(num)                                :: epsilon
+  REAL(num)                                :: dx,dy,dz,dt
+  REAL(num), dimension(:), allocatable     :: xp,yp,zp
   REAL(num), dimension(:), allocatable     :: uxp,uyp,uzp
-  REAL(num), dimension(:), allocatable     :: gaminv,w  
-  REAL(num), dimension(:), allocatable     :: ex,ey,ez  
-  REAL(num), dimension(:), allocatable     :: bx,by,bz   
-  REAL(num), dimension(:,:,:), allocatable :: exg,eyg,ezg 
-  REAL(num), dimension(:,:,:), allocatable :: bxg,byg,bzg   
+  REAL(num), dimension(:), allocatable     :: gaminv,w
+  REAL(num), dimension(:), allocatable     :: ex,ey,ez
+  REAL(num), dimension(:), allocatable     :: bx,by,bz
+  REAL(num), dimension(:,:,:), allocatable :: exg,eyg,ezg
+  REAL(num), dimension(:,:,:), allocatable :: bxg,byg,bzg
   REAL(num), dimension(10)                 :: sumex,sumey,sumez
-  REAL(num), dimension(10)                 :: sumbx,sumby,sumbz  
+  REAL(num), dimension(10)                 :: sumbx,sumby,sumbz
   REAL(num), dimension(10)                 :: errex,errey,errez
-  REAL(num), dimension(10)                 :: errbx,errby,errbz  
+  REAL(num), dimension(10)                 :: errbx,errby,errbz
   REAL(num), dimension(10)                 :: te,tb
   CHARACTER(len=64), dimension(10)         :: namee,nameb
-    
+
   write(0,'(" ____________________________________________________________________________")')
   write(0,*) 'TEST: field gathering 3D'
 
   ! _________________________________________________________________
   ! Parameter initialization
-  
+
   np = 10000
-  
+
   nx = 50
   ny = 50
   nz = 50
-  
+
   lvect = 64
-  
+
   nxguard = 3
   nyguard = 3
   nzguard = 3
@@ -84,73 +84,73 @@ PROGRAM field_gathering_3d_test
   xmin = 0.
   ymin = 0.
   zmin = 0.
-  
+
   Ef = 1E12 !V/m
   Bf = 1E4  !T
-  
+
   q = -1._num
   m = 1._num
-  
+
   dx = 1.E-6
   dy = 1.E-6
   dz = 1.E-6
 
   dt = 0.5_num * 1._num / sqrt(1._num / dx**2 + 1._num / dy**2 + 1._num / dz**2 )
-  
+
   epsilon = 1E-6
-  
+
   l_lower_order_in_v = .TRUE.
-  
+
   passed = .TRUE.
-  
+
   xmax = xmin + (nx-1)*dx
-  ymax = ymin + (ny-1)*dy  
-  zmax = zmin + (nz-1)*dz  
+  ymax = ymin + (ny-1)*dy
+  zmax = zmin + (nz-1)*dz
 
   write(0,*) 'l_lower_order_in_v:',l_lower_order_in_v
   write(0,'(" xmax:",F12.5," ymax:",F12.5," zmax",F12.5 )') xmax,ymax,zmax
 
   ! __ MPI init for the time
   CALL MPI_INIT(ierr)
-    
+
   ! __ array allocations ________________________________________________
-    
+
   ALLOCATE(exg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
-  ALLOCATE(eyg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
+  ALLOCATE(eyg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
   ALLOCATE(ezg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
 
   ALLOCATE(bxg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
-  ALLOCATE(byg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
+  ALLOCATE(byg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
   ALLOCATE(bzg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
-  
-  ALLOCATE(xp(np),yp(np),zp(np)) 
+
+  ALLOCATE(xp(np),yp(np),zp(np))
 
   ALLOCATE(uxp(np),uyp(np),uzp(np))
-  ALLOCATE(w(np),gaminv(np))  
-    
-  ALLOCATE(ex(np),ey(np),ez(np))    
-  ALLOCATE(bx(np),by(np),bz(np))   
-  
+  ALLOCATE(w(np),gaminv(np))
+
+  ALLOCATE(ex(np),ey(np),ez(np))
+  ALLOCATE(bx(np),by(np),bz(np))
+
   ! __ Initialization of the arrays _________________________________
   CALL random_seed()
   !CALL init_random_seed()
-  
-  CALL RANDOM_NUMBER(xp(1:np))
-  CALL RANDOM_NUMBER(yp(1:np))  
-  CALL RANDOM_NUMBER(zp(1:np)) 
-  
-  CALL RANDOM_NUMBER(exg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))   
-  CALL RANDOM_NUMBER(eyg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
-  CALL RANDOM_NUMBER(ezg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
 
-  CALL RANDOM_NUMBER(bxg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))   
-  CALL RANDOM_NUMBER(byg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
-  CALL RANDOM_NUMBER(bzg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))  
+  CALL RANDOM_NUMBER(xp(1:np))
+  CALL RANDOM_NUMBER(yp(1:np))
+  CALL RANDOM_NUMBER(zp(1:np))
+
+  CALL RANDOM_NUMBER(exg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
+  CALL RANDOM_NUMBER(eyg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
+  CALL RANDOM_NUMBER(ezg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
+
+  CALL RANDOM_NUMBER(bxg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
+  CALL RANDOM_NUMBER(byg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
+  CALL RANDOM_NUMBER(bzg(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
 
   CALL RANDOM_NUMBER(uxp(1:np))
-  CALL RANDOM_NUMBER(uyp(1:np))  
-  CALL RANDOM_NUMBER(uzp(1:np)) 
-  
+  CALL RANDOM_NUMBER(uyp(1:np))
+  CALL RANDOM_NUMBER(uzp(1:np))
+
   CALL RANDOM_NUMBER(w(1:np))
 
   exg = exg*Ef
@@ -166,29 +166,29 @@ PROGRAM field_gathering_3d_test
   zp = zmin + zp*(zmax - zmin)
 
   gaminv = 1._num / sqrt(1 - (uxp**2 + uyp**2 + uxp**2))
-  
+
   uxp = uxp * gaminv
   uyp = uyp * gaminv
   uzp = uzp * gaminv
-  
+
   sumex = 0
   sumey = 0
   sumez = 0
   sumbx = 0
   sumby = 0
-  sumbz = 0  
+  sumbz = 0
   errex = 0
   errey = 0
   errez = 0
   errbx = 0
   errby = 0
   errbz = 0
-  
+
   ! ___________________________________________________
   ! Test of the functions
-  
+
   ! __ Electric field Order 1 ________________________________________
-  
+
   i = 1
   !write(0,*) 'test reference: pxr_gete3d_n_energy_conserving'
   namee(i) = 'pxr_gete3d_n_energy_conserving'
@@ -204,7 +204,7 @@ PROGRAM field_gathering_3d_test
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
   i = i + 1
-  !write(0,*) sum(ex),sum(ey),sum(ez)  
+  !write(0,*) sum(ex),sum(ey),sum(ez)
 
   !write(0,*) 'test 1: gete3d_energy_conserving_1_1_1'
 !   name(i) = 'gete3d_energy_conserving_1_1_1'
@@ -214,7 +214,7 @@ PROGRAM field_gathering_3d_test
 !   CALL gete3d_energy_conserving_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
 !                                        dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
 !                                        exg,eyg,ezg,l_lower_order_in_v)
-!   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
+!   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
 !   errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
 !   errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
 !   errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
@@ -243,8 +243,8 @@ PROGRAM field_gathering_3d_test
                                        dx,dz,nx,nz,nxguard,nzguard, &
                                        bxg,byg,bzg,lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
   errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
   errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
   errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
@@ -259,10 +259,10 @@ PROGRAM field_gathering_3d_test
   IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
   i = i + 1
 
-  
+
   n = i-1
   write(0,*)
-  write(0,'(" Results Electric field order 1")')  
+  write(0,'(" Results Electric field order 1")')
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
@@ -271,7 +271,7 @@ PROGRAM field_gathering_3d_test
 
   n = i-1
   write(0,*)
-  write(0,'(" Results Magnetic field order 1")')  
+  write(0,'(" Results Magnetic field order 1")')
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(bx)", "sum(by)", "sum(bz)", "err eb", "err by", "err bz", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
@@ -284,19 +284,19 @@ PROGRAM field_gathering_3d_test
   sumez = 0
   sumbx = 0
   sumby = 0
-  sumbz = 0  
+  sumbz = 0
   errex = 0
   errey = 0
   errez = 0
   errbx = 0
   errby = 0
-  errbz = 0  
+  errbz = 0
   ex = 0
   ey = 0
   ez = 0
   bx = 0
   by = 0
-  bz = 0  
+  bz = 0
   write(0,*)
 
   i = 1
@@ -334,8 +334,8 @@ PROGRAM field_gathering_3d_test
                                        dx,dz,nx,nz,nxguard,nzguard, &
                                        bxg,byg,bzg,lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
   errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
   errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
   errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
@@ -352,7 +352,7 @@ PROGRAM field_gathering_3d_test
 
   n = i-1
   write(0,*)
-  write(0,'(" Results Electric field order 2")')  
+  write(0,'(" Results Electric field order 2")')
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
@@ -361,7 +361,7 @@ PROGRAM field_gathering_3d_test
 
   n = i-1
   write(0,*)
-  write(0,'(" Results Magnetic field order 2")')  
+  write(0,'(" Results Magnetic field order 2")')
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(bx)", "sum(by)", "sum(bz)", "err eb", "err by", "err bz", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
@@ -369,22 +369,22 @@ PROGRAM field_gathering_3d_test
   ENDDO
 
   ! __ Electric field Order 3 ______________________________________
-  
+
   sumex = 0
   sumey = 0
   sumez = 0
   sumbx = 0
   sumby = 0
-  sumbz = 0  
+  sumbz = 0
   errex = 0
   errey = 0
   errez = 0
   errbx = 0
   errby = 0
-  errbz = 0  
+  errbz = 0
   bx = 0
   by = 0
-  bz = 0  
+  bz = 0
   ex = 0
   ey = 0
   ez = 0
@@ -404,7 +404,7 @@ PROGRAM field_gathering_3d_test
   tb(i) = MPI_WTIME() - t0
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
-  
+
   i = i + 1
   namee(i) = 'pxr_gete2dxz_energy_conserving_scalar_3_3'
   nameb(i) = 'pxr_getb2dxz_energy_conserving_scalar_3_3'
@@ -424,8 +424,8 @@ PROGRAM field_gathering_3d_test
                                        dx,dz,nx,nz,nxguard,nzguard, &
                                        bxg,byg,bzg,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
   errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
   errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
   errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
@@ -438,7 +438,7 @@ PROGRAM field_gathering_3d_test
   IF (errbx(i) .gt. epsilon) passed = (passed.and.(.false.))
   IF (errby(i) .gt. epsilon) passed = (passed.and.(.false.))
   IF (errbz(i) .gt. epsilon) passed = (passed.and.(.false.))
-  
+
   i = i + 1
   namee(i) = 'pxr_gete2dxz_energy_conserving_vect_3_3'
   nameb(i) = 'pxr_getb2dxz_energy_conserving_vect_3_3'
@@ -458,8 +458,8 @@ PROGRAM field_gathering_3d_test
                                        dx,dz,nx,nz,nxguard,nzguard, &
                                        bxg,byg,bzg,lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
-  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
   errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
   errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
   errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
@@ -484,8 +484,8 @@ PROGRAM field_gathering_3d_test
                                        exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   tb(i) = te(i)
-  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) 
-  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) 
+  sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
+  sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
   errex(i) = abs((sumex(i) - sumex(1)))/sumex(1)
   errey(i) = abs((sumey(i) - sumey(1)))/sumey(1)
   errez(i) = abs((sumez(i) - sumez(1)))/sumez(1)
@@ -501,7 +501,7 @@ PROGRAM field_gathering_3d_test
 
   n = i
   write(0,*)
-  write(0,'(" Results Electric field order 3")')  
+  write(0,'(" Results Electric field order 3")')
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(ex)", "sum(ey)", "sum(ez)", "err ex", "err ey", "err ez", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
@@ -510,7 +510,7 @@ PROGRAM field_gathering_3d_test
 
 
   write(0,*)
-  write(0,'(" Results Magnetic field order 3")')  
+  write(0,'(" Results Magnetic field order 3")')
   write(0,'(A40, 7(A13))') "Subrtouines", "sum(bx)", "sum(by)", "sum(bz)", "err eb", "err by", "err bz", "time (s)"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
@@ -518,23 +518,23 @@ PROGRAM field_gathering_3d_test
   ENDDO
 
   ! __ Check results ___________
-  
+
   write(0,*)
   IF (passed) THEN
-    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')  
-    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
+    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')
+    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')
     CALL system('printf "\e[32m ********** TEST FIELD GATHERING 2D PASSED **********  \e[0m \n"')
   ELSE
     !write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
-    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")     
+    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")
     CALL system('printf "\e[31m ********** TEST FIELD GATHERING 2D FAILED **********  \e[0m \n"')
     CALL EXIT(9)
   ENDIF
-  
+
   write(0,'(" ____________________________________________________________________________")')
 
   ! finalyze MPI
-  call MPI_FINALIZE(ierr) 
+  call MPI_FINALIZE(ierr)
 
 END PROGRAM
 
@@ -550,7 +550,7 @@ END PROGRAM
 !   integer, allocatable :: seed(:)
 !   integer :: i, n, un, istat, dt(8), pid
 !   integer(int64) :: t
-! 
+!
 !   call random_seed(size = n)
 !   allocate(seed(n))
   ! First try if the OS provides a random number generator

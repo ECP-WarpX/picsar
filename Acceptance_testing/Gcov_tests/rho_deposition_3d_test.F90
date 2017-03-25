@@ -2,21 +2,21 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)  
-! 2016, The Regents of the University of California, through Lawrence Berkeley 
-! National Laboratory (subject to receipt of any required approvals from the 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! 2016, The Regents of the University of California, through Lawrence Berkeley
+! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
-! This Software was developed under funding from the U.S. Department of Energy 
-! and the U.S. Government consequently retains certain rights. As such, the U.S. 
-! Government has been granted for itself and others acting on its behalf a  
-! paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
-! reproduce, distribute copies to the public, prepare derivative works, and 
-! perform publicly and display publicly, and to permit other to do so. 
+! This Software was developed under funding from the U.S. Department of Energy
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
+! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+! reproduce, distribute copies to the public, prepare derivative works, and
+! perform publicly and display publicly, and to permit other to do so.
 !
 ! RHO_DEPOSITION_3D_TEST.F90
 !
@@ -36,16 +36,16 @@ PROGRAM rho_deposition_3d_test
 
   INTEGER(idp)                             :: i,n
   INTEGER(idp)                             :: np,nc
-  INTEGER(idp)                             :: lvect  
+  INTEGER(idp)                             :: lvect
   INTEGER(idp)                             :: nx,ny,nz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
-  LOGICAL                                  :: passed  
+  LOGICAL                                  :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
-  REAL(num)                                :: q,m 
-  REAL(num)                                :: epsilon   
-  REAL(num)                                :: dx,dy,dz,dt  
-  REAL(num), dimension(:), allocatable     :: xp,yp,zp 
+  REAL(num)                                :: q,m
+  REAL(num)                                :: epsilon
+  REAL(num)                                :: dx,dy,dz,dt
+  REAL(num), dimension(:), allocatable     :: xp,yp,zp
   REAL(num), dimension(:), allocatable     :: uxp,uyp,uzp
   REAL(num), dimension(:), allocatable     :: up,theta,phi
   REAL(num), dimension(:), allocatable     :: gaminv,w
@@ -74,7 +74,7 @@ PROGRAM rho_deposition_3d_test
 
   ! Charge
   q = -1.
-  
+
   ! Mass
   m = 1.
 
@@ -102,17 +102,17 @@ PROGRAM rho_deposition_3d_test
   ! Variable that becomes FALSE in case of error
   passed = .TRUE.
 
-  ! Domain max 
+  ! Domain max
   xmax = xmin + (nx)*dx
-  ymax = ymin + (ny)*dy  
-  zmax = zmin + (nz)*dz  
+  ymax = ymin + (ny)*dy
+  zmax = zmin + (nz)*dz
 
   ! Vector length for vectorized subroutines
   lvect = 8
 
   write(0,'(" xmax:",F12.5," ymax:",F12.5," zmax",F12.5 )') xmax,ymax,zmax
   write(0,'(" dt:",E12.5)') dt
-  
+
 
   ! __ array allocations ________________________________________________
 
@@ -120,25 +120,25 @@ PROGRAM rho_deposition_3d_test
 
   ALLOCATE(rho(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
   ALLOCATE(rho_ref(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard))
-  
-  ALLOCATE(xp(np),yp(np),zp(np)) 
 
-  ALLOCATE(up(np),theta(np),phi(np)) 
-  
+  ALLOCATE(xp(np),yp(np),zp(np))
+
+  ALLOCATE(up(np),theta(np),phi(np))
+
   ALLOCATE(uxp(np),uyp(np),uzp(np))
-  ALLOCATE(w(np),gaminv(np))  
+  ALLOCATE(w(np),gaminv(np))
 
   ! __ Initialization of the arrays _________________________________
   call random_seed
   !CALL init_random_seed()
 
   CALL RANDOM_NUMBER(xp(1:np))
-  CALL RANDOM_NUMBER(yp(1:np))  
-  CALL RANDOM_NUMBER(zp(1:np)) 
+  CALL RANDOM_NUMBER(yp(1:np))
+  CALL RANDOM_NUMBER(zp(1:np))
 
   CALL RANDOM_NUMBER(up(1:np))
-  CALL RANDOM_NUMBER(theta(1:np))  
-  CALL RANDOM_NUMBER(phi(1:np)) 
+  CALL RANDOM_NUMBER(theta(1:np))
+  CALL RANDOM_NUMBER(phi(1:np))
 
   CALL RANDOM_NUMBER(w(1:np))
 
@@ -164,9 +164,9 @@ PROGRAM rho_deposition_3d_test
 
   write(0,'(" Total particle energy:",E12.5)') sum(w/gaminv)
   write(0,'(" Min/Max energy:",2(X,E12.5))') minval(1/gaminv),maxval(1/gaminv)
-  write(0,'(" Min velocity:",3(X,E12.5))') minval(uxp*gaminv),minval(uyp*gaminv),minval(uzp*gaminv) 
-  write(0,'(" Min momentum:",3(X,E12.5))') minval(uxp),minval(uyp),minval(uzp)   
-  write(0,'(" Max momentum:",3(X,E12.5))') maxval(uxp),maxval(uyp),maxval(uzp)  
+  write(0,'(" Min velocity:",3(X,E12.5))') minval(uxp*gaminv),minval(uyp*gaminv),minval(uzp*gaminv)
+  write(0,'(" Min momentum:",3(X,E12.5))') minval(uxp),minval(uyp),minval(uzp)
+  write(0,'(" Max momentum:",3(X,E12.5))') maxval(uxp),maxval(uyp),maxval(uzp)
   ! _____________________________________________________________
   ! Test of the functions
 
@@ -176,27 +176,27 @@ PROGRAM rho_deposition_3d_test
   i = 1
   rho(:,:,:) = 0.
   name(i) = 'pxr_depose_rho_n'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
                     nxguard,nyguard,nzguard,1_idp,1_idp,1_idp, &
                     .TRUE.,.FALSE.)
   sum_rho(i)=sum(rho)
   rho_ref = rho
-  
-  
+
+
   i = i + 1
   rho(:,:,:) = 0.
   name(i) = 'depose_rho_scalar_1_1_1'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL depose_rho_scalar_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
           nxguard,nyguard,nzguard,lvect)
   CALL check(rho_ref,rho,nc,sum_rho(1),sum_rho(i),min_err_rho(i),ave_err_rho(i),&
        max_err_rho(i),err_sum_rho(i),epsilon, passed)
-  
+
   i = i + 1
   rho(:,:,:) = 0.
   name(i) = 'depose_rho_vecHVv2_1_1_1'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL depose_rho_vecHVv2_1_1_1(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
           nxguard,nyguard,nzguard,lvect)
   CALL check(rho_ref,rho,nc,sum_rho(1),sum_rho(i),min_err_rho(i),ave_err_rho(i),&
@@ -215,7 +215,7 @@ PROGRAM rho_deposition_3d_test
   i = 1
   rho(:,:,:) = 0.
   name(i) = 'pxr_depose_rho_n'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
                     nxguard,nyguard,nzguard,2_idp,2_idp,2_idp, &
                     .TRUE.,.FALSE.)
@@ -225,7 +225,7 @@ PROGRAM rho_deposition_3d_test
   i = i + 1
   rho(:,:,:) = 0.
   name(i) = 'depose_rho_scalar_2_2_2'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL depose_rho_scalar_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
           nxguard,nyguard,nzguard,lvect)
   CALL check(rho_ref,rho,nc,sum_rho(1),sum_rho(i),min_err_rho(i),ave_err_rho(i),&
@@ -234,7 +234,7 @@ PROGRAM rho_deposition_3d_test
   i = i + 1
   rho(:,:,:) = 0.
   name(i) = 'depose_rho_vecHVv4_2_2_2'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL depose_rho_vecHVv2_2_2_2(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
           nxguard,nyguard,nzguard,lvect)
   CALL check(rho_ref,rho,nc,sum_rho(1),sum_rho(i),min_err_rho(i),ave_err_rho(i),&
@@ -250,7 +250,7 @@ PROGRAM rho_deposition_3d_test
   i = 1
   rho(:,:,:) = 0.
   name(i) = 'pxr_depose_rho_n'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL pxr_depose_rho_n(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
                     nxguard,nyguard,nzguard,3_idp,3_idp,3_idp, &
                     .TRUE.,.FALSE.)
@@ -260,7 +260,7 @@ PROGRAM rho_deposition_3d_test
   i = i + 1
   rho(:,:,:) = 0.
   name(i) = 'depose_rho_scalar_3_3_3'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL depose_rho_scalar_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
           nxguard,nyguard,nzguard,lvect)
   CALL check(rho_ref,rho,nc,sum_rho(1),sum_rho(i),min_err_rho(i),ave_err_rho(i),&
@@ -269,7 +269,7 @@ PROGRAM rho_deposition_3d_test
   i = i + 1
   rho(:,:,:) = 0.
   name(i) = 'depose_rho_vecHVv4_3_3_3'
-  !print*,trim(adjustl(name(i))) 
+  !print*,trim(adjustl(name(i)))
   CALL depose_rho_vecHVv4_3_3_3(rho,np,xp,yp,zp,w,q,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,&
           nxguard,nyguard,nzguard,lvect)
   CALL check(rho_ref,rho,nc,sum_rho(1),sum_rho(i),min_err_rho(i),ave_err_rho(i),&
@@ -280,21 +280,21 @@ PROGRAM rho_deposition_3d_test
 
 
   ! __ Check results ___________
-  
+
   write(0,*)
   IF (passed) THEN
-    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')  
-    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')  
+    !write(0,'("\033[32m **** TEST PASSED **** \033[0m")')
+    !CALL system('echo -e "\e[32m **** TEST PASSED **** \e[0m"')
     CALL system('printf "\e[32m ********** TEST CHARGE DEPOSITION 3D PASSED **********  \e[0m \n"')
   ELSE
     !write(0,'("\033[31m **** TEST FAILED **** \033[0m")')
-    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")     
+    !CALL system("echo -e '\e[31m **********  TEST FAILED ********** \e[0m'")
     CALL system('printf "\e[31m ********** TEST CHARGE DEPOSITION 3D FAILED **********  \e[0m \n"')
     CALL EXIT(9)
   ENDIF
-  
+
   write(0,'(" ____________________________________________________________________________")')
-  
+
 END PROGRAM
 
 ! ________________________________________________________________________________________
@@ -309,7 +309,7 @@ SUBROUTINE check(rho_ref,rho,nc,sum_rho_ref,sum_rho,min_err_rho,ave_err_rho,max_
 
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(idp)                   :: nc
   REAL(num)                      :: ave_err_rho
   REAL(num)                      :: err_sum_rho
@@ -317,30 +317,30 @@ SUBROUTINE check(rho_ref,rho,nc,sum_rho_ref,sum_rho,min_err_rho,ave_err_rho,max_
   REAL(num)                      :: epsilon
   REAL(num), DIMENSION(nc)       :: rho_ref, rho
   LOGICAL, INTENT(INOUT)         :: passed
-  
+
   REAL(num), DIMENSION(nc)       :: diff_rho
   REAL(num)                      :: max_err_rho,min_err_rho
-  
-  
+
+
   diff_rho = rho - rho_ref
-  
+
   ! Sum
   sum_rho = sum(rho)
-  
+
   ! Error point by point
   ave_err_rho = abs(sum(diff_rho/rho_ref,MASK=((rho_ref.ne.0).and.(rho.ne.0))))/nc !/abs(sum_rho_ref)
   max_err_rho = maxval(abs(diff_rho/rho_ref),MASK=((rho_ref.ne.0).and.(rho.ne.0)))
   min_err_rho = minval(abs(diff_rho/rho_ref),MASK=((rho_ref.ne.0).and.(rho.ne.0)))
-  
+
   ! Error sum
   err_sum_rho = abs((sum_rho - sum_rho))/abs(sum_rho)
-  
-  ! 
+
+  !
   IF (err_sum_rho .gt. epsilon) passed = (passed.and.(.false.))
   IF (ave_err_rho .gt. epsilon) passed = (passed.and.(.false.))
   IF (min_err_rho .gt. epsilon) passed = (passed.and.(.false.))
   IF (max_err_rho .gt. epsilon) passed = (passed.and.(.false.))
-  
+
 END SUBROUTINE
 ! ________________________________________________________________
 
@@ -354,7 +354,7 @@ SUBROUTINE output_check(title,n,name,sum_rho,err_rho,err_sum_rho)
 
   USE constants
   IMPLICIT NONE
-  
+
   CHARACTER(len=64), INTENT(IN)            :: title
   INTEGER(isp), INTENT(IN)                 :: n
   CHARACTER(len=64), dimension(10)         :: name
@@ -382,7 +382,7 @@ END SUBROUTINE
 !   integer, allocatable :: seed(:)
 !   integer :: i, n, un, istat, dt(8), pid
 !   integer(int64) :: t
-! 
+!
 !   call random_seed(size = n)
 !   allocate(seed(n))
   ! First try if the OS provides a random number generator
