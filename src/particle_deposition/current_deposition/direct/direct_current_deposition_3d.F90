@@ -90,7 +90,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( &
     jy,jy_nguard,jy_nvalid, &
     jz,jz_nguard,jz_nvalid, &
     np,xp,yp,zp,uxp,uyp,uzp,&
-    gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !# do not parse
+    gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !#do not parse
 ! ______________________________________________________________________________
 
   USE constants
