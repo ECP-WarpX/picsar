@@ -83,8 +83,11 @@ PROGRAM main
 #endif
 
 ! --- mpi init communicator
-  CALL mpi_minimal_init
-
+  IF (fftw_with_mpi) THEN 
+    CALL mpi_minimal_init_fftw
+  ELSE
+    CALL mpi_minimal_init
+  ENDIF 
   IF (rank .EQ. 0) THEN
     write(0,*) "_________________________________________________________________"
     write(0,*) ""

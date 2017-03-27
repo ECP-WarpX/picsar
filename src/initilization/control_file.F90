@@ -207,6 +207,9 @@ MODULE control_file
         temdiag_frequency = 0
         temdiag_format = 0
 
+        ! SET FFTW WITH MPI FLAG 
+        fftw_with_mpi = .FALSE.  
+
     END SUBROUTINE default_init
 
     ! ____________________________________________________________________________________
@@ -525,6 +528,9 @@ MODULE control_file
             ELSE IF (INDEX(buffer,'l_staggered') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), *) l_staggered
+            ELSE IF (INDEX(buffer,'fftw_with_mpi') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) fftw_with_mpi
             ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated

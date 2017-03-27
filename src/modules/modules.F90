@@ -964,6 +964,8 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   ! MPI subdomain data
   !----------------------------------------------------------------------------
+  !> FFTW distributed 
+  LOGICAL(idp) :: fftw_with_mpi, fftw_threads_ok 
   !> Error code for MPI
   INTEGER(isp) :: errcode
   !> Variable used by MPI

@@ -17,7 +17,15 @@ MODULE fftw3_fortran
   integer(C_INT) :: nplan=0
 END MODULE fftw3_fortran
 
-
+MODULE mpi_fftw3
+  use, intrinsic :: iso_c_binding
+  use PICSAR_precision 
+  include 'fftw3-mpi.f03'
+  integer(idp), parameter :: nmaxplan_mpi=100000
+  ! > Fortran Integer Array where C integer pointers to plans are stored
+  integer(idp), DIMENSION(nmaxplan_mpi) :: plans_cint_mpi
+  integer(C_INT) :: nplan_mpi=0
+END MODULE mpi_fftw3
 
 !**********************************************
 !* SECTION 2: PLAN CREATION ROUTINES 1D,2D,3D, ND

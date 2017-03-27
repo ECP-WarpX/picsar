@@ -38,6 +38,7 @@ MODULE mpi_routines
   USE shared_data
   USE fields
   USE mpi
+  
   USE params
   IMPLICIT NONE
   !PRIVATE
@@ -62,12 +63,12 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
-
+    INTEGER(isp) :: iret 
     !print*,'start mpi_minimal_init()'
     !print*,'MPI_INITIALIZED'
     CALL MPI_INITIALIZED(isinitialized,errcode)
     IF (.NOT. isinitialized) THEN
-      !print*, 'MPI_INIT_THREAD'
+      !print*, 'MPI_INIT_THREAD' 
       CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
       !CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE,provided,errcode)
     ENDIF
@@ -82,6 +83,33 @@ MODULE mpi_routines
     !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
 
+  SUBROUTINE mpi_minimal_init_fftw()
+    USE mpi_fftw3
+  ! ____________________________________________________________________________
+    LOGICAL(isp) :: isinitialized
+    INTEGER(isp) :: nproc_comm, rank_in_comm
+    INTEGER(isp) :: iret 
+    !print*,'start mpi_minimal_init()'
+    !print*,'MPI_INITIALIZED'
+    CALL MPI_INITIALIZED(isinitialized,errcode)
+    IF (.NOT. isinitialized) THEN
+        CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED,provided,errcode)
+        IF (provided >= MPI_THREAD_FUNNELED) THEN 
+          CALL DFFTW_INIT_THREADS(iret)
+          fftw_threads_ok = .TRUE.
+        ENDIF 
+        CALL FFTW_MPI_INIT()
+    ENDIF 
+    !print*,'MPI_COMM_DUP'
+    CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+    !print*,'MPI_COMM_SIZE'
+    CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
+    nproc=INT(nproc_comm,idp)
+    !print*,'MPI_COMM_RANK'
+    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+    rank=INT(rank_in_comm,idp)
+    !print*, 'end mpi_minimal_init'
+  END SUBROUTINE mpi_minimal_init_fftw
   ! ____________________________________________________________________________
   !> @brief
   !> Minimal initialization when using Python.
