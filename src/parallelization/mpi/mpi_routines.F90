@@ -561,7 +561,7 @@ MODULE mpi_routines
 	INTEGER(C_INTPTR_T) :: kx, ly,mz 
   	TYPE(C_PTR) :: plan, cdata_out, rdata_in
   	COMPLEX(C_DOUBLE_COMPLEX), pointer :: data(:,:)
-  	INTEGER(C_INTPTR_T) :: alloc_local, local_z, local_z_offset
+  	INTEGER(C_INTPTR_T) :: local_z_offset
 	INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs
     ! Init number of guard cells of subdomains in each dimension
 
@@ -895,7 +895,9 @@ MODULE mpi_routines
   !> Creation 2015
   SUBROUTINE allocate_grid_quantities()
   USE fourier 
+  USE mpi_fftw3
   IMPLICIT NONE  
+  TYPE(C_PTR) :: cdata, cin 
   ! ____________________________________________________________________________
 
       ! --- Allocate grid quantities (in real space)
@@ -912,34 +914,81 @@ MODULE mpi_routines
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 	! ---  Allocate grid quantities (in Fourier space)
 	IF (l_spectral) THEN 
-   		ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
-		nkx=(2*nxguards+1+nx)/2+1 ! Real To Complex Transform 
-		nky=(2*nyguards+1+ny)
-		nkz=(2*nzguards+1+nz)
-		ALLOCATE(exf(nkx,nky,nkz))
-		ALLOCATE(eyf(nkx,nky,nkz))
-		ALLOCATE(ezf(nkx,nky,nkz))
-		ALLOCATE(bxf(nkx,nky,nkz))
-		ALLOCATE(byf(nkx,nky,nkz))
-		ALLOCATE(bzf(nkx,nky,nkz))
-		ALLOCATE(jxf(nkx,nky,nkz))
-		ALLOCATE(jyf(nkx,nky,nkz))
-		ALLOCATE(jzf(nkx,nky,nkz))
-		ALLOCATE(rhof(nkx,nky,nkz))
-		ALLOCATE(rhooldf(nkx,nky,nkz))
-		! allocate k-vectors 
-		ALLOCATE(kxunit(nkx),kyunit(nky),kzunit(nkz))
-		ALLOCATE(kxunit_mod(nkx),kyunit_mod(nky),kzunit_mod(nkz))
-		ALLOCATE(kxn(nkx,nky,nkz),kyn(nkx,nky,nkz),kzn(nkx,nky,nkz)) 
-		ALLOCATE(kx_unmod(nkx,nky,nkz),ky_unmod(nkx,nky,nkz),kz_unmod(nkx,nky,nkz)) 
-		ALLOCATE(kx(nkx,nky,nkz),ky(nkx,nky,nkz),kz(nkx,nky,nkz)) 
-		ALLOCATE(k(nkx,nky,nkz),kmag(nkx,nky,nkz)) 
-		ALLOCATE(kxmn(nkx,nky,nkz),kxpn(nkx,nky,nkz)) 
-		ALLOCATE(kymn(nkx,nky,nkz),kypn(nkx,nky,nkz)) 
-		ALLOCATE(kzmn(nkx,nky,nkz),kzpn(nkx,nky,nkz)) 
-		ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
-		ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
-		ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
+		IF (fftw_with_mpi) THEN 
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, exf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, eyf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, ezf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, bxf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, byf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, bzf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, jxf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, jyf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, jzf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, rhof, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		    call c_f_pointer(cdata, rhooldf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, ex_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, ey_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, ez_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, bx_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, by_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, bz_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, jx_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, jy_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, jz_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, rho_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		    call c_f_pointer(cin, rhoold_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+		ELSE 
+			ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+			nkx=(2*nxguards+1+nx)/2+1 ! Real To Complex Transform 
+			nky=(2*nyguards+1+ny)
+			nkz=(2*nzguards+1+nz)
+			ALLOCATE(exf(nkx,nky,nkz))
+			ALLOCATE(eyf(nkx,nky,nkz))
+			ALLOCATE(ezf(nkx,nky,nkz))
+			ALLOCATE(bxf(nkx,nky,nkz))
+			ALLOCATE(byf(nkx,nky,nkz))
+			ALLOCATE(bzf(nkx,nky,nkz))
+			ALLOCATE(jxf(nkx,nky,nkz))
+			ALLOCATE(jyf(nkx,nky,nkz))
+			ALLOCATE(jzf(nkx,nky,nkz))
+			ALLOCATE(rhof(nkx,nky,nkz))
+			ALLOCATE(rhooldf(nkx,nky,nkz))
+			! allocate k-vectors 
+			ALLOCATE(kxunit(nkx),kyunit(nky),kzunit(nkz))
+			ALLOCATE(kxunit_mod(nkx),kyunit_mod(nky),kzunit_mod(nkz))
+			ALLOCATE(kxn(nkx,nky,nkz),kyn(nkx,nky,nkz),kzn(nkx,nky,nkz)) 
+			ALLOCATE(kx_unmod(nkx,nky,nkz),ky_unmod(nkx,nky,nkz),kz_unmod(nkx,nky,nkz)) 
+			ALLOCATE(kx(nkx,nky,nkz),ky(nkx,nky,nkz),kz(nkx,nky,nkz)) 
+			ALLOCATE(k(nkx,nky,nkz),kmag(nkx,nky,nkz)) 
+			ALLOCATE(kxmn(nkx,nky,nkz),kxpn(nkx,nky,nkz)) 
+			ALLOCATE(kymn(nkx,nky,nkz),kypn(nkx,nky,nkz)) 
+			ALLOCATE(kzmn(nkx,nky,nkz),kzpn(nkx,nky,nkz)) 
+			ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
+			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
+			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
+		ENDIF 
 	ENDIF 
     ! --- Quantities used by the dynamic load balancer
     ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))

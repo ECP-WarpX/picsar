@@ -170,6 +170,28 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:,:,:) :: jy
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:,:,:) :: jz
+  !> MPI-domain electric field grid in x
+  REAL(num), POINTER, DIMENSION(:,:,:) :: ex_r
+  !> MPI-domain electric field grid in y
+  REAL(num), POINTER, DIMENSION(:,:,:) :: ey_r
+  !> MPI-domain electric field grid in z
+  REAL(num), POINTER, DIMENSION(:,:,:) :: ez_r
+  !> MPI-domain magnetic field grid in x
+  REAL(num), POINTER, DIMENSION(:,:,:) :: bx_r
+  !> MPI-domain magnetic field grid in y
+  REAL(num), POINTER, DIMENSION(:,:,:) :: by_r
+  !> MPI-domain magnetic field grid in z
+  REAL(num), POINTER, DIMENSION(:,:,:) :: bz_r
+  !> MPI-domain current grid in x
+  REAL(num), POINTER, DIMENSION(:,:,:) :: jx_r
+  !> MPI-domain current grid in y
+  REAL(num), POINTER, DIMENSION(:,:,:) :: jy_r
+  !> MPI-domain current grid in z
+  REAL(num), POINTER, DIMENSION(:,:,:) :: jz_r
+  !> MPI-domain current grid in z - Fourier space 
+  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rho_r
+  !> MPI-domain current grid in z - Fourier space 
+  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space 
   COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: exf
   !> MPI-domain electric field grid in y - Fourier space 
