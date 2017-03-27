@@ -178,10 +178,18 @@ MODULE mpi_routines
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
 
+
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)
     nproc=INT(nproc_comm,idp)
+
+	! With fftw can only do CPU split with respect to Z direction (X in C-order)
+	IF (fftw_with_mpi) THEN 
+		nprocx=1
+		nprocy=1
+		nprocz=nproc
+	ENDIF 
 
     dims = (/nprocz, nprocy, nprocx/)
 
@@ -531,6 +539,7 @@ MODULE mpi_routines
   END SUBROUTINE setup_communicator
 
 
+
   ! ____________________________________________________________________________
   !> @brief
   !> This subroutine computes the space domain decomposition and
@@ -543,13 +552,17 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE mpi_initialise
+	USE mpi_fftw3
   ! ____________________________________________________________________________
 
     INTEGER(isp) :: idim
     INTEGER(isp) :: nx0, nxp
     INTEGER(isp) :: ny0, nyp
     INTEGER(isp) :: nz0, nzp
-
+	INTEGER(C_INTPTR_T) :: L, M 
+  	TYPE(C_PTR) :: plan, cdata_out, rdata_in
+  	COMPLEX(C_DOUBLE_COMPLEX), pointer :: data(:,:)
+  	INTEGER(C_INTPTR_T) :: alloc_local, local_M, local_j_offset
     ! Init number of guard cells of subdomains in each dimension
 
     IF (l_smooth_compensate) THEN
@@ -567,67 +580,79 @@ MODULE mpi_routines
     ALLOCATE(cell_y_min(1:nprocy), cell_y_max(1:nprocy))
     ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
-  ! Split is done on the total number of cells as in WARP
-  ! Initial WARP split is used with each processor boundary
-  ! being shared by two adjacent MPI processes
-    nx0 = nx_global / nprocx
-    ny0 = ny_global / nprocy
-    nz0 = nz_global / nprocz
 
+	! With fftw_with_mpi CPU split is performed only along z 
+	IF (fftw_with_mpi) THEN 
+		!   get local data size and allocate (note dimension reversal)
+		alloc_local = fftw_mpi_local_size_3d(M/2+1, L, K, MPI_COMM_WORLD, &
+										   local_M, local_j_offset)
+		!rdata_in = fftw_alloc_real(2 * alloc_local);
+		!cdata_out = fftw_alloc_complex(alloc_local);
+		!call c_f_pointer(rdata_in, fdata_in, [L,K,2*local_M])
+		!call c_f_pointer(cdata_out, fdata_out, [L,K,local_M])
+	! Regular CPU split 
     ! If the total number of gridpoints cannot be exactly subdivided then fix
     ! The first nxp processors have nx0 cells
     ! The remaining processors have nx0+1 cells
-    IF (nx0 * nprocx .NE. nx_global) THEN
-        nxp = (nx0 + 1) * nprocx - nx_global
-    ELSE
-        nxp = nprocx
-    ENDIF
+	ELSE 
+	  ! Split is done on the total number of cells as in WARP
+	  ! Initial WARP split is used with each processor boundary
+	  ! being shared by two adjacent MPI processes
+		nx0 = nx_global / nprocx
+		ny0 = ny_global / nprocy
+		nz0 = nz_global / nprocz
+		
+		IF (nx0 * nprocx .NE. nx_global) THEN
+			nxp = (nx0 + 1) * nprocx - nx_global
+		ELSE
+			nxp = nprocx
+		ENDIF
 
-    IF (ny0 * nprocy .NE. ny_global) THEN
-        nyp = (ny0 + 1) * nprocy - ny_global
-    ELSE
-        nyp = nprocy
-    ENDIF
+		IF (ny0 * nprocy .NE. ny_global) THEN
+			nyp = (ny0 + 1) * nprocy - ny_global
+		ELSE
+			nyp = nprocy
+		ENDIF
 
-    IF (nz0 * nprocz .NE. nz_global) THEN
-        nzp = (nz0 + 1) * nprocz - nz_global
-    ELSE
-        nzp = nprocz
-    ENDIF
+		IF (nz0 * nprocz .NE. nz_global) THEN
+			nzp = (nz0 + 1) * nprocz - nz_global
+		ELSE
+			nzp = nprocz
+		ENDIF
 
-    cell_x_min(1)=0
-    cell_x_max(1)=nx0-1
-    DO idim = 2, nxp
-        cell_x_min(idim) = cell_x_max(idim-1)+1
-        cell_x_max(idim) = cell_x_min(idim)+nx0-1
-    ENDDO
-    DO idim = nxp+1, nprocx
-        cell_x_min(idim) = cell_x_max(idim-1)+1
-        cell_x_max(idim) = cell_x_min(idim)+nx0
-    ENDDO
+		cell_x_min(1)=0
+		cell_x_max(1)=nx0-1
+		DO idim = 2, nxp
+			cell_x_min(idim) = cell_x_max(idim-1)+1
+			cell_x_max(idim) = cell_x_min(idim)+nx0-1
+		ENDDO
+		DO idim = nxp+1, nprocx
+			cell_x_min(idim) = cell_x_max(idim-1)+1
+			cell_x_max(idim) = cell_x_min(idim)+nx0
+		ENDDO
 
-    cell_y_min(1)=0
-    cell_y_max(1)=ny0-1
-    DO idim = 2, nyp
-        cell_y_min(idim) = cell_y_max(idim-1)+1
-        cell_y_max(idim) = cell_y_min(idim)+ny0-1
-    ENDDO
-    DO idim = nyp+1, nprocy
-        cell_y_min(idim) = cell_y_max(idim-1)+1
-        cell_y_max(idim) = cell_y_min(idim)+ny0
-    ENDDO
+		cell_y_min(1)=0
+		cell_y_max(1)=ny0-1
+		DO idim = 2, nyp
+			cell_y_min(idim) = cell_y_max(idim-1)+1
+			cell_y_max(idim) = cell_y_min(idim)+ny0-1
+		ENDDO
+		DO idim = nyp+1, nprocy
+			cell_y_min(idim) = cell_y_max(idim-1)+1
+			cell_y_max(idim) = cell_y_min(idim)+ny0
+		ENDDO
 
-    cell_z_min(1)=0
-    cell_z_max(1)=nz0-1
-    DO idim = 2, nzp
-        cell_z_min(idim) = cell_z_max(idim-1)+1
-        cell_z_max(idim) = cell_z_min(idim)+nz0-1
-    ENDDO
-    DO idim = nzp+1 , nprocz
-        cell_z_min(idim) = cell_z_max(idim-1)+1
-        cell_z_max(idim) = cell_z_min(idim)+nz0
-    ENDDO
-
+		cell_z_min(1)=0
+		cell_z_max(1)=nz0-1
+		DO idim = 2, nzp
+			cell_z_min(idim) = cell_z_max(idim-1)+1
+			cell_z_max(idim) = cell_z_min(idim)+nz0-1
+		ENDDO
+		DO idim = nzp+1 , nprocz
+			cell_z_min(idim) = cell_z_max(idim-1)+1
+			cell_z_max(idim) = cell_z_min(idim)+nz0
+		ENDDO
+	ENDIF
 
     nx_global_grid_min = cell_x_min(x_coords+1)
     nx_global_grid_max = cell_x_max(x_coords+1)+1
