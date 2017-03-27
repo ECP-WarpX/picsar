@@ -827,9 +827,11 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE allocate_grid_quantities()
+  USE fourier 
+  IMPLICIT NONE  
   ! ____________________________________________________________________________
 
-      ! --- Allocate grid quantities
+      ! --- Allocate grid quantities (in real space)
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -841,6 +843,37 @@ MODULE mpi_routines
     ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
     ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+	! ---  Allocate grid quantities (in Fourier space)
+	IF (l_spectral) THEN 
+   		ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+		nkx=(2*nxguards+1+nx)/2+1 ! Real To Complex Transform 
+		nky=(2*nyguards+1+ny)
+		nkz=(2*nzguards+1+nz)
+		ALLOCATE(exf(nkx,nky,nkz))
+		ALLOCATE(eyf(nkx,nky,nkz))
+		ALLOCATE(ezf(nkx,nky,nkz))
+		ALLOCATE(bxf(nkx,nky,nkz))
+		ALLOCATE(byf(nkx,nky,nkz))
+		ALLOCATE(bzf(nkx,nky,nkz))
+		ALLOCATE(jxf(nkx,nky,nkz))
+		ALLOCATE(jyf(nkx,nky,nkz))
+		ALLOCATE(jzf(nkx,nky,nkz))
+		ALLOCATE(rhof(nkx,nky,nkz))
+		ALLOCATE(rhooldf(nkx,nky,nkz))
+		! allocate k-vectors 
+		ALLOCATE(kxunit(nkx),kyunit(nky),kzunit(nkz))
+		ALLOCATE(kxunit_mod(nkx),kyunit_mod(nky),kzunit_mod(nkz))
+		ALLOCATE(kxn(nkx,nky,nkz),kyn(nkx,nky,nkz),kzn(nkx,nky,nkz)) 
+		ALLOCATE(kx_unmod(nkx,nky,nkz),ky_unmod(nkx,nky,nkz),kz_unmod(nkx,nky,nkz)) 
+		ALLOCATE(kx(nkx,nky,nkz),ky(nkx,nky,nkz),kz(nkx,nky,nkz)) 
+		ALLOCATE(k(nkx,nky,nkz),kmag(nkx,nky,nkz)) 
+		ALLOCATE(kxmn(nkx,nky,nkz),kxpn(nkx,nky,nkz)) 
+		ALLOCATE(kymn(nkx,nky,nkz),kypn(nkx,nky,nkz)) 
+		ALLOCATE(kzmn(nkx,nky,nkz),kzpn(nkx,nky,nkz)) 
+		ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
+		ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
+		ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
+	ENDIF 
     ! --- Quantities used by the dynamic load balancer
     ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
     ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))

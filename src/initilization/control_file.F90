@@ -88,6 +88,8 @@ MODULE control_file
         nordery = 2
         norderz = 2
         l_nodalgrid = .FALSE.
+        l_spectral = .FALSE. ! (no spectral solver by default) 
+        l_staggered = .TRUE. ! (staggered scheme by default - for spectral ) 
         ! --- Order of current deposition/ field gathering
         ! (default is 2 in x,y,z)
         nox = 1
@@ -517,7 +519,12 @@ MODULE control_file
                 READ(buffer(ix+1:string_length), '(i10)') partcom
             ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
-                READ(buffer(ix+1:string_length), '(i10)') mpi_buf_size
+            ELSE IF (INDEX(buffer,'l_spectral') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) l_spectral
+            ELSE IF (INDEX(buffer,'l_staggered') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) l_staggered
             ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated

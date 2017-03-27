@@ -62,6 +62,7 @@ SUBROUTINE step(nst)
   USE simple_io
   USE sorting
   USE mpi_routines
+  USE fourier_psaotd
 #if (defined(VTUNE) && VTUNE>0)
   USE ITT_FORTRAN
 #endif
@@ -112,6 +113,10 @@ SUBROUTINE step(nst)
         !IF (rank .EQ. 0) PRINT *, "#1"
         CALL field_gathering_plus_particle_pusher
         !IF (rank .EQ. 0) PRINT *, "#2"
+		IF (l_spectral) THEN 
+			rhoold=rho 
+        	CALL pxrdepose_rho_on_grid
+		ENDIF 
         !!! --- Apply BC on particles
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
@@ -129,22 +134,30 @@ SUBROUTINE step(nst)
         !IF (rank .EQ. 0) PRINT *, "#6"
         !!! --- Push B field half a time step
         !write(0,*),'push_bfield'
-        CALL push_bfield
-        !IF (rank .EQ. 0) PRINT *, "#7"
-        !!! --- Boundary conditions for B
-        CALL bfield_bcs
-        !IF (rank .EQ. 0) PRINT *, "#8"
-        !!! --- Push E field  a full time step
-        CALL push_efield
-        !IF (rank .EQ. 0) PRINT *, "#9"
-        !!! --- Boundary conditions for E
-        CALL efield_bcs
-        !IF (rank .EQ. 0) PRINT *, "#10"
-        !!! --- push B field half a time step
-        CALL push_bfield
-        !IF (rank .EQ. 0) PRINT *, "#11"
-        !!! --- Boundary conditions for B
-        CALL bfield_bcs
+		IF (l_spectral) THEN 
+			CALL get_Ffields ! - FFT  
+			CALL push_psaotd_ebfielfs ! - PUSH PSATD 
+			CALL get_fields  ! IFFT
+			CALL efield_bcs
+			CALL bfield_bcs 
+		ELSE 
+			CALL push_bfield
+			!IF (rank .EQ. 0) PRINT *, "#7"
+			!!! --- Boundary conditions for B
+			CALL bfield_bcs
+			!IF (rank .EQ. 0) PRINT *, "#8"
+			!!! --- Push E field  a full time step
+			CALL push_efield
+			!IF (rank .EQ. 0) PRINT *, "#9"
+			!!! --- Boundary conditions for E
+			CALL efield_bcs
+			!IF (rank .EQ. 0) PRINT *, "#10"
+			!!! --- push B field half a time step
+			CALL push_bfield
+			!IF (rank .EQ. 0) PRINT *, "#11"
+			!!! --- Boundary conditions for B
+			CALL bfield_bcs
+		ENDIF 
         !IF (rank .EQ. 0) PRINT *, "#12"
         !!! --- Computes derived quantities
         CALL calc_diags
@@ -245,6 +258,7 @@ SUBROUTINE initall
   USE shared_data
   USE tiling
   USE time_stat
+  USE fourier_psaotd 
   USE precomputed
 
   !use IFPORT ! uncomment if using the intel compiler (for rand)
@@ -438,6 +452,10 @@ SUBROUTINE initall
 
   init_localtimes(1) = MPI_WTIME() - tdeb
 
+  ! -Init Fourier 
+  IF (l_spectral) THEN 
+  	CALL init_fourier
+  ENDIF 
   ! - Estimate tile size
   CALL estimate_memory_consumption
 
