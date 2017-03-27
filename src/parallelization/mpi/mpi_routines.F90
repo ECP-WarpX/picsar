@@ -562,6 +562,7 @@ MODULE mpi_routines
   	TYPE(C_PTR) :: plan, cdata_out, rdata_in
   	COMPLEX(C_DOUBLE_COMPLEX), pointer :: data(:,:)
   	INTEGER(C_INTPTR_T) :: alloc_local, local_z, local_z_offset
+	INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs
     ! Init number of guard cells of subdomains in each dimension
 
     IF (l_smooth_compensate) THEN
@@ -582,9 +583,23 @@ MODULE mpi_routines
 
 	! With fftw_with_mpi CPU split is performed only along z 
 	IF (fftw_with_mpi) THEN 
+		mz=nz_global+1; ly=ny_global+1; kx=nx_global+1
 		!   get local data size and allocate (note dimension reversal)
-		alloc_local = 1!fftw_mpi_local_size_3d(mz/2+1, ly, kx, comm, &
-						!				   local_z, local_z_offset)
+		alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, &
+	                      local_z, local_z_offset)
+		ALLOCATE(nz_procs(local_z))
+		CALL MPI_ALLGATHER(int(local_z-1,idp), &
+		1,MPI_INTEGER8,nz_procs,nprocz,MPI_INTEGER8,comm,errcode)
+                cell_x_min(1)=0
+                cell_x_max(1)=nx_global-1
+                cell_y_min(1)=0
+                cell_y_max(1)=ny_global-1
+                cell_z_min(1)=0
+                cell_z_max(1)=nz_procs(1)-1
+                DO idim = 2, nprocz
+                        cell_z_min(idim) = cell_z_max(idim-1)+1
+                        cell_z_max(idim) = cell_z_min(idim)+nz_procs(idim)
+                ENDDO
 		!rdata_in = fftw_alloc_real(2 * alloc_local);
 		!cdata_out = fftw_alloc_complex(alloc_local);
 		!call c_f_pointer(rdata_in, fdata_in, [L,K,2*local_M])
