@@ -916,49 +916,49 @@ MODULE mpi_routines
 	IF (l_spectral) THEN 
 		IF (fftw_with_mpi) THEN 
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, exf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, exf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, eyf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, eyf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, ezf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, ezf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, bxf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, bxf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, byf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, byf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, bzf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, bzf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, jxf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, jxf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, jyf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, jyf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, jzf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, jzf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, rhof, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, rhof, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, rhooldf, [(nxglobal+1)/2+1,nyglobal+1,local_z])
+ 		    call c_f_pointer(cdata, rhooldf, [(nx_global+1)/2+1,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, ex_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, ex_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, ey_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, ey_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, ez_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, ez_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, bx_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, bx_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, by_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, by_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, bz_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, bz_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, jx_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, jx_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, jy_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, jy_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, jz_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, jz_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, rho_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, rho_r, [(nx_global+1)+2,ny_global+1,local_z])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, rhoold_r, [(nxglobal+1)+2,nyglobal+1,local_z])
+ 		    call c_f_pointer(cin, rhoold_r, [(nx_global+1)+2,ny_global+1,local_z])
 		ELSE 
 			ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
 			nkx=(2*nxguards+1+nx)/2+1 ! Real To Complex Transform 
