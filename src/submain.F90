@@ -103,6 +103,7 @@ SUBROUTINE step(nst)
   IF (c_dim.eq.3) THEN
 
     DO i=1,nst
+        CALL set_unit_pulse 
         IF (rank .EQ. 0) startit=MPI_WTIME()
 
         !!! --- Init iteration variables
@@ -113,13 +114,13 @@ SUBROUTINE step(nst)
         !IF (rank .EQ. 0) PRINT *, "#1"
         CALL field_gathering_plus_particle_pusher
         !IF (rank .EQ. 0) PRINT *, "#2"
-		IF (l_spectral) THEN 
-			rhoold=rho 
-        	CALL pxrdepose_rho_on_grid
-		ENDIF 
         !!! --- Apply BC on particles
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
+		    IF (l_spectral) THEN 
+			      rhoold=rho 
+        	  CALL pxrdepose_rho_on_grid
+		    ENDIF 
         !!! --- Particle Sorting
         !write(0,*),'Sorting'
         CALL pxr_particle_sorting
@@ -291,7 +292,12 @@ SUBROUTINE initall
 
   !!! --- Set time step/ it
   IF (c_dim.eq.3) THEN
-    dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+    IF (l_spectral) THEN
+      dt=MIN(dx,dy,dz)/clight
+      PRINT *, "dt, dx",dt,dx
+    ELSE 
+      dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+    ENDIF 
   ELSE IF (c_dim.eq.2) THEN
     dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
   ENDIF
@@ -633,5 +639,25 @@ SUBROUTINE current_debug
   !!! --- End debug
 END SUBROUTINE
 
+SUBROUTINE set_unit_pulse
+USE fields 
+USE shared_data 
+INTEGER(idp) :: i,j,k 
+
+IF (rank .EQ. 0) THEN
+  IF (it .EQ. 0) THEN  
+    DO k=-1,1
+      DO i=-1,1
+        DO j=-1,1
+            ex(nx/2,ny/2,nz/2)=0.5*1e8
+        END DO 
+      END DO 
+    END DO 
+    ex(nx/2,ny/2,nz/2)=1e8
+  ENDIF 
+ENDIF 
+
+
+END SUBROUTINE set_unit_pulse
 
 ! ______________________________________
