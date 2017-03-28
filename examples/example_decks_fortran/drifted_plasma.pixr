@@ -33,7 +33,7 @@ section::main
  ymax = 20e-6
  zmax = 20e-6
  # Simulation duration (in 1/w0)
- t_max = 20
+ t_max = 2
  
  # Dtcoef on the dt determined from the CFL
  dtcoef = 0.7
