@@ -234,7 +234,7 @@ def test_plasma_drift(tpath,trun,ttest,tshow):
 
   # Analyse of the files
   if 1: # Temporarily removed due to MPI-IO issues (plateform dependent)
-      for it in range(0,200,20):
+      for it in range(0,21,10):
         dive=Field('RESULTS/dive' + str(it) + '.pxr')
         rho=Field('RESULTS/rho'+ str(it) + '.pxr')  
         F = ((dive.f*eps0-rho.f)) 
