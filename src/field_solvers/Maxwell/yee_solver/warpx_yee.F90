@@ -226,10 +226,10 @@ end subroutine warpx_pxr_push_em3d_bvec
 !> @date
 !> Creation 2015
 subroutine warpx_pxr_push_em2d_evec( &
-     lo, hi, &
-     ex,exlo,exhi,&
-     ey,eylo, eyhi, &
-     ez,ezlo, ezhi, &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex, exlo, exhi, &
+     ey, eylo, eyhi, &
+     ez, ezlo, ezhi, &
      bx, bxlo, bxhi, &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
@@ -243,7 +243,7 @@ subroutine warpx_pxr_push_em2d_evec( &
 
   use constants
 
-  integer, intent(in) :: lo(2), hi(2), &
+  integer, intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
        exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
        bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2),&
        jxlo(2),jxhi(2),jylo(2),jyhi(2),jzlo(2),jzhi(2),&
@@ -267,15 +267,21 @@ subroutine warpx_pxr_push_em2d_evec( &
 
   ! dtsdy should be be used.  It is set to nan by WarpX.
 
-  do k    = lo(2), hi(2)
-     do j = lo(1), hi(1)
+  do k    = xlo(2), xhi(2)
+     do j = xlo(1), xhi(1)
         Ex(j,k) = Ex(j,k) - dtsdz * (By(j,k) - By(j,k-1)) &
                           - mudt  * jx(j,k)
-
+     end do
+  end do
+  do k    = ylo(2), yhi(2)
+     do j = ylo(1), yhi(1)
         Ey(j,k) = Ey(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
                           + dtsdz * (Bx(j,k) - Bx(j,k-1)) &
                           - mudt  * jy(j,k)
-
+      end do
+   end do
+   do k    = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
         Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
                           - mudt  * jz(j,k)
      end do
@@ -299,7 +305,7 @@ end subroutine warpx_pxr_push_em2d_evec
 !> @date
 !> Creation 2015
 subroutine warpx_pxr_push_em2d_bvec( &
-     lo, hi, &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
      ez,ezlo, ezhi, &
@@ -312,7 +318,7 @@ subroutine warpx_pxr_push_em2d_bvec( &
 
   USE constants
 
-  integer :: lo(2), hi(2), &
+  integer :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
        exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
        bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2),&
        norder
@@ -331,11 +337,19 @@ subroutine warpx_pxr_push_em2d_bvec( &
 
   ! dtsdy should be be used.  It is set to nan by WarpX.
 
-  do k    = lo(2), hi(2)
-     do j = lo(1), hi(1)
+  do k    = xlo(2), xhi(2)
+     do j = xlo(1), xhi(1)
         Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
+    end do
+ end do
+ do k    = ylo(2), yhi(2)
+    do j = ylo(1), yhi(1)
         By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
                           - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
+      end do
+   end do
+   do k    = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
         Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
      end do
   end do
