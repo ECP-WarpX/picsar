@@ -75,7 +75,7 @@ def test_langmuir_wave():
   l_test             = 1      # Will open output window on screen
                               # and stop before entering main loop.
   l_gist             = 0      # Turns gist plotting on/off
-  l_matplotlib       = 0
+  l_matplotlib       = 1
   l_restart          = false  # To restart simulation from an old run (works?)
   restart_dump       = ""     # dump file to restart from (works?)
   l_moving_window    = 1      # on/off (Galilean) moving window

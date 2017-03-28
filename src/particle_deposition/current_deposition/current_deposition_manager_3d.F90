@@ -49,7 +49,7 @@
 !>
 SUBROUTINE depose_jxjyjz_generic(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-           nox,noy,noz,current_depo_algo) !#do not parse
+           nox,noy,noz,current_depo_algo)
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard,current_depo_algo
