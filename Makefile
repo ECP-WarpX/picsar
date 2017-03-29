@@ -145,6 +145,10 @@ else ifeq ($(SYS),cori2)
 		COMP=none
 		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
 		LARCH=
+  	else ifeq ($(MODE),prod_spectral)
+		COMP=none
+		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		LARCH=
 	else ifeq ($(MODE),debug)
 		APPNAME=picsar_cori2_debug
 		COMP=none
@@ -457,8 +461,8 @@ build:$(SRCDIR)/modules/modules.o \
 	mv $(APPNAME) $(BINDIR)
 else ifeq ($(MODE),prod_spectral)
 build:$(SRCDIR)/modules/modules.o \
-    $(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
-    $(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+    	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+    	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
