@@ -117,10 +117,10 @@ SUBROUTINE step(nst)
         !!! --- Apply BC on particles
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
-		    IF (l_spectral) THEN 
-			      rhoold=rho 
-        	  CALL pxrdepose_rho_on_grid
-		    ENDIF 
+        IF (l_spectral) THEN 
+          rhoold=rho 
+          CALL pxrdepose_rho_on_grid
+        ENDIF 
         !!! --- Particle Sorting
         !write(0,*),'Sorting'
         CALL pxr_particle_sorting
@@ -135,30 +135,30 @@ SUBROUTINE step(nst)
         !IF (rank .EQ. 0) PRINT *, "#6"
         !!! --- Push B field half a time step
         !write(0,*),'push_bfield'
-		IF (l_spectral) THEN 
-			CALL get_Ffields ! - FFT  
-			CALL push_psaotd_ebfielfs ! - PUSH PSATD 
-			CALL get_fields  ! IFFT
-			CALL efield_bcs
-			CALL bfield_bcs 
-		ELSE 
-			CALL push_bfield
-			!IF (rank .EQ. 0) PRINT *, "#7"
-			!!! --- Boundary conditions for B
-			CALL bfield_bcs
-			!IF (rank .EQ. 0) PRINT *, "#8"
-			!!! --- Push E field  a full time step
-			CALL push_efield
-			!IF (rank .EQ. 0) PRINT *, "#9"
-			!!! --- Boundary conditions for E
-			CALL efield_bcs
-			!IF (rank .EQ. 0) PRINT *, "#10"
-			!!! --- push B field half a time step
-			CALL push_bfield
-			!IF (rank .EQ. 0) PRINT *, "#11"
-			!!! --- Boundary conditions for B
-			CALL bfield_bcs
-		ENDIF 
+        IF (l_spectral) THEN 
+          CALL get_Ffields ! - FFT  
+          CALL push_psaotd_ebfielfs ! - PUSH PSATD 
+          CALL get_fields  ! IFFT
+          CALL efield_bcs
+          CALL bfield_bcs 
+        ELSE 
+          CALL push_bfield
+          !IF (rank .EQ. 0) PRINT *, "#7"
+          !!! --- Boundary conditions for B
+          CALL bfield_bcs
+          !IF (rank .EQ. 0) PRINT *, "#8"
+          !!! --- Push E field  a full time step
+          CALL push_efield
+          !IF (rank .EQ. 0) PRINT *, "#9"
+          !!! --- Boundary conditions for E
+          CALL efield_bcs
+          !IF (rank .EQ. 0) PRINT *, "#10"
+          !!! --- push B field half a time step
+          CALL push_bfield
+          !IF (rank .EQ. 0) PRINT *, "#11"
+          !!! --- Boundary conditions for B
+          CALL bfield_bcs
+        ENDIF 
         !IF (rank .EQ. 0) PRINT *, "#12"
         !!! --- Computes derived quantities
         CALL calc_diags
