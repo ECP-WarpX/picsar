@@ -176,7 +176,11 @@ END SUBROUTINE push_bfield_2d
 
 ! ______________________________________________________________________________
 !> @brief
-!> PUSH B field half a time step in 2D
+!> This subroutine pushes the electric and the magnetic fields using
+!> the PSATD solver.
+!
+!> @details
+!> Time spent in this subroutine is stored in the electric field timer.
 !
 !> @author
 !> Henri Vincenti
