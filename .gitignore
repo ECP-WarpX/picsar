@@ -65,3 +65,6 @@ Acceptance_testing/Gcov_tests/*_test
 src/*.optrpt
 src/*/*.optrpt
 src/*/*/*.optrpt
+src/*/*/*/*.optrpt
+src/*.F90~
+src/*/*.F90~

@@ -2,7 +2,7 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
 ! 2016, The Regents of the University of California, through Lawrence Berkeley
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
@@ -136,9 +136,7 @@ SUBROUTINE step(nst)
         !!! --- Push B field half a time step
         !write(0,*),'push_bfield'
         IF (l_spectral) THEN 
-          CALL get_Ffields ! - FFT  
-          CALL push_psaotd_ebfielfs ! - PUSH PSATD 
-          CALL get_fields  ! IFFT
+          CALL push_psatd_ebfield_3d
           CALL efield_bcs
           CALL bfield_bcs 
         ELSE 

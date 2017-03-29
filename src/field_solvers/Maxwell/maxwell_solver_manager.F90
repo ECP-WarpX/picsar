@@ -172,3 +172,41 @@ SUBROUTINE push_bfield_2d
   ENDIF
 
 END SUBROUTINE push_bfield_2d
+
+
+! ______________________________________________________________________________
+!> @brief
+!> PUSH B field half a time step in 2D
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation March 29 2017
+SUBROUTINE push_psatd_ebfield_3d
+! ______________________________________________________________________________
+
+  USE constants
+  USE time_stat
+  USE params
+  USE shared_data
+  USE fourier_psaotd
+
+  IMPLICIT NONE
+
+  REAL(num) :: tmptime
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+
+  CALL get_Ffields ! - FFT  
+  CALL push_psaotd_ebfielfs ! - PUSH PSATD 
+  CALL get_fields  ! IFFT
+
+
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END SUBROUTINE
