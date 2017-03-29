@@ -54,19 +54,19 @@ SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,   &
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
         CALL pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
 	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
-        	nox,noz,lvect, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+            nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, .FALSE._idp)
     ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
         CALL pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
 	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
-            nox,noz,lvect, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+            nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, .FALSE._idp)
     ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
         CALL pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
 	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
-        	nox,noz,lvect, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+            nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, .FALSE._idp)
     ELSE
         CALL pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
             gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
-            nox,noz, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+            nox,noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, .FALSE._idp)
     ENDIF
 
 END SUBROUTINE
@@ -105,9 +105,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Interfaces for func_order
   INTERFACE
 
-  SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,  &
-      xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,    &
-      dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)
+  SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,  & !#do not parse
+      xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,    & !#do not parse
+      dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)   !#do not parse
       USE constants
       implicit none
       integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard
@@ -251,9 +251,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   ! ___ Interface _________________________________________________
   ! For the func_order input function
   INTERFACE
-      SUBROUTINE curr_depo_sub(jx,jy,jz,np,&
-          xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-          dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)
+      SUBROUTINE curr_depo_sub(jx,jy,jz,np,&             !#do not parse
+          xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &   !#do not parse
+          dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)  !#do not parse
           USE constants
           implicit none
           integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard
