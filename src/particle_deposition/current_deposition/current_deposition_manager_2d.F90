@@ -40,15 +40,15 @@
 !> This routine calls the relevant current deposition routine depending
 !> on the order of the particle shape and the selected algorithm.
 !>
-SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-    dt,dx,dz,nx,nz,nxguard,nzguard, &
-    nox,noz,lvect,current_depo_algo)
+SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,   &
+    xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,     &
+    dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)
     USE constants
     implicit none
-    integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,current_depo_algo
+    integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard
     integer(idp)                          :: lvect
     real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
-    real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
+    real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
     real(num)                             :: q,dt,dx,dz,xmin,zmin
 
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
@@ -105,15 +105,15 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Interfaces for func_order
   INTERFACE
 
-  SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-      dt,dx,dz,nx,nz,nxguard,nzguard, &
-      nox,noz,lvect,current_depo_algo)
+  SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,  &
+      xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,    &
+      dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)
       USE constants
       implicit none
-      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,current_depo_algo
+      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard
       integer(idp)                          :: lvect
       real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
-      real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
+      real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
       real(num)                             :: q,dt,dx,dz,xmin,zmin
   END SUBROUTINE
 
@@ -251,20 +251,17 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   ! ___ Interface _________________________________________________
   ! For the func_order input function
   INTERFACE
-    SUBROUTINE curr_depo_sub(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, & !#do not parse
-             dt,dx,dz,nx,nz,nxguard,nzguard, & !#do not parse
-             nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose) !#do not parse
-
-      USE constants
-      IMPLICIT NONE
-      INTEGER(idp)             :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
-      INTEGER(idp)             :: lvect
-      REAL(num), DIMENSION(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-      REAL(num), DIMENSION(np) :: xp,zp,uxp,uyp,uzp, w, gaminv
-      REAL(num)                :: q,dt,dx,dz,xmin,zmin
-      LOGICAL(lp)              :: l_particles_weight,l4symtry,l_2drz
-    END SUBROUTINE
-
+      SUBROUTINE curr_depo_sub(jx,jy,jz,np,&
+          xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
+          dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)
+          USE constants
+          implicit none
+          integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard
+          integer(idp)                          :: lvect
+          real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
+          real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
+          real(num)                             :: q,dt,dx,dz,xmin,zmin
+      END SUBROUTINE
   END INTERFACE
 
   !$OMP PARALLEL DEFAULT(NONE)                                                              &
@@ -306,13 +303,14 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
                 ENDIF
 
                 ! Depose current in jtile
-                CALL curr_depo_sub(currg%jxtile,currg%jytile,                               &
-                currg%jztile,count,                                                         &
-                curr_tile%part_x,curr_tile%part_z,                                          &
-                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,&
-                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,                &
-                curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,                              &
-                nxjg,nzjg,noxx,nozz,lvect,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
+                CALL curr_depo_sub(                                          &
+                    currg%jxtile,currg%jytile,currg%jztile,count,            &
+                    curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,      &
+                    curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,   &
+                    curr_tile%part_gaminv,curr_tile%pid(1,wpid),curr%charge, &
+                    curr_tile%x_grid_tile_min,curr_tile%z_grid_tile_min,     &
+                    dtt,dxx,dzz,nxc,nzc,nxjg,nzjg,noxx,nozz,lvect)
+
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
               jxg(jmin:jmax,0,lmin:lmax)=jxg(jmin:jmax,0,lmin:lmax)+currg%jxtile(0:nxc,0,0:nzc)
