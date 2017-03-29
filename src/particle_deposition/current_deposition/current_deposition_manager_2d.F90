@@ -34,6 +34,45 @@
 
 ! ______________________________________________________________________________
 !> @brief
+!> Generic subroutine for current deposition on one tile
+!>
+!> @details
+!> This routine calls the relevant current deposition routine depending
+!> on the order of the particle shape and the selected algorithm.
+!>
+SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
+    dt,dx,dz,nx,nz,nxguard,nzguard, &
+    nox,noz,lvect,current_depo_algo)
+    USE constants
+    implicit none
+    integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,current_depo_algo
+    integer(idp)                          :: lvect
+    real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
+    real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
+    real(num)                             :: q,dt,dx,dz,xmin,zmin
+
+    IF ((nox.eq.1).and.(noz.eq.1)) THEN
+        CALL pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+        	nox,noz,lvect, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+    ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
+        CALL pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+            nox,noz,lvect, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+    ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
+        CALL pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+        	nox,noz,lvect, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+    ELSE
+        CALL pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
+            gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+            nox,noz, .TRUE._idp, .FALSE._idp, .FALSE._idp, .FALSE._idp)
+    ENDIF
+
+END SUBROUTINE
+
+! ______________________________________________________________________________
+!> @brief
 !> Main subroutine for the current deposition called in submain in 2d.
 
 !> @details
@@ -66,58 +105,16 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Interfaces for func_order
   INTERFACE
 
-    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
+  SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
+      dt,dx,dz,nx,nz,nxguard,nzguard, &
+      nox,noz,lvect,current_depo_algo)
       USE constants
       implicit none
-      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
+      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,current_depo_algo
       integer(idp)                          :: lvect
       real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
       real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
       real(num)                             :: q,dt,dx,dz,xmin,zmin
-      LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
-      real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
-    END SUBROUTINE
-
-    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                            dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                            nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
-      USE constants
-      implicit none
-      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
-      integer(idp)                          :: lvect
-      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
-      real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
-      real(num)                             :: q,dt,dx,dz,xmin,zmin
-      LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
-      real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
-    END SUBROUTINE
-
-    SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                    nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)!#do not parse
-      USE constants
-      implicit none
-      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
-      integer(idp)                          :: lvect
-      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
-      real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
-      real(num)                             :: q,dt,dx,dz,xmin,zmin
-      LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
-      real(num)                             :: dxi,dzi,dtsdx,dtsdz,xint,zint
-    END SUBROUTINE
-
-  subroutine pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                   dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                   nox,noz,l_particles_weight,l4symtry,l_2drz,type_rz_depose) !#do not parse
-     use constants
-     implicit none
-     integer(idp)                           :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
-     real(num), dimension(np)               :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
-     real(num)                              :: q,dt,dx,dz,xmin,zmin
-     LOGICAL(lp)                            :: l_particles_weight,l4symtry,l_2drz
-     real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
   END SUBROUTINE
 
 #if defined(DEV)
@@ -168,17 +165,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Esirkepov OpenMP/tiling version non-vectorized but more optimized than the general order subroutine
   ELSE IF (currdepo.EQ.1) THEN
 
-    ! Order 1
-    IF ((nox.eq.1).AND.(noz.eq.1)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_1_1,jx,jy,jz,&
-                     nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-    ! Order 2
-    ELSE IF ((nox.eq.2).AND.(noz.eq.2)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_2_2,jx,jy,jz,&
-                     nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-    ! Order 3
-    ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_3_3,jx,jy,jz,&
+    IF ((nox.eq.noz)) THEN
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_generic_2d,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order n
     ELSE
@@ -190,17 +178,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE
 
-    ! Order 1
-    IF ((nox.eq.1).AND.(noz.eq.1)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_1_1,jx,jy,jz,&
-                     nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-    ! Order 2
-    ELSE IF ((nox.eq.2).AND.(noz.eq.2)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_2_2,jx,jy,jz,&
-                     nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
-    ! Order 3
-    ELSE IF ((nox.eq.3).AND.(noz.eq.3)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(pxr_depose_jxjyjz_esirkepov2d_3_3,jx,jy,jz,&
+    IF ((nox.eq.noz)) THEN
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_generic_2d,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order n
     ELSE
