@@ -302,10 +302,10 @@ SUBROUTINE initall
   it = 0
 
   !!! --- set number of time steps or total time
-  if (tmax.eq.0) then
-    tmax = nsteps*w0_l*dt
-  else
+  if (nsteps .eq. 0) then
     nsteps = nint(tmax/(w0_l*dt))
+  else
+    tmax = nsteps*w0_l*dt
   endif
 
   !!! --- Sorting
