@@ -25,7 +25,8 @@ MODULE mpi_fftw3
   ! > Fortran Integer Array where C integer pointers to plans are stored
   integer(idp), DIMENSION(nmaxplan_mpi) :: plans_cint_mpi
   integer(C_INT) :: nplan_mpi=0
-  INTEGER(C_INTPTR_T) :: alloc_local, local_z
+  INTEGER(C_INTPTR_T) :: alloc_local, local_nz, local_z0
+  TYPE(C_PTR) :: plan_r2c_mpi, plan_c2r_mpi 
 END MODULE mpi_fftw3
 
 !**********************************************
@@ -108,6 +109,8 @@ SUBROUTINE fast_fftw_create_plan_r2c_3d_dft(nopenmp,nx,ny,nz,array_in, &
     ! return index of plan
     plan(1)=nplan
 END SUBROUTINE fast_fftw_create_plan_r2c_3d_dft
+
+
 
 ! Subroutine that creates a 3D complex to real plan using plan_type optimization
 ! plan_type can either be FFTW_ESTIMATE (low overhead, low optimization)

@@ -189,9 +189,9 @@ MODULE fields
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:,:,:) :: jz_r
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rho_r
+  REAL(num), POINTER, DIMENSION(:,:,:) :: rho_r
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhoold_r
+  REAL(num), POINTER, DIMENSION(:,:,:) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space 
   COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: exf
   !> MPI-domain electric field grid in y - Fourier space 

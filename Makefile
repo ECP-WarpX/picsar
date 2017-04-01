@@ -51,7 +51,7 @@ CC=mpicc
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
 
 # External libs 
-FFTW3_LIB=$(HOME)/fftw-3.3.6-pl1
+FFTW3_LIB=$(HOME)/fftw-3.3.5/
 
 # Source directory
 SRCDIR=src
@@ -312,7 +312,7 @@ endif
 
 ifeq ($(MODE),prod_spectral)
 	FARGS += -I$(FFTW3_LIB)/include
-	LDFLAGS += -L$(FFTW3_LIB)/lib -lfftw3 -lfftw3_omp
+	LDFLAGS += -L$(FFTW3_LIB)/lib -lfftw3 -lfftw3_mpi -lfftw3_omp
 endif
 
 
