@@ -1,34 +1,34 @@
 """
  _______________________________________________________________________________
- 
+
   *** Copyright Notice ***
 
- "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)  
- 2016, The Regents of the University of California, through Lawrence Berkeley 
- National Laboratory (subject to receipt of any required approvals from the 
+ "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+ 2016, The Regents of the University of California, through Lawrence Berkeley
+ National Laboratory (subject to receipt of any required approvals from the
  U.S. Dept. of Energy). All rights reserved.
 
- If you have questions about your rights to use or distribute this software, 
+ If you have questions about your rights to use or distribute this software,
  please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 
  NOTICE.
- This Software was developed under funding from the U.S. Department of Energy 
- and the U.S. Government consequently retains certain rights. As such, the U.S. 
- Government has been granted for itself and others acting on its behalf a  
- paid-up, nonexclusive, irrevocable, worldwide license in the Software to 
- reproduce, distribute copies to the public, prepare derivative works, and 
- perform publicly and display publicly, and to permit other to do so. 
- 
+ This Software was developed under funding from the U.S. Department of Energy
+ and the U.S. Government consequently retains certain rights. As such, the U.S.
+ Government has been granted for itself and others acting on its behalf a
+ paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+ reproduce, distribute copies to the public, prepare derivative works, and
+ perform publicly and display publicly, and to permit other to do so.
+
  PARSER FOR FORTHON
  H. VINCENTI - DEC 7, 2015
- 
- 
- This function reads a group of Fortran 90 files and produces a FORTHON 
- interface file .v used by the forthon compiler to produce a python 
+
+
+ This function reads a group of Fortran 90 files and produces a FORTHON
+ interface file .v used by the forthon compiler to produce a python
  module file .so
- 
+
  Input arguments: filename
- 
+
  Outputs:
  1. New fortran file filename_forthon.F90 forthon compliant
  2. interface file .v with subroutines/modules declaration
@@ -60,13 +60,13 @@ import time
 ###### MAIN FUNCTION FOR PRE-PARSING SEVERAL .F90 FILES INTO A SINGLE FILE
 
 def fortran_preparser(filelist,filewrite):
-    
+
     ##### Open new file to write modules
     # Subroutine file
     fws=open(filewrite+"_subroutines.F90","w")
     # Module file
     fwm=open(filewrite+"_modules.F90","w")
-    
+
     # Parsing modules and subroutines for all files
     listlines_modules=[]
     listlines_subroutines=[]
@@ -76,7 +76,7 @@ def fortran_preparser(filelist,filewrite):
         ##### Cleaning text from comments, continuations &
         listlines=fr.readlines()
         Nlines=len(listlines)
-        
+
         print("Pre-formatting "+str(Nlines)+" lines of file "+filelist[ifile])
         listlines_1=(preprocess_file(listlines))
         print("Sanity check of file "+filelist[ifile])
@@ -86,11 +86,11 @@ def fortran_preparser(filelist,filewrite):
         ##### Parse modules
         print("Now parsing modules of file "+filelist[ifile])
         listlines_modules=listlines_modules+preparse_modules(listlines)
-    
+
          ##### Parse subroutines
         print("Now parsing subroutines of file "+filelist[ifile])
         listlines_subroutines=listlines_subroutines+preparse_subroutines(listlines)
-    
+
     # For each subroutine/function, check if an interface A is needed
     # If needed,  place interface in a module intmod
     # All modules are placed at the end of module files
@@ -153,7 +153,7 @@ def preparse_subroutines(listlines):
 
 
 def preparse_subroutine_interfaces(listlines_sub):
-    
+
     # Identify subroutines that need interface and create corresponding interface block
     [names,istart,iend,proceduremod] = get_subroutine_blocks(listlines_sub)
     listlines_interfaces=[]
@@ -222,7 +222,7 @@ def sanity_check_1(listline):
     [names,istart,iend,procmod] = get_module_blocks(listline)
     ## Get type definition blocks
     [names_t,istart_t,iend_t] = get_DerivedType_def_blocks(listline)
-    
+
     ## Sanity check 1: Fortran derived types definition blocks have to be placed in separate modules with names
     # Find type declaration that does not comply with Forthon rules
     compliant =[False for _ in range(len(names_t))]
@@ -261,10 +261,10 @@ def sanity_check_2(listline):
     lenlist=len(listline)
     ## Identify module blocks and positions in file
     [names,istart,iend,procmod] = get_module_blocks(listline)
-    
+
     ## Get type definition blocks
     [names_t,istart_t,iend_t] = get_DerivedType_def_blocks(listline)
-    
+
     ## Get array of derived type declaration lines
     ideclines=[]
     for i in range(0,len(listline)):
@@ -294,7 +294,7 @@ def sanity_check_2(listline):
             if ((ideclines[i]>=istart[ibl]) & (ideclines[i]<=iend[ibl])):
                 isinmodule[i]=True
                 indmod[i]=istart[ibl]
-    
+
     # Re-write new listline without non compliant Type declaration
     listline_new=[]
     for i in range(0,len(listline)):
@@ -333,10 +333,10 @@ def sanity_check_3(listline):
     lenlist=len(listline)
     ## Identify module blocks and positions in file
     [names,istart,iend,procmod] = get_module_blocks(listline)
-    
+
     ## Get type definition blocks
     [names_t,istart_t,iend_t] = get_DerivedType_def_blocks(listline)
-    
+
     ## Get array of derived type declaration lines
     ideclines=[]
     for i in range(0,len(listline)):
@@ -359,7 +359,7 @@ def sanity_check_3(listline):
             if ((ideclines[i]>=istart[ibl]) & (ideclines[i]<=iend[ibl])):
                 isinmodule[i]=True
                 indmod[i]=istart[ibl]
-    
+
     # Re-write new listline with flag do not parse
     listline_new=[]
     for i in range(0,len(listline)):
@@ -404,7 +404,7 @@ def get_DerivedType_def_blocks(listlines):
                 curr_line=listlines[i]
                 if ((curr_line.find("end type")>=0)):
                     break
-        
+
             iend.append(i)
             names.append(subname.strip())
     return[names,istart,iend]
@@ -473,7 +473,7 @@ def parse_file(fileread):
     # Write down module name in .v file
     fw.write(fileroot+"\n")
     fw.write("\n")
-    
+
 
     ##### Parse the Fortran source file in .v file
     ## Number of lines of the source file
@@ -481,7 +481,7 @@ def parse_file(fileread):
     Nlines=len(listlines)
     print("Pre-processing "+str(Nlines)+" lines of file "+fileread)
     listlines=(preprocess_file(listlines))
-    
+
     ## Identify and parse blocks in order
     # - 1 Parse module blocks
     [namesmod,istart,iend,procmod] = get_module_blocks(listlines)
@@ -527,7 +527,7 @@ def get_module_blocks(listlines):
                         break
                     else:
                         pass
-        
+
             iend.append(i)
             names.append(subname.strip())
             proceduremod.append(proc_mod)
@@ -610,7 +610,7 @@ def gen_forthon_dtypef90(modname,modinv):
       if (newmod_pre[i].find("END MODULE")>=0):
         newmod_post.append(newmod_pre[i])
         isinmod=False
-    
+
     fnewmod.close()
     os.system("rm -rf build/")
     os.system("rm -f tempapp.v")
@@ -684,13 +684,13 @@ def get_subroutine_blocks(listlines):
                 if (i>=Nlines):
                     sys.exit("ERROR: missing end subroutine block")
                 curr_line=listlines[i]
-                
+
                 # If an interface is defined in the subroutine
                 # We pass the interface block without looking for "end subroutine"
                 if (curr_line.find("interface")>=0):
                   search_end = False
                 if (curr_line.find("end interface")>=0):
-                  search_end = True                                 
+                  search_end = True
                 if ((curr_line.find("end subroutine")>=0)and(search_end)):
                     break
             iend.append(i)
@@ -755,7 +755,7 @@ def parse_subroutine_blocks(fw,listlines,names,namesmod,istart,iend):
     fw.write("\n")
     fw.write("***** Subroutines:\n")
     print("Parsed "+str(nblocks)+" subroutine block(s) in .v file \n")
-    
+
     # Get non used derived type
     nonusedtype=[]
     for i in range(0,len(namesmod)):
@@ -785,7 +785,7 @@ def parse_subroutine_blocks(fw,listlines,names,namesmod,istart,iend):
 ### - PARSE SUBROUTINE ARGS AND TYPES
 def parse_subroutine_args(listlines):
     len_block=len(listlines)
-    
+
     # Get subroutine full arg list (without &, spaces and parenthesis)
     curr_line=listlines[0].replace(" ","")
     istart=curr_line.find("(")
@@ -829,13 +829,13 @@ def preprocess_file(listline):
     # Make everything lower case (Fortran is case insensitive)
     for i in range(0,lenlist):
         curr_line=listline[i]
-        # Line is not considered 
+        # Line is not considered
         if (curr_line.find("!#do not consider")>=0):
           curr_line = ""
         else:
           # Compiler directive are case sensitive do not lower
           if not ((curr_line.find("#ifdef")>=0) or (curr_line.find("#if")>=0) or (curr_line.find("#else")>=0) or \
-          (curr_line.find("#endif")>=0)): 
+          (curr_line.find("#endif")>=0)):
               curr_line=curr_line.lower()
           curr_line=rm_comments(curr_line)
           curr_line=rm_newline(curr_line)
@@ -991,7 +991,7 @@ def parse_decl_line(line):
         for ip in range(0,len(ileftp)):
             if ((icomma[icom]<=irightp[ip]) & (icomma[icom]>=ileftp[ip])):
                 icomnew.pop(icomnew.index(icomma[icom]))
-    
+
     # Get vars and init values
     ist=0
     for i in range(0,len(icomnew)+1):
@@ -1030,9 +1030,9 @@ def parse_decl_line(line):
             argsname.append((currvar+addnamec).replace(" ",""))
             argstype.append(currtype.replace(" ",""))
             initvalue.append(currval.replace(" ",""))
-    
+
     return [argsname, argstype, initvalue]
-    
+
 def find_all(line,substr):
     iocc=[]
     istart=0
@@ -1048,7 +1048,7 @@ def find_all(line,substr):
 
 
 def fuse_subroutine_module_files(appname):
-    
+
     ##### Open new file to write modules
     # Subroutine file
     fws=open(appname+"_subroutines.F90","r")
@@ -1056,7 +1056,7 @@ def fuse_subroutine_module_files(appname):
     # Module file
     fwm=open(appname+"_modules.F90","r")
     listline_m=fwm.readlines()
-    
+
     # remove # parsing flags before compilation
     for i in range(0,len(listline_s)):
         listline_s[i]=listline_s[i].replace("#do not parse","")
@@ -1153,4 +1153,3 @@ parse_forthon_app(appname)
 #fuse_subroutine_module_files(appname)
 
 # Compile app with forthon compiler
-
