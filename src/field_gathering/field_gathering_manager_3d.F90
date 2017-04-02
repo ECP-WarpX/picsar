@@ -310,7 +310,7 @@ SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      ll4symtry,                 &
                                      l_lower_order_in_v,        &
                                      lvect,                     &
-                                     field_gathe_algo) !#do not parse
+                                     field_gathe_algo) !#do not wrap
 ! ______________________________________________________________________________
   USE constants
   USE particles
@@ -349,7 +349,7 @@ SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                               -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
 
 ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
-! and for compatibility with automated tests, although they will not be used 
+! and for compatibility with automated tests, although they will not be used
 ! in the future
 integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
 nx = exg_nvalid(1)-1

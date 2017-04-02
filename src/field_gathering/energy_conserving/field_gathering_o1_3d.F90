@@ -70,7 +70,7 @@
 !
 SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,l_lower_order_in_v) !#do not parse
+                                      exg,eyg,ezg,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 
 
@@ -1926,7 +1926,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,&
                                          bxg,bxg_nguard,bxg_nvalid, &
                                          byg,byg_nguard,byg_nvalid, &
                                          bzg,bzg_nguard,bzg_nvalid, &
-                                         lvect, l_lower_order_in_v) !#do not parse
+                                         lvect, l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 
 

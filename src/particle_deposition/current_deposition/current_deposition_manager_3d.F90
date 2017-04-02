@@ -82,7 +82,7 @@ SUBROUTINE depose_jxjyjz_generic(                      &
     jy,jy_nguard,jy_nvalid,                            &
     jz,jz_nguard,jz_nvalid,                            &
     np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-    dt,dx,dy,dz,nox,noy,noz,current_depo_algo) !#do not parse
+    dt,dx,dy,dz,nox,noy,noz,current_depo_algo) !#do not wrap
      USE constants
      IMPLICIT NONE
      INTEGER(idp) :: np,nox,noy,noz,current_depo_algo
