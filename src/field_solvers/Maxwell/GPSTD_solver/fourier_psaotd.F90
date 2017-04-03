@@ -554,7 +554,7 @@ CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, rhof, rho_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, rhooldf, rhoold_r)
 
-coeff_norm=1.!(nx_global)*(ny_global)*(nz)
+coeff_norm=(nx_global)*(ny_global)*(nz_global)
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nz
 	DO iy=1,ny_global
