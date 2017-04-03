@@ -96,7 +96,7 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                        bxg,nguard,nvalid,         &
                                        byg,nguard,nvalid,         &
                                        bzg,nguard,nvalid,         &
-                                       ll4symtry,                 &
+                                       l4symtry,                  &
                                        l_lower_order_in_v,        &
                                        lvect,                     &
                                        field_gathe_algo)
@@ -109,7 +109,7 @@ END SUBROUTINE
 !>
 !> @details
 !>
-SUBROUTINE geteb2xz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
+SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                     xmin,ymin,zmin,            &
                                     dx,dy,dz,nox,noy,noz,      &
                                     exg,exg_nguard,exg_nvalid, &
@@ -118,7 +118,7 @@ SUBROUTINE geteb2xz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                     bxg,bxg_nguard,bxg_nvalid, &
                                     byg,byg_nguard,byg_nvalid, &
                                     bzg,bzg_nguard,bzg_nvalid, &
-                                    ll4symtry,                 &
+                                    l4symtry,                 &
                                     l_lower_order_in_v,        &
                                     lvect,                     &
                                     field_gathe_algo) !#do not wrap
@@ -136,7 +136,7 @@ SUBROUTINE geteb2xz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                    bxg_nguard(2),bxg_nvalid(2),&
                                    byg_nguard(2),byg_nvalid(2),&
                                    bzg_nguard(2),bzg_nvalid(2)
-  LOGICAL(lp) , intent(in)      :: ll4symtry,l_lower_order_in_v
+  LOGICAL(lp) , intent(in)      :: l4symtry,l_lower_order_in_v
   real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
   real(num)                     :: xmin,ymin,zmin,dx,dy,dz
   integer(idp)                  :: lvect
@@ -256,4 +256,4 @@ nzguard = exg_nguard(2)
 
     ENDIF
   ENDIF
-END SUBROUTINE geteb2dxz_energy_conserving
+END SUBROUTINE
