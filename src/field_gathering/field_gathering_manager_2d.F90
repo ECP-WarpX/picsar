@@ -140,17 +140,17 @@ SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
   real(num)                     :: xmin,ymin,zmin,dx,dy,dz
   integer(idp)                  :: lvect
-  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,1, &
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
                               -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
-  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,1, &
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
                               -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
-  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,1, &
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
                               -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
-  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,1, &
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
                               -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
-  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,1, &
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
                               -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
-  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,1, &
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
                               -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
 
 ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
@@ -215,13 +215,19 @@ nzguard = exg_nguard(2)
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
 
       !!! --- Gather electric field on particles
-      CALL pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,   &
-                                            dx,dz,nx,nz,nxguard,nzguard, &
-                                            exg,eyg,ezg,LVEC_fieldgathe,l_lower_order_in_v)
+      CALL pxr_gete2dxz_energy_conserving_vect_1_1(         &
+        np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                  &
+        exg,exg_nguard,exg_nvalid,                          &
+        eyg,eyg_nguard,eyg_nvalid,                          &
+        ezg,ezg_nguard,ezg_nvalid,                          &
+        LVEC_fieldgathe,l_lower_order_in_v)
       !!! --- Gather magnetic fields on particles
-      CALL pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,   &
-                                            dx,dz,nx,nz,nxguard,nzguard, &
-                                            bxg,byg,bzg,LVEC_fieldgathe,l_lower_order_in_v)
+      CALL pxr_getb2dxz_energy_conserving_vect_1_1(         &
+        np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                  &
+        bxg,bxg_nguard,bxg_nvalid,                          &
+        byg,byg_nguard,byg_nvalid,                          &
+        bzg,bzg_nguard,bzg_nvalid,                          &
+        LVEC_fieldgathe,l_lower_order_in_v)
 
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
 
