@@ -61,7 +61,7 @@ SUBROUTINE depose_jxjyjz_2d(jx,jy,jz,np,   &
        jy,nguard,nvalid,                             &
        jz,nguard,nvalid,                             &
        np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-       dt,dx,dz,nox,noz)
+       dt,dx,dz,nox,noz,lvect)
 
 END SUBROUTINE
 
@@ -79,7 +79,7 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
     jy,jy_nguard,jy_nvalid,                            &
     jz,jz_nguard,jz_nvalid,                            &
     np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,      &
-    dt,dx,dz,nox,noz) !#do not wrap
+    dt,dx,dz,nox,noz,lvect) !#do not wrap
     USE constants
     implicit none
     integer(idp)                          :: np,nox,noz
