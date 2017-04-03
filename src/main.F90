@@ -53,6 +53,7 @@ PROGRAM main
   USE time_stat
   USE diagnostics
 
+
 ! Vtune profiling
 #if (defined(VTUNE) && VTUNE>0)
   USE ITT_FORTRAN
@@ -63,7 +64,8 @@ PROGRAM main
 #endif
 
   IMPLICIT NONE
-
+  LOGICAL :: exist
+  CHARACTER(len=250) :: str1, str2, str3, str4, str5
 ! Intel Design Forward project
 #if defined(DFP)
   CALL DFP_INIT_START
@@ -116,6 +118,26 @@ PROGRAM main
   CALL step(nsteps)
   IF (rank .EQ. 0) endsim=MPI_WTIME()
   IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim
+
+  IF (rank .EQ. 0) THEN 
+	
+	INQUIRE(file="output_statistics_gb.out", exist=exist)
+	IF (exist) THEN 
+		OPEN (unit=12,file="output_statistics_gb.out", &	
+		action="write",position="append", status="old")
+	ELSE
+		OPEN (unit=12,file="output_statistics_gb.out",  &
+		action="write",status="new")
+	ENDIF 
+	WRITE(str1,*) nx_global; WRITE(str2,*) ny_global
+	WRITE(str3,*) nz_global; WRITE(str4,*) nproc
+	WRITE(str5,*) endsim-startsim
+	
+	WRITE(12, *)  trim(adjustl(str1))//" "//trim(adjustl(str2))//" "// &
+				  trim(adjustl(str3))//" "//trim(adjustl(str4))//" "// &
+				  trim(adjustl(str5))
+	CLOSE(12)
+  ENDIF 
 
   CALL time_statistics
 
