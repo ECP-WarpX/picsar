@@ -118,7 +118,7 @@ SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                     bxg,bxg_nguard,bxg_nvalid, &
                                     byg,byg_nguard,byg_nvalid, &
                                     bzg,bzg_nguard,bzg_nvalid, &
-                                    l4symtry,                 &
+                                    l4symtry,                  &
                                     l_lower_order_in_v,        &
                                     lvect,                     &
                                     field_gathe_algo) !#do not wrap
@@ -140,17 +140,17 @@ SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
   real(num)                     :: xmin,ymin,zmin,dx,dy,dz
   integer(idp)                  :: lvect
-  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,1, &
                               -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
-  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,1, &
                               -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
-  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,1, &
                               -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
-  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,1, &
                               -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
-  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,1, &
                               -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
-  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,1, &
                               -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
 
 ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
