@@ -63,6 +63,8 @@ PROGRAM field_gathering_3d_test
   REAL(num), dimension(10)                 :: te,tb
   CHARACTER(len=64), dimension(10)         :: namee,nameb
 
+ INTEGER(idp)                             :: nguard(2), nvalid(2)
+
   write(0,'(" ____________________________________________________________________________")')
   write(0,*) 'TEST: field gathering 3D'
 
@@ -234,14 +236,22 @@ PROGRAM field_gathering_3d_test
   by = 0
   bz = 0
   t0 = MPI_WTIME()
-  CALL pxr_gete2dxz_energy_conserving_vect_1_1(np,xp,zp,ex,ey,ez,xmin,zmin,   &
-                                       dx,dz,nx,nz,nxguard,nzguard, &
-                                       exg,eyg,ezg,lvect,l_lower_order_in_v)
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
+  CALL pxr_gete2dxz_energy_conserving_vect_1_1(  &
+        np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz, &
+        exg,nguard,nvalid, &
+        eyg,nguard,nvalid, &
+        ezg,nguard,nvalid, &
+        lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
-  CALL pxr_getb2dxz_energy_conserving_vect_1_1(np,xp,zp,bx,by,bz,xmin,zmin,   &
-                                       dx,dz,nx,nz,nxguard,nzguard, &
-                                       bxg,byg,bzg,lvect,l_lower_order_in_v)
+  CALL pxr_getb2dxz_energy_conserving_vect_1_1( &
+        np,xp,zp,bx,by,bz,xmin,zmin,dx,dz, &
+        bxg,nguard,nvalid, &
+        byg,nguard,nvalid, &
+        bzg,nguard,nvalid, &
+        lvect,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
