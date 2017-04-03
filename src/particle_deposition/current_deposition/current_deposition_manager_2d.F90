@@ -87,12 +87,12 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
                                              jy_nguard(2), jy_nvalid(2), &
                                              jz_nguard(2), jz_nvalid(2)
     integer(idp)                          :: lvect
-    REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,1, &
-    -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
-    REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,1, &
-    -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
-    REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,1, &
-    -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
+    REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                   -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
+    REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
+    REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
     real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
     real(num)                             :: q,dt,dx,dz,xmin,zmin
 
@@ -106,8 +106,12 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
     nzguard = jx_nguard(2)
 
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
-        CALL pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
-	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+        CALL pxr_depose_jxjyjz_esirkepov2d_1_1(                &
+            jx,jx_nguard,jx_nvalid,                            &
+            jy,jy_nguard,jy_nvalid,                            &
+            jz,jz_nguard,jz_nvalid,                            &
+            np,xp,zp,uxp,uyp,uzp,                              &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
             nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
         CALL pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
