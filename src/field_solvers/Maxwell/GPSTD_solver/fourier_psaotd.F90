@@ -149,9 +149,9 @@ ALLOCATE(kxtemp(nkx),kytemp(nky),kztemp(nkz))
 ALLOCATE(xcoefs(nkx),ycoefs(nky),zcoefs(nkz))
 
 IF (fftw_with_mpi) THEN 
-	nfftx=nx_global+1
-	nffty=ny_global+1
-	nfftz=nz_global+1
+	nfftx=nx_global
+	nffty=ny_global
+	nfftz=nz_global
 ELSE
 	nfftx=nx+2*nxguards+1
 	nffty=ny+2*nyguards+1
@@ -450,9 +450,9 @@ INTEGER(idp) :: ix,iy,iz
 
 ! Copy array values before FFT 
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
-DO ix=1,nx_global+1
-	DO iy=1,ny_global+1
-		DO iz=1,nz
+DO iz=1,nz
+	DO iy=1,ny_global
+		DO ix=1,nx_global
 			ex_r(ix,iy,iz)=ex(ix-1,iy-1,iz-1)
 			ey_r(ix,iy,iz)=ey(ix-1,iy-1,iz-1)
 			ez_r(ix,iy,iz)=ez(ix-1,iy-1,iz-1)
@@ -554,11 +554,11 @@ CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, rhof, rho_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, rhooldf, rhoold_r)
 
-coeff_norm=(nx_global+1)*(ny_global+1)*(nz_global+1)
+coeff_norm=1.!(nx_global)*(ny_global)*(nz)
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
-DO ix=1,nx_global+1
-	DO iy=1,ny_global+1
-		DO iz=1,nz
+DO iz=1,nz
+	DO iy=1,ny_global
+		DO ix=1,nx_global
 			ex(ix-1,iy-1,iz-1)=ex_r(ix,iy,iz)/coeff_norm
 			ey(ix-1,iy-1,iz-1)=ey_r(ix,iy,iz)/coeff_norm
 			ez(ix-1,iy-1,iz-1)=ez_r(ix,iy,iz)/coeff_norm

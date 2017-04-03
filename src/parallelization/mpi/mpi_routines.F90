@@ -580,33 +580,33 @@ MODULE mpi_routines
 
 	! With fftw_with_mpi CPU split is performed only along z 
 	IF (fftw_with_mpi) THEN 
-		mz=nz_global+1; ly=ny_global+1; kx=nx_global+1
+		mz=nz_global; ly=ny_global; kx=nx_global
 		!   get local data size and allocate (note dimension reversal)
 		alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, &
 	                      local_nz, local_z0)
+    PRINT *, "grid size", nx_global,ny_global,nz_global 
 		PRINT *, "rank", rank, " local_nz",local_nz
 		ALLOCATE(nz_procs(nproc))
 		CALL MPI_ALLGATHER(INT(local_nz,idp), &
 		1_isp,MPI_INTEGER8,nz_procs,INT(1,isp),MPI_INTEGER8,comm,errcode)
-		PRINT *, "rank", rank,  "NUmber of grid points per proc: ", nz_procs+1, nz_global+1
-                cell_x_min(1)=0
-                cell_x_max(1)=nx_global-1
-                cell_y_min(1)=0
-                cell_y_max(1)=ny_global-1
-                cell_z_min(1)=0
-                cell_z_max(1)=nz_procs(1)-1
-                DO idim = 2, nprocz
-                        cell_z_min(idim) = cell_z_max(idim-1)+1
-                        cell_z_max(idim) = cell_z_min(idim)+nz_procs(idim)-1
-                ENDDO
-		!rdata_in = fftw_alloc_real(2 * alloc_local);
-		!cdata_out = fftw_alloc_complex(alloc_local);
-		!call c_f_pointer(rdata_in, fdata_in, [L,K,2*local_M])
-		!call c_f_pointer(cdata_out, fdata_out, [L,K,local_M])
+		PRINT *, "rank", rank,  "NUmber of grid points per proc: ", nz_procs, nz_global
+    !            cell_x_min(1)=0
+    !            cell_x_max(1)=nx_global-1
+    !            cell_y_min(1)=0
+    !            cell_y_max(1)=ny_global-1
+    !            cell_z_min(1)=0
+    !            cell_z_max(1)=nz_procs(1)-1
+    !            DO idim = 2, nprocz
+    !                    cell_z_min(idim) = cell_z_max(idim-1)+1
+    !                    cell_z_max(idim) = cell_z_min(idim)+nz_procs(idim)-1
+    !            ENDDO
 	! Regular CPU split 
     ! If the total number of gridpoints cannot be exactly subdivided then fix
     ! The first nxp processors have nx0 cells
     ! The remaining processors have nx0+1 cells
+  	nx0 = nx_global / nprocx
+  	ny0 = ny_global / nprocy
+		nz0 = local_nz
 	ELSE 
 	  ! Split is done on the total number of cells as in WARP
 	  ! Initial WARP split is used with each processor boundary
@@ -614,7 +614,7 @@ MODULE mpi_routines
 		nx0 = nx_global / nprocx
 		ny0 = ny_global / nprocy
 		nz0 = nz_global / nprocz
-		
+	ENDIF 
 		IF (nx0 * nprocx .NE. nx_global) THEN
 			nxp = (nx0 + 1) * nprocx - nx_global
 		ELSE
@@ -665,7 +665,6 @@ MODULE mpi_routines
 			cell_z_min(idim) = cell_z_max(idim-1)+1
 			cell_z_max(idim) = cell_z_min(idim)+nz0
 		ENDDO
-	ENDIF
 
     nx_global_grid_min = cell_x_min(x_coords+1)
     nx_global_grid_max = cell_x_max(x_coords+1)+1
@@ -916,55 +915,55 @@ MODULE mpi_routines
 	IF (l_spectral) THEN 
 		IF (fftw_with_mpi) THEN 
 			PRINT *, "#11"
-			nkx=(nx_global+1)/2+1! Real To Complex Transform 
-			nky=ny_global+1
+			nkx=(nx_global)/2+1! Real To Complex Transform 
+			nky=ny_global
 			nkz=local_nz
 			! - Allocate complex arrays 
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, exf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, exf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, eyf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, eyf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, ezf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, ezf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, bxf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, bxf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, byf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, byf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, bzf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, bzf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, jxf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, jxf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, jyf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, jyf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, jzf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, jzf, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, rhof, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, rhof, [nkx,nky,nkz])
 			cdata = fftw_alloc_complex(alloc_local)
- 		    call c_f_pointer(cdata, rhooldf, [(nx_global+1)/2+1,ny_global+1,local_nz])
+ 		    call c_f_pointer(cdata, rhooldf, [nkx,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
 			! - Allocate real arrays 
- 		    call c_f_pointer(cin, ex_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, ex_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, ey_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, ey_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, ez_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, ez_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, bx_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, bx_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, by_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, by_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, bz_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, bz_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, jx_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, jx_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, jy_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, jy_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, jz_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, jz_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, rho_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, rho_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
- 		    call c_f_pointer(cin, rhoold_r, [(nx_global+1)+2,ny_global+1,local_nz])
+ 		    call c_f_pointer(cin, rhoold_r, [(nx_global)+2,nky,nkz])
 			PRINT *, "#12"
 			! allocate k-vectors 
 			ALLOCATE(kxunit(nkx),kyunit(nky),kzunit(nkz))
