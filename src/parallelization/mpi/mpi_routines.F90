@@ -925,9 +925,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
     INTEGER(idp)             :: nthreads_tot
 
@@ -945,11 +942,12 @@ MODULE mpi_routines
     CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     ! Minimum times
     CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
+    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
     ! Average
     CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
+    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
     avetimes = avetimes / nproc
+    init_avetimes = init_avetimes / nproc
 
     ! Percentage
     percenttimes = avetimes / avetimes(20) * 100
@@ -1064,9 +1062,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
 
     ! Time stats per iteration activated

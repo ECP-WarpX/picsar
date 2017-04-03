@@ -801,6 +801,10 @@ use constants
 
   !> MPI local times for the main loop
   REAL(num), dimension(20)               :: localtimes
+  REAL(num), DIMENSION(20)               :: mintimes, init_mintimes
+  REAL(num), DIMENSION(20)               :: maxtimes, init_maxtimes
+  REAL(num), DIMENSION(20)               :: avetimes, init_avetimes
+
   !> Buffer for the output
   REAL(num), DIMENSION(:,:), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat
