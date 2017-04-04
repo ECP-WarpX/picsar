@@ -897,6 +897,7 @@ MODULE mpi_routines
   USE mpi_fftw3
   IMPLICIT NONE  
   TYPE(C_PTR) :: cdata, cin 
+  INTEGER(idp) :: imn,imx,jmn,jmx,kmn,kmx 
   ! ____________________________________________________________________________
 
       ! --- Allocate grid quantities (in real space)
@@ -915,7 +916,6 @@ MODULE mpi_routines
 	! ---  Allocate grid quantities (in Fourier space)
 	IF (l_spectral) THEN 
 		IF (fftw_with_mpi) THEN 
-			PRINT *, "#11"
 			nkx=(nx_global)/2+1! Real To Complex Transform 
 			nky=ny_global
 			nkz=local_nz
@@ -1006,18 +1006,21 @@ MODULE mpi_routines
 			ALLOCATE(kzmn(nkx,nky,nkz),kzpn(nkx,nky,nkz)) 
 			ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
 			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
-			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
-      ALLOCATE(ex_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(ey_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(ez_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(bx_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(by_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(bz_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(jx_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(jy_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(jz_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(rho_r(imn:imx,jmn:jmx,kmn:kmx))
-      ALLOCATE(rhoold_r(imn:imx,jmn:jmx,kmn:kmx))
+			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz))
+		    imn=-nxguards; imx=nx+nxguards-1
+		    jmn=-nyguards;jmx=ny+nyguards-1
+		    kmn=-nzguards;kmx=nz+nzguards-1 
+		    ALLOCATE(ex_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(ey_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(ez_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(bx_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(by_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(bz_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(jx_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(jy_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(jz_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(rho_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(rhoold_r(imn:imx,jmn:jmx,kmn:kmx))
 		ENDIF 
 	ENDIF 
     ! --- Quantities used by the dynamic load balancer
