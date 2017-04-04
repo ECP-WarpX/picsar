@@ -555,6 +555,8 @@ MODULE particle_properties
   LOGICAL(lp) :: l_species_allocated=.FALSE.
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
+  !> Flag for plasma init/push 
+  LOGICAL(lp) :: l_plasma = .TRUE. 
 END MODULE particle_properties
 
 
@@ -821,8 +823,13 @@ use constants
   !> MPI local times for the initialization
   REAL(num), dimension(5)                :: init_localtimes
 
+
   !> MPI local times for the main loop
   REAL(num), dimension(20)               :: localtimes
+  REAL(num), DIMENSION(20)               :: mintimes, init_mintimes
+  REAL(num), DIMENSION(20)               :: maxtimes, init_maxtimes
+  REAL(num), DIMENSION(20)               :: avetimes, init_avetimes
+
   !> Buffer for the output
   REAL(num), DIMENSION(:,:), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat

@@ -1074,9 +1074,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
     INTEGER(idp)             :: nthreads_tot
 
@@ -1213,9 +1210,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
 
     ! Time stats per iteration activated

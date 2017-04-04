@@ -110,31 +110,33 @@ SUBROUTINE step(nst)
         pushtime=0._num
         divE_computed = .False.
 
-        !!! --- Field gather & particle push
-        !IF (rank .EQ. 0) PRINT *, "#1"
-        CALL field_gathering_plus_particle_pusher
-        !IF (rank .EQ. 0) PRINT *, "#2"
-        !!! --- Apply BC on particles
-        CALL particle_bcs
-        !IF (rank .EQ. 0) PRINT *, "#3"
-		    IF (l_spectral) THEN 
-			      rhoold=rho 
-        	  CALL pxrdepose_rho_on_grid
-		    ENDIF 
-        !!! --- Particle Sorting
-        !write(0,*),'Sorting'
-        CALL pxr_particle_sorting
-        !IF (rank .EQ. 0) PRINT *, "#4"
-        !!! --- Deposit current of particle species on the grid
-        !write(0,*),'Depose currents'
-        CALL pxrdepose_currents_on_grid_jxjyjz
-        !IF (rank .EQ. 0) PRINT *, "#5"
-        !!! --- Boundary conditions for currents
-        !write(0,*),'Current_bcs'
-        CALL current_bcs
-        !IF (rank .EQ. 0) PRINT *, "#6"
-        !!! --- Push B field half a time step
-        !write(0,*),'push_bfield'
+        IF (l_plasma) THEN 
+			!!! --- Field gather & particle push
+			!IF (rank .EQ. 0) PRINT *, "#1"
+			CALL field_gathering_plus_particle_pusher
+			!IF (rank .EQ. 0) PRINT *, "#2"
+			!!! --- Apply BC on particles
+			CALL particle_bcs
+			!IF (rank .EQ. 0) PRINT *, "#3"
+				IF (l_spectral) THEN 
+					  rhoold=rho 
+				  CALL pxrdepose_rho_on_grid
+				ENDIF 
+			!!! --- Particle Sorting
+			!write(0,*),'Sorting'
+			CALL pxr_particle_sorting
+			!IF (rank .EQ. 0) PRINT *, "#4"
+			!!! --- Deposit current of particle species on the grid
+			!write(0,*),'Depose currents'
+			CALL pxrdepose_currents_on_grid_jxjyjz
+			!IF (rank .EQ. 0) PRINT *, "#5"
+			!!! --- Boundary conditions for currents
+			!write(0,*),'Current_bcs'
+			CALL current_bcs
+			!IF (rank .EQ. 0) PRINT *, "#6"
+			!!! --- Push B field half a time step
+			!write(0,*),'push_bfield'
+		ENDIF 
 		IF (l_spectral) THEN 
 			CALL push_psatd_ebfield_3d
 			CALL efield_bcs
@@ -302,10 +304,10 @@ SUBROUTINE initall
   it = 0
 
   !!! --- set number of time steps or total time
-  if (tmax.eq.0) then
-    tmax = nsteps*w0_l*dt
-  else
+  if (nsteps .eq. 0) then
     nsteps = nint(tmax/(w0_l*dt))
+  else
+    tmax = nsteps*w0_l*dt
   endif
 
   !!! --- Sorting
