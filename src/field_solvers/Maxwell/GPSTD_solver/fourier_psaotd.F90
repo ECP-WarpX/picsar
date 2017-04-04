@@ -471,10 +471,10 @@ END SUBROUTINE get_fields
 SUBROUTINE normalize_Fourier(ex_out,n1,n2,n3,ex_in,nxx,nyy,nzz,coeff_norm)
 USE PICSAR_precision 
 IMPLICIT NONE 
+INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz,n1,n2,n3
 REAL(num), INTENT(IN) :: coeff_norm 
 REAL(num), DIMENSION(nxx,nyy,nzz), INTENT(IN OUT) :: ex_in 
 REAL(num), DIMENSION(n1,n2,n3), INTENT(IN OUT) :: ex_out
-INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz,n1,n2,n3
 INTEGER(idp) :: ix,iy,iz
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,MIN(nzz,n3)
