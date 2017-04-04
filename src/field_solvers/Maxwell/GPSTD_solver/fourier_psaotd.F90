@@ -311,7 +311,6 @@ CALL rfftfreq(nfftx,kxunit,1.0_num)!2._num/dx*pi*(rfftfreq(nx,1.0_num))
 CALL fftfreq(nffty,kyunit, 1.0_num)!2._num/dx*pi*(rfftfreq(ny,1.0_num))
 ALLOCATE(kzfftfreq_temp(nz_global+1))
 CALL fftfreq(nfftz,kzfftfreq_temp, 1.0_num)!2._num/dx*pi*(rfftfreq(nz,1.0_num))
-PRINT *, "rank",  local_z0, local_nz, nz_global+1
 kzunit(1:nkz)=kzfftfreq_temp(local_z0+1:local_z0+1+local_nz-1)
 DEALLOCATE(kzfftfreq_temp)
 
@@ -343,9 +342,9 @@ nopenmp_cint=nopenmp
 IF  (fftw_threads_ok) THEN 
 	CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
 ENDIF 
-nz_cint=nz_global+1
-ny_cint=ny_global+1
-nx_cint=nx_global+1
+nz_cint=nz_global
+ny_cint=ny_global
+nx_cint=nx_global
 
 plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
 				ex_r, exf, comm, FFTW_MEASURE);
@@ -475,9 +474,9 @@ END DO
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, exf)
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, eyf)
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, ezf)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
@@ -545,9 +544,9 @@ INTEGER(idp) :: ix,iy,iz
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, ex_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, ey_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, ez_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jxf, jx_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)

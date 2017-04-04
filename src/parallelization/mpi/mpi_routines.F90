@@ -606,7 +606,7 @@ MODULE mpi_routines
     ! The remaining processors have nx0+1 cells
   	nx0 = nx_global / nprocx
   	ny0 = ny_global / nprocy
-		nz0 = local_nz
+		nz0 = nz_global /nprocz 
 	ELSE 
 	  ! Split is done on the total number of cells as in WARP
 	  ! Initial WARP split is used with each processor boundary
@@ -687,6 +687,7 @@ MODULE mpi_routines
     ny=ny_grid-1
     nz=nz_grid-1
 
+    PRINT *, "rank : ", rank, " local_nz", local_nz, "nz ", nz
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin

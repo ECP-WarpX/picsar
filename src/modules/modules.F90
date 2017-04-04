@@ -193,27 +193,27 @@ MODULE fields
   !> MPI-domain current grid in z - Fourier space 
   REAL(num), POINTER, DIMENSION(:,:,:) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: exf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: exf
   !> MPI-domain electric field grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: eyf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: eyf
   !> MPI-domain electric field grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: ezf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: ezf
   !> MPI-domain magnetic field grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: bxf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: bxf
   !> MPI-domain magnetic field grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: byf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: byf
   !> MPI-domain magnetic field grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: bzf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: bzf
   !> MPI-domain current grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jxf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: jxf
   !> MPI-domain current grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jyf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: jyf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jzf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: jzf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhof
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: rhof
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhooldf
+  COMPLEX(cpx),  ALLOCATABLE, DIMENSION(:,:,:) :: rhooldf
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y
