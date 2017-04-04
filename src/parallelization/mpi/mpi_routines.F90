@@ -1007,6 +1007,17 @@ MODULE mpi_routines
 			ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
 			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
 			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
+      ALLOCATE(ex_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(ey_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(ez_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(bx_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(by_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(bz_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(jx_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(jy_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(jz_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(rho_r(imn:imx,jmn:jmx,kmn:kmx))
+      ALLOCATE(rhoold_r(imn:imx,jmn:jmx,kmn:kmx))
 		ENDIF 
 	ENDIF 
     ! --- Quantities used by the dynamic load balancer
