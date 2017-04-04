@@ -136,17 +136,7 @@ SUBROUTINE step(nst)
         !!! --- Push B field half a time step
         !write(0,*),'push_bfield'
 		IF (l_spectral) THEN 
-			IF (fftw_with_mpi) THEN 
-				CALL get_Ffields_mpi ! - global FFT 
-			ELSE
-				CALL get_Ffields ! - local FFT  
-			ENDIF 
-			CALL push_psaotd_ebfielfs ! - PUSH PSATD 
-			IF (fftw_with_mpi) THEN 
-				CALL get_fields_mpi  ! global IFFT
-			ELSE
-				CALL get_fields  ! local IFFT
-			ENDIF 
+			CALL push_psatd_ebfield_3d
 			CALL efield_bcs
 			CALL bfield_bcs 
 		ELSE 
