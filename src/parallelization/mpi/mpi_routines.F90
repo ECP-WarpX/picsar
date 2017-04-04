@@ -980,9 +980,9 @@ MODULE mpi_routines
 			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
 			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
 		ELSE 
-			nkx=(2*nxguards+1+nx)/2+1 ! Real To Complex Transform 
-			nky=(2*nyguards+1+ny)
-			nkz=(2*nzguards+1+nz)
+			nkx=(2*nxguards+nx)/2+1 ! Real To Complex Transform 
+			nky=(2*nyguards+ny)
+			nkz=(2*nzguards+nz)
 			ALLOCATE(exf(nkx,nky,nkz))
 			ALLOCATE(eyf(nkx,nky,nkz))
 			ALLOCATE(ezf(nkx,nky,nkz))
