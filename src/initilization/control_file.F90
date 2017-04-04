@@ -186,6 +186,9 @@ MODULE control_file
         ! --- Init number of particle dumps
         npdumps = 0
 
+        ! --- l_plasma
+        l_plasma= .TRUE. 
+
         ! --- Particle distribution
         pdistr=1
         ! Init species array
@@ -295,6 +298,9 @@ MODULE control_file
             ELSE IF (INDEX(buffer,'lvec_curr_depo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) lvec_curr_depo
+            ELSE IF (INDEX(buffer,'l_plasma') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) l_plasma
             ELSE IF (INDEX(buffer,'lvec_charge_depo') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) lvec_charge_depo
@@ -733,6 +739,9 @@ MODULE control_file
             ELSE IF (INDEX(buffer,'njguardsz') .GT. 0) THEN
                 ix = INDEX(buffer, "=")
                 READ(buffer(ix+1:string_length), '(i10)') nzjguards
+            ELSE IF (INDEX(buffer,'l_plasma') .GT. 0) THEN
+                ix = INDEX(buffer, "=")
+                READ(buffer(ix+1:string_length), *) l_plasma
             ELSE IF (INDEX(buffer,'end::main') .GT. 0) THEN
                 end_section =.TRUE.
             END IF

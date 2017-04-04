@@ -828,7 +828,8 @@ MODULE mpi_routines
   !> Creation 2015
   SUBROUTINE allocate_grid_quantities()
   USE fourier 
-  IMPLICIT NONE  
+  IMPLICIT NONE 
+  INTEGER(idp) :: imn,imx,jmn,jmx,kmn,kmx 
   ! ____________________________________________________________________________
 
       ! --- Allocate grid quantities (in real space)
@@ -846,9 +847,9 @@ MODULE mpi_routines
 	! ---  Allocate grid quantities (in Fourier space)
 	IF (l_spectral) THEN 
    		ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
-		nkx=(2*nxguards+1+nx)/2+1 ! Real To Complex Transform 
-		nky=(2*nyguards+1+ny)
-		nkz=(2*nzguards+1+nz)
+		nkx=(2*nxguards+nx)/2+1 ! Real To Complex Transform 
+		nky=(2*nyguards+ny)
+		nkz=(2*nzguards+nz)
 		ALLOCATE(exf(nkx,nky,nkz))
 		ALLOCATE(eyf(nkx,nky,nkz))
 		ALLOCATE(ezf(nkx,nky,nkz))
@@ -873,6 +874,20 @@ MODULE mpi_routines
 		ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
 		ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
 		ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
+    imn=-nxguards; imx=nx+nxguards-1
+    jmn=-nyguards;jmx=ny+nyguards-1
+    kmn=-nzguards;kmx=nz+nzguards-1
+    ALLOCATE(ex_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(ey_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(ez_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(bx_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(by_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(bz_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(jx_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(jy_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(jz_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(rho_r(imn:imx,jmn:jmx,kmn:kmx))
+    ALLOCATE(rhoold_r(imn:imx,jmn:jmx,kmn:kmx))
 	ENDIF 
     ! --- Quantities used by the dynamic load balancer
     ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))

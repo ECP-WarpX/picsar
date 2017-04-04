@@ -170,28 +170,50 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:,:,:) :: jy
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:,:,:) :: jz
+  !>   !> MPI-domain electric field grid in x - for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: ex_r
+  !> MPI-domain electric field grid in y- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: ey_r
+  !> MPI-domain electric field grid in z- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: ez_r
+  !> MPI-domain magnetic field grid in x- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: bx_r
+  !> MPI-domain magnetic field grid in y- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: by_r
+  !> MPI-domain magnetic field grid in z- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: bz_r
+  !> MPI-domain current grid in x- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jx_r
+  !> MPI-domain current grid in y- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jy_r
+  !> MPI-domain current grid in z- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: jz_r
+  !> MPI-domain current grid in rho- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: rho_r
+  !> MPI-domain current grid in rhoold- for FFT
+  REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: exf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: exf
   !> MPI-domain electric field grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: eyf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: eyf
   !> MPI-domain electric field grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: ezf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: ezf
   !> MPI-domain magnetic field grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: bxf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: bxf
   !> MPI-domain magnetic field grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: byf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: byf
   !> MPI-domain magnetic field grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: bzf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: bzf
   !> MPI-domain current grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jxf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: jxf
   !> MPI-domain current grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jyf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: jyf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jzf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: jzf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhof
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: rhof
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhooldf
+  COMPLEX(cpx), ALLOCATABLE, DIMENSION(:,:,:) :: rhooldf
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y
@@ -533,6 +555,8 @@ MODULE particle_properties
   LOGICAL(lp) :: l_species_allocated=.FALSE.
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
+  !> Flag for plasma init/push 
+  LOGICAL(lp) :: l_plasma = .TRUE. 
 END MODULE particle_properties
 
 
