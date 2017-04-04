@@ -48,6 +48,9 @@ SUBROUTINE fast_fftw_create_plan_3d_dft(nopenmp,nx,ny,nz,array_in,array_out, &
     plan,plan_type,dir)
     USE omp_lib
     USE fftw3_fortran
+
+    IMPLICIT NONE
+
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
