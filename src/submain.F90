@@ -642,7 +642,7 @@ SUBROUTINE set_unit_pulse
 USE fields 
 USE shared_data 
 INTEGER(idp) :: i,j,k 
-REAL(num) :: amp =0. 
+REAL(num) :: amp =0._num  
 IF (rank .EQ. 0) THEN
   IF (it .EQ. 0) THEN  
     DO k=-1,1
