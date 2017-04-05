@@ -382,7 +382,9 @@ SUBROUTINE initall
     write(0,'(" Local number of grid point:",I5,X,I5,X,I5)') nx_grid,ny_grid,nz_grid
     write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
     write(0,*) ''
-
+    write(0,'(" FFTW - parameters ")')
+	IF (fftw_with_mpi) write(0,'(" FFTW distributed version - MPI ")')
+	IF (fftw_threads_ok) write(0,'(" FFTW MPI - Threaded support enabled ")')
     ! Sorting
     IF (sorting_activated.gt.0) THEN
       write(0,*) 'Particle sorting activated'

@@ -96,6 +96,8 @@ MODULE mpi_routines
         IF (provided >= MPI_THREAD_FUNNELED) THEN 
           CALL DFFTW_INIT_THREADS(iret)
           fftw_threads_ok = .TRUE.
+		ELSE 
+		  fftw_threads_ok=.FALSE.
         ENDIF 
         CALL FFTW_MPI_INIT()
     ENDIF 
