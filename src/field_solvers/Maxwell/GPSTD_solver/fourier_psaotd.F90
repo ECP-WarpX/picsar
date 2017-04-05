@@ -153,9 +153,9 @@ IF (fftw_with_mpi) THEN
 	nffty=ny_global
 	nfftz=nz_global
 ELSE
-	nfftx=nx+2*nxguards+1
-	nffty=ny+2*nyguards+1
-	nfftz=nz+2*nzguards+1
+	nfftx=nx+2*nxguards
+	nffty=ny+2*nyguards
+	nfftz=nz+2*nzguards
 ENDIF 
 
 ! Init k-vectors 
@@ -287,10 +287,10 @@ CALL init_psaotd()
 IF (fftw_with_mpi) THEN 
 	CALL init_plans_fourier_mpi(nopenmp) 
 ELSE 
-	CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,nfftx,nffty,nfftz,ex, &
+	CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,nfftx,nffty,nfftz,ex_r, &
 		exf,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
 	CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,nfftx,nffty,nfftz,exf, &
-		ex,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
+		ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
 ENDIF 
 
 END SUBROUTINE init_fourier 
@@ -308,7 +308,6 @@ CALL rfftfreq(nfftx,kxunit,1.0_num)!2._num/dx*pi*(rfftfreq(nx,1.0_num))
 CALL fftfreq(nffty,kyunit, 1.0_num)!2._num/dx*pi*(rfftfreq(ny,1.0_num))
 ALLOCATE(kzfftfreq_temp(nz_global+1))
 CALL fftfreq(nfftz,kzfftfreq_temp, 1.0_num)!2._num/dx*pi*(rfftfreq(nz,1.0_num))
-PRINT *, "rank",  local_z0, local_nz, nz_global+1
 kzunit(1:nkz)=kzfftfreq_temp(local_z0+1:local_z0+1+local_nz-1)
 DEALLOCATE(kzfftfreq_temp)
 
@@ -340,9 +339,9 @@ nopenmp_cint=nopenmp
 IF  (fftw_threads_ok) THEN 
 	CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
 ENDIF 
-nz_cint=nz_global+1
-ny_cint=ny_global+1
-nx_cint=nx_global+1
+nz_cint=nz_global
+ny_cint=ny_global
+nx_cint=nx_global
 
 plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
 				ex_r, exf, comm, FFTW_MEASURE);
@@ -416,23 +415,37 @@ USE fields
 USE fourier 
 USE fastfft 
 IMPLICIT NONE
-INTEGER(idp) :: nfftx,nffty,nfftz 
-nfftx=nx+2*nxguards+1
-nffty=ny+2*nyguards+1
-nfftz=nz+2*nzguards+1
+INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
+nfftx=nx+2*nxguards
+nffty=ny+2*nyguards
+nfftz=nz+2*nzguards
+nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1; 
 
-! Get Fourier transform of all fields components and currents 
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ex, exf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ey, eyf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ez, ezf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bx, bxf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,by, byf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bz, bzf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jx, jxf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jy, jyf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jz, jzf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rhoold, rhooldf, plan_r2c)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho, rhof, plan_r2c)
+! Init fourier fields fields 
+call normalize_Fourier(ex_r,nfftx,nffty,nfftz,ex,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(ey_r,nfftx,nffty,nfftz,ey,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(ez_r,nfftx,nffty,nfftz,ez,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(bx_r,nfftx,nffty,nfftz,bx,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(by_r,nfftx,nffty,nfftz,by,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(bz_r,nfftx,nffty,nfftz,bz,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(jx_r,nfftx,nffty,nfftz,jx,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(jy_r,nfftx,nffty,nfftz,jy,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(jz_r,nfftx,nffty,nfftz,jz,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num) 
+call normalize_Fourier(rhoold_r,nfftx,nffty,nfftz,rhoold,nxx,nyy,nzz,1.0_num) 
+
+! Do Fourier Transform 
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ex_r, exf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ey_r, eyf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ez_r, ezf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bx_r, bxf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,by_r, byf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bz_r, bzf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jx_r, jxf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jy_r, jyf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jz_r, jzf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rhoold_r, rhooldf, plan_r2c)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r, rhof, plan_r2c)
 
 END SUBROUTINE get_Ffields
 
@@ -472,9 +485,9 @@ END DO
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, exf)
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, eyf)
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, ezf)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
@@ -492,42 +505,58 @@ USE fourier
 USE fastfft 
 IMPLICIT NONE
 REAL(num) :: coeff_norm 
-INTEGER(idp) :: ix,iy,iz
+INTEGER(idp) :: ix,iy,iz,nxx,nyy,nzz,nfftx,nffty,nfftz
+nfftx=nx+2*nxguards
+nffty=ny+2*nyguards
+nfftz=nz+2*nzguards
 ! Get Inverse Fourier transform of all fields components and currents 
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,exf, ex, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,eyf, ey, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,ezf, ez, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,bxf, bx, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,byf, by, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,bzf, bz, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,jxf, jx, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,jyf, jy, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,jzf, jz, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,rhof, rho, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nx,ny,nz,rhooldf, rhoold, plan_c2r)
-coeff_norm= SIZE(ex)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,exf, ex_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,eyf, ey_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,ezf, ez_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,bxf, bx_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,byf, by_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,bzf, bz_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jxf, jx_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jyf, jy_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jzf, jz_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhof, rho_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhooldf, rhoold_r, plan_c2r)
+
+coeff_norm= 1._num/SIZE(ex_r)
+nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1; 
+call normalize_Fourier(ex,nxx,nyy,nzz,ex_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(ey,nxx,nyy,nzz,ey_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(ez,nxx,nyy,nzz,ez_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(bx,nxx,nyy,nzz,bx_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(by,nxx,nyy,nzz,by_r,nfftx,nffty,nfftz,coeff_norm)  
+call normalize_Fourier(bz,nxx,nyy,nzz,bz_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(jx,nxx,nyy,nzz,jx_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(jy,nxx,nyy,nzz,jy_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(jz,nxx,nyy,nzz,jz_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(rho,nxx,nyy,nzz,rho_r,nfftx,nffty,nfftz,coeff_norm) 
+call normalize_Fourier(rhoold,nxx,nyy,nzz,rhoold_r,nfftx,nffty,nfftz,coeff_norm) 
+
+END SUBROUTINE get_fields
+
+SUBROUTINE normalize_Fourier(ex_out,n1,n2,n3,ex_in,nxx,nyy,nzz,coeff_norm)
+USE PICSAR_precision 
+IMPLICIT NONE 
+INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz,n1,n2,n3
+REAL(num), INTENT(IN) :: coeff_norm 
+REAL(num), DIMENSION(nxx,nyy,nzz), INTENT(IN OUT) :: ex_in 
+REAL(num), DIMENSION(n1,n2,n3), INTENT(IN OUT) :: ex_out
+INTEGER(idp) :: ix,iy,iz
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
-DO iz=-nzguards,nz+nzguards 
-	DO iy=-nyguards,ny+nyguards 
-		DO ix=-nxguards,nx+nxguards
-				ex(ix,iy,iz)=ex(ix,iy,iz)/coeff_norm
-				ey(ix,iy,iz)=ey(ix,iy,iz)/coeff_norm 
-				ez(ix,iy,iz)=ez(ix,iy,iz)/coeff_norm 
-				bx(ix,iy,iz)=bx(ix,iy,iz)/coeff_norm
-				by(ix,iy,iz)=by(ix,iy,iz)/coeff_norm
-				bz(ix,iy,iz)=bz(ix,iy,iz)/coeff_norm 
-				jx(ix,iy,iz)=jx(ix,iy,iz)/coeff_norm 
-				jy(ix,iy,iz)=jy(ix,iy,iz)/coeff_norm 
-				jz(ix,iy,iz)=jz(ix,iy,iz)/coeff_norm 
-				rho(ix,iy,iz)=rho(ix,iy,iz)/coeff_norm 
-				rhoold(ix,iy,iz)=rhoold(ix,iy,iz)/coeff_norm
+DO iz=1,MIN(nzz,n3)
+	DO iy=1,MIN(nyy,n2)
+		DO ix=1,MIN(nyy,n1)
+				ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
 		END DO 
 	END DO 
 END DO 
 !$OMP END PARALLEL DO 
 !ex=0.
-!ex(1:nkx,:,:)=k*clight*dt
-END SUBROUTINE get_fields
+END SUBROUTINE normalize_Fourier
 
 SUBROUTINE get_fields_mpi
 USE shared_data
@@ -542,9 +571,9 @@ INTEGER(idp) :: ix,iy,iz
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, ex_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, ey_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, ez_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jxf, jx_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)

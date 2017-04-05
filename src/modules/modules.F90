@@ -195,25 +195,25 @@ MODULE fields
   !> MPI-domain electric field grid in x - Fourier space 
   COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: exf
   !> MPI-domain electric field grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: eyf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: eyf
   !> MPI-domain electric field grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: ezf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: ezf
   !> MPI-domain magnetic field grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: bxf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: bxf
   !> MPI-domain magnetic field grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: byf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: byf
   !> MPI-domain magnetic field grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: bzf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: bzf
   !> MPI-domain current grid in x - Fourier space 
   COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jxf
   !> MPI-domain current grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jyf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: jyf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jzf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: jzf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhof
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhof
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: rhooldf
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhooldf
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y
@@ -555,6 +555,8 @@ MODULE particle_properties
   LOGICAL(lp) :: l_species_allocated=.FALSE.
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
+  !> Flag for plasma init/push 
+  LOGICAL(lp) :: l_plasma = .TRUE. 
 END MODULE particle_properties
 
 
@@ -821,8 +823,13 @@ use constants
   !> MPI local times for the initialization
   REAL(num), dimension(5)                :: init_localtimes
 
+
   !> MPI local times for the main loop
   REAL(num), dimension(20)               :: localtimes
+  REAL(num), DIMENSION(20)               :: mintimes, init_mintimes
+  REAL(num), DIMENSION(20)               :: maxtimes, init_maxtimes
+  REAL(num), DIMENSION(20)               :: avetimes, init_avetimes
+
   !> Buffer for the output
   REAL(num), DIMENSION(:,:), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat

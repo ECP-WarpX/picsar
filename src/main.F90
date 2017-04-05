@@ -65,7 +65,8 @@ PROGRAM main
 
   IMPLICIT NONE
   LOGICAL :: exist
-  CHARACTER(len=250) :: str1, str2, str3, str4, str5
+  CHARACTER(len=250) :: str1, str2, str3
+  CHARACTER(len=250) :: str4, str5, str6
 ! Intel Design Forward project
 #if defined(DFP)
   CALL DFP_INIT_START
@@ -111,6 +112,7 @@ PROGRAM main
    CALL DFP_INIT_STOP
 #endif
 
+
   !----------------------------------------------
   ! THIS IS THE PIC ALGORITHM TIME LOOP
   !----------------------------------------------
@@ -119,23 +121,34 @@ PROGRAM main
   IF (rank .EQ. 0) endsim=MPI_WTIME()
   IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim
 
+
+  ! Time statistics for the different processes of the PIC step
+  CALL time_statistics
+
   IF (rank .EQ. 0) THEN 
-	
 	INQUIRE(file="output_statistics_gb.out", exist=exist)
 	IF (exist) THEN 
-		OPEN (unit=12,file="output_statistics_gb.out", &	
+		OPEN (unit=12,file="output_statistics_gb.out", &
 		action="write",position="append", status="old")
 	ELSE
 		OPEN (unit=12,file="output_statistics_gb.out",  &
-		action="write",status="new")
+		  action="write",status="new")
 	ENDIF 
 	WRITE(str1,*) nx_global; WRITE(str2,*) ny_global
 	WRITE(str3,*) nz_global; WRITE(str4,*) nproc
+	! total simulation time
 	WRITE(str5,*) endsim-startsim
-	
-	WRITE(12, *)  trim(adjustl(str1))//" "//trim(adjustl(str2))//" "// &
+	! Average time spent in different steps of the PIC loop
+	WRITE(str6,'(15(E12.5))') avetimes(1),avetimes(2),avetimes(11), &
+								avetimes(3),avetimes(4),avetimes(5), &
+								avetimes(6),avetimes(7),avetimes(8), &
+								avetimes(9),avetimes(10),avetimes(12), &
+								avetimes(13)  
+
+	! All time are put in the file on a single line
+	WRITE(12, '(512A)')  trim(adjustl(str1))//" "//trim(adjustl(str2))//" "// &
 				  trim(adjustl(str3))//" "//trim(adjustl(str4))//" "// &
-				  trim(adjustl(str5))
+				  trim(adjustl(str5))//" "//trim(adjustl(str6))
 	CLOSE(12)
   ENDIF 
 

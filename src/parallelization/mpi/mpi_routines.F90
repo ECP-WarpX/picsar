@@ -606,7 +606,7 @@ MODULE mpi_routines
     ! The remaining processors have nx0+1 cells
   	nx0 = nx_global / nprocx
   	ny0 = ny_global / nprocy
-		nz0 = local_nz
+		nz0 = nz_global /nprocz 
 	ELSE 
 	  ! Split is done on the total number of cells as in WARP
 	  ! Initial WARP split is used with each processor boundary
@@ -687,6 +687,7 @@ MODULE mpi_routines
     ny=ny_grid-1
     nz=nz_grid-1
 
+    PRINT *, "rank : ", rank, " local_nz", local_nz, "nz ", nz
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin
@@ -896,6 +897,7 @@ MODULE mpi_routines
   USE mpi_fftw3
   IMPLICIT NONE  
   TYPE(C_PTR) :: cdata, cin 
+  INTEGER(idp) :: imn,imx,jmn,jmx,kmn,kmx 
   ! ____________________________________________________________________________
 
       ! --- Allocate grid quantities (in real space)
@@ -914,7 +916,6 @@ MODULE mpi_routines
 	! ---  Allocate grid quantities (in Fourier space)
 	IF (l_spectral) THEN 
 		IF (fftw_with_mpi) THEN 
-			PRINT *, "#11"
 			nkx=(nx_global)/2+1! Real To Complex Transform 
 			nky=ny_global
 			nkz=local_nz
@@ -979,9 +980,9 @@ MODULE mpi_routines
 			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
 			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
 		ELSE 
-			nkx=(2*nxguards+1+nx)/2+1 ! Real To Complex Transform 
-			nky=(2*nyguards+1+ny)
-			nkz=(2*nzguards+1+nz)
+			nkx=(2*nxguards+nx)/2+1 ! Real To Complex Transform 
+			nky=(2*nyguards+ny)
+			nkz=(2*nzguards+nz)
 			ALLOCATE(exf(nkx,nky,nkz))
 			ALLOCATE(eyf(nkx,nky,nkz))
 			ALLOCATE(ezf(nkx,nky,nkz))
@@ -1005,7 +1006,21 @@ MODULE mpi_routines
 			ALLOCATE(kzmn(nkx,nky,nkz),kzpn(nkx,nky,nkz)) 
 			ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
 			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
-			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
+			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz))
+		    imn=-nxguards; imx=nx+nxguards-1
+		    jmn=-nyguards;jmx=ny+nyguards-1
+		    kmn=-nzguards;kmx=nz+nzguards-1 
+		    ALLOCATE(ex_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(ey_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(ez_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(bx_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(by_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(bz_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(jx_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(jy_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(jz_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(rho_r(imn:imx,jmn:jmx,kmn:kmx))
+		    ALLOCATE(rhoold_r(imn:imx,jmn:jmx,kmn:kmx))
 		ENDIF 
 	ENDIF 
     ! --- Quantities used by the dynamic load balancer
@@ -1059,9 +1074,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
     INTEGER(idp)             :: nthreads_tot
 
@@ -1198,9 +1210,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
 
     ! Time stats per iteration activated

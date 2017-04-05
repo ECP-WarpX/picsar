@@ -48,8 +48,11 @@ SUBROUTINE fast_fftw_create_plan_3d_dft(nopenmp,nx,ny,nz,array_in,array_out, &
     plan,plan_type,dir)
     USE omp_lib
     USE fftw3_fortran
+
+    IMPLICIT NONE
+
+    INTEGER(idp), INTENT(IN) ::  nopenmp,nx,ny,nz
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in, array_out
-    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret, plan_type_cint, dir_cint, &
@@ -83,9 +86,9 @@ SUBROUTINE fast_fftw_create_plan_r2c_3d_dft(nopenmp,nx,ny,nz,array_in, &
     array_out,plan,plan_type,dir)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_out
-    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret, nopenmp_cint, nx_cint, ny_cint, nz_cint, &
@@ -110,8 +113,6 @@ SUBROUTINE fast_fftw_create_plan_r2c_3d_dft(nopenmp,nx,ny,nz,array_in, &
     plan(1)=nplan
 END SUBROUTINE fast_fftw_create_plan_r2c_3d_dft
 
-
-
 ! Subroutine that creates a 3D complex to real plan using plan_type optimization
 ! plan_type can either be FFTW_ESTIMATE (low overhead, low optimization)
 ! FFTW_MEASURE (moderate to high overhead, high optimization)
@@ -120,9 +121,9 @@ SUBROUTINE fast_fftw_create_plan_c2r_3d_dft(nopenmp,nx,ny,nz,array_in, &
     array_out,plan,plan_type,dir)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_out
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_in
-    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret,nopenmp_cint, nx_cint, ny_cint, nz_cint, &
@@ -155,8 +156,8 @@ SUBROUTINE fast_fftw_create_plan_2d_dft(nopenmp,nx,nz,array_in, &
     array_out,plan,plan_type,dir)
     USE omp_lib
     USE fftw3_fortran
-    COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
+    COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret,nopenmp_cint, nx_cint, nz_cint, &
@@ -189,9 +190,9 @@ SUBROUTINE fast_fftw_create_plan_r2c_2d_dft(nopenmp,nx,nz,array_in,&
     array_out,plan,plan_type,dir)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
     REAL(num), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_out
-    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret,nopenmp_cint, nx_cint, nz_cint, &
@@ -223,9 +224,9 @@ SUBROUTINE fast_fftw_create_plan_c2r_2d_dft(nopenmp,nx,nz,array_in, &
     array_out,plan,plan_type, dir)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
     REAL(num), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_out
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_in
-    INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret,nopenmp_cint, nx_cint, nz_cint, &
@@ -258,8 +259,8 @@ SUBROUTINE fast_fftw_create_plan_1d_dft(nopenmp,nx,array_in,array_out, &
     plan,plan_type, dir)
     USE omp_lib
     USE fftw3_fortran
-    COMPLEX(cpx), DIMENSION(nx), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx
+    COMPLEX(cpx), DIMENSION(nx), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret,nopenmp_cint, nx_cint,        &
@@ -288,8 +289,8 @@ SUBROUTINE fast_fftw_create_plan_many_1dft_on_2darray(nopenmp,nx,nz, &
             idist, odist, plan,plan_type, dir)
     USE omp_lib
     USE fftw3_fortran
-    COMPLEX(cpx), DIMENSION(nx, nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx, nz, idist, odist
+    COMPLEX(cpx), DIMENSION(nx, nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir, istride, ostride, howmany, ndft
     INTEGER(C_INT) :: iret, rank,nopenmp_cint,                     &
@@ -327,8 +328,8 @@ SUBROUTINE fast_fftw_create_plan_many_1dft_on_3darray(nopenmp,nx,ny,nz, &
             odist, plan, plan_type, dir)
     USE omp_lib
     USE fftw3_fortran
-    COMPLEX(cpx), DIMENSION(nx, ny, nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx, ny, nz, idist, odist
+    COMPLEX(cpx), DIMENSION(nx, ny, nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir, istride, ostride, howmany, ndft
     INTEGER(C_INT) :: iret, rank,nopenmp_cint, plan_type_cint, dir_cint, &
@@ -372,9 +373,9 @@ SUBROUTINE fast_fftw_create_plan_r2c_1d_dft(nopenmp,nx,array_in,array_out, &
     plan,plan_type, dir)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nopenmp, nx
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_out
-    INTEGER(idp), INTENT(IN) ::  nopenmp, nx
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret,nopenmp_cint, nx_cint,        &
@@ -406,9 +407,9 @@ SUBROUTINE fast_fftw_create_plan_c2r_1d_dft(nopenmp,nx,array_in,array_out, &
     plan,plan_type,dir)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nopenmp, nx
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_out
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_in
-    INTEGER(idp), INTENT(IN) ::  nopenmp, nx
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
     INTEGER(idp), INTENT(IN) :: plan_type, dir
     INTEGER(C_INT) :: iret,nopenmp_cint, nx_cint,        &
@@ -442,10 +443,10 @@ END SUBROUTINE fast_fftw_create_plan_c2r_1d_dft
 SUBROUTINE fast_fftw3d_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -457,10 +458,10 @@ END SUBROUTINE fast_fftw3d_with_plan
 SUBROUTINE fast_fftw3d_r2c_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -472,10 +473,10 @@ END SUBROUTINE fast_fftw3d_r2c_with_plan
 SUBROUTINE fast_fftw3d_c2r_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_in
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -489,10 +490,10 @@ END SUBROUTINE fast_fftw3d_c2r_with_plan
 SUBROUTINE fast_fftw2d_with_plan(nx,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx,nz
     COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx,nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -505,10 +506,10 @@ END SUBROUTINE fast_fftw2d_with_plan
 SUBROUTINE fast_fftw2d_r2c_with_plan(nx,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx,nz
     REAL(num), DIMENSION(nx,nz), INTENT(IN)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx,nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -520,10 +521,10 @@ END SUBROUTINE fast_fftw2d_r2c_with_plan
 SUBROUTINE fast_fftw2d_c2r_with_plan(nx,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) :: nx,nz
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_in
     REAL(num), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) :: nx,nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -537,10 +538,10 @@ END SUBROUTINE fast_fftw2d_c2r_with_plan
 SUBROUTINE fast_fftw1d_with_plan(nx,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx
     COMPLEX(cpx), DIMENSION(nx), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -551,10 +552,10 @@ END SUBROUTINE fast_fftw1d_with_plan
 SUBROUTINE fast_fftw1d_with_plan_on_2d_array(nx,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx, nz
     COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx, nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -565,10 +566,10 @@ END SUBROUTINE fast_fftw1d_with_plan_on_2d_array
 SUBROUTINE fast_fftw1d_with_plan_on_3d_array(nx,ny,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx, ny, nz
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx, ny, nz
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -581,10 +582,10 @@ END SUBROUTINE fast_fftw1d_with_plan_on_3d_array
 SUBROUTINE fast_fftw1d_r2c_with_plan(nx,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) :: nx
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) :: nx
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
@@ -596,10 +597,10 @@ END SUBROUTINE fast_fftw1d_r2c_with_plan
 SUBROUTINE fast_fftw1d_c2r_with_plan(nx,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
+    INTEGER(idp), INTENT(IN) ::  nx
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_in
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
-    INTEGER(idp), INTENT(IN) ::  nx
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
