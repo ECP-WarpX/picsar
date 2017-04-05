@@ -584,12 +584,9 @@ MODULE mpi_routines
 		!   get local data size and allocate (note dimension reversal)
 		alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, &
 	                      local_nz, local_z0)
-    PRINT *, "grid size", nx_global,ny_global,nz_global 
-		PRINT *, "rank", rank, " local_nz",local_nz
 		ALLOCATE(nz_procs(nproc))
 		CALL MPI_ALLGATHER(INT(local_nz,idp), &
 		1_isp,MPI_INTEGER8,nz_procs,INT(1,isp),MPI_INTEGER8,comm,errcode)
-		PRINT *, "rank", rank,  "NUmber of grid points per proc: ", nz_procs, nz_global
     !            cell_x_min(1)=0
     !            cell_x_max(1)=nx_global-1
     !            cell_y_min(1)=0
@@ -686,8 +683,6 @@ MODULE mpi_routines
     nx=nx_grid-1
     ny=ny_grid-1
     nz=nz_grid-1
-
-    PRINT *, "rank : ", rank, " local_nz", local_nz, "nz ", nz
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin
@@ -965,7 +960,6 @@ MODULE mpi_routines
  		    call c_f_pointer(cin, rho_r, [(nx_global)+2,nky,nkz])
 			cin = fftw_alloc_real(2 * alloc_local);
  		    call c_f_pointer(cin, rhoold_r, [(nx_global)+2,nky,nkz])
-			PRINT *, "#12"
 			! allocate k-vectors 
 			ALLOCATE(kxunit(nkx),kyunit(nky),kzunit(nkz))
 			ALLOCATE(kxunit_mod(nkx),kyunit_mod(nky),kzunit_mod(nkz))
