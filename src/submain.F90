@@ -294,7 +294,6 @@ SUBROUTINE initall
   IF (c_dim.eq.3) THEN
     IF (l_spectral) THEN
       dt=MIN(dx,dy,dz)/clight
-      PRINT *, "dt, dx",dt,dx
     ELSE 
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF 

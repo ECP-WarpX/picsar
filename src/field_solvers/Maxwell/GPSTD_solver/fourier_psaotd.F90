@@ -166,9 +166,6 @@ ALLOCATE(wx(norderx/2),wy(nordery/2),wz(norderz/2))
 CALL FD_weights_hvincenti(norderx,wx,l_staggered)
 CALL FD_weights_hvincenti(nordery,wy,l_staggered)
 CALL FD_weights_hvincenti(norderz,wz,l_staggered)
-IF (rank .EQ. 0) THEN 
-	PRINT *, 'COEFFICIENTS HVINCENTI', wx(:)
-ENDIF 
 
 ! - Init xcoefs 
 xcoefs=0._num
