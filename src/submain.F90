@@ -642,17 +642,17 @@ SUBROUTINE set_unit_pulse
 USE fields 
 USE shared_data 
 INTEGER(idp) :: i,j,k 
-
+REAL(num) :: amp =0. 
 IF (rank .EQ. 0) THEN
   IF (it .EQ. 0) THEN  
     DO k=-1,1
       DO i=-1,1
         DO j=-1,1
-            ex(nx/2,ny/2,nz/2)=0.5*1e8
+            ex(nx/2,ny/2,nz/2)=amp/2._num
         END DO 
       END DO 
     END DO 
-    ex(nx/2,ny/2,nz/2)=1e8
+    ex(nx/2,ny/2,nz/2)=amp
   ENDIF 
 ENDIF 
 
