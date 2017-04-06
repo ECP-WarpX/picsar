@@ -328,7 +328,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp, &
   bxg,bxg_nguard,bxg_nvalid, &
   byg,byg_nguard,byg_nvalid, &
   bzg,bzg_nguard,bzg_nvalid, &
-  l_lower_order_in_v)
+  l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 
 

@@ -63,16 +63,28 @@
 !> @param[in] lvect vector size for the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
-                                       nox,noz,exg,eyg,ezg,l4symtry,l_2drz,l_lower_order_in_v)
+subroutine pxr_gete2dxz_n_energy_conserving(          &
+  np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
+  exg,exg_nguard,exg_nvalid,                          &
+  eyg,eyg_nguard,eyg_nvalid,                          &
+  ezg,ezg_nguard,ezg_nvalid,                          &
+  l4symtry,l_2drz,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
   use constants
   implicit none
 
-  integer(idp)             :: np,nx,nz,nox,noz,nxguard,nzguard
+  integer(idp)             :: np,nox,noz
+  integer(idp), intent(IN) :: exg_nguard(2),exg_nvalid(2),&
+                              eyg_nguard(2),eyg_nvalid(2),&
+                              ezg_nguard(2),ezg_nvalid(2)
   real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
   logical(idp)             :: l4symtry,l_2drz,l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: exg,eyg,ezg
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,1, &
+                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,1, &
+                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,1, &
+                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
   real(num)                :: xmin,zmin,dx,dz,costheta,sintheta
   integer(idp)             :: ip, j, l, ixmin, ixmax, izmin, izmax, &
                               ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
