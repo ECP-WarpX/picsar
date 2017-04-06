@@ -409,9 +409,6 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !> @param[in] q particle charge
 !> @param[in] xmin,zmin minimal boundaries of the tile
 !> @param[in] dt, dx, dz time and space discretization
-!> @param[in] nx,nz tile grid size
-!> @param[in] nxguard,nzguard guard cell numbers
-!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
 !> @param[in] lvect: vector length (useless since not vectorized)
 !> @param[in] l_particles_weight to take into account the particle weight
 !> @param[in] l4symtry (useless here bur kept for common interface)
@@ -423,7 +420,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(          &
     jy,jy_nguard,jy_nvalid,                            &
     jz,jz_nguard,jz_nvalid,                            &
     np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,         &
-    dt,dx,dz,nox,noz,lvect,l_particles_weight,         &
+    dt,dx,dz,lvect,l_particles_weight,                 &
     l4symtry,l_2drz,type_rz_depose) !#do not wrap
 ! ______________________________________________________________________________
 
@@ -432,7 +429,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(          &
   implicit none
 
   ! __ Parameter declaration ________________________________________________________
-  integer(idp)                          :: np,nox,noz,type_rz_depose
+  integer(idp)                          :: np,type_rz_depose
   integer(idp)                          :: lvect
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), &
                                            jy_nguard(2), jy_nvalid(2), &
@@ -602,17 +599,18 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 !> @param[in] q particle charge
 !> @param[in] xmin,zmin minimal boundaries of the tile
 !> @param[in] dt, dx, dz time and space discretization
-!> @param[in] nx,nz tile grid size
-!> @param[in] nxguard,nzguard guard cell numbers
-!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
 !> @param[in] l_particles_weight to take into account the particle weight
 !> @param[in] l4symtry (useless here bur kept for common interface)
 !> @param[in] l_2drz  (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 !
-SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
+SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(          &
+    jx,jx_nguard,jx_nvalid,                            &
+    jy,jy_nguard,jy_nvalid,                            &
+    jz,jz_nguard,jz_nvalid,                            &
+    np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,         &
+    dt,dx,dz,lvect,l_particles_weight,                 &
+    l4symtry,l_2drz,type_rz_depose) !#do not wrap
 ! ______________________________________________________________________________
 
 
@@ -620,9 +618,17 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   implicit none
 
   ! __ Parameter declaration ________________________________________________________
-  integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard, type_rz_depose
+  integer(idp)                          :: np,type_rz_depose
   integer(idp)                          :: lvect
-  real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+  INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), &
+                                           jy_nguard(2), jy_nvalid(2), &
+                                           jz_nguard(2), jz_nvalid(2)
+   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
+   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
+   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
   LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
@@ -793,17 +799,18 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 !> @param[in] q particle charge
 !> @param[in] xmin,zmin minimal boundaries of the tile
 !> @param[in] dt, dx, dz time and space discretization
-!> @param[in] nx,nz tile grid size
-!> @param[in] nxguard,nzguard guard cell numbers
-!> @param[in] nox, noz shape factor order (useless here but kept for common interface)
 !> @param[in] l_particles_weight to take into account the particle weight
 !> @param[in] l4symtry (useless here bur kept for common interface)
 !> @param[in] l_2drz  (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 !
-subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
+subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(          &
+    jx,jx_nguard,jx_nvalid,                            &
+    jy,jy_nguard,jy_nvalid,                            &
+    jz,jz_nguard,jz_nvalid,                            &
+    np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,         &
+    dt,dx,dz,lvect,l_particles_weight,                 &
+    l4symtry,l_2drz,type_rz_depose) !#do not wrap
 ! ______________________________________________________________________________
 
 
@@ -811,9 +818,17 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
   implicit none
 
   ! __ Parameter declaration _______________________________________________
-  integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard, type_rz_depose
+  integer(idp)                          :: np,type_rz_depose
   integer(idp)                          :: lvect
-  real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+  INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), &
+                                           jy_nguard(2), jy_nvalid(2), &
+                                           jz_nguard(2), jz_nvalid(2)
+   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
+   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
+   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
   LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz

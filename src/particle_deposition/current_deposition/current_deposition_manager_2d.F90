@@ -114,12 +114,20 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
 	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
             nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
-        CALL pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
-	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+        CALL pxr_depose_jxjyjz_esirkepov2d_2_2(                &
+            jx,jx_nguard,jx_nvalid,                            &
+            jy,jy_nguard,jy_nvalid,                            &
+            jz,jz_nguard,jz_nvalid,                            &
+            np,xp,zp,uxp,uyp,uzp,                              &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
             nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
-        CALL pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
-	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+        CALL pxr_depose_jxjyjz_esirkepov2d_3_3(                &
+            jx,jx_nguard,jx_nvalid,                            &
+            jy,jy_nguard,jy_nvalid,                            &
+            jz,jz_nguard,jz_nvalid,                            &
+            np,xp,zp,uxp,uyp,uzp,                              &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
             nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE
         CALL pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
