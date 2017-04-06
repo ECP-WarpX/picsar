@@ -38,10 +38,7 @@ PROGRAM esirkepov_3d_test
   INTEGER(idp)                             :: np
   INTEGER(idp)                             :: lvect
   INTEGER(idp)                             :: nx,ny,nz
-  INTEGER(idp)                             :: ncx,ncy,ncz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
-  INTEGER(idp)                             :: ncells
-  LOGICAL(idp)                             :: l_lower_order_in_v
   LOGICAL                                  :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
@@ -53,11 +50,9 @@ PROGRAM esirkepov_3d_test
   REAL(num), dimension(:), allocatable     :: up,theta,phi
   REAL(num), dimension(:), allocatable     :: gaminv,w
   REAL(num), dimension(:,:,:), allocatable :: jx,jy,jz
-  REAL(num), dimension(:,:), allocatable :: jxcells,jycells,jzcells
   REAL(num), dimension(10)                 :: sumjx,sumjy,sumjz
   REAL(num), dimension(10)                 :: errjx,errjy,errjz
   CHARACTER(len=64), dimension(10)         :: name
-  CHARACTER(len=512)                       :: line
 
   write(0,'(" ____________________________________________________________________________")')
   write(0,*) 'TEST: current deposition 3D'
