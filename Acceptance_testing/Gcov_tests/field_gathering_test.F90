@@ -223,15 +223,22 @@ PROGRAM field_gathering_3d_test
   ex = 0 ; ey = 0 ; ez = 0
   bx = 0 ; by = 0 ; bz = 0
   t0 = MPI_WTIME()
-  CALL gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,l_lower_order_in_v)
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
+  CALL gete3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp, &
+    ex,ey,ez,xmin,ymin,zmin,dx,dy,dz, &
+    exg,nguard,nvalid, &
+    eyg,nguard,nvalid, &
+    ezg,nguard,nvalid, &
+    l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
-
   t0 = MPI_WTIME()
-  CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,l_lower_order_in_v)
+  CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp, &
+    bx,by,bz,xmin,ymin,zmin,dx,dy,dz, &
+    bxg,nguard,nvalid, &
+    byg,nguard,nvalid, &
+    bzg,nguard,nvalid, &
+    l_lower_order_in_v)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
