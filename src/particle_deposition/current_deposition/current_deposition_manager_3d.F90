@@ -156,9 +156,12 @@ SUBROUTINE depose_jxjyjz_generic(                      &
     ! Esirkepov non optimized
     CASE(1)
 
-        CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-             dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-             nox,noy,noz,.TRUE._idp,.FALSE._idp)
+        CALL pxr_depose_jxjyjz_esirkepov_n( &
+            jx,jx_nguard,jx_nvalid,      &
+            jy,jy_nguard,jy_nvalid,      &
+            jz,jz_nguard,jz_nvalid,      &
+            np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+            dt,dx,dy,dz,nox,noy,noz,.TRUE._idp,.FALSE._idp)
 
     ! Optimized Esirkepov
     CASE DEFAULT
