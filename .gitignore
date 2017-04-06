@@ -14,6 +14,10 @@ src/*.o
 src/*/*.o
 src/*/*/*.o
 src/*/*/*/*.o
+src/*.swp
+src/*/*.swp
+src/*/*/*.swp
+src/*/*/*/*.swp
 *.mod
 picsar
 python_bin/
@@ -48,6 +52,7 @@ postproc_python_script/*.pyc
 Acceptance_testing/Fortran_tests/*/__pycache__/
 Acceptance_testing/Fortran_tests/*/.cache
 Acceptance_testing/Fortran_tests/*/.DS_Store
+Acceptance_testing/Gcov_tests/*.swp
 python_libs/*.pyc
 python_libs/em3dsolverPXR.py.old
 utils/depose_jxjyjz_esirkepov_1_1.F90
