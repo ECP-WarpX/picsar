@@ -65,7 +65,35 @@ SUBROUTINE depose_jxjyjz(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,z
          jz,nguard,nvalid,                            &
          np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
          dt,dx,dy,dz,nox,noy,noz,current_depo_algo)
+END SUBROUTINE
 
+! ______________________________________________________________________________
+!> @brief
+!> Esirkepov subroutine for current deposition on one tile
+!>
+!>
+SUBROUTINE depose_jxjyjz_esirkepov(jx,jy,jz,np, &
+    xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+    dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+    nox,noy,noz)
+      USE constants
+      IMPLICIT NONE
+      INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+      REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+      REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+      REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+
+      ! Build array of guard cells and valid cells, to pass them to the generic routine
+      integer(idp)                       :: nguard(3), nvalid(3)
+      nguard = (/ nxguard, nyguard, nzguard /)
+      nvalid = (/ nx+1, ny+1, nz+1 /)
+
+      CALL pxr_depose_jxjyjz_esirkepov_n( &
+          jx,nguard,nvalid,      &
+          jy,nguard,nvalid,      &
+          jz,nguard,nvalid,      &
+          np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+          dt,dx,dy,dz,nox,noy,noz,.TRUE._idp,.FALSE._idp)
 END SUBROUTINE
 
 ! ______________________________________________________________________________
@@ -130,9 +158,12 @@ SUBROUTINE depose_jxjyjz_generic(                      &
         CALL depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
              dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
       ELSE
-        CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-             dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-             nox,noy,noz,.TRUE._idp,.FALSE._idp)
+          CALL pxr_depose_jxjyjz_esirkepov_n( &
+              jx,jx_nguard,jx_nvalid,      &
+              jy,jy_nguard,jy_nvalid,      &
+              jz,jz_nguard,jz_nvalid,      &
+              np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+              dt,dx,dy,dz,nox,noy,noz,.TRUE._idp,.FALSE._idp)
       ENDIF
 
     ! Optimized classical current deposition
@@ -148,9 +179,12 @@ SUBROUTINE depose_jxjyjz_generic(                      &
         CALL depose_jxjyjz_vecHVv3_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
       ELSE
-        CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-             dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-             nox,noy,noz,.TRUE._idp,.FALSE.)
+          CALL pxr_depose_jxjyjz_esirkepov_n( &
+              jx,jx_nguard,jx_nvalid,      &
+              jy,jy_nguard,jy_nvalid,      &
+              jz,jz_nguard,jz_nvalid,      &
+              np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+              dt,dx,dy,dz,nox,noy,noz,.TRUE._idp,.FALSE._idp)
       ENDIF
 
     ! Esirkepov non optimized
@@ -1809,13 +1843,13 @@ DO iz=1,ntilez
                     curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,                                 &
                     nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
                   CASE DEFAULT
-                    CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                         &
-                    currg%jztile,count,                                                                   &
+                    CALL depose_jxjyjz_esirkepov( &
+                    currg%jxtile,currg%jytile,currg%jztile,count,                                         &                                                                  &
                     curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                                   &
                     curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,          &
                     curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,&
                     curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                &
-                    nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp)
+                    nxjg,nyjg,nzjg,noxx,noyy,nozz)
                  END SELECT
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
@@ -2162,13 +2196,13 @@ DO iz=1,ntilez
                   isdeposited=.TRUE.
                 ENDIF
                 ! Depose current in jtile
-                CALL pxr_depose_jxjyjz_esirkepov_n(currg%jxtile,currg%jytile,                                 &
-                currg%jztile,count,                                                          &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                               &
-                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,              &
-                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,        &
-                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                  &
-                nxjg,nyjg,nzjg,noxx,noyy,nozz,.TRUE._idp,.FALSE._idp)
+                CALL depose_jxjyjz_esirkepov( &
+                currg%jxtile,currg%jytile,currg%jztile,count,                                         &                                                                  &
+                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                                   &
+                curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,          &
+                curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,&
+                curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                &
+                nxjg,nyjg,nzjg,noxx,noyy,nozz)
             END DO! END LOOP ON SPECIES
             IF (isdeposited) THEN
               jxg(jmin:jmax,kmin:kmax,lmin:lmax)=jxg(jmin:jmax,kmin:kmax,lmin:lmax)+currg%jxtile
