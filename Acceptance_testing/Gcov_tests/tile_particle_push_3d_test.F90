@@ -97,6 +97,22 @@ PROGRAM tile_particle_push_3d_test
   ntiley = 6
   ntilez = 6
 
+  ! --- Order (these values will be changed later in the code, 
+  ! this is the maximum in thi test)
+  nox=3
+  noy=3
+  noz=3
+
+  ! --- Init guard cells
+  ! (Since we will use the same arrays for all orders, 
+  ! we put the maximum of guard cells)
+  nxguards=3
+  nyguards=3
+  nzguards=3
+  nxjguards=3
+  nyjguards=3
+  nzjguards=3
+
   ! --- Vector length field gathering
   LVEC_fieldgathe = 256
 
@@ -255,6 +271,11 @@ PROGRAM tile_particle_push_3d_test
   ! ______________________________________________________________________________________
   ! Test of the different subroutines with tiling
 
+  ! ______________
+  ! Order 1
+
+  nox=1 ; noy=1 ; noz=1
+
   errex = 0
   errey = 0
   errez = 0
@@ -275,7 +296,6 @@ PROGRAM tile_particle_push_3d_test
   write(0,*) 'Computation of ',name(i)
   particle_pusher = 0
   fieldgathe = 2
-  nox=1 ; noy=1 ; noz=1
   ! field gathering first
   t0 = MPI_WTIME()
   CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -422,6 +442,8 @@ PROGRAM tile_particle_push_3d_test
 
   ! __ Order 2 __________________
   write(0,*) ''
+
+  nox=2 ; noy=2 ; noz=2
 
   errex = 0
   errey = 0
@@ -593,6 +615,8 @@ PROGRAM tile_particle_push_3d_test
   ! __ Order 3 __________________
   write(0,*) ''
 
+  nox=3 ; noy=3 ; noz=3
+
   errex = 0
   errey = 0
   errez = 0
@@ -612,7 +636,7 @@ PROGRAM tile_particle_push_3d_test
   name(i) = 'field_gathering_sub + particle_pusher_sub (Boris)'
   write(0,*) 'Computation of ',name(i)
   particle_pusher = 0
-  fieldgathe = 2 ; nox=3 ; noy=3 ; noz=3
+  fieldgathe = 2  
   ! field gathering first
   t0 = MPI_WTIME()
   CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
@@ -831,9 +855,7 @@ SUBROUTINE check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz, &
   REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumx,tilesumy,tilesumz
   REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumpx,tilesumpy,tilesumpz
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
-  INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
 
   DO iz=1, ntilez ! LOOP ON TILES

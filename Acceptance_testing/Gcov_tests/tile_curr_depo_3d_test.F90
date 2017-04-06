@@ -73,6 +73,22 @@ PROGRAM tile_curr_depo_3d_test
   ny_global_grid=50
   nz_global_grid=50
 
+  ! --- Order (these values will be changed later in the code, 
+  ! this is the maximum in thi test)
+  nox=3
+  noy=3
+  noz=3
+
+  ! --- Init guard cells
+  ! (Since we will use the same arrays for all orders, 
+  ! we put the maximum of guard cells)
+  nxguards=3
+  nyguards=3
+  nzguards=3
+  nxjguards=3
+  nyjguards=3
+  nzjguards=3
+
   ! --- Domain extension
   xmin=0
   ymin=0
@@ -450,6 +466,8 @@ PROGRAM tile_curr_depo_3d_test
 
   write(0,'(" ____________________________________________________________________________")')
 
+  CALL MPI_FINALIZE(errcode)
+
   ! ____________________________________________________________________________
 
 END PROGRAM
@@ -465,7 +483,7 @@ SUBROUTINE depose_currents_on_grid_jxjyjz
   USE time_stat
 
   IMPLICIT NONE
-  REAL(num) :: tdeb, tend
+  REAL(num) :: tdeb
 
 
   ! ___________________________________________________________________________
@@ -705,11 +723,8 @@ SUBROUTINE check(tilesumjx,tilesumjy,tilesumjz)
 
   ! ___ Parameter declaration ________________________________________
   REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumjx,tilesumjy,tilesumjz
-  INTEGER(idp)             :: ispecies, ix, iy, iz, count
-  INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
-  TYPE(particle_species), POINTER :: curr
+  INTEGER(idp)                    :: ix, iy, iz
   TYPE(grid_tile), POINTER        :: currg
-  TYPE(particle_tile), POINTER    :: curr_tile
 
   DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley

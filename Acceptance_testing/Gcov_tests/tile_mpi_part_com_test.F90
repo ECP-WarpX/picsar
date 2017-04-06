@@ -41,7 +41,6 @@ PROGRAM tile_mpi_part_com_test
 
 	TYPE(particle_species), POINTER          :: curr
 	TYPE(particle_species)                   :: curr0
-	INTEGER(idp)                             :: jmin, jmax, kmin, kmax, lmin, lmax
 	REAL(num)                                :: partx, party, partz
 	REAL(num)                                :: partux, partuy, partuz, gaminv
 	REAL(num), DIMENSION(:), ALLOCATABLE		 :: partpid
@@ -68,7 +67,6 @@ PROGRAM tile_mpi_part_com_test
   REAL(num), dimension(10)                 :: errx,erry,errz
   REAL(num), dimension(10)                 :: errpx,errpy,errpz
   REAL(num), dimension(10)                 :: errga
-  CHARACTER(len=64)                        :: title
 
 	! ____________________________________________________________________________
 	! Initialization
@@ -481,9 +479,7 @@ SUBROUTINE check(tilesumex,tilesumey,tilesumez,tilesumbx,tilesumby,tilesumbz, &
   REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumpx,tilesumpy,tilesumpz
   REAL(num), DIMENSION(ntilez,ntiley,ntilex) :: tilesumga
   INTEGER(idp)                    :: ispecies, ix, iy, iz, count
-  INTEGER(idp)                    :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
 
   DO iz=1, ntilez ! LOOP ON TILES
