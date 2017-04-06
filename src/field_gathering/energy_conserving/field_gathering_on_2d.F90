@@ -357,7 +357,7 @@ subroutine pxr_getb2dxz_n_energy_conserving(          &
   bxg,bxg_nguard,bxg_nvalid,                          &
   byg,byg_nguard,byg_nvalid,                          &
   bzg,bzg_nguard,bzg_nvalid,                          &
-  l4symtry,l_2drz,l_lower_order_in_v)
+  l4symtry,l_2drz,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 
   use constants
