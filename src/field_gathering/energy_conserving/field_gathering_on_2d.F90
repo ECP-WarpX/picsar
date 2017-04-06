@@ -352,17 +352,29 @@ end subroutine pxr_gete2dxz_n_energy_conserving
 !> @param[in] l_2drz use the 2d cylindrical geometry system
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nx,nz,nxguard,nzguard, &
-                                       nox,noz,bxg,byg,bzg,l4symtry,l_2drz,l_lower_order_in_v)
+subroutine pxr_getb2dxz_n_energy_conserving(          &
+  np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
+  bxg,bxg_nguard,bxg_nvalid,                          &
+  byg,byg_nguard,byg_nvalid,                          &
+  bzg,bzg_nguard,bzg_nvalid,                          &
+  l4symtry,l_2drz,l_lower_order_in_v)
 ! ______________________________________________________________________________
 
   use constants
   implicit none
 
-  integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard
+  integer(idp) :: np,nox,noz
+  integer(idp), intent(IN)                :: bxg_nguard(2),bxg_nvalid(2),&
+                                             byg_nguard(2),byg_nvalid(2),&
+                                             bzg_nguard(2),bzg_nvalid(2)
   real(num), dimension(np) :: xp,yp,zp,bx,by,bz
   logical(idp) :: l4symtry,l_2drz,l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard) :: bxg,byg,bzg
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,1, &
+                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,1, &
+                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,1, &
+                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
   real(num) :: xmin,zmin,dx,dz
   integer(idp) :: ip, j, l, ixmin, ixmax, izmin, izmax, &
                   ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
