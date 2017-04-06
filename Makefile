@@ -526,8 +526,8 @@ help:
 	@echo ' Targets:'
 	@echo ' - build'
 	@echo ' - clean'
-	@echo ' - buildtest'
-	@echo ' - cleantest'
+	@echo ' - build_test'
+	@echo ' - clean_test'
 	@echo ' - test_gcov'
 	@echo
 	@echo ' COMP= Compiler type:'
@@ -539,7 +539,9 @@ help:
 	@echo ' - prod: production compilation'
 	@echo ' - debug: debug compilation'
 	@echo ' - novec: disable vectorization'
-	@echo ' - vtune: vtune analysis'
+	@echo ' - vtune: Vtune analysis'
+	@echo ' - sde: Intel SDE analysis'
+	@echo ' - advisor: Intel Advisor analysis'
 	@echo
 	@echo ' SYS= System'
 	@echo ' - edison: Edison NERSC'

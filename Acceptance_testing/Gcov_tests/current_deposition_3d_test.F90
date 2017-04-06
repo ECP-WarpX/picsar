@@ -29,6 +29,7 @@
 PROGRAM current_deposition_3d_test
 
   USE constants
+
   IMPLICIT NONE
 
   ! __________________________________________________________________
@@ -41,7 +42,6 @@ PROGRAM current_deposition_3d_test
   INTEGER(idp)                             :: ncx,ncy,ncz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
   INTEGER(idp)                             :: ncells
-  LOGICAL(idp)                             :: l_lower_order_in_v
   LOGICAL                                  :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
@@ -57,7 +57,6 @@ PROGRAM current_deposition_3d_test
   REAL(num), dimension(10)                 :: sumjx,sumjy,sumjz
   REAL(num), dimension(10)                 :: errjx,errjy,errjz
   CHARACTER(len=64), dimension(10)         :: name
-  CHARACTER(len=512)                       :: line
 
   INTEGER(idp)                             :: nguard(3), nvalid(3)
 
@@ -440,6 +439,7 @@ PROGRAM current_deposition_3d_test
   ENDIF
 
   write(0,'(" ____________________________________________________________________________")')
+
 
 END PROGRAM
 

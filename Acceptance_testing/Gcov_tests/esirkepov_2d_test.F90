@@ -38,29 +38,24 @@ PROGRAM current_deposition_3d_test
   INTEGER(idp)                             :: np
   INTEGER(idp)                             :: lvect
   INTEGER(idp)                             :: nx,ny,nz
-  INTEGER(idp)                             :: ncx,ncy,ncz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
-  INTEGER(idp)                             :: ncells
   INTEGER                                  :: ierr
-  LOGICAL(idp)                             :: l_lower_order_in_v
   LOGICAL                                  :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
   REAL(num)                                :: q,m
   REAL(num)                                :: epsilon
   REAL(num)                                :: dx,dy,dz,dt
-  REAL(num)                                :: t0,t1
+  REAL(num)                                :: t0
   REAL(num), dimension(:), allocatable     :: xp,yp,zp
   REAL(num), dimension(:), allocatable     :: uxp,uyp,uzp
-  REAL(num), dimension(:), allocatable     :: up,theta,phi
+  REAL(num), dimension(:), allocatable     :: up,theta
   REAL(num), dimension(:), allocatable     :: gaminv,w
   REAL(num), dimension(:,:,:), allocatable :: jx,jy,jz
-  REAL(num), dimension(:,:), allocatable :: jxcells,jycells,jzcells
   REAL(num), dimension(10)                 :: sumjx,sumjy,sumjz
   REAL(num), dimension(10)                 :: errjx,errjy,errjz
   REAL(num), dimension(10)                 :: t
   CHARACTER(len=64), dimension(10)         :: name
-  CHARACTER(len=512)                       :: line
 
  INTEGER(idp)                             :: nguard(2), nvalid(2)
 
