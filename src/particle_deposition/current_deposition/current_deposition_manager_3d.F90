@@ -164,21 +164,30 @@ SUBROUTINE depose_jxjyjz_generic(                      &
     CASE DEFAULT
 
       IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
-        CALL depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-                                            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                            nox,noy,noz,.TRUE._idp,.FALSE._idp)
+        CALL depose_jxjyjz_esirkepov_1_1_1( &
+            jx,jx_nguard,jx_nvalid,      &
+            jy,jy_nguard,jy_nvalid,      &
+            jz,jz_nguard,jz_nvalid,      &
+            np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
       ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
-        CALL depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-                                            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                            nox,noy,noz,.TRUE._idp,.FALSE._idp)
+        CALL depose_jxjyjz_esirkepov_2_2_2( &
+            jx,jx_nguard,jx_nvalid,      &
+            jy,jy_nguard,jy_nvalid,      &
+            jz,jz_nguard,jz_nvalid,      &
+            np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
       ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-        CALL depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-                                            dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                            nox,noy,noz,.TRUE._idp,.FALSE._idp)
+        CALL depose_jxjyjz_esirkepov_3_3_3( &
+            jx,jx_nguard,jx_nvalid,      &
+            jy,jy_nguard,jy_nvalid,      &
+            jz,jz_nguard,jz_nvalid,      &
+            np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
       ELSE
-        CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-             dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-             nox,noy,noz,.TRUE._idp,.FALSE._idp)
+        CALL pxr_depose_jxjyjz_esirkepov_n( &
+            jx,jx_nguard,jx_nvalid,      &
+            jy,jy_nguard,jy_nvalid,      &
+            jz,jz_nguard,jz_nvalid,      &
+            np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+            dt,dx,dy,dz,nox,noy,noz,.TRUE._idp,.FALSE._idp)
       ENDIF
 
     END SELECT
