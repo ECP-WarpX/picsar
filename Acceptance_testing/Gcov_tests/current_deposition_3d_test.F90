@@ -168,8 +168,14 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
   !print*,trim(adjustl(name(i)))
-  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE._idp)
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
+  CALL pxr_depose_jxjyjz_esirkepov_n( &
+          jx,nguard,nvalid,     &
+          jy,nguard,nvalid,     &
+          jz,nguard,nvalid,     &
+          np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+          dt,dx,dy,dz,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE._idp)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   i = i + 1
 
@@ -253,8 +259,14 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
   !print*,trim(adjustl(name(i)))
-  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE._idp)
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
+  CALL pxr_depose_jxjyjz_esirkepov_n( &
+        jx,nguard,nvalid,     &
+        jy,nguard,nvalid,     &
+        jz,nguard,nvalid,     &
+        np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+        dt,dx,dy,dz,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE._idp)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   i = i + 1
 
@@ -334,8 +346,14 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
   !print*,trim(adjustl(name(i)))
-  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE._idp)
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
+  CALL pxr_depose_jxjyjz_esirkepov_n( &
+          jx,nguard,nvalid,     &
+          jy,nguard,nvalid,     &
+          jz,nguard,nvalid,     &
+          np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+          dt,dx,dy,dz,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE._idp)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   i = i + 1
 
