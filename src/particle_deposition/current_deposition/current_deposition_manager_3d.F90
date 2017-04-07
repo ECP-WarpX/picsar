@@ -72,10 +72,9 @@ END SUBROUTINE
 !> Esirkepov subroutine for current deposition on one tile
 !>
 !>
-SUBROUTINE depose_jxjyjz_esirkepov(jx,jy,jz,np, &
+SUBROUTINE depose_jxjyjz_esirkepov(jx,jy,jz,np,     &
     xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-    dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-    nox,noy,noz)
+    dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,nox,noy,noz)
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
@@ -1844,11 +1843,11 @@ DO iz=1,ntilez
                     nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
                   CASE DEFAULT
                     CALL depose_jxjyjz_esirkepov( &
-                    currg%jxtile,currg%jytile,currg%jztile,count,                                         &                                                                  &
-                    curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                                   &
-                    curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,          &
-                    curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,&
-                    curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                &
+                    currg%jxtile, currg%jytile, currg%jztile,                                              &
+                    count, curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                             &
+                    curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,           &
+                    curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min, &
+                    curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                 &
                     nxjg,nyjg,nzjg,noxx,noyy,nozz)
                  END SELECT
             END DO! END LOOP ON SPECIES
@@ -2197,8 +2196,8 @@ DO iz=1,ntilez
                 ENDIF
                 ! Depose current in jtile
                 CALL depose_jxjyjz_esirkepov( &
-                currg%jxtile,currg%jytile,currg%jztile,count,                                         &                                                                  &
-                curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                                   &
+                currg%jxtile, currg%jytile, currg%jztile,                                             &
+                count,curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                             &
                 curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,          &
                 curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,&
                 curr_tile%z_grid_tile_min,dtt,dxx,dyy,dzz,nxc,nyc,nzc,                                &
