@@ -274,8 +274,12 @@ PROGRAM current_deposition_3d_test
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_scalar_2_2_2'
-  CALL depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+  CALL depose_jxjyjz_scalar_2_2_2( &
+       jx,nguard,nvalid,     &
+       jy,nguard,nvalid,     &
+       jz,nguard,nvalid,     &
+       np,xp,yp,zp,uxp,uyp,uzp,    &
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) ;
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -361,8 +365,12 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_scalar_3_3_3'
   !print*,trim(adjustl(name(i)))
-  CALL depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+  CALL depose_jxjyjz_scalar_3_3_3( &
+       jx,nguard,nvalid,     &
+       jy,nguard,nvalid,     &
+       jz,nguard,nvalid,     &
+       np,xp,yp,zp,uxp,uyp,uzp,    &
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
   errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
