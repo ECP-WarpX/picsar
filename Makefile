@@ -24,7 +24,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod
+MODE=debug
 
 # System (SYS)
 # - cori2
