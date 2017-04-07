@@ -159,7 +159,7 @@ def preparse_subroutine_interfaces(listlines_sub):
     listlines_interfaces=[]
     isininterface=[False for _ in range(len(names))]
     for i in range(0,len(names)):
-        [argsname, argstype] = parse_subroutine_args(preprocess_file(listlines_sub[istart[i]:iend[i]+1]))
+        [argsname, argstype, parse_flag] = parse_subroutine_args(preprocess_file(listlines_sub[istart[i]:iend[i]+1]))
         needsinterface=False
         for iargs in range(0, len(argstype)):
             currtype=argstype[iargs]
@@ -766,13 +766,13 @@ def parse_subroutine_blocks(fw,listlines,names,namesmod,istart,iend):
     for iblock in range(0,nblocks):
         print("subroutine "+names[iblock])
         # Parse subroutine args names and types
-        [argsname, argstype] = parse_subroutine_args(listlines[istart[iblock]:iend[iblock]+1])
+        [argsname, argstype, parse_flag] = parse_subroutine_args(listlines[istart[iblock]:iend[iblock]+1])
         parse=True
         for itype in range(0,len(argsname)):
             for inon in range(0,len(nonusedtype)):
                 if (argstype[itype].find(nonusedtype[inon])>=0):
                     parse=False
-        if (parse):
+        if (parse and parse_flag):
             # Write parsed subroutine in .v file
             semicol=""
             if (argsname!=[""]):
@@ -799,8 +799,11 @@ def parse_subroutine_args(listlines):
 
     # Get args types
     argstypes=["" for _ in range(len(argslist))]
+    parse_flag = True
     for i in range(0,len_block):
         curr_line=listlines[i]
+        if curr_line.find("#do not parse") >= 0:
+            parse_flag = False
         idecl=curr_line.find("::")
         if (idecl >= 0):
             [argsname, argstype, initvalue]=parse_decl_line(curr_line)
@@ -816,7 +819,7 @@ def parse_subroutine_args(listlines):
                     argslist[idx]=argsname[ivar] # in Case of array
                     argstypes[idx]=argstype[ivar].replace(" ","")
 
-    return [argslist,argstypes]
+    return [argslist,argstypes,parse_flag]
 ###### ----------------------------------------------------
 
 ###### ----------------------------------------------------
