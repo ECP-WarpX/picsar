@@ -103,7 +103,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
-  INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
+  INTEGER(idp)             :: nxc, nyc, nzc
   INTEGER(idp)             :: nxjg,nyjg,nzjg
   LOGICAL(lp)                   :: isgathered=.FALSE._lp
 
@@ -126,7 +126,7 @@ SUBROUTINE field_gathering_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   !$OMP byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,fieldgathe, &
   !$OMP LVEC_fieldgathe) &
   !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
-  !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
+  !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg, isgathered)
   DO iz=1, ntilez ! LOOP ON TILES
     DO iy=1, ntiley
         DO ix=1, ntilex
@@ -312,7 +312,7 @@ SUBROUTINE geteb3d_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                      nox,noy,noz,bxg,byg,bzg,ll4symtry,l_lower_order_in_v)
       ENDIF
-    
+
 
     ! ______________________________________
     ! Vectorized non efficient field gathering subroutines
