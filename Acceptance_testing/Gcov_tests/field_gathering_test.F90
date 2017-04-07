@@ -539,9 +539,15 @@ PROGRAM field_gathering_3d_test
   bx = 0 ; by = 0 ; bz = 0
 
   t0 = MPI_WTIME()
-  CALL geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+  CALL geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp, &
+     ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz, &
+     exg,nguard,nvalid, &
+	 eyg,nguard,nvalid, &
+	 ezg,nguard,nvalid, &
+	 bxg,nguard,nvalid, &
+	 byg,nguard,nvalid, &
+	 bzg,nguard,nvalid, &
+	 lvect,l_lower_order_in_v)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
