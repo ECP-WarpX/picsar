@@ -580,20 +580,33 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
-SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,&
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,lvect,l_lower_order_in_v)
+SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp, &
+  ex,ey,ez,xmin,ymin,zmin,dx,dy,dz, &
+  exg,exg_nguard,exg_nvalid, &
+  eyg,eyg_nguard,eyg_nvalid, &
+  ezg,ezg_nguard,ezg_nvalid, &
+  l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
   
   USE constants
   IMPLICIT NONE
 
-  INTEGER(idp)                         :: np,nx,ny,nz
-  INTEGER(idp)                         :: nxguard,nyguard,nzguard
+  INTEGER(idp)                         :: np
+  INTEGER(idp), intent(in)             :: exg_nguard(3),exg_nvalid(3),&
+                                          eyg_nguard(3),eyg_nvalid(3),&
+                                          ezg_nguard(3),ezg_nvalid(3)
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp,yp,zp,ex,ey,ez
   LOGICAL(lp)                              :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
+                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
+                              -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
+                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
+                              -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
+                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
+                              -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: jj, kk, ll
@@ -966,19 +979,33 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
-SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,       &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,lvect,l_lower_order_in_v)
+SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp, &
+  bx,by,bz,xmin,ymin,zmin,dx,dy,dz, &
+  bxg,bxg_nguard,bxg_nvalid, &
+  byg,byg_nguard,byg_nvalid, &
+  bzg,bzg_nguard,bzg_nvalid, &
+  l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 
   
   USE constants
   IMPLICIT NONE
-  INTEGER(idp)                         :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp)                         :: np
+  INTEGER(idp), intent(in)                :: bxg_nguard(3),bxg_nvalid(3),&
+                                             byg_nguard(3),byg_nvalid(3),&
+                                             bzg_nguard(3),bzg_nvalid(3)
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp,yp,zp,bx,by,bz
   LOGICAL(lp)                              :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
+                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
+                              -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
+                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
+                              -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
+                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
+                              -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
   REAL(num)                            :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
