@@ -125,7 +125,7 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                                         vz,
                                         gi,
                                         pids)
-                                        
+
         if not lallindomain:
             pxr.particle_bcs()
             aliasparticlearrays()
@@ -426,82 +426,82 @@ class EM3DPXR(EM3DFFT):
         # Global part boundaries
         # Local part boundaries
         # - Xmin
-        if (pxr.pbound_x_min == 3) or (pxr.pbound_x_min==1): 
+        if (pxr.pbound_x_min == 3) or (pxr.pbound_x_min==1):
             pxr.xmin_part=pxr.xmin+pxr.offset_grid_part_x_min
-            if (pxr.xmin_part >= pxr.x_min_local) and (pxr.xmin_part < pxr.x_max_local): 
-                pxr.x_min_boundary_part= 1 
+            if (pxr.xmin_part >= pxr.x_min_local) and (pxr.xmin_part < pxr.x_max_local):
+                pxr.x_min_boundary_part= 1
                 pxr.x_min_local_part=pxr.xmin_part
-            else: 
+            else:
                 pxr.x_min_boundary_part= 0
                 pxr.x_min_local_part = pxr.x_min_local
-        else: 
+        else:
             pxr.xmin_part=pxr.xmin
-            pxr.x_min_boundary_part=pxr.x_min_boundary 
+            pxr.x_min_boundary_part=pxr.x_min_boundary
             pxr.x_min_local_part=pxr.x_min_local
         # - Xmax
-        if (pxr.pbound_x_max == 3) or (pxr.pbound_x_max==1): 
+        if (pxr.pbound_x_max == 3) or (pxr.pbound_x_max==1):
             pxr.xmax_part=pxr.xmax+pxr.offset_grid_part_x_max
-            if (pxr.xmax_part >=  pxr.x_min_local) and (pxr.xmax_part < pxr.x_max_local): 
-                pxr.x_max_boundary_part= 1 
+            if (pxr.xmax_part >=  pxr.x_min_local) and (pxr.xmax_part < pxr.x_max_local):
+                pxr.x_max_boundary_part= 1
                 pxr.x_max_local_part=pxr.xmax_part
-            else: 
+            else:
                 pxr.x_max_boundary_part= 0
                 pxr.x_max_local_part = pxr.x_max_local
-        else: 
+        else:
             pxr.xmax_part=pxr.xmax
-            pxr.x_max_boundary_part=pxr.x_max_boundary 
+            pxr.x_max_boundary_part=pxr.x_max_boundary
             pxr.x_max_local_part=pxr.x_max_local
         # - Ymin
-        if (pxr.pbound_y_min == 3) or (pxr.pbound_y_min==1): 
+        if (pxr.pbound_y_min == 3) or (pxr.pbound_y_min==1):
             pxr.ymin_part=pxr.ymin+pxr.offset_grid_part_y_min
-            if (pxr.ymin_part >=  pxr.y_min_local) and (pxr.ymin_part < pxr.y_max_local): 
-                pxr.y_min_boundary_part= 1 
+            if (pxr.ymin_part >=  pxr.y_min_local) and (pxr.ymin_part < pxr.y_max_local):
+                pxr.y_min_boundary_part= 1
                 pxr.y_min_local_part=pxr.ymin_part
-            else: 
+            else:
                 pxr.y_min_boundary_part= 0
                 pxr.y_min_local_part = pxr.y_min_local
-        else: 
+        else:
             pxr.ymin_part=pxr.ymin
-            pxr.y_min_boundary_part=pxr.y_min_boundary 
+            pxr.y_min_boundary_part=pxr.y_min_boundary
             pxr.y_min_local_part=pxr.y_min_local
         # - Ymax
-        if (pxr.pbound_y_max == 3) or (pxr.pbound_y_max==1): 
+        if (pxr.pbound_y_max == 3) or (pxr.pbound_y_max==1):
             pxr.ymax_part=pxr.ymax+pxr.offset_grid_part_y_max
-            if (pxr.ymax_part >=  pxr.y_min_local) and (pxr.ymax_part < pxr.y_max_local): 
-                pxr.y_max_boundary_part= 1 
+            if (pxr.ymax_part >=  pxr.y_min_local) and (pxr.ymax_part < pxr.y_max_local):
+                pxr.y_max_boundary_part= 1
                 pxr.y_max_local_part=pxr.ymax_part
-            else: 
+            else:
                 pxr.y_max_boundary_part= 0
                 pxr.y_max_local_part = pxr.y_max_local
-        else: 
+        else:
             pxr.ymax_part=pxr.ymax
-            pxr.y_max_boundary_part=pxr.y_max_boundary 
+            pxr.y_max_boundary_part=pxr.y_max_boundary
             pxr.y_max_local_part=pxr.y_max_local
         # - Zmin
-        if (pxr.pbound_z_min == 3) or (pxr.pbound_z_min==1): 
+        if (pxr.pbound_z_min == 3) or (pxr.pbound_z_min==1):
             pxr.zmin_part=pxr.zmin+pxr.offset_grid_part_z_min
-            if (pxr.zmin_part >=  pxr.z_min_local) and (pxr.zmin_part < pxr.z_max_local): 
-                pxr.z_min_boundary_part= 1 
+            if (pxr.zmin_part >=  pxr.z_min_local) and (pxr.zmin_part < pxr.z_max_local):
+                pxr.z_min_boundary_part= 1
                 pxr.z_min_local_part=pxr.zmin_part
-            else: 
+            else:
                 pxr.z_min_boundary_part= 0
                 pxr.z_min_local_part = pxr.z_min_local
-        else: 
+        else:
             pxr.zmin_part=pxr.zmin
-            pxr.z_min_boundary_part=pxr.z_min_boundary 
+            pxr.z_min_boundary_part=pxr.z_min_boundary
             pxr.z_min_local_part=pxr.z_min_local
         # - Zmax
-        if (pxr.pbound_z_max == 3) or (pxr.pbound_z_max==1): 
+        if (pxr.pbound_z_max == 3) or (pxr.pbound_z_max==1):
             pxr.zmax_part=pxr.zmax+pxr.offset_grid_part_z_max
-            if (pxr.zmax_part >=  pxr.z_min_local) and (pxr.zmax_part < pxr.z_max_local): 
-                pxr.z_max_boundary_part= 1 
+            if (pxr.zmax_part >=  pxr.z_min_local) and (pxr.zmax_part < pxr.z_max_local):
+                pxr.z_max_boundary_part= 1
                 pxr.z_max_local_part=pxr.zmax_part
-            else: 
+            else:
                 pxr.z_max_boundary_part= 0
                 pxr.z_max_local_part = pxr.z_max_local
-        else: 
+        else:
             pxr.zmax_part=pxr.zmax
-            pxr.z_max_boundary_part=pxr.z_max_boundary 
+            pxr.z_max_boundary_part=pxr.z_max_boundary
             pxr.z_max_local_part=pxr.z_max_local
 
         # Particle domain extents
