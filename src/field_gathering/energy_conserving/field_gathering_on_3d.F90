@@ -51,18 +51,32 @@
 !
 !> @date
 !> 2015
-SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,       &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      nox,noy,noz,exg,eyg,ezg,l_lower_order_in_v)
+SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp, &
+    ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
+    exg,exg_nguard,exg_nvalid, &
+    eyg,eyg_nguard,eyg_nvalid, &
+    ezg,ezg_nguard,ezg_nvalid, &
+    ll4symtry,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 USE omp_lib
 USE constants
 IMPLICIT NONE
 
-  INTEGER(idp)             :: np,nx,ny,nz
+  INTEGER(idp)             :: np
+  INTEGER(idp), intent(in) :: exg_nguard(3),exg_nvalid(3),&
+                              eyg_nguard(3),eyg_nvalid(3),&
+                              ezg_nguard(3),ezg_nvalid(3)
   INTEGER(idp)             :: nox,noy,noz
-  INTEGER(idp)             :: nxguard,nyguard,nzguard
   REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
+                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
+                              -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
+                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
+                              -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
+                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
+                              -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   LOGICAL(lp)              :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num) :: xmin,ymin,zmin,dx,dy,dz
@@ -355,17 +369,31 @@ END SUBROUTINE pxrgete3d_n_energy_conserving
 !> @brief
 !> Gathering of Magnetic field from Yee grid ("energy conserving") on particles
 !> At arbitrary order. WARNING: Highly unoptimized routine
-SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,    &
-                                      dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      nox,noy,noz,bxg,byg,bzg,l_lower_order_in_v)
+SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
+    bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
+    bxg,bxg_nguard,bxg_nvalid, &
+    byg,byg_nguard,byg_nvalid, &
+    bzg,bzg_nguard,bzg_nvalid, &
+    ll4symtry,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 USE omp_lib
 USE constants
 IMPLICIT NONE
-INTEGER(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+INTEGER(idp) :: np,nox,noy,noz
+INTEGER(idp), intent(in)             :: bxg_nguard(3),bxg_nvalid(3),&
+                                        byg_nguard(3),byg_nvalid(3),&
+                                        bzg_nguard(3),bzg_nvalid(3)
 REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
 LOGICAL(lp)  :: l_lower_order_in_v
-REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
+REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
+                            -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
+                            -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
+REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
+                            -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
+                            -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
+REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
+                            -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
+                            -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
 REAL(num) :: xmin,ymin,zmin,dx,dy,dz
 INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
               ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
@@ -667,16 +695,31 @@ END SUBROUTINE pxrgetb3d_n_energy_conserving
 !
 !> @date
 !> 2015
-subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                       nox,noy,noz,bxg,byg,bzg,l4symtry,l_lower_order_in_v)
+subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
+    bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
+    bxg,bxg_nguard,bxg_nvalid, &
+    byg,byg_nguard,byg_nvalid, &
+    bzg,bzg_nguard,bzg_nvalid, &
+    ll4symtry,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
   use constants
   implicit none
 
-  integer(idp)                     :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  integer(idp)                     :: np,nox,noy,noz
+  INTEGER(idp), intent(in)             :: bxg_nguard(3),bxg_nvalid(3),&
+                                          byg_nguard(3),byg_nvalid(3),&
+                                          bzg_nguard(3),bzg_nvalid(3)
   real(num), dimension(np)         :: xp,yp,zp,bx,by,bz
   LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
+                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
+                              -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
+                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
+                              -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
+                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
+                              -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
   real(num) :: xmin,ymin,zmin,dx,dy,dz
   integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
                   ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
@@ -995,16 +1038,31 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,dx
 !
 !> @date
 !> 2015
-  subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                       nox,noy,noz,exg,eyg,ezg,l4symtry,l_lower_order_in_v)
+  subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
+      ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
+      exg,exg_nguard,exg_nvalid, &
+      eyg,eyg_nguard,eyg_nvalid, &
+      ezg,ezg_nguard,ezg_nvalid, &
+      ll4symtry,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
     use constants
     USE params
     implicit none
-    integer(idp) :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+    integer(idp) :: np,nox,noy,noz
+    INTEGER(idp), intent(in) :: exg_nguard(3),exg_nvalid(3),&
+                                eyg_nguard(3),eyg_nvalid(3),&
+                                ezg_nguard(3),ezg_nvalid(3)
     real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
     LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
-    real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
+    REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
+                                -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
+                                -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
+    REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
+                                -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
+                                -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
+    REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
+                                -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
+                                -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
     real(num) :: xmin,ymin,zmin,dx,dy,dz
     integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
                     ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
