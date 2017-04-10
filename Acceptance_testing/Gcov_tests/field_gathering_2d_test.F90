@@ -203,7 +203,7 @@ PROGRAM field_gathering_3d_test
     exg,nguard,nvalid,                          &
     eyg,nguard,nvalid,                          &
     ezg,nguard,nvalid,                          &
-    .FALSE._idp,.FALSE._idp,l_lower_order_in_v)
+    .FALSE._idp,0_idp,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
   CALL pxr_getb2dxz_n_energy_conserving(          &
@@ -211,7 +211,7 @@ PROGRAM field_gathering_3d_test
     bxg,nguard,nvalid,                          &
     byg,nguard,nvalid,                          &
     bzg,nguard,nvalid,                          &
-    .FALSE._idp,.FALSE._idp,l_lower_order_in_v)
+    .FALSE._idp,0_idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
@@ -331,7 +331,7 @@ PROGRAM field_gathering_3d_test
     exg,nguard,nvalid,                          &
     eyg,nguard,nvalid,                          &
     ezg,nguard,nvalid,                          &
-    .FALSE._idp,.FALSE._idp,l_lower_order_in_v)
+    .FALSE._idp,0_idp,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
   CALL pxr_getb2dxz_n_energy_conserving(          &
@@ -339,7 +339,7 @@ PROGRAM field_gathering_3d_test
     bxg,nguard,nvalid,                          &
     byg,nguard,nvalid,                          &
     bzg,nguard,nvalid,                          &
-    .FALSE._idp,.FALSE._idp,l_lower_order_in_v)
+    .FALSE._idp,0_idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
@@ -440,7 +440,7 @@ PROGRAM field_gathering_3d_test
     exg,nguard,nvalid,                          &
     eyg,nguard,nvalid,                          &
     ezg,nguard,nvalid,                          &
-    .FALSE._idp,.FALSE._idp,l_lower_order_in_v)
+    .FALSE._idp,0_idp,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
   CALL pxr_getb2dxz_n_energy_conserving(          &
@@ -448,7 +448,7 @@ PROGRAM field_gathering_3d_test
     bxg,nguard,nvalid,                          &
     byg,nguard,nvalid,                          &
     bzg,nguard,nvalid,                          &
-    .FALSE._idp,.FALSE._idp,l_lower_order_in_v)
+    .FALSE._idp,0_idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() - t0
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz)
@@ -463,6 +463,7 @@ PROGRAM field_gathering_3d_test
   by = 0
   bz = 0
   t0 = MPI_WTIME()
+  
   nguard = (/ nxguard, nzguard /)
   nvalid = (/ nx+1, nz+1 /)
   CALL pxr_gete2dxz_energy_conserving_scalar_3_3(   &
