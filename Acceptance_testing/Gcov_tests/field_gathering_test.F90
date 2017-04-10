@@ -201,12 +201,14 @@ PROGRAM field_gathering_3d_test
   namee(i) = 'pxr_gete3d_n_energy_conserving'
   nameb(i) = 'pxr_getb3d_n_energy_conserving'
   t0 = MPI_WTIME()
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
   CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
       ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,1_idp,1_idp,1_idp, &
       exg,nguard,nvalid, &
       eyg,nguard,nvalid, &
       ezg,nguard,nvalid, &
-      .FALSE.,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v)
   te(i) = MPI_WTIME() - t0
 
   t0 = MPI_WTIME()
@@ -215,7 +217,7 @@ PROGRAM field_gathering_3d_test
       bxg,nguard,nvalid, &
       byg,nguard,nvalid, &
       bzg,nguard,nvalid, &
-      .FALSE.,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME()-t0
 
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) ;
@@ -324,7 +326,6 @@ PROGRAM field_gathering_3d_test
   nguard = (/ nxguard, nyguard, nzguard /)
   nvalid = (/ nx+1, ny+1, nz+1 /)
   t0 = MPI_WTIME()
-
   CALL geteb3d_energy_conserving_vecV4_1_1_1(np,xp,yp,zp, &
          ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz, &
          exg,nguard,nvalid, &
@@ -461,16 +462,18 @@ PROGRAM field_gathering_3d_test
       exg,nguard,nvalid, &
       eyg,nguard,nvalid, &
       ezg,nguard,nvalid, &
-      .FALSE.,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
   CALL pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
       bx,by,bz,xmin,ymin,zmin,dx,dy,dz,2_idp,2_idp,2_idp, &
       bxg,nguard,nvalid, &
       byg,nguard,nvalid, &
       bzg,nguard,nvalid, &
-      .FALSE.,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) ;
@@ -484,6 +487,8 @@ PROGRAM field_gathering_3d_test
   bx = 0 ; by = 0 ; bz = 0
 
   t0 = MPI_WTIME()
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
   CALL gete3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp, &
     ex,ey,ez,xmin,ymin,zmin,dx,dy,dz, &
     exg,nguard,nvalid, &
@@ -551,6 +556,8 @@ PROGRAM field_gathering_3d_test
   bx = 0 ; by = 0 ; bz = 0
 
   t0 = MPI_WTIME()
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
   CALL geteb3d_energy_conserving_vecV4_2_2_2(np,xp,yp,zp, &
      ex,ey,ez,bx,by,bz,xmin,ymin,zmin,dx,dy,dz, &
      exg,nguard,nvalid, &
@@ -644,6 +651,8 @@ PROGRAM field_gathering_3d_test
   ex = 0 ; ey = 0 ; ez = 0
   bx = 0 ; by = 0 ; bz = 0
 
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
   t0 = MPI_WTIME()
   CALL gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -714,13 +723,15 @@ PROGRAM field_gathering_3d_test
   !write(0,*) 'test reference: pxr_gete3d_n_energy_conserving'
   namee(i) = 'pxr_gete3d_n_energy_conserving'
   nameb(i) = 'pxr_getb3d_n_energy_conserving'
+  nguard = (/ nxguard, nyguard, nzguard /)
+  nvalid = (/ nx+1, ny+1, nz+1 /)
   t0 = MPI_WTIME()
   CALL pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
       ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,3_idp,3_idp,3_idp, &
       exg,nguard,nvalid, &
       eyg,nguard,nvalid, &
       ezg,nguard,nvalid, &
-      .FALSE.,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
@@ -729,7 +740,7 @@ PROGRAM field_gathering_3d_test
       bxg,nguard,nvalid, &
       byg,nguard,nvalid, &
       bzg,nguard,nvalid, &
-      .FALSE.,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
