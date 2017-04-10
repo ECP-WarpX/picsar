@@ -56,7 +56,7 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp, &
     exg,exg_nguard,exg_nvalid, &
     eyg,eyg_nguard,eyg_nvalid, &
     ezg,ezg_nguard,ezg_nvalid, &
-    ll4symtry,l_lower_order_in_v) !#do not wrap
+    l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 USE omp_lib
 USE constants
@@ -78,7 +78,6 @@ IMPLICIT NONE
                               -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
                               -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   LOGICAL(lp)              :: l_lower_order_in_v
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   REAL(num) :: xmin,ymin,zmin,dx,dy,dz
   INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
   ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
@@ -374,7 +373,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
     bxg,bxg_nguard,bxg_nvalid, &
     byg,byg_nguard,byg_nvalid, &
     bzg,bzg_nguard,bzg_nvalid, &
-    ll4symtry,l_lower_order_in_v) !#do not wrap
+    l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 USE omp_lib
 USE constants
@@ -700,7 +699,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
     bxg,bxg_nguard,bxg_nvalid, &
     byg,byg_nguard,byg_nvalid, &
     bzg,bzg_nguard,bzg_nvalid, &
-    ll4symtry,l_lower_order_in_v) !#do not wrap
+    l4symtry,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
   use constants
   implicit none
@@ -1043,7 +1042,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
       exg,exg_nguard,exg_nvalid, &
       eyg,eyg_nguard,eyg_nvalid, &
       ezg,ezg_nguard,ezg_nvalid, &
-      ll4symtry,l_lower_order_in_v) !#do not wrap
+      l4symtry,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
     use constants
     USE params
