@@ -56,7 +56,7 @@ SUBROUTINE depose_jxjyjz_2d(jx,jy,jz,np,   &
     nguard = (/ nxguard, nzguard /)
     nvalid = (/ nx+1, nz+1 /)
 
-    call depose_jxjyjz_generic_2d(                     &
+    call depose_jxjyjz_generic_2d(                   &
        jx,nguard,nvalid,                             &
        jy,nguard,nvalid,                             &
        jz,nguard,nvalid,                             &
@@ -130,8 +130,12 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
 	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
             lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE
-        CALL pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-            gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+        CALL pxr_depose_jxjyjz_esirkepov2d_n(                  &
+            jx,jx_nguard,jx_nvalid,                            &
+            jy,jy_nguard,jy_nvalid,                            &
+            jz,jz_nguard,jz_nvalid,                            &
+            np,xp,yp,zp,uxp,uyp,uzp,                           &
+            gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
             nox,noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ENDIF
 
