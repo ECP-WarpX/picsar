@@ -171,7 +171,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ! Interfaces for func_order
   INTERFACE
 
-  SUBROUTINE depose_jxjyjz_generic_2d(jx,jy,jz,np,  & !#do not parse
+  SUBROUTINE depose_jxjyjz_2d(jx,jy,jz,np,  & !#do not parse
       xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,    & !#do not parse
       dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz,lvect)   !#do not parse
       USE constants
@@ -232,7 +232,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ELSE IF (currdepo.EQ.1) THEN
 
     IF ((nox.eq.noz)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_generic_2d,jx,jy,jz,&
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_2d,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order n
     ELSE
@@ -245,7 +245,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   ELSE
 
     IF ((nox.eq.noz)) THEN
-      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_generic_2d,jx,jy,jz,&
+      CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_2d,jx,jy,jz,&
                      nx,ny,nz,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,lvec_curr_depo)
     ! Order n
     ELSE

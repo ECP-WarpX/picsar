@@ -726,14 +726,28 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 !> @date
 !> 2015
 !
-SUBROUTINE depose_jxjyjz_scalar_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,&
-                                      xmin,ymin,zmin, &
-                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+SUBROUTINE depose_jxjyjz_scalar_2_2_2( &
+    jx,jx_nguard,jx_nvalid, &
+    jy,jy_nguard,jy_nvalid, &
+    jz,jz_nguard,jz_nvalid, &
+    np,xp,yp,zp,uxp,uyp,uzp,&
+    gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !#do not wrap
 ! ______________________________________________________________________________
     USE constants
     IMPLICIT NONE
-    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-    REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+    INTEGER(idp) :: np
+    INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+                                jy_nguard(3), jy_nvalid(3), &
+                                jz_nguard(3), jz_nvalid(3)
+    REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                   -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+                                   -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+    REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+                                   -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+    REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+                                   -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, gaminv, w
     REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
     REAL(num) :: dxi,dyi,dzi,xint,yint,zint
@@ -1663,15 +1677,29 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 !
 !> @date
 !> Creation 2015
-SUBROUTINE depose_jxjyjz_scalar_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q, &
-                                      xmin,ymin,zmin, &
-                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard)
+SUBROUTINE depose_jxjyjz_scalar_3_3_3( &
+    jx,jx_nguard,jx_nvalid, &
+    jy,jy_nguard,jy_nvalid, &
+    jz,jz_nguard,jz_nvalid, &
+    np,xp,yp,zp,uxp,uyp,uzp,&
+    gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !#do not wrap
 ! ______________________________________________________________________________
 
     USE constants
     IMPLICIT NONE
-    INTEGER(idp) :: np,nx,ny,nz,nxguard,nyguard,nzguard
-    REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+    INTEGER(idp) :: np
+    INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+                                jy_nguard(3), jy_nvalid(3), &
+                                jz_nguard(3), jz_nvalid(3)
+    REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                   -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+                                   -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+    REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+                                   -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+    REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+                                   -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
     REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
     REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
     REAL(num) :: dxi,dyi,dzi,xint,yint,zint, &

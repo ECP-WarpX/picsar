@@ -170,13 +170,19 @@ nzguard = exg_nguard(2)
 
 
     !!! --- Gather electric field on particles
-    CALL pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,&
-                                          dx,dz,nx,nz,nxguard,nzguard, &
-                                          nox,noz,exg,eyg,ezg,l4symtry,.FALSE._idp,l_lower_order_in_v)
+    CALL pxr_gete2dxz_n_energy_conserving(                &
+      np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
+      exg,exg_nguard,exg_nvalid,                          &
+      eyg,eyg_nguard,eyg_nvalid,                          &
+      ezg,ezg_nguard,ezg_nvalid,                          &
+      l4symtry,.FALSE._idp,l_lower_order_in_v)
     !!! --- Gather magnetic fields on particles
-    CALL pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,&
-                                          dx,dz,nx,nz,nxguard,nzguard, &
-                                          nox,noz,bxg,byg,bzg,l4symtry,.FALSE._idp,l_lower_order_in_v)
+    CALL pxr_getb2dxz_n_energy_conserving(          &
+      np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
+      bxg,bxg_nguard,bxg_nvalid,                          &
+      byg,byg_nguard,byg_nvalid,                          &
+      bzg,bzg_nguard,bzg_nvalid,                          &
+      l4symtry,.FALSE._idp,l_lower_order_in_v)
 
   ! ______________________________________________
   ! Arbitrary order, scalar subroutines
@@ -197,14 +203,19 @@ nzguard = exg_nguard(2)
     ELSE
 
       !!! --- Gather electric field on particles
-      CALL pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,&
-                                             dx,dz,nx,nz,nxguard,nzguard, &
-                                             nox,noz,exg,eyg,ezg,l4symtry,.FALSE._idp,l_lower_order_in_v)
+      CALL pxr_gete2dxz_n_energy_conserving(                &
+        np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
+        exg,exg_nguard,exg_nvalid,                          &
+        eyg,eyg_nguard,eyg_nvalid,                          &
+        ezg,ezg_nguard,ezg_nvalid,                          &
+        l4symtry,.FALSE._idp,l_lower_order_in_v)
       !!! --- Gather magnetic fields on particles
-      CALL pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,&
-                                            dx,dz,nx,nz,nxguard,nzguard, &
-                                            nox,noz,bxg,byg,bzg,l4symtry,.FALSE._idp,l_lower_order_in_v)
-
+      CALL pxr_getb2dxz_n_energy_conserving(          &
+        np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
+        bxg,bxg_nguard,bxg_nvalid,                          &
+        byg,byg_nguard,byg_nvalid,                          &
+        bzg,bzg_nguard,bzg_nvalid,                          &
+        l4symtry,.FALSE._idp,l_lower_order_in_v)
     ENDIF
 
   ! ________________________________________
@@ -252,14 +263,19 @@ nzguard = exg_nguard(2)
     ELSE
 
       !!! --- Gather electric field on particles
-      CALL pxr_gete2dxz_n_energy_conserving(np,xp,yp,zp,ex,ey,ez,xmin,zmin,&
-                                             dx,dz,nx,nz,nxguard,nzguard, &
-                                             nox,noz,exg,eyg,ezg,l4symtry,.FALSE._idp,l_lower_order_in_v)
+      CALL pxr_gete2dxz_n_energy_conserving(                &
+        np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
+        exg,exg_nguard,exg_nvalid,                          &
+        eyg,eyg_nguard,eyg_nvalid,                          &
+        ezg,ezg_nguard,ezg_nvalid,                          &
+        l4symtry,.FALSE._idp,l_lower_order_in_v)
       !!! --- Gather magnetic fields on particles
-     CALL pxr_getb2dxz_n_energy_conserving(np,xp,yp,zp,bx,by,bz,xmin,zmin,&
-                                             dx,dz,nx,nz,nxguard,nzguard, &
-                                            nox,noz,bxg,byg,bzg,l4symtry,.FALSE._idp,l_lower_order_in_v)
-
+     CALL pxr_getb2dxz_n_energy_conserving(                 &
+        np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
+        bxg,bxg_nguard,bxg_nvalid,                          &
+        byg,byg_nguard,byg_nvalid,                          &
+        bzg,bzg_nguard,bzg_nvalid,                          &
+        l4symtry,.FALSE._idp,l_lower_order_in_v)
     ENDIF
   ENDIF
 END SUBROUTINE
