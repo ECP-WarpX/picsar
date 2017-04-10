@@ -60,7 +60,7 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3(&
   exg,exg_nguard,exg_nvalid,                         &
   eyg,eyg_nguard,eyg_nvalid,                         &
   ezg,ezg_nguard,ezg_nvalid,                         &
-  l_lower_order_in_v)
+  l_lower_order_in_v) !#do not wrap
 
   use constants
   implicit none
@@ -611,7 +611,7 @@ subroutine pxr_getb2dxz_energy_conserving_scalar_3_3(&
   bxg,bxg_nguard,bxg_nvalid,                         &
   byg,byg_nguard,byg_nvalid,                         &
   bzg,bzg_nguard,bzg_nvalid,                         &
-  l_lower_order_in_v)
+  l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 
   use constants
@@ -1166,27 +1166,45 @@ end subroutine pxr_getb2dxz_energy_conserving_vect_3_3
 !> @param[in] lvect the vector length of the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_geteb2dxz_energy_conserving_vect_3_3(np,xp,zp,ex,ey,ez, &
-                                                    bx,by,bz,xmin,zmin,dx,dz,nx,nz,&
-                                                    nxguard,nzguard, &
-                                                    exg,eyg,ezg, &
-                                                    bxg,byg,bzg,lvect,l_lower_order_in_v)
+subroutine pxr_geteb2dxz_energy_conserving_vect_3_3(        &
+        np,xp,zp,ex,ey,ez,bx,by,bz,xmin,zmin,dx,dz,         &
+        exg,exg_nguard,exg_nvalid,                          &
+        eyg,eyg_nguard,eyg_nvalid,                          &
+        ezg,ezg_nguard,ezg_nvalid,                          &
+        bxg,bxg_nguard,bxg_nvalid,                          &
+        byg,byg_nguard,byg_nvalid,                          &
+        bzg,bzg_nguard,bzg_nvalid,                          &
+        lvect,l_lower_order_in_v) !#do not wrap
 ! ______________________________________________________________________________
 
   use constants
   implicit none
 
   ! __ Parameter declaration ___________________________________________
-  integer(idp), intent(in)                :: np,nx,nz,nxguard,nzguard
+  integer(idp), intent(in)                :: np
+  integer(idp), intent(IN)      :: exg_nguard(2),exg_nvalid(2),&
+                                   eyg_nguard(2),eyg_nvalid(2),&
+                                   ezg_nguard(2),ezg_nvalid(2),&
+                                   bxg_nguard(2),bxg_nvalid(2),&
+                                   byg_nguard(2),byg_nvalid(2),&
+                                   bzg_nguard(2),bzg_nvalid(2)
   integer(idp), intent(in)                :: lvect
   real(num), dimension(np), intent(in)    :: xp,zp
   real(num), dimension(np), intent(inout) :: ex,ey,ez
   real(num), dimension(np), intent(inout) :: bx,by,bz
   logical(idp), intent(in)                :: l_lower_order_in_v
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
-                                          :: exg,eyg,ezg
-  real(num), dimension(-nxguard:nx+nxguard,1,-nzguard:nz+nzguard), intent(in) &
-                                          :: bxg,byg,bzg
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,1, &
+                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,1, &
+                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,1, &
+                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,1, &
+                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,1, &
+                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,1, &
+                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
 
   real(num)                          :: xmin,zmin,dx,dz
   integer(idp)                       :: ip, j, l
