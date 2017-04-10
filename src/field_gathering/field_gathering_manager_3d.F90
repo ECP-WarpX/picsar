@@ -350,7 +350,7 @@ SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
 
   IF (np .EQ. 0_idp) RETURN
 
-  #if defined(DEV)
+#if defined(DEV)
   ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard
   ! for compatibility with the DEV routines
   integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
@@ -360,7 +360,7 @@ SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   nxguard = exg_nguard(1)
   nyguard = exg_nguard(2)
   nzguard = exg_nguard(3)
-  #endif
+#endif
 
   SELECT CASE(field_gathe_algo)
 
