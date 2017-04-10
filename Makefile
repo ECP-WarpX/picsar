@@ -149,6 +149,11 @@ else ifeq ($(SYS),cori2)
 		COMP=none
 		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
 		LARCH=
+  	else ifeq ($(MODE),debug_spectral)
+		APPNAME=picsar_cori2_debug
+		COMP=none
+		FARGS= -g -O3 -D DEBUG=0 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback
+		LARCH=
 	else ifeq ($(MODE),debug)
 		APPNAME=picsar_cori2_debug
 		COMP=none
@@ -314,7 +319,7 @@ endif
 #-include $(FDEPT)
 # ________________________________________________________
 
-ifeq ($(MODE),prod_spectral)
+ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 	FARGS += -I$(FFTW3_LIB)/include
 	LDFLAGS += -L$(FFTW3_LIB)/lib -lfftw3 -lfftw3_omp
 endif
@@ -459,7 +464,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
-else ifeq ($(MODE),prod_spectral)
+else ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 build:$(SRCDIR)/modules/modules.o \
     	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
     	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
