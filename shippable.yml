@@ -6,6 +6,12 @@ build:
     pull: true
 
   ci:
+    # Install dependencies
+    - pip install matplotlib pytest
+    # Get the latest version of warp
+    - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
+    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
+
     # Compile the unit tests
     - make build_test
     # Run the unit test
