@@ -174,7 +174,7 @@ PROGRAM current_deposition_3d_test
              jz,jz_nguard,jz_nvalid,                            &
              np,xp,yp,zp,uxp,uyp,uzp,                           &
              gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
-             1_idp,1_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+             1_idp,1_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	i = i + 1
@@ -228,7 +228,7 @@ PROGRAM current_deposition_3d_test
              jz,jz_nguard,jz_nvalid,                            &
              np,xp,yp,zp,uxp,uyp,uzp,                           &
              gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
-             2_idp,2_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+             2_idp,2_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	i = i + 1
@@ -280,7 +280,7 @@ PROGRAM current_deposition_3d_test
              jz,jz_nguard,jz_nvalid,                            &
              np,xp,yp,zp,uxp,uyp,uzp,                           &
              gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
-             3_idp,3_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+             3_idp,3_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	i = i + 1

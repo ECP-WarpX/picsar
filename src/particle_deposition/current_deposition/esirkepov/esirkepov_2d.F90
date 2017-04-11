@@ -80,7 +80,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(                   &
 ! ______________________________________________________________________________
    use constants
    implicit none
-   integer(idp) :: np,nox,noz
+   integer(idp) :: np,nox,noz,type_rz_depose
    INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), &
                                             jy_nguard(2), jy_nvalid(2), &
                                             jz_nguard(2), jz_nvalid(2)
