@@ -23,6 +23,8 @@ build:
     - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/python_bin:$PYTHONPATH"
     - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/utils/postprocessing:$PYTHONPATH"
     - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/python_libs:$PYTHONPATH"
+    # Install matplotlib for compatibility
+    - pip install matplotlib
     # Run the tests for Picsar Fortran
     - cd Acceptance_testing/Fortran_tests/test_plasma_drift
     - py.test -s --ttest=1 --trun=1 --tshow=0
