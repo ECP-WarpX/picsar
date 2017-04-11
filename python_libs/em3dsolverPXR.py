@@ -135,13 +135,13 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
             if top.yoldpid > 0: pid[:,top.yoldpid-1] = y
             if top.zoldpid > 0: pid[:,top.zoldpid-1] = z
             if lmomentum:
-                if top.vxoldpid > 0: pid[:,top.vxoldpid-1] = vx
-                if top.vyoldpid > 0: pid[:,top.vyoldpid-1] = vy
-                if top.vzoldpid > 0: pid[:,top.vzoldpid-1] = vz
+                if top.uxoldpid > 0: pid[:,top.uxoldpid-1] = vx
+                if top.uyoldpid > 0: pid[:,top.uyoldpid-1] = vy
+                if top.uzoldpid > 0: pid[:,top.uzoldpid-1] = vz
             else:
-                if top.vxoldpid > 0: pid[:,top.vxoldpid-1] = vx/gi
-                if top.vyoldpid > 0: pid[:,top.vyoldpid-1] = vy/gi
-                if top.vzoldpid > 0: pid[:,top.vzoldpid-1] = vz/gi
+                if top.uxoldpid > 0: pid[:,top.uxoldpid-1] = vx/gi
+                if top.uyoldpid > 0: pid[:,top.uyoldpid-1] = vy/gi
+                if top.uzoldpid > 0: pid[:,top.uzoldpid-1] = vz/gi
             
         pxr.py_add_particles_to_species(self.pxr_species_array, nps0,pxr.npid,
                                         x,
