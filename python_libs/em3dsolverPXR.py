@@ -93,7 +93,7 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                          pidpairs=None):
         nps0 = x.size
         pids = np.zeros([nps0,pxr.npid])
-      
+
         # --- Load in any pid data passed in
         if pidpairs is None:
             if top.wpid>0:
@@ -123,26 +123,21 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
         if lnewparticles:
             # --- Set time of creation
             if top.tbirthpid > 0:
-                pid[:,top.tbirthpid-1] = top.time
-
-            # --- Set weights
-            if w is not None and top.wpid > 0:
-                pid[:,top.wpid-1] = array(w)*ones(maxlen,'d')
-            # --- Note that ssn is set in addpart
+                pids[:,top.tbirthpid-1] = top.time
 
             # --- Set xyz old
-            if top.xoldpid > 0: pid[:,top.xoldpid-1] = x
-            if top.yoldpid > 0: pid[:,top.yoldpid-1] = y
-            if top.zoldpid > 0: pid[:,top.zoldpid-1] = z
+            if top.xoldpid > 0: pids[:,top.xoldpid-1] = x
+            if top.yoldpid > 0: pids[:,top.yoldpid-1] = y
+            if top.zoldpid > 0: pids[:,top.zoldpid-1] = z
             if lmomentum:
-                if top.uxoldpid > 0: pid[:,top.uxoldpid-1] = vx
-                if top.uyoldpid > 0: pid[:,top.uyoldpid-1] = vy
-                if top.uzoldpid > 0: pid[:,top.uzoldpid-1] = vz
+                if top.uxoldpid > 0: pids[:,top.uxoldpid-1] = vx
+                if top.uyoldpid > 0: pids[:,top.uyoldpid-1] = vy
+                if top.uzoldpid > 0: pids[:,top.uzoldpid-1] = vz
             else:
-                if top.uxoldpid > 0: pid[:,top.uxoldpid-1] = vx/gi
-                if top.uyoldpid > 0: pid[:,top.uyoldpid-1] = vy/gi
-                if top.uzoldpid > 0: pid[:,top.uzoldpid-1] = vz/gi
-            
+                if top.uxoldpid > 0: pids[:,top.uxoldpid-1] = vx/gi
+                if top.uyoldpid > 0: pids[:,top.uyoldpid-1] = vy/gi
+                if top.uzoldpid > 0: pids[:,top.uzoldpid-1] = vz/gi
+
         pxr.py_add_particles_to_species(self.pxr_species_array, nps0,pxr.npid,
                                         x,
                                         y,
