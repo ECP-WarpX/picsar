@@ -143,6 +143,36 @@ END SUBROUTINE
 
 ! ______________________________________________________________________________
 !> @brief
+!> Esirkepov subroutine for current deposition on one tile
+!>
+!>
+SUBROUTINE depose_jxjyjz_esirkepov_2d(jx,jy,jz,np,   &
+    xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,     &
+    dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz)
+      USE constants
+      IMPLICIT NONE
+      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard
+      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
+      real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
+      real(num)                             :: q,dt,dx,dz,xmin,zmin
+
+      ! Build array of guard cells and valid cells, to pass them to the generic routine
+      integer(idp)                       :: nguard(2), nvalid(2)
+      nguard = (/ nxguard, nzguard /)
+      nvalid = (/ nx+1, nz+1 /)
+
+      CALL pxr_depose_jxjyjz_esirkepov2d_n(                 &
+          jx,nguard,nvalid,                                  &
+          jy,nguard,nvalid,                                  &
+          jz,nguard,nvalid,                                  &
+          np,xp,yp,zp,uxp,uyp,uzp,                           &
+          gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
+          nox,noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+
+END SUBROUTINE
+
+! ______________________________________________________________________________
+!> @brief
 !> Main subroutine for the current deposition called in submain in 2d.
 
 !> @details
