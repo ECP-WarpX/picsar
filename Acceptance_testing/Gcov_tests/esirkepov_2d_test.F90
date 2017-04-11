@@ -167,6 +167,8 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_n'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
   CALL  pxr_depose_jxjyjz_esirkepov2d_n(                        &
              jx,nguard,nvalid,                            &
@@ -221,6 +223,8 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_n'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
   CALL  pxr_depose_jxjyjz_esirkepov2d_n(                        &
              jx,nguard,nvalid,                            &
@@ -238,6 +242,8 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_2_2'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
 	CALL pxr_depose_jxjyjz_esirkepov2d_2_2( &
         jx,nguard,nvalid, &
@@ -273,6 +279,8 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_n'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
   CALL  pxr_depose_jxjyjz_esirkepov2d_n(                        &
              jx,nguard,nvalid,                            &
