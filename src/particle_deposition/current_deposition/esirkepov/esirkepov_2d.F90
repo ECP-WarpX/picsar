@@ -89,7 +89,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n(                   &
     REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
                                    -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
     REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
-                                   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )   real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+                                   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
    real(num), dimension(np) :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
    real(num)    :: q,dt,dx,dz,xmin,zmin
    LOGICAL(lp)  :: l_particles_weight,l4symtry,l_2drz
