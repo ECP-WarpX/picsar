@@ -89,9 +89,11 @@ except:
 def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                          lallindomain=False,
                          lmomentum=False,
+                         lnewparticles=True,
                          pidpairs=None):
         nps0 = x.size
         pids = np.zeros([nps0,pxr.npid])
+      
         # --- Load in any pid data passed in
         if pidpairs is None:
             if top.wpid>0:
@@ -116,6 +118,31 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
             vx = array(vx)*ones(nps0,'d')/gi
             vy = array(vy)*ones(nps0,'d')/gi
             vz = array(vz)*ones(nps0,'d')/gi
+
+
+        if lnewparticles:
+            # --- Set time of creation
+            if top.tbirthpid > 0:
+                pid[:,top.tbirthpid-1] = top.time
+
+            # --- Set weights
+            if w is not None and top.wpid > 0:
+                pid[:,top.wpid-1] = array(w)*ones(maxlen,'d')
+            # --- Note that ssn is set in addpart
+
+            # --- Set xyz old
+            if top.xoldpid > 0: pid[:,top.xoldpid-1] = x
+            if top.yoldpid > 0: pid[:,top.yoldpid-1] = y
+            if top.zoldpid > 0: pid[:,top.zoldpid-1] = z
+            if lmomentum:
+                if top.uxoldpid > 0: pid[:,top.uxoldpid-1] = vx
+                if top.uyoldpid > 0: pid[:,top.uyoldpid-1] = vy
+                if top.uzoldpid > 0: pid[:,top.uzoldpid-1] = vz
+            else:
+                if top.uxoldpid > 0: pid[:,top.uxoldpid-1] = vx/gi
+                if top.uyoldpid > 0: pid[:,top.uyoldpid-1] = vy/gi
+                if top.uzoldpid > 0: pid[:,top.uzoldpid-1] = vz/gi
+            
         pxr.py_add_particles_to_species(self.pxr_species_array, nps0,pxr.npid,
                                         x,
                                         y,
@@ -1326,6 +1353,10 @@ class EM3DPXR(EM3DFFT):
             if l_pxr:
                 # Particle pusher
                 tdebpart=MPI.Wtime()
+                if (self.l_debug): print("Call record_old_positions()")
+                for i,s in enumerate(self.listofallspecies):
+                    for pg in s.flatten(s.pgroups):
+                        self.record_old_positions(0,pg)
                 if (self.l_debug): print("Call pxr.pxrpush_particles_part2()")
                 pxr.pxrpush_particles_part2()
                 tendpart=MPI.Wtime()
@@ -1350,6 +1381,7 @@ class EM3DPXR(EM3DFFT):
                 for i,s in enumerate(self.listofallspecies):
                     for pg in s.flatten(s.pgroups):
                         self.push_velocity_second_half(0,pg)
+                        self.record_old_positions(0,pg)
                         self.push_positions(0,pg)
                         particleboundaries3d(pg,-1,False)
         else:
@@ -1358,6 +1390,10 @@ class EM3DPXR(EM3DFFT):
                 if (self.l_debug): print("Call pxr.field_gathering_plus_particle_pusher()")
                 tdebpart=MPI.Wtime()
                 #pxr.push_particles()
+                if (self.l_debug): print("Call record_old_positions()")
+                for i,s in enumerate(self.listofallspecies):
+                    for pg in s.flatten(s.pgroups):
+                        self.record_old_positions(0,pg)
                 pxr.field_gathering_plus_particle_pusher()
                 tendpart=MPI.Wtime()
                 pxr.local_time_part=pxr.local_time_part+(tendpart-tdebpart)
@@ -1382,6 +1418,7 @@ class EM3DPXR(EM3DFFT):
                     for pg in s.flatten(s.pgroups):
                         tendpart=MPI.Wtime()
                         self.push_velocity_full(0,pg)
+                        self.record_old_positions(0,pg)
                         self.push_positions(0,pg)
                         tendpart=MPI.Wtime()
                         self.time_stat_loc_array[0] += (tendpart-tdebpart)
