@@ -96,15 +96,6 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
     real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
     real(num)                             :: q,dt,dx,dz,xmin,zmin
 
-    ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
-    ! and for compatibility with automated tests, although they will not be used
-    ! in the future
-    integer(idp) :: nx, nz, nxguard, nzguard
-    nx = jx_nvalid(1)-1
-    nz = jx_nvalid(2)-1
-    nxguard = jx_nguard(1)
-    nzguard = jx_nguard(2)
-
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
         CALL pxr_depose_jxjyjz_esirkepov2d_1_1(                &
             jx,jx_nguard,jx_nvalid,                            &

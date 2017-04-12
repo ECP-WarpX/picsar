@@ -153,15 +153,6 @@ SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
                               -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
 
-! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
-! and for compatibility with automated tests, although they will not be used
-! in the future
-integer(idp) :: nx, nz, nxguard, nzguard
-nx = exg_nvalid(1)-1
-nz = exg_nvalid(2)-1
-nxguard = exg_nguard(1)
-nzguard = exg_nguard(2)
-
   IF (field_gathe_algo.lt.0) return
 
   ! ______________________________________________
