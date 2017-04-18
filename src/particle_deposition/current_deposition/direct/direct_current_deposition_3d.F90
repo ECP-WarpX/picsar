@@ -296,7 +296,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( &
   REAL(num)                :: x,y,z,xmid,ymid,zmid,invvol, dts2dx, dts2dy, dts2dz
 
   INTEGER(idp)                    :: j,k,l,j0,k0,l0,ip, NCELLS, ic
-  INTEGER(idp)                    :: nnx, nnxy, n,nn,nv
+  INTEGER(idp)                    :: n,nn,nv
   REAL(num)                       :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
   INTEGER(idp)                    :: mxoff(1:8), myoff(1:8), mzoff(1:8)
   INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
