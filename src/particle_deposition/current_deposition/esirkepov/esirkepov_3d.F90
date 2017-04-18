@@ -67,20 +67,32 @@
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
 !>
-SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      nox,noy,noz,l_particles_weight,l4symtry)
+SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( &
+    jx,jx_nguard,jx_nvalid,      &
+    jy,jy_nguard,jy_nvalid,      &
+    jz,jz_nguard,jz_nvalid,      &
+    np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !#do not wrap
 ! ______________________________________________________________________________
-  
+
   USE constants
   IMPLICIT NONE
 
   ! Input/output parameters
-  INTEGER(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+  INTEGER(idp)             :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+                              jy_nguard(3), jy_nvalid(3), &
+                              jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                 -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+                                 -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                 -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+                                 -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                 -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+                                 -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
   REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-  LOGICAL(lp)              :: l_particles_weight,l4symtry
 
   ! Internal parameters
   REAL(num)                                :: dxi,dyi,dzi,xint,yint,zint
@@ -1825,15 +1837,28 @@ END SUBROUTINE
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
 !>
-SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      nox,noy,noz,l_particles_weight,l4symtry)
+SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( &
+    jx,jx_nguard,jx_nvalid,      &
+    jy,jy_nguard,jy_nvalid,      &
+    jz,jz_nguard,jz_nvalid,      &
+    np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !#do not wrap
 ! ______________________________________________________________________________
-  
+
   USE constants
   IMPLICIT NONE
-  INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+  INTEGER :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+                              jy_nguard(3), jy_nvalid(3), &
+                              jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                 -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+                                 -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                 -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+                                 -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                 -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+                                 -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
   REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
   REAL(num) :: dxi,dyi,dzi,xint,yint,zint
@@ -1849,7 +1874,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv
   REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
   INTEGER :: iixp0,ijxp0,ikxp0,iixp,ijxp,ikxp,ip,dix,diy,diz,i,j,k,ic,jc,kc
   INTEGER :: ixmin, ixmax, iymin, iymax, izmin, izmax
-  LOGICAL(lp)  :: l_particles_weight,l4symtry
 
   ! PARAMETER INIT
   dxi = 1.0_num/dx
@@ -2005,7 +2029,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
                                       nox,noy,noz,l_particles_weight,l4symtry)
 ! ______________________________________________________________________________
-  
+
   USE constants
   IMPLICIT NONE
 
@@ -3301,20 +3325,31 @@ END SUBROUTINE
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
 !>
-SUBROUTINE depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-                                      dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      nox,noy,noz,l_particles_weight,l4symtry)
+SUBROUTINE depose_jxjyjz_esirkepov_3_3_3( &
+    jx,jx_nguard,jx_nvalid,      &
+    jy,jy_nguard,jy_nvalid,      &
+    jz,jz_nguard,jz_nvalid,      &
+    np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !#do not wrap
 ! ______________________________________________________________________________
-  
+
   USE constants
   IMPLICIT NONE
 
-  INTEGER :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+  INTEGER :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+                              jy_nguard(3), jy_nvalid(3), &
+                              jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                 -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+                                 -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                 -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+                                 -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                 -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+                                 -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
   REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
-  LOGICAL(lp)  :: l_particles_weight,l4symtry
-
   REAL(num) :: dxi,dyi,dzi,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
   REAL(num) :: clghtisq,xold,yold,zold
@@ -3494,20 +3529,32 @@ END SUBROUTINE depose_jxjyjz_esirkepov_3_3_3
 !
 !> @date
 !> 2016
-SUBROUTINE pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q, &
-                                         xmin,ymin,zmin, &
-                                         dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                         nox,noy,noz,l_particles_weight,l4symtry)
+SUBROUTINE pxr_depose_jxjyjz_esirkepov_n( &
+    jx,jx_nguard,jx_nvalid, &
+    jy,jy_nguard,jy_nvalid, &
+    jz,jz_nguard,jz_nvalid, &
+    np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
+    dt,dx,dy,dz,nox,noy,noz,l_particles_weight,l4symtry) !#do not wrap
 ! ______________________________________________________________________________
 
   USE constants
   IMPLICIT NONE
 
-  INTEGER(idp)             :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
+  INTEGER(idp)             :: np,nox,noy,noz
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
   REAL(num)                :: q,dt,dx,dy,dz,xmin,ymin,zmin
-  REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
-
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+                              jy_nguard(3), jy_nvalid(3), &
+                              jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                 -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+                                 -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                 -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+                                 -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                 -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+                                 -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
   REAL(num) :: xold,yold,zold,x,y,z,wq,wqx,wqy,wqz,vx,vy,vz,dts2dx,dts2dy,dts2dz

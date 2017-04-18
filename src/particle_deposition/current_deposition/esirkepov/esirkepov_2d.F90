@@ -418,19 +418,31 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !> @param[in] l_2drz  (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 !
-SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
+SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(          &
+    jx,jx_nguard,jx_nvalid,                            &
+    jy,jy_nguard,jy_nvalid,                            &
+    jz,jz_nguard,jz_nvalid,                            &
+    np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,         &
+    dt,dx,dz,nox,noz,lvect,l_particles_weight,         &
+    l4symtry,l_2drz,type_rz_depose) !#do not wrap
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   implicit none
 
   ! __ Parameter declaration ________________________________________________________
-  integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard, type_rz_depose
+  integer(idp)                          :: np,nox,noz,type_rz_depose
   integer(idp)                          :: lvect
-  real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(in out) :: jx,jy,jz
+  INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), &
+                                           jy_nguard(2), jy_nvalid(2), &
+                                           jz_nguard(2), jz_nvalid(2)
+   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+                                  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
+   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+                                  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
+   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+                                  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np)              :: xp,zp,uxp,uyp,uzp,gaminv,w
   real(num)                             :: q,dt,dx,dz,xmin,zmin
   LOGICAL(lp)                           :: l_particles_weight,l4symtry,l_2drz
@@ -603,7 +615,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   implicit none
 
@@ -794,7 +806,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gamin
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   implicit none
 
@@ -1012,7 +1024,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,
                                                  nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose)
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   implicit none
 
@@ -1433,7 +1445,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp
           nox,noz,lvect,l_particles_weight,l4symtry,l_2drz,type_rz_depose) !#do not parse
 ! ______________________________________________________________________________
 
-  
+
   USE constants
   implicit none
 
