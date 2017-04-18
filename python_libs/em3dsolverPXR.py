@@ -224,7 +224,7 @@ class EM3DPXR(EM3DFFT):
                       'mpi_buf_size':2000,
                       'sorting':None,
                       'l_debug':0,
-                      'l_reinject':0,
+                      'l_reinject':[0, 0, 0, 0, 0, 0],
                       'offset_x_part_grid':[0.,0.],
                       'offset_y_part_grid':[0.,0.],
                       'offset_z_part_grid':[0.,0.],
@@ -342,7 +342,7 @@ class EM3DPXR(EM3DFFT):
         # Particle boundaries for PXR
         if (self.l_debug): print(" Setup particle boundaries for PXR")
         if (top.pbound0 == absorb):
-          if (self.l_reinject):
+          if (self.l_reinject[4]):
               pxr.pbound_z_min=3
           else:
               pxr.pbound_z_min=1
@@ -352,7 +352,7 @@ class EM3DPXR(EM3DFFT):
           pxr.pbound_z_min=0
 
         if (top.pboundnz == absorb):
-            if (self.l_reinject):
+            if (self.l_reinject[5]):
                 pxr.pbound_z_max=3
             else:
                 pxr.pbound_z_max=1
@@ -362,16 +362,23 @@ class EM3DPXR(EM3DFFT):
             pxr.pbound_z_max=0
 
         if (top.pboundxy == absorb):
-            if (self.l_reinject):
+            if (self.l_reinject[0]):
                 pxr.pbound_x_min=3
-                pxr.pbound_x_max=3
-                pxr.pbound_y_min=3
-                pxr.pbound_y_max=3
             else:
                 pxr.pbound_x_min=1
+            if (self.l_reinject[1]):
+                pxr.pbound_x_max=3
+            else:
                 pxr.pbound_x_max=1
+            if (self.l_reinject[2]):
+                pxr.pbound_y_min=3
+            else:
                 pxr.pbound_y_min=1
+            if (self.l_reinject[3]):
+                pxr.pbound_y_max=3
+            else:
                 pxr.pbound_y_max=1
+
         elif(top.pboundxy == reflect):
             pxr.pbound_x_min=2
             pxr.pbound_x_max=2
