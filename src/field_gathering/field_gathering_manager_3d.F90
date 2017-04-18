@@ -296,7 +296,23 @@ END SUBROUTINE
 !> General subroutines for the 3D field gathering, adapted for field
 !> arrays having different sizes depending on their nodal/cell-centered nature
 !>
-!> @details
+!> @param[in] np number of particles
+!> @param[in] xp,yp,zp particle positions
+!> @param[out] ex,ey,ez particle electric field
+!> @param[out] bx,by,bz particle magnetic field
+!> @param[in] xmin,ymin,zmin tile origin
+!> @param[in] dx,dy,dz space discretization
+!> @param[in] nox,noy,noz shape factor order
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells of the exg,eyg,ezg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg,eyg,ezg arrays (1d arrays containing 3 integers)
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells of the bxg,byg,bzg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg,byg,bzg arrays (1d arrays containing 3 integers)
+!> @param[in] ll4symtry
+!> @param[in] l_lower_order_in_v
+!> @param[in] field_gathe_algo gathering algorithm
+!> @param[in] lvect vector length
 !>
 SUBROUTINE geteb3d_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
                                      xmin,ymin,zmin,            &
