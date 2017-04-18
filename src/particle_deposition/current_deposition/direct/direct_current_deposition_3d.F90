@@ -270,7 +270,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( &
     jy,jy_nguard,jy_nvalid, &
     jz,jz_nguard,jz_nvalid, &
     np,xp,yp,zp,uxp,uyp,uzp,&
-    gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+    gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz) !#do not wrap
 ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
