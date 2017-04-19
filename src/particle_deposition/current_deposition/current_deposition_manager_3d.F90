@@ -1840,13 +1840,13 @@ DO iz=1,ntilez
                 ! Depose current in jtile
                 SELECT CASE (c_dim)
                   CASE (2)
-                    CALL pxr_depose_jxjyjz_esirkepov2d_n(currg%jxtile(:,0,:),currg%jytile(:,0,:),  &
-                    currg%jztile(:,0,:),count,                                                     &
-                    curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                            &
+                    CALL depose_jxjyjz_esirkepov_2d(                                               &
+                    currg%jxtile(:,0,:),currg%jytile(:,0,:), currg%jztile(:,0,:),                  &
+                    count,curr_tile%part_x,curr_tile%part_y,curr_tile%part_z,                      &
                     curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz,curr_tile%part_gaminv,   &
                     curr_tile%pid(1,wpid),curr%charge,curr_tile%x_grid_tile_min,                   &
                     curr_tile%z_grid_tile_min,dtt,dxx,dzz,nxc,nzc,                                 &
-                    nxjg,nzjg,noxx,nozz,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
+                    nxjg,nzjg,noxx,nozz)
                   CASE DEFAULT
                     CALL depose_jxjyjz_esirkepov( &
                     currg%jxtile, currg%jytile, currg%jztile,                                              &

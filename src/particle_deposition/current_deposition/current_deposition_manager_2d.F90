@@ -56,7 +56,7 @@ SUBROUTINE depose_jxjyjz_2d(jx,jy,jz,np,   &
     nguard = (/ nxguard, nzguard /)
     nvalid = (/ nx+1, nz+1 /)
 
-    call depose_jxjyjz_generic_2d(                     &
+    call depose_jxjyjz_generic_2d(                   &
        jx,nguard,nvalid,                             &
        jy,nguard,nvalid,                             &
        jz,nguard,nvalid,                             &
@@ -96,15 +96,6 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
     real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
     real(num)                             :: q,dt,dx,dz,xmin,zmin
 
-    ! Maintain variables nx, ny, nz, nxguard, nyguard, nzguard for compilation
-    ! and for compatibility with automated tests, although they will not be used
-    ! in the future
-    integer(idp) :: nx, nz, nxguard, nzguard
-    nx = jx_nvalid(1)-1
-    nz = jx_nvalid(2)-1
-    nxguard = jx_nguard(1)
-    nzguard = jx_nguard(2)
-
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
         CALL pxr_depose_jxjyjz_esirkepov2d_1_1(                &
             jx,jx_nguard,jx_nvalid,                            &
@@ -112,20 +103,62 @@ SUBROUTINE depose_jxjyjz_generic_2d(                   &
             jz,jz_nguard,jz_nvalid,                            &
             np,xp,zp,uxp,uyp,uzp,                              &
 	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
-            nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+            lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
-        CALL pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
-	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
-            nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+        CALL pxr_depose_jxjyjz_esirkepov2d_2_2(                &
+            jx,jx_nguard,jx_nvalid,                            &
+            jy,jy_nguard,jy_nvalid,                            &
+            jz,jz_nguard,jz_nvalid,                            &
+            np,xp,zp,uxp,uyp,uzp,                              &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
+            lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
-        CALL pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp, &
-	     	gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
-            nox,noz,lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+        CALL pxr_depose_jxjyjz_esirkepov2d_3_3(                &
+            jx,jx_nguard,jx_nvalid,                            &
+            jy,jy_nguard,jy_nvalid,                            &
+            jz,jz_nguard,jz_nvalid,                            &
+            np,xp,zp,uxp,uyp,uzp,                              &
+	     	gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
+            lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ELSE
-        CALL pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-            gaminv,w,q,xmin,zmin,dt,dx,dz,nx,nz,nxguard,nzguard, &
+        CALL pxr_depose_jxjyjz_esirkepov2d_n(                  &
+            jx,jx_nguard,jx_nvalid,                            &
+            jy,jy_nguard,jy_nvalid,                            &
+            jz,jz_nguard,jz_nvalid,                            &
+            np,xp,yp,zp,uxp,uyp,uzp,                           &
+            gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
             nox,noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
     ENDIF
+
+END SUBROUTINE
+
+! ______________________________________________________________________________
+!> @brief
+!> Esirkepov subroutine for current deposition on one tile
+!>
+!>
+SUBROUTINE depose_jxjyjz_esirkepov_2d(jx,jy,jz,np,   &
+    xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin,     &
+    dt,dx,dz,nx,nz,nxguard,nzguard,nox,noz)
+      USE constants
+      IMPLICIT NONE
+      integer(idp)                          :: np,nx,nz,nox,noz,nxguard,nzguard
+      real(num), dimension(-nxguard:nx+nxguard,-nzguard:nz+nzguard), intent(inout) :: jx,jy,jz
+      real(num), dimension(np)              :: xp,yp,zp,uxp,uyp,uzp,gaminv,w
+      real(num)                             :: q,dt,dx,dz,xmin,zmin
+
+      ! Build array of guard cells and valid cells, to pass them to the generic routine
+      integer(idp)                       :: nguard(2), nvalid(2)
+      nguard = (/ nxguard, nzguard /)
+      nvalid = (/ nx+1, nz+1 /)
+
+      CALL pxr_depose_jxjyjz_esirkepov2d_n(                 &
+          jx,nguard,nvalid,                                  &
+          jy,nguard,nvalid,                                  &
+          jz,nguard,nvalid,                                  &
+          np,xp,yp,zp,uxp,uyp,uzp,                           &
+          gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
+          nox,noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
 
 END SUBROUTINE
 

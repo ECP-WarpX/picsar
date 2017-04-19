@@ -167,10 +167,16 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_n'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
-  CALL  pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 1_idp,1_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+  CALL  pxr_depose_jxjyjz_esirkepov2d_n(                        &
+             jx,nguard,nvalid,                            &
+             jy,nguard,nvalid,                            &
+             jz,nguard,nvalid,                            &
+             np,xp,yp,zp,uxp,uyp,uzp,                           &
+             gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
+             1_idp,1_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	i = i + 1
@@ -188,7 +194,7 @@ PROGRAM current_deposition_3d_test
         jy,nguard,nvalid, &
         jz,nguard,nvalid, &
         np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, dt,dx,dz, &
-        1_idp,1_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+        1_idp,1_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -217,10 +223,16 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_n'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
-  CALL  pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 2_idp,2_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+  CALL  pxr_depose_jxjyjz_esirkepov2d_n(                        &
+             jx,nguard,nvalid,                            &
+             jy,nguard,nvalid,                            &
+             jz,nguard,nvalid,                            &
+             np,xp,yp,zp,uxp,uyp,uzp,                           &
+             gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
+             2_idp,2_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	i = i + 1
@@ -230,10 +242,15 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_2_2'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
-	CALL pxr_depose_jxjyjz_esirkepov2d_2_2(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 2_idp,2_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+	CALL pxr_depose_jxjyjz_esirkepov2d_2_2( &
+        jx,nguard,nvalid, &
+        jy,nguard,nvalid, &
+        jz,nguard,nvalid, &
+        np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, dt,dx,dz, &
+        2_idp,2_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -262,10 +279,16 @@ PROGRAM current_deposition_3d_test
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_n'
   !print*,trim(adjustl(name(i)))
+  nguard = (/ nxguard, nzguard /)
+  nvalid = (/ nx+1, nz+1 /)
   t0 = MPI_WTIME()
-  CALL  pxr_depose_jxjyjz_esirkepov2d_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 3_idp,3_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+  CALL  pxr_depose_jxjyjz_esirkepov2d_n(                        &
+             jx,nguard,nvalid,                            &
+             jy,nguard,nvalid,                            &
+             jz,nguard,nvalid,                            &
+             np,xp,yp,zp,uxp,uyp,uzp,                           &
+             gaminv,w,q,xmin,zmin,dt,dx,dz,                     &
+             3_idp,3_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	i = i + 1
@@ -276,9 +299,12 @@ PROGRAM current_deposition_3d_test
   name(i) = 'pxr_depose_jxjyjz_esirkepov2d_3_3'
   !print*,trim(adjustl(name(i)))
   t0 = MPI_WTIME()
-	CALL pxr_depose_jxjyjz_esirkepov2d_3_3(jx,jy,jz,np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, &
-                                                 dt,dx,dz,nx,nz,nxguard,nzguard, &
-                                                 3_idp,3_idp,.TRUE._idp,.FALSE._idp,0_idp,.FALSE._idp)
+	CALL pxr_depose_jxjyjz_esirkepov2d_3_3( &
+        jx,nguard,nvalid, &
+        jy,nguard,nvalid, &
+        jz,nguard,nvalid, &
+        np,xp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,zmin, dt,dx,dz, &
+        3_idp,3_idp,.TRUE._idp,.FALSE._idp,.FALSE._idp,0_idp)
   t(i) = MPI_WTIME() - t0
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
 	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
