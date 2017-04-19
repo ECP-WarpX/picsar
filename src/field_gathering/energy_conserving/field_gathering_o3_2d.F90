@@ -50,9 +50,9 @@
 !> @param[inout] ex,ey,ez electric field particle arrays
 !> @param[in] xmin,zmin tile boundaries
 !> @param[in] dx,dz space steps
-!> @param[in] nx,nz space discretization
-!> @param[in] nxguard, nzguard number of guard cells
-!> @param[in] exg, eyg,ezg field arrays
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells of the exg,eyg,ezg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg,eyg,ezg arrays (1d arrays containing 2 integers)
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
 subroutine pxr_gete2dxz_energy_conserving_scalar_3_3(&
@@ -277,9 +277,9 @@ end subroutine
 !> @param[inout] ex,ey,ez electric field particle arrays
 !> @param[in] xmin,zmin tile boundaries
 !> @param[in] dx,dz space steps
-!> @param[in] nx,nz space discretization
-!> @param[in] nxguard, nzguard number of guard cells
-!> @param[in] exg, eyg,ezg field arrays
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells of the exg,eyg,ezg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg,eyg,ezg arrays (1d arrays containing 2 integers)
 !> @param[in] lvect vector size for the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
@@ -601,9 +601,9 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3(     &
 !> @param[inout] bx,by,bz magnetic field particle arrays
 !> @param[in] xmin,zmin tile boundaries
 !> @param[in] dx,dz space steps
-!> @param[in] nx,nz space discretization
-!> @param[in] nxguard, nzguard number of guard cells
-!> @param[in] bxg, byg,bzg field arrays
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells of the bxg,byg,bzg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg,byg,bzg arrays (1d arrays containing 2 integers)
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
 subroutine pxr_getb2dxz_energy_conserving_scalar_3_3(&
@@ -828,9 +828,9 @@ end subroutine
 !> @param[inout] bx,by,bz magnetic field particle arrays
 !> @param[in] xmin,zmin tile boundaries
 !> @param[in] dx,dz space steps
-!> @param[in] nx,nz space discretization
-!> @param[in] nxguard, nzguard number of guard cells
-!> @param[in] bxg, byg,bzg field arrays
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells of the bxg,byg,bzg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg,byg,bzg arrays (1d arrays containing 2 integers)
 !> @param[in] lvect the vector length of the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
@@ -1161,8 +1161,12 @@ end subroutine pxr_getb2dxz_energy_conserving_vect_3_3
 !> @param[in] dx,dz space steps
 !> @param[in] nx,nz space discretization
 !> @param[in] nxguard, nzguard number of guard cells
-!> @param[in] exg,eyg,ezg electric field arrays
-!> @param[in] bxg,byg,bzg magnetic field arrays
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells of the exg,eyg,ezg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg,eyg,ezg arrays (1d arrays containing 2 integers)
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells of the bxg,byg,bzg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg,byg,bzg arrays (1d arrays containing 2 integers)
 !> @param[in] lvect the vector length of the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !

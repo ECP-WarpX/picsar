@@ -53,7 +53,15 @@
 !> Creation 2016
 
 ! Input parameters:
-!> @param[inout] jx,jy,jz current arrays
+!> @param[inout] jx x-current component (2D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[inout] jy y-current component (2D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[inout] jz z-current component (2D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
@@ -62,12 +70,10 @@
 !> @param[in] q particle charge
 !> @param[in] xmin,zmin minimal boundaries of the tile
 !> @param[in] dt, dx, dz time and space discretization
-!> @param[in] nx,nz tile grid size
-!> @param[in] nxguard,nzguard guard cell numbers
 !> @param[in] nox, noz shape factor order (useless here but kept for common interface)
 !> @param[in] l_particles_weight to take into account the particle weight
 !> @param[in] l4symtry (useless here bur kept for common interface)
-!> @param[in] l_2drz  (useless here bur kept for common interface)
+!> @param[in] l_2drz (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 !
 subroutine pxr_depose_jxjyjz_esirkepov2d_n(                   &
@@ -412,7 +418,15 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 
 !
 ! Input parameters:
-!> @param[inout] jx,jy,jz current arrays
+!> @param[inout] jx x-current component (2D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[inout] jy y-current component (2D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[inout] jz z-current component (2D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
@@ -423,9 +437,9 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !> @param[in] dt, dx, dz time and space discretization
 !> @param[in] lvect: vector length (useless since not vectorized)
 !> @param[in] l_particles_weight to take into account the particle weight
-!> @param[in] l4symtry (useless here bur kept for common interface)
-!> @param[in] l_2drz  (useless here bur kept for common interface)
-!> @param[in] type_rz_depose (useless here bur kept for common interface)
+!> @param[in] l4symtry (useless here but kept for common interface)
+!> @param[in] l_2drz  (useless here but kept for common interface)
+!> @param[in] type_rz_depose (useless here but kept for common interface)
 !
 SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1(          &
     jx,jx_nguard,jx_nvalid,                            &
@@ -602,7 +616,15 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 !> Creation 2016
 !
 ! Input parameters:
-!> @param[inout] jx,jy,jz current arrays
+!> @param[inout] jx x-current component (2D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[inout] jy y-current component (2D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[inout] jz z-current component (2D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
@@ -802,7 +824,15 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 !> Creation 2016
 !
 ! Input parameters:
-!> @param[inout] jx,jy,jz current arrays
+!> @param[inout] jx x-current component (2D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[inout] jy y-current component (2D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[inout] jz z-current component (2D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays

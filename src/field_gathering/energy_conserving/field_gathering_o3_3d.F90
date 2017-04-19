@@ -72,9 +72,9 @@
 !> @param[in] xmin,ymin,zmin tile minimum grid position
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
-!> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
-!> @param[in] exg,eyg,ezg electric field grid
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells of the exg,eyg,ezg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg,eyg,ezg arrays (1d arrays containing 3 integers)
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp, &
@@ -376,9 +376,9 @@ END SUBROUTINE
 !> @param[in] xmin,ymin,zmin tile minimum grid position
 !> @param[in] dx,dy,dz space step
 !> @param[in] dt time step
-!> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
-!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells of the bxg,byg,bzg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg,byg,bzg arrays (1d arrays containing 3 integers)
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np,xp,yp,zp, &
@@ -6156,10 +6156,12 @@ END SUBROUTINE
 !> @param[in] xmin,ymin,zmin tile minimum grid position
 !> @param[in] dx,dy,dz space steps in every directions
 !> @param[in] dt time step
-!> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
-!> @param[in] exg,eyg,ezg electric field grid
-!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] exg,eyg,ezg electric field grids
+!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells of the exg,eyg,ezg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg,eyg,ezg arrays (1d arrays containing 3 integers)
+!> @param[in] bxg,byg,bzg magnetic field grids
+!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells of the bxg,byg,bzg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg,byg,bzg arrays (1d arrays containing 3 integers)
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !

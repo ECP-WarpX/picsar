@@ -52,7 +52,15 @@
 !> @date
 !> Revision 10/09/2016
 !>
-!> @param[inout] jx,jy,jz current arrays
+!> @param[inout] jx x-current component (3D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
+!> @param[inout] jy y-current component (3D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
+!> @param[inout] jz z-current component (3D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)
 !> @param[in] np number of particles
 !> @param[in] xp,yp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
@@ -61,8 +69,6 @@
 !> @param[in] q particle species charge
 !> @param[in] xmin,ymin,zmin tile grid minimum position
 !> @param[in] dx,dy,dz space discretization steps
-!> @param[in] nx,ny,nz number of cells
-!> @param[in] nxguard,nyguard,nzguard number of guard cells
 !> @param[in] nox,noy,noz interpolation order
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
@@ -1822,7 +1828,15 @@ END SUBROUTINE
 !> @date
 !> Revision 10/09/2016
 !>
-!> @param[inout] jx,jy,jz current arrays
+!> @param[inout] jx x-current component (3D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
+!> @param[inout] jy y-current component (3D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
+!> @param[inout] jz z-current component (3D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)s
 !> @param[in] np number of particles
 !> @param[in] xp,yp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
@@ -1831,8 +1845,6 @@ END SUBROUTINE
 !> @param[in] q particle species charge
 !> @param[in] xmin,ymin,zmin tile grid minimum position
 !> @param[in] dx,dy,dz space discretization steps
-!> @param[in] nx,ny,nz number of cells
-!> @param[in] nxguard,nyguard,nzguard number of guard cells
 !> @param[in] nox,noy,noz interpolation order
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
@@ -3310,7 +3322,15 @@ END SUBROUTINE
 !> @date
 !> Revision 10/09/2016
 !>
-!> @param[inout] jx,jy,jz current arrays
+!> @param[inout] jx x-current component (3D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
+!> @param[inout] jy y-current component (3D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
+!> @param[inout] jz z-current component (3D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)
 !> @param[in] np number of particles
 !> @param[in] xp,yp,zp particle position arrays
 !> @param[in] uxp,uyp,uzp particle momentum arrays
@@ -3319,8 +3339,6 @@ END SUBROUTINE
 !> @param[in] q particle species charge
 !> @param[in] xmin,ymin,zmin tile grid minimum position
 !> @param[in] dx,dy,dz space discretization steps
-!> @param[in] nx,ny,nz number of cells
-!> @param[in] nxguard,nyguard,nzguard number of guard cells
 !> @param[in] nox,noy,noz interpolation order
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry

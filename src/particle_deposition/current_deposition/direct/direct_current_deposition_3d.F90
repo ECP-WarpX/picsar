@@ -81,8 +81,14 @@
 !> @param[in] dy mesh size along y (scalar)
 !> @param[in] dz mesh size along z (scalar)
 !> @param[inout] jx x-current component (3D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)
 !> @warning arrays jx,jy,jz should be set to 0 before entering this subroutine.
 !
 SUBROUTINE depose_jxjyjz_scalar_1_1_1( &
