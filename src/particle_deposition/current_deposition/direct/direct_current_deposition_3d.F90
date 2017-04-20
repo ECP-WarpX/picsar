@@ -297,13 +297,20 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( &
 
   INTEGER(idp)                    :: j,k,l,j0,k0,l0,ip, NCELLS, ic
   INTEGER(idp)                    :: n,nn,nv
-  REAL(num)                       :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
-  INTEGER(idp)                    :: mxoff(1:8), myoff(1:8), mzoff(1:8)
   INTEGER(idp), DIMENSION(LVEC,3) :: ICELL
   REAL(num), DIMENSION(LVEC)      :: sx, sy, sz, sx0, sy0, sz0, wqx, wqy, wqz
   REAL(num)                       :: wwx,wwy,wwz, wq,vx,vy,vz, wx,wx0, wy,wy0, wz,wz0
   INTEGER(idp)                    :: jorig, korig, lorig
   INTEGER(idp)                    :: ncx, ncy, ncxy, ncz, ix, iy, iz
+  ! Coefficients for the computation of the weights
+  REAL(num), DIMENSION(8), PARAMETER   :: mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
+  REAL(num), DIMENSION(8), PARAMETER   :: my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
+  REAL(num), DIMENSION(8), PARAMETER   :: mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
+  REAL(num), DIMENSION(8), PARAMETER   :: sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
+  ! Positions of the nodes on the grids
+  INTEGER(idp), DIMENSION(8), PARAMETER  :: mxoff=(/0_idp,1_idp,0_idp,1_idp,0_idp,1_idp,0_idp,1_idp/)
+  INTEGER(idp), DIMENSION(8), PARAMETER  :: myoff=(/0_idp,0_idp,1_idp,1_idp,0_idp,0_idp,1_idp,1_idp/)
+  INTEGER(idp), DIMENSION(8), PARAMETER  :: mzoff=(/0_idp,0_idp,0_idp,0_idp,1_idp,1_idp,1_idp,1_idp/)
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -330,15 +337,6 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( &
   ALLOCATE(jxcells(8,NCELLS),jycells(8,NCELLS),jzcells(8,NCELLS))
   jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
 
-  ! Coefficients for the computation of the weights
-  mx=(/1_num,0_num,1_num,0_num,1_num,0_num,1_num,0_num/)
-  my=(/1_num,1_num,0_num,0_num,1_num,1_num,0_num,0_num/)
-  mz=(/1_num,1_num,1_num,1_num,0_num,0_num,0_num,0_num/)
-  sgn=(/-1_num,1_num,1_num,-1_num,1_num,-1_num,-1_num,1_num/)
-  ! Positions of the nodes on the grids
-  mxoff=(/0_idp,1_idp,0_idp,1_idp,0_idp,1_idp,0_idp,1_idp/)
-  myoff=(/0_idp,0_idp,1_idp,1_idp,0_idp,0_idp,1_idp,1_idp/)
-  mzoff=(/0_idp,0_idp,0_idp,0_idp,1_idp,1_idp,1_idp,1_idp/)
   jorig=-2; korig=-2;lorig=-2
 
   ! LOOP ON PARTICLES
