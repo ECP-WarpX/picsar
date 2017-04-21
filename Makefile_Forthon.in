@@ -9,7 +9,7 @@
 # Source directory
 SRCDIR= src
 # Binary directory (.so) after compilation
-BINDIR = picsar_python
+BINDIR = python_module/picsar_python
 # Application name
 APPNAME=picsar
 # Python binary name
@@ -47,7 +47,7 @@ parse:
 
 clean:
 	rm -rf $(SRCDIR)/build
-	rm -rf $(BINDIR)
+	rm -rf $(BINDIR)/picsarpy.so
 
 test1:
 	cp -p examples/example_scripts_python/test_drifted_plasmas_3d.py Acceptance_testing/Python_tests/test_drifted_plasmas/
