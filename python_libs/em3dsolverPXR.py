@@ -53,7 +53,7 @@ except:
     import warp.field_solvers.GPSTD as gpstd
 
 try:
-    import picsarpy as pxrpy
+    from picsar_python import picsarpy as pxrpy
     print 'Import picsarpy as pxrpy'
     pxr = pxrpy.picsar
     l_pxr=True
@@ -93,7 +93,7 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                          pidpairs=None):
         nps0 = x.size
         pids = np.zeros([nps0,pxr.npid])
-      
+
         # --- Load in any pid data passed in
         if pidpairs is None:
             if top.wpid>0:
@@ -142,7 +142,7 @@ def addparticlesPXR(self,x=0.,y=0.,z=0.,vx=0.,vy=0.,vz=0.,gi=1.,w=None,
                 if top.uxoldpid > 0: pid[:,top.uxoldpid-1] = vx/gi
                 if top.uyoldpid > 0: pid[:,top.uyoldpid-1] = vy/gi
                 if top.uzoldpid > 0: pid[:,top.uzoldpid-1] = vz/gi
-            
+
         pxr.py_add_particles_to_species(self.pxr_species_array, nps0,pxr.npid,
                                         x,
                                         y,

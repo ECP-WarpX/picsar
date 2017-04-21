@@ -9,7 +9,7 @@
 # Source directory
 SRCDIR= src
 # Binary directory (.so) after compilation
-BINDIR = python_bin
+BINDIR = picsar_python
 # Application name
 APPNAME=picsar
 # Python binary name

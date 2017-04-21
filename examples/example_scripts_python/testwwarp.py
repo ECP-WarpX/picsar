@@ -4,7 +4,7 @@ import os
 currentdir=os.getcwd()
 sys.path.append(currentdir+'/python_bin/')
 print(currentdir+'/python_bin/')
-import picsarpy as pxrpy
+from picsar_python import picsarpy as pxrpy
 import numpy as np
 import warp as wp
 

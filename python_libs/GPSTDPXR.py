@@ -33,7 +33,7 @@
 """
 from warp.field_solvers.GPSTD import *
 try:
-    import picsarpy as pxrpy
+    from picsar_python import picsarpy as pxrpy
     pxr = pxrpy.picsar
     l_pxr=True
     print 'PICSAR package found and loaded.'
