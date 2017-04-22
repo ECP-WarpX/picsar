@@ -8,7 +8,6 @@ setup(
     maintainer_email='henri.vincenti@cea.fr',
     license='BSD-3-Clause-LBNL',
     packages=find_packages('./'),
-    package_data={'': ['picsar_python/picsarpy.so']},
     include_package_data=True,
     zip_safe=False,
     platforms='any'
