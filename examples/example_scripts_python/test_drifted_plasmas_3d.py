@@ -12,7 +12,7 @@
 # ______________________________________________________________________________
 
 from warp import *
-from em3dsolverPXR import *
+from warp.field_solvers.em3dsolverPXR import *
 from warp.init_tools import *
 from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI

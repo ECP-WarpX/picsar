@@ -3,7 +3,7 @@ Launches laser at z=-2.5 microns.
 """
 from mpi4py import MPI
 from warp import *
-from em3dsolverPXR import *
+from warp.field_solvers.em3dsolverPXR import *
 EnableAll()
 
 l_2d    = 0
