@@ -3,10 +3,8 @@
 # Execution test: Langmuir wave
 # We advice to not delete or modify this script, else make a copy
 # ______________________________________________________________________________
-
 from warp import *
-from em3dsolverPXR import *
-import os
+from warp.field_solvers.em3dsolverPXR import *
 from warp.data_dumping.openpmd_diag import FieldDiagnostic, ParticleDiagnostic
 from mpi4py import MPI
 import matplotlib.pyplot as plt

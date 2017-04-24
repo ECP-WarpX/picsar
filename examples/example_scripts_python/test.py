@@ -1,7 +1,7 @@
 from mpi4py import MPI
 import sys
 import os
-import picsarpy as pxrpy
+from picsar_python import picsarpy as pxrpy
 import numpy as np
 home=os.getenv('HOME')
 #currentdir=os.getcwd()
