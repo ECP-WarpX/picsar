@@ -618,7 +618,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
     USE constants
 
     IMPLICIT NONE
-    INTEGER(idp), INTENT(IN)                      :: np,nx,ny,nz
+    INTEGER(idp), INTENT(IN)                      :: np,nx,ny,nz,ncells
     INTEGER(idp), INTENT(IN)                      :: nxguard,nyguard,nzguard
     INTEGER(idp), INTENT(IN)                      :: lvect
     REAL(num), DIMENSION(8,ncells), INTENT(INOUT) :: jxcells,jycells,jzcells
@@ -627,7 +627,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num), INTENT(IN)                         :: q,dt,dx,dy,dz,xmin,ymin,zmin
     REAL(num)                                     :: x,y,z,xmid,ymid,zmid
 
-    INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip,NCELLS
+    INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip
     INTEGER(isp)                                  :: n,nn,nv
     REAL(num)                                     :: mx(1:8),my(1:8),mz(1:8), sgn(1:8)
     REAL(num)                                     :: invvol,dxi,dyi,dzi
@@ -2863,7 +2863,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
     USE constants
     IMPLICIT NONE
 
-    INTEGER(idp), INTENT(IN)                      :: np,nx,ny,nz
+    INTEGER(idp), INTENT(IN)                      :: np,nx,ny,nz,ncells
     INTEGER(idp), INTENT(IN)                      :: lvect
     INTEGER(idp), INTENT(IN)                      :: nxguard,nyguard,nzguard
     REAL(num), DIMENSION(8,ncells), INTENT(INOUT) :: jxcells,jycells,jzcells
@@ -2879,7 +2879,6 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp
     REAL(num)                                     :: invvol,dxi,dyi,dzi
     REAL(num)                                     :: dts2dx,dts2dy,dts2dz
     INTEGER(isp)                                  :: j,k,l,j0,k0,l0,ip
-    INTEGER(isp)                                  :: NCELLS
     INTEGER(isp)                                  :: nnx, nnxy,ngridx, ngridy
     INTEGER(isp)                                  :: n,nn,nv
     INTEGER(isp), DIMENSION(lvect,3)              :: ICELL
@@ -3328,8 +3327,8 @@ SUBROUTINE current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-    REAL(num),INTENT(IN), DIMENSION(8,ncells)  :: jxcells,jycells,jzcells
     INTEGER(idp), INTENT(IN)               :: ncells
+    REAL(num),INTENT(IN), DIMENSION(8,ncells)  :: jxcells,jycells,jzcells
 
     INTEGER(isp)                           :: ic
     INTEGER(isp)                           :: moff(1:8)
