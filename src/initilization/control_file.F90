@@ -265,6 +265,9 @@ MODULE control_file
             ELSE IF (INDEX(buffer,'tmax') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) tmax
+            ELSE IF (INDEX(buffer,'nsteps') .GT. 0) THEN
+                CALL GETARG(i+1, buffer)
+                READ(buffer, *) nsteps
             ELSE IF (INDEX(buffer,'dtcoef') .GT. 0) THEN
                 CALL GETARG(i+1, buffer)
                 READ(buffer, *) dtcoef

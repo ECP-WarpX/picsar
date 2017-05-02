@@ -170,6 +170,7 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:,:,:) :: jy
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:,:,:) :: jz
+#if defined(FFTW)
   !> MPI-domain electric field grid in x
   REAL(num), POINTER, DIMENSION(:,:,:) :: ex_r
   !> MPI-domain electric field grid in y
@@ -214,6 +215,7 @@ MODULE fields
   COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhof
   !> MPI-domain current grid in z - Fourier space 
   COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhooldf
+#endif
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y
@@ -1341,6 +1343,7 @@ MODULE shared_data
   INTEGER(idp) :: npart_global
 END MODULE shared_data
 
+#if defined(FFTW)
 MODULE fourier !#do not parse
   USE constants 
   ! Fourier k-vectors 
@@ -1366,6 +1369,7 @@ MODULE fourier !#do not parse
 												 ERhooldmult, BJmult, axm, axp, aym, ayp, &
 												 azm, azp 
 END MODULE fourier 
+#endif
 
 !===============================================================================
 !> Module for the Maxwell Solver coefficients

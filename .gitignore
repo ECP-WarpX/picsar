@@ -62,4 +62,9 @@ Doxygen/*.tmp
 Acceptance_testing/Fortran_tests/test_*/conftest.pyc
 postproc_python_script/__pycache__/*.pyc
 Acceptance_testing/Gcov_tests/*_test
-
+src/*.optrpt
+src/*/*.optrpt
+src/*/*/*.optrpt
+src/*/*/*/*.optrpt
+src/*.F90~
+src/*/*.F90~

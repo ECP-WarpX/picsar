@@ -144,7 +144,7 @@ REAL(num), DIMENSION(:), POINTER :: temp
 REAL(num), DIMENSION(:), ALLOCATABLE :: xcoefs,ycoefs,zcoefs
 REAL(num), DIMENSION(:), ALLOCATABLE :: kxtemp, kytemp, kztemp
 COMPLEX(cpx) :: ii 
-INTEGER(idp) :: nfftx,nffty,nfftz 
+INTEGER(idp) :: nfftx,nffty,nfftz, imn,imx,jmn,jmx,kmn,kmx
 ALLOCATE(kxtemp(nkx),kytemp(nky),kztemp(nkz))
 ALLOCATE(xcoefs(nkx),ycoefs(nky),zcoefs(nkz))
 
@@ -166,7 +166,6 @@ IF (fftw_with_mpi) THEN
 ELSE
 	CALL initkvectors(nfftx,nffty,nfftz)
 ENDIF 
-
 kxunit=2._num/dx*pi*kxunit
 kyunit=2._num/dy*pi*kyunit
 kzunit=2._num/dz*pi*kzunit
@@ -535,7 +534,6 @@ call normalize_Fourier(jy,nxx,nyy,nzz,jy_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(jz,nxx,nyy,nzz,jz_r,nfftx,nffty,nfftz,coeff_norm) 
 call normalize_Fourier(rho,nxx,nyy,nzz,rho_r,nfftx,nffty,nfftz,coeff_norm) 
 call normalize_Fourier(rhoold,nxx,nyy,nzz,rhoold_r,nfftx,nffty,nfftz,coeff_norm) 
-
 END SUBROUTINE get_fields
 
 SUBROUTINE normalize_Fourier(ex_out,n1,n2,n3,ex_in,nxx,nyy,nzz,coeff_norm)
@@ -602,8 +600,6 @@ END DO
 !$OMP END PARALLEL DO 
 
 END SUBROUTINE get_fields_mpi
-
-
 
 
 SUBROUTINE init_psaotd 
@@ -714,18 +710,5 @@ END DO
 !$OMP END PARALLEL DO 
 
 END SUBROUTINE push_psaotd_ebfielfs
-
-
-
-
-! - Push b 
-!            mymat.add_op('bx',{'bx':C,'ey': azp/c,'ez':-ayp/c,'jy': kzpn*BJmult,'jz':-kypn*BJmult})
-!            mymat.add_op('by',{'by':C,'ex':-azp/c,'ez': axp/c,'jx':-kzpn*BJmult,'jz': kxpn*BJmult})
-!            mymat.add_op('bz',{'bz':C,'ex': ayp/c,'ey':-axp/c,'jx': kypn*BJmult,'jy':-kxpn*BJmult})
-! - Push e 
-!            mymat.add_op('ex',{'ex':C,'by':-azm*c,'bz': aym*c,'jx':EJmult,'rhonew':kxpn*ERhomult,'rhoold':kxpn*ERhooldmult})
-!            mymat.add_op('ey',{'ey':C,'bx': azm*c,'bz':-axm*c,'jy':EJmult,'rhonew':kypn*ERhomult,'rhoold':kypn*ERhooldmult})
-!            mymat.add_op('ez',{'ez':C,'bx':-aym*c,'by': axm*c,'jz':EJmult,'rhonew':kzpn*ERhomult,'rhoold':kzpn*ERhooldmult})
-
 
 END MODULE fourier_psaotd
