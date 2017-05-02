@@ -2602,35 +2602,31 @@ MODULE particle_boundary
         DO ybd = -1, 1
           DO zbd = -1, 1
 
-            IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
+            IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .EQ. 0) CYCLE
 
             ib = 2+xbd + (1+ybd)*3 + (1+zbd)*9
 
             DO iz=1, ntilez! LOOP ON TILES
-            DO iy=1, ntiley
-            DO ix=1, ntilex
+              DO iy=1, ntiley
+                DO ix=1, ntilex
+                    k = tilebuf(ix,iy,iz,is)%npart(ib)
+                    !print*,'iz,iy,ix, ib:',iz,iy,ix,ib,'k',k
 
-              k = tilebuf(ix,iy,iz,is)%npart(ib)
-              !print*,'iz,iy,ix, ib:',iz,iy,ix,ib,'k',k
+                    IF (k.eq.0) CYCLE
 
-              IF (k.eq.0) CYCLE
-
-              j = mpi_npart(ib,is)
-              bufsend(j+1:j+k,1,ib,is) = tilebuf(ix,iy,iz,is)%part_x(1:k,ib)
-              bufsend(j+1:j+k,2,ib,is) = tilebuf(ix,iy,iz,is)%part_y(1:k,ib)
-              bufsend(j+1:j+k,3,ib,is) = tilebuf(ix,iy,iz,is)%part_z(1:k,ib)
-              bufsend(j+1:j+k,4,ib,is) = tilebuf(ix,iy,iz,is)%part_ux(1:k,ib)
-              bufsend(j+1:j+k,5,ib,is) = tilebuf(ix,iy,iz,is)%part_uy(1:k,ib)
-              bufsend(j+1:j+k,6,ib,is) = tilebuf(ix,iy,iz,is)%part_uz(1:k,ib)
-              bufsend(j+1:j+k,7,ib,is) = tilebuf(ix,iy,iz,is)%part_gaminv(1:k,ib)
-              bufsend(j+1:j+k,8:7+npid,ib,is) = tilebuf(ix,iy,iz,is)%pid(1:k,1:npid,ib)
-              mpi_npart(ib,is) = j + k
-
+                    j = mpi_npart(ib,is)
+                    bufsend(j+1:j+k,1,ib,is) = tilebuf(ix,iy,iz,is)%part_x(1:k,ib)
+                    bufsend(j+1:j+k,2,ib,is) = tilebuf(ix,iy,iz,is)%part_y(1:k,ib)
+                    bufsend(j+1:j+k,3,ib,is) = tilebuf(ix,iy,iz,is)%part_z(1:k,ib)
+                    bufsend(j+1:j+k,4,ib,is) = tilebuf(ix,iy,iz,is)%part_ux(1:k,ib)
+                    bufsend(j+1:j+k,5,ib,is) = tilebuf(ix,iy,iz,is)%part_uy(1:k,ib)
+                    bufsend(j+1:j+k,6,ib,is) = tilebuf(ix,iy,iz,is)%part_uz(1:k,ib)
+                    bufsend(j+1:j+k,7,ib,is) = tilebuf(ix,iy,iz,is)%part_gaminv(1:k,ib)
+                    bufsend(j+1:j+k,8:7+npid,ib,is) = tilebuf(ix,iy,iz,is)%pid(1:k,1:npid,ib)
+                    mpi_npart(ib,is) = j + k
+                ENDDO
+              ENDDO
             ENDDO
-            ENDDO
-            ENDDO
-
-
           ENDDO
         ENDDO
       ENDDO
