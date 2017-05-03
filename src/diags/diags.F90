@@ -78,14 +78,13 @@ MODULE diagnostics
 #if defined(DEBUG)
         WRITE(0,*) "Calc_diags: start"
 #endif
-
-        ! - Computes total charge density
-        CALL pxrdepose_rho_on_grid()
-
-        ! - Charge boundary conditions
-        CALL charge_bcs()
-
-
+        IF (l_plasma) THEN 
+          ! - Computes total charge density
+          CALL pxrdepose_rho_on_grid()
+  
+          ! - Charge boundary conditions
+          CALL charge_bcs()
+        ENDIF 
         ! - Computes electric field divergence on grid at n+1
         IF (.False.) THEN
 

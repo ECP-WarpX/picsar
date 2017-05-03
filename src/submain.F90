@@ -2,7 +2,7 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c)
+! "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
 ! 2016, The Regents of the University of California, through Lawrence Berkeley
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
@@ -62,6 +62,9 @@ SUBROUTINE step(nst)
   USE simple_io
   USE sorting
   USE mpi_routines
+#if defined(FFTW)
+  USE fourier_psaotd
+#endif 
 #if (defined(VTUNE) && VTUNE>0)
   USE ITT_FORTRAN
 #endif
@@ -102,49 +105,66 @@ SUBROUTINE step(nst)
   IF (c_dim.eq.3) THEN
 
     DO i=1,nst
+        CALL set_unit_pulse 
         IF (rank .EQ. 0) startit=MPI_WTIME()
 
         !!! --- Init iteration variables
         pushtime=0._num
         divE_computed = .False.
 
-        !!! --- Field gather & particle push
-        !IF (rank .EQ. 0) PRINT *, "#1"
-        CALL field_gathering_plus_particle_pusher
-        !IF (rank .EQ. 0) PRINT *, "#2"
-        !!! --- Apply BC on particles
-        CALL particle_bcs
-        !IF (rank .EQ. 0) PRINT *, "#3"
-        !!! --- Particle Sorting
-        !write(0,*),'Sorting'
-        CALL pxr_particle_sorting
-        !IF (rank .EQ. 0) PRINT *, "#4"
-        !!! --- Deposit current of particle species on the grid
-        !write(0,*),'Depose currents'
-        CALL pxrdepose_currents_on_grid_jxjyjz
-        !IF (rank .EQ. 0) PRINT *, "#5"
-        !!! --- Boundary conditions for currents
-        !write(0,*),'Current_bcs'
-        CALL current_bcs
-        !IF (rank .EQ. 0) PRINT *, "#6"
-        !!! --- Push B field half a time step
-        !write(0,*),'push_bfield'
-        CALL push_bfield
-        !IF (rank .EQ. 0) PRINT *, "#7"
-        !!! --- Boundary conditions for B
-        CALL bfield_bcs
-        !IF (rank .EQ. 0) PRINT *, "#8"
-        !!! --- Push E field  a full time step
-        CALL push_efield
-        !IF (rank .EQ. 0) PRINT *, "#9"
-        !!! --- Boundary conditions for E
-        CALL efield_bcs
-        !IF (rank .EQ. 0) PRINT *, "#10"
-        !!! --- push B field half a time step
-        CALL push_bfield
-        !IF (rank .EQ. 0) PRINT *, "#11"
-        !!! --- Boundary conditions for B
-        CALL bfield_bcs
+        IF (l_plasma) THEN 
+            !!! --- Field gather & particle push
+            !IF (rank .EQ. 0) PRINT *, "#1"
+            CALL field_gathering_plus_particle_pusher
+            !IF (rank .EQ. 0) PRINT *, "#2"
+            !!! --- Apply BC on particles
+            CALL particle_bcs
+            !IF (rank .EQ. 0) PRINT *, "#3"
+            IF (l_spectral) THEN 
+              rhoold=rho 
+              CALL pxrdepose_rho_on_grid
+            ENDIF 
+            !!! --- Particle Sorting
+            !write(0,*),'Sorting'
+            CALL pxr_particle_sorting
+            !IF (rank .EQ. 0) PRINT *, "#4"
+            !!! --- Deposit current of particle species on the grid
+            !write(0,*),'Depose currents'
+            CALL pxrdepose_currents_on_grid_jxjyjz
+            !IF (rank .EQ. 0) PRINT *, "#5"
+            !!! --- Boundary conditions for currents
+            !write(0,*),'Current_bcs'
+            CALL current_bcs
+            !IF (rank .EQ. 0) PRINT *, "#6"
+            !!! --- Push B field half a time step
+            !write(0,*),'push_bfield'
+        ENDIF 
+#if defined(FFTW)
+        IF (l_spectral) THEN 
+            CALL push_psatd_ebfield_3d
+            CALL efield_bcs
+            CALL bfield_bcs 
+        ELSE 
+#endif
+            CALL push_bfield
+            !IF (rank .EQ. 0) PRINT *, "#7"
+            !!! --- Boundary conditions for B
+            CALL bfield_bcs
+            !IF (rank .EQ. 0) PRINT *, "#8"
+            !!! --- Push E field  a full time step
+            CALL push_efield
+            !IF (rank .EQ. 0) PRINT *, "#9"
+            !!! --- Boundary conditions for E
+            CALL efield_bcs
+            !IF (rank .EQ. 0) PRINT *, "#10"
+            !!! --- push B field half a time step
+            CALL push_bfield
+            !IF (rank .EQ. 0) PRINT *, "#11"
+            !!! --- Boundary conditions for B
+            CALL bfield_bcs
+#if defined(FFTW)
+        ENDIF 
+#endif 
         !IF (rank .EQ. 0) PRINT *, "#12"
         !!! --- Computes derived quantities
         CALL calc_diags
@@ -245,6 +265,9 @@ SUBROUTINE initall
   USE shared_data
   USE tiling
   USE time_stat
+#if defined(FFTW)
+  USE fourier_psaotd
+#endif  
   USE precomputed
 
   !use IFPORT ! uncomment if using the intel compiler (for rand)
@@ -277,17 +300,21 @@ SUBROUTINE initall
 
   !!! --- Set time step/ it
   IF (c_dim.eq.3) THEN
-    dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+    IF (l_spectral) THEN
+      dt=MIN(dx,dy,dz)/clight
+    ELSE 
+      dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+    ENDIF 
   ELSE IF (c_dim.eq.2) THEN
     dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
   ENDIF
   it = 0
 
   !!! --- set number of time steps or total time
-  if (tmax.eq.0) then
-    tmax = nsteps*w0_l*dt
-  else
+  if (nsteps .eq. 0) then
     nsteps = nint(tmax/(w0_l*dt))
+  else
+    tmax = nsteps*w0_l*dt
   endif
 
   !!! --- Sorting
@@ -363,7 +390,9 @@ SUBROUTINE initall
     write(0,'(" Local number of grid point:",I5,X,I5,X,I5)') nx_grid,ny_grid,nz_grid
     write(0,'(" Guard cells:",I5,X,I5,X,I5)') nxguards,nyguards,nzguards
     write(0,*) ''
-
+    write(0,'(" FFTW - parameters ")')
+	IF (fftw_with_mpi) write(0,'(" FFTW distributed version - MPI ")')
+	IF (fftw_threads_ok) write(0,'(" FFTW MPI - Threaded support enabled ")')
     ! Sorting
     IF (sorting_activated.gt.0) THEN
       write(0,*) 'Particle sorting activated'
@@ -438,6 +467,12 @@ SUBROUTINE initall
 
   init_localtimes(1) = MPI_WTIME() - tdeb
 
+#if defined(FFTW)
+  ! -Init Fourier 
+  IF (l_spectral) THEN 
+  	CALL init_fourier
+  ENDIF 
+#endif 
   ! - Estimate tile size
   CALL estimate_memory_consumption
 
@@ -615,5 +650,26 @@ SUBROUTINE current_debug
   !!! --- End debug
 END SUBROUTINE
 
+SUBROUTINE set_unit_pulse
+USE fields 
+USE shared_data 
+INTEGER(idp) :: i,j,k 
+REAL(num) :: amp =0._num  
+
+IF (rank .EQ. 0) THEN
+  IF (it .EQ. 0) THEN  
+    DO k=-1,1
+      DO i=-1,1
+        DO j=-1,1
+            ex(nx/2,ny/2,nz/2)=amp*0.5_num
+        END DO 
+      END DO 
+    END DO 
+    ex(nx/2,ny/2,nz/2)=amp
+  ENDIF 
+ENDIF 
+
+
+END SUBROUTINE set_unit_pulse
 
 ! ______________________________________

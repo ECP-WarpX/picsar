@@ -117,6 +117,10 @@ MODULE fields
   LOGICAL(lp) :: l_lower_order_in_v
   !> Flag: use of nodal grids
   LOGICAL(lp) :: l_nodalgrid
+  !> Flag: use of PSAOTD spectral solver 
+  LOGICAL(lp) :: l_spectral
+  !> Flag: use of staggered grid 
+  LOGICAL(lp) :: l_staggered
   !> Flag: this flag needs a description, used in field gathering routines
   LOGICAL(lp) :: l4symtry
   INTEGER(idp):: nxs=0, nys=0, nzs=0
@@ -166,6 +170,52 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:,:,:) :: jy
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:,:,:) :: jz
+#if defined(FFTW)
+  !> MPI-domain electric field grid in x
+  REAL(num), POINTER, DIMENSION(:,:,:) :: ex_r
+  !> MPI-domain electric field grid in y
+  REAL(num), POINTER, DIMENSION(:,:,:) :: ey_r
+  !> MPI-domain electric field grid in z
+  REAL(num), POINTER, DIMENSION(:,:,:) :: ez_r
+  !> MPI-domain magnetic field grid in x
+  REAL(num), POINTER, DIMENSION(:,:,:) :: bx_r
+  !> MPI-domain magnetic field grid in y
+  REAL(num), POINTER, DIMENSION(:,:,:) :: by_r
+  !> MPI-domain magnetic field grid in z
+  REAL(num), POINTER, DIMENSION(:,:,:) :: bz_r
+  !> MPI-domain current grid in x
+  REAL(num), POINTER, DIMENSION(:,:,:) :: jx_r
+  !> MPI-domain current grid in y
+  REAL(num), POINTER, DIMENSION(:,:,:) :: jy_r
+  !> MPI-domain current grid in z
+  REAL(num), POINTER, DIMENSION(:,:,:) :: jz_r
+  !> MPI-domain current grid in z - Fourier space 
+  REAL(num), POINTER, DIMENSION(:,:,:) :: rho_r
+  !> MPI-domain current grid in z - Fourier space 
+  REAL(num), POINTER, DIMENSION(:,:,:) :: rhoold_r
+  !> MPI-domain electric field grid in x - Fourier space 
+  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: exf
+  !> MPI-domain electric field grid in y - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: eyf
+  !> MPI-domain electric field grid in z - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: ezf
+  !> MPI-domain magnetic field grid in x - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: bxf
+  !> MPI-domain magnetic field grid in y - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: byf
+  !> MPI-domain magnetic field grid in z - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: bzf
+  !> MPI-domain current grid in x - Fourier space 
+  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jxf
+  !> MPI-domain current grid in y - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: jyf
+  !> MPI-domain current grid in z - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: jzf
+  !> MPI-domain current grid in z - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhof
+  !> MPI-domain current grid in z - Fourier space 
+  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhooldf
+#endif
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y
@@ -507,6 +557,8 @@ MODULE particle_properties
   LOGICAL(lp) :: l_species_allocated=.FALSE.
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
+  !> Flag for plasma init/push 
+  LOGICAL(lp) :: l_plasma = .TRUE. 
 END MODULE particle_properties
 
 
@@ -773,8 +825,13 @@ use constants
   !> MPI local times for the initialization
   REAL(num), dimension(5)                :: init_localtimes
 
+
   !> MPI local times for the main loop
   REAL(num), dimension(20)               :: localtimes
+  REAL(num), DIMENSION(20)               :: mintimes, init_mintimes
+  REAL(num), DIMENSION(20)               :: maxtimes, init_maxtimes
+  REAL(num), DIMENSION(20)               :: avetimes, init_avetimes
+
   !> Buffer for the output
   REAL(num), DIMENSION(:,:), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat
@@ -938,6 +995,8 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   ! MPI subdomain data
   !----------------------------------------------------------------------------
+  !> FFTW distributed 
+  LOGICAL(idp) :: fftw_with_mpi, fftw_threads_ok 
   !> Error code for MPI
   INTEGER(isp) :: errcode
   !> Variable used by MPI
@@ -1076,6 +1135,7 @@ MODULE shared_data
   !> Global z axis cell array with guard cells (-nzguards:nz_global+nzguards)
   REAL(num), DIMENSION(:), POINTER    :: z_global
 
+
   ! domain limits and size
   !> local number of cells in x
   INTEGER(idp)                        :: nx
@@ -1089,6 +1149,12 @@ MODULE shared_data
   INTEGER(idp)                        :: ny_grid
   !> local number of grid points in z
   INTEGER(idp)                        :: nz_grid
+  !> local number of grid points in kx (Fourier Space)
+  INTEGER(idp)                        :: nkx
+  !> local number of grid points in ky (Fourier Space)
+  INTEGER(idp)                        :: nky
+  !> local number of grid points in kz (Fourier Space)"
+  INTEGER(idp)                        :: nkz
   !> global number of cells in x
   INTEGER(idp)                        :: nx_global
   !> global number of cells in y
@@ -1261,7 +1327,7 @@ MODULE shared_data
   REAL(num) :: z_grid_max_local
 
   !> Total charge density
-  REAL(num), POINTER, DIMENSION(:,:,:) :: rho
+  REAL(num), POINTER, DIMENSION(:,:,:) :: rho, rhoold
   !> Electric Field divergence
   REAL(num), POINTER, DIMENSION(:,:,:) :: dive
 
@@ -1276,6 +1342,34 @@ MODULE shared_data
   INTEGER(idp) :: npart_local
   INTEGER(idp) :: npart_global
 END MODULE shared_data
+
+#if defined(FFTW)
+MODULE fourier !#do not parse
+  USE constants 
+  ! Fourier k-vectors 
+  ! -- Along X 
+  REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit,kxunit_mod
+  ! -- Along Y
+  REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit,kyunit_mod
+  ! -- Along Z 
+  REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit,kzunit_mod
+  ! - 3D k vectors 
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: kxn, kyn, kzn, k , kx,ky,kz, kmag 
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod 
+  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kxmn, kxpn 
+  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kymn, kypn 
+  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kzmn, kzpn 
+  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kxm, kxp
+  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kym, kyp
+  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kzm, kzp
+  INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
+
+  ! - PSATD Coefficients 
+  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult, &
+												 ERhooldmult, BJmult, axm, axp, aym, ayp, &
+												 azm, azp 
+END MODULE fourier 
+#endif
 
 !===============================================================================
 !> Module for the Maxwell Solver coefficients

@@ -62,12 +62,12 @@ MODULE mpi_routines
   ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
-
+    INTEGER(isp) :: iret 
     !print*,'start mpi_minimal_init()'
     !print*,'MPI_INITIALIZED'
     CALL MPI_INITIALIZED(isinitialized,errcode)
     IF (.NOT. isinitialized) THEN
-      !print*, 'MPI_INIT_THREAD'
+      !print*, 'MPI_INIT_THREAD' 
       CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE,provided,errcode)
       !CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE,provided,errcode)
     ENDIF
@@ -82,6 +82,37 @@ MODULE mpi_routines
     !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
 
+#if defined(FFTW)
+  SUBROUTINE mpi_minimal_init_fftw()
+    USE mpi_fftw3
+  ! ____________________________________________________________________________
+    LOGICAL(isp) :: isinitialized
+    INTEGER(isp) :: nproc_comm, rank_in_comm
+    INTEGER(isp) :: iret 
+    !print*,'start mpi_minimal_init()'
+    !print*,'MPI_INITIALIZED'
+    CALL MPI_INITIALIZED(isinitialized,errcode)
+    IF (.NOT. isinitialized) THEN
+        CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED,provided,errcode)
+        IF (provided >= MPI_THREAD_FUNNELED) THEN 
+          CALL DFFTW_INIT_THREADS(iret)
+          fftw_threads_ok = .TRUE.
+		ELSE 
+		  fftw_threads_ok=.FALSE.
+        ENDIF 
+        CALL FFTW_MPI_INIT()
+    ENDIF 
+    !print*,'MPI_COMM_DUP'
+    CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
+    !print*,'MPI_COMM_SIZE'
+    CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
+    nproc=INT(nproc_comm,idp)
+    !print*,'MPI_COMM_RANK'
+    CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
+    rank=INT(rank_in_comm,idp)
+    !print*, 'end mpi_minimal_init'
+  END SUBROUTINE mpi_minimal_init_fftw
+#endif 
   ! ____________________________________________________________________________
   !> @brief
   !> Minimal initialization when using Python.
@@ -150,10 +181,18 @@ MODULE mpi_routines
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
 
+
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)
     nproc=INT(nproc_comm,idp)
+
+	! With fftw can only do CPU split with respect to Z direction (X in C-order)
+	IF (fftw_with_mpi) THEN 
+		nprocx=1
+		nprocy=1
+		nprocz=nproc
+	ENDIF 
 
     dims = (/nprocz, nprocy, nprocx/)
 
@@ -503,6 +542,7 @@ MODULE mpi_routines
   END SUBROUTINE setup_communicator
 
 
+
   ! ____________________________________________________________________________
   !> @brief
   !> This subroutine computes the space domain decomposition and
@@ -515,13 +555,17 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE mpi_initialise
-  ! ____________________________________________________________________________
-
+#if defined(FFTW)
+	USE mpi_fftw3
+#endif 
     INTEGER(isp) :: idim
     INTEGER(isp) :: nx0, nxp
     INTEGER(isp) :: ny0, nyp
     INTEGER(isp) :: nz0, nzp
-
+#if defined(FFTW)
+   	INTEGER(C_INTPTR_T) :: kx, ly,mz 
+	  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs
+#endif 
     ! Init number of guard cells of subdomains in each dimension
 
     IF (l_smooth_compensate) THEN
@@ -539,67 +583,94 @@ MODULE mpi_routines
     ALLOCATE(cell_y_min(1:nprocy), cell_y_max(1:nprocy))
     ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
-  ! Split is done on the total number of cells as in WARP
-  ! Initial WARP split is used with each processor boundary
-  ! being shared by two adjacent MPI processes
-    nx0 = nx_global / nprocx
-    ny0 = ny_global / nprocy
-    nz0 = nz_global / nprocz
-
+#if defined(FFTW)
+	! With fftw_with_mpi CPU split is performed only along z 
+	IF (fftw_with_mpi) THEN 
+		mz=nz_global; ly=ny_global; kx=nx_global
+		!   get local data size and allocate (note dimension reversal)
+		alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, &
+	                      local_nz, local_z0)
+		ALLOCATE(nz_procs(nproc))
+		CALL MPI_ALLGATHER(INT(local_nz,idp), &
+		1_isp,MPI_INTEGER8,nz_procs,INT(1,isp),MPI_INTEGER8,comm,errcode)
+    !            cell_x_min(1)=0
+    !            cell_x_max(1)=nx_global-1
+    !            cell_y_min(1)=0
+    !            cell_y_max(1)=ny_global-1
+    !            cell_z_min(1)=0
+    !            cell_z_max(1)=nz_procs(1)-1
+    !            DO idim = 2, nprocz
+    !                    cell_z_min(idim) = cell_z_max(idim-1)+1
+    !                    cell_z_max(idim) = cell_z_min(idim)+nz_procs(idim)-1
+    !            ENDDO
+	! Regular CPU split 
     ! If the total number of gridpoints cannot be exactly subdivided then fix
     ! The first nxp processors have nx0 cells
     ! The remaining processors have nx0+1 cells
-    IF (nx0 * nprocx .NE. nx_global) THEN
-        nxp = (nx0 + 1) * nprocx - nx_global
-    ELSE
-        nxp = nprocx
-    ENDIF
+  	nx0 = nx_global / nprocx
+  	ny0 = ny_global / nprocy
+		nz0 = nz_global /nprocz 
+	ELSE 
+#endif 
+	  ! Split is done on the total number of cells as in WARP
+	  ! Initial WARP split is used with each processor boundary
+	  ! being shared by two adjacent MPI processes
+		nx0 = nx_global / nprocx
+		ny0 = ny_global / nprocy
+		nz0 = nz_global / nprocz
+#if defined(FFTW)
+	ENDIF 
+#endif 
+		IF (nx0 * nprocx .NE. nx_global) THEN
+			nxp = (nx0 + 1) * nprocx - nx_global
+		ELSE
+			nxp = nprocx
+		ENDIF
 
-    IF (ny0 * nprocy .NE. ny_global) THEN
-        nyp = (ny0 + 1) * nprocy - ny_global
-    ELSE
-        nyp = nprocy
-    ENDIF
+		IF (ny0 * nprocy .NE. ny_global) THEN
+			nyp = (ny0 + 1) * nprocy - ny_global
+		ELSE
+			nyp = nprocy
+		ENDIF
 
-    IF (nz0 * nprocz .NE. nz_global) THEN
-        nzp = (nz0 + 1) * nprocz - nz_global
-    ELSE
-        nzp = nprocz
-    ENDIF
+		IF (nz0 * nprocz .NE. nz_global) THEN
+			nzp = (nz0 + 1) * nprocz - nz_global
+		ELSE
+			nzp = nprocz
+		ENDIF
 
-    cell_x_min(1)=0
-    cell_x_max(1)=nx0-1
-    DO idim = 2, nxp
-        cell_x_min(idim) = cell_x_max(idim-1)+1
-        cell_x_max(idim) = cell_x_min(idim)+nx0-1
-    ENDDO
-    DO idim = nxp+1, nprocx
-        cell_x_min(idim) = cell_x_max(idim-1)+1
-        cell_x_max(idim) = cell_x_min(idim)+nx0
-    ENDDO
+		cell_x_min(1)=0
+		cell_x_max(1)=nx0-1
+		DO idim = 2, nxp
+			cell_x_min(idim) = cell_x_max(idim-1)+1
+			cell_x_max(idim) = cell_x_min(idim)+nx0-1
+		ENDDO
+		DO idim = nxp+1, nprocx
+			cell_x_min(idim) = cell_x_max(idim-1)+1
+			cell_x_max(idim) = cell_x_min(idim)+nx0
+		ENDDO
 
-    cell_y_min(1)=0
-    cell_y_max(1)=ny0-1
-    DO idim = 2, nyp
-        cell_y_min(idim) = cell_y_max(idim-1)+1
-        cell_y_max(idim) = cell_y_min(idim)+ny0-1
-    ENDDO
-    DO idim = nyp+1, nprocy
-        cell_y_min(idim) = cell_y_max(idim-1)+1
-        cell_y_max(idim) = cell_y_min(idim)+ny0
-    ENDDO
+		cell_y_min(1)=0
+		cell_y_max(1)=ny0-1
+		DO idim = 2, nyp
+			cell_y_min(idim) = cell_y_max(idim-1)+1
+			cell_y_max(idim) = cell_y_min(idim)+ny0-1
+		ENDDO
+		DO idim = nyp+1, nprocy
+			cell_y_min(idim) = cell_y_max(idim-1)+1
+			cell_y_max(idim) = cell_y_min(idim)+ny0
+		ENDDO
 
-    cell_z_min(1)=0
-    cell_z_max(1)=nz0-1
-    DO idim = 2, nzp
-        cell_z_min(idim) = cell_z_max(idim-1)+1
-        cell_z_max(idim) = cell_z_min(idim)+nz0-1
-    ENDDO
-    DO idim = nzp+1 , nprocz
-        cell_z_min(idim) = cell_z_max(idim-1)+1
-        cell_z_max(idim) = cell_z_min(idim)+nz0
-    ENDDO
-
+		cell_z_min(1)=0
+		cell_z_max(1)=nz0-1
+		DO idim = 2, nzp
+			cell_z_min(idim) = cell_z_max(idim-1)+1
+			cell_z_max(idim) = cell_z_min(idim)+nz0-1
+		ENDDO
+		DO idim = nzp+1 , nprocz
+			cell_z_min(idim) = cell_z_max(idim-1)+1
+			cell_z_max(idim) = cell_z_min(idim)+nz0
+		ENDDO
 
     nx_global_grid_min = cell_x_min(x_coords+1)
     nx_global_grid_max = cell_x_max(x_coords+1)+1
@@ -621,7 +692,6 @@ MODULE mpi_routines
     nx=nx_grid-1
     ny=ny_grid-1
     nz=nz_grid-1
-
 
     !!! --- Set up global grid limits
     length_x = xmax - xmin
@@ -827,20 +897,142 @@ MODULE mpi_routines
   !> @date
   !> Creation 2015
   SUBROUTINE allocate_grid_quantities()
+#if defined(FFTW)
+  USE fourier 
+  USE mpi_fftw3
+#endif 
+  IMPLICIT NONE  
+#if defined(FFTW)
+  TYPE(C_PTR) :: cdata, cin 
+  INTEGER(idp) :: imn,imx,jmn,jmx,kmn,kmx 
+#endif 
   ! ____________________________________________________________________________
 
-      ! --- Allocate grid quantities
-    ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-    ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
-    ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
-    ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
-    ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
-    ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ! --- Allocate regular grid quantities (in real space)
+  ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+  ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+  ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+  ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+  ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards, -nzjguards:nz+nzjguards))
+  ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+#if defined(FFTW)
+	! ---  Allocate grid quantities in Fourier space 
+	IF (l_spectral) THEN 
+		IF (fftw_with_mpi) THEN 
+			nkx=(nx_global)/2+1! Real To Complex Transform 
+			nky=ny_global
+			nkz=local_nz
+			! - Allocate complex arrays 
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, exf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, eyf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, ezf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, bxf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, byf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, bzf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, jxf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, jyf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, jzf, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, rhof, [nkx,nky,nkz])
+			cdata = fftw_alloc_complex(alloc_local)
+ 		  CALL c_f_pointer(cdata, rhooldf, [nkx,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+			! - Allocate real arrays 
+ 		  CALL c_f_pointer(cin, ex_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, ey_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, ez_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, bx_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, by_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, bz_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, jx_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, jy_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, jz_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, rho_r, [(nx_global)+2,nky,nkz])
+			cin = fftw_alloc_real(2 * alloc_local);
+ 		  CALL c_f_pointer(cin, rhoold_r, [(nx_global)+2,nky,nkz])
+
+			! allocate k-vectors 
+			ALLOCATE(kxunit(nkx),kyunit(nky),kzunit(nkz))
+			ALLOCATE(kxunit_mod(nkx),kyunit_mod(nky),kzunit_mod(nkz))
+			ALLOCATE(kxn(nkx,nky,nkz),kyn(nkx,nky,nkz),kzn(nkx,nky,nkz)) 
+			ALLOCATE(kx_unmod(nkx,nky,nkz),ky_unmod(nkx,nky,nkz),kz_unmod(nkx,nky,nkz)) 
+			ALLOCATE(kx(nkx,nky,nkz),ky(nkx,nky,nkz),kz(nkx,nky,nkz)) 
+			ALLOCATE(k(nkx,nky,nkz),kmag(nkx,nky,nkz)) 
+			ALLOCATE(kxmn(nkx,nky,nkz),kxpn(nkx,nky,nkz)) 
+			ALLOCATE(kymn(nkx,nky,nkz),kypn(nkx,nky,nkz)) 
+			ALLOCATE(kzmn(nkx,nky,nkz),kzpn(nkx,nky,nkz)) 
+			ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
+			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
+			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz)) 
+		ELSE 
+			nkx=(2*nxguards+nx)/2+1 ! Real To Complex Transform 
+			nky=(2*nyguards+ny)
+			nkz=(2*nzguards+nz)
+			ALLOCATE(exf(nkx,nky,nkz))
+			ALLOCATE(eyf(nkx,nky,nkz))
+			ALLOCATE(ezf(nkx,nky,nkz))
+			ALLOCATE(bxf(nkx,nky,nkz))
+			ALLOCATE(byf(nkx,nky,nkz))
+			ALLOCATE(bzf(nkx,nky,nkz))
+			ALLOCATE(jxf(nkx,nky,nkz))
+			ALLOCATE(jyf(nkx,nky,nkz))
+			ALLOCATE(jzf(nkx,nky,nkz))
+			ALLOCATE(rhof(nkx,nky,nkz))
+			ALLOCATE(rhooldf(nkx,nky,nkz))
+			! allocate k-vectors 
+			ALLOCATE(kxunit(nkx),kyunit(nky),kzunit(nkz))
+			ALLOCATE(kxunit_mod(nkx),kyunit_mod(nky),kzunit_mod(nkz))
+			ALLOCATE(kxn(nkx,nky,nkz),kyn(nkx,nky,nkz),kzn(nkx,nky,nkz)) 
+			ALLOCATE(kx_unmod(nkx,nky,nkz),ky_unmod(nkx,nky,nkz),kz_unmod(nkx,nky,nkz)) 
+			ALLOCATE(kx(nkx,nky,nkz),ky(nkx,nky,nkz),kz(nkx,nky,nkz)) 
+			ALLOCATE(k(nkx,nky,nkz),kmag(nkx,nky,nkz)) 
+			ALLOCATE(kxmn(nkx,nky,nkz),kxpn(nkx,nky,nkz)) 
+			ALLOCATE(kymn(nkx,nky,nkz),kypn(nkx,nky,nkz)) 
+			ALLOCATE(kzmn(nkx,nky,nkz),kzpn(nkx,nky,nkz)) 
+			ALLOCATE(kxm(nkx,nky,nkz),kxp(nkx,nky,nkz)) 
+			ALLOCATE(kym(nkx,nky,nkz),kyp(nkx,nky,nkz)) 
+			ALLOCATE(kzm(nkx,nky,nkz),kzp(nkx,nky,nkz))
+	    imn=-nxguards; imx=nx+nxguards-1
+	    jmn=-nyguards;jmx=ny+nyguards-1
+	    kmn=-nzguards;kmx=nz+nzguards-1 
+	    ALLOCATE(ex_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(ey_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(ez_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(bx_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(by_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(bz_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(jx_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(jy_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(jz_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(rho_r(imn:imx,jmn:jmx,kmn:kmx))
+	    ALLOCATE(rhoold_r(imn:imx,jmn:jmx,kmn:kmx))
+		ENDIF 
+	ENDIF 
+#endif 
     ! --- Quantities used by the dynamic load balancer
     ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
     ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
@@ -892,9 +1084,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
     INTEGER(idp)             :: nthreads_tot
 
@@ -912,11 +1101,12 @@ MODULE mpi_routines
     CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     ! Minimum times
     CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
+    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
     ! Average
     CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
+    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
     avetimes = avetimes / nproc
+    init_avetimes = init_avetimes / nproc
 
     ! Percentage
     percenttimes = avetimes / avetimes(20) * 100
@@ -1031,9 +1221,6 @@ MODULE mpi_routines
 #endif
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: mintimes, init_mintimes
-    REAL(num), DIMENSION(20) :: maxtimes, init_maxtimes
-    REAL(num), DIMENSION(20) :: avetimes, init_avetimes
     REAL(num), DIMENSION(20) :: percenttimes
 
     ! Time stats per iteration activated
