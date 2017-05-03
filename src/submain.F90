@@ -653,6 +653,7 @@ END SUBROUTINE
 SUBROUTINE set_unit_pulse
 USE fields 
 USE shared_data 
+USE params 
 INTEGER(idp) :: i,j,k 
 REAL(num) :: amp =0._num  
 

@@ -82,9 +82,11 @@ MODULE mpi_routines
     !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
 
-#if defined(FFTW)
+
   SUBROUTINE mpi_minimal_init_fftw()
+#if defined(FFTW)
     USE mpi_fftw3
+#endif 
   ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
@@ -94,13 +96,15 @@ MODULE mpi_routines
     CALL MPI_INITIALIZED(isinitialized,errcode)
     IF (.NOT. isinitialized) THEN
         CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED,provided,errcode)
+#if defined(FFTW)
         IF (provided >= MPI_THREAD_FUNNELED) THEN 
           CALL DFFTW_INIT_THREADS(iret)
           fftw_threads_ok = .TRUE.
-		ELSE 
-		  fftw_threads_ok=.FALSE.
+		    ELSE 
+		      fftw_threads_ok=.FALSE.
         ENDIF 
         CALL FFTW_MPI_INIT()
+#endif 
     ENDIF 
     !print*,'MPI_COMM_DUP'
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
@@ -112,7 +116,7 @@ MODULE mpi_routines
     rank=INT(rank_in_comm,idp)
     !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init_fftw
-#endif 
+
   ! ____________________________________________________________________________
   !> @brief
   !> Minimal initialization when using Python.

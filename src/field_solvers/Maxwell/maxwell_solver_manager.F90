@@ -173,7 +173,6 @@ SUBROUTINE push_bfield_2d
 
 END SUBROUTINE push_bfield_2d
 
-#if defined(FFTW)
 ! ______________________________________________________________________________
 !> @brief
 !> PUSH E,B PSAOTD a full time step 
@@ -196,15 +195,16 @@ SUBROUTINE push_psatd_ebfield_3d
   USE time_stat
   USE params
   USE shared_data
+#if defined(FFTW)
   USE fourier_psaotd
-
+#endif
   IMPLICIT NONE
 
   REAL(num) :: tmptime
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
-
+#if defined(FFTW)
    ! - Fourier Transform R2C
    IF (fftw_with_mpi) THEN 
 		CALL get_Ffields_mpi ! - global FFT 
@@ -220,10 +220,10 @@ SUBROUTINE push_psatd_ebfield_3d
    ELSE
 		CALL get_fields  ! local IFFT
    ENDIF 
-
+#endif 
   IF (it.ge.timestat_itstart) THEN
     localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
   ENDIF
 
 END SUBROUTINE
-#endif
+
