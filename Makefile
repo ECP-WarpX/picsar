@@ -18,7 +18,7 @@
 COMP=gnu
 
 # Mode (MODE)
-# - prod: production mode (no FFTW)
+# - prod: production mode (without FFTW)
 # - prod_spectral: production mode with spectral solver and FFTW
 # - debug: debug mode
 # - vtune: vtune profiling
