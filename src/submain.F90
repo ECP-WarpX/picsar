@@ -105,7 +105,6 @@ SUBROUTINE step(nst)
   IF (c_dim.eq.3) THEN
 
     DO i=1,nst
-        CALL set_unit_pulse 
         IF (rank .EQ. 0) startit=MPI_WTIME()
 
         !!! --- Init iteration variables
@@ -649,28 +648,5 @@ SUBROUTINE current_debug
   !jz(nx,ny,nz) = 0.5
   !!! --- End debug
 END SUBROUTINE
-
-SUBROUTINE set_unit_pulse
-USE fields 
-USE shared_data 
-USE params 
-INTEGER(idp) :: i,j,k 
-REAL(num) :: amp =0._num  
-
-IF (rank .EQ. 0) THEN
-  IF (it .EQ. 0) THEN  
-    DO k=-1,1
-      DO i=-1,1
-        DO j=-1,1
-            ex(nx/2,ny/2,nz/2)=amp*0.5_num
-        END DO 
-      END DO 
-    END DO 
-    ex(nx/2,ny/2,nz/2)=amp
-  ENDIF 
-ENDIF 
-
-
-END SUBROUTINE set_unit_pulse
 
 ! ______________________________________
