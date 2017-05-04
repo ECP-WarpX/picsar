@@ -67,10 +67,10 @@ if you want to contribute to PICSAR.
 
 First, download and install [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html).
 
-You can create the documentation by command line ([see this page for more information](https://www.stack.nl/~dimitri/doxygen/manual/doxygen_usage.html))
+You can create the documentation by command line ([see this page for more information](https://www.stack.nl/~dimitri/doxygen/manual/doxygen_usage.html)). In `Doxygen/` folder, type: 
 
 ```
-doxygen Doxygen/Doxyfile
+doxygen Doxyfile
 ```
 
 The html documentation is then accessible in `Doxygen/html/index.html`.
