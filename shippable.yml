@@ -8,6 +8,8 @@ build:
   ci:
     # Install dependencies
     - pip install matplotlib pytest
+    # Install FFTW3
+    - sudo apt-get update && sudo apt-get install libfftw3-dev
     # Get the latest version of warp
     - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
     - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
@@ -16,9 +18,13 @@ build:
     - make build_test
     # Run the unit test
     - make test_gcov
+    # Compile Picsar with fftw
+    - make clean
+    - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
+    - make
     # Compile Picsar as library
     - make clean
-    - sed -i 's/MODE=prod/MODE=library/g' Makefile
+    - sed -i 's/MODE=prod_spectral/MODE=library/g' Makefile
     - make lib
     # Add Picsar Dynamic library to LD_LIBRARY_PATH
     - export LD_LIBRARY_PATH=/path_to_libpxr.iso:$LD_LIBRARY_PATH
