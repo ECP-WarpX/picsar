@@ -2303,6 +2303,7 @@ MODULE particle_boundary
                        SELECT CASE (pbound_x_min)
                          CASE (1_idp) ! absorbing
                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+                         CYCLE 
                        CASE (3_idp) ! Reinjecting (not thermal for now)
                           curr_tile%part_x(i)=2*xmin_part-curr_tile%part_x(i)
                           curr_tile%part_ux(i)=0.
@@ -2328,7 +2329,7 @@ MODULE particle_boundary
                       IF (x_max_boundary_part) THEN
                         SELECT CASE (pbound_x_max)
                           CASE (1_idp) ! absorbing
-                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+                            CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                             CYCLE
                           CASE (3_idp) ! Reinjecting (not thermal for now)
                               curr_tile%part_x(i)=2*xmax_part-curr_tile%part_x(i)
@@ -2354,8 +2355,8 @@ MODULE particle_boundary
                     IF ((party .LT. y_min_local_part)) THEN
                       ybd = -1
                        IF (y_min_boundary_part) THEN
-                              SELECT CASE (pbound_y_min)! absorbing
-                              CASE (1_idp)
+                        SELECT CASE (pbound_y_min)! absorbing
+                        CASE (1_idp)
                           CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                           CYCLE
                         CASE (3_idp) ! Reinjecting (not thermal for now)
@@ -2382,7 +2383,7 @@ MODULE particle_boundary
                       IF (y_max_boundary_part) THEN
                         SELECT CASE (pbound_y_max)
                         CASE (1_idp) ! absorbing
-                                CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
                           CYCLE
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_y(i)=2*ymax_part-curr_tile%part_y(i)
@@ -2460,48 +2461,43 @@ MODULE particle_boundary
                   ENDIF
 
 
-                  ! Particle has left processor, we put it in a local buffer
-                  IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
+                ! Particle has left processor, we put it in a local buffer
+				! Boundary index 1-27
+				ib = 2+xbd + (1+ybd)*3 + (1+zbd)*9
+				! Current particle available index
+				k = tilebuf(ix,iy,iz,is)%npart(ib) + 1
 
-                    ! Boundary index 1-27
-                    ib = 2+xbd + (1+ybd)*3 + (1+zbd)*9
-                    ! Current particle available index
-                    k = tilebuf(ix,iy,iz,is)%npart(ib) + 1
+				! Particle properties are placed in a buffer for each com direction
+				tilebuf(ix,iy,iz,is)%part_x(k,ib) = curr_tile%part_x(i)
+				tilebuf(ix,iy,iz,is)%part_y(k,ib) = curr_tile%part_y(i)
+				tilebuf(ix,iy,iz,is)%part_z(k,ib) = curr_tile%part_z(i)
+				tilebuf(ix,iy,iz,is)%part_ux(k,ib) = curr_tile%part_ux(i)
+				tilebuf(ix,iy,iz,is)%part_uy(k,ib) = curr_tile%part_uy(i)
+				tilebuf(ix,iy,iz,is)%part_uz(k,ib) = curr_tile%part_uz(i)
+				tilebuf(ix,iy,iz,is)%part_gaminv(k,ib) = curr_tile%part_gaminv(i)
+				tilebuf(ix,iy,iz,is)%pid(k,1:npid,ib) = curr_tile%pid(i,1:npid)
 
-                    ! Particle properties are placed in a buffer for each com direction
-                    tilebuf(ix,iy,iz,is)%part_x(k,ib) = curr_tile%part_x(i)
-                    tilebuf(ix,iy,iz,is)%part_y(k,ib) = curr_tile%part_y(i)
-                    tilebuf(ix,iy,iz,is)%part_z(k,ib) = curr_tile%part_z(i)
-                    tilebuf(ix,iy,iz,is)%part_ux(k,ib) = curr_tile%part_ux(i)
-                    tilebuf(ix,iy,iz,is)%part_uy(k,ib) = curr_tile%part_uy(i)
-                    tilebuf(ix,iy,iz,is)%part_uz(k,ib) = curr_tile%part_uz(i)
-                    tilebuf(ix,iy,iz,is)%part_gaminv(k,ib) = curr_tile%part_gaminv(i)
-                    tilebuf(ix,iy,iz,is)%pid(k,1:npid,ib) = curr_tile%pid(i,1:npid)
-
-                    IF (k.eq.SIZE(tilebuf(ix,iy,iz,is)%part_x,1)) THEN
-                      old_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)
-                      new_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)*2
-                      WRITE(0,'(" WARNING: Tile buffer array has been resized: nbpart = ",I7,&
+				IF (k.eq.SIZE(tilebuf(ix,iy,iz,is)%part_x,1)) THEN
+				  old_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)
+				  new_mpi_buf_size = SIZE(tilebuf(ix,iy,iz,is)%part_x,1)*2
+				  WRITE(0,'(" WARNING: Tile buffer array has been resized: nbpart = ",I7,&
 " new buffer size = ",I7)') k,new_mpi_buf_size
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_x, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_y, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_z, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_ux, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uy, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uz, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_gaminv, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
-                      CALL resize_3D_array_real(tilebuf(ix,iy,iz,is)%pid, old_mpi_buf_size,new_mpi_buf_size,npid,npid,27_idp,27_idp)
-                    ENDIF
+				  CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_x, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+				  CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_y, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+				  CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_z, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+				  CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_ux, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+				  CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uy, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+				  CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_uz, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+				  CALL resize_2D_array_real(tilebuf(ix,iy,iz,is)%part_gaminv, old_mpi_buf_size,new_mpi_buf_size,27_idp,27_idp)
+				  CALL resize_3D_array_real(tilebuf(ix,iy,iz,is)%pid, old_mpi_buf_size,new_mpi_buf_size,npid,npid,27_idp,27_idp)
+				ENDIF
 
-                    ! Update of the number of particles
-                    tilebuf(ix,iy,iz,is)%npart(ib) = k
+				! Update of the number of particles
+				tilebuf(ix,iy,iz,is)%npart(ib) = k
 
-                    ! The particle is deleted
-                    CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-
-                  ENDIF
-
-                    CYCLE
+				! The particle is deleted
+				CALL rm_particle_at_tile(curr,ix,iy,iz,i)
+				CYCLE
 
                   ENDIF !end if particle left MPI domain
 

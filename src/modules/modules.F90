@@ -64,7 +64,7 @@ REAL(num), PARAMETER :: clight  = 2.99792458e8_num
 REAL(num), PARAMETER :: mu0     = 1.2566370614359173e-06_num
 !> Vacuum permeability
 REAL(num), PARAMETER :: eps0    = 8.854187817620389e-12_num
-REAL(num), PARAMETER :: imu0    = 795774.715459
+REAL(num), PARAMETER :: imu0    = 795774.715459_num 
 !> The famous pi value
 REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
 !> Dimension of the cartesian topology
@@ -1283,31 +1283,31 @@ MODULE kyee_em3d
 !===============================================================================
   USE constants
   !> alphax Maxwell coefficient = 7./12.
-  REAL(num) :: alphax = 0.58333333333333337
+  REAL(num) :: alphax = 0.58333333333333337_num 
   !> alphax Maxwell coefficient = 1./12.
-  REAL(num) :: betaxy = 0.083333333333333329
+  REAL(num) :: betaxy = 0.083333333333333329_num 
   !> alphax Maxwell coefficient = 1./12.
-  REAL(num) :: betaxz = 0.083333333333333329
+  REAL(num) :: betaxz = 0.083333333333333329_num 
   !> gammax Maxwell coefficient = 1./48.
-  REAL(num) :: gammax = 0.020833333333333332
+  REAL(num) :: gammax = 0.020833333333333332_num 
   !> alphay Maxwell coefficient = 7./12.
-  REAL(num) :: alphay = 0.58333333333333337
+  REAL(num) :: alphay = 0.58333333333333337_num 
   !> betayx Maxwell coefficient = 1./12.
-  REAL(num) :: betayx = 0.083333333333333329
+  REAL(num) :: betayx = 0.083333333333333329_num 
   !> betayz Maxwell coefficient = 1./12.
-  REAL(num) :: betayz = 0.083333333333333329
+  REAL(num) :: betayz = 0.083333333333333329_num 
   !> gammay Maxwell coefficient = 1./48.
-  REAL(num) :: gammay = 0.020833333333333332
+  REAL(num) :: gammay = 0.020833333333333332_num 
   !> alphaz Maxwell coefficient = 7./12.
-  REAL(num) :: alphaz = 0.58333333333333337
+  REAL(num) :: alphaz = 0.58333333333333337_num 
   !> betazx Maxwell coefficient = 1./12.
-  REAL(num) :: betazx = 0.083333333333333329
+  REAL(num) :: betazx = 0.083333333333333329_num 
   !> betazy Maxwell coefficient = 1./12.
-  REAL(num) :: betazy = 0.083333333333333329
+  REAL(num) :: betazy = 0.083333333333333329_num 
   !> gammaz Maxwell coefficient = 1./48.
-  REAL(num) :: gammaz = 0.020833333333333332
+  REAL(num) :: gammaz = 0.020833333333333332_num 
   !> Coefficient for the lehe solver
-  REAL(num) :: deltaz = 0.000000000000000000
+  REAL(num) :: deltaz = 0.000000000000000000_num 
 END MODULE kyee_em3d
 
 !=========================================================================================
