@@ -127,10 +127,8 @@ INTEGER(idp) :: i, nopenmp, l, m, n
 REAL(num), DIMENSION(:), ALLOCATABLE :: wx,wy,wz
 REAL(num), DIMENSION(:), POINTER :: temp  
 REAL(num), DIMENSION(:), ALLOCATABLE :: xcoefs,ycoefs,zcoefs
-REAL(num), DIMENSION(:), ALLOCATABLE :: kxtemp, kytemp, kztemp
 COMPLEX(cpx) :: ii 
 INTEGER(idp) :: nfftx,nffty,nfftz, imn,imx,jmn,jmx,kmn,kmx
-ALLOCATE(kxtemp(nkx),kytemp(nky),kztemp(nkz))
 ALLOCATE(xcoefs(nkx),ycoefs(nky),zcoefs(nkz))
 
 IF (fftw_with_mpi) THEN 
@@ -178,17 +176,12 @@ DO i=1, norderz/2
 ENDDO 
 
 ! Init kxunit_mod 
-kxtemp=kxunit*dx
-WHERE(kxtemp==0._num) kxtemp=1.0_num!kxtemp(1)=1. ! Put 1 where kx==0
-kxunit_mod=kxunit*xcoefs/(kxtemp)
+kxunit_mod=xcoefs/dx
 ! Init kyunit_mod 
-kytemp=kyunit*dy
-WHERE(kytemp==0._num) kytemp=1.0_num ! Put 1 where ky==0
-kyunit_mod=kyunit*ycoefs/(kytemp)
+kyunit_mod=ycoefs/dy
 ! Init kzunit_mod 
-kztemp=kzunit*dz
-WHERE(kztemp==0._num) kztemp=1.0_num! kztemp(1)=1. ! Put 1 where kz==0
-kzunit_mod=kzunit*zcoefs/(kztemp)
+kzunit_mod=zcoefs/dz
+
 ! Init kxn, kx_unmod 
 DO n=1,nkz
 	DO m=1,nky

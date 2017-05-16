@@ -134,9 +134,6 @@ SUBROUTINE step(nst)
             !!! --- Boundary conditions for currents
             !write(0,*),'Current_bcs'
             CALL current_bcs
-            !IF (rank .EQ. 0) PRINT *, "#6"
-            !!! --- Push B field half a time step
-            !write(0,*),'push_bfield'
         ENDIF 
 #if defined(FFTW)
         IF (l_spectral) THEN 
@@ -145,6 +142,9 @@ SUBROUTINE step(nst)
             CALL bfield_bcs 
         ELSE 
 #endif
+            !IF (rank .EQ. 0) PRINT *, "#6"
+            !!! --- Push B field half a time step
+            !write(0,*),'push_bfield'
             CALL push_bfield
             !IF (rank .EQ. 0) PRINT *, "#7"
             !!! --- Boundary conditions for B
