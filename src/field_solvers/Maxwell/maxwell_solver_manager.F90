@@ -172,3 +172,58 @@ SUBROUTINE push_bfield_2d
   ENDIF
 
 END SUBROUTINE push_bfield_2d
+
+! ______________________________________________________________________________
+!> @brief
+!> PUSH E,B PSAOTD a full time step 
+!> This subroutine pushes the electric and the magnetic fields using
+!> the PSATD solver.
+!
+!> @details
+!> Time spent in this subroutine is stored in the electric field timer.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation March 29 2017
+SUBROUTINE push_psatd_ebfield_3d
+! ______________________________________________________________________________
+
+  USE constants
+  USE time_stat
+  USE params
+  USE shared_data
+#if defined(FFTW)
+  USE fourier_psaotd
+#endif
+  IMPLICIT NONE
+
+  REAL(num) :: tmptime
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+#if defined(FFTW)
+   ! - Fourier Transform R2C
+   IF (fftw_with_mpi) THEN 
+		CALL get_Ffields_mpi ! - global FFT 
+   ELSE
+		CALL get_Ffields ! - local FFT  
+   ENDIF 
+
+   CALL push_psaotd_ebfielfs ! - PUSH PSATD 
+
+   ! - Inverse Fourier Transform C2R
+   IF (fftw_with_mpi) THEN 
+		CALL get_fields_mpi  ! global IFFT
+   ELSE
+		CALL get_fields  ! local IFFT
+   ENDIF 
+#endif 
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END SUBROUTINE
+

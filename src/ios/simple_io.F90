@@ -838,7 +838,6 @@ CONTAINS
     USE shared_data
     IMPLICIT NONE
 
-    REAL(num), DIMENSION(20) :: avetimes
 
 #if defined(DEBUG)
         WRITE(0,*) "output_time_statistic: start"

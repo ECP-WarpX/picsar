@@ -18,7 +18,8 @@
 COMP=gnu
 
 # Mode (MODE)
-# - prod: production mode
+# - prod: production mode (without FFTW)
+# - prod_spectral: production mode with spectral solver and FFTW
 # - debug: debug mode
 # - vtune: vtune profiling
 # - sde: sde profiling
@@ -40,13 +41,17 @@ SYS=default
 # - host
 ARCH=
 
+
 # User Compiler Parameters (that can be tuned by the user)
 # Fortan compiler arguments
 FC=mpif90
 # C compiler
 CC=mpicc
 # Fortran compiler arguments
-FARGS= -O3 -fopenmp -JModules
+FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
+
+# External libs 
+FFTW3_LIB=$(HOME)/fftw-3.3.5/
 
 # Source directory
 SRCDIR=src
@@ -139,6 +144,15 @@ else ifeq ($(SYS),cori2)
   ifeq ($(MODE),prod)
 		COMP=none
 		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		LARCH=
+  	else ifeq ($(MODE),prod_spectral)
+		COMP=none
+		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
+		LARCH=
+  	else ifeq ($(MODE),debug_spectral)
+		APPNAME=picsar_cori2_debug
+		COMP=none
+		FARGS= -g -O3 -D DEBUG=0 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback
 		LARCH=
 	else ifeq ($(MODE),debug)
 		APPNAME=picsar_cori2_debug
@@ -305,6 +319,12 @@ endif
 #-include $(FDEPT)
 # ________________________________________________________
 
+ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
+	FARGS += -I$(FFTW3_LIB)/include -D FFTW=1
+	LDFLAGS += -L$(FFTW3_LIB)/lib -lfftw3_mpi -lfftw3 -lfftw3_omp
+endif
+
+
 
 $(SRCDIR)/%.o $(SRCDIR)/*/%.o $(SRCDIR)/*/*/%.o $(SRCDIR)/*/*/*/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
@@ -404,6 +424,50 @@ else ifeq ($(MODE),sde)
 build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/profiling/api_fortran_sde.o \
 	$(SRCDIR)/profiling/sde_fortran.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/housekeeping/sorting.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/submain.o \
+	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/main.o
+	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
+	mkdir -p $(BINDIR)
+	mv $(APPNAME) $(BINDIR)
+else ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
+build:$(SRCDIR)/modules/modules.o \
+    	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+    	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
