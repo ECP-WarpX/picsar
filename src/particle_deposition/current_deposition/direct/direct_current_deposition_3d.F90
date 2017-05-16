@@ -423,7 +423,6 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( &
 
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
             !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
-            !DIR$ ASSUME_ALIGNED mx:64, my:64, mz:64,sgn:64
 #elif defined __IBMBGQ__
           !IBM* ALIGN(64,jxcells,jycells,jzcells,mx,my,mz)
 #endif
