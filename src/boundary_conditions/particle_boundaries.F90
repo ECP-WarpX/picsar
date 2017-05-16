@@ -2303,7 +2303,7 @@ MODULE particle_boundary
                        SELECT CASE (pbound_x_min)
                          CASE (1_idp) ! absorbing
                          CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                         CYCLE 
+                         CYCLE ! If particle has been removed CYCLE to next particle 
                        CASE (3_idp) ! Reinjecting (not thermal for now)
                           curr_tile%part_x(i)=2*xmin_part-curr_tile%part_x(i)
                           curr_tile%part_ux(i)=0.
@@ -2330,7 +2330,7 @@ MODULE particle_boundary
                         SELECT CASE (pbound_x_max)
                           CASE (1_idp) ! absorbing
                             CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                            CYCLE
+                            CYCLE ! If particle has been removed CYCLE to next particle 
                           CASE (3_idp) ! Reinjecting (not thermal for now)
                               curr_tile%part_x(i)=2*xmax_part-curr_tile%part_x(i)
                               curr_tile%part_ux(i)=0.
@@ -2358,7 +2358,7 @@ MODULE particle_boundary
                         SELECT CASE (pbound_y_min)! absorbing
                         CASE (1_idp)
                           CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                          CYCLE
+                          CYCLE ! If particle has been removed CYCLE to next particle 
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_y(i)=2*ymin_part-curr_tile%part_y(i)
                             curr_tile%part_ux(i)=0.
@@ -2384,7 +2384,7 @@ MODULE particle_boundary
                         SELECT CASE (pbound_y_max)
                         CASE (1_idp) ! absorbing
                           CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                          CYCLE
+                          CYCLE ! If particle has been removed CYCLE to next particle 
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_y(i)=2*ymax_part-curr_tile%part_y(i)
                             curr_tile%part_ux(i)=0.
@@ -2412,7 +2412,7 @@ MODULE particle_boundary
                         SELECT CASE (pbound_z_min)
                           CASE (1_idp) ! absorbing
                             CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                          CYCLE
+                          CYCLE ! If particle has been removed CYCLE to next particle 
                         CASE (3_idp) ! Reinjecting (not thermal for now)
                             curr_tile%part_z(i)=2*zmin_part-curr_tile%part_z(i)
                             curr_tile%part_ux(i)=0.
@@ -2439,7 +2439,7 @@ MODULE particle_boundary
                               SELECT CASE (pbound_z_max)
                               CASE (1_idp) ! absorbing
                                 CALL rm_particle_at_tile(curr,ix,iy,iz,i)
-                                CYCLE
+                                CYCLE ! If particle has been removed CYCLE to next particle 
                               CASE (3_idp) ! Reinjecting (not thermal for now)
                                   curr_tile%part_z(i)=2*zmax_part-curr_tile%part_z(i)
                                   curr_tile%part_ux(i)=0.
