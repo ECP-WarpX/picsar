@@ -19,14 +19,20 @@
 ! publicly, and to permit other to do so.
 !
 !
-! init_Fourier.F90
+! fourier_psaotd.F90
 !
 ! Purpose:
-! This file contains subroutines for Fourier init (allocation and init of Fourier k-vectors, 
-! creation of planes for FFTW etc.)
+! This file contains subroutines for: 
+! (i)  Fourier init (allocation and init of Fourier k-vectors, 
+! creation of planes for FFTW etc.), 
+! (ii) Forward/Backward Fourier transform of EM fields using , 
+! FFTW (Distributed/Shared version), 
+! (iii) Maxwell push in the spectral space using the Pseudo-Spectral Arbitrary Order 
+! Analytical Time Domain (PSAOTD) Maxwell solver. 
 !
-! Author:
+! Authors:
 ! Henri Vincenti
+! Jean-Luc Vay 
 !
 ! Date:
 ! Creation March, 2017
@@ -46,9 +52,7 @@ INTEGER(idp), INTENT(IN) :: nxx
 REAL(num), INTENT(IN) :: dxx
 REAL(num), DIMENSION(nxx/2+1), INTENT(OUT) :: kxx
 INTEGER(idp) :: i, l,m,n
-REAL(num) :: fe
-
-fe=1_num/dxx
+REAL(num) :: df
 
 ! Even case
 IF (MOD(nxx,2) .EQ. 0) THEN 
@@ -63,7 +67,10 @@ DO i=1,n
 	kxx(i+1)=kxx(i)+1
 END DO
 
-kxx=kxx/(dxx*nxx)
+df=1_num/(dxx*nxx)
+
+kxx=kxx*fe
+
 END SUBROUTINE rfftfreq
 
 
@@ -75,9 +82,7 @@ INTEGER(idp), INTENT(IN) :: nxx
 REAL(num), INTENT(IN) :: dxx
 REAL(num), DIMENSION(nxx), INTENT(OUT) :: kxx
 INTEGER(idp) :: i,n
-REAL(num) :: fe
-
-fe=1_num/dxx
+REAL(num) :: df
 
 n=nxx
 
@@ -103,31 +108,11 @@ ELSE
 		kxx(i+1)=kxx(i)+1_idp
 	END DO
 ENDIF  
-kxx=kxx/(dxx*nxx)
+
+df=1_num/(dxx*nxx)
+
+kxx=kxx*df
 END SUBROUTINE fftfreq
-
-! ---  fftfreq as in numpy 
-SUBROUTINE fftfreq2(nxx,kxx, dxx)
-USE constants 
-IMPLICIT NONE 
-INTEGER(idp), INTENT(IN) :: nxx
-REAL(num), INTENT(IN) :: dxx
-REAL(num), DIMENSION(nxx), INTENT(OUT) :: kxx
-INTEGER(idp) :: i,n
-REAL(num) :: fe
-
-fe=1_num/dxx
-
-n=nxx
-
-kxx(1)=0
-DO i=1,n-1
-	kxx(i+1)=kxx(i)+1
-END DO
-
-kxx=kxx/(dxx*n)
-END SUBROUTINE fftfreq2
-
 
 SUBROUTINE init_fourier
 USE shared_data 
@@ -159,16 +144,11 @@ ELSE
 ENDIF 
 
 ! Init k-vectors 
-CALL rfftfreq(nfftx,kxunit,1.0_num)!2._num/dx*pi*(rfftfreq(nx,1.0_num))
-CALL fftfreq(nffty,kyunit, 1.0_num)!2._num/dx*pi*(rfftfreq(ny,1.0_num))
 IF (fftw_with_mpi) THEN 
 	CALL initkvectors_mpi(nfftx,nffty,nfftz)
 ELSE
 	CALL initkvectors(nfftx,nffty,nfftz)
 ENDIF 
-kxunit=2._num/dx*pi*kxunit
-kyunit=2._num/dy*pi*kyunit
-kzunit=2._num/dz*pi*kzunit
 
 ! 
 IF (l_staggered) THEN
@@ -184,30 +164,30 @@ CALL FD_weights_hvincenti(norderz,wz,l_staggered)
 ! - Init xcoefs 
 xcoefs=0._num
 DO i=1, norderx/2
-	xcoefs=xcoefs+wx(i)*2.0_num*SIN(kxunit*(xi*(i-1)+1_idp)*dx/xi)
+	xcoefs=xcoefs+wx(i)*2.0_num*SIN(kxunit*dx*((i-1)+1_idp/xi))
 ENDDO 
 ! - Init ycoefs
 ycoefs=0._num 
 DO i=1, nordery/2
-	ycoefs=ycoefs+wy(i)*2.0_num*SIN(kyunit*(xi*(i-1)+1_idp)*dy/xi)
+	ycoefs=ycoefs+wy(i)*2.0_num*SIN(kyunit*dy*((i-1)+1_idp/xi))
 ENDDO 
 ! - Init zcoefs 
 zcoefs=0._num
 DO i=1, norderz/2
-	zcoefs=zcoefs+wz(i)*2.0_num*SIN(kzunit*(xi*(i-1)+1_idp)*dz/xi)
+	zcoefs=zcoefs+wz(i)*2.0_num*SIN(kzunit*dz*((i-1)+1_idp/xi))
 ENDDO 
 
 ! Init kxunit_mod 
 kxtemp=kxunit*dx
-WHERE(kxtemp==0.) kxtemp=1.0_num!kxtemp(1)=1. ! Put 1 where kx==0
+WHERE(kxtemp==0._num) kxtemp=1.0_num!kxtemp(1)=1. ! Put 1 where kx==0
 kxunit_mod=kxunit*xcoefs/(kxtemp)
 ! Init kyunit_mod 
 kytemp=kyunit*dy
-WHERE(kytemp==0.) kytemp=1.0_num ! Put 1 where ky==0
+WHERE(kytemp==0._num) kytemp=1.0_num ! Put 1 where ky==0
 kyunit_mod=kyunit*ycoefs/(kytemp)
 ! Init kzunit_mod 
 kztemp=kzunit*dz
-WHERE(kztemp==0.) kztemp=1.0_num! kztemp(1)=1. ! Put 1 where kz==0
+WHERE(kztemp==0._num) kztemp=1.0_num! kztemp(1)=1. ! Put 1 where kz==0
 kzunit_mod=kzunit*zcoefs/(kztemp)
 ! Init kxn, kx_unmod 
 DO n=1,nkz
@@ -234,7 +214,7 @@ END DO
 kx=kxn
 ky=kyn
 kz=kzn
-k = ABS(SQRT(kxn**2+kyn**2+kzn**2))
+k =SQRT(kxn**2+kyn**2+kzn**2)
 kmag = k 
 WHERE(kmag==0.) kmag=1._num
 !kmag(1,1,1)=1._num ! Remove k=0 
@@ -303,10 +283,10 @@ IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nfftx, nffty, nfftz
 REAL(num), DIMENSION(:), ALLOCATABLE :: kxtemp, kytemp, kztemp, kzfftfreq_temp 
 
-CALL rfftfreq(nfftx,kxunit,1.0_num)!2._num/dx*pi*(rfftfreq(nx,1.0_num))
-CALL fftfreq(nffty,kyunit, 1.0_num)!2._num/dx*pi*(rfftfreq(ny,1.0_num))
+CALL rfftfreq(nfftx,kxunit,dx/(2_num*pi))
+CALL fftfreq(nffty,kyunit, dy/(2_num*pi)) 
 ALLOCATE(kzfftfreq_temp(nz_global+1))
-CALL fftfreq(nfftz,kzfftfreq_temp, 1.0_num)!2._num/dx*pi*(rfftfreq(nz,1.0_num))
+CALL fftfreq(nfftz,kzfftfreq_temp, dz/(2_num*pi))
 kzunit(1:nkz)=kzfftfreq_temp(local_z0+1:local_z0+1+local_nz-1)
 DEALLOCATE(kzfftfreq_temp)
 
@@ -319,9 +299,9 @@ USE fourier
 USE shared_data
 IMPLICIT NONE 
 INTEGER(idp), INTENT(IN) :: nfftx, nffty, nfftz
-CALL rfftfreq(nfftx,kxunit,1.0_num)!2._num/dx*pi*(rfftfreq(nx,1.0_num))
-CALL fftfreq(nffty,kyunit, 1.0_num)!2._num/dx*pi*(rfftfreq(ny,1.0_num))
-CALL fftfreq(nfftz,kzunit, 1.0_num)!2._num/dx*pi*(rfftfreq(nz,1.0_num))
+CALL rfftfreq(nfftx,kxunit,dx/(2_num*pi))
+CALL fftfreq(nffty,kyunit,dy/(2_num*pi))
+CALL fftfreq(nfftz,kzunit,dz/(2_num*pi))
 END SUBROUTINE initkvectors
 
 SUBROUTINE init_plans_fourier_mpi(nopenmp)
