@@ -1241,22 +1241,22 @@ MODULE shared_data
   !> Offset between grid and particle limits (x min bound)
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
-  REAL(num)                           :: offset_grid_part_x_min =0._num
+  REAL(num)                           :: offset_grid_part_x_min =0.0_num
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
-  REAL(num)                           :: offset_grid_part_x_max =0._num
+  REAL(num)                           :: offset_grid_part_x_max =0.0_num
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
-  REAL(num)                           :: offset_grid_part_y_min =0._num
+  REAL(num)                           :: offset_grid_part_y_min =0.0_num
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
-  REAL(num)                           :: offset_grid_part_y_max =0._num
+  REAL(num)                           :: offset_grid_part_y_max =0.0_num
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
-  REAL(num)                           :: offset_grid_part_z_min =0._num
+  REAL(num)                           :: offset_grid_part_z_min =0.0_num
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
-  REAL(num)                           :: offset_grid_part_z_max =0._num
+  REAL(num)                           :: offset_grid_part_z_max =0.0_num
 
   ! Sorting
   !> Activation of the sorting
