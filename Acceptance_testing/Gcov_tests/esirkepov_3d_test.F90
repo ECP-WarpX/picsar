@@ -197,18 +197,18 @@ PROGRAM esirkepov_3d_test
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_esirkepov_vecHV_1_1_1' !Vectorized esirkepov H. Vincenti
-	CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-	                gaminv,w,q,xmin,ymin,zmin, &
-                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                  1,1,1,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+ CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
+	gaminv,w,q,xmin,ymin,zmin, &
+	dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+	ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 #endif
 
 	n = i-1

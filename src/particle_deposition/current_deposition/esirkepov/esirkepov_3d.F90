@@ -275,12 +275,12 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 !> DO NOT USE
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
                                       dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      nox,noy,noz,l_particles_weight,l4symtry)
+                                      l_particles_weight,l4symtry)
 ! ______________________________________________________________________________
 USE constants
 !USE precomputed
 IMPLICIT NONE
-    INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard, nox, noy,noz
+    INTEGER(idp)             :: np,nx,ny,nz,nxguard,nyguard,nzguard
     REAL(num),INTENT(IN OUT) :: jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
     REAL(num),INTENT(IN OUT) :: jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
