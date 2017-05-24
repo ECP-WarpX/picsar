@@ -39,11 +39,13 @@ PROGRAM esirkepov_3d_test
   INTEGER(idp)                             :: lvect
   INTEGER(idp)                             :: nx,ny,nz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
-  LOGICAL                                  :: passed
+  INTEGER(idp), DIMENSION(3)			   :: jx_nguard, jy_nguard, jz_nguard
+  INTEGER(idp), DIMENSION(3)			   :: jx_nvalid, jy_nvalid, jz_nvalid
+  LOGICAL(idp)                             :: passed, ll_particles_weight, ll4symtry 
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
   REAL(num)                                :: q,m
-  REAL(num)                                :: epsilon
+  REAL(num), PARAMETER                     :: epsilon = 1E-3 ! TEST TOLERANCE ERROR 
   REAL(num)                                :: dx,dy,dz,dt
   REAL(num), dimension(:), allocatable     :: xp,yp,zp
   REAL(num), dimension(:), allocatable     :: uxp,uyp,uzp
@@ -83,9 +85,9 @@ PROGRAM esirkepov_3d_test
 
   dt = 0.5_num * 1._num / ((clight *sqrt(1._num / dx**2 + 1._num / dy**2 + 1._num / dz**2 )))
 
-  epsilon = 1E-3
-
   passed = .TRUE.
+  ll_particles_weight = .TRUE.
+  ll4symtry = .TRUE. 
 
   xmax = xmin + (nx-1)*dx
   ymax = ymin + (ny-1)*dy
@@ -144,6 +146,14 @@ PROGRAM esirkepov_3d_test
   errjz = 0
 
   DEALLOCATE(up,theta,phi)
+  
+  ! Init array dimensions for routines calls 
+  jx_nguard = (/nxguard, nyguard, nzguard/)
+  jy_nguard = (/nxguard, nyguard, nzguard/)
+  jz_nguard = (/nxguard, nyguard, nzguard/)
+  jx_nvalid = (/nx+1, ny+1, nz+1/)
+  jy_nvalid = (/nx+1, ny+1, nz+1/)
+  jz_nvalid = (/nx+1, ny+1, nz+1/)
 
   write(0,'(" Total particle energy:",E12.5)') sum(w/gaminv)
   write(0,'(" Min/Max energy:",2(X,E12.5))') minval(1/gaminv),maxval(1/gaminv)
@@ -159,37 +169,34 @@ PROGRAM esirkepov_3d_test
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
-  name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
-  !print*,trim(adjustl(name(i)))
-  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	i = i + 1
+  name(i) = 'pxr_depose_jxjyjz_esirkepov_n' ! Legacy Esirkepov From WARP 
+  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jx_nguard,jx_nvalid,jy,jy_nguard,jy_nvalid,     & 
+	  jz,jz_nguard,jz_nvalid, np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,        &
+	  dt,dx,dy,dz,1_idp,1_idp,1_idp,ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  i = i + 1
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
-  name(i) = 'depose_jxjyjz_esirkepov_1_1_1'
-  !print*,trim(adjustl(name(i)))
-	CALL depose_jxjyjz_esirkepov_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-	                gaminv,w,q,xmin,ymin,zmin, &
-                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                  1,1,1,.TRUE.,.FALSE.)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  name(i) = 'depose_jxjyjz_esirkepov_1_1_1' ! Inlined Esirkepov (not vectorized)
+  CALL depose_jxjyjz_esirkepov_1_1_1(jx,jx_nguard,jx_nvalid,jy,jy_nguard,jy_nvalid,     &
+	  jz,jz_nguard,jz_nvalid,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,         &
+      dt,dx,dy,dz,ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
 #if defined(DEV)
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
-  name(i) = 'depose_jxjyjz_esirkepov_vecHV_1_1_1'
-  !print*,trim(adjustl(name(i)))
+  name(i) = 'depose_jxjyjz_esirkepov_vecHV_1_1_1' !Vectorized esirkepov H. Vincenti
 	CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
 	                gaminv,w,q,xmin,ymin,zmin, &
                   dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -220,7 +227,6 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,1_idp,1_idp,1_idp,.TRUE._idp,.FALSE
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
-  !print*,trim(adjustl(name(i)))
   CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE._idp)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
@@ -231,7 +237,6 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_esirkepov_2_2_2'
-  !print*,trim(adjustl(name(i)))
 	CALL depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
 	                gaminv,w,q,xmin,ymin,zmin, &
                   dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -250,7 +255,6 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_esirkepov_vecHV_2_2_2'
-  !print*,trim(adjustl(name(i)))
 	CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
 	                gaminv,w,q,xmin,ymin,zmin, &
                   dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
@@ -281,7 +285,6 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
-  !print*,trim(adjustl(name(i)))
   CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
 dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE._idp)
 	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
@@ -291,7 +294,6 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_esirkepov_3_3_3'
-  !print*,trim(adjustl(name(i)))
 	CALL depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
 	                gaminv,w,q,xmin,ymin,zmin, &
                   dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
