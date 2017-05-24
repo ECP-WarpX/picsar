@@ -197,9 +197,8 @@ PROGRAM esirkepov_3d_test
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_esirkepov_vecHV_1_1_1' !Vectorized esirkepov H. Vincenti
- CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-	gaminv,w,q,xmin,ymin,zmin, &
-	dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
+ CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,	 &
+	gaminv,w,q,xmin,ymin,zmin, dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, & 
 	ll_particles_weight, ll4symtry)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -211,14 +210,14 @@ PROGRAM esirkepov_3d_test
   i = i + 1
 #endif
 
-	n = i-1
-	write(0,*)
+  n = i-1
+  write(0,*)
   write(0,'(" Current deposition order 2")')
   write(0,'(A40, 6(A10))') "Subroutines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
 		write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
-	ENDDO
+  ENDDO
 
   ! __ Order 2 __________________________________________________
 
@@ -226,57 +225,56 @@ PROGRAM esirkepov_3d_test
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
-  name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
-  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	i = i + 1
+  name(i) = 'pxr_depose_jxjyjz_esirkepov_n' ! Legacy Esirkepov From WARP 
+  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jx_nguard,jx_nvalid,jy,jy_nguard,jy_nvalid,     & 
+	  jz,jz_nguard,jz_nvalid, np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,        &
+	  dt,dx,dy,dz,2_idp,2_idp,2_idp,ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  i = i + 1
 
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
-  name(i) = 'depose_jxjyjz_esirkepov_2_2_2'
-	CALL depose_jxjyjz_esirkepov_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-	                gaminv,w,q,xmin,ymin,zmin, &
-                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                  2,2,2,.TRUE.,.FALSE.)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  name(i) = 'depose_jxjyjz_esirkepov_2_2_2' ! Inlined Esirkepov (not vectorized)
+  CALL depose_jxjyjz_esirkepov_2_2_2(jx,jx_nguard,jx_nvalid,jy,jy_nguard,jy_nvalid,     &
+	  jz,jz_nguard,jz_nvalid,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,         &
+      dt,dx,dy,dz,ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
 #if defined(DEV)
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
-  name(i) = 'depose_jxjyjz_esirkepov_vecHV_2_2_2'
-	CALL depose_jxjyjz_esirkepov_vecHV_1_1_1(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-	                gaminv,w,q,xmin,ymin,zmin, &
-                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                  2_idp,2_idp,2_idp,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  name(i) = 'depose_jxjyjz_esirkepov_vecHV_2_2_2'  !Vectorized esirkepov H. Vincenti
+  CALL depose_jxjyjz_esirkepov_vecHV_2_2_2(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,	 &
+	gaminv,w,q,xmin,ymin,zmin, dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, & 
+	ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 #endif
 
-	n = i-1
-	write(0,*)
+  n = i-1
+  write(0,*)
   write(0,'(" Current deposition order 1")')
   write(0,'(A40, 6(A10))') "Subroutines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz"
   write(0,'(" _____________________________________________________")')
   DO i = 1,n
-		write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
-	ENDDO
+	 write(0,'(A40,6(X,E12.5))') name(i), sumjx(i), sumjy(i), sumjz(i), errjx(i), errjy(i), errjz(i)
+  ENDDO
 
   ! __ Order 3 __________________________________________________
 
@@ -285,31 +283,31 @@ dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,2_idp,2_idp,2_idp,.TRUE._idp,.FALSE
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'pxr_depose_jxjyjz_esirkepov_n'
-  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,3_idp,3_idp,3_idp,.TRUE._idp,.FALSE._idp)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	i = i + 1
+  CALL pxr_depose_jxjyjz_esirkepov_n(jx,jx_nguard,jx_nvalid,jy,jy_nguard,jy_nvalid,     & 
+	  jz,jz_nguard,jz_nvalid, np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,        &
+	  dt,dx,dy,dz,3_idp,3_idp,3_idp,ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  i = i + 1
 
   jx(:,:,:) = 0.
   jy(:,:,:) = 0.
   jz(:,:,:) = 0.
   name(i) = 'depose_jxjyjz_esirkepov_3_3_3'
-	CALL depose_jxjyjz_esirkepov_3_3_3(jx,jy,jz,np,xp,yp,zp,uxp,uyp,uzp,&
-	                gaminv,w,q,xmin,ymin,zmin, &
-                  dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                  3,3,3,.TRUE.,.FALSE.)
-	sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
-	errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
-	errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
-	errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
-	IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
-	IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
-	i = i + 1
+  CALL depose_jxjyjz_esirkepov_3_3_3(jx,jx_nguard,jx_nvalid,jy,jy_nguard,jy_nvalid,     &
+	  jz,jz_nguard,jz_nvalid,np,xp,yp,zp,uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin,         &
+      dt,dx,dy,dz,ll_particles_weight, ll4symtry)
+  sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
+  errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
+  errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
+  errjz(i) = abs((sumjz(i) - sumjz(1)))/abs(sumjz(1))
+  IF (errjx(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjy(i) .gt. epsilon) passed = (passed.and.(.false.))
+  IF (errjz(i) .gt. epsilon) passed = (passed.and.(.false.))
+  i = i + 1
 
 
-	n = i-1
-	write(0,*)
+  n = i-1
+  write(0,*)
   write(0,'(" Current deposition order 3")')
   write(0,'(A40, 6(A10))') "Subroutines", "sum(jx)", "sum(jy)", "sum(jz)", "err jx", "err jy", "err jz"
   write(0,'(" _____________________________________________________")')
