@@ -69,7 +69,7 @@ END DO
 
 df=1_num/(dxx*nxx)
 
-kxx=kxx*fe
+kxx=kxx*df
 
 END SUBROUTINE rfftfreq
 
