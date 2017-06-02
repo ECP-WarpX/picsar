@@ -48,11 +48,11 @@
 !> @param[in] dt time step
 !
 SUBROUTINE pxr_boris_push_u_3d(np,uxp,uyp,uzp,&
-                               gaminv, &
-                               ex,ey,ez, &
-                               bx,by,bz, &
-                               q,m,dt)
-! ______________________________________________________________________________
+  gaminv, &
+  ex,ey,ez, &
+  bx,by,bz, &
+  q,m,dt)
+  ! ______________________________________________________________________________
   USE constants
   
   IMPLICIT NONE
@@ -78,17 +78,17 @@ SUBROUTINE pxr_boris_push_u_3d(np,uxp,uyp,uzp,&
   clghtisq = 1.0_num/clight**2
   
   ! Loop over the particles
-
+  
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+  !DIR$ ASSUME_ALIGNED gaminv:64
+  !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+  !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #elif defined __IBMBGQ__
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
+  !IBM* ALIGN(64,uxp,uyp,uzp)
+  !IBM* ALIGN(64,gaminv)
+  !IBM* ALIGN(64,ex,ey,ez)
+  !IBM* ALIGN(64,bx,by,bz)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -100,7 +100,7 @@ SUBROUTINE pxr_boris_push_u_3d(np,uxp,uyp,uzp,&
   !DIR$ SIMD
 #endif
   DO ip=1,np
-  
+    
     ! Push using the electric field
     uxp(ip) = uxp(ip) + ex(ip)*const
     uyp(ip) = uyp(ip) + ey(ip)*const
@@ -140,7 +140,7 @@ SUBROUTINE pxr_boris_push_u_3d(np,uxp,uyp,uzp,&
   !$OMP END SIMD
 #endif
 #endif
-
+  
 END SUBROUTINE
 
 
@@ -165,11 +165,11 @@ END SUBROUTINE
 !> @param[in] dt time step
 !
 SUBROUTINE pxr_boris_push_u_3d_block(np,uxp,uyp,uzp,&
-                               gaminv, &
-                               ex,ey,ez, &
-                               bx,by,bz, &
-                               q,m,dt,lvect)
-! ______________________________________________________________________________
+  gaminv, &
+  ex,ey,ez, &
+  bx,by,bz, &
+  q,m,dt,lvect)
+  ! ______________________________________________________________________________
   USE constants
   
   IMPLICIT NONE
@@ -197,44 +197,44 @@ SUBROUTINE pxr_boris_push_u_3d_block(np,uxp,uyp,uzp,&
   
   ! Loop over the particles
   DO ip=1,np,lvect
-
+    
     ! Size of the block
     blocksize = MIN(lvect,np-ip+1)
     
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+    !DIR$ ASSUME_ALIGNED gaminv:64
+    !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+    !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
 #elif defined __IBMBGQ__
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,gaminv)
-      !IBM* ALIGN(64,ex,ey,ez)
-      !IBM* ALIGN(64,bx,by,bz)
+    !IBM* ALIGN(64,uxp,uyp,uzp)
+    !IBM* ALIGN(64,gaminv)
+    !IBM* ALIGN(64,ex,ey,ez)
+    !IBM* ALIGN(64,bx,by,bz)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD
+    !$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
-  !IBM* SIMD_LEVEL
+    !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-  !DIR$ SIMD
+    !DIR$ SIMD
 #endif
-
+    
     ! Loop on the particles of blocks
     DO n=1,blocksize
       nn=ip+n-1
-  
+      
       ! Push using the electric field
       uxp(nn) = uxp(nn) + ex(nn)*const
       uyp(nn) = uyp(nn) + ey(nn)*const
       uzp(nn) = uzp(nn) + ez(nn)*const
-    
+      
       ! Compute temporary Gamma
       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
       gaminvtmp = 1.0_num/sqrt(1.0_num + usq)
-    
+      
       ! Magnetic rotation
       tx = gaminvtmp*bx(nn)*const
       ty = gaminvtmp*by(nn)*const
@@ -249,25 +249,25 @@ SUBROUTINE pxr_boris_push_u_3d_block(np,uxp,uyp,uzp,&
       uxp(nn) = uxp(nn) + uyppr*sz - uzppr*sy
       uyp(nn) = uyp(nn) + uzppr*sx - uxppr*sz
       uzp(nn) = uzp(nn) + uxppr*sy - uyppr*sx
-    
+      
       ! Push using the electric field
       uxp(nn) = uxp(nn) + ex(nn)*const
       uyp(nn) = uyp(nn) + ey(nn)*const
       uzp(nn) = uzp(nn) + ez(nn)*const
-    
+      
       ! Compute final Gamma
       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    
+      
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD
+    !$OMP END SIMD
 #endif
 #endif
-
-ENDDO
-
+    
+  ENDDO
+  
 END SUBROUTINE
 
 
@@ -288,9 +288,9 @@ END SUBROUTINE
 !> @param[in] gaminv particle Lorentz factors
 !> @param[in] dt time step
 SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
-! ______________________________________________________________________________
+  ! ______________________________________________________________________________
   USE constants
-
+  
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)   :: np
   REAL(num), INTENT(INOUT)   :: xp(np),yp(np),zp(np)
@@ -299,24 +299,24 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
   
   ! Local parameters
   INTEGER(idp)               :: ip
-
+  
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED gaminv:64
+  !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
+  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+  !DIR$ ASSUME_ALIGNED gaminv:64
 #elif defined __IBMBGQ__
-      !IBM* ALIGN(64,xp,yp,zp)
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,gaminv)
+  !IBM* ALIGN(64,xp,yp,zp)
+  !IBM* ALIGN(64,uxp,uyp,uzp)
+  !IBM* ALIGN(64,gaminv)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
+  !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-    !DIR$ SIMD
+  !DIR$ SIMD
 #endif
   DO ip=1,np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
@@ -328,7 +328,7 @@ SUBROUTINE pxr_pushxyz(np,xp,yp,zp,uxp,uyp,uzp,gaminv,dt)
   !$OMP END SIMD
 #endif
 #endif
-
+  
   RETURN
 END SUBROUTINE pxr_pushxyz
 
@@ -355,8 +355,8 @@ END SUBROUTINE pxr_pushxyz
 !> @param[in] m masse
 !> @param[in] dt time step
 SUBROUTINE pxr_epush_v(np,uxp,uyp,uzp,ex,ey,ez,q,m,dt)
-! ______________________________________________________________________________
-
+  ! ______________________________________________________________________________
+  
   USE constants
   IMPLICIT NONE
   
@@ -369,15 +369,15 @@ SUBROUTINE pxr_epush_v(np,uxp,uyp,uzp,ex,ey,ez,q,m,dt)
   ! Local parameters
   INTEGER(idp) :: ip
   REAL(num)    :: const
-
+  
   const = q*dt/m
-
+  
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-      !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+  !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
 #elif defined __IBMBGQ__
-      !IBM* ALIGN(64,uxp,uyp,uzp)
-      !IBM* ALIGN(64,ex,ey,ez)
+  !IBM* ALIGN(64,uxp,uyp,uzp)
+  !IBM* ALIGN(64,ex,ey,ez)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -424,8 +424,8 @@ END SUBROUTINE pxr_epush_v
 !> @param[in] m masse
 !> @param[in] dt time step
 SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,gaminv,bx,by,bz,q,m,dt)
-! ______________________________________________________________________________
-
+  ! ______________________________________________________________________________
+  
   USE constants
   IMPLICIT NONE
   
@@ -438,26 +438,26 @@ SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,gaminv,bx,by,bz,q,m,dt)
   ! Local parameters
   INTEGER(idp)   :: ip
   REAL(num)      :: const,sx,sy,sz,tx,ty,tz,tsqi,uxppr,uyppr,uzppr
-
+  
   const = q*dt*0.5_num/m
-
+  
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
-    !DIR$ ASSUME_ALIGNED gaminv:64
+  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+  !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+  !DIR$ ASSUME_ALIGNED gaminv:64
 #elif defined __IBMBGQ__
-    !IBM* ALIGN(64,uxp,uyp,uzp)
-    !IBM* ALIGN(64,bx,by,bz)
-    !IBM* ALIGN(64,gaminv)
+  !IBM* ALIGN(64,uxp,uyp,uzp)
+  !IBM* ALIGN(64,bx,by,bz)
+  !IBM* ALIGN(64,gaminv)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
+  !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-    !DIR$ SIMD
+  !DIR$ SIMD
 #endif
   DO ip=1,np
     tx = gaminv(ip)*bx(ip)*const
@@ -479,9 +479,9 @@ SUBROUTINE pxr_bpush_v(np,uxp,uyp,uzp,gaminv,bx,by,bz,q,m,dt)
   !$OMP END SIMD
 #endif
 #endif
-
+  
   RETURN
-
+  
 END SUBROUTINE pxr_bpush_v
 
 
@@ -504,8 +504,8 @@ END SUBROUTINE pxr_bpush_v
 !> @param[in] gaminv particle Lorentz factors
 !
 SUBROUTINE pxr_set_gamma(np,uxp,uyp,uzp,gaminv)
-! ______________________________________________________________________________
-
+  ! ______________________________________________________________________________
+  
   USE constants
   IMPLICIT NONE
   
@@ -517,37 +517,37 @@ SUBROUTINE pxr_set_gamma(np,uxp,uyp,uzp,gaminv)
   ! Local parameters
   INTEGER(idp)   :: ip
   REAL(num)      :: clghtisq, usq
-
+  
   clghtisq = 1.0_num/clight**2
-
+  
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !DIR$ ASSUME_ALIGNED gaminv:64
+  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+  !DIR$ ASSUME_ALIGNED gaminv:64
 #elif defined __IBMBGQ__
-    !IBM* ALIGN(64,uxp,uyp,uzp)
-    !IBM* ALIGN(64,gaminv)
+  !IBM* ALIGN(64,uxp,uyp,uzp)
+  !IBM* ALIGN(64,gaminv)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
+  !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-    !DIR$ SIMD
+  !DIR$ SIMD
 #endif
-
+  
   DO ip=1,np
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
   END DO
-
+  
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD
 #endif
 #endif
-
-RETURN
-
+  
+  RETURN
+  
 END SUBROUTINE pxr_set_gamma
