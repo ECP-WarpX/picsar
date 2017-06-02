@@ -439,6 +439,8 @@ MODULE particle_speciesmodule !#do not parse
   !> Fortran object representing a particle species
   TYPE particle_species
     ! Attributes of particle species object
+    !> Particle antenna flag (.FALSE. by default) 
+    LOGICAL(lp) :: is_antenna = .FALSE. 
     !> Particle species name
     CHARACTER(LEN=string_length) :: name
     !> Particle species charge
