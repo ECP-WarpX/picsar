@@ -58,21 +58,21 @@
 !> @param[in] lvect vector length
 !
 SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
-                                       xmin,ymin,zmin,                &
-                                       dx,dy,dz,nx,ny,nz,             &
-                                       nxguard,nyguard,nzguard,       &
-                                       nox,noy,noz,                   &
-                                       exg,eyg,ezg,bxg,byg,bzg,       &
-                                       l4symtry,                      &
-                                       l_lower_order_in_v,            &
-                                       lvect,                         &
-                                       field_gathe_algo)
-! ______________________________________________________________________________
-
+  xmin,ymin,zmin,                &
+  dx,dy,dz,nx,ny,nz,             &
+  nxguard,nyguard,nzguard,       &
+  nox,noy,noz,                   &
+  exg,eyg,ezg,bxg,byg,bzg,       &
+  l4symtry,                      &
+  l_lower_order_in_v,            &
+  lvect,                         &
+  field_gathe_algo)
+  ! ______________________________________________________________________________
+  
   USE constants
   USE params
   implicit none
-
+  
   integer(idp)                  :: np,nx,ny,nz,nox,noy,noz,nxguard,nyguard,nzguard
   integer(idp)                  :: field_gathe_algo
   integer(idp)                  :: lvect
@@ -81,25 +81,25 @@ SUBROUTINE geteb2dxz_energy_conserving(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: exg,eyg,ezg
   real(num), dimension(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard) :: bxg,byg,bzg
   real(num)                     :: xmin,ymin,zmin,dx,dy,dz
-
+  
   ! Build array of guard cells and valid cells, to pass them to the generic routine
   integer(idp)                       :: nguard(2), nvalid(2)
   nguard = (/ nxguard, nzguard /)
   nvalid = (/ nx+1, nz+1 /)
-
+  
   call geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
-                                       xmin,ymin,zmin,            &
-                                       dx,dy,dz,nox,noy,noz,      &
-                                       exg,nguard,nvalid,         &
-                                       eyg,nguard,nvalid,         &
-                                       ezg,nguard,nvalid,         &
-                                       bxg,nguard,nvalid,         &
-                                       byg,nguard,nvalid,         &
-                                       bzg,nguard,nvalid,         &
-                                       l4symtry,                  &
-                                       l_lower_order_in_v,        &
-                                       lvect,                     &
-                                       field_gathe_algo)
+  xmin,ymin,zmin,            &
+  dx,dy,dz,nox,noy,noz,      &
+  exg,nguard,nvalid,         &
+  eyg,nguard,nvalid,         &
+  ezg,nguard,nvalid,         &
+  bxg,nguard,nvalid,         &
+  byg,nguard,nvalid,         &
+  bzg,nguard,nvalid,         &
+  l4symtry,                  &
+  l_lower_order_in_v,        &
+  lvect,                     &
+  field_gathe_algo)
 END SUBROUTINE
 
 ! ______________________________________________________________________________
@@ -125,181 +125,181 @@ END SUBROUTINE
 !> @param[in] exg,eyg,ezg electric field grid
 !>
 SUBROUTINE geteb2dxz_energy_conserving_generic(np,xp,yp,zp,ex,ey,ez,bx,by,bz, &
-                                    xmin,ymin,zmin,            &
-                                    dx,dy,dz,nox,noy,noz,      &
-                                    exg,exg_nguard,exg_nvalid, &
-                                    eyg,eyg_nguard,eyg_nvalid, &
-                                    ezg,ezg_nguard,ezg_nvalid, &
-                                    bxg,bxg_nguard,bxg_nvalid, &
-                                    byg,byg_nguard,byg_nvalid, &
-                                    bzg,bzg_nguard,bzg_nvalid, &
-                                    l4symtry,                  &
-                                    l_lower_order_in_v,        &
-                                    lvect,                     &
-                                    field_gathe_algo) !#do not wrap
-! ______________________________________________________________________________
+  xmin,ymin,zmin,            &
+  dx,dy,dz,nox,noy,noz,      &
+  exg,exg_nguard,exg_nvalid, &
+  eyg,eyg_nguard,eyg_nvalid, &
+  ezg,ezg_nguard,ezg_nvalid, &
+  bxg,bxg_nguard,bxg_nvalid, &
+  byg,byg_nguard,byg_nvalid, &
+  bzg,bzg_nguard,bzg_nvalid, &
+  l4symtry,                  &
+  l_lower_order_in_v,        &
+  lvect,                     &
+  field_gathe_algo) !#do not wrap
+  ! ______________________________________________________________________________
   USE constants
   USE particles
   USE params
   implicit none
-
+  
   integer(idp)                  :: field_gathe_algo
   integer(idp)                  :: np,nox,noy,noz
   integer(idp), intent(IN)      :: exg_nguard(2),exg_nvalid(2),&
-                                   eyg_nguard(2),eyg_nvalid(2),&
-                                   ezg_nguard(2),ezg_nvalid(2),&
-                                   bxg_nguard(2),bxg_nvalid(2),&
-                                   byg_nguard(2),byg_nvalid(2),&
-                                   bzg_nguard(2),bzg_nvalid(2)
+  eyg_nguard(2),eyg_nvalid(2),&
+  ezg_nguard(2),ezg_nvalid(2),&
+  bxg_nguard(2),bxg_nvalid(2),&
+  byg_nguard(2),byg_nvalid(2),&
+  bzg_nguard(2),bzg_nvalid(2)
   LOGICAL(lp) , intent(in)      :: l4symtry,l_lower_order_in_v
   real(num), dimension(np)      :: xp,yp,zp,ex,ey,ez,bx,by,bz
   real(num)                     :: xmin,ymin,zmin,dx,dy,dz
   integer(idp)                  :: lvect
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
-                              -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
+  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
-                              -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
+  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
-                              -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
+  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
-                              -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
+  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
-                              -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
+  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
   REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
-                              -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
-
+  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
+  
   IF (field_gathe_algo.lt.0) return
-
+  
   ! ______________________________________________
   ! Arbitrary order, non-optimized subroutines
   IF (field_gathe_algo.eq.2) THEN
-
-
+    
+    
     !!! --- Gather electric field on particles
     CALL pxr_gete2dxz_n_energy_conserving(                &
+    np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
+    exg,exg_nguard,exg_nvalid,                          &
+    eyg,eyg_nguard,eyg_nvalid,                          &
+    ezg,ezg_nguard,ezg_nvalid,                          &
+    l4symtry,.FALSE._idp,l_lower_order_in_v)
+    !!! --- Gather magnetic fields on particles
+    CALL pxr_getb2dxz_n_energy_conserving(          &
+    np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
+    bxg,bxg_nguard,bxg_nvalid,                          &
+    byg,byg_nguard,byg_nvalid,                          &
+    bzg,bzg_nguard,bzg_nvalid,                          &
+    l4symtry,.FALSE._idp,l_lower_order_in_v)
+    
+    ! ______________________________________________
+    ! Arbitrary order, scalar subroutines
+  ELSE IF (field_gathe_algo.eq.1) THEN
+    
+    ! Order 3
+    IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+      
+      !!! --- Gather electric field on particles
+      CALL pxr_gete2dxz_energy_conserving_scalar_3_3(      &
+      np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                 &
+      exg,exg_nguard,exg_nvalid,                         &
+      eyg,eyg_nguard,eyg_nvalid,                         &
+      ezg,ezg_nguard,ezg_nvalid,                         &
+      l_lower_order_in_v)
+      !!! --- Gather magnetic fields on particles
+      CALL pxr_getb2dxz_energy_conserving_scalar_3_3(      &
+      np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                 &
+      bxg,bxg_nguard,bxg_nvalid,                         &
+      byg,byg_nguard,byg_nvalid,                         &
+      bzg,bzg_nguard,bzg_nvalid,                         &
+      l_lower_order_in_v)
+      
+      ! Arbitrary order
+    ELSE
+      
+      !!! --- Gather electric field on particles
+      CALL pxr_gete2dxz_n_energy_conserving(                &
       np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
       exg,exg_nguard,exg_nvalid,                          &
       eyg,eyg_nguard,eyg_nvalid,                          &
       ezg,ezg_nguard,ezg_nvalid,                          &
       l4symtry,.FALSE._idp,l_lower_order_in_v)
-    !!! --- Gather magnetic fields on particles
-    CALL pxr_getb2dxz_n_energy_conserving(          &
+      !!! --- Gather magnetic fields on particles
+      CALL pxr_getb2dxz_n_energy_conserving(          &
       np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
       bxg,bxg_nguard,bxg_nvalid,                          &
       byg,byg_nguard,byg_nvalid,                          &
       bzg,bzg_nguard,bzg_nvalid,                          &
       l4symtry,.FALSE._idp,l_lower_order_in_v)
-
-  ! ______________________________________________
-  ! Arbitrary order, scalar subroutines
-  ELSE IF (field_gathe_algo.eq.1) THEN
-
-    ! Order 3
-    IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-
-      !!! --- Gather electric field on particles
-      CALL pxr_gete2dxz_energy_conserving_scalar_3_3(      &
-        np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                 &
-        exg,exg_nguard,exg_nvalid,                         &
-        eyg,eyg_nguard,eyg_nvalid,                         &
-        ezg,ezg_nguard,ezg_nvalid,                         &
-        l_lower_order_in_v)
-      !!! --- Gather magnetic fields on particles
-      CALL pxr_getb2dxz_energy_conserving_scalar_3_3(      &
-        np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                 &
-        bxg,bxg_nguard,bxg_nvalid,                         &
-        byg,byg_nguard,byg_nvalid,                         &
-        bzg,bzg_nguard,bzg_nvalid,                         &
-        l_lower_order_in_v)
-
-    ! Arbitrary order
-    ELSE
-
-      !!! --- Gather electric field on particles
-      CALL pxr_gete2dxz_n_energy_conserving(                &
-        np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
-        exg,exg_nguard,exg_nvalid,                          &
-        eyg,eyg_nguard,eyg_nvalid,                          &
-        ezg,ezg_nguard,ezg_nvalid,                          &
-        l4symtry,.FALSE._idp,l_lower_order_in_v)
-      !!! --- Gather magnetic fields on particles
-      CALL pxr_getb2dxz_n_energy_conserving(          &
-        np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
-        bxg,bxg_nguard,bxg_nvalid,                          &
-        byg,byg_nguard,byg_nvalid,                          &
-        bzg,bzg_nguard,bzg_nvalid,                          &
-        l4symtry,.FALSE._idp,l_lower_order_in_v)
     ENDIF
-
-  ! ________________________________________
-  ! Optimized subroutines, default
+    
+    ! ________________________________________
+    ! Optimized subroutines, default
   ELSE
-
-
+    
+    
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
-
+      
       !!! --- Gather electric field on particles
       CALL pxr_gete2dxz_energy_conserving_vect_1_1(         &
-        np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                  &
-        exg,exg_nguard,exg_nvalid,                          &
-        eyg,eyg_nguard,eyg_nvalid,                          &
-        ezg,ezg_nguard,ezg_nvalid,                          &
-        LVEC_fieldgathe,l_lower_order_in_v)
+      np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                  &
+      exg,exg_nguard,exg_nvalid,                          &
+      eyg,eyg_nguard,eyg_nvalid,                          &
+      ezg,ezg_nguard,ezg_nvalid,                          &
+      LVEC_fieldgathe,l_lower_order_in_v)
       !!! --- Gather magnetic fields on particles
       CALL pxr_getb2dxz_energy_conserving_vect_1_1(         &
-        np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                  &
-        bxg,bxg_nguard,bxg_nvalid,                          &
-        byg,byg_nguard,byg_nvalid,                          &
-        bzg,bzg_nguard,bzg_nvalid,                          &
-        LVEC_fieldgathe,l_lower_order_in_v)
-
+      np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                  &
+      bxg,bxg_nguard,bxg_nvalid,                          &
+      byg,byg_nguard,byg_nvalid,                          &
+      bzg,bzg_nguard,bzg_nvalid,                          &
+      LVEC_fieldgathe,l_lower_order_in_v)
+      
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
-
+      
       !!! --- Gather electric field on particles
       CALL pxr_gete2dxz_energy_conserving_vect_2_2(         &
-        np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                  &
-        exg,exg_nguard,exg_nvalid,                          &
-        eyg,eyg_nguard,eyg_nvalid,                          &
-        ezg,ezg_nguard,ezg_nvalid,                          &
-        LVEC_fieldgathe,l_lower_order_in_v)
+      np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                  &
+      exg,exg_nguard,exg_nvalid,                          &
+      eyg,eyg_nguard,eyg_nvalid,                          &
+      ezg,ezg_nguard,ezg_nvalid,                          &
+      LVEC_fieldgathe,l_lower_order_in_v)
       !!! --- Gather magnetic fields on particles
       CALL pxr_getb2dxz_energy_conserving_vect_2_2(         &
-        np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                  &
-        bxg,bxg_nguard,bxg_nvalid,                          &
-        byg,byg_nguard,byg_nvalid,                          &
-        bzg,bzg_nguard,bzg_nvalid,                          &
-        LVEC_fieldgathe,l_lower_order_in_v)
-
+      np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                  &
+      bxg,bxg_nguard,bxg_nvalid,                          &
+      byg,byg_nguard,byg_nvalid,                          &
+      bzg,bzg_nguard,bzg_nvalid,                          &
+      LVEC_fieldgathe,l_lower_order_in_v)
+      
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-
+      
       !!! --- Gather electric and magnetic field on particles
       CALL pxr_geteb2dxz_energy_conserving_vect_3_3(        &
-        np,xp,zp,ex,ey,ez,bx,by,bz,xmin,zmin,dx,dz,         &
-        exg,exg_nguard,exg_nvalid,                          &
-        eyg,eyg_nguard,eyg_nvalid,                          &
-        ezg,ezg_nguard,ezg_nvalid,                          &
-        bxg,bxg_nguard,bxg_nvalid,                          &
-        byg,byg_nguard,byg_nvalid,                          &
-        bzg,bzg_nguard,bzg_nvalid,                          &
-        LVEC_fieldgathe,l_lower_order_in_v)
-
-    ! Arbitrary order
+      np,xp,zp,ex,ey,ez,bx,by,bz,xmin,zmin,dx,dz,         &
+      exg,exg_nguard,exg_nvalid,                          &
+      eyg,eyg_nguard,eyg_nvalid,                          &
+      ezg,ezg_nguard,ezg_nvalid,                          &
+      bxg,bxg_nguard,bxg_nvalid,                          &
+      byg,byg_nguard,byg_nvalid,                          &
+      bzg,bzg_nguard,bzg_nvalid,                          &
+      LVEC_fieldgathe,l_lower_order_in_v)
+      
+      ! Arbitrary order
     ELSE
-
+      
       !!! --- Gather electric field on particles
       CALL pxr_gete2dxz_n_energy_conserving(                &
-        np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
-        exg,exg_nguard,exg_nvalid,                          &
-        eyg,eyg_nguard,eyg_nvalid,                          &
-        ezg,ezg_nguard,ezg_nvalid,                          &
-        l4symtry,.FALSE._idp,l_lower_order_in_v)
+      np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
+      exg,exg_nguard,exg_nvalid,                          &
+      eyg,eyg_nguard,eyg_nvalid,                          &
+      ezg,ezg_nguard,ezg_nvalid,                          &
+      l4symtry,.FALSE._idp,l_lower_order_in_v)
       !!! --- Gather magnetic fields on particles
-     CALL pxr_getb2dxz_n_energy_conserving(                 &
-        np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
-        bxg,bxg_nguard,bxg_nvalid,                          &
-        byg,byg_nguard,byg_nvalid,                          &
-        bzg,bzg_nguard,bzg_nvalid,                          &
-        l4symtry,.FALSE._idp,l_lower_order_in_v)
+      CALL pxr_getb2dxz_n_energy_conserving(                 &
+      np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
+      bxg,bxg_nguard,bxg_nvalid,                          &
+      byg,byg_nguard,byg_nvalid,                          &
+      bzg,bzg_nguard,bzg_nvalid,                          &
+      l4symtry,.FALSE._idp,l_lower_order_in_v)
     ENDIF
   ENDIF
 END SUBROUTINE

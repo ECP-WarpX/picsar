@@ -1576,35 +1576,35 @@ MODULE tiling
     IF (rank.eq.0) WRITE(0,*) 'Memory balance:'
     
     if (mpipartsize > 1024.) then
-    mpipartsize = mpipartsize/1024.
-    unity = 'Ko'
+      mpipartsize = mpipartsize/1024.
+      unity = 'Ko'
     endif
     if (mpipartsize > 1024.) then
-    mpipartsize = mpipartsize/1024.
-    unity = 'Mo'
+      mpipartsize = mpipartsize/1024.
+      unity = 'Mo'
     endif
     
     IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the particles',mpipartsize,unity
     
     if (tilepartsize > 1024.) then
-    tilepartsize = tilepartsize/1024.
-    unity = 'Ko'
+      tilepartsize = tilepartsize/1024.
+      unity = 'Ko'
     endif
     if (tilepartsize > 1024.) then
-    tilepartsize = tilepartsize/1024.
-    unity = 'Mo'
+      tilepartsize = tilepartsize/1024.
+      unity = 'Mo'
     endif
     
     IF (rank.eq.0) WRITE(0,*) 'Average tile size for particles',tilepartsize,unity
     
     
     if (mpifieldsize > 1024.) then
-    mpifieldsize = mpifieldsize/1024.
-    unity = 'Ko'
+      mpifieldsize = mpifieldsize/1024.
+      unity = 'Ko'
     endif
     if (mpifieldsize > 1024.) then
-    mpifieldsize = mpifieldsize/1024.
-    unity = 'Mo'
+      mpifieldsize = mpifieldsize/1024.
+      unity = 'Mo'
     endif
     
     IF (rank.eq.0) WRITE(0,*) 'Average number of cells per tiles',ncloc
@@ -1614,8 +1614,8 @@ MODULE tiling
     IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for E and B',mpifieldsize*6.,unity
     
     if (tilefieldsize > 1024.) then
-    tilefieldsize = tilefieldsize/1024.
-    unity = 'Ko'
+      tilefieldsize = tilefieldsize/1024.
+      unity = 'Ko'
     endif
     
     IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity

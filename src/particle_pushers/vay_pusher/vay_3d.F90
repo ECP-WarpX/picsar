@@ -52,10 +52,10 @@
 !> @param[in] which algorithm
 !
 SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
-                              exp,eyp,ezp,bxp,byp,bzp,&
-                              q,m,dt,which)
-! ______________________________________________________________________________
-
+  exp,eyp,ezp,bxp,byp,bzp,&
+  q,m,dt,which)
+  ! ______________________________________________________________________________
+  
   USE constants
   
   ! Input/Ooutput parameters
@@ -69,29 +69,29 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
   REAL(num)    :: const,bconst,s,gisq,invclight,invclightsq,gprsq
   REAL(num)    :: tx,ty,tz,tu,uxpr,uypr,uzpr,bg,vx,vy,vz
   REAL(num)    :: taux,tauy,tauz,tausq,ust,sigma
-
+  
   invclight   = 1./clight
   invclightsq = 1./(clight*clight)
-
+  
   IF (which==0) THEN
     !     --- full push
     const = q*dt/m
     bconst = 0.5_num*const
-
+    
 #ifndef NOVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-  !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
-  !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
-  !DIR$ ASSUME_ALIGNED gi:64
+    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+    !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
+    !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
+    !DIR$ ASSUME_ALIGNED gi:64
 #elif defined __IBMBGQ__
-  !IBM* ALIGN(64,uxp,uyp,uzp)
-  !IBM* ALIGN(64,exp,eyp,ezp)
-  !IBM* ALIGN(64,bxp,byp,bzp)
-  !IBM* ALIGN(64,gi)
+    !IBM* ALIGN(64,uxp,uyp,uzp)
+    !IBM* ALIGN(64,exp,eyp,ezp)
+    !IBM* ALIGN(64,bxp,byp,bzp)
+    !IBM* ALIGN(64,gi)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-  !$OMP SIMD
+    !$OMP SIMD
 #elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
@@ -129,32 +129,32 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
       uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
       
     END DO
-
+    
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD
+    !$OMP END SIMD
 #endif
 #endif
-
+    
   ELSE IF(which==1) THEN
-
+    
     !     --- first half push
     const = 0.5_num*q*dt/m
-
+    
 #ifndef NOVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-  !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
-  !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
-  !DIR$ ASSUME_ALIGNED gi:64
+    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+    !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
+    !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
+    !DIR$ ASSUME_ALIGNED gi:64
 #elif defined __IBMBGQ__
-  !IBM* ALIGN(64,uxp,uyp,uzp)
-  !IBM* ALIGN(64,exp,eyp,ezp)
-  !IBM* ALIGN(64,bxp,byp,bzp)
-  !IBM* ALIGN(64,gi)
+    !IBM* ALIGN(64,uxp,uyp,uzp)
+    !IBM* ALIGN(64,exp,eyp,ezp)
+    !IBM* ALIGN(64,bxp,byp,bzp)
+    !IBM* ALIGN(64,gi)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
-  !$OMP SIMD
+    !$OMP SIMD
 #elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
@@ -173,26 +173,26 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD
+    !$OMP END SIMD
 #endif
 #endif
-
-
+    
+    
   ELSE IF(which==2) THEN
-  !     --- second half push
+    !     --- second half push
     const = 0.5_num*q*dt/m
     bconst = const
-
+    
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP SIMD
+    !$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
 #endif
-
+    
     DO ip=1,np
       !     --- get U'
       uxpr = uxp(ip) + const*exp(ip)
@@ -222,11 +222,11 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
       uxp(ip) = s*(uxpr+tx*tu+uypr*tz-uzpr*ty)
       uyp(ip) = s*(uypr+ty*tu+uzpr*tx-uxpr*tz)
       uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
-      ENDDO
-
+    ENDDO
+    
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP END SIMD
+    !$OMP END SIMD
 #endif
 #endif
   ENDIF

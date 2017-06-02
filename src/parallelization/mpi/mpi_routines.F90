@@ -1057,39 +1057,178 @@ MODULE mpi_routines
     INTEGER :: seconds, minutes, hours, total
     
     IF (rank .EQ. 0) THEN
-      end_time = MPI_WTIME()
-      total = INT(end_time - start_time)
-      seconds = MOD(total, 60)
-      minutes = MOD(total / 60, 60)
-      hours = total / 3600
+    end_time = MPI_WTIME()
+    total = INT(end_time - start_time)
+    seconds = MOD(total, 60)
+    minutes = MOD(total / 60, 60)
+    hours = total / 3600
+  ENDIF
+  
+  CALL MPI_FINALIZE(errcode)
+  
+END SUBROUTINE mpi_close
+
+! ____________________________________________________________________________
+!> @brief
+!> Subroutine dedicated to the time report at the end of the simulation.
+!> This subroutines gathers time statistics from all processes and print a summary
+!> of the time spent in each important step of the main PIC loop.
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2016
+SUBROUTINE time_statistics
+  ! ____________________________________________________________________________
+  USE time_stat
+  USE params
+#ifdef _OPENMP
+  USE omp_lib
+#endif
+  IMPLICIT NONE
+  
+  REAL(num), DIMENSION(20) :: percenttimes
+  INTEGER(idp)             :: nthreads_tot
+  
+  ! Total times
+  localtimes(20) = sum(localtimes(1:14))
+  localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
+  localtimes(8) + localtimes(11) + localtimes(13)
+  localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)
+  
+  init_localtimes(5) = sum(init_localtimes(1:4))
+  
+  ! Reductions
+  ! Maximun times
+  CALL MPI_REDUCE(localtimes,maxtimes,20_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
+  CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
+  ! Minimum times
+  CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
+  CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
+  ! Average
+  CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
+  CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
+  avetimes = avetimes / nproc
+  init_avetimes = init_avetimes / nproc
+  
+  ! Percentage
+  percenttimes = avetimes / avetimes(20) * 100
+  
+  IF (rank .EQ. 0) THEN
+    WRITE(0,*) '___________________________________________________________________________'
+    WRITE(0,'(X,A40,X)') "Time statistics Initialization:"
+    WRITE(0,*) ""
+    WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)"
+    WRITE(0,*) "---------------------------------------------------------------------------"
+    WRITE(0,'(X,A25,5(X,F8.2))') "Tiling and part. load:", init_mintimes(1), init_avetimes(1), init_maxtimes(1)
+    WRITE(0,*) ""
+    WRITE(0,*) '___________________________________________________________________________'
+    WRITE(0,'(X,A40,X)') "Time statistics main loop:"
+    WRITE(0,*) ""
+    WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
+    WRITE(0,*) "---------------------------------------------------------------------------"
+    IF (fg_p_pp_separated.le.1) THEN
+      WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher + field gathering:", mintimes(1), avetimes(1), maxtimes(1),&
+      percenttimes(1), avetimes(1)/nsteps*1e3
+    ELSE
+      WRITE(0,'(X,A25,5(X,F8.2))') "Field gathering:",mintimes(14), avetimes(14), maxtimes(14),&
+      percenttimes(14), avetimes(14)/nsteps*1e3
+      WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
+      percenttimes(1), avetimes(1)/nsteps*1e3
+    ENDIF
+    WRITE(0,'(X,A25,5(X,F8.2))') "Particle MPI bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
+    percenttimes(2), avetimes(2)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), avetimes(11), maxtimes(11),&
+    percenttimes(11), avetimes(11)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Current deposition:", mintimes(3), avetimes(3), maxtimes(3),&
+    percenttimes(3), avetimes(3)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Current bound. cond.:", mintimes(4), avetimes(4), maxtimes(4),&
+    percenttimes(4), avetimes(4)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Push bfield:", mintimes(5), avetimes(5), maxtimes(5),&
+    percenttimes(5), avetimes(5)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "B field bound. cond.:",mintimes(6), avetimes(6), maxtimes(6),&
+    percenttimes(6), avetimes(6)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Push efield:", mintimes(7), avetimes(7), maxtimes(7),&
+    percenttimes(7), avetimes(7)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "E field bound. cond.:",mintimes(8), avetimes(8), maxtimes(8),&
+    percenttimes(8), avetimes(8)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Sorting:",mintimes(10), avetimes(10), maxtimes(10),&
+    percenttimes(10), avetimes(10)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Charge deposition:", mintimes(12), avetimes(12), maxtimes(12),&
+    percenttimes(12), avetimes(12)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Charge bound. cond.:", mintimes(13), avetimes(13), maxtimes(13),&
+    percenttimes(13), avetimes(13)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Diags:",mintimes(9), avetimes(9), maxtimes(9),&
+    percenttimes(9), avetimes(9)/nsteps*1e3
+    
+    WRITE(0,*) ""
+    WRITE(0,'(X,A25,5(X,F8.2))') "Total time Maxwell solver:",mintimes(18), avetimes(18), maxtimes(18), &
+    percenttimes(18), avetimes(18)/nsteps*1e3
+    WRITE(0,'(X,A25,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
+    percenttimes(19), avetimes(19)/nsteps*1e3
+    WRITE(0,'(X,A25,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
+    
+    
+#ifdef _OPENMP
+    nthreads_tot=OMP_GET_MAX_THREADS()
+    CALL OMP_SET_NESTED(.TRUE.)
+#else
+    nthreads_tot=1
+#endif
+    
+    WRITE(0,*) ''
+    IF (fg_p_pp_separated.le.1) THEN
+      WRITE(0,*) 'For lib_performance python class:'
+      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",part_mpi_com=",F6.2,&
+      ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
+      ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")')&
+      nproc,nthreads_tot,avetimes(20), &
+      avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
+      avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
+      avetimes(12),avetimes(13),avetimes(9)
+    ELSE
+      WRITE(0,*) 'For lib_performance python class:'
+      WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",partpusher=",F6.2,",part_mpi_com=",F6.2,&
+      ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
+      ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
+      nproc,nthreads_tot,avetimes(20), &
+      avetimes(14),avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
+      avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
+      avetimes(12),avetimes(13),avetimes(9)
     ENDIF
     
-    CALL MPI_FINALIZE(errcode)
-    
-  END SUBROUTINE mpi_close
+  ENDIF
   
+END SUBROUTINE
+
+! ____________________________________________________________________________
+!> @brief
+!> Subroutine dedicated to the time statistics for one iteration
+!
+!> This subroutine prints time statistics during the simulation
+!> every iterations if timestat_perit > 0.
+!>
+!
+!> @author
+!> Mathieu Lobet
+!
+!> @date
+!> 2016
+SUBROUTINE time_statistics_per_iteration
   ! ____________________________________________________________________________
-  !> @brief
-  !> Subroutine dedicated to the time report at the end of the simulation.
-  !> This subroutines gathers time statistics from all processes and print a summary
-  !> of the time spent in each important step of the main PIC loop.
-  !
-  !> @author
-  !> Mathieu Lobet
-  !
-  !> @date
-  !> Creation 2016
-  SUBROUTINE time_statistics
-    ! ____________________________________________________________________________
-    USE time_stat
-    USE params
+  
+  USE time_stat
+  USE params
 #ifdef _OPENMP
-    USE omp_lib
+  USE omp_lib
 #endif
-    IMPLICIT NONE
-    
-    REAL(num), DIMENSION(20) :: percenttimes
-    INTEGER(idp)             :: nthreads_tot
+  IMPLICIT NONE
+  
+  REAL(num), DIMENSION(20) :: percenttimes
+  
+  ! Time stats per iteration activated
+  IF (timestat_perit.gt.0) THEN
     
     ! Total times
     localtimes(20) = sum(localtimes(1:14))
@@ -1105,27 +1244,17 @@ MODULE mpi_routines
     CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     ! Minimum times
     CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
+    CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     ! Average
     CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
-    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
+    CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
     avetimes = avetimes / nproc
-    init_avetimes = init_avetimes / nproc
     
     ! Percentage
     percenttimes = avetimes / avetimes(20) * 100
     
     IF (rank .EQ. 0) THEN
       WRITE(0,*) '___________________________________________________________________________'
-      WRITE(0,'(X,A40,X)') "Time statistics Initialization:"
-      WRITE(0,*) ""
-      WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)"
-      WRITE(0,*) "---------------------------------------------------------------------------"
-      WRITE(0,'(X,A25,5(X,F8.2))') "Tiling and part. load:", init_mintimes(1), init_avetimes(1), init_maxtimes(1)
-      WRITE(0,*) ""
-      WRITE(0,*) '___________________________________________________________________________'
-      WRITE(0,'(X,A40,X)') "Time statistics main loop:"
-      WRITE(0,*) ""
       WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
       WRITE(0,*) "---------------------------------------------------------------------------"
       IF (fg_p_pp_separated.le.1) THEN
@@ -1168,139 +1297,10 @@ MODULE mpi_routines
       WRITE(0,'(X,A25,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
       percenttimes(19), avetimes(19)/nsteps*1e3
       WRITE(0,'(X,A25,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
-      
-      
-#ifdef _OPENMP
-      nthreads_tot=OMP_GET_MAX_THREADS()
-      CALL OMP_SET_NESTED(.TRUE.)
-#else
-      nthreads_tot=1
-#endif
-      
-      WRITE(0,*) ''
-      IF (fg_p_pp_separated.le.1) THEN
-        WRITE(0,*) 'For lib_performance python class:'
-        WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",part_mpi_com=",F6.2,&
-        ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
-        ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")')&
-        nproc,nthreads_tot,avetimes(20), &
-        avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
-        avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
-        avetimes(12),avetimes(13),avetimes(9)
-      ELSE
-        WRITE(0,*) 'For lib_performance python class:'
-        WRITE(0,'("(nmpi=",I5,",nomp=",I5,",name='''',kernel=",F6.2,",fieldgathe=",F6.2,",partpusher=",F6.2,",part_mpi_com=",F6.2,&
-        ",part_omp_com=",F6.2,",currdepo=",F6.2,",currcom=",F6.2,",maxwell=",F6.2,&
-        ",maxwellcom=",F6.2,",sorting=",F6.2,",rhodepo=",F6.2,",rhocom=",F6.2,",diags=",F6.2,")")') &
-        nproc,nthreads_tot,avetimes(20), &
-        avetimes(14),avetimes(1),avetimes(2),avetimes(11),avetimes(3),avetimes(4),&
-        avetimes(5)+avetimes(7),avetimes(6)+avetimes(8),avetimes(10),&
-        avetimes(12),avetimes(13),avetimes(9)
-      ENDIF
-      
     ENDIF
     
-  END SUBROUTINE
+  ENDIF
   
-  ! ____________________________________________________________________________
-  !> @brief
-  !> Subroutine dedicated to the time statistics for one iteration
-  !
-  !> This subroutine prints time statistics during the simulation
-  !> every iterations if timestat_perit > 0.
-  !>
-  !
-  !> @author
-  !> Mathieu Lobet
-  !
-  !> @date
-  !> 2016
-  SUBROUTINE time_statistics_per_iteration
-    ! ____________________________________________________________________________
-    
-    USE time_stat
-    USE params
-#ifdef _OPENMP
-    USE omp_lib
-#endif
-    IMPLICIT NONE
-    
-    REAL(num), DIMENSION(20) :: percenttimes
-    
-    ! Time stats per iteration activated
-    IF (timestat_perit.gt.0) THEN
-      
-      ! Total times
-      localtimes(20) = sum(localtimes(1:14))
-      localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + &
-      localtimes(8) + localtimes(11) + localtimes(13)
-      localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)
-      
-      init_localtimes(5) = sum(init_localtimes(1:4))
-      
-      ! Reductions
-      ! Maximun times
-      CALL MPI_REDUCE(localtimes,maxtimes,20_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
-      CALL MPI_REDUCE(init_localtimes,init_maxtimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
-      ! Minimum times
-      CALL MPI_REDUCE(localtimes,mintimes,20_isp,mpidbl,MPI_MIN,0_isp,comm,errcode)
-      CALL MPI_REDUCE(init_localtimes,init_mintimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
-      ! Average
-      CALL MPI_REDUCE(localtimes,avetimes,20_isp,mpidbl,MPI_SUM,0_isp,comm,errcode)
-      CALL MPI_REDUCE(init_localtimes,init_avetimes,5_isp,mpidbl,MPI_MAX,0_isp,comm,errcode)
-      avetimes = avetimes / nproc
-      
-      ! Percentage
-      percenttimes = avetimes / avetimes(20) * 100
-      
-      IF (rank .EQ. 0) THEN
-        WRITE(0,*) '___________________________________________________________________________'
-        WRITE(0,'(X,A25,X,A8,X,A8,X,A8,X,A8,X,A8)') "Step part","min (s)","ave (s)","max (s)","per (%)","/it (ms)"
-        WRITE(0,*) "---------------------------------------------------------------------------"
-        IF (fg_p_pp_separated.le.1) THEN
-          WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher + field gathering:", mintimes(1), avetimes(1), maxtimes(1),&
-          percenttimes(1), avetimes(1)/nsteps*1e3
-        ELSE
-          WRITE(0,'(X,A25,5(X,F8.2))') "Field gathering:",mintimes(14), avetimes(14), maxtimes(14),&
-          percenttimes(14), avetimes(14)/nsteps*1e3
-          WRITE(0,'(X,A25,5(X,F8.2))') "Particle pusher:", mintimes(1), avetimes(1), maxtimes(1),&
-          percenttimes(1), avetimes(1)/nsteps*1e3
-        ENDIF
-        WRITE(0,'(X,A25,5(X,F8.2))') "Particle MPI bound. cond.:", mintimes(2), avetimes(2), maxtimes(2),&
-        percenttimes(2), avetimes(2)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), avetimes(11), maxtimes(11),&
-        percenttimes(11), avetimes(11)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Current deposition:", mintimes(3), avetimes(3), maxtimes(3),&
-        percenttimes(3), avetimes(3)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Current bound. cond.:", mintimes(4), avetimes(4), maxtimes(4),&
-        percenttimes(4), avetimes(4)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Push bfield:", mintimes(5), avetimes(5), maxtimes(5),&
-        percenttimes(5), avetimes(5)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "B field bound. cond.:",mintimes(6), avetimes(6), maxtimes(6),&
-        percenttimes(6), avetimes(6)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Push efield:", mintimes(7), avetimes(7), maxtimes(7),&
-        percenttimes(7), avetimes(7)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "E field bound. cond.:",mintimes(8), avetimes(8), maxtimes(8),&
-        percenttimes(8), avetimes(8)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Sorting:",mintimes(10), avetimes(10), maxtimes(10),&
-        percenttimes(10), avetimes(10)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Charge deposition:", mintimes(12), avetimes(12), maxtimes(12),&
-        percenttimes(12), avetimes(12)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Charge bound. cond.:", mintimes(13), avetimes(13), maxtimes(13),&
-        percenttimes(13), avetimes(13)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Diags:",mintimes(9), avetimes(9), maxtimes(9),&
-        percenttimes(9), avetimes(9)/nsteps*1e3
-        
-        WRITE(0,*) ""
-        WRITE(0,'(X,A25,5(X,F8.2))') "Total time Maxwell solver:",mintimes(18), avetimes(18), maxtimes(18), &
-        percenttimes(18), avetimes(18)/nsteps*1e3
-        WRITE(0,'(X,A25,5(X,F8.2))') "Total time bound. cond.:",mintimes(19), avetimes(19), maxtimes(19), &
-        percenttimes(19), avetimes(19)/nsteps*1e3
-        WRITE(0,'(X,A25,X,F8.2,X,F8.2,X,F8.2)') "Total time:",mintimes(20), avetimes(20), maxtimes(20)
-      ENDIF
-      
-    ENDIF
-    
-  END SUBROUTINE
-  
+END SUBROUTINE
+
 END MODULE mpi_routines

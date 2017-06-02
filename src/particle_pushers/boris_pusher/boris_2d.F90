@@ -40,22 +40,22 @@
 !> @param[in] gaminv particle inverse Lorentz factor
 !> @param[in] dt time step
 SUBROUTINE pxr_pushxz(np,xp,zp,uxp,uzp,gaminv,dt)
-! ______________________________________________________________________________
+  ! ______________________________________________________________________________
   USE constants
-
+  
   IMPLICIT NONE
   INTEGER(idp)   :: np
   REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
-
+  
   !!$OMP PARALLEL DO PRIVATE(ip)
   DO ip=1,np
-      xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-      zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
+    xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
+    zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
   ENDDO
   !!$OMP END PARALLEL DO
-
+  
   RETURN
 END SUBROUTINE pxr_pushxz
 
@@ -76,7 +76,7 @@ END SUBROUTINE pxr_pushxz
 !> @param[in] gaminv particle inverse Lorentz factor
 !> @param[in] dt time step
 SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
-! ______________________________________________________________________________
+  ! ______________________________________________________________________________
   USE constants
   
   IMPLICIT NONE
@@ -84,23 +84,23 @@ SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
   REAL(num) :: xp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
-
-
+  
+  
 #if defined _OPENMP && _OPENMP>=201307
-    !$OMP SIMD
+  !$OMP SIMD
 #elif defined __IBMBGQ__
-    !IBM* SIMD_LEVEL
+  !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
-    !$DIR SIMD
+  !$DIR SIMD
 #endif
   DO ip=1,np
-      xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
-      zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-
+    xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
+    zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
+    
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
-!$OMP END SIMD
+  !$OMP END SIMD
 #endif
-
+  
   RETURN
 END SUBROUTINE pxr_push2dxz
