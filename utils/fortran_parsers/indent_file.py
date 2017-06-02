@@ -54,7 +54,7 @@ def correct_indentation(input_file,output_file,indent_block):
 	listlines_output=[]
 	# -- Block pattern 
 	pattern_block_start="^\s*(DO|SUBROUTINE|MODULE|PROGRAM|IF.*THEN|FUNCTION|SELECT|INTERFACE|TYPE ).*"
-	pattern_block_end="^\s*(END)"
+	pattern_block_end="^\s*(END |ENDDO|ENDIF|END$|END\!)"
 	pattern_block_intermediate="^\s*(CASE|ELSE)"
 	pattern_no_trailing_spaces="^\s*(.*)"
 	pattern_comp_directive="^#"

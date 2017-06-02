@@ -435,702 +435,702 @@ MODULE control_file
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') c_dim
       ELSE IF (INDEX(buffer,'end::cpusplit') .GT. 0) THEN
-      end_section =.TRUE.
-    END IF
-  END DO
-  RETURN
-END SUBROUTINE read_cpusplit_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads the plasma main properties in the input file
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_plasma_section
-  ! ____________________________________________________________________________________
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_cpusplit_section
   
-  INTEGER :: ix = 0
-  LOGICAL(lp)  :: end_section = .FALSE.
-  ! READS CPUSPLIT SECTION OF INPUT FILE
-  DO WHILE((.NOT. end_section) .AND. (ios==0))
-    READ(fh_input, '(A)', iostat=ios) buffer
-    !WRITE(0,*),TRIM(ADJUSTL(buffer))
-    IF (INDEX(buffer,'#') .GT. 0) THEN
-      CYCLE
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads the plasma main properties in the input file
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_plasma_section
+    ! ____________________________________________________________________________________
+    
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS CPUSPLIT SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'nlab') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) nlab
+      ELSE IF (INDEX(buffer,'gamma0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) g0
+      ELSE IF (INDEX(buffer,'pdistr') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) pdistr
+      ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') particle_pusher
+      ELSE IF (INDEX(buffer,'end::plasma') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_plasma_section
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads the solver parameters in the input file
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_solver_section
+    ! ____________________________________________________________________________________
+    
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS CPUSPLIT SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'norderx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') norderx
+      ELSE IF (INDEX(buffer,'nordery') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nordery
+      ELSE IF (INDEX(buffer,'norderz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') norderz
+      ELSE IF (INDEX(buffer,'nox') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nox
+      ELSE IF (INDEX(buffer,'noy') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') noy
+      ELSE IF (INDEX(buffer,'noz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') noz
+      ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') currdepo
+      ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') fieldgathe
+      ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') rhodepo
+      ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') partcom
+      ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+      ELSE IF (INDEX(buffer,'l_spectral') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) l_spectral
+      ELSE IF (INDEX(buffer,'l_staggered') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) l_staggered
+      ELSE IF (INDEX(buffer,'fftw_with_mpi') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) fftw_with_mpi
+      ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated
+      ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_solver_section
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads the particle sorting parameters in the input file
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_sorting_section
+    ! ____________________________________________________________________________________
+    
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS CPUSPLIT SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'activation') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') sorting_activated
+      ELSE IF (INDEX(buffer,'dx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) sorting_dx
+      ELSE IF (INDEX(buffer,'dy') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) sorting_dy
+      ELSE IF (INDEX(buffer,'dz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) sorting_dz
+      ELSE IF (INDEX(buffer,'shiftx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) sorting_shiftx
+      ELSE IF (INDEX(buffer,'shifty') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) sorting_shifty
+      ELSE IF (INDEX(buffer,'shiftz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) sorting_shiftz
+      ELSE IF (INDEX(buffer,'verbose') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) sorting_verbose
+      ELSE IF (INDEX(buffer,'end::sorting') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_sorting_section
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads the time statistics parameters
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_timestat_section
+    ! ____________________________________________________________________________________
+    
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS CPUSPLIT SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'activation') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') timestat_activated
+      ELSE IF (INDEX(buffer,'period') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') timestat_period
+      ELSE IF (INDEX(buffer,'it_start') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') timestat_itstart
+      ELSE IF (INDEX(buffer,'per_it') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') timestat_perit
+      ELSE IF (INDEX(buffer,'buffersize') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat
+      ELSE IF (INDEX(buffer,'end::timestat') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_timestat_section
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads the general parameters including the domain extension,
+  !> the discretization, the tiling, the guard cells.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_main_section
+    ! ____________________________________________________________________________________
+    
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS GRID SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'c_dim') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_dim
+      ELSE IF (INDEX(buffer,'nx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nx_global_grid
+        nx_global=nx_global_grid-1
+      ELSE IF (INDEX(buffer,'ny') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') ny_global_grid
+        ny_global=ny_global_grid-1
+      ELSE IF (INDEX(buffer,'nz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nz_global_grid
+        nz_global=nz_global_grid-1
+      ELSE IF (INDEX(buffer,'ntilex') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') ntilex
+      ELSE IF (INDEX(buffer,'ntiley') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') ntiley
+      ELSE IF (INDEX(buffer,'ntilez') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') ntilez
+      ELSEIF (INDEX(buffer,'dx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dx
+      ELSE IF (INDEX(buffer,'dy') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dy
+      ELSE IF (INDEX(buffer,'dz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dz
+      ELSEIF (INDEX(buffer,'xmin') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) xmin
+      ELSE IF (INDEX(buffer,'ymin') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) ymin
+      ELSE IF (INDEX(buffer,'zmin') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) zmin
+      ELSEIF (INDEX(buffer,'xmax') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) xmax
+      ELSE IF (INDEX(buffer,'ymax') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) ymax
+      ELSE IF (INDEX(buffer,'zmax') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) zmax
+      ELSE IF (INDEX(buffer,'t_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) tmax
+      ELSE IF (INDEX(buffer,'nsteps') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) nsteps
+      ELSE IF (INDEX(buffer,'dtcoef') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dtcoef
+      ELSE IF (INDEX(buffer,'nguardsx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nxguards
+      ELSE IF (INDEX(buffer,'nguardsy') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nyguards
+      ELSE IF (INDEX(buffer,'nguardsz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nzguards
+      ELSE IF (INDEX(buffer,'njguardsx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nxjguards
+      ELSE IF (INDEX(buffer,'njguardsy') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nyjguards
+      ELSE IF (INDEX(buffer,'njguardsz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nzjguards
+      ELSE IF (INDEX(buffer,'l_plasma') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) l_plasma
+      ELSE IF (INDEX(buffer,'end::main') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_main_section
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads the species properties.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_species_section
+    ! ____________________________________________________________________________________
+    
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section
+    TYPE(particle_species), POINTER :: curr
+    ! READS SPECIES SECTION OF INPUT FILE
+    IF (.NOT. l_species_allocated) THEN
+      nspecies=0
+      ALLOCATE(species_parray(1:nspecies_max))
+      l_species_allocated=.TRUE.
     ENDIF
-    IF (INDEX(buffer,'nlab') .GT. 0) THEN
-      ix = INDEX(buffer, "=")
-      READ(buffer(ix+1:string_length), *) nlab
-    ELSE IF (INDEX(buffer,'gamma0') .GT. 0) THEN
-      ix = INDEX(buffer, "=")
-      READ(buffer(ix+1:string_length), *) g0
-    ELSE IF (INDEX(buffer,'pdistr') .GT. 0) THEN
-      ix = INDEX(buffer, "=")
-      READ(buffer(ix+1:string_length), *) pdistr
-    ELSE IF (INDEX(buffer,'particle_pusher') .GT. 0) THEN
-      ix = INDEX(buffer, "=")
-      READ(buffer(ix+1:string_length), '(i10)') particle_pusher
-    ELSE IF (INDEX(buffer,'end::plasma') .GT. 0) THEN
-    end_section =.TRUE.
-  END IF
-END DO
-RETURN
-END SUBROUTINE read_plasma_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads the solver parameters in the input file
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_solver_section
-! ____________________________________________________________________________________
-
-INTEGER :: ix = 0
-LOGICAL(lp)  :: end_section = .FALSE.
-! READS CPUSPLIT SECTION OF INPUT FILE
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-  READ(fh_input, '(A)', iostat=ios) buffer
-  !WRITE(0,*),TRIM(ADJUSTL(buffer))
-  IF (INDEX(buffer,'#') .GT. 0) THEN
-    CYCLE
-  ENDIF
-  IF (INDEX(buffer,'norderx') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') norderx
-  ELSE IF (INDEX(buffer,'nordery') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') nordery
-  ELSE IF (INDEX(buffer,'norderz') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') norderz
-  ELSE IF (INDEX(buffer,'nox') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') nox
-  ELSE IF (INDEX(buffer,'noy') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') noy
-  ELSE IF (INDEX(buffer,'noz') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') noz
-  ELSE IF (INDEX(buffer,'currdepo') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') currdepo
-  ELSE IF (INDEX(buffer,'fieldgathe') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') fieldgathe
-  ELSE IF (INDEX(buffer,'rhodepo') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') rhodepo
-  ELSE IF (INDEX(buffer,'partcom') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') partcom
-  ELSE IF (INDEX(buffer,'mpi_buf_size') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-  ELSE IF (INDEX(buffer,'l_spectral') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), *) l_spectral
-  ELSE IF (INDEX(buffer,'l_staggered') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), *) l_staggered
-  ELSE IF (INDEX(buffer,'fftw_with_mpi') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), *) fftw_with_mpi
-  ELSE IF (INDEX(buffer,'fg_p_pp_separated') .GT. 0) THEN
-    ix = INDEX(buffer, "=")
-    READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated
-  ELSE IF (INDEX(buffer,'end::solver') .GT. 0) THEN
-  end_section =.TRUE.
-END IF
-END DO
-RETURN
-END SUBROUTINE read_solver_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads the particle sorting parameters in the input file
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_sorting_section
-! ____________________________________________________________________________________
-
-INTEGER :: ix = 0
-LOGICAL(lp)  :: end_section = .FALSE.
-! READS CPUSPLIT SECTION OF INPUT FILE
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-READ(fh_input, '(A)', iostat=ios) buffer
-!WRITE(0,*),TRIM(ADJUSTL(buffer))
-IF (INDEX(buffer,'#') .GT. 0) THEN
-  CYCLE
-ENDIF
-IF (INDEX(buffer,'activation') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length), '(i10)') sorting_activated
-ELSE IF (INDEX(buffer,'dx') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length),*) sorting_dx
-ELSE IF (INDEX(buffer,'dy') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length),*) sorting_dy
-ELSE IF (INDEX(buffer,'dz') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length),*) sorting_dz
-ELSE IF (INDEX(buffer,'shiftx') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length),*) sorting_shiftx
-ELSE IF (INDEX(buffer,'shifty') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length),*) sorting_shifty
-ELSE IF (INDEX(buffer,'shiftz') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length),*) sorting_shiftz
-ELSE IF (INDEX(buffer,'verbose') .GT. 0) THEN
-  ix = INDEX(buffer, "=")
-  READ(buffer(ix+1:string_length),*) sorting_verbose
-ELSE IF (INDEX(buffer,'end::sorting') .GT. 0) THEN
-end_section =.TRUE.
-END IF
-END DO
-RETURN
-END SUBROUTINE read_sorting_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads the time statistics parameters
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_timestat_section
-! ____________________________________________________________________________________
-
-INTEGER :: ix = 0
-LOGICAL(lp)  :: end_section = .FALSE.
-! READS CPUSPLIT SECTION OF INPUT FILE
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-READ(fh_input, '(A)', iostat=ios) buffer
-!WRITE(0,*),TRIM(ADJUSTL(buffer))
-IF (INDEX(buffer,'#') .GT. 0) THEN
-CYCLE
-ENDIF
-IF (INDEX(buffer,'activation') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') timestat_activated
-ELSE IF (INDEX(buffer,'period') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') timestat_period
-ELSE IF (INDEX(buffer,'it_start') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') timestat_itstart
-ELSE IF (INDEX(buffer,'per_it') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') timestat_perit
-ELSE IF (INDEX(buffer,'buffersize') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nbuffertimestat
-ELSE IF (INDEX(buffer,'end::timestat') .GT. 0) THEN
-end_section =.TRUE.
-END IF
-END DO
-RETURN
-END SUBROUTINE read_timestat_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads the general parameters including the domain extension,
-!> the discretization, the tiling, the guard cells.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_main_section
-! ____________________________________________________________________________________
-
-INTEGER :: ix = 0
-LOGICAL(lp)  :: end_section = .FALSE.
-! READS GRID SECTION OF INPUT FILE
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-READ(fh_input, '(A)', iostat=ios) buffer
-!WRITE(0,*),TRIM(ADJUSTL(buffer))
-IF (INDEX(buffer,'#') .GT. 0) THEN
-CYCLE
-ENDIF
-IF (INDEX(buffer,'c_dim') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_dim
-ELSE IF (INDEX(buffer,'nx') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nx_global_grid
-nx_global=nx_global_grid-1
-ELSE IF (INDEX(buffer,'ny') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') ny_global_grid
-ny_global=ny_global_grid-1
-ELSE IF (INDEX(buffer,'nz') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nz_global_grid
-nz_global=nz_global_grid-1
-ELSE IF (INDEX(buffer,'ntilex') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') ntilex
-ELSE IF (INDEX(buffer,'ntiley') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') ntiley
-ELSE IF (INDEX(buffer,'ntilez') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') ntilez
-ELSEIF (INDEX(buffer,'dx') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dx
-ELSE IF (INDEX(buffer,'dy') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dy
-ELSE IF (INDEX(buffer,'dz') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dz
-ELSEIF (INDEX(buffer,'xmin') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) xmin
-ELSE IF (INDEX(buffer,'ymin') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) ymin
-ELSE IF (INDEX(buffer,'zmin') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) zmin
-ELSEIF (INDEX(buffer,'xmax') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) xmax
-ELSE IF (INDEX(buffer,'ymax') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) ymax
-ELSE IF (INDEX(buffer,'zmax') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) zmax
-ELSE IF (INDEX(buffer,'t_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) tmax
-ELSE IF (INDEX(buffer,'nsteps') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) nsteps
-ELSE IF (INDEX(buffer,'dtcoef') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dtcoef
-ELSE IF (INDEX(buffer,'nguardsx') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nxguards
-ELSE IF (INDEX(buffer,'nguardsy') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nyguards
-ELSE IF (INDEX(buffer,'nguardsz') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nzguards
-ELSE IF (INDEX(buffer,'njguardsx') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nxjguards
-ELSE IF (INDEX(buffer,'njguardsy') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nyjguards
-ELSE IF (INDEX(buffer,'njguardsz') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') nzjguards
-ELSE IF (INDEX(buffer,'l_plasma') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) l_plasma
-ELSE IF (INDEX(buffer,'end::main') .GT. 0) THEN
-end_section =.TRUE.
-END IF
-END DO
-RETURN
-END SUBROUTINE read_main_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads the species properties.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_species_section
-! ____________________________________________________________________________________
-
-INTEGER :: ix = 0
-LOGICAL(lp)  :: end_section
-TYPE(particle_species), POINTER :: curr
-! READS SPECIES SECTION OF INPUT FILE
-IF (.NOT. l_species_allocated) THEN
-nspecies=0
-ALLOCATE(species_parray(1:nspecies_max))
-l_species_allocated=.TRUE.
-ENDIF
-nspecies = nspecies+1
-curr => species_parray(nspecies)
-! minimal init for species attributes
-curr%charge = -echarge
-curr%mass = emass
-curr%nppcell = 0
-curr%x_min = 0._num
-curr%x_max = 0._num
-curr%y_min = 0._num
-curr%y_max = 0._num
-curr%z_min = 0._num
-curr%z_max = 0._num
-curr%vdrift_x =0._num
-curr%vdrift_y =0._num
-curr%vdrift_z =0._num
-curr%vth_x =0._num
-curr%vth_y =0._num
-curr%vth_z =0._num
-curr%sorting_period = 0
-curr%sorting_start = 0
-curr%species_npart=0
-end_section=.FALSE.
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-READ(fh_input, '(A)', iostat=ios) buffer
-!WRITE(0,*),TRIM(ADJUSTL(buffer))
-IF (INDEX(buffer,'#') .GT. 0) THEN
-CYCLE
-ENDIF
-IF (INDEX(buffer,'name') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%name
-ELSE IF (INDEX(buffer,'mass') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%mass
-curr%mass=curr%mass*emass
-ELSE IF (INDEX(buffer,'charge') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%charge
-curr%charge=curr%charge*echarge
-ELSEIF (INDEX(buffer,'nppcell') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length),'(i10)') curr%nppcell
-ELSE IF (INDEX(buffer,'x_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%x_min
-ELSE IF (INDEX(buffer,'x_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%x_max
-ELSEIF (INDEX(buffer,'y_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%y_min
-ELSE IF (INDEX(buffer,'y_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%y_max
-ELSEIF (INDEX(buffer,'z_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%z_min
-ELSE IF (INDEX(buffer,'z_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%z_max
-ELSE IF (INDEX(buffer,'vdrift_x') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%vdrift_x
-curr%vdrift_x=curr%vdrift_x*clight
-ELSE IF (INDEX(buffer,'vdrift_y') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%vdrift_y
-curr%vdrift_y=curr%vdrift_y*clight
-ELSE IF (INDEX(buffer,'vdrift_z') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%vdrift_z
-curr%vdrift_z=curr%vdrift_z*clight
-ELSE IF (INDEX(buffer,'vth_x') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%vth_x
-curr%vth_x=curr%vth_x*clight
-ELSE IF (INDEX(buffer,'vth_y') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%vth_y
-curr%vth_y=curr%vth_y*clight
-ELSE IF (INDEX(buffer,'vth_z') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%vth_z
-curr%vth_z=curr%vth_z*clight
-ELSE IF (INDEX(buffer,'sorting_period') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%sorting_period
-ELSE IF (INDEX(buffer,'sorting_start') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) curr%sorting_start
-ELSE IF (INDEX(buffer,'end::species') .GT. 0) THEN
-end_section =.TRUE.
-END IF
-END DO
-RETURN
-END SUBROUTINE read_species_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads parameters for particle dumps.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_particle_dumps_section
-! ____________________________________________________________________________________
-
-INTEGER                      :: ix = 0, ispecies
-LOGICAL(lp)                       :: end_section
-TYPE(particle_dump), POINTER :: dp
-CHARACTER(LEN=string_length) :: dump_name
-! READS SPECIES SECTION OF INPUT FILE
-IF (.NOT. l_pdumps_allocated) THEN
-npdumps=0
-ALLOCATE(particle_dumps(1:nspecies_max))
-l_pdumps_allocated=.TRUE.
-ENDIF
-npdumps=npdumps+1
-dp => particle_dumps(npdumps)
-! minimal init for filter attributes
-dp%ispecies   = -1
-dp%dump_x_min = xmin
-dp%dump_x_max = xmax
-dp%dump_y_min = ymin
-dp%dump_y_max = ymax
-dp%dump_z_min = zmin
-dp%dump_z_max = zmax
-dp%dump_ux_min = 1e7
-dp%dump_ux_max = 1e9
-dp%dump_uy_min = 1e7
-dp%dump_uy_max = 1e9
-dp%dump_uz_min = 1e7
-dp%dump_uz_max = 1e9
-dp%diag_period = -1
-end_section=.FALSE.
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-READ(fh_input, '(A)', iostat=ios) buffer
-!WRITE(0,*),TRIM(ADJUSTL(buffer))
-IF (INDEX(buffer,'#') .GT. 0) THEN
-CYCLE
-ENDIF
-IF (INDEX(buffer,'dump_x_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_x_min
-ELSE IF (INDEX(buffer,'dump_x_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_x_max
-ELSE IF (INDEX(buffer,'species_name') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dump_name
-DO ispecies=1,nspecies
-IF (INDEX(dump_name,species_parray(ispecies)%name) .GT. 0) THEN
-dp%ispecies=ispecies
-EXIT
-ENDIF
-END DO
-IF (dp%ispecies .EQ. -1) THEN
-WRITE(0,*) "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
-
-ENDIF
-ELSE IF (INDEX(buffer,'dump_y_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_y_min
-ELSEIF (INDEX(buffer,'dump_y_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_y_max
-ELSE IF (INDEX(buffer,'dump_z_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_z_min
-ELSEIF (INDEX(buffer,'dump_z_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length),*) dp%dump_z_max
-ELSE IF (INDEX(buffer,'dump_ux_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_ux_min
-ELSE IF (INDEX(buffer,'dump_ux_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_ux_max
-ELSE IF (INDEX(buffer,'dump_uy_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_uy_min
-ELSEIF (INDEX(buffer,'dump_uy_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_uy_max
-ELSE IF (INDEX(buffer,'dump_uz_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), *) dp%dump_uz_min
-ELSEIF (INDEX(buffer,'dump_uz_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length),*) dp%dump_uz_max
-ELSEIF (INDEX(buffer,'diag_period') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length),'(i10)') dp%diag_period
-ELSE IF (INDEX(buffer,'end::particle_dump') .GT. 0) THEN
-end_section =.TRUE.
-END IF
-END DO
-RETURN
-END SUBROUTINE read_particle_dumps_section
-
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads parameters for field outputs.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_output_section
-! ____________________________________________________________________________________
-INTEGER :: ix = 0
-LOGICAL(lp)  :: end_section = .FALSE.
-! READS GRID SECTION OF INPUT FILE
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-READ(fh_input, '(A)', iostat=ios) buffer
-!WRITE(0,*),TRIM(ADJUSTL(buffer))
-IF (INDEX(buffer,'#') .GT. 0) THEN
-CYCLE
-ENDIF
-IF (INDEX(buffer,'output_frequency') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') output_frequency
-ELSE IF (INDEX(buffer,'output_step_min') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') output_step_min
-ELSE IF (INDEX(buffer,'output_step_max') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') output_step_max
-ELSEIF (INDEX(buffer,'ex') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_ex
-ELSE IF (INDEX(buffer,'ey') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_ey
-ELSE IF (INDEX(buffer,'ez') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_ez
-ELSEIF (INDEX(buffer,'bx') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_bx
-ELSE IF (INDEX(buffer,'by') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_by
-ELSE IF (INDEX(buffer,'bz') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_bz
-ELSEIF (INDEX(buffer,'jx') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_jx
-ELSE IF (INDEX(buffer,'jy') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_jy
-ELSE IF (INDEX(buffer,'jz') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_jz
-ELSEIF (INDEX(buffer,'rho') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_rho
-ELSE IF (INDEX(buffer,'dive') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') c_output_dive
-ELSE IF (INDEX(buffer,'end::output') .GT. 0) THEN
-end_section =.TRUE.
-END IF
-END DO
-RETURN
-END SUBROUTINE read_output_section
-
-! ____________________________________________________________________________________
-!> @brief
-!> Routine that reads parameters for temporal diagnistics.
-!> Temporal diagnostics are the temporal evolution of some quantities
-!> such as the particle energies and the field energies.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE read_temporal_output_section
-! ____________________________________________________________________________________
-INTEGER :: ix = 0
-LOGICAL(lp)  :: end_section = .FALSE.
-
-DO WHILE((.NOT. end_section) .AND. (ios==0))
-READ(fh_input, '(A)', iostat=ios) buffer
-!WRITE(0,*),TRIM(ADJUSTL(buffer))
-IF (INDEX(buffer,'#') .GT. 0) THEN
-CYCLE
-ENDIF
-IF (INDEX(buffer,'frequency') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_frequency
-ELSE IF (INDEX(buffer,'format') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_format
-ELSE IF (INDEX(buffer,'kinE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(1)
-ELSE IF (INDEX(buffer,'exE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(2)
-ELSE IF (INDEX(buffer,'eyE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(3)
-ELSE IF (INDEX(buffer,'ezE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(4)
-ELSE IF (INDEX(buffer,'bxE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(5)
-ELSE IF (INDEX(buffer,'byE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(6)
-ELSE IF (INDEX(buffer,'bzE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(7)
-ELSE IF (INDEX(buffer,'divE-rho') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(8)
-ELSE IF (INDEX(buffer,'rho') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(9)
-ELSE IF (INDEX(buffer,'divE') .GT. 0) THEN
-ix = INDEX(buffer, "=")
-READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(10)
-ENDIF
-ENDDO
-RETURN
-END SUBROUTINE
-
-! ____________________________________________________________________________________
-!> @brief
-!> Initialization of the species section and arrays.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE init_species_section
-! ____________________________________________________________________________________
-
-IF (.NOT. l_species_allocated) THEN
-nspecies=0
-ALLOCATE(species_parray(1:nspecies_max))
-l_species_allocated=.TRUE.
-ENDIF
-END SUBROUTINE init_species_section
-
+    nspecies = nspecies+1
+    curr => species_parray(nspecies)
+    ! minimal init for species attributes
+    curr%charge = -echarge
+    curr%mass = emass
+    curr%nppcell = 0
+    curr%x_min = 0._num
+    curr%x_max = 0._num
+    curr%y_min = 0._num
+    curr%y_max = 0._num
+    curr%z_min = 0._num
+    curr%z_max = 0._num
+    curr%vdrift_x =0._num
+    curr%vdrift_y =0._num
+    curr%vdrift_z =0._num
+    curr%vth_x =0._num
+    curr%vth_y =0._num
+    curr%vth_z =0._num
+    curr%sorting_period = 0
+    curr%sorting_start = 0
+    curr%species_npart=0
+    end_section=.FALSE.
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'name') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%name
+      ELSE IF (INDEX(buffer,'mass') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%mass
+        curr%mass=curr%mass*emass
+      ELSE IF (INDEX(buffer,'charge') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%charge
+        curr%charge=curr%charge*echarge
+      ELSEIF (INDEX(buffer,'nppcell') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),'(i10)') curr%nppcell
+      ELSE IF (INDEX(buffer,'x_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%x_min
+      ELSE IF (INDEX(buffer,'x_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%x_max
+      ELSEIF (INDEX(buffer,'y_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%y_min
+      ELSE IF (INDEX(buffer,'y_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%y_max
+      ELSEIF (INDEX(buffer,'z_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%z_min
+      ELSE IF (INDEX(buffer,'z_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%z_max
+      ELSE IF (INDEX(buffer,'vdrift_x') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%vdrift_x
+        curr%vdrift_x=curr%vdrift_x*clight
+      ELSE IF (INDEX(buffer,'vdrift_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%vdrift_y
+        curr%vdrift_y=curr%vdrift_y*clight
+      ELSE IF (INDEX(buffer,'vdrift_z') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%vdrift_z
+        curr%vdrift_z=curr%vdrift_z*clight
+      ELSE IF (INDEX(buffer,'vth_x') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%vth_x
+        curr%vth_x=curr%vth_x*clight
+      ELSE IF (INDEX(buffer,'vth_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%vth_y
+        curr%vth_y=curr%vth_y*clight
+      ELSE IF (INDEX(buffer,'vth_z') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%vth_z
+        curr%vth_z=curr%vth_z*clight
+      ELSE IF (INDEX(buffer,'sorting_period') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%sorting_period
+      ELSE IF (INDEX(buffer,'sorting_start') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%sorting_start
+      ELSE IF (INDEX(buffer,'end::species') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_species_section
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads parameters for particle dumps.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_particle_dumps_section
+    ! ____________________________________________________________________________________
+    
+    INTEGER                      :: ix = 0, ispecies
+    LOGICAL(lp)                       :: end_section
+    TYPE(particle_dump), POINTER :: dp
+    CHARACTER(LEN=string_length) :: dump_name
+    ! READS SPECIES SECTION OF INPUT FILE
+    IF (.NOT. l_pdumps_allocated) THEN
+      npdumps=0
+      ALLOCATE(particle_dumps(1:nspecies_max))
+      l_pdumps_allocated=.TRUE.
+    ENDIF
+    npdumps=npdumps+1
+    dp => particle_dumps(npdumps)
+    ! minimal init for filter attributes
+    dp%ispecies   = -1
+    dp%dump_x_min = xmin
+    dp%dump_x_max = xmax
+    dp%dump_y_min = ymin
+    dp%dump_y_max = ymax
+    dp%dump_z_min = zmin
+    dp%dump_z_max = zmax
+    dp%dump_ux_min = 1e7
+    dp%dump_ux_max = 1e9
+    dp%dump_uy_min = 1e7
+    dp%dump_uy_max = 1e9
+    dp%dump_uz_min = 1e7
+    dp%dump_uz_max = 1e9
+    dp%diag_period = -1
+    end_section=.FALSE.
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'dump_x_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_x_min
+      ELSE IF (INDEX(buffer,'dump_x_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_x_max
+      ELSE IF (INDEX(buffer,'species_name') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dump_name
+        DO ispecies=1,nspecies
+          IF (INDEX(dump_name,species_parray(ispecies)%name) .GT. 0) THEN
+            dp%ispecies=ispecies
+            EXIT
+          ENDIF
+        END DO
+        IF (dp%ispecies .EQ. -1) THEN
+          WRITE(0,*) "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
+          
+        ENDIF
+      ELSE IF (INDEX(buffer,'dump_y_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_y_min
+      ELSEIF (INDEX(buffer,'dump_y_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_y_max
+      ELSE IF (INDEX(buffer,'dump_z_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_z_min
+      ELSEIF (INDEX(buffer,'dump_z_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) dp%dump_z_max
+      ELSE IF (INDEX(buffer,'dump_ux_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_ux_min
+      ELSE IF (INDEX(buffer,'dump_ux_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_ux_max
+      ELSE IF (INDEX(buffer,'dump_uy_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_uy_min
+      ELSEIF (INDEX(buffer,'dump_uy_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_uy_max
+      ELSE IF (INDEX(buffer,'dump_uz_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) dp%dump_uz_min
+      ELSEIF (INDEX(buffer,'dump_uz_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),*) dp%dump_uz_max
+      ELSEIF (INDEX(buffer,'diag_period') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length),'(i10)') dp%diag_period
+      ELSE IF (INDEX(buffer,'end::particle_dump') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_particle_dumps_section
+  
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads parameters for field outputs.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_output_section
+    ! ____________________________________________________________________________________
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS GRID SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'output_frequency') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') output_frequency
+      ELSE IF (INDEX(buffer,'output_step_min') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') output_step_min
+      ELSE IF (INDEX(buffer,'output_step_max') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') output_step_max
+      ELSEIF (INDEX(buffer,'ex') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_ex
+      ELSE IF (INDEX(buffer,'ey') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_ey
+      ELSE IF (INDEX(buffer,'ez') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_ez
+      ELSEIF (INDEX(buffer,'bx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_bx
+      ELSE IF (INDEX(buffer,'by') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_by
+      ELSE IF (INDEX(buffer,'bz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_bz
+      ELSEIF (INDEX(buffer,'jx') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_jx
+      ELSE IF (INDEX(buffer,'jy') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_jy
+      ELSE IF (INDEX(buffer,'jz') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_jz
+      ELSEIF (INDEX(buffer,'rho') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_rho
+      ELSE IF (INDEX(buffer,'dive') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_dive
+      ELSE IF (INDEX(buffer,'end::output') .GT. 0) THEN
+        end_section =.TRUE.
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_output_section
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Routine that reads parameters for temporal diagnistics.
+  !> Temporal diagnostics are the temporal evolution of some quantities
+  !> such as the particle energies and the field energies.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE read_temporal_output_section
+    ! ____________________________________________________________________________________
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0,*),TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'frequency') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_frequency
+      ELSE IF (INDEX(buffer,'format') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_format
+      ELSE IF (INDEX(buffer,'kinE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(1)
+      ELSE IF (INDEX(buffer,'exE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(2)
+      ELSE IF (INDEX(buffer,'eyE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(3)
+      ELSE IF (INDEX(buffer,'ezE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(4)
+      ELSE IF (INDEX(buffer,'bxE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(5)
+      ELSE IF (INDEX(buffer,'byE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(6)
+      ELSE IF (INDEX(buffer,'bzE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(7)
+      ELSE IF (INDEX(buffer,'divE-rho') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(8)
+      ELSE IF (INDEX(buffer,'rho') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(9)
+      ELSE IF (INDEX(buffer,'divE') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') temdiag_act_list(10)
+      ENDIF
+    ENDDO
+    RETURN
+  END SUBROUTINE
+  
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> Initialization of the species section and arrays.
+  !
+  !> @author
+  !> Henri Vincenti
+  !
+  !> @date
+  !> Creation 2015
+  SUBROUTINE init_species_section
+    ! ____________________________________________________________________________________
+    
+    IF (.NOT. l_species_allocated) THEN
+      nspecies=0
+      ALLOCATE(species_parray(1:nspecies_max))
+      l_species_allocated=.TRUE.
+    ENDIF
+  END SUBROUTINE init_species_section
+  
 END MODULE control_file
