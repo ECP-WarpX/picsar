@@ -429,20 +429,61 @@ MODULE particle_tilemodule !#do not parse
   END TYPE
 END MODULE particle_tilemodule
 
+!> Module defining particle_antenna type 
+MODULE antenna !#do not parse 
+  USE constants
+  TYPE particle_antenna
+    REAL(num)         ::  vector_x 
+    REAL(num)         ::  vector_y
+    REAL(num)         ::  vector_z
+    REAL(num)         ::  spot_x
+    REAL(num)         ::  spot_y
+    REAL(num)         ::  spot_z
+    REAL(num)         ::  pvec_x
+    REAL(num)         ::  pvec_y
+    REAL(num)         ::  pvec_z
+    REAL(num) , DIMENSION(3) ::  polvector1,polvector2,vector  !source_v
+    REAL(num)         :: laser_a_1 !laser particle max_v_1 at focus (in clight unit) 
+    REAL(num)         :: laser_a_2 !laser particle max_v_2 at focus (in clight unit)
+    REAL(num)         :: Emax_laser_1
+    REAL(num)         :: Emax_laser_2
+    REAL(num)         :: laser_w0 !laser waist at focus
+    REAL(num)         :: inv_w02  ! 1./w0**2
+    COMPLEX(cpx)      :: q_z      ! complex curv on the plan
+    COMPLEX(cpx)      :: q_0      ! complex_curv at focus
+    REAL(num)         :: laser_ctau ! length of the pulse(length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
+    REAL(num)         :: laser_tau  ! time duration of the pulse
+    REAL(num)         :: t_peak     
+    REAL(num)         :: laser_z0   ! initial position with respect to (spot,vector)
+    LOGICAL(lp)       :: is_lens    ! if .TRUE. the is a this lens beteen plan and source 
+    REAL(num)         :: laser_zf   ! distance between lens and plan 
+    REAL(num)         :: laser_z    ! distance between focus and lens
+    REAL(num)         :: focal_length ! focal length of the lens
+    REAL(num)         :: zr           ! rayleigh length of the laser  
+    REAL(num)         :: inv_zr       !1/zr  
+    REAL(num)         :: polangle   ! phase shift between laser along povector2 and polvector1
+    REAL(num)         :: lambda_laser
+    REAL(num)         :: k0_laser 
+    COMPLEX(cpx)      :: diffract_factor
+    INTEGER(idp)      :: temporal_order
+  END TYPE particle_antenna 
+END MODULE antenna
+
 !===============================================================================
 !> @brief
 !> Module containing the Fortran object descriptor representing a particle species
 MODULE particle_speciesmodule !#do not parse
   !===============================================================================
-  use particle_tilemodule
-  use constants
+  USE particle_tilemodule
+  USE constants
+  USE antenna 
   !> Fortran object representing a particle species
   TYPE particle_species
     ! Attributes of particle species object
     !> Particle antenna flag (.FALSE. by default) 
     LOGICAL(lp) :: is_antenna = .FALSE. 
-	!> Antenna params (init if is_antenna true)
-	TYPE(antenna) :: antenna_params 
+    !> Antenna params (init if is_antenna true)
+    TYPE(particle_antenna) :: antenna_params 
     !> Particle species name
     CHARACTER(LEN=string_length) :: name
     !> Particle species charge
@@ -1560,42 +1601,5 @@ MODULE python_pointers
   !DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers
 
-!> Module Antenna
-MODULE antenna
-  USE constants
-  REAL(num)         ::  vector_x 
-  REAL(num)         ::  vector_y
-  REAL(num)         ::  vector_z
-  REAL(num)         ::  spot_x
-  REAL(num)         ::  spot_y
-  REAL(num)         ::  spot_z
-  REAL(num)         ::  pvec_x
-  REAL(num)         ::  pvec_y
-  REAL(num)         ::  pvec_z
-  REAL(num) , DIMENSION(3) ::  polvector1,polvector2,vector  !source_v
-  REAL(num)         :: laser_a_1 !laser particle max_v_1 at focus (in clight unit) 
-  REAL(num)         :: laser_a_2 !laser particle max_v_2 at focus (in clight unit)
-  REAL(num)         :: Emax_laser_1
-  REAL(num)         :: Emax_laser_2
-  REAL(num)         :: laser_w0 !laser waist at focus
-  REAL(num)         :: inv_w02  ! 1./w0**2
-  COMPLEX(cpx)      :: q_z      ! complex curv on the plan
-  COMPLEX(cpx)      :: q_0      ! complex_curv at focus
-  REAL(num)         :: laser_ctau ! length of the pulse(length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
-  REAL(num)         :: laser_tau  ! time duration of the pulse
-  REAL(num)         :: t_peak     
-  REAL(num)         :: laser_z0   ! initial position with respect to (spot,vector)
-  LOGICAL(lp)       :: is_lens    ! if .TRUE. the is a this lens beteen plan and source 
-  REAL(num)         :: laser_zf   ! distance between lens and plan 
-  REAL(num)         :: laser_z    ! distance between focus and lens
-  REAL(num)         :: focal_length ! focal length of the lens
-  REAL(num)         :: zr           ! rayleigh length of the laser  
-  REAL(num)         :: inv_zr       !1/zr  
-  REAL(num)         :: polangle   ! phase shift between laser along povector2 and polvector1
-  REAL(num)         :: lambda_laser
-  REAL(num)         :: k0_laser 
-  COMPLEX(cpx)      :: diffract_factor
-  INTEGER(idp)      :: temporal_order
-END MODULE antenna
 
 

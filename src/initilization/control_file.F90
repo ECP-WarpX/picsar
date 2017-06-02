@@ -1127,6 +1127,7 @@ MODULE control_file
     ! ____________________________________________________________________________________
     INTEGER :: ix = 0
     LOGICAL(lp)  :: end_section = .FALSE.
+    TYPE(particle_species), POINTER :: curr
     IF (.NOT. l_species_allocated) THEN
       nspecies=0
       ALLOCATE(species_parray(1:nspecies_max))
@@ -1153,7 +1154,7 @@ MODULE control_file
     curr%sorting_period = 0
     curr%sorting_start = 0
     curr%species_npart=0
-	curr%is_antenna=.TRUE. 
+    curr%is_antenna=.TRUE. 
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer,'#') .GT. 0) THEN
