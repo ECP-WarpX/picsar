@@ -1,0 +1,182 @@
+######################### INPUT FILE FOR THE CODE PICSAR
+section::cpusplit
+ nprocx =1 
+ nprocy =1   
+ nprocz =1   
+ topology = 0
+ 
+ # MPI com type
+ mpicom_curr = 0
+ 
+ # LVEC size for the current deposition
+ lvec_curr_depo = 8
+ 
+ # LVEC size for the charge deposition
+ lvec_charge_depo = 64
+
+ # LVEC size for the charge deposition
+ lvec_fieldgathe = 256
+ 
+ # buffer size for MPI exchanges
+ mpi_buf_size = 2000
+ 
+end::cpusplit
+
+section::main
+ # Number of grid points in x,y,z
+ nx = 100
+ ny = 100 
+ nz = 100
+
+ # Origin of simulation axes
+ xmin = -5e-5
+ ymin = -5e-5
+ zmin = -5e-5
+ xmax = 5e-5
+ ymax = 5e-5
+ zmax = 5e-5
+ # Simulation duration (in 1/w0)
+ #t_max = 7
+ nsteps=300
+ 
+ ntilex = 2
+ ntiley = 2 
+ ntilez = 2 
+ 
+ # Guard cells
+ nguardsx =4 
+ nguardsy = 4
+ nguardsz = 4
+ njguardsx = 4
+ njguardsy = 4
+ njguardsz = 4
+ 
+end::main
+
+
+section::solver
+ 
+ # Maxwell solver order
+ norderx = 2
+ nordery = 2
+ norderz = 2
+ # Shape factor order
+ nox = 2
+ noy = 2
+ noz = 2
+
+ # Current deposition method
+ currdepo = 0
+ 
+ # Field gathering method
+ fieldgathe = 0
+ 
+ # Type of particle communication
+ partcom = 1
+
+ # Charge deposition method
+ rhodepo = 0
+
+ # Particle pusher and field gathering seperated
+ fg_p_pp_separated = 0
+
+ # Particle pusher algorithm
+ particle_pusher = 0
+
+end::solver
+
+section::plasma
+
+ nlab=1.1e25
+ gamma0=1
+ 
+ # Initialization type
+ pdistr=1
+ 
+end::plasma
+
+section::sorting
+ activation = 1
+ dx=0.5
+ dy=0.5
+ dz=0.5
+ shiftx=-0.5
+ shifty=-0.5
+ shiftz=-0.5
+end::sorting 
+
+section::species
+ name =  laser
+ mass = 1
+ charge = 10.
+ nppcell = 16
+ ! Drift velocity (in clight)
+ vdrift_x = .0
+ vdrift_y = .0
+ vdrift_z = 0.0
+ ! Thermal velocity (in clight)
+ vth_x = 0.0
+ vth_y = 0.0
+ vth_z = 0.0
+ sorting_period=20
+ sorting_start=20
+end::species
+
+
+section::output
+ output_frequency = 10
+ output_step_min  = 0
+ output_step_max  = 1000
+ ex = 1
+ ey = 1
+ ez = 1
+ jy = 1
+ jx= 1
+ jz = 1
+end::output
+
+section::timestat
+  activation=0
+  period=1
+  buffer=10
+end::timestat
+
+section::antenna
+  vector_x = 1.0
+  vector_y = 0.0
+  vector_z = 0.00
+  spot_x = 0.  
+  spot_y = 0.
+  spot_z = 0.
+  lambda_laser = 4e-7
+  pvec_x = 0.0
+  pvec_y = 1.0
+  pvec_z = 0.0
+  polangle = 0
+  laser_ctau =9e-6
+  laser_a_1=0.000001
+  laser_a_2=0.00000
+  laser_w0 = 10e-6
+  is_lens = .FALSE.
+  laser_zf=0
+  laser_z0=0e-5
+  focal_length = 0
+  temporal_order = 2 
+end::antenna
+
+section::temporal
+  frequency=1
+  # output 0 - binary, 1 - ascii
+  format=0
+  kinE=1
+  exE=1
+  eyE=1
+  ezE=1
+  bxE=1
+  byE=1
+  bzE=1
+  divE-rho=1
+  rho=1
+  divE=1
+end::temporal
+
