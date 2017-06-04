@@ -343,6 +343,7 @@ build_lib:$(SRCDIR)/modules/modules.o \
         $(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
         $(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
         $(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	    $(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
         $(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
         $(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
         $(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
@@ -389,6 +390,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
@@ -433,6 +435,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
@@ -477,6 +480,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
@@ -519,6 +523,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
