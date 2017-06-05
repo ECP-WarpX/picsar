@@ -464,6 +464,8 @@ SUBROUTINE initall
   ! - Load particle distribution on each tile
   CALL load_particles
   
+  ! - Load laser antenna particles 
+  CALL load_laser
   IF (rank .EQ. 0) write(0,*) "Creation of the particles: done"
   
   init_localtimes(1) = MPI_WTIME() - tdeb
