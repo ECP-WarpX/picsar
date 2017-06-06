@@ -1156,6 +1156,8 @@ MODULE control_file
     curr%sorting_start = 0
     curr%species_npart=0
     curr%is_antenna=.TRUE. 
+    curr%antenna_params%is_lens=.FALSE.
+    curr%antenna_params%laser_z0 = 0._num
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer,'#') .GT. 0) THEN

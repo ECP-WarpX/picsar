@@ -1635,10 +1635,10 @@ MODULE tiling
     REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
     REAL(num) ::   partvx,partvy,partvz,intercept,weight_laser
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
-    REAL(num) ,dimension(3)      :: mins,maxs,pos,spot,dst
+    REAL(num) ,DIMENSION(3)      :: mins,maxs,pos,spot,dst
     INTEGER(idp) :: i1, i2, inonz
     TYPE(particle_antenna), POINTER ::  laser
-    
+    REAL(num) , DIMENSION(2,2)      :: M1,M2,M3
     laser=>curr%antenna_params
     ! --- Initing laser wave vector (vector normal to laser injection plane)
     laser%vector(1) = laser%vector_x 
@@ -1690,7 +1690,19 @@ MODULE tiling
     laser%q_0 = (0,1.) * laser%laser_w0**2*pi/laser%lambda_laser
 
     ! --- Gaussian q parameter in antenna_plane
-    laser%q_z = laser%q_0-laser%focal_length
+    IF(laser%is_lens .EQV. .FALSE.) THEN
+      laser%q_z = (laser%q_0+laser%laser_z0)
+    ELSE
+      M1(1,1) = 1.0_num ; M1(1,2) = laser%laser_z0-laser%laser_zf
+      M1(2,1) = 0.0_num ; M1(2,2) = 1.0_num
+      M2(1,1) = 1.0_num ; M2(1,2) = 0.0_num
+      M2(2,1) = -1./laser%focal_length ; M2(2,2) = 1.0_num
+      CALL product_matrix_2c2(M1,M2,M3)
+      M2(1,1) = 1.0_num ; M2(1,2) = laser%laser_zf
+      M2(2,1) = 0.0_num ; M2(2,2) = 1.0_num
+      CALL product_matrix_2c2(M3,M2,M1)
+      laser%q_z = (M1(1,1)*laser%q_0  + M1(1,2))/(M1(2,1)*laser%q_0+M1(2,2))
+    ENDIF
     ALLOCATE(partpid(npid))
  !   partpid(wpid) = nc*dx*dz/(curr%nppcell)
 
@@ -1775,6 +1787,20 @@ MODULE tiling
     partuz = partvz /gaminv
     
   END SUBROUTINE init_momentum
+    
+  SUBROUTINE product_matrix_2c2(M1,M2,M3)
+    REAL(num)  , INTENT(IN), DIMENSION(2,2)     :: M1,M2
+    REAL(num)  , INTENT(INOUT), DIMENSION(2,2)  :: M3
+    INTEGER(idp)                                :: i,j,k
   
-  
+    M3=0._num * M3
+    DO i=1,2
+      DO j=1,2
+           DO k=1,2
+             M3(i,j) = M1(i,k)*M2(k,j)
+           ENDDO
+      ENDDO
+    ENDDO
+  ENDSUBROUTINE 
+
 END MODULE tiling
