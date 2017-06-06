@@ -3,15 +3,11 @@
 
 ## **1. Overview**
 
+The Particle-In-Cell Scalable Application Resource (PICSAR) is a high performance library intended to help scientists porting their Particle-In-Cell (PIC) codes to the next generation of exascale computers.
 
-The PICSAR code is a "mini-app" standalone Particle-In-Cell (PIC) code that includes
-the key functionalities of the WARP code main PIC loop. It is a 
-compact **self-contained proxy** that adequately portrays the computational loads
-and dataflow of the more complex WARP code. 
+PICSAR exploits the three levels of parallelism that will be required to achieve good performances on future architectures: distributed memory parallelization (internode),  shared memory parallelization (intranode) and vectorization.
 
-Since WARP is a very large code written in a mix of FORTRAN95, C and Python 
-PICSAR will be essential for studying multi-level parallelization on the next
-generation of exascale computers. 
+The PICSAR library also contains a "mini-app" standalone Particle-In-Cell (PIC) code that includes the key functionalities of the main PIC loop. It is a compact **self-contained proxy** that adequately portrays the computational loads and dataflow of the more complex PIC codes. 
 
 PICSAR can be run in two modes:
 
