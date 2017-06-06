@@ -47,7 +47,8 @@ SUBROUTINE push_laser_particles
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) CYCLE
-          CALL laserp_pusher(count,npid,curr_tile%pid(1:count,1:npid), curr_tile%part_x,    &
+          CALL laserp_pusher(count,npid,curr_tile%pid(1:count,1:npid),      &
+          curr_tile%part_x,                                                 &
           curr_tile%part_y,curr_tile%part_z, curr_tile%part_ux,             &
           curr_tile%part_uy,                                                &
           curr_tile%part_uz,curr_tile%part_gaminv,dt,8_idp,                 &
@@ -61,7 +62,8 @@ SUBROUTINE push_laser_particles
           curr%antenna_params%laser_tau,                                    &   
           real_time,                                                        &    
           curr%antenna_params%t_peak,                                       &
-          curr%antenna_params%temporal_order)                       
+          curr%antenna_params%temporal_order,                               &
+          curr%antenna_params%polangle)                  
         END DO! END LOOP ON SPECIES
       END DO
     END DO
@@ -87,7 +89,7 @@ END SUBROUTINE push_laser_particles
 !> Creation 2017
 SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
   dtt,lvect,emax,emax1,emax2,polvector1,polvector2,              &
-  k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
+  k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
   USE shared_data
   USE omp_lib
   USE constants
@@ -107,7 +109,7 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
   REAL(num), INTENT(IN)                   :: dtt 
   REAL(num) , DIMENSION(3), INTENT(IN)    :: polvector1,polvector2
   REAL(num) , INTENT(IN)                  :: emax,emax1,emax2,k0_laser, laser_tau, &
-  real_time,t_peak
+  real_time,t_peak, polangle 
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order 
   INTEGER(idp)                            :: n,nn,ip,i,j,k,blocksize
@@ -145,7 +147,7 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
       xx = pid(nn,2) 
       yy = pid(nn,3)
       CALL gaussian_profile(xx,yy,amp,emax,emax1,emax2,polvector1,polvector2,  &
-      k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
+      k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
       ! --- Update particle momenta based on laser electric field 
       uxp(nn) = amp(1)*coeff_ampli
       uyp(nn) = amp(2)*coeff_ampli
@@ -163,7 +165,7 @@ END SUBROUTINE laserp_pusher
 
 
 SUBROUTINE gaussian_profile(xx,yy,amp,emax,emax1,emax2,polvector1,polvector2,  &
-  k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
+  k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
   USE shared_data
   USE omp_lib
   USE constants
@@ -173,7 +175,7 @@ SUBROUTINE gaussian_profile(xx,yy,amp,emax,emax1,emax2,polvector1,polvector2,  &
   REAL(num) , DIMENSION(3), INTENT(INOUT) :: amp
   REAL(num) , DIMENSION(3), INTENT(IN)    :: polvector1,polvector2
   REAL(num) , INTENT(IN)                  :: emax,emax1,emax2, k0_laser, laser_tau, &
-  real_time,t_peak
+  real_time,t_peak, polangle 
   COMPLEX(cpx), INTENT(IN)                :: q_z
   REAL(num) ,INTENT(IN)                   :: xx,yy
   INTEGER(idp), INTENT(IN)                :: temporal_order
@@ -185,7 +187,7 @@ SUBROUTINE gaussian_profile(xx,yy,amp,emax,emax1,emax2,polvector1,polvector2,  &
   - ((real_time - t_peak )/laser_tau)**temporal_order
   
   u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) &
-  - ((real_time - t_peak )/laser_tau)**temporal_order 
+  - ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2_num*pi
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
   DO i=1,3

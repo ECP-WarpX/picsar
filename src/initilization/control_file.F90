@@ -1155,9 +1155,29 @@ MODULE control_file
     curr%sorting_period = 0
     curr%sorting_start = 0
     curr%species_npart=0
+    ! --- Init default value for antenna params 
     curr%is_antenna=.TRUE. 
     curr%antenna_params%is_lens=.FALSE.
     curr%antenna_params%laser_z0 = 0._num
+    curr%antenna_params%polangle = 0._num
+    curr%antenna_params%vector_x = 0._num
+    curr%antenna_params%vector_y = 0._num
+    curr%antenna_params%vector_z = 0._num
+    curr%antenna_params%spot_x = 0._num
+    curr%antenna_params%spot_y = 0._num
+    curr%antenna_params%spot_z = 0._num
+    curr%antenna_params%lambda_laser = 0._num
+    curr%antenna_params%pvec_x = 0._num
+    curr%antenna_params%pvec_y = 0._num
+    curr%antenna_params%pvec_z = 0._num
+    curr%antenna_params%laser_ctau = 0._num
+    curr%antenna_params%laser_a_1 = 0._num
+    curr%antenna_params%laser_a_2 = 0._num
+    curr%antenna_params%laser_w0 = 0._num
+    curr%antenna_params%temporal_order = 2
+    curr%antenna_params%is_lens = .FALSE. 
+    curr%antenna_params%laser_zf = 0._num 
+    curr%antenna_params%focal_length = 0._num 
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer,'#') .GT. 0) THEN
@@ -1207,6 +1227,7 @@ MODULE control_file
         READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_w0 
       ELSE IF (INDEX(buffer,'polangle') .GT. 0) THEN
         ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%polangle
       ELSE IF (INDEX(buffer,'temporal_order') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') curr%antenna_params%temporal_order
