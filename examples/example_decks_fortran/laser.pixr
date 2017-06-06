@@ -138,7 +138,7 @@ section::antenna
   pvec_x = 1.0
   pvec_y = 0.0
   pvec_z = 0.0
-  # Polar angle 
+  # Polar angle (0 - linear, 1/4 - Circular)
   polangle = 0
   # Laser duration 
   laser_ctau =5e-6
