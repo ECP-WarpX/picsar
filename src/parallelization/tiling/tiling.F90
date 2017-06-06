@@ -1685,17 +1685,14 @@ MODULE tiling
     laser%inv_w02 = 1._num/laser%laser_w0**2
 
     ! --- Compute laser t_peak (1.5*laser_duration) s
-    laser%t_peak = 3._num*laser%laser_tau
-
+    laser%t_peak = 2._num*laser%laser_tau
     ! --- Gaussian q parameter at focus
     laser%q_0 = (0,1.) * laser%laser_w0**2*pi/laser%lambda_laser
 
     ! --- Gaussian q parameter in antenna_plane
     laser%q_z = laser%q_0-laser%focal_length
-    
     ALLOCATE(partpid(npid))
-    partpid(wpid) = nc*dx*dz/(curr%nppcell)
-
+ !   partpid(wpid) = nc*dx*dz/(curr%nppcell)
 
     ! --- Sanity check on vector normal to antenna plane 
     IF (SUM(laser%vector**2)==0) THEN 
@@ -1723,7 +1720,9 @@ MODULE tiling
     dst  = (/dx,dy,dz/)
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
-    weight_laser=eps0*laser%Emax/0.01_num
+    weight_laser=eps0*laser%Emax/0.01_num/5.47732632553035844E-010/curr%nppcell*4
+    weight_laser=eps0*laser%Emax/(dx*dy*dz*curr%nppcell)/2894451.2504163496
+
 	DO l=1,lmax
 	  DO j=1,jmax
 		DO ipart=1,curr%nppcell
