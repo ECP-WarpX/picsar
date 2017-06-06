@@ -1139,7 +1139,7 @@ MODULE control_file
     curr%charge = 1.
     curr%mass = 1.
     curr%name='laser_antenna'
-    curr%nppcell = 2
+    curr%nppcell = 2 
     curr%x_min = 0._num
     curr%x_max = 0._num
     curr%y_min = 0._num

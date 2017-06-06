@@ -1684,8 +1684,8 @@ MODULE tiling
     laser%inv_zr = 1._num/laser%zr
     laser%inv_w02 = 1._num/laser%laser_w0**2
 
-    ! --- Compute inverse Rayleigh length s
-    laser%t_peak = 1.5_num*laser%laser_tau
+    ! --- Compute laser t_peak (1.5*laser_duration) s
+    laser%t_peak = 3._num*laser%laser_tau
 
     ! --- Gaussian q parameter at focus
     laser%q_0 = (0,1.) * laser%laser_w0**2*pi/laser%lambda_laser
@@ -1702,7 +1702,6 @@ MODULE tiling
       WRITE(0,*) 'laser wave vector is null - Error '
       STOP 
     ENDIF 
-    
     ! --- Get non-zero dimension 
     IF(laser%vector(3) .NE. 0._num) THEN 
       i1=1; i2=2; inonz=3;

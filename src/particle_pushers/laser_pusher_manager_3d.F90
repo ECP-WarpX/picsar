@@ -47,8 +47,7 @@ SUBROUTINE push_laser_particles
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) CYCLE
-          
-          CALL laserp_pusher(count,npid,curr_tile%pid, curr_tile%part_x,    &
+          CALL laserp_pusher(count,npid,curr_tile%pid(1:count,1:npid), curr_tile%part_x,    &
           curr_tile%part_y,curr_tile%part_z, curr_tile%part_ux,             &
           curr_tile%part_uy,                                                &
           curr_tile%part_uz,curr_tile%part_gaminv,dt,8_idp,                 &
@@ -119,8 +118,6 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
   coeff_ampli = disp_max / emax
   clightsq = 1._num/clight**2
   
-  print*,"exp = ",temporal_order
-  
   !____________________________________________________________________________
   ! Loop on block of particles of size lvect
   DO ip=1,np,lvect
@@ -156,9 +153,9 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
       ! --- Update gaminv 
       gaminv(nn) = 1.0_num
       ! --- Push x,y,z
-      xp(nn)  = xp(nn) + dt*uxp(nn)! + dt*source_v(1) 
-      yp(nn)  = yp(nn) + dt*uyp(nn)! + dt*source_v(2)
-      zp(nn)  = zp(nn) + dt*uzp(nn)! + dt*source_v(3)
+ !     xp(nn)  = xp(nn) + dt*uxp(nn)! + dt*source_v(1) 
+ !     yp(nn)  = yp(nn) + dt*uyp(nn)! + dt*source_v(2)
+ !     zp(nn)  = zp(nn) + dt*uzp(nn)! + dt*source_v(3)
       
     ENDDO 
   ENDDO
