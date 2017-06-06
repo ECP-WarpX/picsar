@@ -40,19 +40,19 @@ make lib both static and dynamic picsar lib are generated in lib/ file.
 * We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`. 
 * Forthon gives access to all the high performance routines of PICSAR from python.
 
-## **2. Doxygen documentation**
+## **2. Installation**
 
-The code has been commented to be compatible with Doxygen.
-Doxygen is a software that analyses formatted comments in your code to deliver 
-a full and accurate documentation of the code structure as well as 
-the subroutine and parameters purposes.
+Detailed installation instructions are available for various platforms for the FORTRAN and Python libraries in the `PICSAR/Installation_doc` folder.
 
-Thanks to Doxygen, you can generate a html documentation that will help you 
-if you want to contribute to PICSAR.
+## **3. Doxygen documentation**
 
-First, download and install [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html).
+PICSAR offers self-documentation of the source code via Doxygen.
 
-You can create the documentation by command line ([see this page for more information](https://www.stack.nl/~dimitri/doxygen/manual/doxygen_usage.html)). In `Doxygen/` folder, type: 
+To generate the code html documentation:
+
+  - Download and install [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html).
+
+  - In the `PICSAR/Doxygen` folder, type: 
 
 ```
 doxygen Doxyfile
@@ -60,46 +60,23 @@ doxygen Doxyfile
 
 The html documentation is then accessible in `Doxygen/html/index.html`.
 
-You can also use the GUI frontend. Open `Doxygen/Doxyfile`, go to `Run`, click on `Run Doxygen` and finally `Show HTML output`.
+You can also use Doxygen's GUI frontend. Open `Doxygen/Doxyfile`, go to `Run`, click on `Run Doxygen` and finally `Show HTML output`.
 
-## **3. Compiling**
+For more information on Doxygen, ([see this page](https://www.stack.nl/~dimitri/doxygen/manual/doxygen_usage.html)).
 
-
-#### A.  Python installation 
-
-In order to install picsar in the form of a Python module, 
-read detailed instructions in the directory `Installation/Python`.
-Then, you can choose instructions depending on your system:
-
-* `INSTALL_PYTHON_MACOS.md`
-* `INSTALL_PYTHON_LINUX.md`
-* `INSTALL_PYTHON_EDISON.md`
-* `INSTALL_PYTHON_CORI.md`
-* `INSTALL_PYTHON_MIRA.md`
-
-#### B.  Fortran installation 
-
-To build the code in full Fotran 90, go to the directory `Installation/Fortran`.
-You will find several instruction files depending where you want to install PICSAR.
-
-* `INSTALL_FORTRAN_MACOS.md`
-* `INSTALL_FORTRAN_LINUX.md`
-* `INSTALL_FORTRAN_EDISON.md`
-* `INSTALL_FORTRAN_CORI1.md`
-* `INSTALL_FORTRAN_CORI2.md`
 
 ## **4. Running simulations**
 
 PICSAR can be run in two modes:
 
-- In **Python mode**: in this case, PICSAR is used **through Warp**, and
-  **accelerates** the Warp simulations by rerouting the calls to the **low-level
+- In **pure-Fortran mode**: in this case, the code is run as a
+  stand-alone application.
+
+- In **Python mode**: in this case, PICSAR is used as a Python module. It can be used with existing code (e.g. Warp) to  
+  **accelerates** simulations by rerouting the calls to the **low-level
   kernels** (current deposition, field advance, particle pusher). More
   precisely, in this case, instead of calling Warp's regular kernels, the
   simulation will call PICSAR's highly-optimized kernels.
-
-- In **pure-Fortran mode**: in this case, the code is run as a
-  stand-alone application.
 
 For more details on how to run the code with these two modes, see the
 sections *Compiling* and *Running simulations* below. 
