@@ -78,21 +78,9 @@ PICSAR can be run in two modes:
   precisely, in this case, instead of calling Warp's regular kernels, the
   simulation will call PICSAR's highly-optimized kernels.
 
-For more details on how to run the code with these two modes, see the
-sections *Compiling* and *Running simulations* below. 
-
 ![warp_and_pxr](Doxygen/images/warp_and_picsar.png)
 
-#### A.  Python mode
-
-An example of python script `test.py` is provided in `examples/example_scripts_python`. 
-To run this script in parallel, simply type :
-```
-mpirun -np NMPI python test.py 
-```
-with NMPI the number of MPI processes. 
-
-#### B.  Fortran mode
+#### A.  Fortran mode
 
 PICSAR input parameters must be provided in an input file named `input_file.pxr` 
 in the folder where the code is ran. An example (`test.pxr`) of input file is 
@@ -102,6 +90,28 @@ To run the executable on n MPI processes:
 mpirun -np n ./picsar
 ```
 Notice that if `nprocx`, `nprocy` and `nprocz` are provided in the input file as part of the `cpusplit` section, then n must be equal to `nprocx x nprocy x nprocz` with `nprocx`, `nprocy`, `nprocz` the number of processors along x,y,z directions. Otherwise, if `nprocx`, `nprocy` and `nprocz` are not defined, the code performs automatic CPU split in each direction. User can specify some arguments in the command line. For the moments this feature supports only the number of tiles in each dimension and the init of particle distribution. Ex: `mpirun -np 1 ./picsar -ntilex ntx -ntiley nty -ntilez ntz -distr 1` with `ntx`, `nty` and `ntz` the number of tiles in each dimension (default is one) and distr the type of particle init ("1" for init on the x-axis of the grid and "2" for Random).
+
+###### 6. Configuration of the input file
+
+Input files are read by PICSAR at the beginning of a run and contain all the required simulation information.
+They should be in the same repository and renamed `input_file.pixr`.
+
+Examples of input files can be found in the directory `example_decks_fortran`.
+
+The structure of an input file is a division into sections.
+Sections start by `section::name` where `name` is the section name and end with `end::name`.
+Then these sections contain keywords and values to be specified according to what you want.
+In order to learn how to create your own input file and what are the available sections, use the Doxygen documentation.
+A page called input file configuration describes the sections and the keywords to set up a correct input file.
+
+#### B.  Python mode
+
+An example of python script `test.py` is provided in `examples/example_scripts_python`. 
+To run this script in parallel, simply type :
+```
+mpirun -np NMPI python test.py 
+```
+with NMPI the number of MPI processes. 
 
 #### C.  OpenMP
 
@@ -131,16 +141,3 @@ The different diagnostics can be activated with their flags:
 Time statistics refer to the computation of the simulation times spend in each significant part of the code. A final time survey is automatically provided at the end of a simulation with the stand-alone code.
 The time statisctics function enables to outpout in files the time spend in the main subroutines for each iteration.
 It corresponds to the section named `timestat`.
-
-## **6. Configuration of the input file**
-
-Input files are read by PICSAR at the beginning of a run and contain all the required simulation information.
-They should be in the same repository and renamed `input_file.pixr`.
-
-Examples of input files can be found in the directory `example_decks_fortran`.
-
-The structure of an input file is a division into sections.
-Sections start by `section::name` where `name` is the section name and end with `end::name`.
-Then these sections contain keywords and values to be specified according to what you want.
-In order to learn how to create your own input file and what are the available sections, use the Doxygen documentation.
-A page called input file configuration describes the sections and the keywords to set up a correct input file.
