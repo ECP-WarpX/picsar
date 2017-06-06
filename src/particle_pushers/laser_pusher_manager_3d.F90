@@ -160,7 +160,7 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
       zp(nn)  = zp(nn) + dt*uzp(nn)! + dt*source_v(3)
     ENDDO 
   ENDDO
- !print*,it,"max v ",maxval(abs(jy))/maxval(abs(uyp)),maxval(abs(ey))/maxval(abs(jy)),maxval(abs(ey))/emax1
+  !print*,it,"max v ",maxval(abs(jy))/maxval(abs(uyp)),maxval(abs(ey))/maxval(abs(jy)),maxval(abs(ey))/emax1
 END SUBROUTINE laserp_pusher 
 
 
