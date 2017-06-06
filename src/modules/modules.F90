@@ -447,6 +447,7 @@ MODULE antenna !#do not parse
     REAL(num)         :: laser_a_2 !laser particle max_v_2 at focus (in clight unit)
     REAL(num)         :: Emax_laser_1
     REAL(num)         :: Emax_laser_2
+    REAL(num)         :: Emax
     REAL(num)         :: laser_w0 !laser waist at focus
     REAL(num)         :: inv_w02  ! 1./w0**2
     COMPLEX(cpx)      :: q_z      ! complex curv on the plan

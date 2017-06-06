@@ -4,7 +4,7 @@
 !> called in the main loop (see. submain.F90)
 !
 !> @details
-!> This routine calls the subroutines for the different
+!> This subroutine calls subroutines for the laser pusher 
 !
 !> @author
 !> H. Vincenti
@@ -52,12 +52,12 @@ SUBROUTINE push_laser_particles
           curr_tile%part_y,curr_tile%part_z, curr_tile%part_ux,             &
           curr_tile%part_uy,                                                &
           curr_tile%part_uz,curr_tile%part_gaminv,dt,8_idp,                 &
-          curr%antenna_params%laser_a_1,                                    &
-          curr%antenna_params%laser_a_2,                                    & 
+          curr%antenna_params%Emax,                                         &
+          curr%antenna_params%Emax_laser_1,                                 &
+          curr%antenna_params%Emax_laser_2,                                 & 
           curr%antenna_params%polvector1,                                   & 
           curr%antenna_params%polvector2,                                   &
           curr%antenna_params%k0_laser,                                     &
-          curr%antenna_params%diffract_factor,                              &
           curr%antenna_params%q_z,                                          &
           curr%antenna_params%laser_tau,                                    &   
           real_time,                                                        &    
@@ -88,8 +88,8 @@ END SUBROUTINE push_laser_particles
 !> @date
 !> Creation 2017
 SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
-  dtt,lvect,laser_a1,laser_a2,polvector1,polvector2,              &
-  k0_laser,diffract_factor,q_z,laser_tau,real_time,t_peak,temporal_order)
+  dtt,lvect,emax,laser_a1,laser_a2,polvector1,polvector2,              &
+  k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
   USE shared_data
   USE omp_lib
   USE constants
@@ -105,16 +105,18 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
   REAL(num), DIMENSION(1:np,1:npidd), INTENT(IN)  :: pid
   REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
   REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
-  REAL(num), INTENT(IN)                   :: dtt
+  REAL(num), INTENT(IN)                   :: dtt, emax 
   REAL(num) , DIMENSION(3), INTENT(IN)    :: polvector1,polvector2
   REAL(num) , INTENT(IN)                  :: laser_a1,laser_a2, k0_laser, laser_tau, &
   real_time,t_peak
-  COMPLEX(cpx), INTENT(IN)                :: diffract_factor,q_z
+  COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order 
   INTEGER(idp)                            :: n,nn,ip,i,j,k,blocksize
   REAL(num), DIMENSION(3)                 :: amp
-  REAL(num)                               :: xx,yy,clightsq,usq
+  REAL(num)                               :: xx,yy,clightsq,usq, coeff_ampli, disp_max
   
+  disp_max   = clight
+  coeff_ampli = disp_max / emax
   clightsq = 1._num/clight**2
   
   print*,"exp = ",temporal_order
@@ -146,16 +148,14 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
       xx = pid(nn,2) 
       yy = pid(nn,3)
       CALL gaussian_profile(xx,yy,amp,laser_a1,laser_a2,polvector1,polvector2,  &
-      k0_laser,diffract_factor,q_z,laser_tau,real_time,t_peak,temporal_order)
-      uxp(nn) = amp(1) 
-      !print*,max(usq,abs(amp(2)),"a"
-      uyp(nn) = amp(2)
-      uzp(nn) = amp(3)
-      usq = (uxp(nn)**2+uyp(nn)**2+uzp(nn)**2)*clightsq
-      !gaminv(nn) = 1._num
-      gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
+      k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
+      ! --- Update particle momenta based on laser electric field 
+      uxp(nn) = amp(1)*coeff_ampli
+      uyp(nn) = amp(2)*coeff_ampli
+      uzp(nn) = amp(3)*coeff_ampli
+      ! --- Update gaminv 
       gaminv(nn) = 1.0_num
-      ! print*,uyp(nn),(q_z/k0_laser),(real_time - t_peak ),laser_tau
+      ! --- Push x,y,z
       xp(nn)  = xp(nn) + dt*uxp(nn)! + dt*source_v(1) 
       yp(nn)  = yp(nn) + dt*uyp(nn)! + dt*source_v(2)
       zp(nn)  = zp(nn) + dt*uzp(nn)! + dt*source_v(3)
@@ -166,7 +166,7 @@ END SUBROUTINE laserp_pusher
 
 
 SUBROUTINE gaussian_profile(xx,yy,amp,laser_a1,laser_a2,polvector1,polvector2,  &
-  k0_laser,diffract_factor,q_z,laser_tau,real_time,t_peak,temporal_order)
+  k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
   USE shared_data
   USE omp_lib
   USE constants
@@ -177,7 +177,7 @@ SUBROUTINE gaussian_profile(xx,yy,amp,laser_a1,laser_a2,polvector1,polvector2,  
   REAL(num) , DIMENSION(3), INTENT(IN)    :: polvector1,polvector2
   REAL(num) , INTENT(IN)                  :: laser_a1,laser_a2, k0_laser, laser_tau, &
   real_time,t_peak
-  COMPLEX(cpx), INTENT(IN)                :: diffract_factor,q_z
+  COMPLEX(cpx), INTENT(IN)                :: q_z
   REAL(num) ,INTENT(IN)                   :: xx,yy
   INTEGER(idp), INTENT(IN)                :: temporal_order
   COMPLEX(cpx) , DIMENSION(3)             :: arg
@@ -192,10 +192,10 @@ SUBROUTINE gaussian_profile(xx,yy,amp,laser_a1,laser_a2,polvector1,polvector2,  
   - ((real_time - t_peak )/laser_tau)**temporal_order 
   
   
-  u1 = EXP(u1)*laser_a1*clight!Emax_laser_1
-  u2 = EXP(u2)*laser_a2*clight!/Emax_laser_2
+  u1 = EXP(u1)*laser_a1!Emax_laser_1
+  u2 = EXP(u2)*laser_a2!Emax_laser_2
   DO i=1,3
-    arg(i) = (u1*polvector1(i) + u2*polvector2(i))/diffract_factor
+    arg(i) = (u1*polvector1(i) + u2*polvector2(i))
   END DO 
   amp = REAL(arg)
 END SUBROUTINE 
