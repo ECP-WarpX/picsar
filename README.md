@@ -15,47 +15,30 @@ PICSAR includes:
 - A compact "mini-app" standalone code, which serves as a self-contained proxy that adequately portrays the computational loads and dataflow of more complex PIC codes.
 - A Python wrapper for using PICSAR optimized routines with Python-driven codes.
 
-PICSAR can be run in two modes:
-
-- In **Python mode**: in this case, PICSAR is used **through Warp**, and
-  **accelerates** the Warp simulations by rerouting the calls to the **low-level
-  kernels** (current deposition, field advance, particle pusher). More
-  precisely, in this case, instead of calling Warp's regular kernels, the
-  simulation will call PICSAR's highly-optimized kernels.
-
-- In **pure-Fortran mode**: in this case, the code is run as a
-  stand-alone application.
-
-For more details on how to run the code with these two modes, see the
-sections *Compiling* and *Running simulations* below. 
-
-![warp_and_pxr](Doxygen/images/warp_and_picsar.png)
-
 #### A.  Here are some of the specific algorithmic features of the PICSAR code :  
 
-* The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered), 
-* The particle pusher uses the Boris algorithm,
-* The field gathering routine is energy conserving, 
-* The current deposition and field gathering routines include high order particle shape factors.
+* The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered). 
+* The particle pusher uses the Boris or Vay algorithm.
+* The field gathering routine is energy conserving. 
+* The current deposition and field gathering routines include high order particle shape factors (up to 3rd order).
 
 #### B.  Here are some high performance features of the PICSAR code :
 
-* Particle tiling to help increase memory locality
-* MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI), 
-* OpenMP parallelization for intranode parallelism,
+* Vectorization.
+* Particle tiling to help increase memory locality.
+* OpenMP parallelization for intranode parallelism.
+* MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI). 
 * MPI-IO for fast parallel outputs.
-* Vectorized subroutines (field gathering, classical current deposition)
 
-#### C.  Python glue: 
+#### C. Build Picsar as Library
+* Picsar can be built as a dynamic or static library to provide tools for PIC codes.
+To compile picsar as a library you need to swith $(MODE) variable in Makefile to "library", then run make with target lib:
+make lib both static and dynamic picsar lib are generated in lib/ file.
+
+#### D.  Python glue: 
 
 * We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`. 
-* Thanks to Forthon, we are able to access all high performance routines of PICSAR from python. This allows us to use PICSAR routines from WARP and vice-versa. 
-
-#### D. Build Picsar as Library
-* Picsar can be built as a dynamic or static library to provide tools for other PIC codes.
-To compile picsar as a library you need to swith $(MODE) variable in Makefile to "library", then run make with target lib:
-make lib
-both static and dynamic picsar lib are generated in lib/ file.
+* Forthon gives access to all the high performance routines of PICSAR from python.
 
 ## **2. Doxygen documentation**
 
@@ -107,6 +90,21 @@ You will find several instruction files depending where you want to install PICS
 
 ## **4. Running simulations**
 
+PICSAR can be run in two modes:
+
+- In **Python mode**: in this case, PICSAR is used **through Warp**, and
+  **accelerates** the Warp simulations by rerouting the calls to the **low-level
+  kernels** (current deposition, field advance, particle pusher). More
+  precisely, in this case, instead of calling Warp's regular kernels, the
+  simulation will call PICSAR's highly-optimized kernels.
+
+- In **pure-Fortran mode**: in this case, the code is run as a
+  stand-alone application.
+
+For more details on how to run the code with these two modes, see the
+sections *Compiling* and *Running simulations* below. 
+
+![warp_and_pxr](Doxygen/images/warp_and_picsar.png)
 
 #### A.  Python mode
 
