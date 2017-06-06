@@ -91,7 +91,7 @@ mpirun -np n ./picsar
 ```
 Notice that if `nprocx`, `nprocy` and `nprocz` are provided in the input file as part of the `cpusplit` section, then n must be equal to `nprocx x nprocy x nprocz` with `nprocx`, `nprocy`, `nprocz` the number of processors along x,y,z directions. Otherwise, if `nprocx`, `nprocy` and `nprocz` are not defined, the code performs automatic CPU split in each direction. User can specify some arguments in the command line. For the moments this feature supports only the number of tiles in each dimension and the init of particle distribution. Ex: `mpirun -np 1 ./picsar -ntilex ntx -ntiley nty -ntilez ntz -distr 1` with `ntx`, `nty` and `ntz` the number of tiles in each dimension (default is one) and distr the type of particle init ("1" for init on the x-axis of the grid and "2" for Random).
 
-###### 6. Configuration of the input file
+##### - Configuration of the input file
 
 Input files are read by PICSAR at the beginning of a run and contain all the required simulation information.
 They should be in the same repository and renamed `input_file.pixr`.
