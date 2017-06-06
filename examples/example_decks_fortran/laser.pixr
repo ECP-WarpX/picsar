@@ -29,19 +29,19 @@ section::main
  nz = 100
 
  # Origin of simulation axes
- xmin = -5e-5
- ymin = -5e-5
- zmin = -5e-5
- xmax = 5e-5
- ymax = 5e-5
- zmax = 5e-5
+ xmin = -1e-5
+ ymin = -1e-5
+ zmin = -1e-5
+ xmax = 1e-5
+ ymax = 1e-5
+ zmax = 1e-5
  # Simulation duration (in 1/w0)
  #t_max = 7
  nsteps=300
  
- ntilex = 2
- ntiley = 2 
- ntilez = 2 
+ ntilex = 1
+ ntiley = 1 
+ ntilez = 1 
  
  # Guard cells
  nguardsx =4 
@@ -105,24 +105,6 @@ section::sorting
  shiftz=-0.5
 end::sorting 
 
-section::species
- name =  laser
- mass = 1
- charge = 10.
- nppcell = 16
- ! Drift velocity (in clight)
- vdrift_x = .0
- vdrift_y = .0
- vdrift_z = 0.0
- ! Thermal velocity (in clight)
- vth_x = 0.0
- vth_y = 0.0
- vth_z = 0.0
- sorting_period=20
- sorting_start=20
-end::species
-
-
 section::output
  output_frequency = 10
  output_step_min  = 0
@@ -142,25 +124,31 @@ section::timestat
 end::timestat
 
 section::antenna
-  vector_x = 1.0
+  # Laser wave vector (orthogonal to antenna)
+  vector_x = 0.0
   vector_y = 0.0
-  vector_z = 0.00
-  spot_x = 0.  
-  spot_y = 0.
-  spot_z = 0.
-  lambda_laser = 4e-7
-  pvec_x = 0.0
-  pvec_y = 1.0
+  vector_z = 1.0
+  # Laser center in antenna plane
+  spot_x = 0e-5  
+  spot_y = 0e-5
+  spot_z = 0e-5
+  # Laser wavelength 
+  lambda_laser = 1e-6
+  # Polar vector (E-field)
+  pvec_x = 1.0
+  pvec_y = 0.0
   pvec_z = 0.0
+  # Polar angle 
   polangle = 0
-  laser_ctau =9e-6
-  laser_a_1=0.000001
-  laser_a_2=0.00000
-  laser_w0 = 10e-6
-  is_lens = .FALSE.
-  laser_zf=0
-  laser_z0=0e-5
-  focal_length = 0
+  # Laser duration 
+  laser_ctau =5e-6
+  # Laser amplitude component 
+  laser_a_1=1.
+  laser_a_2=0.
+  # Laser waist 
+  laser_w0 = 3e-6
+  # Focusing length 
+  focal_length = 0.
   temporal_order = 2 
 end::antenna
 

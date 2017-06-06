@@ -1136,7 +1136,7 @@ MODULE control_file
     nspecies = nspecies+1
     curr => species_parray(nspecies)
     ! minimal init for species attributes
-    curr%charge = echarge
+    curr%charge = 1
     curr%mass = emass
     curr%name='laser_antenna'
     curr%nppcell = 1 

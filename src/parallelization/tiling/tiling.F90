@@ -1732,8 +1732,7 @@ MODULE tiling
     dst  = (/dx,dy,dz/)
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
-    weight_laser=eps0*laser%Emax/0.01_num/5.47732632553035844E-010/curr%nppcell*4
-    weight_laser=eps0*laser%Emax/(dx*dy*dz*curr%nppcell)/2894451.2504163496
+    weight_laser=eps0*laser%Emax*(dx*dy*dz)/(0.01_num)*laser%k0_laser
 
 	DO l=1,lmax
 	  DO j=1,jmax

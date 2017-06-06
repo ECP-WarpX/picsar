@@ -53,9 +53,7 @@ SUBROUTINE push_laser_particles
           curr_tile%part_uz,curr_tile%part_gaminv,dt,8_idp,                 &
           curr%antenna_params%Emax,                                         &
           curr%antenna_params%Emax_laser_1,                                 &
-          curr%antenna_params%Emax_laser_2,                                 &
-          curr%antenna_params%laser_a_1,                                    &
-          curr%antenna_params%laser_a_2,                                    &  
+          curr%antenna_params%Emax_laser_2,                                 & 
           curr%antenna_params%polvector1,                                   & 
           curr%antenna_params%polvector2,                                   &
           curr%antenna_params%k0_laser,                                     &
@@ -88,7 +86,7 @@ END SUBROUTINE push_laser_particles
 !> @date
 !> Creation 2017
 SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
-  dtt,lvect,emax,emax1,emax2,a1,a2,polvector1,polvector2,              &
+  dtt,lvect,emax,emax1,emax2,polvector1,polvector2,              &
   k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
   USE shared_data
   USE omp_lib
@@ -108,7 +106,7 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
   REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
   REAL(num), INTENT(IN)                   :: dtt 
   REAL(num) , DIMENSION(3), INTENT(IN)    :: polvector1,polvector2
-  REAL(num) , INTENT(IN)                  :: emax,emax1,emax2,k0_laser, laser_tau,a1,a2, &
+  REAL(num) , INTENT(IN)                  :: emax,emax1,emax2,k0_laser, laser_tau, &
   real_time,t_peak
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order 
@@ -116,7 +114,7 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
   REAL(num), DIMENSION(3)                 :: amp
   REAL(num)                               :: xx,yy,clightsq,usq, coeff_ampli, disp_max
   
-  disp_max   = clight
+  disp_max   = 0.01_num*clight
   coeff_ampli = disp_max / emax
   clightsq = 1._num/clight**2
   
@@ -146,7 +144,7 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
       nn=ip+n-1
       xx = pid(nn,2) 
       yy = pid(nn,3)
-      CALL gaussian_profile(xx,yy,amp,emax,emax1,emax2,a1,a2,polvector1,polvector2,  &
+      CALL gaussian_profile(xx,yy,amp,emax,emax1,emax2,polvector1,polvector2,  &
       k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
       ! --- Update particle momenta based on laser electric field 
       uxp(nn) = amp(1)*coeff_ampli
@@ -164,7 +162,7 @@ SUBROUTINE laserp_pusher(np,npidd,pid,xp,yp,zp,uxp,uyp,uzp,gaminv,&
 END SUBROUTINE laserp_pusher 
 
 
-SUBROUTINE gaussian_profile(xx,yy,amp,emax,emax1,emax2,a1,a2,polvector1,polvector2,  &
+SUBROUTINE gaussian_profile(xx,yy,amp,emax,emax1,emax2,polvector1,polvector2,  &
   k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order)
   USE shared_data
   USE omp_lib
@@ -174,7 +172,7 @@ SUBROUTINE gaussian_profile(xx,yy,amp,emax,emax1,emax2,a1,a2,polvector1,polvecto
   USE particle_speciesmodule
   REAL(num) , DIMENSION(3), INTENT(INOUT) :: amp
   REAL(num) , DIMENSION(3), INTENT(IN)    :: polvector1,polvector2
-  REAL(num) , INTENT(IN)                  :: emax,emax1,emax2, k0_laser, laser_tau,a1,a2, &
+  REAL(num) , INTENT(IN)                  :: emax,emax1,emax2, k0_laser, laser_tau, &
   real_time,t_peak
   COMPLEX(cpx), INTENT(IN)                :: q_z
   REAL(num) ,INTENT(IN)                   :: xx,yy
@@ -183,13 +181,13 @@ SUBROUTINE gaussian_profile(xx,yy,amp,emax,emax1,emax2,a1,a2,polvector1,polvecto
   COMPLEX(cpx)                            :: j,u1,u2
   INTEGER(idp)                            :: i 
   j=(0.,1.)
-  u1 = j*k0_laser*clight*(real_time-t_peak)*0 - j*k0_laser*(xx**2+yy**2)/(2*q_z) &
+  u1 = j*k0_laser*clight*(real_time-t_peak)- j*k0_laser*(xx**2+yy**2)/(2*q_z) &
   - ((real_time - t_peak )/laser_tau)**temporal_order
   
   u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) &
   - ((real_time - t_peak )/laser_tau)**temporal_order 
-  u1 = EXP(u1)*a1*clight
-  u2 = EXP(u2)*a2*clight
+  u1 = EXP(u1)*emax1
+  u2 = EXP(u2)*emax2
   DO i=1,3
     arg(i) = (u1*polvector1(i) + u2*polvector2(i))
   END DO
