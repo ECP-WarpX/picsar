@@ -15,7 +15,7 @@ PICSAR includes:
 - A compact "mini-app" standalone code, which serves as a self-contained proxy that adequately portrays the computational loads and dataflow of more complex PIC codes.
 - A Python wrapper for using PICSAR optimized routines with Python-driven codes.
 
-#### A.  Here are some of the specific algorithmic features of the PICSAR code :  
+#### A.  Here are some of the specific algorithmic features of the PICSAR algorithms:  
 
 * The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered). 
 * The particle pusher uses the Boris or Vay algorithm.
