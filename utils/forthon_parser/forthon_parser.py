@@ -1143,7 +1143,7 @@ listfiles=["modules/modules.F90", \
            "diags/diags.F90", \
            "submain.F90", \
            "parallelization/mpi/mpi_routines.F90",\
-           "initilization/control_file.F90", \
+           "initialization/control_file.F90", \
            "housekeeping/load_balancing.F90"]
 
 
