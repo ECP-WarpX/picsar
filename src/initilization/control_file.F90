@@ -91,7 +91,7 @@ MODULE control_file
     l_spectral = .FALSE. ! (no spectral solver by default) 
     l_staggered = .TRUE. ! (staggered scheme by default - for spectral ) 
     ! --- Order of current deposition/ field gathering
-    ! (default is 2 in x,y,z)
+    ! (default is 1 in x,y,z)
     nox = 1
     noy = 1
     noz = 1
