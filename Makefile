@@ -371,7 +371,7 @@ build_lib:$(SRCDIR)/modules/modules.o \
         $(SRCDIR)/ios/simple_io.o \
         $(SRCDIR)/parallelization/mpi/mpi_routines.o \
         $(SRCDIR)/submain.o \
-        $(SRCDIR)/initilization/control_file.o
+        $(SRCDIR)/initialization/control_file.o
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
@@ -418,7 +418,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
@@ -463,7 +463,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
@@ -508,7 +508,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
@@ -551,7 +551,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mkdir -p $(BINDIR)
@@ -650,7 +650,7 @@ build_tile_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test \
 	$(SRCDIR)/modules/modules.o \
@@ -666,7 +666,7 @@ build_tile_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_field_gathering_3d_test.o
 
 build_field_gathering_3d_test: $(SRCDIR)/modules/modules.o \
@@ -762,7 +762,7 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_particle_push_3d_test \
 	$(SRCDIR)/modules/modules.o \
@@ -783,7 +783,7 @@ build_tile_particle_push_3d_test: createdir \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_particle_push_3d_test.o
 
 build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
@@ -807,7 +807,7 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test \
 	$(SRCDIR)/modules/modules.o \
@@ -831,7 +831,7 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 
 build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
@@ -857,7 +857,7 @@ build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test \
 	$(SRCDIR)/modules/modules.o \
@@ -869,7 +869,7 @@ build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test.o
 
 build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
@@ -883,7 +883,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test \
 	$(SRCDIR)/modules/modules.o \
@@ -897,7 +897,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/initilization/control_file.o \
+	$(SRCDIR)/initialization/control_file.o \
 	Acceptance_testing/Gcov_tests/tile_curr_depo_3d_test.o
 
 build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
