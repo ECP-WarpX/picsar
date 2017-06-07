@@ -91,7 +91,7 @@ MODULE control_file
     l_spectral = .FALSE. ! (no spectral solver by default) 
     l_staggered = .TRUE. ! (staggered scheme by default - for spectral ) 
     ! --- Order of current deposition/ field gathering
-    ! (default is 2 in x,y,z)
+    ! (default is 1 in x,y,z)
     nox = 1
     noy = 1
     noz = 1
@@ -352,6 +352,8 @@ MODULE control_file
           CALL read_main_section
         CASE('section::species')
           CALL read_species_section
+        CASE('section::antenna')
+          CALL read_antenna_section
         CASE('section::output')
           CALL read_output_section
         CASE('section::cpusplit')
@@ -1114,6 +1116,137 @@ MODULE control_file
     RETURN
   END SUBROUTINE
   
+  SUBROUTINE read_antenna_section
+    ! ____________________________________________________________________________________
+    !> @brief
+    !> Initialization Laser (and antenna) section.
+    !> @author
+    !> Haithem Kallala
+    !> @date
+    !> Creation 2017
+    ! ____________________________________________________________________________________
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    TYPE(particle_species), POINTER :: curr
+    IF (.NOT. l_species_allocated) THEN
+      nspecies=0
+      ALLOCATE(species_parray(1:nspecies_max))
+      l_species_allocated=.TRUE.
+    ENDIF
+    nspecies = nspecies+1
+    curr => species_parray(nspecies)
+    ! minimal init for species attributes
+    curr%charge = 1
+    curr%mass = emass
+    curr%name='laser_antenna'
+    curr%nppcell = 1 
+    curr%x_min = 0._num
+    curr%x_max = 0._num
+    curr%y_min = 0._num
+    curr%y_max = 0._num
+    curr%z_min = 0._num
+    curr%z_max = 0._num
+    curr%vdrift_x =0._num
+    curr%vdrift_y =0._num
+    curr%vdrift_z =0._num
+    curr%vth_x =0._num
+    curr%vth_y =0._num
+    curr%vth_z =0._num
+    curr%sorting_period = 0
+    curr%sorting_start = 0
+    curr%species_npart=0
+    ! --- Init default value for antenna params 
+    curr%is_antenna=.TRUE. 
+    curr%antenna_params%is_lens=.FALSE.
+    curr%antenna_params%laser_z0 = 0._num
+    curr%antenna_params%polangle = 0._num
+    curr%antenna_params%vector_x = 0._num
+    curr%antenna_params%vector_y = 0._num
+    curr%antenna_params%vector_z = 0._num
+    curr%antenna_params%spot_x = 0._num
+    curr%antenna_params%spot_y = 0._num
+    curr%antenna_params%spot_z = 0._num
+    curr%antenna_params%lambda_laser = 0._num
+    curr%antenna_params%pvec_x = 0._num
+    curr%antenna_params%pvec_y = 0._num
+    curr%antenna_params%pvec_z = 0._num
+    curr%antenna_params%laser_ctau = 0._num
+    curr%antenna_params%laser_a_1 = 0._num
+    curr%antenna_params%laser_a_2 = 0._num
+    curr%antenna_params%laser_w0 = 0._num
+    curr%antenna_params%temporal_order = 2
+    curr%antenna_params%is_lens = .FALSE. 
+    curr%antenna_params%laser_zf = 0._num 
+    curr%antenna_params%focal_length = 0._num 
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      IF (INDEX(buffer,'#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer,'vector_x') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector_x
+      ELSE IF (INDEX(buffer,'vector_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector_y
+      ELSE IF (INDEX(buffer,'vector_z') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector_z
+      ELSE IF (INDEX(buffer,'spot_x') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%spot_x
+      ELSE IF (INDEX(buffer,'spot_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%spot_y
+      ELSE IF (INDEX(buffer,'spot_z') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%spot_z
+      ELSE IF (INDEX(buffer,'lambda_laser') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%lambda_laser 
+      ELSE IF (INDEX(buffer,'pvec_x') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%pvec_x
+      ELSE IF (INDEX(buffer,'pvec_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%pvec_y
+      ELSE IF (INDEX(buffer,'pvec_z') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%pvec_z
+      ELSE IF (INDEX(buffer,'laser_ctau') .GT. 0) THEN 
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_ctau
+      ELSE IF (INDEX(buffer,'laser_a_1') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_a_1
+      ELSE IF (INDEX(buffer,'laser_a_2') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_a_2
+      ELSE IF (INDEX(buffer,'laser_w0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_w0 
+      ELSE IF (INDEX(buffer,'polangle') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%polangle
+      ELSE IF (INDEX(buffer,'temporal_order') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') curr%antenna_params%temporal_order
+      ELSE IF (INDEX(buffer,'is_lens') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%is_lens          
+      ELSE IF (INDEX(buffer,'laser_zf') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_zf
+      ELSE IF (INDEX(buffer,'focal_length') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%focal_length
+      ELSE IF (INDEX(buffer,'laser_z0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_z0
+      ENDIF
+    ENDDO
+    RETURN
+  END SUBROUTINE read_antenna_section
   ! ____________________________________________________________________________________
   !> @brief
   !> Initialization of the species section and arrays.

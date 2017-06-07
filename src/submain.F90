@@ -116,6 +116,8 @@ SUBROUTINE step(nst)
         !IF (rank .EQ. 0) PRINT *, "#1"
         CALL field_gathering_plus_particle_pusher
         !IF (rank .EQ. 0) PRINT *, "#2"
+        !!! --- Push virtual laser particles 
+        CALL push_laser_particles
         !!! --- Apply BC on particles
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
@@ -462,6 +464,8 @@ SUBROUTINE initall
   ! - Load particle distribution on each tile
   CALL load_particles
   
+  ! - Load laser antenna particles 
+  CALL load_laser
   IF (rank .EQ. 0) write(0,*) "Creation of the particles: done"
   
   init_localtimes(1) = MPI_WTIME() - tdeb

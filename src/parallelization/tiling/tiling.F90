@@ -873,6 +873,7 @@ MODULE tiling
     IF (pdistr .EQ. 1) THEN
       DO ispecies=1,nspecies
         curr=>species_parray(ispecies)
+        IF (curr%is_antenna) CYCLE 
         IF (c_dim.eq.3) THEN
           jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
           jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
@@ -955,6 +956,7 @@ MODULE tiling
     ELSE IF (pdistr .EQ. 2) THEN
       DO ispecies=1,nspecies
         curr=>species_parray(ispecies)
+        IF (curr%is_antenna) CYCLE 
         jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
         jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
         kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
@@ -998,6 +1000,7 @@ MODULE tiling
       !!! --- Sets-up particle space distribution (random space with a given velocity)
     ELSE IF (pdistr .EQ. 3) THEN
       DO ispecies=1,nspecies
+        IF (curr%is_antenna) CYCLE 
         curr=>species_parray(ispecies)
         jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
         jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
@@ -1045,6 +1048,7 @@ MODULE tiling
     ntot=0
     DO ispecies=1,nspecies
       curr=>species_parray(ispecies)
+      IF (curr%is_antenna) CYCLE 
       CALL MPI_ALLREDUCE(curr%species_npart,npart,1_isp, MPI_INTEGER8,MPI_SUM,comm, err)
       ntot=ntot+npart
       IF (rank .EQ. 0) THEN
@@ -1621,14 +1625,181 @@ MODULE tiling
     IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity
     IF (rank.eq.0) WRITE(0,*) 'Average tile size for the current',tilefieldsize*3.,unity
     
-    !if (tilefieldcurrent > 1024.) then
-    !  tilefieldcurrent = tilefieldcurrent/1024.
-    !  unity = 'Ko'
-    !endif
-    
-    !IF (rank.eq.0) WRITE(0,*) 'Average tile size for currents',tilefieldcurrent,unity
-    !IF (rank.eq.0) WRITE(0,*)
-    
   END SUBROUTINE estimate_memory_consumption
+  
+  SUBROUTINE load_laser_species(curr)
+    USE antenna 
+    TYPE(particle_species),POINTER, INTENT(INOUT) :: curr
+    INTEGER(idp)       ::  lmax,jmax,kmax,j,l,k,ipart
+    REAL(num) ,DIMENSION(2) :: rng
+    REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
+    REAL(num) ::   partvx,partvy,partvz,intercept,weight_laser
+    REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
+    REAL(num) ,DIMENSION(3)      :: mins,maxs,pos,spot,dst
+    INTEGER(idp) :: i1, i2, inonz
+    TYPE(particle_antenna), POINTER ::  laser
+    REAL(num) , DIMENSION(2,2)      :: M1,M2,M3
+    laser=>curr%antenna_params
+    ! --- Initing laser wave vector (vector normal to laser injection plane)
+    laser%vector(1) = laser%vector_x 
+    laser%vector(2) = laser%vector_y
+    laser%vector(3) = laser%vector_z
+    laser%vector    = laser%vector/SQRT(SUM(laser%vector**2)) ! Norm - 1
+    ! --- Initing laser polarization vector 
+    laser%polvector1(1) = laser%pvec_x
+    laser%polvector1(2) = laser%pvec_y
+    laser%polvector1(3) = laser%pvec_z
+    laser%polvector1=laser%polvector1/SQRT(SUM(laser%polvector1**2)) ! Norm - 1
+    
+    IF(SUM(laser%polvector1*laser%vector) .NE. 0._num )  &
+    WRITE(0,*) 'ERROR : laser vector and polvector are not orthogonal' 
+    
+    ! --- Vector orthogonal to vectors polvector1 and wavevector 
+    laser%polvector2(1) = laser%vector(2)*laser%polvector1(3) - &
+    laser%vector(3)*laser%polvector1(2)
+    laser%polvector2(2) = laser%vector(3)*laser%polvector1(1) - &
+    laser%vector(1)*laser%polvector1(3)
+    laser%polvector2(3) = laser%vector(1)*laser%polvector1(2) - &
+    laser%vector(2)*laser%polvector1(1)  
+    
+    ! --- Constant variables of antenna plane equation (ax+by+cz=intercept)
+    intercept  = laser%vector(1)*laser%spot_x +                 &
+    laser%vector(2)*laser%spot_y + laser%vector(3)*laser%spot_z
+    
+    ! --- Get Laser duration (in s)
+    laser%laser_tau = laser%laser_ctau/clight
+    
+    ! --- Compute laser wavevector 
+    laser%k0_laser  = 2_num * pi / laser%lambda_laser
+    
+    ! --- Compute laser amplitudes along polvector1 and polvector2 (in SI units) 
+    laser%Emax_laser_1 = laser%laser_a_1*clight**2*emass*laser%k0_laser/echarge
+    laser%Emax_laser_2 = laser%laser_a_2*clight**2*emass*laser%k0_laser/echarge
+    laser%Emax = SQRT(SUM((laser%Emax_laser_1*laser%polvector1+   &
+    laser%Emax_laser_2*laser%polvector2)**2))
+    ! --- Compute Rayleigh length   
+    laser%zr = 0.5_num*laser%k0_laser*laser%laser_w0**2
+    
+    ! --- Compute inverse Rayleigh length 
+    laser%inv_zr = 1._num/laser%zr
+    laser%inv_w02 = 1._num/laser%laser_w0**2
+    
+    ! --- Compute laser t_peak (1.5*laser_duration) s
+    laser%t_peak = 2._num*laser%laser_tau
+    ! --- Gaussian q parameter at focus
+    laser%q_0 = (0,1.) * laser%laser_w0**2*pi/laser%lambda_laser
+    
+    ! --- Gaussian q parameter in antenna_plane
+    IF(laser%is_lens .EQV. .FALSE.) THEN
+      laser%q_z = (laser%q_0+laser%laser_z0)
+    ELSE
+      M1(1,1) = 1.0_num ; M1(1,2) = laser%laser_z0-laser%laser_zf
+      M1(2,1) = 0.0_num ; M1(2,2) = 1.0_num
+      M2(1,1) = 1.0_num ; M2(1,2) = 0.0_num
+      M2(2,1) = -1./laser%focal_length ; M2(2,2) = 1.0_num
+      CALL product_matrix_2c2(M1,M2,M3)
+      M2(1,1) = 1.0_num ; M2(1,2) = laser%laser_zf
+      M2(2,1) = 0.0_num ; M2(2,2) = 1.0_num
+      CALL product_matrix_2c2(M3,M2,M1)
+      laser%q_z = (M1(1,1)*laser%q_0  + M1(1,2))/(M1(2,1)*laser%q_0+M1(2,2))
+    ENDIF
+    ALLOCATE(partpid(npid))
+    !   partpid(wpid) = nc*dx*dz/(curr%nppcell)
+    
+    ! --- Sanity check on vector normal to antenna plane 
+    IF (SUM(laser%vector**2)==0) THEN 
+      WRITE(0,*) 'laser wave vector is null - Error '
+      STOP 
+    ENDIF 
+    ! --- Get non-zero dimension 
+    IF(laser%vector(3) .NE. 0._num) THEN 
+      i1=1; i2=2; inonz=3;
+      jmax = 1+(x_max_local-x_min_local)/dx
+      lmax = 1+(y_max_local-y_min_local)/dy
+    ELSE IF (laser%vector(2) .NE. 0._num) THEN 
+      i1=1; i2=3; inonz=2;
+      jmax = 1+(x_max_local-x_min_local)/dx
+      lmax = 1+(z_max_local-z_min_local)/dz
+    ELSE IF (laser%vector(1) .NE. 0._num) THEN 
+      i1=2; i2=3; inonz=1;
+      jmax = 1+(y_max_local-y_min_local)/dy
+      lmax = 1+(z_max_local-z_min_local)/dz
+    ENDIF 
+    
+    ! --- init laser particle positions
+    mins = (/x_min_local,y_min_local,z_min_local/)
+    maxs = (/x_max_local,y_max_local,z_max_local/)
+    dst  = (/dx,dy,dz/)
+    pos = (/0._num, 0._num, 0._num/)
+    spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
+    weight_laser=eps0*laser%Emax*(dx*dy*dz)/(0.01_num)*laser%k0_laser
+    
+    DO l=1,lmax
+      DO j=1,jmax
+        DO ipart=1,curr%nppcell
+          !CALL RANDOM_NUMBER(rng)
+          pos(i1) = (mins(i1)+(j-1)*dst(i1))+(dst(i1))/2_num
+          pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2_num
+          pos(inonz) = (intercept-laser%vector(i1)*pos(i1)-laser%vector(i2)*pos(i2)) &
+          /laser%vector(inonz)  
+          ! --- Filter particles in the local domain 
+          ! --- If in local domain, store its coordinates (two doubles) in
+          ! --- the plane of the antenna in pids 
+          IF((pos(inonz) .GE. mins(inonz)) .AND. (pos(inonz)  .LT. maxs(inonz))) THEN 
+            ! -- Laser particle weight 
+            partpid(wpid) = weight_laser
+            ! -- X_a position of laser particle in antenna frame 
+            !-- (projection on polvector1)
+            partpid(wpid+1_idp) = SUM((pos-spot)*laser%polvector1)
+            ! -- Y_a position of laser particle in antenna frame
+            !-- (projection on polvector2)
+            partpid(wpid+2_idp) = SUM((pos-spot)*laser%polvector2)
+            ! -- Init particle momenta in the lab frame 
+            CALL init_momentum(partvx,partvy,partvz,gaminv,partux,partuy,partuz)  
+            ! -- Add particle to current laser species                    
+            CALL add_particle_to_species(curr,pos(1),pos(2),pos(3),&
+            partux, partuy, partuz, gaminv,partpid)
+          ENDIF
+        ENDDO
+      ENDDO
+    ENDDO
+  END SUBROUTINE load_laser_species
+  
+  SUBROUTINE load_laser 
+    TYPE(particle_species), POINTER :: curr
+    INTEGER(idp) :: ispecies
+    DO ispecies=1,nspecies 
+      curr=>species_parray(ispecies)
+      IF (curr%is_antenna) CALL load_laser_species(curr)
+    END DO 
+  END SUBROUTINE load_laser
+  
+  SUBROUTINE init_momentum(partvx,partvy,partvz,gaminv,partux,partuy,partuz)
+    
+    IMPLICIT NONE
+    REAL(num) , INTENT(INOUT)  ::  partvx,partvy,partvz,gaminv,partux,partuy,partuz
+    
+    partvx = 0._num; partvy = 0._num; partvz = 0._num;
+    gaminv = 1.
+    partux = partvx /gaminv
+    partuy = partvy /gaminv
+    partuz = partvz /gaminv
+    
+  END SUBROUTINE init_momentum
+  
+  SUBROUTINE product_matrix_2c2(M1,M2,M3)
+    REAL(num)  , INTENT(IN), DIMENSION(2,2)     :: M1,M2
+    REAL(num)  , INTENT(INOUT), DIMENSION(2,2)  :: M3
+    INTEGER(idp)                                :: i,j,k
+    
+    M3=0._num * M3
+    DO i=1,2
+      DO j=1,2
+        DO k=1,2
+          M3(i,j) = M1(i,k)*M2(k,j)
+        ENDDO
+      ENDDO
+    ENDDO
+  END SUBROUTINE 
   
 END MODULE tiling
