@@ -53,6 +53,7 @@ FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 # External libs 
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
 FFTW3_INCLUDE=/usr/include
+VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
 # Source directory
 SRCDIR=src
@@ -172,8 +173,8 @@ else ifeq ($(SYS),cori2)
 		#CARGS= -D VTUNE=1 -O3 -g -Bdynamic -qopenmp -xMIC-AVX512 -fPIE -fPIC -debug inline-debug-info -I /opt/intel/vtune_amplifier_xe_2017.1.0.486011/include
 		#LDFLAGS= /opt/intel/vtune_amplifier_xe_2017.1.0.486011/lib64/libittnotify.a -pie
 		FARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xMIC-AVX512 -align array64byte -debug inline-debug-info
-		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xMIC-AVX512 -debug inline-debug-info -I /opt/intel/vtune_amplifier_xe_2017.1.0.486011/include
-		LDFLAGS= /opt/intel/vtune_amplifier_xe_2017.1.0.486011/lib64/libittnotify.a
+		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xMIC-AVX512 -debug inline-debug-info -I $(VTUNEDIR)/include
+		LDFLAGS= $(VTUNEDIR)/lib64/libittnotify.a
 		LARCH=
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_cori2_sde
