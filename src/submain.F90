@@ -485,7 +485,6 @@ SUBROUTINE initall
   ex=0.0_num;ey=0.0_num;ez=0.0_num
   bx=0.0_num;by=0.0_num;bz=0.0_num
   jx=0.0_num;jy=0.0_num;jz=0.0_num
-  
 END SUBROUTINE initall
 
 ! ________________________________________________________________________________________
