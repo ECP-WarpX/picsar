@@ -65,8 +65,9 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that proceeds to default init
-  !
+  !> Routine that proceeds to default init of parameters of the PIC loop.   
+  !> This init is performed first in the main program.  It is called by ::main
+  !>
   !> @author
   !> Henri Vincenti
   !
@@ -220,7 +221,10 @@ MODULE control_file
   !> Routine that reads command line arguments.
   !
   !> @details
-  !> this is useful for parametric studies.
+  !> This routine allow to pass command line arguments to PXR 
+  !> and is very useful when performing parametric studies. 
+  !> This init is performed after every other init and thus overwrites parameters
+  !> defined in default_init or read_input_file. It is called by ::main
   !
   !> @author
   !> Henri Vincenti
@@ -329,7 +333,9 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads simulation parameters from input file.
+  !> Routine that reads simulation parameters from an input file (of name input_file.pixr)
+  !> This init is performed after the call to default_init and before the call to
+  !> to read_from_cl. It is called by ::main
   !
   !> @author
   !> Henri Vincenti
@@ -378,7 +384,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads the cpu configuration in the input file
+  !> Routine that reads the cpu section in the input file
   !
   !> @author
   !> Henri Vincenti
@@ -445,7 +451,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads the plasma main properties in the input file
+  !> Routine that reads the plasma main properties section in the input file
   !
   !> @author
   !> Henri Vincenti
@@ -485,7 +491,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads the solver parameters in the input file
+  !> Routine that reads the solver parameters section in the input file
   !
   !> @author
   !> Henri Vincenti
@@ -557,7 +563,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads the particle sorting parameters in the input file
+  !> Routine that reads the particle sorting parameters section in the input file
   !
   !> @author
   !> Henri Vincenti
@@ -609,7 +615,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads the time statistics parameters
+  !> Routine that reads the time statistics parameters section in the input file 
   !
   !> @author
   !> Henri Vincenti
@@ -652,8 +658,8 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads the general parameters including the domain extension,
-  !> the discretization, the tiling, the guard cells.
+  !> Routine that reads the general parameters section in the input file 
+  !> including the domain extension, the discretization, the tiling, the guard cells 
   !
   !> @author
   !> Henri Vincenti
@@ -762,7 +768,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads the species properties.
+  !> Routine that reads the species properties section in the input file 
   !
   !> @author
   !> Henri Vincenti
@@ -880,7 +886,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads parameters for particle dumps.
+  !> Routine that reads the particle dump parameters section 
   !
   !> @author
   !> Henri Vincenti
@@ -986,7 +992,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads parameters for field outputs.
+  !> Routine that field output parameters section 
   !
   !> @author
   !> Henri Vincenti
@@ -1055,7 +1061,7 @@ MODULE control_file
   
   ! ____________________________________________________________________________________
   !> @brief
-  !> Routine that reads parameters for temporal diagnistics.
+  !> Routine that reads parameters for temporal diagnistics in the input file 
   !> Temporal diagnostics are the temporal evolution of some quantities
   !> such as the particle energies and the field energies.
   !
@@ -1243,6 +1249,8 @@ MODULE control_file
       ELSE IF (INDEX(buffer,'laser_z0') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_z0
+      ELSE IF (INDEX(buffer,'end::antenna') .GT. 0) THEN
+        end_section =.TRUE.
       ENDIF
     ENDDO
     RETURN

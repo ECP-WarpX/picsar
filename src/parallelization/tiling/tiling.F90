@@ -33,7 +33,7 @@
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Module that contains subroutines for the tiling.
+!> Module that contains subroutines for the particle/grid tiling.
 !
 !> @author
 !> Henri Vincenti
@@ -54,8 +54,9 @@ MODULE tiling
   
   ! ______________________________________________________________________________________
   !> @brief
-  !> Main subroutine that split the particles into tiles.
-  !
+  !> Main subroutine that sets the tile split for all species. 
+  !> This subroutine is called by ::initall
+  !>
   !> @author
   !> Henri Vincenti
   !
@@ -78,8 +79,8 @@ MODULE tiling
   
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine sets particle tile split in space.
-  !> It is called by set_tile_split().
+  !> This subroutine sets particle tile split in space for a given species 
+  !> This subroutine is called by ::set_tile_split
   !
   !> @author
   !> Henri Vincenti
@@ -1677,6 +1678,7 @@ MODULE tiling
     laser%Emax_laser_2 = laser%laser_a_2*clight**2*emass*laser%k0_laser/echarge
     laser%Emax = SQRT(SUM((laser%Emax_laser_1*laser%polvector1+   &
     laser%Emax_laser_2*laser%polvector2)**2))
+    IF (laser%Emax .EQ. 0._num) RETURN 
     ! --- Compute Rayleigh length   
     laser%zr = 0.5_num*laser%k0_laser*laser%laser_w0**2
     

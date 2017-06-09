@@ -78,7 +78,6 @@ MODULE simple_io
     ENDIF
     
     WRITE(strtemp,'(I5)') it
-    
     IF (output_frequency .GE. 1) THEN
       tmptime2 = MPI_WTIME()
       IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND. &
