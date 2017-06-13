@@ -90,8 +90,8 @@ ifeq ($(SYS),cori1)
 		APPNAME=picsar_cori1_vtune
 		COMP=none
 		FARGS= -D VTUNE=1 -O3 -g -dynamic -debug inline-debug-info -qopenmp -xCORE-AVX2 -align array64byte
-		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xCORE-AVX2 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
-		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
+		CARGS= -D VTUNE=1 -O3 -g -dynamic -qopenmp -xCORE-AVX2 -I $(VTUNEDIR)/include
+		LDFLAGS= $(VTUNEDIR)/lib64/libittnotify.a
 		LARCH=
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_cori1_sde
@@ -213,8 +213,8 @@ else ifeq ($(SYS),carl)
 		APPNAME=picsar_carl_vtune
 		COMP=none
 		FARGS= -D VTUNE=1	-g -Bdynamic -O3 -xMIC-AVX512 -qopenmp -debug inline-debug-info -qopt-streaming-stores auto
-		CARGS= -D VTUNE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNE_AMPLIFIER_XE_2016_DIR)/include
-		LDFLAGS= $(VTUNE_AMPLIFIER_XE_2016_DIR)/lib64/libittnotify.a
+		CARGS= -D VTUNE=1 -g -Bdynamic -O3 -qopenmp -xMIC-AVX512 -I $(VTUNEDIR)/include
+		LDFLAGS= $(VTUNEDIR)/lib64/libittnotify.a
 		LARCH=
 	else ifeq ($(MODE),sde)
 		APPNAME=picsar_carl_sde
