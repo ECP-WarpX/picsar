@@ -119,7 +119,7 @@ MODULE control_file
     fieldgathe = 0
     
     ! Particle communication routine
-    partcom = 0
+    partcom = 1
     
     ! Particle pusher algorithm
     particle_pusher = 0

@@ -682,7 +682,7 @@ MODULE params
   !> Field gathering method
   INTEGER(idp) :: fieldgathe = 0
   !> Type of comm routine to use for particles
-  INTEGER(idp) :: partcom = 0
+  INTEGER(idp) :: partcom = 1
   !> Field gathering + part. pusher seperated flag
   INTEGER(idp) :: fg_p_pp_separated = 0
   !> Vector size for the current deposition
