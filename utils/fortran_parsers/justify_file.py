@@ -147,7 +147,7 @@ def justify_file(input_file,output_file):
 	fin=open(input_file,"r")
 	list_of_output_lines=[]
 	curr_line=fin.readline()
-    split_char=" "
+	split_char=", "
 	while (curr_line != ""):
 	   # Get indentation lever of current line 
 	   curr_indent=get_current_indent(curr_line)
