@@ -97,6 +97,11 @@ def operate_truncation(input_line,max_chars,baseindent,directive,ampersand_col,s
        the current line) 
 """
 def pre_process_line(fh,curr_line):
+   # -- Test if current line is a pre-processor directive 
+   # -- nothing to do in this case 
+   pattern_preproc="^#"
+   if re.search(pattern_preproc,curr_line): 
+      return [curr_line[:-1],'','']
    # -- Test if current line is a compiler directive
    pattern_dir="^\s*(!\$[A-Z,a-z]* )"
    match_dir=re.search(pattern_dir,curr_line)
