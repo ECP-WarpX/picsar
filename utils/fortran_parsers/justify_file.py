@@ -167,7 +167,7 @@ def pre_process_line(fh,curr_line):
       return [code_part,comment_part,directive]
 
 """
- --- This function pre-processes gets the current indent (leading spaces) of a line 
+ --- This function gets the current indent (leading spaces) of a line 
       of code 
  --- Input parameters: 
      - string curr_line containing the input line of code
