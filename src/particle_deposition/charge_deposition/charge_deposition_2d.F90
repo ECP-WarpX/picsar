@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -22,8 +21,7 @@
 ! CHARGE_DEPOSITION_2D.F90
 !
 ! Developers:
-! Henri Vincenti,
-! Mathieu Lobet
+! Henri Vincenti, ! Mathieu Lobet
 !
 ! Brief description:
 ! File containing subroutines for the charge deposition itself in 2D.
@@ -45,26 +43,23 @@
 !
 !> @date
 !> Creation 2016
-subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,&
-  nxguard,nzguard,nox,noz, &
-  l_particles_weight,  &
-  l4symtry,l_2drz, type_rz_depose)
+subroutine pxr_depose_rho_n_2dxz(rho, np, xp, yp, zp, w, q, xmin, zmin, dx, dz, nx,   &
+nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_depose)   
   ! ______________________________________________________________________________
   use constants
   implicit none
-  integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard,type_rz_depose
-  real(num), dimension(-nxguard:nx+nxguard,0:0,-nzguard:nz+nzguard), intent(in out) :: rho
-  real(num), dimension(np) :: xp,yp,zp,w
-  real(num) :: q,dx,dz,xmin,zmin
-  LOGICAL(lp)  :: l_particles_weight,l4symtry,l_2drz
+  integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard, type_rz_depose
+  real(num), dimension(-nxguard:nx+nxguard, 0:0, -nzguard:nz+nzguard), intent(in out) &
+  :: rho
+  real(num), dimension(np) :: xp, yp, zp, w
+  real(num) :: q, dx, dz, xmin, zmin
+  LOGICAL(lp)  :: l_particles_weight, l4symtry, l_2drz
   
-  real(num) :: dxi,dzi,xint,zint, &
-  oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
-  real(num) :: x,z,r,wq,invvol
-  real(num) :: sx(-int(nox/2):int((nox+1)/2)), &
-  sz(-int(noz/2):int((noz+1)/2))
-  real(num), parameter :: onesixth=1./6.,twothird=2./3.
-  integer(idp) :: j,l,ip,jj,ll,ixmin, ixmax, izmin, izmax
+  real(num) :: dxi, dzi, xint, zint, oxint, ozint, xintsq, zintsq, oxintsq, ozintsq 
+  real(num) :: x, z, r, wq, invvol
+  real(num) :: sx(-int(nox/2):int((nox+1)/2)), sz(-int(noz/2):int((noz+1)/2)) 
+  real(num), parameter :: onesixth=1./6., twothird=2./3.
+  integer(idp) :: j, l, ip, jj, ll, ixmin, ixmax, izmin, izmax
   
   dxi = 1./dx
   dzi = 1./dz
@@ -80,7 +75,7 @@ subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,&
   izmin = -int(noz/2)
   izmax = int((noz+1)/2)
   
-  do ip=1,np
+  do ip=1, np
     
     ! --- computes current position in grid units
     if (l_2drz) then
@@ -122,10 +117,10 @@ subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,&
     end if
     
     ! --- computes coefficients for node centered quantities
-    if (type_rz_depose == 2) then ! Davoine method, modified particle shapes in r
+    if (type_rz_depose == 2) then! Davoine method, modified particle shapes in r
       sx(0) = 1. - xint  + 1./(4*j+2)*( -xint + xint**2 )
       sx(1) = 1. - sx(0)
-    else                          ! Standard method, canonical shapes in r
+    else! Standard method, canonical shapes in r
       select case(nox)
       case(0)
         sx( 0) = 1.
@@ -172,7 +167,7 @@ subroutine pxr_depose_rho_n_2dxz(rho,np,xp,yp,zp,w,q,xmin,zmin,dx,dz,nx,nz,&
     ! --- add charge density contributions
     do ll = izmin, izmax
       do jj = ixmin, ixmax
-        rho(j+jj,0,l+ll)=rho(j+jj,0,l+ll)+sx(jj)*sz(ll)*wq
+        rho(j+jj, 0, l+ll)=rho(j+jj, 0, l+ll)+sx(jj)*sz(ll)*wq
       end do
     end do
     
@@ -191,31 +186,27 @@ end subroutine pxr_depose_rho_n_2dxz
 !
 !> @date
 !> Creation 2016
-subroutine pxr_depose_rhoold_n_2dxz(rhoold,np,xp,zp,ux,uy,uz, &
-  gaminv,w,q,xmin,zmin,dt,dx,dz, &
-  nx,nz,nxguard,nzguard,nox,noz, &
-  l_particles_weight,l4symtry)
+subroutine pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q,     &
+xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, l_particles_weight,       &
+l4symtry)   
   ! ______________________________________________________________________________
   use constants
   implicit none
-  integer(idp) :: np,nx,nz,nox,noz,nxguard,nzguard
-  real(num), dimension(-nxguard:nx+nxguard,0:0,-nzguard:nz+nzguard), intent(in out) :: rhoold
-  real(num), dimension(np) :: xp,zp,w,ux,uy,uz,gaminv
-  real(num) :: q,dt,dx,dz,xmin,zmin
-  LOGICAL(lp) :: l_particles_weight,l4symtry
+  integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard
+  real(num), dimension(-nxguard:nx+nxguard, 0:0, -nzguard:nz+nzguard), intent(in out) &
+  :: rhoold
+  real(num), dimension(np) :: xp, zp, w, ux, uy, uz, gaminv
+  real(num) :: q, dt, dx, dz, xmin, zmin
+  LOGICAL(lp) :: l_particles_weight, l4symtry
   
-  real(num) :: dxi,dzi,xint,zint, &
-  oxint,ozint,xintsq,zintsq,oxintsq,ozintsq
-  real(num) :: xintold,zintold, &
-  oxintold,ozintold
-  real(num) :: x,z,xold,zold,wq,invvol,vx,vy,vz
-  real(num) :: sx(-int(nox/2):int((nox+1)/2)), &
-  sz(-int(noz/2):int((noz+1)/2))
-  real(num) :: sxold(-int(nox/2):int((nox+1)/2)), &
-  szold(-int(noz/2):int((noz+1)/2))
-  real(num), parameter :: onesixth=1./6.,twothird=2./3.
-  integer(idp) :: j,l,ip,jj,ll,jold,lold,ixmin, ixmax, izmin, izmax, ndt,idt
-  real(num) :: dxp,dzp,x0,z0,x1,z1
+  real(num) :: dxi, dzi, xint, zint, oxint, ozint, xintsq, zintsq, oxintsq, ozintsq 
+  real(num) :: xintold, zintold, oxintold, ozintold 
+  real(num) :: x, z, xold, zold, wq, invvol, vx, vy, vz
+  real(num) :: sx(-int(nox/2):int((nox+1)/2)), sz(-int(noz/2):int((noz+1)/2)) 
+  real(num) :: sxold(-int(nox/2):int((nox+1)/2)), szold(-int(noz/2):int((noz+1)/2)) 
+  real(num), parameter :: onesixth=1./6., twothird=2./3.
+  integer(idp) :: j, l, ip, jj, ll, jold, lold, ixmin, ixmax, izmin, izmax, ndt, idt
+  real(num) :: dxp, dzp, x0, z0, x1, z1
   
   dxi = 1./dx
   dzi = 1./dz
@@ -227,7 +218,7 @@ subroutine pxr_depose_rhoold_n_2dxz(rhoold,np,xp,zp,ux,uy,uz, &
   izmax = int((noz+1)/2)
   ndt = 1
   
-  do ip=1,np
+  do ip=1, np
     
     vx = ux(ip)*gaminv(ip)
     vy = uy(ip)*gaminv(ip)
@@ -244,7 +235,7 @@ subroutine pxr_depose_rhoold_n_2dxz(rhoold,np,xp,zp,ux,uy,uz, &
     xold=x0
     zold=z0
     
-    do idt=1,ndt
+    do idt=1, ndt
       
       if (idt>1) then
         xold=x
@@ -380,7 +371,8 @@ subroutine pxr_depose_rhoold_n_2dxz(rhoold,np,xp,zp,ux,uy,uz, &
       do ll = izmin, izmax
         do jj = ixmin, ixmax
           
-          rhoold(jold+jj,0,lold+ll) = rhoold(jold+jj,0,lold+ll) + sxold(jj)*szold(ll)*wq
+          rhoold(jold+jj, 0, lold+ll) = rhoold(jold+jj, 0, lold+ll) +                 &
+          sxold(jj)*szold(ll)*wq
           
         end do
       end do

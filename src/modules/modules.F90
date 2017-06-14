@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -64,7 +63,7 @@ MODULE constants
   REAL(num), PARAMETER :: mu0     = 1.2566370614359173e-06_num
   !> Vacuum permeability
   REAL(num), PARAMETER :: eps0    = 8.854187817620389e-12_num
-  REAL(num), PARAMETER :: imu0    = 795774.715459_num 
+  REAL(num), PARAMETER :: imu0    = 795774.715459_num
   !> The famous pi value
   REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
   !> Dimension of the cartesian topology
@@ -101,9 +100,9 @@ MODULE precomputed
   !> \f$ 1/dz \f$
   REAL(num) :: dzi
   REAL(num) :: invvol
-  REAL(num) :: dts2dx,dts2dy,dts2dz
-  REAL(num) :: dtsdx0,dtsdy0,dtsdz0
-  REAL(num) :: dxs2,dys2,dzs2
+  REAL(num) :: dts2dx, dts2dy, dts2dz
+  REAL(num) :: dtsdx0, dtsdy0, dtsdz0
+  REAL(num) :: dxs2, dys2, dzs2
   REAL(num) :: clightsq
 END MODULE precomputed
 
@@ -153,67 +152,67 @@ MODULE fields
   !> Coefficient for the Maxwell solver, exact purpose needs a better explanation
   REAL(num):: alpha(3)
   !> MPI-domain electric field grid in x
-  REAL(num), POINTER, DIMENSION(:,:,:) :: ex
+  REAL(num), POINTER, DIMENSION(:, :, :) :: ex
   !> MPI-domain electric field grid in y
-  REAL(num), POINTER, DIMENSION(:,:,:) :: ey
+  REAL(num), POINTER, DIMENSION(:, :, :) :: ey
   !> MPI-domain electric field grid in z
-  REAL(num), POINTER, DIMENSION(:,:,:) :: ez
+  REAL(num), POINTER, DIMENSION(:, :, :) :: ez
   !> MPI-domain magnetic field grid in x
-  REAL(num), POINTER, DIMENSION(:,:,:) :: bx
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bx
   !> MPI-domain magnetic field grid in y
-  REAL(num), POINTER, DIMENSION(:,:,:) :: by
+  REAL(num), POINTER, DIMENSION(:, :, :) :: by
   !> MPI-domain magnetic field grid in z
-  REAL(num), POINTER, DIMENSION(:,:,:) :: bz
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bz
   !> MPI-domain current grid in x
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jx
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jx
   !> MPI-domain current grid in y
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jy
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jy
   !> MPI-domain current grid in z
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jz
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jz
   !> MPI-domain electric field grid in x
-  REAL(num), POINTER, DIMENSION(:,:,:) :: ex_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: ex_r
   !> MPI-domain electric field grid in y
-  REAL(num), POINTER, DIMENSION(:,:,:) :: ey_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: ey_r
   !> MPI-domain electric field grid in z
-  REAL(num), POINTER, DIMENSION(:,:,:) :: ez_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: ez_r
   !> MPI-domain magnetic field grid in x
-  REAL(num), POINTER, DIMENSION(:,:,:) :: bx_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bx_r
   !> MPI-domain magnetic field grid in y
-  REAL(num), POINTER, DIMENSION(:,:,:) :: by_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: by_r
   !> MPI-domain magnetic field grid in z
-  REAL(num), POINTER, DIMENSION(:,:,:) :: bz_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bz_r
   !> MPI-domain current grid in x
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jx_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jx_r
   !> MPI-domain current grid in y
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jy_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jy_r
   !> MPI-domain current grid in z
-  REAL(num), POINTER, DIMENSION(:,:,:) :: jz_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jz_r
   !> MPI-domain current grid in z - Fourier space 
-  REAL(num), POINTER, DIMENSION(:,:,:) :: rho_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: rho_r
   !> MPI-domain current grid in z - Fourier space 
-  REAL(num), POINTER, DIMENSION(:,:,:) :: rhoold_r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: exf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
   !> MPI-domain electric field grid in y - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: eyf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf
   !> MPI-domain electric field grid in z - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: ezf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf
   !> MPI-domain magnetic field grid in x - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: bxf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf
   !> MPI-domain magnetic field grid in y - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: byf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf
   !> MPI-domain magnetic field grid in z - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: bzf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf
   !> MPI-domain current grid in x - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:,:,:) :: jxf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jxf
   !> MPI-domain current grid in y - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: jyf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jyf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: jzf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jzf
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhof
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhof
   !> MPI-domain current grid in z - Fourier space 
-  COMPLEX(cpx),  POINTER, DIMENSION(:,:,:) :: rhooldf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhooldf
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y
@@ -226,7 +225,7 @@ END MODULE fields
 ! ________________________________________________________________________________________
 !> @brief
 !> Module containing the field tile data structure.
-MODULE grid_tilemodule !#do not parse
+MODULE grid_tilemodule!#do not parse
   ! ________________________________________________________________________________________
   
   USE constants
@@ -234,25 +233,25 @@ MODULE grid_tilemodule !#do not parse
   !> This object contains 3D field grids for one tile
   TYPE grid_tile
     !> Tile Electric field grid in x
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: extile
     !> Tile Electric field grid in y
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: eytile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eytile
     !> Tile Electric field grid in z
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: eztile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eztile
     !> Tile Magnetic field grid in x
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bxtile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: bxtile
     !> Tile Magnetic field grid in y
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bytile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: bytile
     !> Tile Magnetic field grid in z
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bztile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: bztile
     !> Tile Current grid in x
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: jxtile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jxtile
     !> Tile Current grid in y
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: jytile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jytile
     !> Tile Current grid in z
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: jztile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jztile
     !> Tile Charge grid
-    REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: rhotile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: rhotile
     
     ! We declare arrays aligned for vectorization efficiency.
     ! These directives are only understood by the Intel compiler.
@@ -285,8 +284,8 @@ MODULE grid_tilemodule !#do not parse
   
   !> This array contains a list of tile field grids.
   !> This array is local to each MPI domain.
-  !> Tile grids are contained in the object grid_tile (see extile,eytile...).
-  TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:,:,:) :: aofgrid_tiles
+  !> Tile grids are contained in the object grid_tile (see extile, eytile...).
+  TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:, :, :) :: aofgrid_tiles
   
 END MODULE grid_tilemodule
 
@@ -294,7 +293,7 @@ END MODULE grid_tilemodule
 !> @brief
 !> Module containing the Fortran object descriptor representing a particle tile.
 !> Also see tiling.F90 for the definition of the tile properties.
-MODULE particle_tilemodule !#do not parse
+MODULE particle_tilemodule!#do not parse
   !===============================================================================
   USE constants
   
@@ -393,7 +392,7 @@ MODULE particle_tilemodule !#do not parse
     !> Particle magnetic field array in z
     REAL(num), ALLOCATABLE, DIMENSION(:) :: part_bz
     !> Particle weight array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: pid
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_x
     !dir$ attributes align:64 :: part_y
@@ -430,10 +429,10 @@ MODULE particle_tilemodule !#do not parse
 END MODULE particle_tilemodule
 
 !> Module defining particle_antenna type 
-MODULE antenna !#do not parse 
+MODULE antenna!#do not parse 
   USE constants
   TYPE particle_antenna
-    REAL(num)         ::  vector_x 
+    REAL(num)         ::  vector_x
     REAL(num)         ::  vector_y
     REAL(num)         ::  vector_z
     REAL(num)         ::  spot_x
@@ -442,49 +441,49 @@ MODULE antenna !#do not parse
     REAL(num)         ::  pvec_x
     REAL(num)         ::  pvec_y
     REAL(num)         ::  pvec_z
-    REAL(num) , DIMENSION(3) ::  polvector1,polvector2,vector  !source_v
-    REAL(num)         :: laser_a_1 !laser particle max_v_1 at focus (in clight unit) 
-    REAL(num)         :: laser_a_2 !laser particle max_v_2 at focus (in clight unit)
+    REAL(num), DIMENSION(3) ::  polvector1, polvector2, vector!source_v
+    REAL(num)         :: laser_a_1!laser particle max_v_1 at focus (in clight unit) 
+    REAL(num)         :: laser_a_2!laser particle max_v_2 at focus (in clight unit)
     REAL(num)         :: Emax_laser_1
     REAL(num)         :: Emax_laser_2
     REAL(num)         :: Emax
-    REAL(num)         :: laser_w0 !laser waist at focus
-    REAL(num)         :: inv_w02  ! 1./w0**2
-    COMPLEX(cpx)      :: q_z      ! complex curv on the plan
-    COMPLEX(cpx)      :: q_0      ! complex_curv at focus
-    REAL(num)         :: laser_ctau ! length of the pulse(length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
-    REAL(num)         :: laser_tau  ! time duration of the pulse
-    REAL(num)         :: t_peak     
-    REAL(num)         :: laser_z0   ! initial position with respect to (spot,vector)
-    LOGICAL(lp)       :: is_lens    ! if .TRUE. the is a this lens beteen plan and source 
-    REAL(num)         :: laser_zf   ! distance between lens and plan 
-    REAL(num)         :: laser_z    ! distance between focus and lens
-    REAL(num)         :: focal_length ! focal length of the lens
-    REAL(num)         :: zr           ! rayleigh length of the laser  
-    REAL(num)         :: inv_zr       !1/zr  
-    REAL(num)         :: polangle   ! phase shift between laser along povector2 and polvector1
+    REAL(num)         :: laser_w0!laser waist at focus
+    REAL(num)         :: inv_w02! 1./w0**2
+    COMPLEX(cpx)      :: q_z! complex curv on the plan
+    COMPLEX(cpx)      :: q_0! complex_curv at focus
+    REAL(num)         :: laser_ctau! length of the pulse(length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
+    REAL(num)         :: laser_tau! time duration of the pulse
+    REAL(num)         :: t_peak
+    REAL(num)         :: laser_z0! initial position with respect to (spot, vector)
+    LOGICAL(lp)       :: is_lens! if .TRUE. the is a this lens beteen plan and source 
+    REAL(num)         :: laser_zf! distance between lens and plan 
+    REAL(num)         :: laser_z! distance between focus and lens
+    REAL(num)         :: focal_length! focal length of the lens
+    REAL(num)         :: zr! rayleigh length of the laser  
+    REAL(num)         :: inv_zr!1/zr  
+    REAL(num)         :: polangle! phase shift between laser along povector2 and polvector1
     REAL(num)         :: lambda_laser
-    REAL(num)         :: k0_laser 
+    REAL(num)         :: k0_laser
     COMPLEX(cpx)      :: diffract_factor
     INTEGER(idp)      :: temporal_order
-  END TYPE particle_antenna 
+  END TYPE particle_antenna
 END MODULE antenna
 
 !===============================================================================
 !> @brief
 !> Module containing the Fortran object descriptor representing a particle species
-MODULE particle_speciesmodule !#do not parse
+MODULE particle_speciesmodule!#do not parse
   !===============================================================================
   USE particle_tilemodule
   USE constants
-  USE antenna 
+  USE antenna
   !> Fortran object representing a particle species
   TYPE particle_species
     ! Attributes of particle species object
     !> Particle antenna flag (.FALSE. by default) 
-    LOGICAL(lp) :: is_antenna = .FALSE. 
+    LOGICAL(lp) :: is_antenna = .FALSE.
     !> Antenna params (init if is_antenna true)
-    TYPE(particle_antenna) :: antenna_params 
+    TYPE(particle_antenna) :: antenna_params
     !> Particle species name
     CHARACTER(LEN=string_length) :: name
     !> Particle species charge
@@ -534,10 +533,10 @@ MODULE particle_speciesmodule !#do not parse
     ! in Fortran 90 - Need to use POINTER instead
     !> List of tiles (of objects particle_tile) in the MPI domain for the
     !> particles of this species.
-    TYPE(particle_tile), DIMENSION(:,:,:), ALLOCATABLE :: array_of_tiles
+    TYPE(particle_tile), DIMENSION(:, :, :), ALLOCATABLE :: array_of_tiles
     !> Array indicating if a tile has been reallocated.
     !> Used for interfacing WARP and PXR
-    INTEGER(idp), DIMENSION(:,:,:), ALLOCATABLE :: are_tiles_reallocated
+    INTEGER(idp), DIMENSION(:, :, :), ALLOCATABLE :: are_tiles_reallocated
   END TYPE
 END MODULE particle_speciesmodule
 
@@ -602,14 +601,14 @@ MODULE particle_properties
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
   !> Flag for plasma init/push 
-  LOGICAL(lp) :: l_plasma = .TRUE. 
+  LOGICAL(lp) :: l_plasma = .TRUE.
 END MODULE particle_properties
 
 
 
 !===============================================================================
 !> Module containing the array of species
-MODULE particles !#do not parse
+MODULE particles!#do not parse
   !===============================================================================
   USE constants
   USE tile_params
@@ -698,7 +697,7 @@ END MODULE params
 
 !===============================================================================
 !> Module containing MPI parameters
-MODULE mpi_type_constants !#do not parse
+MODULE mpi_type_constants!#do not parse
   !===============================================================================
   use mpi
   use constants
@@ -721,7 +720,7 @@ END MODULE mpi_type_constants
 
 !===============================================================================
 !> Module for the communications
-MODULE communications  !#do not parse
+MODULE communications!#do not parse
   !===============================================================================
   use constants
   
@@ -782,7 +781,7 @@ MODULE communications  !#do not parse
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_gaminv
     !> particle weight buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: pid
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: pid
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: pid
 #endif
@@ -798,49 +797,49 @@ MODULE communications  !#do not parse
   !> particle_bcs_tiles_and_mpi_3d() in boundary.F90.
   TYPE mpi_tile_buffer
     !> particle x position buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_x
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: part_x
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_x
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_x
     !> particle y position buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_y
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: part_y
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_y
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_y
     !> particle z position buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_z
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: part_z
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_z
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_z
     !> particle x momentum buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_ux
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: part_ux
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_ux
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_ux
     !> particle y momentum buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uy
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: part_uy
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_uy
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_uy
     !> particle z momentum buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_uz
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: part_uz
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_uz
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_uz
     !> particle gamma factor buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:) :: part_gaminv
+    REAL(num), ALLOCATABLE, DIMENSION(:, :) :: part_gaminv
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: part_gaminv
 #endif
     !DIR ATTRIBUTES FASTMEM  :: part_gaminv
     !> particle weight buffer array
-    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) :: pid
+    REAL(num), ALLOCATABLE, DIMENSION(:, :, :) :: pid
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !dir$ attributes align:64 :: pid
 #endif
@@ -854,7 +853,7 @@ END MODULE communications
 
 !===============================================================================
 !> Module for the time statistics
-MODULE time_stat !#do not parse
+MODULE time_stat!#do not parse
   !===============================================================================
   use constants
   
@@ -877,7 +876,7 @@ MODULE time_stat !#do not parse
   REAL(num), DIMENSION(20)               :: avetimes, init_avetimes
   
   !> Buffer for the output
-  REAL(num), DIMENSION(:,:), POINTER     :: buffer_timestat
+  REAL(num), DIMENSION(:, :), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat
   !> Number of entries in the buffer
   INTEGER(idp)                           :: nbuffertimestat
@@ -886,7 +885,7 @@ END MODULE
 
 !===============================================================================
 !> Module for the outputs
-MODULE output_data !#do not parse
+MODULE output_data!#do not parse
   !===============================================================================
   use constants
   
@@ -904,7 +903,7 @@ MODULE output_data !#do not parse
   REAL(num) :: pushtime
   
   !> Output frequency of the field diagnostics
-  INTEGER(idp) :: output_frequency = -1 !(Default is no output)
+  INTEGER(idp) :: output_frequency = -1!(Default is no output)
   !> First step for the field diagnostics
   INTEGER(idp) :: output_step_min = 0
   !> Last step for the field diagnostics
@@ -981,7 +980,7 @@ MODULE output_data !#do not parse
   !> Output format of the temporal diagnostics
   INTEGER(idp) :: temdiag_format
   !> Big array containing all the temporal diag at a given iteration
-  REAL(num), dimension(:),allocatable :: temdiag_array
+  REAL(num), dimension(:), allocatable :: temdiag_array
   
   ! Computation flags
   !> Flag true if the divergence of the electric field has been
@@ -1040,7 +1039,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed 
-  LOGICAL(idp) :: fftw_with_mpi, fftw_threads_ok 
+  LOGICAL(idp) :: fftw_with_mpi, fftw_threads_ok
   !> Error code for MPI
   INTEGER(isp) :: errcode
   !> Variable used by MPI
@@ -1371,9 +1370,9 @@ MODULE shared_data
   REAL(num) :: z_grid_max_local
   
   !> Total charge density
-  REAL(num), POINTER, DIMENSION(:,:,:) :: rho, rhoold
+  REAL(num), POINTER, DIMENSION(:, :, :) :: rho, rhoold
   !> Electric Field divergence
-  REAL(num), POINTER, DIMENSION(:,:,:) :: dive
+  REAL(num), POINTER, DIMENSION(:, :, :) :: dive
   
   ! Values used for load balancing
   REAL(num) :: mpitime_per_it
@@ -1388,31 +1387,30 @@ MODULE shared_data
 END MODULE shared_data
 
 #if defined(FFTW)
-MODULE fourier !#do not parse
-  USE constants 
+MODULE fourier!#do not parse
+  USE constants
   ! Fourier k-vectors 
   ! -- Along X 
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit,kxunit_mod
+  REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit, kxunit_mod
   ! -- Along Y
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit,kyunit_mod
+  REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit, kyunit_mod
   ! -- Along Z 
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit,kzunit_mod
+  REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit, kzunit_mod
   ! - 3D k vectors 
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: kxn, kyn, kzn, k , kx,ky,kz, kmag 
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod 
-  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kxmn, kxpn 
-  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kymn, kypn 
-  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kzmn, kzpn 
-  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kxm, kxp
-  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kym, kyp
-  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: kzm, kzp
+  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kxn, kyn, kzn, k, kx, ky, kz, kmag
+  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod
+  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxmn, kxpn
+  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kymn, kypn
+  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzmn, kzpn
+  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxm, kxp
+  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kym, kyp
+  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzm, kzp
   INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
   
   ! - PSATD Coefficients 
-  COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult, &
-  ERhooldmult, BJmult, axm, axp, aym, ayp, &
-  azm, azp 
-END MODULE fourier 
+  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult,  &
+  ERhooldmult, BJmult, axm, axp, aym, ayp, azm, azp  
+END MODULE fourier
 #endif
 
 !===============================================================================
@@ -1421,31 +1419,31 @@ MODULE kyee_em3d
   !===============================================================================
   USE constants
   !> alphax Maxwell coefficient = 7./12.
-  REAL(num) :: alphax = 0.58333333333333337_num 
+  REAL(num) :: alphax = 0.58333333333333337_num
   !> alphax Maxwell coefficient = 1./12.
-  REAL(num) :: betaxy = 0.083333333333333329_num 
+  REAL(num) :: betaxy = 0.083333333333333329_num
   !> alphax Maxwell coefficient = 1./12.
-  REAL(num) :: betaxz = 0.083333333333333329_num 
+  REAL(num) :: betaxz = 0.083333333333333329_num
   !> gammax Maxwell coefficient = 1./48.
-  REAL(num) :: gammax = 0.020833333333333332_num 
+  REAL(num) :: gammax = 0.020833333333333332_num
   !> alphay Maxwell coefficient = 7./12.
-  REAL(num) :: alphay = 0.58333333333333337_num 
+  REAL(num) :: alphay = 0.58333333333333337_num
   !> betayx Maxwell coefficient = 1./12.
-  REAL(num) :: betayx = 0.083333333333333329_num 
+  REAL(num) :: betayx = 0.083333333333333329_num
   !> betayz Maxwell coefficient = 1./12.
-  REAL(num) :: betayz = 0.083333333333333329_num 
+  REAL(num) :: betayz = 0.083333333333333329_num
   !> gammay Maxwell coefficient = 1./48.
-  REAL(num) :: gammay = 0.020833333333333332_num 
+  REAL(num) :: gammay = 0.020833333333333332_num
   !> alphaz Maxwell coefficient = 7./12.
-  REAL(num) :: alphaz = 0.58333333333333337_num 
+  REAL(num) :: alphaz = 0.58333333333333337_num
   !> betazx Maxwell coefficient = 1./12.
-  REAL(num) :: betazx = 0.083333333333333329_num 
+  REAL(num) :: betazx = 0.083333333333333329_num
   !> betazy Maxwell coefficient = 1./12.
-  REAL(num) :: betazy = 0.083333333333333329_num 
+  REAL(num) :: betazy = 0.083333333333333329_num
   !> gammaz Maxwell coefficient = 1./48.
-  REAL(num) :: gammaz = 0.020833333333333332_num 
+  REAL(num) :: gammaz = 0.020833333333333332_num
   !> Coefficient for the lehe solver
-  REAL(num) :: deltaz = 0.000000000000000000_num 
+  REAL(num) :: deltaz = 0.000000000000000000_num
 END MODULE kyee_em3d
 
 !=========================================================================================
@@ -1559,7 +1557,7 @@ MODULE python_pointers
 #endif
   !DIR ATTRIBUTES FASTMEM  :: partgaminv
   !> Array for particle weights and ids
-  REAL(num), DIMENSION(:,:), POINTER :: pid
+  REAL(num), DIMENSION(:, :), POINTER :: pid
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !dir$ attributes align:64 :: pid
 #endif

@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
+! If you have questions about your rights to use or distribute this software, 
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -68,11 +68,12 @@ MODULE tiling
     IMPLICIT NONE
     
     ! Set tile split for species arrays
-    CALL set_tile_split_for_species(species_parray,nspecies,ntilex,ntiley,ntilez,nx_grid,ny_grid,nz_grid, &
-    x_min_local,y_min_local,z_min_local,x_max_local,y_max_local,z_max_local)
+    CALL set_tile_split_for_species(species_parray, nspecies, ntilex, ntiley, ntilez, &
+    nx_grid, ny_grid, nz_grid, x_min_local, y_min_local, z_min_local, x_max_local,    &
+    y_max_local, z_max_local) 
     
     ! ALLOCATE grid tile arrays
-    ALLOCATE(aofgrid_tiles(ntilex,ntiley,ntilez))
+    ALLOCATE(aofgrid_tiles(ntilex, ntiley, ntilez))
     
   END SUBROUTINE set_tile_split
   
@@ -87,14 +88,15 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE set_tile_split_for_species(species_array,nspec,ntx,nty,ntz,nxgrid,nygrid,nzgrid, &
-    xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal)
+  SUBROUTINE set_tile_split_for_species(species_array, nspec, ntx, nty, ntz, nxgrid,  &
+  nygrid, nzgrid, xminlocal, yminlocal, zminlocal, xmaxlocal, ymaxlocal, zmaxlocal) 
     ! ______________________________________________________________________________________
     
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
     INTEGER(idp), INTENT(IN OUT)    ::  ntx, nty, ntz
-    REAL(num), INTENT(IN)           :: xminlocal,yminlocal,zminlocal,xmaxlocal,ymaxlocal,zmaxlocal
+    REAL(num), INTENT(IN)           :: xminlocal, yminlocal, zminlocal, xmaxlocal,    &
+    ymaxlocal, zmaxlocal
     TYPE(particle_species), INTENT(IN OUT), TARGET, DIMENSION(nspec) :: species_array
     INTEGER(idp)                    :: ix, iy, iz, ispecies
     INTEGER(idp)                    :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
@@ -109,17 +111,20 @@ MODULE tiling
     
     ! Some sanity check
     IF (nx0_grid_tile .LT. 4) THEN
-      IF (rank .EQ. 0) PRINT *, "number of tiles in X is too high, settting back to default value 1"
+      IF (rank .EQ. 0) PRINT *, "number of tiles in X is too high, settting back to   &
+      default value 1"
       ntx=1
     END IF
     IF (ny0_grid_tile .LT. 4) THEN
       IF(c_dim .EQ. 3) THEN
-        IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to default value 1"
+        IF (rank .EQ. 0) PRINT *, "number of tiles in Y is too high, setting back to  &
+        default value 1"
       ENDIF
       nty=1
     END IF
     IF (nz0_grid_tile .LT. 4) THEN
-      IF (rank .EQ. 0) PRINT *, "number of tiles in Z is too high, setting back to default value 1"
+      IF (rank .EQ. 0) PRINT *, "number of tiles in Z is too high, setting back to    &
+      default value 1"
       ntz=1
     END IF
     !-- N.B: If the number of grid points cannot be equally divided between
@@ -132,16 +137,16 @@ MODULE tiling
     DO ispecies =1, nspecies
       curr_sp => species_array(ispecies)
       IF (.NOT. curr_sp%l_arrayoftiles_allocated) THEN
-        ALLOCATE(curr_sp%array_of_tiles(ntx,nty,ntz))
-        ALLOCATE(curr_sp%are_tiles_reallocated(ntx,nty,ntz))
+        ALLOCATE(curr_sp%array_of_tiles(ntx, nty, ntz))
+        ALLOCATE(curr_sp%are_tiles_reallocated(ntx, nty, ntz))
         curr_sp%are_tiles_reallocated= 0
         curr_sp%l_arrayoftiles_allocated = .TRUE.
       END IF
       ! Sets tile spatial extents for current species
       DO iz=1, ntz
-        DO iy=1,nty
-          DO ix=1,ntx
-            curr=> curr_sp%array_of_tiles(ix,iy,iz)
+        DO iy=1, nty
+          DO ix=1, ntx
+            curr=> curr_sp%array_of_tiles(ix, iy, iz)
             !------------- X- DIRECTION
             ! FIRST TILE in X DIRECTION
             IF (ix .EQ. 1) THEN
@@ -250,7 +255,7 @@ MODULE tiling
           END DO
         END DO
       END DO
-    END DO ! END DO SPECIES
+    END DO! END DO SPECIES
   END SUBROUTINE set_tile_split_for_species
   
   ! ______________________________________________________________________________________
@@ -263,8 +268,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, &
-    partux, partuy, partuz, gaminv, partpid)
+  SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, partux, partuy, partuz, &
+  gaminv, partpid) 
     ! ______________________________________________________________________________________
     
     IMPLICIT NONE
@@ -276,18 +281,20 @@ MODULE tiling
     
     
     ! Get first tiles dimensions (may be different from last tile)
-    nx0_grid_tile = currsp%array_of_tiles(1,1,1)%nx_grid_tile
-    nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
+    nx0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nx_grid_tile
+    nz0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nz_grid_tile
     
     ! Get particle index in array of tile
-    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
-    iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx), idp)+1,       &
+    ntilex)
+    iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz), idp)+1,       &
+    ntilez)
     
-    ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
-    !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+    ! Point to current tile arr_of_tiles(ixtile, iytile, iztile)
+    !curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
     
-    CALL add_particle_at_tile_2d(currsp,ixtile,iztile, partx, partz, &
-    partux, partuy, partuz, gaminv, partpid)
+    CALL add_particle_at_tile_2d(currsp, ixtile, iztile, partx, partz, partux,        &
+    partuy, partuz, gaminv, partpid) 
     
     ! Update total number of particle species
     currsp%species_npart=currsp%species_npart+1
@@ -304,8 +311,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE add_particle_to_species(currsp, partx, party, partz, &
-    partux, partuy, partuz, gaminv, partpid)
+  SUBROUTINE add_particle_to_species(currsp, partx, party, partz, partux, partuy,     &
+  partuz, gaminv, partpid) 
     ! ______________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz
@@ -317,21 +324,24 @@ MODULE tiling
     
     
     ! Get first tiles dimensions (may be different from last tile)
-    nx0_grid_tile = currsp%array_of_tiles(1,1,1)%nx_grid_tile
-    ny0_grid_tile = currsp%array_of_tiles(1,1,1)%ny_grid_tile
-    nz0_grid_tile = currsp%array_of_tiles(1,1,1)%nz_grid_tile
+    nx0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nx_grid_tile
+    ny0_grid_tile = currsp%array_of_tiles(1, 1, 1)%ny_grid_tile
+    nz0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nz_grid_tile
     
     ! Get particle index in array of tile
-    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),idp)+1,ntilex)
-    iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),idp)+1,ntiley)
-    iztile = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz),idp)+1,ntilez)
+    ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx), idp)+1,       &
+    ntilex)
+    iytile = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy), idp)+1,       &
+    ntiley)
+    iztile = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz), idp)+1,     &
+    ntilez)
     
     
-    ! Point to current tile arr_of_tiles(ixtile,iytile,iztile)
-    !curr=>currsp%array_of_tiles(ixtile,iytile,iztile)
+    ! Point to current tile arr_of_tiles(ixtile, iytile, iztile)
+    !curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
     
-    CALL add_particle_at_tile(currsp,ixtile,iytile,iztile, partx, party, partz, &
-    partux, partuy, partuz, gaminv, partpid)
+    CALL add_particle_at_tile(currsp, ixtile, iytile, iztile, partx, party, partz,    &
+    partux, partuy, partuz, gaminv, partpid) 
     
     ! Update total number of particle species
     currsp%species_npart=currsp%species_npart+1
@@ -347,8 +357,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, &
-    partux, partuy, partuz, gaminv, partpid)
+  SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, partux, partuy,  &
+  partuz, gaminv, partpid) 
     ! ______________________________________________________________________________________
     IMPLICIT NONE
     
@@ -360,7 +370,7 @@ MODULE tiling
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     TYPE(particle_tile), POINTER                    :: curr
     
-    curr=>currsp%array_of_tiles(ixt,1,izt)
+    curr=>currsp%array_of_tiles(ixt, 1, izt)
     ! If no particles in tile, allocate particle arrays
     IF (.NOT. curr%l_arrays_allocated) THEN
       CALL allocate_tile_arrays(curr)
@@ -371,8 +381,8 @@ MODULE tiling
     nmax  = curr%npmax_tile
     IF (count .GT. nmax) THEN
       ! Resize particle tile arrays if tile is full
-      currsp%are_tiles_reallocated(ixt,1,izt)=1
-      CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
+      currsp%are_tiles_reallocated(ixt, 1, izt)=1
+      CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1, idp))
     ENDIF
     ! Finally, add particle to tile
     curr%np_tile(1)=count
@@ -384,7 +394,7 @@ MODULE tiling
     curr%part_uy(count) = partuy
     curr%part_uz(count) = partuz
     curr%part_gaminv(count) = gaminv
-    curr%pid(count,1:npid) = partpid
+    curr%pid(count, 1:npid) = partpid
     curr%part_ex(count)  = 0._num
     curr%part_ey(count)  = 0._num
     curr%part_ez(count)  = 0._num
@@ -404,8 +414,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, &
-    partux, partuy, partuz, gaminv, partpid)
+  SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, partux, &
+  partuy, partuz, gaminv, partpid) 
     ! ______________________________________________________________________________________
     
     IMPLICIT NONE
@@ -416,7 +426,7 @@ MODULE tiling
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     TYPE(particle_tile), POINTER :: curr
     
-    curr=>currsp%array_of_tiles(ixt,iyt,izt)
+    curr=>currsp%array_of_tiles(ixt, iyt, izt)
     ! If no particles in tile, allocate particle arrays
     IF (.NOT. curr%l_arrays_allocated) THEN
       CALL allocate_tile_arrays(curr)
@@ -427,8 +437,8 @@ MODULE tiling
     nmax  = curr%npmax_tile
     IF (count .GT. nmax) THEN
       ! Resize particle tile arrays if tile is full
-      currsp%are_tiles_reallocated(ixt,iyt,izt)=1
-      CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
+      currsp%are_tiles_reallocated(ixt, iyt, izt)=1
+      CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1, idp))
     ENDIF
     ! Finally, add particle to tile
     curr%np_tile(1)=count
@@ -439,7 +449,7 @@ MODULE tiling
     curr%part_uy(count) = partuy
     curr%part_uz(count) = partuz
     curr%part_gaminv(count) = gaminv
-    curr%pid(count,1:npid) = partpid
+    curr%pid(count, 1:npid) = partpid
     curr%part_ex(count)  = 0._num
     curr%part_ey(count)  = 0._num
     curr%part_ez(count)  = 0._num
@@ -458,18 +468,18 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np,npiid, partx, party, &
-    partz, partux, partuy, partuz, gaminv, partpid)
+  SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, npiid, partx,  &
+  party, partz, partux, partuy, partuz, gaminv, partpid) 
     ! ______________________________________________________________________________________
     
     IMPLICIT NONE
     INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew, npiid
     REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv
-    REAL(num), DIMENSION(np,npiid) :: partpid
+    REAL(num), DIMENSION(np, npiid) :: partpid
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     TYPE(particle_tile), POINTER :: curr
     
-    curr=>currsp%array_of_tiles(ixt,iyt,izt)
+    curr=>currsp%array_of_tiles(ixt, iyt, izt)
     ! If no particles in tile, allocate particle arrays
     IF (.NOT. curr%l_arrays_allocated) THEN
       CALL allocate_tile_arrays(curr)
@@ -481,8 +491,8 @@ MODULE tiling
     nmax  = curr%npmax_tile
     IF (npnew .GT. nmax) THEN
       ! Resize particle tile arrays if tile is full
-      currsp%are_tiles_reallocated(ixt,iyt,izt)=1
-      CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1,idp))
+      currsp%are_tiles_reallocated(ixt, iyt, izt)=1
+      CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1, idp))
     ENDIF
     ! Finally, add particle to tile
     curr%np_tile(1)=npnew
@@ -493,7 +503,7 @@ MODULE tiling
     curr%part_uy(count+1:npnew) = partuy
     curr%part_uz(count+1:npnew) = partuz
     curr%part_gaminv(count+1:npnew) = gaminv
-    curr%pid(count+1:npnew,1:npiid) = partpid
+    curr%pid(count+1:npnew, 1:npiid) = partpid
     curr%part_ex(count+1:npnew)  = 0._num
     curr%part_ey(count+1:npnew)  = 0._num
     curr%part_ez(count+1:npnew)  = 0._num
@@ -514,20 +524,20 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
-  SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt,mask)
+  SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt, mask)
     ! ______________________________________________________________________________________
     
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
-    LOGICAL(lp) , DIMENSION (:), INTENT(IN) :: mask
+    LOGICAL(lp), DIMENSION (:), INTENT(IN) :: mask
     INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
     INTEGER(idp) :: ninit, i
     TYPE(particle_tile), POINTER :: curr
     
-    curr=>currsp%array_of_tiles(ixt,iyt,izt)
+    curr=>currsp%array_of_tiles(ixt, iyt, izt)
     ninit= curr%np_tile(1)
-    DO i = ninit,1,-1
+    DO i = ninit, 1, -1
       IF (.NOT. mask(i)) THEN
-        CALL rm_particle_at_tile(currsp,ixt,iyt,izt,i)
+        CALL rm_particle_at_tile(currsp, ixt, iyt, izt, i)
         currsp%species_npart=currsp%species_npart-1
       ENDIF
     ENDDO
@@ -548,7 +558,7 @@ MODULE tiling
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     INTEGER(idp), INTENT(IN) :: ipart, ixt, izt
     
-    CALL rm_particle_at_tile_2d(currsp,ixt, izt, ipart)
+    CALL rm_particle_at_tile_2d(currsp, ixt, izt, ipart)
     currsp%species_npart=currsp%species_npart-1
   END SUBROUTINE rm_particles_from_species_2d
   
@@ -568,7 +578,7 @@ MODULE tiling
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     INTEGER(idp), INTENT(IN) :: ipart, ixt, iyt, izt
     
-    CALL rm_particle_at_tile(currsp,ixt, iyt, izt, ipart)
+    CALL rm_particle_at_tile(currsp, ixt, iyt, izt, ipart)
     currsp%species_npart=currsp%species_npart-1
   END SUBROUTINE rm_particles_from_species
   
@@ -583,13 +593,13 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
-  SUBROUTINE rm_particle_at_tile_2d(currsp,ixt,izt, index)
+  SUBROUTINE rm_particle_at_tile_2d(currsp, ixt, izt, index)
     ! ______________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                        :: index, ixt, izt
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     TYPE(particle_tile), POINTER                    :: curr
-    curr=>currsp%array_of_tiles(ixt,1,izt)
+    curr=>currsp%array_of_tiles(ixt, 1, izt)
     
     IF (index .EQ. curr%np_tile(1)) THEN
       ! If particle i is last element
@@ -604,7 +614,7 @@ MODULE tiling
       curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
       curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
       curr%part_gaminv(index)=curr%part_gaminv(curr%np_tile(1))
-      curr%pid(index,1:npid)=curr%pid(curr%np_tile(1),1:npid)
+      curr%pid(index, 1:npid)=curr%pid(curr%np_tile(1), 1:npid)
       curr%np_tile=curr%np_tile(1)-1
     END IF
     
@@ -613,8 +623,9 @@ MODULE tiling
     ! 30% of array size
     IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN
       IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
-        CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
-        currsp%are_tiles_reallocated(ixt,1,izt)=1
+        CALL resize_particle_arrays(curr, curr%npmax_tile,                            &
+        FLOOR(downsize_factor*curr%npmax_tile, idp))
+        currsp%are_tiles_reallocated(ixt, 1, izt)=1
       ENDIF
     ENDIF
   END SUBROUTINE rm_particle_at_tile_2d
@@ -630,13 +641,13 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
-  SUBROUTINE rm_particle_at_tile(currsp,ixt,iyt,izt, index)
+  SUBROUTINE rm_particle_at_tile(currsp, ixt, iyt, izt, index)
     ! ______________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                        :: index, ixt, iyt, izt
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     TYPE(particle_tile), POINTER                    :: curr
-    curr=>currsp%array_of_tiles(ixt,iyt,izt)
+    curr=>currsp%array_of_tiles(ixt, iyt, izt)
     
     IF (index .EQ. curr%np_tile(1)) THEN
       ! If particle i is last element
@@ -652,7 +663,7 @@ MODULE tiling
       curr%part_uy(index)=curr%part_uy(curr%np_tile(1))
       curr%part_uz(index)=curr%part_uz(curr%np_tile(1))
       curr%part_gaminv(index)=curr%part_gaminv(curr%np_tile(1))
-      curr%pid(index,1:npid)=curr%pid(curr%np_tile(1),1:npid)
+      curr%pid(index, 1:npid)=curr%pid(curr%np_tile(1), 1:npid)
       curr%np_tile=curr%np_tile(1)-1
     END IF
     
@@ -661,8 +672,9 @@ MODULE tiling
     ! 30% of array size
     IF(curr%np_tile(1) .LT. FLOOR(downsize_threshold*curr%npmax_tile)) THEN
       IF (FLOOR(downsize_factor*curr%npmax_tile) .GT. 0) THEN
-        CALL resize_particle_arrays(curr,  curr%npmax_tile, FLOOR(downsize_factor*curr%npmax_tile,idp))
-        currsp%are_tiles_reallocated(ixt,iyt,izt)=1
+        CALL resize_particle_arrays(curr, curr%npmax_tile,                            &
+        FLOOR(downsize_factor*curr%npmax_tile, idp))
+        currsp%are_tiles_reallocated(ixt, iyt, izt)=1
       ENDIF
     ENDIF
   END SUBROUTINE rm_particle_at_tile
@@ -684,13 +696,12 @@ MODULE tiling
     INTEGER(idp) :: nmax
     ! ALLOCATE PARTICLE ARRAYS
     nmax = curr_tile%npmax_tile
-    ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),         &
-    curr_tile%part_z(1:nmax), curr_tile%part_ux(1:nmax),          &
-    curr_tile%part_uy(1:nmax), curr_tile%part_uz(1:nmax),         &
-    curr_tile%pid(1:nmax,1:npid), curr_tile%part_ex(1:nmax),      &
-    curr_tile%part_ey(1:nmax), curr_tile%part_ez(1:nmax),         &
-    curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax),         &
-    curr_tile%part_bz(1:nmax),curr_tile%part_gaminv(1:nmax))
+    ALLOCATE(curr_tile%part_x(1:nmax), curr_tile%part_y(1:nmax),                      &
+    curr_tile%part_z(1:nmax), curr_tile%part_ux(1:nmax), curr_tile%part_uy(1:nmax),   &
+    curr_tile%part_uz(1:nmax), curr_tile%pid(1:nmax, 1:npid),                         &
+    curr_tile%part_ex(1:nmax), curr_tile%part_ey(1:nmax), curr_tile%part_ez(1:nmax),  &
+    curr_tile%part_bx(1:nmax), curr_tile%part_by(1:nmax), curr_tile%part_bz(1:nmax),  &
+    curr_tile%part_gaminv(1:nmax))      
     curr_tile%l_arrays_allocated = .TRUE.
     
   END SUBROUTINE allocate_tile_arrays
@@ -710,8 +721,8 @@ MODULE tiling
     
     IMPLICIT NONE
     
-    CALL init_tile_arrays_for_species(nspecies, species_parray, &
-    aofgrid_tiles, ntilex, ntiley, ntilez)
+    CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles,        &
+    ntilex, ntiley, ntilez) 
     
   END SUBROUTINE init_tile_arrays
   
@@ -731,13 +742,15 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  SUBROUTINE init_tile_arrays_for_species(nspec2,species_array,aofgtiles,ntx2,nty2,ntz2)
+  SUBROUTINE init_tile_arrays_for_species(nspec2, species_array, aofgtiles, ntx2,     &
+  nty2, ntz2)
     ! ____________________________________________________________________________________
     
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
-    TYPE(grid_tile), DIMENSION(ntx2,nty2,ntz2), INTENT(IN OUT)        :: aofgtiles
-    TYPE(particle_species), DIMENSION(nspec2), TARGET, INTENT(IN OUT) :: species_array
+    TYPE(grid_tile), DIMENSION(ntx2, nty2, ntz2), INTENT(IN OUT)        :: aofgtiles
+    TYPE(particle_species), DIMENSION(nspec2), TARGET, INTENT(IN OUT) ::              &
+    species_array
     
     INTEGER(idp)                    :: ispecies, ix, iy, iz
     INTEGER(idp)                    :: n1, n2, n3, ng1, ng2, ng3
@@ -747,32 +760,32 @@ MODULE tiling
     IF (nspec2 .EQ. 0) RETURN
     
     ! Allocate particle tile arrays
-    DO ispecies=1,nspec2 ! LOOP ON SPECIES
+    DO ispecies=1, nspec2! LOOP ON SPECIES
       curr=>species_array(ispecies)
       curr%species_npart=0
       DO iz=1, ntz2! LOOP ON TILES
         DO iy=1, nty2
-          DO ix=1,ntx2
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          DO ix=1, ntx2
+            curr_tile=>curr%array_of_tiles(ix, iy, iz)
             ! - Max size of particle arrays of current ile
             n1=curr_tile%nx_cells_tile
             n2=curr_tile%ny_cells_tile
             n3=curr_tile%nz_cells_tile
-            curr_tile%npmax_tile=MAX(n1*n2*n3*curr%nppcell,1_idp)
+            curr_tile%npmax_tile=MAX(n1*n2*n3*curr%nppcell, 1_idp)
             curr_tile%np_tile(1)=0
             ! Set number of guard cells for each tile
             IF ((ix .GT. 1) .AND. (ix .LT. ntx2)) THEN
-              curr_tile%nxg_tile=MAX(nox+1,2_idp)
+              curr_tile%nxg_tile=MAX(nox+1, 2_idp)
             ELSE
               curr_tile%nxg_tile=nxjguards
             END IF
             IF ((iy .GT. 1) .AND. (iy .LT. nty2) .AND. (c_dim .EQ. 3)) THEN
-              curr_tile%nyg_tile=MAX(noy+1,2_idp)
+              curr_tile%nyg_tile=MAX(noy+1, 2_idp)
             ELSE
               curr_tile%nyg_tile=nyjguards
             END IF
             IF ((iz .GT. 1) .AND. (iz .LT. ntz2)) THEN
-              curr_tile%nzg_tile=MAX(noz+1,2_idp)
+              curr_tile%nzg_tile=MAX(noz+1, 2_idp)
             ELSE
               curr_tile%nzg_tile=nzjguards
             END IF
@@ -788,15 +801,15 @@ MODULE tiling
     ! - For some reason, don't set all values to zero?????
     ! - Have to set it manually for each element through
     ! - a DO loop see add_particle_at_tile
-    !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-    !$OMP SHARED(species_array, ntx2, nty2, ntz2, nspec2) &
-    !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile)
-    DO iz=1, ntz2 ! LOOP ON TILES
+    !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE)                     &
+    !$OMP SHARED(species_array, ntx2, nty2, ntz2, nspec2) PRIVATE(ix, iy, iz,         &
+    !$OMP ispecies, curr, curr_tile)  
+    DO iz=1, ntz2! LOOP ON TILES
       DO iy=1, nty2
         DO ix=1, ntx2
-          DO ispecies=1, nspec2 ! LOOP ON SPECIES
+          DO ispecies=1, nspec2! LOOP ON SPECIES
             curr=>species_array(ispecies)
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            curr_tile=>curr%array_of_tiles(ix, iy, iz)
             !!! --- Init tile arrays
             curr_tile%part_x=0.0_num
             curr_tile%part_y=0.0_num
@@ -819,10 +832,10 @@ MODULE tiling
     !$OMP END PARALLEL DO
     ! Allocate grid tile arrays
     curr=>species_array(1)
-    DO iz=1, ntz2 ! LOOP ON TILES
+    DO iz=1, ntz2! LOOP ON TILES
       DO iy=1, nty2
         DO ix=1, ntx2
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
           ! - Max size of particle arrays of current ile
           n1=curr_tile%nx_cells_tile
           n2=curr_tile%ny_cells_tile
@@ -830,16 +843,26 @@ MODULE tiling
           ng1=curr_tile%nxg_tile
           ng2=curr_tile%nyg_tile
           ng3=curr_tile%nzg_tile
-          ALLOCATE(aofgtiles(ix,iy,iz)%extile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%eytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%eztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%bxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%bytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%bztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%jxtile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%jytile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%jztile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix,iy,iz)%rhotile(-ng1:n1+ng1,-ng2:n2+ng2,-ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%extile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%eytile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%eztile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%bxtile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%bytile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%bztile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%jxtile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%jytile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%jztile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          -ng3:n3+ng3))
+          ALLOCATE(aofgtiles(ix, iy, iz)%rhotile(-ng1:n1+ng1, -ng2:n2+ng2,            &
+          -ng3:n3+ng3))
         END DO
       END DO
     END DO! END LOOP ON TILES
@@ -863,7 +886,7 @@ MODULE tiling
     INTEGER(idp) :: ispecies, l, k, j, ipart
     INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
     REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
-    REAL(num) :: phi, th, v, clightsq,partvx,partvy,partvz
+    REAL(num) :: phi, th, v, clightsq, partvx, partvy, partvz
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
     INTEGER(idp) :: npart
     INTEGER(isp) :: err
@@ -872,21 +895,21 @@ MODULE tiling
     ALLOCATE(partpid(npid))
     !!! --- Sets-up particle space distribution (homogeneous case, uniform space distribution - default)
     IF (pdistr .EQ. 1) THEN
-      DO ispecies=1,nspecies
+      DO ispecies=1, nspecies
         curr=>species_parray(ispecies)
-        IF (curr%is_antenna) CYCLE 
+        IF (curr%is_antenna) CYCLE
         IF (c_dim.eq.3) THEN
-          jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
-          jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
-          kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
-          kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
-          lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
-          lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
+          jmin = NINT(MAX(curr%x_min-x_min_local, 0.0_num)/dx)
+          jmax = NINT(MIN(curr%x_max-x_min_local, x_max_local-x_min_local)/dx)
+          kmin = NINT(MAX(curr%y_min-y_min_local, 0.0_num)/dy)
+          kmax = NINT(MIN(curr%y_max-y_min_local, y_max_local-y_min_local)/dy)
+          lmin = NINT(MAX(curr%z_min-z_min_local, 0.0_num)/dz)
+          lmax = NINT(MIN(curr%z_max-z_min_local, z_max_local-z_min_local)/dz)
           
-          DO l=lmin,lmax-1
-            DO k=kmin,kmax-1
-              DO j=jmin,jmax-1
-                DO ipart=1,curr%nppcell
+          DO l=lmin, lmax-1
+            DO k=kmin, kmax-1
+              DO j=jmin, jmax-1
+                DO ipart=1, curr%nppcell
                   ! Sets positions and weight
                   partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-0.5_num)
                   party = y_min_local+k*dy+dy/curr%nppcell*(ipart-0.5_num)
@@ -894,22 +917,25 @@ MODULE tiling
                   partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                   ! Sets velocity
                   CALL RANDOM_NUMBER(rng(1:3))
-                  v=MAX(1e-10_num,rng(1))
+                  v=MAX(1e-10_num, rng(1))
                   th=2*pi*rng(2)
                   phi=2*pi*rng(3)
                   
-                  partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                  partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
+                  partvx= curr%vdrift_x +                                             &
+                  curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                  partvy= curr%vdrift_y +                                             &
+                  curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
                   partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
                   
-                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 +                    &
+                  partvz**2)*clightsq)
                   partux = partvx /gaminv
                   partuy = partvy /gaminv
                   partuz = partvz /gaminv
                   
                   ! Adds particle to array of tiles of current species
-                  CALL add_particle_to_species(curr, partx, party, partz, &
-                  partux, partuy, partuz, gaminv, partpid)
+                  CALL add_particle_to_species(curr, partx, party, partz, partux,     &
+                  partuy, partuz, gaminv, partpid) 
                 END DO
               END DO
             END DO
@@ -917,20 +943,20 @@ MODULE tiling
           
         ELSE IF (c_dim.eq.2) THEN
           
-          jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
-          jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
-          lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
-          lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
-          DO l=lmin,lmax-1
-            DO j=jmin,jmax-1
-              DO ipart=1,curr%nppcell
+          jmin = NINT(MAX(curr%x_min-x_min_local, 0.0_num)/dx)
+          jmax = NINT(MIN(curr%x_max-x_min_local, x_max_local-x_min_local)/dx)
+          lmin = NINT(MAX(curr%z_min-z_min_local, 0.0_num)/dz)
+          lmax = NINT(MIN(curr%z_max-z_min_local, z_max_local-z_min_local)/dz)
+          DO l=lmin, lmax-1
+            DO j=jmin, jmax-1
+              DO ipart=1, curr%nppcell
                 ! Sets positions and weight
                 partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
                 partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
                 partpid(wpid) = nc*dx*dz/(curr%nppcell)
                 ! Sets velocity
                 CALL RANDOM_NUMBER(rng(1:3))
-                v=MAX(1e-10_num,rng(1))
+                v=MAX(1e-10_num, rng(1))
                 th=2*pi*rng(2)
                 phi=2*pi*rng(3)
                 
@@ -944,38 +970,38 @@ MODULE tiling
                 partuz = partvz /gaminv
                 
                 ! Adds particle to array of tiles of current species
-                CALL add_particle_to_species_2d(curr, partx, partz, &
-                partux, partuy, partuz, gaminv, partpid)
+                CALL add_particle_to_species_2d(curr, partx, partz, partux, partuy,   &
+                partuz, gaminv, partpid) 
               END DO
             END DO
           END DO
           
         ENDIF
-      END DO ! END LOOP ON SPECIES
+      END DO! END LOOP ON SPECIES
       
       !!! --- Sets-up particle space distribution (random space distribution)
     ELSE IF (pdistr .EQ. 2) THEN
-      DO ispecies=1,nspecies
+      DO ispecies=1, nspecies
         curr=>species_parray(ispecies)
-        IF (curr%is_antenna) CYCLE 
-        jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
-        jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
-        kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
-        kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
-        lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
-        lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
-        DO l=lmin,lmax-1
-          DO k=kmin,kmax-1
-            DO j=jmin,jmax-1
-              DO ipart=1,curr%nppcell
+        IF (curr%is_antenna) CYCLE
+        jmin = NINT(MAX(curr%x_min-x_min_local, 0.0_num)/dx)
+        jmax = NINT(MIN(curr%x_max-x_min_local, x_max_local-x_min_local)/dx)
+        kmin = NINT(MAX(curr%y_min-y_min_local, 0.0_num)/dy)
+        kmax = NINT(MIN(curr%y_max-y_min_local, y_max_local-y_min_local)/dy)
+        lmin = NINT(MAX(curr%z_min-z_min_local, 0.0_num)/dz)
+        lmax = NINT(MIN(curr%z_max-z_min_local, z_max_local-z_min_local)/dz)
+        DO l=lmin, lmax-1
+          DO k=kmin, kmax-1
+            DO j=jmin, jmax-1
+              DO ipart=1, curr%nppcell
                 CALL RANDOM_NUMBER(rng(1:6))
                 ! Sets positions and weight
-                partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
-                party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
-                partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
+                partx = x_min_local+MIN(rng(1), 0.999_num)*(x_max_local-x_min_local)
+                party = y_min_local+MIN(rng(2), 0.999_num)*(y_max_local-y_min_local)
+                partz = z_min_local+MIN(rng(3), 0.999_num)*(z_max_local-z_min_local)
                 partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                 ! Sets velocity
-                v=MAX(1e-10_num,rng(4))
+                v=MAX(1e-10_num, rng(4))
                 th=2*pi*rng(5)
                 phi=2*pi*rng(6)
                 
@@ -989,39 +1015,39 @@ MODULE tiling
                 partuz = partvz /gaminv
                 
                 ! Adds particle to array of tiles of current species
-                CALL add_particle_to_species(curr, partx, party, partz, &
-                partux, partuy, partuz, gaminv, partpid)
+                CALL add_particle_to_species(curr, partx, party, partz, partux,       &
+                partuy, partuz, gaminv, partpid) 
               END DO
             END DO
           END DO
         END DO
-      END DO ! END LOOP ON SPECIES
+      END DO! END LOOP ON SPECIES
       
       
       !!! --- Sets-up particle space distribution (random space with a given velocity)
     ELSE IF (pdistr .EQ. 3) THEN
-      DO ispecies=1,nspecies
-        IF (curr%is_antenna) CYCLE 
+      DO ispecies=1, nspecies
+        IF (curr%is_antenna) CYCLE
         curr=>species_parray(ispecies)
-        jmin = NINT(MAX(curr%x_min-x_min_local,0.0_num)/dx)
-        jmax = NINT(MIN(curr%x_max-x_min_local,x_max_local-x_min_local)/dx)
-        kmin = NINT(MAX(curr%y_min-y_min_local,0.0_num)/dy)
-        kmax = NINT(MIN(curr%y_max-y_min_local,y_max_local-y_min_local)/dy)
-        lmin = NINT(MAX(curr%z_min-z_min_local,0.0_num)/dz)
-        lmax = NINT(MIN(curr%z_max-z_min_local,z_max_local-z_min_local)/dz)
-        DO l=lmin,lmax-1
-          DO k=kmin,kmax-1
-            DO j=jmin,jmax-1
-              DO ipart=1,curr%nppcell
+        jmin = NINT(MAX(curr%x_min-x_min_local, 0.0_num)/dx)
+        jmax = NINT(MIN(curr%x_max-x_min_local, x_max_local-x_min_local)/dx)
+        kmin = NINT(MAX(curr%y_min-y_min_local, 0.0_num)/dy)
+        kmax = NINT(MIN(curr%y_max-y_min_local, y_max_local-y_min_local)/dy)
+        lmin = NINT(MAX(curr%z_min-z_min_local, 0.0_num)/dz)
+        lmax = NINT(MIN(curr%z_max-z_min_local, z_max_local-z_min_local)/dz)
+        DO l=lmin, lmax-1
+          DO k=kmin, kmax-1
+            DO j=jmin, jmax-1
+              DO ipart=1, curr%nppcell
                 CALL RANDOM_NUMBER(rng(1:6))
                 ! Sets positions and weight
-                partx = x_min_local+MIN(rng(1),0.999_num)*(x_max_local-x_min_local)
-                party = y_min_local+MIN(rng(2),0.999_num)*(y_max_local-y_min_local)
-                partz = z_min_local+MIN(rng(3),0.999_num)*(z_max_local-z_min_local)
+                partx = x_min_local+MIN(rng(1), 0.999_num)*(x_max_local-x_min_local)
+                party = y_min_local+MIN(rng(2), 0.999_num)*(y_max_local-y_min_local)
+                partz = z_min_local+MIN(rng(3), 0.999_num)*(z_max_local-z_min_local)
                 partpid(wpid) = nc*dx*dy*dz/(curr%nppcell)
                 
                 ! Sets velocity
-                v=MAX(1e-10_num,rng(4))
+                v=MAX(1e-10_num, rng(4))
                 th=2*pi*rng(5)
                 phi=2*pi*rng(6)
                 
@@ -1035,26 +1061,27 @@ MODULE tiling
                 partuz = partvz /gaminv
                 
                 ! Adds particle to array of tiles of current species
-                CALL add_particle_to_species(curr, partx, party, partz, &
-                partux, partuy, partuz, gaminv, partpid)
+                CALL add_particle_to_species(curr, partx, party, partz, partux,       &
+                partuy, partuz, gaminv, partpid) 
               END DO
             END DO
           END DO
         END DO
-      END DO ! END LOOP ON SPECIES
+      END DO! END LOOP ON SPECIES
       
     ENDIF
     
     ! Collects total number of particles from other subdomains (useful for statistics)
     ntot=0
-    DO ispecies=1,nspecies
+    DO ispecies=1, nspecies
       curr=>species_parray(ispecies)
-      IF (curr%is_antenna) CYCLE 
-      CALL MPI_ALLREDUCE(curr%species_npart,npart,1_isp, MPI_INTEGER8,MPI_SUM,comm, err)
+      IF (curr%is_antenna) CYCLE
+      CALL MPI_ALLREDUCE(curr%species_npart, npart, 1_isp, MPI_INTEGER8, MPI_SUM,     &
+      comm, err)
       ntot=ntot+npart
       IF (rank .EQ. 0) THEN
-        WRITE (0,*) 'Loaded npart = ', npart,' particles of species ', &
-        TRIM(ADJUSTL(curr%name))
+        WRITE (0, *) 'Loaded npart = ', npart, ' particles of species ',              &
+        TRIM(ADJUSTL(curr%name)) 
       END IF
     END DO
     
@@ -1087,7 +1114,7 @@ MODULE tiling
     CALL resize_1D_array_real(curr%part_uy, old_size, new_size)
     CALL resize_1D_array_real(curr%part_uz, old_size, new_size)
     CALL resize_1D_array_real(curr%part_gaminv, old_size, new_size)
-    CALL resize_2D_array_real(curr%pid, old_size, new_size,npid,npid)
+    CALL resize_2D_array_real(curr%pid, old_size, new_size, npid, npid)
     CALL resize_1D_array_real(curr%part_ex, old_size, new_size)
     CALL resize_1D_array_real(curr%part_ey, old_size, new_size)
     CALL resize_1D_array_real(curr%part_ez, old_size, new_size)
@@ -1109,8 +1136,8 @@ MODULE tiling
   SUBROUTINE resize_1D_array_real(arr, old_size, new_size)
     ! ____________________________________________________________________________________
     IMPLICIT NONE
-    REAL(num), DIMENSION(:),ALLOCATABLE, INTENT(IN OUT) :: arr
-    REAL(num), DIMENSION(:),ALLOCATABLE :: temp
+    REAL(num), DIMENSION(:), ALLOCATABLE, INTENT(IN OUT) :: arr
+    REAL(num), DIMENSION(:), ALLOCATABLE :: temp
     INTEGER(idp) :: old_size, new_size
     
     ALLOCATE(temp(1:new_size))
@@ -1136,15 +1163,15 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
-  SUBROUTINE resize_2D_array_real(arr, nx_old,nx_new,ny_old,ny_new)
+  SUBROUTINE resize_2D_array_real(arr, nx_old, nx_new, ny_old, ny_new)
     ! ____________________________________________________________________________________
     IMPLICIT NONE
-    REAL(num), DIMENSION(:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
-    INTEGER(idp),INTENT(IN) :: nx_old,ny_old,nx_new,ny_new
-    INTEGER(idp)            :: nx_temp,ny_temp
-    REAL(num), DIMENSION(:,:),ALLOCATABLE :: temp
+    REAL(num), DIMENSION(:, :), ALLOCATABLE, INTENT(IN OUT) :: arr
+    INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nx_new, ny_new
+    INTEGER(idp)            :: nx_temp, ny_temp
+    REAL(num), DIMENSION(:, :), ALLOCATABLE :: temp
     
-    ALLOCATE(temp(1:nx_new,1:ny_new))
+    ALLOCATE(temp(1:nx_new, 1:ny_new))
     ! reshape array
     ! reshape array
     IF (nx_new .GT. nx_old) THEN
@@ -1157,10 +1184,9 @@ MODULE tiling
     ELSE
       ny_temp=ny_new
     ENDIF
-    temp(1:nx_temp,1:ny_temp)= &
-    arr(1:nx_temp,1:ny_temp)
+    temp(1:nx_temp, 1:ny_temp)= arr(1:nx_temp, 1:ny_temp) 
     DEALLOCATE(arr)
-    ALLOCATE(arr(1:nx_new,1:ny_new))
+    ALLOCATE(arr(1:nx_new, 1:ny_new))
     arr=temp
     DEALLOCATE(temp)
   END SUBROUTINE resize_2D_array_real
@@ -1175,17 +1201,16 @@ MODULE tiling
   !> @date
   !> Creation: 2017
   !
-  SUBROUTINE resize_3D_array_real(arr, nx_old,nx_new,ny_old,ny_new, &
-    nz_old,nz_new)
+  SUBROUTINE resize_3D_array_real(arr, nx_old, nx_new, ny_old, ny_new, nz_old,        &
+  nz_new) 
     ! ____________________________________________________________________________________
     IMPLICIT NONE
-    REAL(num), DIMENSION(:,:,:),ALLOCATABLE, INTENT(IN OUT) :: arr
-    INTEGER(idp),INTENT(IN) :: nx_old, ny_old, nz_old, &
-    nx_new, ny_new, nz_new
-    INTEGER(idp)            :: nx_temp,ny_temp,nz_temp
-    REAL(num), DIMENSION(:,:,:),ALLOCATABLE :: temp
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE, INTENT(IN OUT) :: arr
+    INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nz_old, nx_new, ny_new, nz_new 
+    INTEGER(idp)            :: nx_temp, ny_temp, nz_temp
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: temp
     
-    ALLOCATE(temp(1:nx_new,1:ny_new,1:nz_new))
+    ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
     ! reshape array
     IF (nx_new .GT. nx_old) THEN
       nx_temp=nx_old
@@ -1202,11 +1227,10 @@ MODULE tiling
     ELSE
       nz_temp=nz_new
     ENDIF
-    temp(1:nx_temp,1:ny_temp,1:nz_temp)= &
-    arr(1:nx_temp,1:ny_temp,1:nz_temp)
+    temp(1:nx_temp, 1:ny_temp, 1:nz_temp)= arr(1:nx_temp, 1:ny_temp, 1:nz_temp) 
     DEALLOCATE(arr)
     
-    ALLOCATE(arr(1:nx_new,1:ny_new,1:nz_new))
+    ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
     arr=temp
     DEALLOCATE(temp)
   END SUBROUTINE resize_3D_array_real
@@ -1228,10 +1252,10 @@ MODULE tiling
     TYPE(particle_species), POINTER :: curr
     
     npart=0
-    DO ispecies=1, nspecies ! LOOP ON SPECIES
+    DO ispecies=1, nspecies! LOOP ON SPECIES
       curr=> species_parray(ispecies)
       npart=npart+curr%species_npart
-    END DO ! END LOOP ON SPECIES
+    END DO! END LOOP ON SPECIES
     
   END SUBROUTINE get_local_number_of_part
   
@@ -1256,12 +1280,12 @@ MODULE tiling
     ! ____________________________________________________________________________________
     USE python_pointers
     IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) :: ix,iy,iz,ispecies
+    INTEGER(idp), INTENT(IN) :: ix, iy, iz, ispecies
     TYPE(particle_species), POINTER  :: currsp
     TYPE(particle_tile), POINTER ::curr_tile
     
     currsp=> species_parray(ispecies)
-    curr_tile=>currsp%array_of_tiles(ix,iy,iz)
+    curr_tile=>currsp%array_of_tiles(ix, iy, iz)
     ! Tile extent and dimension
     nxtg=curr_tile%nxg_tile
     nytg=curr_tile%nyg_tile
@@ -1322,13 +1346,14 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
-  SUBROUTINE set_particle_species_properties(nsp,sname,mss,chrg,nppc,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax, &
-    vdxs,vdys,vdzs,vthxs,vthys,vthzs,sorting_period,sorting_start,dodepos)
+  SUBROUTINE set_particle_species_properties(nsp, sname, mss, chrg, nppc, xsmin,      &
+  ysmin, zsmin, xsmax, ysmax, zsmax, vdxs, vdys, vdzs, vthxs, vthys, vthzs,           &
+  sorting_period, sorting_start, dodepos) 
     ! ____________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nsp, nppc
-    REAL(num), INTENT(IN)    :: mss, chrg,xsmin,ysmin,zsmin,xsmax,ysmax,zsmax
-    REAL(num), INTENT(IN)    :: vdxs,vdys,vdzs,vthxs,vthys,vthzs
+    REAL(num), INTENT(IN)    :: mss, chrg, xsmin, ysmin, zsmin, xsmax, ysmax, zsmax
+    REAL(num), INTENT(IN)    :: vdxs, vdys, vdzs, vthxs, vthys, vthzs
     CHARACTER(LEN=*), INTENT(IN) :: sname
     LOGICAL(lp)  :: dodepos
     TYPE(particle_species), POINTER  :: currsp
@@ -1379,20 +1404,21 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
-  SUBROUTINE py_add_particles_to_species(nsp, npart,npiid, partx, party, partz, &
-    partux, partuy, partuz, gaminv, partpid)
+  SUBROUTINE py_add_particles_to_species(nsp, npart, npiid, partx, party, partz,      &
+  partux, partuy, partuz, gaminv, partpid) 
     ! ____________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nsp, npart, npiid
-    REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy, partuz, gaminv
-    REAL(num), DIMENSION(npart,npiid), INTENT(IN) :: partpid
+    REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy,   &
+    partuz, gaminv
+    REAL(num), DIMENSION(npart, npiid), INTENT(IN) :: partpid
     TYPE(particle_species), POINTER :: currsp
     INTEGER(idp) :: i
     currsp=>species_parray(nsp)
     
-    DO i=1,npart
-      CALL add_particle_to_species(currsp, partx(i), party(i), partz(i), &
-      partux(i), partuy(i), partuz(i), gaminv(i), partpid(i,1:npiid))
+    DO i=1, npart
+      CALL add_particle_to_species(currsp, partx(i), party(i), partz(i), partux(i),   &
+      partuy(i), partuz(i), gaminv(i), partpid(i, 1:npiid)) 
     END DO
   END SUBROUTINE py_add_particles_to_species
   
@@ -1410,8 +1436,8 @@ MODULE tiling
   SUBROUTINE get_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
     ! ____________________________________________________________________________________
     IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) :: nsp, ntx,nty,ntz
-    INTEGER(idp), DIMENSION(ntx,nty,ntz), INTENT(IN OUT) :: atrealloc
+    INTEGER(idp), INTENT(IN) :: nsp, ntx, nty, ntz
+    INTEGER(idp), DIMENSION(ntx, nty, ntz), INTENT(IN OUT) :: atrealloc
     TYPE(particle_species), POINTER :: currsp
     currsp=>species_parray(nsp)
     
@@ -1433,8 +1459,8 @@ MODULE tiling
   SUBROUTINE set_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
     ! ____________________________________________________________________________________
     IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) :: nsp, ntx,nty,ntz
-    INTEGER(idp), DIMENSION(ntx,nty,ntz), INTENT(IN) :: atrealloc
+    INTEGER(idp), INTENT(IN) :: nsp, ntx, nty, ntz
+    INTEGER(idp), DIMENSION(ntx, nty, ntz), INTENT(IN) :: atrealloc
     TYPE(particle_species), POINTER :: currsp
     currsp=>species_parray(nsp)
     
@@ -1466,8 +1492,8 @@ MODULE tiling
     TYPE(particle_tile), POINTER    :: curr_tile
     
     INTEGER(idp)                    :: ispecies, ix, iy, iz, nbp
-    INTEGER(idp)                    :: nxc,nyc,nzc
-    INTEGER(idp)                    :: nxg,nyg,nzg
+    INTEGER(idp)                    :: nxc, nyc, nzc
+    INTEGER(idp)                    :: nxg, nyg, nzg
     REAL(num)                       :: ncloc
     REAL(num)                       :: mpipartsize
     REAL(num)                       :: tilepartsize
@@ -1481,11 +1507,11 @@ MODULE tiling
     
     IF (c_dim.eq.3) THEN
       
-      !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-      !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
-      !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,nbp,nxc,nyc,nzc,nxg,nyg,nzg) &
-      !$OMP REDUCTION(+:mpipartsize,ncloc,tilefieldsize)
-      DO iz=1, ntilez ! LOOP ON TILES
+      !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,    &
+      !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, dx, dy, dz, it,  &
+      !$OMP rank) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, nbp, nxc, nyc, nzc,  &
+      !$OMP nxg, nyg, nzg) REDUCTION(+:mpipartsize, ncloc, tilefieldsize)   
+      DO iz=1, ntilez! LOOP ON TILES
         DO iy=1, ntiley
           DO ix=1, ntilex
             
@@ -1494,8 +1520,8 @@ MODULE tiling
               
               curr=>species_parray(ispecies)
               
-              curr_tile=>curr%array_of_tiles(ix,iy,iz)
-              nbp=curr_tile%npmax_tile  ! size of the arrays
+              curr_tile=>curr%array_of_tiles(ix, iy, iz)
+              nbp=curr_tile%npmax_tile! size of the arrays
               nxc=curr_tile%nx_cells_tile
               nyc=curr_tile%ny_cells_tile
               nzc=curr_tile%nz_cells_tile
@@ -1503,10 +1529,11 @@ MODULE tiling
               nyg=curr_tile%nyg_tile
               nzg=curr_tile%nzg_tile
               
-              mpipartsize = mpipartsize + nbp*8*14 ! 8 for double, 14 for x,y,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
+              mpipartsize = mpipartsize + nbp*8*14! 8 for double, 14 for x, y, z, px, py, pz, gam, pid, ex, ey, ez, bx, by, bz
               ncloc = ncloc + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)
               
-              tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)*8.
+              tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nyc + 2*nyg +        &
+              1)*(nzc + 2*nzg + 1)*8.
               
             END DO! END LOOP ON SPECIES
           END DO
@@ -1516,11 +1543,11 @@ MODULE tiling
       
     ELSE IF (c_dim.eq.2) THEN
       
-      !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) &
-      !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles,dx,dy,dz,it,rank) &
-      !$OMP PRIVATE(ix,iz,ispecies,curr,curr_tile,nbp,nxc,nzc,nxg,nzg) &
-      !$OMP REDUCTION(+:mpipartsize,ncloc,tilefieldsize)
-      DO iz=1, ntilez ! LOOP ON TILES
+      !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,    &
+      !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, dx, dy, dz, it,  &
+      !$OMP rank) PRIVATE(ix, iz, ispecies, curr, curr_tile, nbp, nxc, nzc, nxg, nzg) &
+      !$OMP REDUCTION(+:mpipartsize, ncloc, tilefieldsize)   
+      DO iz=1, ntilez! LOOP ON TILES
         DO ix=1, ntilex
           
           ! Loop over the species
@@ -1528,14 +1555,14 @@ MODULE tiling
             
             curr=>species_parray(ispecies)
             
-            curr_tile=>curr%array_of_tiles(ix,1,iz)
-            nbp=curr_tile%npmax_tile  ! size of the arrays
+            curr_tile=>curr%array_of_tiles(ix, 1, iz)
+            nbp=curr_tile%npmax_tile! size of the arrays
             nxc=curr_tile%nx_cells_tile
             nzc=curr_tile%nz_cells_tile
             nxg=curr_tile%nxg_tile
             nzg=curr_tile%nzg_tile
             
-            mpipartsize = mpipartsize + nbp*8*13 ! 8 for double, 13 for x,z,px,py,pz,gam,pid,ex,ey,ez,bx,by,bz
+            mpipartsize = mpipartsize + nbp*8*13! 8 for double, 13 for x, z, px, py, pz, gam, pid, ex, ey, ez, bx, by, bz
             ncloc = ncloc + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)
             
             tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)*8.
@@ -1570,15 +1597,17 @@ MODULE tiling
     ! _________________________________________
     ! Memory used for currents
     IF (c_dim.eq.3) THEN
-      tilefieldcurrent = (nx+2*nxjguards+1)*(ny+2*nyjguards+1)*(nz+2*nzjguards+1)*8.*3./(ntilex*ntiley*ntilez)
+      tilefieldcurrent =                                                              &
+      (nx+2*nxjguards+1)*(ny+2*nyjguards+1)*(nz+2*nzjguards+1)*8.*3./(ntilex*ntiley*ntilez)
+
     ELSE IF (c_dim.eq.2) THEN
       tilefieldcurrent = (nx+2*nxjguards+1)*(nz+2*nzjguards+1)*8.*3./(ntilex*ntilez)
     ENDIF
     ! _________________________________________
     ! Outputs
     
-    IF (rank.eq.0) WRITE(0,*)
-    IF (rank.eq.0) WRITE(0,*) 'Memory balance:'
+    IF (rank.eq.0) WRITE(0, *)
+    IF (rank.eq.0) WRITE(0, *) 'Memory balance:'
     
     if (mpipartsize > 1024.) then
       mpipartsize = mpipartsize/1024.
@@ -1589,7 +1618,8 @@ MODULE tiling
       unity = 'Mo'
     endif
     
-    IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for the particles',mpipartsize,unity
+    IF (rank.eq.0) WRITE(0, *) 'Average occupied memory per MPI process for the       &
+    particles', mpipartsize, unity
     
     if (tilepartsize > 1024.) then
       tilepartsize = tilepartsize/1024.
@@ -1600,7 +1630,7 @@ MODULE tiling
       unity = 'Mo'
     endif
     
-    IF (rank.eq.0) WRITE(0,*) 'Average tile size for particles',tilepartsize,unity
+    IF (rank.eq.0) WRITE(0, *) 'Average tile size for particles', tilepartsize, unity
     
     
     if (mpifieldsize > 1024.) then
@@ -1612,60 +1642,63 @@ MODULE tiling
       unity = 'Mo'
     endif
     
-    IF (rank.eq.0) WRITE(0,*) 'Average number of cells per tiles',ncloc
+    IF (rank.eq.0) WRITE(0, *) 'Average number of cells per tiles', ncloc
     
-    !IF (rank.eq.0) WRITE(0,*)
-    IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process per each field component',mpifieldsize,unity
-    IF (rank.eq.0) WRITE(0,*) 'Average occupied memory per MPI process for E and B',mpifieldsize*6.,unity
+    !IF (rank.eq.0) WRITE(0, *)
+    IF (rank.eq.0) WRITE(0, *) 'Average occupied memory per MPI process per each      &
+    field component', mpifieldsize, unity
+    IF (rank.eq.0) WRITE(0, *) 'Average occupied memory per MPI process for E and B', &
+    mpifieldsize*6., unity
     
     if (tilefieldsize > 1024.) then
       tilefieldsize = tilefieldsize/1024.
       unity = 'Ko'
     endif
     
-    IF (rank.eq.0) WRITE(0,*) 'Average tile size for fields',tilefieldsize,unity
-    IF (rank.eq.0) WRITE(0,*) 'Average tile size for the current',tilefieldsize*3.,unity
+    IF (rank.eq.0) WRITE(0, *) 'Average tile size for fields', tilefieldsize, unity
+    IF (rank.eq.0) WRITE(0, *) 'Average tile size for the current', tilefieldsize*3., &
+    unity
     
   END SUBROUTINE estimate_memory_consumption
   
   SUBROUTINE load_laser_species(curr)
-    USE antenna 
-    TYPE(particle_species),POINTER, INTENT(INOUT) :: curr
-    INTEGER(idp)       ::  lmax,jmax,kmax,j,l,k,ipart
-    REAL(num) ,DIMENSION(2) :: rng
+    USE antenna
+    TYPE(particle_species), POINTER, INTENT(INOUT) :: curr
+    INTEGER(idp)       ::  lmax, jmax, kmax, j, l, k, ipart
+    REAL(num), DIMENSION(2) :: rng
     REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
-    REAL(num) ::   partvx,partvy,partvz,intercept,weight_laser
+    REAL(num) ::   partvx, partvy, partvz, intercept, weight_laser
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
-    REAL(num) ,DIMENSION(3)      :: mins,maxs,pos,spot,dst
+    REAL(num), DIMENSION(3)      :: mins, maxs, pos, spot, dst
     INTEGER(idp) :: i1, i2, inonz
     TYPE(particle_antenna), POINTER ::  laser
-    REAL(num) , DIMENSION(2,2)      :: M1,M2,M3
+    REAL(num), DIMENSION(2, 2)      :: M1, M2, M3
     laser=>curr%antenna_params
     ! --- Initing laser wave vector (vector normal to laser injection plane)
-    laser%vector(1) = laser%vector_x 
+    laser%vector(1) = laser%vector_x
     laser%vector(2) = laser%vector_y
     laser%vector(3) = laser%vector_z
-    laser%vector    = laser%vector/SQRT(SUM(laser%vector**2)) ! Norm - 1
+    laser%vector    = laser%vector/SQRT(SUM(laser%vector**2))! Norm - 1
     ! --- Initing laser polarization vector 
     laser%polvector1(1) = laser%pvec_x
     laser%polvector1(2) = laser%pvec_y
     laser%polvector1(3) = laser%pvec_z
-    laser%polvector1=laser%polvector1/SQRT(SUM(laser%polvector1**2)) ! Norm - 1
+    laser%polvector1=laser%polvector1/SQRT(SUM(laser%polvector1**2))! Norm - 1
     
-    IF(SUM(laser%polvector1*laser%vector) .NE. 0._num )  &
-    WRITE(0,*) 'ERROR : laser vector and polvector are not orthogonal' 
+    IF(SUM(laser%polvector1*laser%vector) .NE. 0._num ) WRITE(0, *) 'ERROR : laser    &
+    vector and polvector are not orthogonal' 
     
     ! --- Vector orthogonal to vectors polvector1 and wavevector 
-    laser%polvector2(1) = laser%vector(2)*laser%polvector1(3) - &
-    laser%vector(3)*laser%polvector1(2)
-    laser%polvector2(2) = laser%vector(3)*laser%polvector1(1) - &
-    laser%vector(1)*laser%polvector1(3)
-    laser%polvector2(3) = laser%vector(1)*laser%polvector1(2) - &
-    laser%vector(2)*laser%polvector1(1)  
+    laser%polvector2(1) = laser%vector(2)*laser%polvector1(3) -                       &
+    laser%vector(3)*laser%polvector1(2) 
+    laser%polvector2(2) = laser%vector(3)*laser%polvector1(1) -                       &
+    laser%vector(1)*laser%polvector1(3) 
+    laser%polvector2(3) = laser%vector(1)*laser%polvector1(2) -                       &
+    laser%vector(2)*laser%polvector1(1) 
     
     ! --- Constant variables of antenna plane equation (ax+by+cz=intercept)
-    intercept  = laser%vector(1)*laser%spot_x +                 &
-    laser%vector(2)*laser%spot_y + laser%vector(3)*laser%spot_z
+    intercept  = laser%vector(1)*laser%spot_x + laser%vector(2)*laser%spot_y +        &
+    laser%vector(3)*laser%spot_z 
     
     ! --- Get Laser duration (in s)
     laser%laser_tau = laser%laser_ctau/clight
@@ -1676,9 +1709,9 @@ MODULE tiling
     ! --- Compute laser amplitudes along polvector1 and polvector2 (in SI units) 
     laser%Emax_laser_1 = laser%laser_a_1*clight**2*emass*laser%k0_laser/echarge
     laser%Emax_laser_2 = laser%laser_a_2*clight**2*emass*laser%k0_laser/echarge
-    laser%Emax = SQRT(SUM((laser%Emax_laser_1*laser%polvector1+   &
-    laser%Emax_laser_2*laser%polvector2)**2))
-    IF (laser%Emax .EQ. 0._num) RETURN 
+    laser%Emax = SQRT(SUM((laser%Emax_laser_1*laser%polvector1+                       &
+    laser%Emax_laser_2*laser%polvector2)**2)) 
+    IF (laser%Emax .EQ. 0._num) RETURN
     ! --- Compute Rayleigh length   
     laser%zr = 0.5_num*laser%k0_laser*laser%laser_w0**2
     
@@ -1689,65 +1722,65 @@ MODULE tiling
     ! --- Compute laser t_peak (1.5*laser_duration) s
     laser%t_peak = 2._num*laser%laser_tau
     ! --- Gaussian q parameter at focus
-    laser%q_0 = (0,1.) * laser%laser_w0**2*pi/laser%lambda_laser
+    laser%q_0 = (0, 1.) * laser%laser_w0**2*pi/laser%lambda_laser
     
     ! --- Gaussian q parameter in antenna_plane
     IF(laser%is_lens .EQV. .FALSE.) THEN
       laser%q_z = (laser%q_0+laser%laser_z0)
     ELSE
-      M1(1,1) = 1.0_num ; M1(1,2) = laser%laser_z0-laser%laser_zf
-      M1(2,1) = 0.0_num ; M1(2,2) = 1.0_num
-      M2(1,1) = 1.0_num ; M2(1,2) = 0.0_num
-      M2(2,1) = -1./laser%focal_length ; M2(2,2) = 1.0_num
-      CALL product_matrix_2c2(M1,M2,M3)
-      M2(1,1) = 1.0_num ; M2(1,2) = laser%laser_zf
-      M2(2,1) = 0.0_num ; M2(2,2) = 1.0_num
-      CALL product_matrix_2c2(M3,M2,M1)
-      laser%q_z = (M1(1,1)*laser%q_0  + M1(1,2))/(M1(2,1)*laser%q_0+M1(2,2))
+      M1(1, 1) = 1.0_num ; M1(1, 2) = laser%laser_z0-laser%laser_zf
+      M1(2, 1) = 0.0_num ; M1(2, 2) = 1.0_num
+      M2(1, 1) = 1.0_num ; M2(1, 2) = 0.0_num
+      M2(2, 1) = -1./laser%focal_length ; M2(2, 2) = 1.0_num
+      CALL product_matrix_2c2(M1, M2, M3)
+      M2(1, 1) = 1.0_num ; M2(1, 2) = laser%laser_zf
+      M2(2, 1) = 0.0_num ; M2(2, 2) = 1.0_num
+      CALL product_matrix_2c2(M3, M2, M1)
+      laser%q_z = (M1(1, 1)*laser%q_0  + M1(1, 2))/(M1(2, 1)*laser%q_0+M1(2, 2))
     ENDIF
     ALLOCATE(partpid(npid))
     !   partpid(wpid) = nc*dx*dz/(curr%nppcell)
     
     ! --- Sanity check on vector normal to antenna plane 
-    IF (SUM(laser%vector**2)==0) THEN 
-      WRITE(0,*) 'laser wave vector is null - Error '
-      STOP 
-    ENDIF 
+    IF (SUM(laser%vector**2)==0) THEN
+      WRITE(0, *) 'laser wave vector is null - Error '
+      STOP
+    ENDIF
     ! --- Get non-zero dimension 
-    IF(laser%vector(3) .NE. 0._num) THEN 
+    IF(laser%vector(3) .NE. 0._num) THEN
       i1=1; i2=2; inonz=3;
       jmax = 1+(x_max_local-x_min_local)/dx
       lmax = 1+(y_max_local-y_min_local)/dy
-    ELSE IF (laser%vector(2) .NE. 0._num) THEN 
+    ELSE IF (laser%vector(2) .NE. 0._num) THEN
       i1=1; i2=3; inonz=2;
       jmax = 1+(x_max_local-x_min_local)/dx
       lmax = 1+(z_max_local-z_min_local)/dz
-    ELSE IF (laser%vector(1) .NE. 0._num) THEN 
+    ELSE IF (laser%vector(1) .NE. 0._num) THEN
       i1=2; i2=3; inonz=1;
       jmax = 1+(y_max_local-y_min_local)/dy
       lmax = 1+(z_max_local-z_min_local)/dz
-    ENDIF 
+    ENDIF
     
     ! --- init laser particle positions
-    mins = (/x_min_local,y_min_local,z_min_local/)
-    maxs = (/x_max_local,y_max_local,z_max_local/)
-    dst  = (/dx,dy,dz/)
+    mins = (/x_min_local, y_min_local, z_min_local/)
+    maxs = (/x_max_local, y_max_local, z_max_local/)
+    dst  = (/dx, dy, dz/)
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
     weight_laser=eps0*laser%Emax*(dx*dy*dz)/(0.01_num)*laser%k0_laser
     
-    DO l=1,lmax
-      DO j=1,jmax
-        DO ipart=1,curr%nppcell
+    DO l=1, lmax
+      DO j=1, jmax
+        DO ipart=1, curr%nppcell
           !CALL RANDOM_NUMBER(rng)
           pos(i1) = (mins(i1)+(j-1)*dst(i1))+(dst(i1))/2_num
           pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2_num
-          pos(inonz) = (intercept-laser%vector(i1)*pos(i1)-laser%vector(i2)*pos(i2)) &
-          /laser%vector(inonz)  
+          pos(inonz) = (intercept-laser%vector(i1)*pos(i1)-laser%vector(i2)*pos(i2))  &
+          /laser%vector(inonz) 
           ! --- Filter particles in the local domain 
           ! --- If in local domain, store its coordinates (two doubles) in
           ! --- the plane of the antenna in pids 
-          IF((pos(inonz) .GE. mins(inonz)) .AND. (pos(inonz)  .LT. maxs(inonz))) THEN 
+          IF((pos(inonz) .GE. mins(inonz)) .AND. (pos(inonz)  .LT. maxs(inonz))) THEN
             ! -- Laser particle weight 
             partpid(wpid) = weight_laser
             ! -- X_a position of laser particle in antenna frame 
@@ -1757,29 +1790,31 @@ MODULE tiling
             !-- (projection on polvector2)
             partpid(wpid+2_idp) = SUM((pos-spot)*laser%polvector2)
             ! -- Init particle momenta in the lab frame 
-            CALL init_momentum(partvx,partvy,partvz,gaminv,partux,partuy,partuz)  
+            CALL init_momentum(partvx, partvy, partvz, gaminv, partux, partuy,        &
+            partuz)
             ! -- Add particle to current laser species                    
-            CALL add_particle_to_species(curr,pos(1),pos(2),pos(3),&
-            partux, partuy, partuz, gaminv,partpid)
+            CALL add_particle_to_species(curr, pos(1), pos(2), pos(3), partux,        &
+            partuy, partuz, gaminv, partpid) 
           ENDIF
         ENDDO
       ENDDO
     ENDDO
   END SUBROUTINE load_laser_species
   
-  SUBROUTINE load_laser 
+  SUBROUTINE load_laser
     TYPE(particle_species), POINTER :: curr
     INTEGER(idp) :: ispecies
-    DO ispecies=1,nspecies 
+    DO ispecies=1, nspecies
       curr=>species_parray(ispecies)
       IF (curr%is_antenna) CALL load_laser_species(curr)
-    END DO 
+    END DO
   END SUBROUTINE load_laser
   
-  SUBROUTINE init_momentum(partvx,partvy,partvz,gaminv,partux,partuy,partuz)
+  SUBROUTINE init_momentum(partvx, partvy, partvz, gaminv, partux, partuy, partuz)
     
     IMPLICIT NONE
-    REAL(num) , INTENT(INOUT)  ::  partvx,partvy,partvz,gaminv,partux,partuy,partuz
+    REAL(num), INTENT(INOUT)  ::  partvx, partvy, partvz, gaminv, partux, partuy,     &
+    partuz
     
     partvx = 0._num; partvy = 0._num; partvz = 0._num;
     gaminv = 1.
@@ -1789,19 +1824,19 @@ MODULE tiling
     
   END SUBROUTINE init_momentum
   
-  SUBROUTINE product_matrix_2c2(M1,M2,M3)
-    REAL(num)  , INTENT(IN), DIMENSION(2,2)     :: M1,M2
-    REAL(num)  , INTENT(INOUT), DIMENSION(2,2)  :: M3
-    INTEGER(idp)                                :: i,j,k
+  SUBROUTINE product_matrix_2c2(M1, M2, M3)
+    REAL(num), INTENT(IN), DIMENSION(2, 2)     :: M1, M2
+    REAL(num), INTENT(INOUT), DIMENSION(2, 2)  :: M3
+    INTEGER(idp)                                :: i, j, k
     
     M3=0._num * M3
-    DO i=1,2
-      DO j=1,2
-        DO k=1,2
-          M3(i,j) = M1(i,k)*M2(k,j)
+    DO i=1, 2
+      DO j=1, 2
+        DO k=1, 2
+          M3(i, j) = M1(i, k)*M2(k, j)
         ENDDO
       ENDDO
     ENDDO
-  END SUBROUTINE 
+  END SUBROUTINE
   
 END MODULE tiling

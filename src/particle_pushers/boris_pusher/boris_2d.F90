@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -35,22 +34,22 @@
 !> Creation 2016
 !
 !> @param[in] np number of particles
-!> @param[inout] xp,zp particle position arrays
-!> @param[in] uxp,uzp particle momentum arrays
+!> @param[inout] xp, zp particle position arrays
+!> @param[in] uxp, uzp particle momentum arrays
 !> @param[in] gaminv particle inverse Lorentz factor
 !> @param[in] dt time step
-SUBROUTINE pxr_pushxz(np,xp,zp,uxp,uzp,gaminv,dt)
+SUBROUTINE pxr_pushxz(np, xp, zp, uxp, uzp, gaminv, dt)
   ! ______________________________________________________________________________
   USE constants
   
   IMPLICIT NONE
   INTEGER(idp)   :: np
-  REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
+  REAL(num) :: xp(np), zp(np), uxp(np), uzp(np), gaminv(np)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
   
   !!$OMP PARALLEL DO PRIVATE(ip)
-  DO ip=1,np
+  DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
   ENDDO
@@ -71,17 +70,17 @@ END SUBROUTINE pxr_pushxz
 !> Creation 2016
 !
 !> @param[in] np number of particles
-!> @param[inout] xp,zp particle position arrays
-!> @param[in] uxp,uzp particle momentum arrays
+!> @param[inout] xp, zp particle position arrays
+!> @param[in] uxp, uzp particle momentum arrays
 !> @param[in] gaminv particle inverse Lorentz factor
 !> @param[in] dt time step
-SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
+SUBROUTINE pxr_push2dxz(np, xp, zp, uxp, uyp, uzp, gaminv, dt)
   ! ______________________________________________________________________________
   USE constants
   
   IMPLICIT NONE
   INTEGER(idp)   :: np
-  REAL(num) :: xp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
+  REAL(num) :: xp(np), zp(np), uxp(np), uyp(np), uzp(np), gaminv(np)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
   
@@ -93,7 +92,7 @@ SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
 #elif defined __INTEL_COMPILER
   !$DIR SIMD
 #endif
-  DO ip=1,np
+  DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
     

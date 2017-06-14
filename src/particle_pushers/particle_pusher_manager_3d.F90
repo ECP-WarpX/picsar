@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -57,7 +56,7 @@ SUBROUTINE field_gathering_plus_particle_pusher
   IMPLICIT NONE
   
 #if defined(DEBUG)
-  WRITE(0,*) "Field gathering + Push_particles: start"
+  WRITE(0, *) "Field gathering + Push_particles: start"
 #endif
   IF (nspecies .EQ. 0_idp) RETURN
   SELECT CASE (c_dim)
@@ -67,10 +66,9 @@ SUBROUTINE field_gathering_plus_particle_pusher
   CASE (2)
     
     ! Particle advance (one time step)
-    CALL field_gathering_plus_particle_pusher_sub_2d(ex,ey,ez,bx,by,bz,nx,ny,nz, &
-    nxguards,nyguards,nzguards, &
-    nxjguards,nyjguards,nzjguards,&
-    nox,noy,noz,dx,dy,dz,dt)
+    CALL field_gathering_plus_particle_pusher_sub_2d(ex, ey, ez, bx, by, bz, nx, ny,  &
+    nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, &
+    dx, dy, dz, dt)   
     
     ! ___________________________________________________________
     ! 3D CASE
@@ -79,29 +77,33 @@ SUBROUTINE field_gathering_plus_particle_pusher
     ! The field gathering and the particle pusher are performed together
     IF (fg_p_pp_separated.eq.0) THEN
       
-      CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,&
-      nxguards,nyguards,nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+      CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex, ey, ez, bx, by,    &
+      bz, nx, ny, nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards,  &
+      nox, noy, noz, dx, dy, dz, dt, l_lower_order_in_v) 
       
     ELSE IF (fg_p_pp_separated.eq.1) THEN
       
-      CALL field_gathering_plus_particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-      nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+      CALL field_gathering_plus_particle_pusher_sub(ex, ey, ez, bx, by, bz, nx, ny,   &
+      nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy,    &
+      noz, dx, dy, dz, dt, l_lower_order_in_v) 
       
       ! The field gathering and the particle pusher are performed separately
     ELSE
       
-      CALL field_gathering_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-      nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+      CALL field_gathering_sub(ex, ey, ez, bx, by, bz, nx, ny, nz, nxguards,          &
+      nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
+      dt, l_lower_order_in_v) 
       
-      CALL particle_pusher_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-      nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l_lower_order_in_v)
+      CALL particle_pusher_sub(ex, ey, ez, bx, by, bz, nx, ny, nz, nxguards,          &
+      nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
+      dt, l_lower_order_in_v) 
       
     ENDIF
     
   END SELECT
   
 #if defined(DEBUG)
-  WRITE(0,*) "Field gathering + Push_particles: stop"
+  WRITE(0, *) "Field gathering + Push_particles: stop"
 #endif
   
 END SUBROUTINE field_gathering_plus_particle_pusher
@@ -119,19 +121,19 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 !> Creation 2015
 !> Revision 10.06.2015
 !
-!> @param[in] exg,eyg,ezg electric field grids
-!> @param[in] bxg,byg,bzg magnetic field grids
-!> @param[in] nxx,nyy,nzz number of cells in each direction for the grids
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction for the grids
-!> @param[in] nxjguard,nyjguard,nzjguard number of guard cells for the current grids
-!> @param[in] noxx,noyy,nozz interpolation orders
-!> @param[in] dxx,dyy,dzz space steps
+!> @param[in] exg, eyg, ezg electric field grids
+!> @param[in] bxg, byg, bzg magnetic field grids
+!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
+!> @param[in] noxx, noyy, nozz interpolation orders
+!> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !>
-SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-  nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,  &
-  nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
+SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg,     &
+nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,   &
+nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)  
   ! ______________________________________________________________________________
   
   USE particles
@@ -147,16 +149,23 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   ! ___ Parameter declaration __________________________________________
   
   ! Input/Output parameters
-  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
-  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
+  nyjguard, nzjguard
+  INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz
   LOGICAL(lp), INTENT(IN)  :: l_lower_order_in_v_in
-  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: dxx, dyy, dzz, dtt
   
   ! Local parameters
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
@@ -165,8 +174,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
   TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
-  INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
-  INTEGER(idp)             :: nxjg,nyjg,nzjg
+  INTEGER(idp)             :: nxc, nyc, nzc, ipmin, ipmax, ip
+  INTEGER(idp)             :: nxjg, nyjg, nzjg
   LOGICAL(lp)              :: isgathered=.FALSE.
   
   tdeb=MPI_WTIME()
@@ -176,18 +185,18 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
 #endif
   
   IF (nspecies .EQ. 0_idp) RETURN
-  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-  !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-  !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
-  !$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,l_lower_order_in_v_in,&
-  !$OMP particle_pusher,fieldgathe,LVEC_fieldgathe) &
-  !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
-  !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
-  DO iz=1, ntilez ! LOOP ON TILES
+  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
+  !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
+  !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
+  !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, l_lower_order_in_v_in, particle_pusher,    &
+  !$OMP fieldgathe, LVEC_fieldgathe) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile,   &
+  !$OMP currg, count, jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, ipmin,       &
+  !$OMP ipmax, ip, nxjg, nyjg, nzjg, isgathered)      
+  DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
         curr=>species_parray(1)
-        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+        curr_tile=>curr%array_of_tiles(ix, iy, iz)
         nxjg=curr_tile%nxg_tile
         nyjg=curr_tile%nyg_tile
         nzjg=curr_tile%nzg_tile
@@ -202,28 +211,28 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
         nzc=curr_tile%nz_cells_tile
         isgathered=.FALSE.
         
-        DO ispecies=1, nspecies ! LOOP ON SPECIES
+        DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE 
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          IF (curr%is_antenna) CYCLE
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
         
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix,iy,iz)
-          currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
-          DO ispecies=1, nspecies ! LOOP ON SPECIES
+          currg=>aofgrid_tiles(ix, iy, iz)
+          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
             curr=>species_parray(ispecies)
-            IF (curr%is_antenna) CYCLE 
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            IF (curr%is_antenna) CYCLE
+            curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             
             IF (count .EQ. 0) CYCLE
@@ -237,89 +246,80 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,
             !!! ---- Loop by blocks over particles in a tile (blocking)
             !!! --- Gather electric field on particles
             SELECT CASE (c_dim)
-            CASE (2) ! 2D CASE X Z
+            CASE (2)! 2D CASE X Z
               !!! --- Gather electric and magnetic fields on particles
-              CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,            &
-              curr_tile%part_z, curr_tile%part_ex,                                     &
-              curr_tile%part_ey,curr_tile%part_ez,                                     &
-              curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,                  &
-              curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                     &
-              curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,          &
-              curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,               &
-              nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                           &
-              currg%eztile,                                                            &
-              currg%bxtile,currg%bytile,currg%bztile,                                  &
-              .FALSE.,                                                                 &
-              l_lower_order_in_v_in,                                                   &
-              LVEC_fieldgathe,                                                         &
-              fieldgathe)
+              CALL geteb2dxz_energy_conserving(count, curr_tile%part_x,               &
+              curr_tile%part_y, curr_tile%part_z, curr_tile%part_ex,                  &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr_tile%x_grid_tile_min,        &
+              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
+              curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                       &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,            &
+              currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile,   &
+              currg%bztile, .FALSE., l_lower_order_in_v_in, LVEC_fieldgathe,          &
+              fieldgathe)             
               
-            CASE DEFAULT ! 3D CASE
+            CASE DEFAULT! 3D CASE
               
               !!! --- Gather electric and magnetic fields on particles
-              CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,            &
-              curr_tile%part_z, curr_tile%part_ex,                                   &
-              curr_tile%part_ey,curr_tile%part_ez,                                   &
-              curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,                &
-              curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                   &
-              curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,        &
-              curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,             &
-              nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                         &
-              currg%eztile,                                                          &
-              currg%bxtile,currg%bytile,currg%bztile                                 &
-              ,.FALSE.,l_lower_order_in_v_in,                                        &
-              lvec_fieldgathe,                                                       &
-              fieldgathe)
+              CALL geteb3d_energy_conserving(count, curr_tile%part_x,                 &
+              curr_tile%part_y, curr_tile%part_z, curr_tile%part_ex,                  &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr_tile%x_grid_tile_min,        &
+              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
+              curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                       &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,            &
+              currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile,   &
+              currg%bztile , .FALSE., l_lower_order_in_v_in, lvec_fieldgathe,         &
+              fieldgathe)            
             END SELECT
             
             SELECT CASE (particle_pusher)
               !! Vay pusher -- Full push
             CASE (1_idp)
-              CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
-              curr_tile%part_ey,                                                  &
-              curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-              curr_tile%part_bz,curr%charge,curr%mass,dtt,0_idp)
+              CALL pxr_ebcancelpush3d(count, curr_tile%part_ux, curr_tile%part_uy,    &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
+              0_idp)    
               
               !! Boris pusher -- Full push
             CASE DEFAULT
               
               !! Push momentum using the Boris method in a single subroutine
               
-              CALL pxr_boris_push_u_3d(count, &
-              curr_tile%part_ux, curr_tile%part_uy,curr_tile%part_uz, &
-              curr_tile%part_gaminv, &
-              curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez,&
-              curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,&
-              curr%charge,curr%mass,dtt)
+              CALL pxr_boris_push_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,   &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)     
               
               !! Push momentum using the Boris method with several subroutines
               !! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,      &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
-              !               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
+              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
+              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
               !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,    &
+              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
               !               curr_tile%part_uz, curr_tile%part_gaminv)
               !! --- Push velocity with B half step
-              !               CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-              !               curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,        &
-              !               curr_tile%part_by,                                                 &
-              !               curr_tile%part_bz, curr%charge,curr%mass,dtt)
+              !               CALL pxr_bpush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
+              !               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_bx, &
+              !               curr_tile%part_by, &
+              !               curr_tile%part_bz, curr%charge, curr%mass, dtt)
               !!! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
-              !               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
+              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
+              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
               !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
+              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
               !               curr_tile%part_uz, curr_tile%part_gaminv)
               
               
             END SELECT
             !!!! --- push particle species positions a time step
-            CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,          &
-            curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,             &
-            curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+            CALL pxr_pushxyz(count, curr_tile%part_x, curr_tile%part_y,               &
+            curr_tile%part_z, curr_tile%part_ux, curr_tile%part_uy,                   &
+            curr_tile%part_uz, curr_tile%part_gaminv, dtt)  
           END DO! END LOOP ON SPECIES
         ENDIF
       END DO
@@ -353,18 +353,19 @@ END SUBROUTINE field_gathering_plus_particle_pusher_sub
 !> Revision 10.06.2015
 !
 !>
-!> @param[in] exg,eyg,ezg electric field grids
-!> @param[in] bxg,byg,bzg electric field grids
-!> @param[in] nxx,nyy,nzz number of cells in each direction for the grids
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction for the grids
-!> @param[in] nxjguard,nyjguard,nzjguard number of guard cells for the current grids
-!> @param[in] noxx,noyy,nozz interpolation orders
-!> @param[in] dxx,dyy,dzz space steps
+!> @param[in] exg, eyg, ezg electric field grids
+!> @param[in] bxg, byg, bzg electric field grids
+!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
+!> @param[in] noxx, noyy, nozz interpolation orders
+!> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !>
-SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-  nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
+SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bxg,    &
+byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard,     &
+noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in) 
   ! ______________________________________________________________________________
   
   USE particles
@@ -379,24 +380,31 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
   IMPLICIT NONE
   
   ! ___ Parameter declaration __________________________________________
-  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
-  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
+  nyjguard, nzjguard
+  INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz
   LOGICAL(lp)                   :: l_lower_order_in_v_in
-  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: dxx, dyy, dzz, dtt
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
   TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
-  INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
-  INTEGER(idp)             :: nxjg,nyjg,nzjg
+  INTEGER(idp)             :: nxc, nyc, nzc, ipmin, ipmax, ip
+  INTEGER(idp)             :: nxjg, nyjg, nzjg
   LOGICAL(lp)              :: isgathered=.FALSE.
   
   IF (it.ge.timestat_itstart) THEN
@@ -408,17 +416,18 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
 #endif
   
   IF (nspecies .EQ. 0_idp) RETURN
-  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-  !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-  !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,&
-  !$OMP bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim,lvec_fieldgathe,l_lower_order_in_v) &
-  !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
-  !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
-  DO iz=1, ntilez ! LOOP ON TILES
+  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
+  !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
+  !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
+  !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, lvec_fieldgathe, l_lower_order_in_v)       &
+  !$OMP PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, currg, count, jmin, jmax,      &
+  !$OMP kmin, kmax, lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg,    &
+  !$OMP isgathered)     
+  DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
         curr=>species_parray(1)
-        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+        curr_tile=>curr%array_of_tiles(ix, iy, iz)
         nxjg=curr_tile%nxg_tile
         nyjg=curr_tile%nyg_tile
         nzjg=curr_tile%nzg_tile
@@ -433,28 +442,28 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
         nzc=curr_tile%nz_cells_tile
         isgathered=.FALSE.
         
-        DO ispecies=1, nspecies ! LOOP ON SPECIES
+        DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE 
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          IF (curr%is_antenna) CYCLE
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
         
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix,iy,iz)
-          currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
-          DO ispecies=1, nspecies ! LOOP ON SPECIES
+          currg=>aofgrid_tiles(ix, iy, iz)
+          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
             curr=>species_parray(ispecies)
-            IF (curr%is_antenna) CYCLE 
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            IF (curr%is_antenna) CYCLE
+            curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE
             curr_tile%part_ex(1:count)=0.0_num
@@ -467,53 +476,47 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg,eyg,ezg,bxg,b
             IF ((noxx.eq.1).and.(noyy.eq.1).and.(nozz.eq.1)) THEN
               
               !!! ---- Loop by blocks over particles in a tile (blocking)
-              CALL field_gathering_plus_particle_pusher_1_1_1(count,   &
-              curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-              curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
-              curr_tile%part_gaminv, &
-              curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
-              curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-              curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min, &
-              dxx,dyy,dzz,dtt,&
-              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
-              nxjg,nyjg,nzjg, &
-              currg%extile,currg%eytile,currg%eztile,&
-              currg%bxtile,currg%bytile,currg%bztile,&
-              curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
+              CALL field_gathering_plus_particle_pusher_1_1_1(count,                  &
+              curr_tile%part_x, curr_tile%part_y, curr_tile%part_z,                   &
+              curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                &
+              curr_tile%part_gaminv, curr_tile%part_ex, curr_tile%part_ey,            &
+              curr_tile%part_ez, curr_tile%part_bx, curr_tile%part_by,                &
+              curr_tile%part_bz, curr_tile%x_grid_tile_min,                           &
+              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
+              dtt, curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                  &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, currg%extile, currg%eytile,  &
+              currg%eztile, currg%bxtile, currg%bytile, currg%bztile, curr%charge,    &
+              curr%mass, lvec_fieldgathe, l_lower_order_in_v)            
               
             ELSE IF ((noxx.eq.2).and.(noyy.eq.2).and.(nozz.eq.2)) THEN
               
               !!! ---- Loop by blocks over particles in a tile (blocking)
-              CALL field_gathering_plus_particle_pusher_2_2_2(count,   &
-              curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-              curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
-              curr_tile%part_gaminv, &
-              curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
-              curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-              curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min, &
-              dxx,dyy,dzz,dtt,&
-              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
-              nxjg,nyjg,nzjg, &
-              currg%extile,currg%eytile,currg%eztile,&
-              currg%bxtile,currg%bytile,currg%bztile,&
-              curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
+              CALL field_gathering_plus_particle_pusher_2_2_2(count,                  &
+              curr_tile%part_x, curr_tile%part_y, curr_tile%part_z,                   &
+              curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                &
+              curr_tile%part_gaminv, curr_tile%part_ex, curr_tile%part_ey,            &
+              curr_tile%part_ez, curr_tile%part_bx, curr_tile%part_by,                &
+              curr_tile%part_bz, curr_tile%x_grid_tile_min,                           &
+              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
+              dtt, curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                  &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, currg%extile, currg%eytile,  &
+              currg%eztile, currg%bxtile, currg%bytile, currg%bztile, curr%charge,    &
+              curr%mass, lvec_fieldgathe, l_lower_order_in_v)            
               
             ELSE IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3)) THEN
               
               !!! ---- Loop by blocks over particles in a tile (blocking)
-              CALL field_gathering_plus_particle_pusher_3_3_3(count,   &
-              curr_tile%part_x,curr_tile%part_y,curr_tile%part_z, &
-              curr_tile%part_ux,curr_tile%part_uy,curr_tile%part_uz, &
-              curr_tile%part_gaminv, &
-              curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez, &
-              curr_tile%part_bx,curr_tile%part_by,curr_tile%part_bz, &
-              curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,curr_tile%z_grid_tile_min, &
-              dxx,dyy,dzz,dtt,&
-              curr_tile%nx_cells_tile,curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,&
-              nxjg,nyjg,nzjg, &
-              currg%extile,currg%eytile,currg%eztile,&
-              currg%bxtile,currg%bytile,currg%bztile,&
-              curr%charge,curr%mass,lvec_fieldgathe,l_lower_order_in_v)
+              CALL field_gathering_plus_particle_pusher_3_3_3(count,                  &
+              curr_tile%part_x, curr_tile%part_y, curr_tile%part_z,                   &
+              curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                &
+              curr_tile%part_gaminv, curr_tile%part_ex, curr_tile%part_ey,            &
+              curr_tile%part_ez, curr_tile%part_bx, curr_tile%part_by,                &
+              curr_tile%part_bz, curr_tile%x_grid_tile_min,                           &
+              curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
+              dtt, curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                  &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, currg%extile, currg%eytile,  &
+              currg%eztile, currg%bxtile, currg%bytile, currg%bztile, curr%charge,    &
+              curr%mass, lvec_fieldgathe, l_lower_order_in_v)            
               
             ENDIF
             
@@ -547,19 +550,19 @@ END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 !> Creation 2015
 !> Revision 10.06.2015
 !>
-!> @param[in] exg,eyg,ezg electric field grids
-!> @param[in] bxg,byg,bzg electric field grids
-!> @param[in] nxx,nyy,nzz number of cells in each direction for the grids
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction for the grids
-!> @param[in] nxjguard,nyjguard,nzjguard number of guard cells for the current grids
-!> @param[in] noxx,noyy,nozz interpolation orders
-!> @param[in] dxx,dyy,dzz space steps
+!> @param[in] exg, eyg, ezg electric field grids
+!> @param[in] bxg, byg, bzg electric field grids
+!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
+!> @param[in] noxx, noyy, nozz interpolation orders
+!> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !
-SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-  nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,&
-  noxx,noyy,nozz,dxx,dyy,dzz,dtt,l_lower_order_in_v_in)
+SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard,  &
+nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, &
+l_lower_order_in_v_in)  
   ! ______________________________________________________________________________
   USE particles
   USE constants
@@ -572,24 +575,31 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   IMPLICIT NONE
   
   ! ___ Parameter declaration __________________________________________
-  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
-  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
+  nyjguard, nzjguard
+  INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz
   LOGICAL(lp)                   :: l_lower_order_in_v_in
-  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN)    :: dxx,dyy,dzz, dtt
+  REAL(num), INTENT(IN)    :: exg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: eyg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: ezg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bxg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: byg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: bzg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,         &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN)    :: dxx, dyy, dzz, dtt
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
   TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
-  INTEGER(idp)             :: nxc, nyc, nzc, ipmin,ipmax, ip
-  INTEGER(idp)             :: nxjg,nyjg,nzjg
+  INTEGER(idp)             :: nxc, nyc, nzc, ipmin, ipmax, ip
+  INTEGER(idp)             :: nxjg, nyjg, nzjg
   LOGICAL(lp)              :: isgathered=.FALSE.
   
   IF (nspecies .EQ. 0_idp) RETURN
@@ -604,17 +614,17 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
 #endif
   
   
-  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-  !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-  !$OMP nxjguard,nyjguard,nzjguard,nxguard,nyguard,nzguard,exg,eyg,ezg,bxg,byg, &
-  !$OMP bzg,dxx,dyy,dzz,dtt,noxx,noyy,nozz,c_dim, particle_pusher) &
-  !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile, currg, count,jmin,jmax,kmin,kmax,lmin, &
-  !$OMP lmax,nxc,nyc,nzc, ipmin,ipmax,ip,nxjg,nyjg,nzjg, isgathered)
-  DO iz=1, ntilez ! LOOP ON TILES
+  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
+  !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
+  !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
+  !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, particle_pusher) PRIVATE(ix, iy, iz,       &
+  !$OMP ispecies, curr, curr_tile, currg, count, jmin, jmax, kmin, kmax, lmin, lmax,  &
+  !$OMP nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg, isgathered)     
+  DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
         curr=>species_parray(1)
-        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+        curr_tile=>curr%array_of_tiles(ix, iy, iz)
         nxjg=curr_tile%nxg_tile
         nyjg=curr_tile%nyg_tile
         nzjg=curr_tile%nzg_tile
@@ -628,76 +638,74 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         isgathered=.FALSE.
-        DO ispecies=1, nspecies ! LOOP ON SPECIES
+        DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE 
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          IF (curr%is_antenna) CYCLE
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix,iy,iz)
-          currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
-          DO ispecies=1, nspecies ! LOOP ON SPECIES
+          currg=>aofgrid_tiles(ix, iy, iz)
+          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
             curr=>species_parray(ispecies)
-            IF (curr%is_antenna) CYCLE 
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            IF (curr%is_antenna) CYCLE
+            curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE
             SELECT CASE (particle_pusher)
               !! Vay pusher -- Full push
             CASE (1_idp)
-              CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
-              curr_tile%part_ey,                                                  &
-              curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-              curr_tile%part_bz,curr%charge,curr%mass,dtt,0_idp)
+              CALL pxr_ebcancelpush3d(count, curr_tile%part_ux, curr_tile%part_uy,    &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
+              0_idp)    
               !! Boris pusher -- Full push
             CASE DEFAULT
               
               !! Push momentum using the Boris method in a single subroutine
               
-              CALL pxr_boris_push_u_3d(count, &
-              curr_tile%part_ux, curr_tile%part_uy,curr_tile%part_uz, &
-              curr_tile%part_gaminv, &
-              curr_tile%part_ex,curr_tile%part_ey,curr_tile%part_ez,&
-              curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,&
-              curr%charge,curr%mass,dtt)
+              CALL pxr_boris_push_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,   &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)     
               
               !! Push momentum using the Boris method with several subroutines
               !! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,      &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
-              !               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
+              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
+              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
               !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,    &
+              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
               !               curr_tile%part_uz, curr_tile%part_gaminv)
               !! --- Push velocity with B half step
-              !               CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-              !               curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx,        &
-              !               curr_tile%part_by,                                                 &
-              !               curr_tile%part_bz, curr%charge,curr%mass,dtt)
+              !               CALL pxr_bpush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
+              !               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_bx, &
+              !               curr_tile%part_by, &
+              !               curr_tile%part_bz, curr%charge, curr%mass, dtt)
               !!! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,       &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,           &
-              !               curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
+              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
+              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
               !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,     &
+              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
               !               curr_tile%part_uz, curr_tile%part_gaminv)
               
               
             END SELECT
             !!!! --- push particle species positions a time step
-            CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,             &
-            curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,                &
-            curr_tile%part_uz,curr_tile%part_gaminv,dtt)
+            CALL pxr_pushxyz(count, curr_tile%part_x, curr_tile%part_y,               &
+            curr_tile%part_z, curr_tile%part_ux, curr_tile%part_uy,                   &
+            curr_tile%part_uz, curr_tile%part_gaminv, dtt)  
           END DO! END LOOP ON SPECIES
         ENDIF
       END DO
@@ -717,7 +725,7 @@ SUBROUTINE particle_pusher_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   ENDIF
   
 #if defined(DEBUG)
-  WRITE(0,*) "Push_particles: stop"
+  WRITE(0, *) "Push_particles: stop"
 #endif
   
 END SUBROUTINE particle_pusher_sub
@@ -743,15 +751,15 @@ SUBROUTINE pxrpush_particles_part1
   IMPLICIT NONE
   
 #if defined(DEBUG)
-  WRITE(0,*) "pxrpush_particles_part1: start"
+  WRITE(0, *) "pxrpush_particles_part1: start"
 #endif
   
-  CALL pxrpush_particles_part1_sub(ex,ey,ez,bx,by,bz,nx,ny,nz,nxguards,nyguards, &
-  nzguards,nxjguards,nyjguards,nzjguards,nox,noy,noz,dx,dy,dz,dt,l4symtry, &
-  l_lower_order_in_v, LVEC_fieldgathe, fieldgathe)
+  CALL pxrpush_particles_part1_sub(ex, ey, ez, bx, by, bz, nx, ny, nz, nxguards,      &
+  nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, &
+  l4symtry, l_lower_order_in_v, LVEC_fieldgathe, fieldgathe)  
   
 #if defined(DEBUG)
-  WRITE(0,*) "pxrpush_particles_part1: stop"
+  WRITE(0, *) "pxrpush_particles_part1: stop"
 #endif
   
 END SUBROUTINE pxrpush_particles_part1
@@ -768,20 +776,20 @@ END SUBROUTINE pxrpush_particles_part1
 !> Henri Vincenti
 !> Mathieu Lobet
 !>
-!> @param[in] exg,eyg,ezg electric field grids
-!> @param[in] bxg,byg,bzg electric field grids
-!> @param[in] nxx,nyy,nzz number of cells in each direction for the grids
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction for the grids
-!> @param[in] nxjguard,nyjguard,nzjguard number of guard cells for the current grids
-!> @param[in] noxx,noyy,nozz interpolation orders
-!> @param[in] dxx,dyy,dzz space steps
+!> @param[in] exg, eyg, ezg electric field grids
+!> @param[in] bxg, byg, bzg electric field grids
+!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
+!> @param[in] noxx, noyy, nozz interpolation orders
+!> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
 !> @param[in] l4symtry_in
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !>
-SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
-  nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard,noxx,noyy,nozz,dxx,dyy, &
-  dzz,dtt,l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
+SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,   &
+nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,  &
+dzz, dtt, l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)  
   ! ______________________________________________________________________________
   
   USE particles
@@ -789,40 +797,47 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
   USE tiling
   IMPLICIT NONE
   
-  INTEGER(idp), INTENT(IN) :: nxx,nyy,nzz,nxguard,nyguard,nzguard,nxjguard,nyjguard,nzjguard
-  INTEGER(idp), INTENT(IN) :: noxx,noyy,nozz
+  INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
+  nyjguard, nzjguard
+  INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz
   INTEGER(idp), INTENT(IN) :: lvect, field_gathe_algo
-  LOGICAL(lp) , INTENT(IN) :: l4symtry_in, l_lower_order_in_v_in
-  REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN) :: ezg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN) :: bxg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN) :: byg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN) :: bzg(-nxguard:nxx+nxguard,-nyguard:nyy+nyguard,-nzguard:nzz+nzguard)
-  REAL(num), INTENT(IN) :: dxx,dyy,dzz, dtt
+  LOGICAL(lp), INTENT(IN) :: l4symtry_in, l_lower_order_in_v_in
+  REAL(num), INTENT(IN) :: exg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,            &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN) :: eyg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,            &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN) :: ezg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,            &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN) :: bxg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,            &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN) :: byg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,            &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN) :: bzg(-nxguard:nxx+nxguard, -nyguard:nyy+nyguard,            &
+  -nzguard:nzz+nzguard)
+  REAL(num), INTENT(IN) :: dxx, dyy, dzz, dtt
   INTEGER(idp)          :: ispecies, ix, iy, iz, count
   INTEGER(idp)          :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
   TYPE(grid_tile), POINTER        :: currg
   INTEGER(idp)                    :: nxc, nyc, nzc
-  INTEGER(idp)                    :: nxjg,nyjg,nzjg
+  INTEGER(idp)                    :: nxjg, nyjg, nzjg
   LOGICAL(lp)                     :: isgathered=.FALSE.
   
   
   IF (nspecies .EQ. 0_idp) RETURN
-  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-  !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray,aofgrid_tiles, &
-  !$OMP nxjguard,nyjguard,nzjguard,exg,eyg,ezg,bxg,byg,bzg,dxx,dyy,dzz,dtt,noxx,noyy, &
-  !$OMP l4symtry_in, l_lower_order_in_v_in, nozz,c_dim,fieldgathe,particle_pusher, &
-  !$OMP field_gathe_algo, lvect) &
-  !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,currg,count,jmin,jmax,kmin,kmax,lmin, &
-  !$OMP lmax,nxc,nyc,nzc,nxjg,nyjg,nzjg,isgathered)
-  DO iz=1, ntilez ! LOOP ON TILES
+  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
+  !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
+  !$OMP nzjguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy, dzz, dtt, noxx, noyy,       &
+  !$OMP l4symtry_in, l_lower_order_in_v_in, nozz, c_dim, fieldgathe, particle_pusher, &
+  !$OMP field_gathe_algo, lvect) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile,       &
+  !$OMP currg, count, jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, nxjg, nyjg,  &
+  !$OMP nzjg, isgathered)      
+  DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
         curr=>species_parray(1)
-        curr_tile=>curr%array_of_tiles(ix,iy,iz)
+        curr_tile=>curr%array_of_tiles(ix, iy, iz)
         nxjg=curr_tile%nxg_tile
         nyjg=curr_tile%nyg_tile
         nzjg=curr_tile%nzg_tile
@@ -836,27 +851,27 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         isgathered=.FALSE.
-        DO ispecies=1, nspecies ! LOOP ON SPECIES
+        DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE 
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          IF (curr%is_antenna) CYCLE
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix,iy,iz)
-          currg%extile=exg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eytile=eyg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%eztile=ezg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bytile=byg(jmin:jmax,kmin:kmax,lmin:lmax)
-          currg%bztile=bzg(jmin:jmax,kmin:kmax,lmin:lmax)
-          DO ispecies=1, nspecies ! LOOP ON SPECIES
+          currg=>aofgrid_tiles(ix, iy, iz)
+          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
             curr=>species_parray(ispecies)
-            IF (curr%is_antenna) CYCLE 
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            IF (curr%is_antenna) CYCLE
+            curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE
             
@@ -871,35 +886,30 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
               
               !!! ---- Loop by blocks over particles in a tile (blocking)
               SELECT CASE (c_dim)
-              CASE (2) ! 2D CASE
+              CASE (2)! 2D CASE
                 !!! --- Gather electric and magnetic fields on particles
-                CALL geteb2dxz_energy_conserving(count,curr_tile%part_x,curr_tile%part_y, &
-                curr_tile%part_z, curr_tile%part_ex,                                &
-                curr_tile%part_ey,curr_tile%part_ez,                                &
-                curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
-                curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
-                curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
-                curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
-                nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
-                currg%eztile,                                                       &
-                currg%bxtile,currg%bytile,currg%bztile                              &
-                ,l4symtry_in,l_lower_order_in_v_in,                                 &
-                lvect,                                                              &
-                field_gathe_algo)
-              CASE DEFAULT ! 3D CASE
+                CALL geteb2dxz_energy_conserving(count, curr_tile%part_x,             &
+                curr_tile%part_y, curr_tile%part_z, curr_tile%part_ex,                &
+                curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,              &
+                curr_tile%part_by, curr_tile%part_bz, curr_tile%x_grid_tile_min,      &
+                curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,  &
+                curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                     &
+                curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,          &
+                currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile, &
+                currg%bztile , l4symtry_in, l_lower_order_in_v_in, lvect,             &
+                field_gathe_algo)            
+              CASE DEFAULT! 3D CASE
                 !!! --- Gather electric and magnetic fields on particles
-                CALL geteb3d_energy_conserving(count,curr_tile%part_x,curr_tile%part_y,   &
-                curr_tile%part_z, curr_tile%part_ex,                                &
-                curr_tile%part_ey,curr_tile%part_ez,                                &
-                curr_tile%part_bx, curr_tile%part_by,curr_tile%part_bz,             &
-                curr_tile%x_grid_tile_min,curr_tile%y_grid_tile_min,                &
-                curr_tile%z_grid_tile_min, dxx,dyy,dzz,curr_tile%nx_cells_tile,     &
-                curr_tile%ny_cells_tile,curr_tile%nz_cells_tile,nxjg,nyjg,          &
-                nzjg,noxx,noyy,nozz,currg%extile,currg%eytile,                      &
-                currg%eztile,                                                       &
-                currg%bxtile,currg%bytile,currg%bztile                              &
-                ,l4symtry_in,l_lower_order_in_v_in,                                 &
-                lvect,field_gathe_algo)
+                CALL geteb3d_energy_conserving(count, curr_tile%part_x,               &
+                curr_tile%part_y, curr_tile%part_z, curr_tile%part_ex,                &
+                curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,              &
+                curr_tile%part_by, curr_tile%part_bz, curr_tile%x_grid_tile_min,      &
+                curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,  &
+                curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                     &
+                curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,          &
+                currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile, &
+                currg%bztile , l4symtry_in, l_lower_order_in_v_in, lvect,             &
+                field_gathe_algo)           
               END SELECT
               
             end if
@@ -908,25 +918,25 @@ SUBROUTINE pxrpush_particles_part1_sub(exg,eyg,ezg,bxg,byg,bzg,nxx,nyy,nzz, &
               !! Vay pusher -- half push part 1
               
             CASE (1_idp)
-              CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,  &
-              curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,          &
-              curr_tile%part_ey,                                                   &
-              curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,              &
-              curr_tile%part_bz,curr%charge,curr%mass,dtt,1_idp)
+              CALL pxr_ebcancelpush3d(count, curr_tile%part_ux, curr_tile%part_uy,    &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
+              1_idp)    
               !! Boris pusher -- half push part 1
             CASE DEFAULT
               !! --- Push velocity with E half step
-              CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,        &
-              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,            &
-              curr_tile%part_ez, curr%charge,curr%mass,dtt*0.5_num)
+              CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy,           &
+              curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,                &
+              curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)  
               !! --- Set gamma of particles
-              CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,      &
-              curr_tile%part_uz, curr_tile%part_gaminv)
+              CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy,         &
+              curr_tile%part_uz, curr_tile%part_gaminv) 
               !! --- Push velocity with B half step
-              CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,        &
-              curr_tile%part_uz,curr_tile%part_gaminv,                            &
-              curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz,            &
-              curr%charge,curr%mass,dtt*0.5_num)
+              CALL pxr_bpush_v(count, curr_tile%part_ux, curr_tile%part_uy,           &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_bx,            &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass,           &
+              dtt*0.5_num)   
             END SELECT
           END DO! END LOOP ON SPECIES
         ENDIF
@@ -965,61 +975,59 @@ SUBROUTINE pxrpush_particles_part2
   INTEGER(idp)                    :: nxc, nyc, nzc
   
 #if defined(DEBUG)
-  WRITE(0,*) "pxrpush_particles_part2: start"
+  WRITE(0, *) "pxrpush_particles_part2: start"
 #endif
   
   IF (nspecies .EQ. 0_idp) RETURN
   tdeb=MPI_WTIME()
-  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
-  !$OMP SHARED(ntilex,ntiley,ntilez,nspecies,species_parray, &
-  !$OMP nxjguards,nyjguards,nzjguards,ex,ey,ez,bx,by,bz,dx,dy,dz,dt,c_dim, particle_pusher) &
-  !$OMP PRIVATE(ix,iy,iz,ispecies,curr,curr_tile,count,jmin,jmax,kmin,kmax,lmin, &
-  !$OMP lmax,nxc,nyc,nzc)
-  DO iz=1, ntilez ! LOOP ON TILES
+  !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
+  !$OMP ntiley, ntilez, nspecies, species_parray, nxjguards, nyjguards, nzjguards,    &
+  !$OMP ex, ey, ez, bx, by, bz, dx, dy, dz, dt, c_dim, particle_pusher) PRIVATE(ix,   &
+  !$OMP iy, iz, ispecies, curr, curr_tile, count, jmin, jmax, kmin, kmax, lmin, lmax, &
+  !$OMP nxc, nyc, nzc)    
+  DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
-        DO ispecies=1, nspecies ! LOOP ON SPECIES
+        DO ispecies=1, nspecies! LOOP ON SPECIES
           ! - Get current tile properties
           ! - Init current tile variables
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE 
-          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          IF (curr%is_antenna) CYCLE
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) CYCLE
           SELECT CASE (particle_pusher)
             !! Vay pusher -- half push part 2
           CASE (1_idp)
-            CALL pxr_ebcancelpush3d(count,curr_tile%part_ux, curr_tile%part_uy,&
-            curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_ex,        &
-            curr_tile%part_ey,                                                  &
-            curr_tile%part_ez,curr_tile%part_bx, curr_tile%part_by,            &
-            curr_tile%part_bz,curr%charge,curr%mass,dt,2_idp)
+            CALL pxr_ebcancelpush3d(count, curr_tile%part_ux, curr_tile%part_uy,      &
+            curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,              &
+            curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                  &
+            curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dt, 2_idp)    
           CASE DEFAULT
             !! Boris pusher -- half push part 2
             !!! --- Push velocity with B half step
-            CALL pxr_bpush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
-            curr_tile%part_uz,curr_tile%part_gaminv, curr_tile%part_bx, curr_tile%part_by,     &
-            curr_tile%part_bz, curr%charge,curr%mass,dt*0.5_num)
+            CALL pxr_bpush_v(count, curr_tile%part_ux, curr_tile%part_uy,             &
+            curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_bx,              &
+            curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dt*0.5_num)  
             !! --- Push velocity with E half step
-            CALL pxr_epush_v(count,curr_tile%part_ux, curr_tile%part_uy,                      &
+            CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy,             &
             curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey,                  &
-            curr_tile%part_ez, curr%charge,curr%mass,dt*0.5_num)
+            curr_tile%part_ez, curr%charge, curr%mass, dt*0.5_num)  
             !! --- Sets gamma of particles
-            CALL pxr_set_gamma(count,curr_tile%part_ux, curr_tile%part_uy,                    &
-            curr_tile%part_uz, curr_tile%part_gaminv)
+            CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy,           &
+            curr_tile%part_uz, curr_tile%part_gaminv) 
           END SELECT
           
           SELECT CASE (c_dim)
-          CASE (2) ! 2D CASE
+          CASE (2)! 2D CASE
             !! --- Advance particle position of one time step
-            CALL pxr_pushxz(count,curr_tile%part_x,                                  &
-            curr_tile%part_z, curr_tile%part_ux,                               &
-            curr_tile%part_uz,curr_tile%part_gaminv,dt)
-          CASE DEFAULT ! 3D CASE
+            CALL pxr_pushxz(count, curr_tile%part_x, curr_tile%part_z,                &
+            curr_tile%part_ux, curr_tile%part_uz, curr_tile%part_gaminv, dt)  
+          CASE DEFAULT! 3D CASE
             !! --- Advance particle position of one time step
-            CALL pxr_pushxyz(count,curr_tile%part_x,curr_tile%part_y,                     &
-            curr_tile%part_z, curr_tile%part_ux,curr_tile%part_uy,                 &
-            curr_tile%part_uz,curr_tile%part_gaminv,dt)
+            CALL pxr_pushxyz(count, curr_tile%part_x, curr_tile%part_y,               &
+            curr_tile%part_z, curr_tile%part_ux, curr_tile%part_uy,                   &
+            curr_tile%part_uz, curr_tile%part_gaminv, dt)  
           END SELECT
         END DO! END LOOP ON SPECIES
       END DO
@@ -1030,7 +1038,7 @@ SUBROUTINE pxrpush_particles_part2
   pushtime=pushtime+(tend-tdeb)
   
 #if defined(DEBUG)
-  WRITE(0,*) "pxrpush_particles_part2: stop"
+  WRITE(0, *) "pxrpush_particles_part2: stop"
 #endif
   
 END SUBROUTINE pxrpush_particles_part2
@@ -1058,25 +1066,25 @@ END SUBROUTINE pxrpush_particles_part2
 !
 ! Input parameters:
 !> @param[in] np number of particles
-!> @param[in] xp,yp,zp particle position
-!> @param[in] uxp,uyp,uzp particle momentum
+!> @param[in] xp, yp, zp particle position
+!> @param[in] uxp, uyp, uzp particle momentum
 !> @param[in] gaminv inverse of the particle Lorentz factor
-!> @param[in] ex,ey,ez particle electric field
-!> @param[in] bx,by,bz particle magnetic field
-!> @param[in] xmin,ymin,zmin tile minimum grid position
-!> @param[in] dx,dy,dz space step
+!> @param[in] ex, ey, ez particle electric field
+!> @param[in] bx, by, bz particle magnetic field
+!> @param[in] xmin, ymin, zmin tile minimum grid position
+!> @param[in] dx, dy, dz space step
 !> @param[in] dtt time step
-!> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
-!> @param[in] exg,eyg,ezg electric field grid
-!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] nx, ny, nz number of grid points in each direction
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction
+!> @param[in] exg, eyg, ezg electric field grid
+!> @param[in] bxg, byg, bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
 !
-SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
-  ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-  dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
-  exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
+SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np, xp, yp, zp, uxp, uyp, uzp,  &
+gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
+nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
+l_lower_order_in_v)   
   ! ______________________________________________________________________________
   
   USE omp_lib
@@ -1089,18 +1097,19 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   ! ___ Parameter declaration ____________________________________
   
   ! Input/Output parameters  
-  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
+  nzguard
   INTEGER(idp), INTENT(IN)                :: lvect
-  REAL(num), INTENT(IN)                   :: q,m
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  REAL(num), INTENT(IN)                   :: q, m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp, yp, zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex, ey, ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx, by, bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp, uyp, uzp, gaminv
   LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
-  REAL(num), &
-  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
-  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
+  REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
+  -nzguard:nz+nzguard), INTENT(IN)                              :: exg, eyg, ezg,     &
+  bxg, byg, bzg  
+  REAL(num), INTENT(IN)                   :: xmin, ymin, zmin, dx, dy, dz, dtt
   
   ! Local parameters
   INTEGER(isp)                         :: j, k, l
@@ -1109,14 +1118,14 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   INTEGER(isp)                         :: nn
   INTEGER(idp)                         :: blocksize
   REAL(num)                            :: dxi, dyi, dzi
-  REAL(num)                            :: x,y,z
+  REAL(num)                            :: x, y, z
   REAL(num)                            :: a
   REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: clghtisq,const1
-  REAL(num), DIMENSION(0:1)            :: sx,sy,sz
-  REAL(num), DIMENSION(0:1)            :: sx0,sy0,sz0
+  REAL(num)                            :: clghtisq, const1
+  REAL(num), DIMENSION(0:1)            :: sx, sy, sz
+  REAL(num), DIMENSION(0:1)            :: sx0, sy0, sz0
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
+  !dir$ attributes align:64 :: sx, sy, sz, sx0, sy0, sz0
 #endif
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
@@ -1142,26 +1151,26 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
   
   ! ____________________________________________________________________________
   ! Loop on block of particles of size lvect
-  DO ip=1,np,lvect
+  DO ip=1, np, lvect
     
-    blocksize = MIN(lvect,np-ip+1)
+    blocksize = MIN(lvect, np-ip+1)
     
     ! __________________________________________________________________________
     ! Field gathering
     
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-    !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
-    !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
-    !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-    !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+    !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
+    !DIR$ ASSUME_ALIGNED sx0:64, sy0:64, sz0:64
+    !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
+    !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-    !$OMP SIMD private(sx,sy,sz,sx0,sy0,sz0)
+    !$OMP SIMD private(sx, sy, sz, sx0, sy0, sz0)
 #endif
 #elif defined __IBMBGQ__
-    !IBM* ALIGN(64,xp,yp,zp)
+    !IBM* ALIGN(64, xp, yp, zp)
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
@@ -1170,7 +1179,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     !DIR$ IVDEP
     !!DIR DISTRIBUTE POINT
 #endif
-    DO nn=ip,blocksize+ip-1
+    DO nn=ip, blocksize+ip-1
       
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
@@ -1201,30 +1210,30 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
       zint=z-0.5_num-l0
       
       ! Compute Ex on particle
-      a = (sy(0)*exg(j0,k,l)   + sy(1)*exg(j0,k+1,l))*sz(0)  &
-      + (sy(0)*exg(j0,k,l+1) + sy(1)*exg(j0,k+1,l+1))*sz(1)
+      a = (sy(0)*exg(j0, k, l)   + sy(1)*exg(j0, k+1, l))*sz(0) + (sy(0)*exg(j0, k,   &
+      l+1) + sy(1)*exg(j0, k+1, l+1))*sz(1) 
       ex(nn) = ex(nn) + a
       
       ! Compute Ey on particle
-      a = (sx(0)*eyg(j,k0,l) + sx(1)*eyg(j+1,k0,l))*sz(0) &
-      + (sx(0)*eyg(j,k0,l+1) + sx(1)*eyg(j+1,k0,l+1))*sz(1)
+      a = (sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0, l))*sz(0) + (sx(0)*eyg(j, k0,     &
+      l+1) + sx(1)*eyg(j+1, k0, l+1))*sz(1) 
       ey(nn) = ey(nn) + a
       
       ! Compute Ez on particle
-      a = (sx(0)*ezg(j,k,l0) + sx(1)*ezg(j+1,k,l0))*sy(0) &
-      + (sx(0)*ezg(j,k+1,l0) + sx(1)*ezg(j+1,k+1,l0))*sy(1)
+      a = (sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k, l0))*sy(0) + (sx(0)*ezg(j, k+1,    &
+      l0) + sx(1)*ezg(j+1, k+1, l0))*sy(1) 
       ez(nn) = ez(nn) + a
       
       ! Compute Bx on particle
-      a = (sx(0)*bxg(j,k0,l0) + sx(1)*bxg(j+1,k0,l0))
+      a = (sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0, l0))
       bx(nn) = bx(nn) + a
       
       ! Compute By on particle
-      a = (sy(0)*byg(j0,k,l0) + sy(1)*byg(j0,k+1,l0))
+      a = (sy(0)*byg(j0, k, l0) + sy(1)*byg(j0, k+1, l0))
       by(nn) = by(nn) + a
       
       ! Compute Bz on particle
-      a = (sz(0)*bzg(j0,k0,l) + sz(1)*bzg(j0,k0,l+1))
+      a = (sz(0)*bzg(j0, k0, l) + sz(1)*bzg(j0, k0, l+1))
       bz(nn) = bz(nn) + a
       
     ENDDO
@@ -1240,99 +1249,84 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     SELECT CASE (particle_pusher)
       !! Vay pusher -- Full push
     CASE (1_idp)
-      CALL pxr_ebcancelpush3d(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1), &
-      uzp(ip:ip+blocksize-1), &
-      gaminv(ip:ip+blocksize-1), &
-      ex(ip:ip+blocksize-1),  &
-      ey(ip:ip+blocksize-1),  &
-      ez(ip:ip+blocksize-1),  &
-      bx(ip:ip+blocksize-1),  &
-      by(ip:ip+blocksize-1),  &
-      bz(ip:ip+blocksize-1),q,m,dt,0_idp)
+      CALL pxr_ebcancelpush3d(blocksize, uxp(ip:ip+blocksize-1),                      &
+      uyp(ip:ip+blocksize-1), uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1),      &
+      ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
+      bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt,  &
+      0_idp)         
       
       !! Boris pusher -- Full push
     CASE DEFAULT
       
       !! Push momentum using the Boris method in a single subroutine
       
-      CALL pxr_boris_push_u_3d(blocksize, &
-      uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),uzp(ip:ip+blocksize-1), &
-      gaminv(ip:ip+blocksize-1), &
-      ex(ip:ip+blocksize-1),ey(ip:ip+blocksize-1),ez(ip:ip+blocksize-1),&
-      bx(ip:ip+blocksize-1),by(ip:ip+blocksize-1),bz(ip:ip+blocksize-1),&
-      q,m,dt)
+      CALL pxr_boris_push_u_3d(blocksize, uxp(ip:ip+blocksize-1),                     &
+      uyp(ip:ip+blocksize-1), uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1),      &
+      ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
+      bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt)     
       
       !! Push momentum using the Boris method with several subroutines
       
       ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
       !                                  uyp(ip:ip+blocksize-1), &
       !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1),  &
-      !                                  ey(ip:ip+blocksize-1),  &
-      !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+      !                                  ex(ip:ip+blocksize-1), &
+      !                                  ey(ip:ip+blocksize-1), &
+      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
       
       ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1),   &
-      gaminv(ip:ip+blocksize-1))
+      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
+      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
       
       
       ! ___ Push with B ___
-      !       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
-      !                                  uyp(ip:ip+blocksize-1),   &
-      !                                  uzp(ip:ip+blocksize-1),   &
-      !                                  gaminv(ip:ip+blocksize-1),&
-      !                                  bx(ip:ip+blocksize-1),    &
-      !                                  by(ip:ip+blocksize-1),    &
-      !                                  bz(ip:ip+blocksize-1),q,m,dt)
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+      !       CALL pxr_bpush_v(blocksize, uxp(ip:ip+blocksize-1), &
       !                                  uyp(ip:ip+blocksize-1), &
       !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1),  &
-      !                                  ey(ip:ip+blocksize-1),  &
-      !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+      !                                  gaminv(ip:ip+blocksize-1), &
+      !                                  bx(ip:ip+blocksize-1), &
+      !                                  by(ip:ip+blocksize-1), &
+      !                                  bz(ip:ip+blocksize-1), q, m, dt)
+      
+      ! ___ Push with E ___
+      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
+      !                                  uyp(ip:ip+blocksize-1), &
+      !                                  uzp(ip:ip+blocksize-1), &
+      !                                  ex(ip:ip+blocksize-1), &
+      !                                  ey(ip:ip+blocksize-1), &
+      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
       
       ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1),   &
-      gaminv(ip:ip+blocksize-1))
+      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
+      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
       
     END SELECT
     ! ___ Update position ___
-    CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
-    yp(ip:ip+blocksize-1),  &
-    zp(ip:ip+blocksize-1),  &
-    uxp(ip:ip+blocksize-1), &
-    uyp(ip:ip+blocksize-1),  &
-    uzp(ip:ip+blocksize-1),  &
-    gaminv(ip:ip+blocksize-1),dt)
+    CALL pxr_pushxyz(blocksize, xp(ip:ip+blocksize-1), yp(ip:ip+blocksize-1),         &
+    zp(ip:ip+blocksize-1), uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),            &
+    uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1), dt)      
     
     ! ___ Push with E + gamma ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,ex,ey,ez)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, ex, ey, ez)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       uxp(nn) = uxp(nn) + ex(nn)*const1
     !       uyp(nn) = uyp(nn) + ey(nn)*const1
     !       uzp(nn) = uzp(nn) + ez(nn)*const1
@@ -1350,22 +1344,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Push with B ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       const2 = gaminv(nn)*const1
     !       tx = bx(nn)*const2
     !       ty = by(nn)*const2
@@ -1390,23 +1384,23 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Push with E + gamma ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,ex,ey,ez)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, ex, ey, ez)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       uxp(nn) = uxp(nn) + ex(nn)*const1
     !       uyp(nn) = uyp(nn) + ey(nn)*const1
     !       uzp(nn) = uzp(nn) + ez(nn)*const1
@@ -1423,22 +1417,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Update position ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+    !       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       const2 = gaminv(nn)*dtt
     !       xp(nn) = xp(nn) + uxp(nn)*const2
     !       yp(nn) = yp(nn) + uyp(nn)*const2
@@ -1481,24 +1475,24 @@ END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
 !
 ! Input parameters:
 !> @param[in] np number of particles
-!> @param[in] xp,yp,zp particle position
-!> @param[in] uxp,uyp,uzp particle momentum
+!> @param[in] xp, yp, zp particle position
+!> @param[in] uxp, uyp, uzp particle momentum
 !> @param[in] gaminv inverse of the particle Lorentz factor
-!> @param[in] ex,ey,ez particle electric field
-!> @param[in] bx,by,bz particle magnetic field
-!> @param[in] xmin,ymin,zmin tile minimum grid position
-!> @param[in] dx,dy,dz space step
+!> @param[in] ex, ey, ez particle electric field
+!> @param[in] bx, by, bz particle magnetic field
+!> @param[in] xmin, ymin, zmin tile minimum grid position
+!> @param[in] dx, dy, dz space step
 !> @param[in] dtt time step
-!> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
-!> @param[in] exg,eyg,ezg electric field grid
-!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] nx, ny, nz number of grid points in each direction
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction
+!> @param[in] exg, eyg, ezg electric field grid
+!> @param[in] bxg, byg, bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
-SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
-  ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-  dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
-  exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
+SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, uzp,  &
+gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
+nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
+l_lower_order_in_v)   
   ! ______________________________________________________________________________
   
   USE omp_lib
@@ -1509,18 +1503,19 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   IMPLICIT NONE
   
   ! Input/Output parameters  
-  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
+  nzguard
   INTEGER(idp), INTENT(IN)                :: lvect
-  REAL(num), INTENT(IN)                   :: q,m
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  REAL(num), INTENT(IN)                   :: q, m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp, yp, zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex, ey, ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx, by, bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp, uyp, uzp, gaminv
   LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
-  REAL(num), &
-  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
-  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
+  REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
+  -nzguard:nz+nzguard), INTENT(IN)                              :: exg, eyg, ezg,     &
+  bxg, byg, bzg  
+  REAL(num), INTENT(IN)                   :: xmin, ymin, zmin, dx, dy, dz, dtt
   
   ! Local parameters
   INTEGER(isp)                         :: ip
@@ -1530,13 +1525,13 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: xintsq,yintsq,zintsq
+  REAL(num)                            :: xintsq, yintsq, zintsq
   REAL(num)                            :: a
-  REAL(num)                            :: clghtisq,const1
-  REAL(num), DIMENSION(-1:1)           :: sx,sy,sz
-  REAL(num), DIMENSION(-1:1)           :: sx0,sy0,sz0
+  REAL(num)                            :: clghtisq, const1
+  REAL(num), DIMENSION(-1:1)           :: sx, sy, sz
+  REAL(num), DIMENSION(-1:1)           :: sx0, sy0, sz0
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
+  !dir$ attributes align:64 :: sx, sy, sz, sx0, sy0, sz0
 #endif
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
@@ -1557,26 +1552,26 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
   sz0=0.0_num
   
   ! ___ Loop on particles _______________________
-  DO ip=1,np,lvect
+  DO ip=1, np, lvect
     
-    blocksize = MIN(lvect,np-ip+1)
+    blocksize = MIN(lvect, np-ip+1)
     
     ! __________________________________________________________________________
     ! Field gathering
     
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-    !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
-    !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
-    !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-    !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+    !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
+    !DIR$ ASSUME_ALIGNED sx0:64, sy0:64, sz0:64
+    !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
+    !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-    !$OMP SIMD private(sx,sy,sz,sx0,sy0,sz0)
+    !$OMP SIMD private(sx, sy, sz, sx0, sy0, sz0)
 #endif
 #elif defined __IBMBGQ__
-    !IBM* ALIGN(64,xp,yp,zp)
+    !IBM* ALIGN(64, xp, yp, zp)
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
@@ -1585,7 +1580,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     !DIR$ IVDEP
     !!DIR DISTRIBUTE POINT
 #endif
-    DO nn=ip,blocksize+ip-1
+    DO nn=ip, blocksize+ip-1
       
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
@@ -1633,120 +1628,83 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
       sz0( 1) = zint
       
       ! Compute Ex on particle
-      a = (sx0(0)*exg(j0,k-1,l-1) &
-      + sx0(1)*exg(j0+1,k-1,l-1))*sy(-1)
-      a = a + (sx0(0)*exg(j0,k,l-1) &
-      + sx0(1)*exg(j0+1,k,l-1))*sy(0)
-      a = a + (sx0(0)*exg(j0,k+1,l-1) &
-      + sx0(1)*exg(j0+1,k+1,l-1))*sy(1)
+      a = (sx0(0)*exg(j0, k-1, l-1) + sx0(1)*exg(j0+1, k-1, l-1))*sy(-1) 
+      a = a + (sx0(0)*exg(j0, k, l-1) + sx0(1)*exg(j0+1, k, l-1))*sy(0) 
+      a = a + (sx0(0)*exg(j0, k+1, l-1) + sx0(1)*exg(j0+1, k+1, l-1))*sy(1) 
       ex(nn) = ex(nn) + a*sz(-1)
-      a = (sx0(0)*exg(j0,k-1,l) &
-      + sx0(1)*exg(j0+1,k-1,l))*sy(-1)
-      a = a + (sx0(0)*exg(j0,k,l) &
-      + sx0(1)*exg(j0+1,k,l))*sy(0)
-      a = a + (sx0(0)*exg(j0,k+1,l) &
-      + sx0(1)*exg(j0+1,k+1,l))*sy(1)
+      a = (sx0(0)*exg(j0, k-1, l) + sx0(1)*exg(j0+1, k-1, l))*sy(-1) 
+      a = a + (sx0(0)*exg(j0, k, l) + sx0(1)*exg(j0+1, k, l))*sy(0) 
+      a = a + (sx0(0)*exg(j0, k+1, l) + sx0(1)*exg(j0+1, k+1, l))*sy(1) 
       ex(nn) = ex(nn) + a*sz(0)
-      a = (sx0(0)*exg(j0,k-1,l+1) &
-      + sx0(1)*exg(j0+1,k-1,l+1))*sy(-1)
-      a = a + (sx0(0)*exg(j0,k,l+1) &
-      + sx0(1)*exg(j0+1,k,l+1))*sy(0)
-      a = a + (sx0(0)*exg(j0,k+1,l+1) &
-      + sx0(1)*exg(j0+1,k+1,l+1))*sy(1)
+      a = (sx0(0)*exg(j0, k-1, l+1) + sx0(1)*exg(j0+1, k-1, l+1))*sy(-1) 
+      a = a + (sx0(0)*exg(j0, k, l+1) + sx0(1)*exg(j0+1, k, l+1))*sy(0) 
+      a = a + (sx0(0)*exg(j0, k+1, l+1) + sx0(1)*exg(j0+1, k+1, l+1))*sy(1) 
       ex(nn) = ex(nn) + a*sz(1)
       
       ! Compute Ey on particle
-      a = (sx(-1)*eyg(j-1,k0,l-1) &
-      + sx(0)*eyg(j,k0,l-1) &
-      + sx(1)*eyg(j+1,k0,l-1))*sy0(0)
-      a = a + (sx(-1)*eyg(j-1,k0+1,l-1) &
-      + sx(0)*eyg(j,k0+1,l-1) &
-      + sx(1)*eyg(j+1,k0+1,l-1))*sy0(1)
+      a = (sx(-1)*eyg(j-1, k0, l-1) + sx(0)*eyg(j, k0, l-1) + sx(1)*eyg(j+1, k0,      &
+      l-1))*sy0(0)  
+      a = a + (sx(-1)*eyg(j-1, k0+1, l-1) + sx(0)*eyg(j, k0+1, l-1) + sx(1)*eyg(j+1,  &
+      k0+1, l-1))*sy0(1)  
       ey(nn) = ey(nn) + a*sz(-1)
-      a = (sx(-1)*eyg(j-1,k0,l) &
-      + sx(0)*eyg(j,k0,l) &
-      + sx(1)*eyg(j+1,k0,l))*sy0(0)
-      a = a + (sx(-1)*eyg(j-1,k0+1,l) &
-      + sx(0)*eyg(j,k0+1,l) &
-      + sx(1)*eyg(j+1,k0+1,l))*sy0(1)
+      a = (sx(-1)*eyg(j-1, k0, l) + sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0,          &
+      l))*sy0(0)  
+      a = a + (sx(-1)*eyg(j-1, k0+1, l) + sx(0)*eyg(j, k0+1, l) + sx(1)*eyg(j+1,      &
+      k0+1, l))*sy0(1)  
       ey(nn) = ey(nn) + a*sz(0)
-      a = (sx(-1)*eyg(j-1,k0,l+1) &
-      + sx(0)*eyg(j,k0,l+1) &
-      + sx(1)*eyg(j+1,k0,l+1))*sy0(0)
-      a = a + (sx(-1)*eyg(j-1,k0+1,l+1) &
-      + sx(0)*eyg(j,k0+1,l+1) &
-      + sx(1)*eyg(j+1,k0+1,l+1))*sy0(1)
+      a = (sx(-1)*eyg(j-1, k0, l+1) + sx(0)*eyg(j, k0, l+1) + sx(1)*eyg(j+1, k0,      &
+      l+1))*sy0(0)  
+      a = a + (sx(-1)*eyg(j-1, k0+1, l+1) + sx(0)*eyg(j, k0+1, l+1) + sx(1)*eyg(j+1,  &
+      k0+1, l+1))*sy0(1)  
       ey(nn) = ey(nn) + a*sz(1)
       
       ! Compute Ez on particle
-      a = (sx(-1)*ezg(j-1,k-1,l0) &
-      + sx(0)*ezg(j,k-1,l0) &
-      + sx(1)*ezg(j+1,k-1,l0))*sy(-1)
-      a = a + (sx(-1)*ezg(j-1,k,l0) &
-      + sx(0)*ezg(j,k,l0) &
-      + sx(1)*ezg(j+1,k,l0))*sy(0)
-      a = a + (sx(-1)*ezg(j-1,k+1,l0) &
-      + sx(0)*ezg(j,k+1,l0) &
-      + sx(1)*ezg(j+1,k+1,l0))*sy(1)
+      a = (sx(-1)*ezg(j-1, k-1, l0) + sx(0)*ezg(j, k-1, l0) + sx(1)*ezg(j+1, k-1,     &
+      l0))*sy(-1)  
+      a = a + (sx(-1)*ezg(j-1, k, l0) + sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k,       &
+      l0))*sy(0)  
+      a = a + (sx(-1)*ezg(j-1, k+1, l0) + sx(0)*ezg(j, k+1, l0) + sx(1)*ezg(j+1, k+1, &
+      l0))*sy(1)  
       ez(nn) = ez(nn) + a*sz0(0)
-      a = (sx(-1)*ezg(j-1,k-1,l0+1) &
-      + sx(0)*ezg(j,k-1,l0+1) &
-      + sx(1)*ezg(j+1,k-1,l0+1))*sy(-1)
-      a = a + (sx(-1)*ezg(j-1,k,l0+1) &
-      + sx(0)*ezg(j,k,l0+1) &
-      + sx(1)*ezg(j+1,k,l0+1))*sy(0)
-      a = a + (sx(-1)*ezg(j-1,k+1,l0+1) &
-      + sx(0)*ezg(j,k+1,l0+1) &
-      + sx(1)*ezg(j+1,k+1,l0+1))*sy(1)
+      a = (sx(-1)*ezg(j-1, k-1, l0+1) + sx(0)*ezg(j, k-1, l0+1) + sx(1)*ezg(j+1, k-1, &
+      l0+1))*sy(-1)  
+      a = a + (sx(-1)*ezg(j-1, k, l0+1) + sx(0)*ezg(j, k, l0+1) + sx(1)*ezg(j+1, k,   &
+      l0+1))*sy(0)  
+      a = a + (sx(-1)*ezg(j-1, k+1, l0+1) + sx(0)*ezg(j, k+1, l0+1) + sx(1)*ezg(j+1,  &
+      k+1, l0+1))*sy(1)  
       ez(nn) = ez(nn) + a*sz0(1)
       
       ! Compute Bx on particle
-      a = (sx(-1)*bxg(j-1,k0,l0) &
-      + sx(0)*bxg(j,k0,l0) &
-      + sx(1)*bxg(j+1,k0,l0))*sy0(0)
-      a = a + (sx(-1)*bxg(j-1,k0+1,l0) &
-      + sx(0)*bxg(j,k0+1,l0) &
-      + sx(1)*bxg(j+1,k0+1,l0))*sy0(1)
+      a = (sx(-1)*bxg(j-1, k0, l0) + sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0,        &
+      l0))*sy0(0)  
+      a = a + (sx(-1)*bxg(j-1, k0+1, l0) + sx(0)*bxg(j, k0+1, l0) + sx(1)*bxg(j+1,    &
+      k0+1, l0))*sy0(1)  
       bx(nn) = bx(nn) + a*sz0(0)
-      a = (sx(-1)*bxg(j-1,k0,l0+1) &
-      + sx(0)*bxg(j,k0,l0+1) &
-      + sx(1)*bxg(j+1,k0,l0+1))*sy0(0)
-      a = a + (sx(-1)*bxg(j-1,k0+1,l0+1) &
-      + sx(0)*bxg(j,k0+1,l0+1) &
-      + sx(1)*bxg(j+1,k0+1,l0+1))*sy0(1)
+      a = (sx(-1)*bxg(j-1, k0, l0+1) + sx(0)*bxg(j, k0, l0+1) + sx(1)*bxg(j+1, k0,    &
+      l0+1))*sy0(0)  
+      a = a + (sx(-1)*bxg(j-1, k0+1, l0+1) + sx(0)*bxg(j, k0+1, l0+1) +               &
+      sx(1)*bxg(j+1, k0+1, l0+1))*sy0(1)  
       bx(nn) = bx(nn) + a*sz0(1)
       
       ! Compute By on particle
-      a = (sx0(0)*byg(j0,k-1,l0) &
-      + sx0(1)*byg(j0+1,k-1,l0))*sy(-1)
-      a = a + (sx0(0)*byg(j0,k,l0) &
-      + sx0(1)*byg(j0+1,k,l0))*sy(0)
-      a = a + (sx0(0)*byg(j0,k+1,l0) &
-      + sx0(1)*byg(j0+1,k+1,l0))*sy(1)
+      a = (sx0(0)*byg(j0, k-1, l0) + sx0(1)*byg(j0+1, k-1, l0))*sy(-1) 
+      a = a + (sx0(0)*byg(j0, k, l0) + sx0(1)*byg(j0+1, k, l0))*sy(0) 
+      a = a + (sx0(0)*byg(j0, k+1, l0) + sx0(1)*byg(j0+1, k+1, l0))*sy(1) 
       by(nn) = by(nn) + a*sz0(0)
-      a = (sx0(0)*byg(j0,k-1,l0+1) &
-      + sx0(1)*byg(j0+1,k-1,l0+1))*sy(-1)
-      a = a + (sx0(0)*byg(j0,k,l0+1) &
-      + sx0(1)*byg(j0+1,k,l0+1))*sy(0)
-      a = a + (sx0(0)*byg(j0,k+1,l0+1) &
-      + sx0(1)*byg(j0+1,k+1,l0+1))*sy(1)
+      a = (sx0(0)*byg(j0, k-1, l0+1) + sx0(1)*byg(j0+1, k-1, l0+1))*sy(-1) 
+      a = a + (sx0(0)*byg(j0, k, l0+1) + sx0(1)*byg(j0+1, k, l0+1))*sy(0) 
+      a = a + (sx0(0)*byg(j0, k+1, l0+1) + sx0(1)*byg(j0+1, k+1, l0+1))*sy(1) 
       by(nn) = by(nn) + a*sz0(1)
       
       ! Compute Bz on particle
-      a = (sx0(0)*bzg(j0,k0,l-1) &
-      + sx0(1)*bzg(j0+1,k0,l-1))*sy0(0)
-      a = a + (sx0(0)*bzg(j0,k0+1,l-1) &
-      + sx0(1)*bzg(j0+1,k0+1,l-1))*sy0(1)
+      a = (sx0(0)*bzg(j0, k0, l-1) + sx0(1)*bzg(j0+1, k0, l-1))*sy0(0) 
+      a = a + (sx0(0)*bzg(j0, k0+1, l-1) + sx0(1)*bzg(j0+1, k0+1, l-1))*sy0(1) 
       bz(nn) = bz(nn) + a*sz(-1)
-      a = (sx0(0)*bzg(j0,k0,l) &
-      + sx0(1)*bzg(j0+1,k0,l))*sy0(0)
-      a = a + (sx0(0)*bzg(j0,k0+1,l) &
-      + sx0(1)*bzg(j0+1,k0+1,l))*sy0(1)
+      a = (sx0(0)*bzg(j0, k0, l) + sx0(1)*bzg(j0+1, k0, l))*sy0(0) 
+      a = a + (sx0(0)*bzg(j0, k0+1, l) + sx0(1)*bzg(j0+1, k0+1, l))*sy0(1) 
       bz(nn) = bz(nn) + a*sz(0)
-      a = (sx0(0)*bzg(j0,k0,l+1) &
-      + sx0(1)*bzg(j0+1,k0,l+1))*sy0(0)
-      a = a + (sx0(0)*bzg(j0,k0+1,l+1) &
-      + sx0(1)*bzg(j0+1,k0+1,l+1))*sy0(1)
+      a = (sx0(0)*bzg(j0, k0, l+1) + sx0(1)*bzg(j0+1, k0, l+1))*sy0(0) 
+      a = a + (sx0(0)*bzg(j0, k0+1, l+1) + sx0(1)*bzg(j0+1, k0+1, l+1))*sy0(1) 
       bz(nn) = bz(nn) + a*sz(1)
       
     ENDDO
@@ -1762,98 +1720,83 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     SELECT CASE (particle_pusher)
       !! Vay pusher -- Full push
     CASE (1_idp)
-      CALL pxr_ebcancelpush3d(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1), &
-      uzp(ip:ip+blocksize-1), &
-      gaminv(ip:ip+blocksize-1), &
-      ex(ip:ip+blocksize-1),  &
-      ey(ip:ip+blocksize-1),  &
-      ez(ip:ip+blocksize-1),  &
-      bx(ip:ip+blocksize-1),  &
-      by(ip:ip+blocksize-1),  &
-      bz(ip:ip+blocksize-1),q,m,dt,0_idp)
+      CALL pxr_ebcancelpush3d(blocksize, uxp(ip:ip+blocksize-1),                      &
+      uyp(ip:ip+blocksize-1), uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1),      &
+      ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
+      bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt,  &
+      0_idp)         
       
       !! Boris pusher -- Full push
     CASE DEFAULT
       
       !! Push momentum using the Boris method in a single subroutine
       
-      CALL pxr_boris_push_u_3d(blocksize, &
-      uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),uzp(ip:ip+blocksize-1), &
-      gaminv(ip:ip+blocksize-1), &
-      ex(ip:ip+blocksize-1),ey(ip:ip+blocksize-1),ez(ip:ip+blocksize-1),&
-      bx(ip:ip+blocksize-1),by(ip:ip+blocksize-1),bz(ip:ip+blocksize-1),&
-      q,m,dt)
+      CALL pxr_boris_push_u_3d(blocksize, uxp(ip:ip+blocksize-1),                     &
+      uyp(ip:ip+blocksize-1), uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1),      &
+      ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
+      bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt)     
       
       !! Push momentum using the Boris method with several subroutines
       
       ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
       !                                  uyp(ip:ip+blocksize-1), &
       !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1),  &
-      !                                  ey(ip:ip+blocksize-1),  &
-      !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+      !                                  ex(ip:ip+blocksize-1), &
+      !                                  ey(ip:ip+blocksize-1), &
+      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
       
       ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1),   &
-      gaminv(ip:ip+blocksize-1))
+      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
+      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
       
       ! ___ Push with B ___
-      !       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
-      !                                  uyp(ip:ip+blocksize-1),   &
-      !                                  uzp(ip:ip+blocksize-1),   &
-      !                                  gaminv(ip:ip+blocksize-1),&
-      !                                  bx(ip:ip+blocksize-1),    &
-      !                                  by(ip:ip+blocksize-1),    &
-      !                                  bz(ip:ip+blocksize-1),q,m,dt)
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+      !       CALL pxr_bpush_v(blocksize, uxp(ip:ip+blocksize-1), &
       !                                  uyp(ip:ip+blocksize-1), &
       !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1),  &
-      !                                  ey(ip:ip+blocksize-1),  &
-      !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+      !                                  gaminv(ip:ip+blocksize-1), &
+      !                                  bx(ip:ip+blocksize-1), &
+      !                                  by(ip:ip+blocksize-1), &
+      !                                  bz(ip:ip+blocksize-1), q, m, dt)
+      
+      ! ___ Push with E ___
+      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
+      !                                  uyp(ip:ip+blocksize-1), &
+      !                                  uzp(ip:ip+blocksize-1), &
+      !                                  ex(ip:ip+blocksize-1), &
+      !                                  ey(ip:ip+blocksize-1), &
+      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
       
       ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1),   &
-      gaminv(ip:ip+blocksize-1))
+      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
+      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
       
     END SELECT
     ! ___ Update position ___
-    CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
-    yp(ip:ip+blocksize-1),  &
-    zp(ip:ip+blocksize-1),  &
-    uxp(ip:ip+blocksize-1), &
-    uyp(ip:ip+blocksize-1),  &
-    uzp(ip:ip+blocksize-1),  &
-    gaminv(ip:ip+blocksize-1),dt)
+    CALL pxr_pushxyz(blocksize, xp(ip:ip+blocksize-1), yp(ip:ip+blocksize-1),         &
+    zp(ip:ip+blocksize-1), uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),            &
+    uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1), dt)      
     
     ! ___ Push with E + gamma ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,ex,ey,ez)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, ex, ey, ez)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       uxp(nn) = uxp(nn) + ex(nn)*const1
     !       uyp(nn) = uyp(nn) + ey(nn)*const1
     !       uzp(nn) = uzp(nn) + ez(nn)*const1
@@ -1871,22 +1814,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Push with B ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       const2 = gaminv(nn)*const1
     !       tx = bx(nn)*const2
     !       ty = by(nn)*const2
@@ -1911,24 +1854,24 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Push with E + gamma ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,ex,ey,ez)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, ex, ey, ez)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       uxp(nn) = uxp(nn) + ex(nn)*const1
     !       uyp(nn) = uyp(nn) + ey(nn)*const1
     !       uzp(nn) = uzp(nn) + ez(nn)*const1
@@ -1945,22 +1888,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Update position ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+    !       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       const2 = gaminv(nn)*dtt
     !       xp(nn) = xp(nn) + uxp(nn)*const2
     !       yp(nn) = yp(nn) + uyp(nn)*const2
@@ -2004,25 +1947,25 @@ END SUBROUTINE field_gathering_plus_particle_pusher_2_2_2
 !
 ! Input parameters:
 !> @param[in] np number of particles
-!> @param[in] xp,yp,zp particle position
-!> @param[in] uxp,uyp,uzp particle momentum
+!> @param[in] xp, yp, zp particle position
+!> @param[in] uxp, uyp, uzp particle momentum
 !> @param[in] gaminv inverse of the particle Lorentz factor
-!> @param[in] ex,ey,ez particle electric field
-!> @param[in] bx,by,bz particle magnetic field
-!> @param[in] xmin,ymin,zmin tile minimum grid position
-!> @param[in] dx,dy,dz space step
+!> @param[in] ex, ey, ez particle electric field
+!> @param[in] bx, by, bz particle magnetic field
+!> @param[in] xmin, ymin, zmin tile minimum grid position
+!> @param[in] dx, dy, dz space step
 !> @param[in] dtt time step
-!> @param[in] nx,ny,nz number of grid points in each direction
-!> @param[in] nxguard,nyguard,nzguard number of guard cells in each direction
-!> @param[in] exg,eyg,ezg electric field grid
-!> @param[in] bxg,byg,bzg magnetic field grid
+!> @param[in] nx, ny, nz number of grid points in each direction
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction
+!> @param[in] exg, eyg, ezg electric field grid
+!> @param[in] bxg, byg, bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
 !
-SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,gaminv, &
-  ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
-  dx,dy,dz,dtt,nx,ny,nz,nxguard,nyguard,nzguard, &
-  exg,eyg,ezg,bxg,byg,bzg,q,m,lvect,l_lower_order_in_v)
+SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, uzp,  &
+gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
+nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
+l_lower_order_in_v)   
   ! ______________________________________________________________________________
   
   USE omp_lib
@@ -2033,18 +1976,19 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   IMPLICIT NONE
   
   ! Input/Output parameters  
-  INTEGER(idp), INTENT(IN)                :: np,nx,ny,nz,nxguard,nyguard,nzguard
+  INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
+  nzguard
   INTEGER(idp), INTENT(IN)                :: lvect
-  REAL(num), INTENT(IN)                   :: q,m
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp,yp,zp
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex,ey,ez
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx,by,bz
-  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp,uyp,uzp,gaminv
+  REAL(num), INTENT(IN)                   :: q, m
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: xp, yp, zp
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: ex, ey, ez
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: bx, by, bz
+  REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp, uyp, uzp, gaminv
   LOGICAL(lp), INTENT(IN)                 :: l_lower_order_in_v
-  REAL(num), &
-  DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), &
-  INTENT(IN)                              :: exg,eyg,ezg,bxg,byg,bzg
-  REAL(num), INTENT(IN)                   :: xmin,ymin,zmin,dx,dy,dz,dtt
+  REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
+  -nzguard:nz+nzguard), INTENT(IN)                              :: exg, eyg, ezg,     &
+  bxg, byg, bzg  
+  REAL(num), INTENT(IN)                   :: xmin, ymin, zmin, dx, dy, dz, dtt
   
   ! Local parameters
   INTEGER(isp)                         :: ip
@@ -2054,8 +1998,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   INTEGER(isp)                         :: j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint
-  REAL(num)                            :: xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq
-  REAL(num)                            :: clghtisq,const1
+  REAL(num)                            :: xintsq, oxint, yintsq, oyint, zintsq,       &
+  ozint, oxintsq, oyintsq, ozintsq
+  REAL(num)                            :: clghtisq, const1
   REAL(num)                            :: a
   REAL(num), DIMENSION(-1:2)           :: sx
   REAL(num), DIMENSION(-1:2)           :: sy
@@ -2064,7 +2009,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   REAL(num), DIMENSION(-1:1)           :: sy0
   REAL(num), DIMENSION(-1:1)           :: sz0
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: sx,sy,sz,sx0,sy0,sz0
+  !dir$ attributes align:64 :: sx, sy, sz, sx0, sy0, sz0
 #endif
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
@@ -2085,26 +2030,26 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
   sz0=0.0_num
   
   ! ___ Loop on partciles _______________________
-  DO ip=1,np,lvect
+  DO ip=1, np, lvect
     
-    blocksize = MIN(lvect,np-ip+1)
+    blocksize = MIN(lvect, np-ip+1)
     
     ! __________________________________________________________________________
     ! Field gathering
     
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-    !DIR$ ASSUME_ALIGNED sx:64,sy:64,sz:64
-    !DIR$ ASSUME_ALIGNED sx0:64,sy0:64,sz0:64
-    !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
-    !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+    !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
+    !DIR$ ASSUME_ALIGNED sx0:64, sy0:64, sz0:64
+    !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
+    !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-    !$OMP SIMD private(sx,sy,sz,sx0,sy0,sz0)
+    !$OMP SIMD private(sx, sy, sz, sx0, sy0, sz0)
 #endif
 #elif defined __IBMBGQ__
-    !IBM* ALIGN(64,xp,yp,zp)
+    !IBM* ALIGN(64, xp, yp, zp)
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
@@ -2113,7 +2058,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     !DIR$ IVDEP
     !!DIR DISTRIBUTE POINT
 #endif
-    DO nn=ip,blocksize+ip-1
+    DO nn=ip, blocksize+ip-1
       
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
@@ -2176,288 +2121,182 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
       sz0( 1) = 0.5_num*(0.5_num+zint)**2
       
       ! Compute Ex on particle
-      a = (sx0(-1)*exg(j0-1,k-1,l-1) &
-      + sx0(0)*exg(j0,k-1,l-1) &
-      + sx0(1)*exg(j0+1,k-1,l-1))*sy(-1)
-      a = a + (sx0(-1)*exg(j0-1,k,l-1) &
-      + sx0(0)*exg(j0,k,l-1) &
-      + sx0(1)*exg(j0+1,k,l-1))*sy(0)
-      a = a + (sx0(-1)*exg(j0-1,k+1,l-1) &
-      + sx0(0)*exg(j0,k+1,l-1) &
-      + sx0(1)*exg(j0+1,k+1,l-1))*sy(1)
-      a = a + (sx0(-1)*exg(j0-1,k+2,l-1) &
-      + sx0(0)*exg(j0,k+2,l-1) &
-      + sx0(1)*exg(j0+1,k+2,l-1))*sy(2)
+      a = (sx0(-1)*exg(j0-1, k-1, l-1) + sx0(0)*exg(j0, k-1, l-1) + sx0(1)*exg(j0+1,  &
+      k-1, l-1))*sy(-1)  
+      a = a + (sx0(-1)*exg(j0-1, k, l-1) + sx0(0)*exg(j0, k, l-1) + sx0(1)*exg(j0+1,  &
+      k, l-1))*sy(0)  
+      a = a + (sx0(-1)*exg(j0-1, k+1, l-1) + sx0(0)*exg(j0, k+1, l-1) +               &
+      sx0(1)*exg(j0+1, k+1, l-1))*sy(1)  
+      a = a + (sx0(-1)*exg(j0-1, k+2, l-1) + sx0(0)*exg(j0, k+2, l-1) +               &
+      sx0(1)*exg(j0+1, k+2, l-1))*sy(2)  
       ex(nn) = ex(nn) + a*sz(-1)
-      a = (sx0(-1)*exg(j0-1,k-1,l) &
-      + sx0(0)*exg(j0,k-1,l) &
-      + sx0(1)*exg(j0+1,k-1,l))*sy(-1)
-      a = a + (sx0(-1)*exg(j0-1,k,l) &
-      + sx0(0)*exg(j0,k,l) &
-      + sx0(1)*exg(j0+1,k,l))*sy(0)
-      a = a + (sx0(-1)*exg(j0-1,k+1,l) &
-      + sx0(0)*exg(j0,k+1,l) &
-      + sx0(1)*exg(j0+1,k+1,l))*sy(1)
-      a = a + (sx0(-1)*exg(j0-1,k+2,l) &
-      + sx0(0)*exg(j0,k+2,l) &
-      + sx0(1)*exg(j0+1,k+2,l))*sy(2)
+      a = (sx0(-1)*exg(j0-1, k-1, l) + sx0(0)*exg(j0, k-1, l) + sx0(1)*exg(j0+1, k-1, &
+      l))*sy(-1)  
+      a = a + (sx0(-1)*exg(j0-1, k, l) + sx0(0)*exg(j0, k, l) + sx0(1)*exg(j0+1, k,   &
+      l))*sy(0)  
+      a = a + (sx0(-1)*exg(j0-1, k+1, l) + sx0(0)*exg(j0, k+1, l) + sx0(1)*exg(j0+1,  &
+      k+1, l))*sy(1)  
+      a = a + (sx0(-1)*exg(j0-1, k+2, l) + sx0(0)*exg(j0, k+2, l) + sx0(1)*exg(j0+1,  &
+      k+2, l))*sy(2)  
       ex(nn) = ex(nn) + a*sz(0)
-      a = (sx0(-1)*exg(j0-1,k-1,l+1) &
-      + sx0(0)*exg(j0,k-1,l+1) &
-      + sx0(1)*exg(j0+1,k-1,l+1))*sy(-1)
-      a = a + (sx0(-1)*exg(j0-1,k,l+1) &
-      + sx0(0)*exg(j0,k,l+1) &
-      + sx0(1)*exg(j0+1,k,l+1))*sy(0)
-      a = a + (sx0(-1)*exg(j0-1,k+1,l+1) &
-      + sx0(0)*exg(j0,k+1,l+1) &
-      + sx0(1)*exg(j0+1,k+1,l+1))*sy(1)
-      a = a + (sx0(-1)*exg(j0-1,k+2,l+1) &
-      + sx0(0)*exg(j0,k+2,l+1) &
-      + sx0(1)*exg(j0+1,k+2,l+1))*sy(2)
+      a = (sx0(-1)*exg(j0-1, k-1, l+1) + sx0(0)*exg(j0, k-1, l+1) + sx0(1)*exg(j0+1,  &
+      k-1, l+1))*sy(-1)  
+      a = a + (sx0(-1)*exg(j0-1, k, l+1) + sx0(0)*exg(j0, k, l+1) + sx0(1)*exg(j0+1,  &
+      k, l+1))*sy(0)  
+      a = a + (sx0(-1)*exg(j0-1, k+1, l+1) + sx0(0)*exg(j0, k+1, l+1) +               &
+      sx0(1)*exg(j0+1, k+1, l+1))*sy(1)  
+      a = a + (sx0(-1)*exg(j0-1, k+2, l+1) + sx0(0)*exg(j0, k+2, l+1) +               &
+      sx0(1)*exg(j0+1, k+2, l+1))*sy(2)  
       ex(nn) = ex(nn) + a*sz(1)
-      a = (sx0(-1)*exg(j0-1,k-1,l+2) &
-      + sx0(0)*exg(j0,k-1,l+2) &
-      + sx0(1)*exg(j0+1,k-1,l+2))*sy(-1)
-      a = a + (sx0(-1)*exg(j0-1,k,l+2) &
-      + sx0(0)*exg(j0,k,l+2) &
-      + sx0(1)*exg(j0+1,k,l+2))*sy(0)
-      a = a + (sx0(-1)*exg(j0-1,k+1,l+2) &
-      + sx0(0)*exg(j0,k+1,l+2) &
-      + sx0(1)*exg(j0+1,k+1,l+2))*sy(1)
-      a = a + (sx0(-1)*exg(j0-1,k+2,l+2) &
-      + sx0(0)*exg(j0,k+2,l+2) &
-      + sx0(1)*exg(j0+1,k+2,l+2))*sy(2)
+      a = (sx0(-1)*exg(j0-1, k-1, l+2) + sx0(0)*exg(j0, k-1, l+2) + sx0(1)*exg(j0+1,  &
+      k-1, l+2))*sy(-1)  
+      a = a + (sx0(-1)*exg(j0-1, k, l+2) + sx0(0)*exg(j0, k, l+2) + sx0(1)*exg(j0+1,  &
+      k, l+2))*sy(0)  
+      a = a + (sx0(-1)*exg(j0-1, k+1, l+2) + sx0(0)*exg(j0, k+1, l+2) +               &
+      sx0(1)*exg(j0+1, k+1, l+2))*sy(1)  
+      a = a + (sx0(-1)*exg(j0-1, k+2, l+2) + sx0(0)*exg(j0, k+2, l+2) +               &
+      sx0(1)*exg(j0+1, k+2, l+2))*sy(2)  
       ex(nn) = ex(nn) + a*sz(2)
       
       ! Compute Ey on particle
-      a = (sx(-1)*eyg(j-1,k0-1,l-1) &
-      + sx(0)*eyg(j,k0-1,l-1) &
-      + sx(1)*eyg(j+1,k0-1,l-1) &
-      + sx(2)*eyg(j+2,k0-1,l-1))*sy0(-1)
-      a = a + (sx(-1)*eyg(j-1,k0,l-1) &
-      + sx(0)*eyg(j,k0,l-1) &
-      + sx(1)*eyg(j+1,k0,l-1) &
-      + sx(2)*eyg(j+2,k0,l-1))*sy0(0)
-      a = a + (sx(-1)*eyg(j-1,k0+1,l-1) &
-      + sx(0)*eyg(j,k0+1,l-1) &
-      + sx(1)*eyg(j+1,k0+1,l-1) &
-      + sx(2)*eyg(j+2,k0+1,l-1))*sy0(1)
+      a = (sx(-1)*eyg(j-1, k0-1, l-1) + sx(0)*eyg(j, k0-1, l-1) + sx(1)*eyg(j+1,      &
+      k0-1, l-1) + sx(2)*eyg(j+2, k0-1, l-1))*sy0(-1)   
+      a = a + (sx(-1)*eyg(j-1, k0, l-1) + sx(0)*eyg(j, k0, l-1) + sx(1)*eyg(j+1, k0,  &
+      l-1) + sx(2)*eyg(j+2, k0, l-1))*sy0(0)   
+      a = a + (sx(-1)*eyg(j-1, k0+1, l-1) + sx(0)*eyg(j, k0+1, l-1) + sx(1)*eyg(j+1,  &
+      k0+1, l-1) + sx(2)*eyg(j+2, k0+1, l-1))*sy0(1)   
       ey(nn) = ey(nn) + a*sz(-1)
-      a = (sx(-1)*eyg(j-1,k0-1,l) &
-      + sx(0)*eyg(j,k0-1,l) &
-      + sx(1)*eyg(j+1,k0-1,l) &
-      + sx(2)*eyg(j+2,k0-1,l))*sy0(-1)
-      a = a + (sx(-1)*eyg(j-1,k0,l) &
-      + sx(0)*eyg(j,k0,l) &
-      + sx(1)*eyg(j+1,k0,l) &
-      + sx(2)*eyg(j+2,k0,l))*sy0(0)
-      a = a + (sx(-1)*eyg(j-1,k0+1,l) &
-      + sx(0)*eyg(j,k0+1,l) &
-      + sx(1)*eyg(j+1,k0+1,l) &
-      + sx(2)*eyg(j+2,k0+1,l))*sy0(1)
+      a = (sx(-1)*eyg(j-1, k0-1, l) + sx(0)*eyg(j, k0-1, l) + sx(1)*eyg(j+1, k0-1, l) &
+      + sx(2)*eyg(j+2, k0-1, l))*sy0(-1)   
+      a = a + (sx(-1)*eyg(j-1, k0, l) + sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0, l) + &
+      sx(2)*eyg(j+2, k0, l))*sy0(0)   
+      a = a + (sx(-1)*eyg(j-1, k0+1, l) + sx(0)*eyg(j, k0+1, l) + sx(1)*eyg(j+1,      &
+      k0+1, l) + sx(2)*eyg(j+2, k0+1, l))*sy0(1)   
       ey(nn) = ey(nn) + a*sz(0)
-      a = (sx(-1)*eyg(j-1,k0-1,l+1) &
-      + sx(0)*eyg(j,k0-1,l+1) &
-      + sx(1)*eyg(j+1,k0-1,l+1) &
-      + sx(2)*eyg(j+2,k0-1,l+1))*sy0(-1)
-      a = a + (sx(-1)*eyg(j-1,k0,l+1) &
-      + sx(0)*eyg(j,k0,l+1) &
-      + sx(1)*eyg(j+1,k0,l+1) &
-      + sx(2)*eyg(j+2,k0,l+1))*sy0(0)
-      a = a + (sx(-1)*eyg(j-1,k0+1,l+1) &
-      + sx(0)*eyg(j,k0+1,l+1) &
-      + sx(1)*eyg(j+1,k0+1,l+1) &
-      + sx(2)*eyg(j+2,k0+1,l+1))*sy0(1)
+      a = (sx(-1)*eyg(j-1, k0-1, l+1) + sx(0)*eyg(j, k0-1, l+1) + sx(1)*eyg(j+1,      &
+      k0-1, l+1) + sx(2)*eyg(j+2, k0-1, l+1))*sy0(-1)   
+      a = a + (sx(-1)*eyg(j-1, k0, l+1) + sx(0)*eyg(j, k0, l+1) + sx(1)*eyg(j+1, k0,  &
+      l+1) + sx(2)*eyg(j+2, k0, l+1))*sy0(0)   
+      a = a + (sx(-1)*eyg(j-1, k0+1, l+1) + sx(0)*eyg(j, k0+1, l+1) + sx(1)*eyg(j+1,  &
+      k0+1, l+1) + sx(2)*eyg(j+2, k0+1, l+1))*sy0(1)   
       ey(nn) = ey(nn) + a*sz(1)
-      a = (sx(-1)*eyg(j-1,k0-1,l+2) &
-      + sx(0)*eyg(j,k0-1,l+2) &
-      + sx(1)*eyg(j+1,k0-1,l+2) &
-      + sx(2)*eyg(j+2,k0-1,l+2))*sy0(-1)
-      a = a + (sx(-1)*eyg(j-1,k0,l+2) &
-      + sx(0)*eyg(j,k0,l+2) &
-      + sx(1)*eyg(j+1,k0,l+2) &
-      + sx(2)*eyg(j+2,k0,l+2))*sy0(0)
-      a = a + (sx(-1)*eyg(j-1,k0+1,l+2) &
-      + sx(0)*eyg(j,k0+1,l+2) &
-      + sx(1)*eyg(j+1,k0+1,l+2) &
-      + sx(2)*eyg(j+2,k0+1,l+2))*sy0(1)
+      a = (sx(-1)*eyg(j-1, k0-1, l+2) + sx(0)*eyg(j, k0-1, l+2) + sx(1)*eyg(j+1,      &
+      k0-1, l+2) + sx(2)*eyg(j+2, k0-1, l+2))*sy0(-1)   
+      a = a + (sx(-1)*eyg(j-1, k0, l+2) + sx(0)*eyg(j, k0, l+2) + sx(1)*eyg(j+1, k0,  &
+      l+2) + sx(2)*eyg(j+2, k0, l+2))*sy0(0)   
+      a = a + (sx(-1)*eyg(j-1, k0+1, l+2) + sx(0)*eyg(j, k0+1, l+2) + sx(1)*eyg(j+1,  &
+      k0+1, l+2) + sx(2)*eyg(j+2, k0+1, l+2))*sy0(1)   
       ey(nn) = ey(nn) + a*sz(2)
       
       ! Compute Ez on particle
-      a = (sx(-1)*ezg(j-1,k-1,l0-1) &
-      + sx(0)*ezg(j,k-1,l0-1) &
-      + sx(1)*ezg(j+1,k-1,l0-1) &
-      + sx(2)*ezg(j+2,k-1,l0-1))*sy(-1)
-      a = a + (sx(-1)*ezg(j-1,k,l0-1) &
-      + sx(0)*ezg(j,k,l0-1) &
-      + sx(1)*ezg(j+1,k,l0-1) &
-      + sx(2)*ezg(j+2,k,l0-1))*sy(0)
-      a = a + (sx(-1)*ezg(j-1,k+1,l0-1) &
-      + sx(0)*ezg(j,k+1,l0-1) &
-      + sx(1)*ezg(j+1,k+1,l0-1) &
-      + sx(2)*ezg(j+2,k+1,l0-1))*sy(1)
-      a = a + (sx(-1)*ezg(j-1,k+2,l0-1) &
-      + sx(0)*ezg(j,k+2,l0-1) &
-      + sx(1)*ezg(j+1,k+2,l0-1) &
-      + sx(2)*ezg(j+2,k+2,l0-1))*sy(2)
+      a = (sx(-1)*ezg(j-1, k-1, l0-1) + sx(0)*ezg(j, k-1, l0-1) + sx(1)*ezg(j+1, k-1, &
+      l0-1) + sx(2)*ezg(j+2, k-1, l0-1))*sy(-1)   
+      a = a + (sx(-1)*ezg(j-1, k, l0-1) + sx(0)*ezg(j, k, l0-1) + sx(1)*ezg(j+1, k,   &
+      l0-1) + sx(2)*ezg(j+2, k, l0-1))*sy(0)   
+      a = a + (sx(-1)*ezg(j-1, k+1, l0-1) + sx(0)*ezg(j, k+1, l0-1) + sx(1)*ezg(j+1,  &
+      k+1, l0-1) + sx(2)*ezg(j+2, k+1, l0-1))*sy(1)   
+      a = a + (sx(-1)*ezg(j-1, k+2, l0-1) + sx(0)*ezg(j, k+2, l0-1) + sx(1)*ezg(j+1,  &
+      k+2, l0-1) + sx(2)*ezg(j+2, k+2, l0-1))*sy(2)   
       ez(nn) = ez(nn) + a*sz0(-1)
-      a = (sx(-1)*ezg(j-1,k-1,l0) &
-      + sx(0)*ezg(j,k-1,l0) &
-      + sx(1)*ezg(j+1,k-1,l0) &
-      + sx(2)*ezg(j+2,k-1,l0))*sy(-1)
-      a = a + (sx(-1)*ezg(j-1,k,l0) &
-      + sx(0)*ezg(j,k,l0) &
-      + sx(1)*ezg(j+1,k,l0) &
-      + sx(2)*ezg(j+2,k,l0))*sy(0)
-      a = a + (sx(-1)*ezg(j-1,k+1,l0) &
-      + sx(0)*ezg(j,k+1,l0) &
-      + sx(1)*ezg(j+1,k+1,l0) &
-      + sx(2)*ezg(j+2,k+1,l0))*sy(1)
-      a = a + (sx(-1)*ezg(j-1,k+2,l0) &
-      + sx(0)*ezg(j,k+2,l0) &
-      + sx(1)*ezg(j+1,k+2,l0) &
-      + sx(2)*ezg(j+2,k+2,l0))*sy(2)
+      a = (sx(-1)*ezg(j-1, k-1, l0) + sx(0)*ezg(j, k-1, l0) + sx(1)*ezg(j+1, k-1, l0) &
+      + sx(2)*ezg(j+2, k-1, l0))*sy(-1)   
+      a = a + (sx(-1)*ezg(j-1, k, l0) + sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k, l0) + &
+      sx(2)*ezg(j+2, k, l0))*sy(0)   
+      a = a + (sx(-1)*ezg(j-1, k+1, l0) + sx(0)*ezg(j, k+1, l0) + sx(1)*ezg(j+1, k+1, &
+      l0) + sx(2)*ezg(j+2, k+1, l0))*sy(1)   
+      a = a + (sx(-1)*ezg(j-1, k+2, l0) + sx(0)*ezg(j, k+2, l0) + sx(1)*ezg(j+1, k+2, &
+      l0) + sx(2)*ezg(j+2, k+2, l0))*sy(2)   
       ez(nn) = ez(nn) + a*sz0(0)
-      a = (sx(-1)*ezg(j-1,k-1,l0+1) &
-      + sx(0)*ezg(j,k-1,l0+1) &
-      + sx(1)*ezg(j+1,k-1,l0+1) &
-      + sx(2)*ezg(j+2,k-1,l0+1))*sy(-1)
-      a = a + (sx(-1)*ezg(j-1,k,l0+1) &
-      + sx(0)*ezg(j,k,l0+1) &
-      + sx(1)*ezg(j+1,k,l0+1) &
-      + sx(2)*ezg(j+2,k,l0+1))*sy(0)
-      a = a + (sx(-1)*ezg(j-1,k+1,l0+1) &
-      + sx(0)*ezg(j,k+1,l0+1) &
-      + sx(1)*ezg(j+1,k+1,l0+1) &
-      + sx(2)*ezg(j+2,k+1,l0+1))*sy(1)
-      a = a + (sx(-1)*ezg(j-1,k+2,l0+1) &
-      + sx(0)*ezg(j,k+2,l0+1) &
-      + sx(1)*ezg(j+1,k+2,l0+1) &
-      + sx(2)*ezg(j+2,k+2,l0+1))*sy(2)
+      a = (sx(-1)*ezg(j-1, k-1, l0+1) + sx(0)*ezg(j, k-1, l0+1) + sx(1)*ezg(j+1, k-1, &
+      l0+1) + sx(2)*ezg(j+2, k-1, l0+1))*sy(-1)   
+      a = a + (sx(-1)*ezg(j-1, k, l0+1) + sx(0)*ezg(j, k, l0+1) + sx(1)*ezg(j+1, k,   &
+      l0+1) + sx(2)*ezg(j+2, k, l0+1))*sy(0)   
+      a = a + (sx(-1)*ezg(j-1, k+1, l0+1) + sx(0)*ezg(j, k+1, l0+1) + sx(1)*ezg(j+1,  &
+      k+1, l0+1) + sx(2)*ezg(j+2, k+1, l0+1))*sy(1)   
+      a = a + (sx(-1)*ezg(j-1, k+2, l0+1) + sx(0)*ezg(j, k+2, l0+1) + sx(1)*ezg(j+1,  &
+      k+2, l0+1) + sx(2)*ezg(j+2, k+2, l0+1))*sy(2)   
       ez(nn) = ez(nn) + a*sz0(1)
       
       ! Compute Bx on particle
-      a = (sx(-1)*bxg(j-1,k0-1,l0-1) &
-      + sx(0)*bxg(j,k0-1,l0-1) &
-      + sx(1)*bxg(j+1,k0-1,l0-1) &
-      + sx(2)*bxg(j+2,k0-1,l0-1))*sy0(-1)
-      a = a + (sx(-1)*bxg(j-1,k0,l0-1) &
-      + sx(0)*bxg(j,k0,l0-1) &
-      + sx(1)*bxg(j+1,k0,l0-1) &
-      + sx(2)*bxg(j+2,k0,l0-1))*sy0(0)
-      a = a + (sx(-1)*bxg(j-1,k0+1,l0-1) &
-      + sx(0)*bxg(j,k0+1,l0-1) &
-      + sx(1)*bxg(j+1,k0+1,l0-1) &
-      + sx(2)*bxg(j+2,k0+1,l0-1))*sy0(1)
+      a = (sx(-1)*bxg(j-1, k0-1, l0-1) + sx(0)*bxg(j, k0-1, l0-1) + sx(1)*bxg(j+1,    &
+      k0-1, l0-1) + sx(2)*bxg(j+2, k0-1, l0-1))*sy0(-1)   
+      a = a + (sx(-1)*bxg(j-1, k0, l0-1) + sx(0)*bxg(j, k0, l0-1) + sx(1)*bxg(j+1,    &
+      k0, l0-1) + sx(2)*bxg(j+2, k0, l0-1))*sy0(0)   
+      a = a + (sx(-1)*bxg(j-1, k0+1, l0-1) + sx(0)*bxg(j, k0+1, l0-1) +               &
+      sx(1)*bxg(j+1, k0+1, l0-1) + sx(2)*bxg(j+2, k0+1, l0-1))*sy0(1)   
       bx(nn) = bx(nn) + a*sz0(-1)
-      a = (sx(-1)*bxg(j-1,k0-1,l0) &
-      + sx(0)*bxg(j,k0-1,l0) &
-      + sx(1)*bxg(j+1,k0-1,l0) &
-      + sx(2)*bxg(j+2,k0-1,l0))*sy0(-1)
-      a = a + (sx(-1)*bxg(j-1,k0,l0) &
-      + sx(0)*bxg(j,k0,l0) &
-      + sx(1)*bxg(j+1,k0,l0) &
-      + sx(2)*bxg(j+2,k0,l0))*sy0(0)
-      a = a + (sx(-1)*bxg(j-1,k0+1,l0) &
-      + sx(0)*bxg(j,k0+1,l0) &
-      + sx(1)*bxg(j+1,k0+1,l0) &
-      + sx(2)*bxg(j+2,k0+1,l0))*sy0(1)
+      a = (sx(-1)*bxg(j-1, k0-1, l0) + sx(0)*bxg(j, k0-1, l0) + sx(1)*bxg(j+1, k0-1,  &
+      l0) + sx(2)*bxg(j+2, k0-1, l0))*sy0(-1)   
+      a = a + (sx(-1)*bxg(j-1, k0, l0) + sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0,    &
+      l0) + sx(2)*bxg(j+2, k0, l0))*sy0(0)   
+      a = a + (sx(-1)*bxg(j-1, k0+1, l0) + sx(0)*bxg(j, k0+1, l0) + sx(1)*bxg(j+1,    &
+      k0+1, l0) + sx(2)*bxg(j+2, k0+1, l0))*sy0(1)   
       bx(nn) = bx(nn) + a*sz0(0)
-      a = (sx(-1)*bxg(j-1,k0-1,l0+1) &
-      + sx(0)*bxg(j,k0-1,l0+1) &
-      + sx(1)*bxg(j+1,k0-1,l0+1) &
-      + sx(2)*bxg(j+2,k0-1,l0+1))*sy0(-1)
-      a = a + (sx(-1)*bxg(j-1,k0,l0+1) &
-      + sx(0)*bxg(j,k0,l0+1) &
-      + sx(1)*bxg(j+1,k0,l0+1) &
-      + sx(2)*bxg(j+2,k0,l0+1))*sy0(0)
-      a = a + (sx(-1)*bxg(j-1,k0+1,l0+1) &
-      + sx(0)*bxg(j,k0+1,l0+1) &
-      + sx(1)*bxg(j+1,k0+1,l0+1) &
-      + sx(2)*bxg(j+2,k0+1,l0+1))*sy0(1)
+      a = (sx(-1)*bxg(j-1, k0-1, l0+1) + sx(0)*bxg(j, k0-1, l0+1) + sx(1)*bxg(j+1,    &
+      k0-1, l0+1) + sx(2)*bxg(j+2, k0-1, l0+1))*sy0(-1)   
+      a = a + (sx(-1)*bxg(j-1, k0, l0+1) + sx(0)*bxg(j, k0, l0+1) + sx(1)*bxg(j+1,    &
+      k0, l0+1) + sx(2)*bxg(j+2, k0, l0+1))*sy0(0)   
+      a = a + (sx(-1)*bxg(j-1, k0+1, l0+1) + sx(0)*bxg(j, k0+1, l0+1) +               &
+      sx(1)*bxg(j+1, k0+1, l0+1) + sx(2)*bxg(j+2, k0+1, l0+1))*sy0(1)   
       bx(nn) = bx(nn) + a*sz0(1)
       
       ! Compute By on particle
-      a = (sx0(-1)*byg(j0-1,k-1,l0-1) &
-      + sx0(0)*byg(j0,k-1,l0-1) &
-      + sx0(1)*byg(j0+1,k-1,l0-1))*sy(-1)
-      a = a + (sx0(-1)*byg(j0-1,k,l0-1) &
-      + sx0(0)*byg(j0,k,l0-1) &
-      + sx0(1)*byg(j0+1,k,l0-1))*sy(0)
-      a = a + (sx0(-1)*byg(j0-1,k+1,l0-1) &
-      + sx0(0)*byg(j0,k+1,l0-1) &
-      + sx0(1)*byg(j0+1,k+1,l0-1))*sy(1)
-      a = a + (sx0(-1)*byg(j0-1,k+2,l0-1) &
-      + sx0(0)*byg(j0,k+2,l0-1) &
-      + sx0(1)*byg(j0+1,k+2,l0-1))*sy(2)
+      a = (sx0(-1)*byg(j0-1, k-1, l0-1) + sx0(0)*byg(j0, k-1, l0-1) +                 &
+      sx0(1)*byg(j0+1, k-1, l0-1))*sy(-1)  
+      a = a + (sx0(-1)*byg(j0-1, k, l0-1) + sx0(0)*byg(j0, k, l0-1) +                 &
+      sx0(1)*byg(j0+1, k, l0-1))*sy(0)  
+      a = a + (sx0(-1)*byg(j0-1, k+1, l0-1) + sx0(0)*byg(j0, k+1, l0-1) +             &
+      sx0(1)*byg(j0+1, k+1, l0-1))*sy(1)  
+      a = a + (sx0(-1)*byg(j0-1, k+2, l0-1) + sx0(0)*byg(j0, k+2, l0-1) +             &
+      sx0(1)*byg(j0+1, k+2, l0-1))*sy(2)  
       by(nn) = by(nn) + a*sz0(-1)
-      a = (sx0(-1)*byg(j0-1,k-1,l0) &
-      + sx0(0)*byg(j0,k-1,l0) &
-      + sx0(1)*byg(j0+1,k-1,l0))*sy(-1)
-      a = a + (sx0(-1)*byg(j0-1,k,l0) &
-      + sx0(0)*byg(j0,k,l0) &
-      + sx0(1)*byg(j0+1,k,l0))*sy(0)
-      a = a + (sx0(-1)*byg(j0-1,k+1,l0) &
-      + sx0(0)*byg(j0,k+1,l0) &
-      + sx0(1)*byg(j0+1,k+1,l0))*sy(1)
-      a = a + (sx0(-1)*byg(j0-1,k+2,l0) &
-      + sx0(0)*byg(j0,k+2,l0) &
-      + sx0(1)*byg(j0+1,k+2,l0))*sy(2)
+      a = (sx0(-1)*byg(j0-1, k-1, l0) + sx0(0)*byg(j0, k-1, l0) + sx0(1)*byg(j0+1,    &
+      k-1, l0))*sy(-1)  
+      a = a + (sx0(-1)*byg(j0-1, k, l0) + sx0(0)*byg(j0, k, l0) + sx0(1)*byg(j0+1, k, &
+      l0))*sy(0)  
+      a = a + (sx0(-1)*byg(j0-1, k+1, l0) + sx0(0)*byg(j0, k+1, l0) +                 &
+      sx0(1)*byg(j0+1, k+1, l0))*sy(1)  
+      a = a + (sx0(-1)*byg(j0-1, k+2, l0) + sx0(0)*byg(j0, k+2, l0) +                 &
+      sx0(1)*byg(j0+1, k+2, l0))*sy(2)  
       by(nn) = by(nn) + a*sz0(0)
-      a = (sx0(-1)*byg(j0-1,k-1,l0+1) &
-      + sx0(0)*byg(j0,k-1,l0+1) &
-      + sx0(1)*byg(j0+1,k-1,l0+1))*sy(-1)
-      a = a + (sx0(-1)*byg(j0-1,k,l0+1) &
-      + sx0(0)*byg(j0,k,l0+1) &
-      + sx0(1)*byg(j0+1,k,l0+1))*sy(0)
-      a = a + (sx0(-1)*byg(j0-1,k+1,l0+1) &
-      + sx0(0)*byg(j0,k+1,l0+1) &
-      + sx0(1)*byg(j0+1,k+1,l0+1))*sy(1)
-      a = a + (sx0(-1)*byg(j0-1,k+2,l0+1) &
-      + sx0(0)*byg(j0,k+2,l0+1) &
-      + sx0(1)*byg(j0+1,k+2,l0+1))*sy(2)
+      a = (sx0(-1)*byg(j0-1, k-1, l0+1) + sx0(0)*byg(j0, k-1, l0+1) +                 &
+      sx0(1)*byg(j0+1, k-1, l0+1))*sy(-1)  
+      a = a + (sx0(-1)*byg(j0-1, k, l0+1) + sx0(0)*byg(j0, k, l0+1) +                 &
+      sx0(1)*byg(j0+1, k, l0+1))*sy(0)  
+      a = a + (sx0(-1)*byg(j0-1, k+1, l0+1) + sx0(0)*byg(j0, k+1, l0+1) +             &
+      sx0(1)*byg(j0+1, k+1, l0+1))*sy(1)  
+      a = a + (sx0(-1)*byg(j0-1, k+2, l0+1) + sx0(0)*byg(j0, k+2, l0+1) +             &
+      sx0(1)*byg(j0+1, k+2, l0+1))*sy(2)  
       by(nn) = by(nn) + a*sz0(1)
       
       ! Compute Bz on particle
-      a = (sx0(-1)*bzg(j0-1,k0-1,l-1) &
-      + sx0(0)*bzg(j0,k0-1,l-1) &
-      + sx0(1)*bzg(j0+1,k0-1,l-1))*sy0(-1)
-      a = a + (sx0(-1)*bzg(j0-1,k0,l-1) &
-      + sx0(0)*bzg(j0,k0,l-1) &
-      + sx0(1)*bzg(j0+1,k0,l-1))*sy0(0)
-      a = a + (sx0(-1)*bzg(j0-1,k0+1,l-1) &
-      + sx0(0)*bzg(j0,k0+1,l-1) &
-      + sx0(1)*bzg(j0+1,k0+1,l-1))*sy0(1)
+      a = (sx0(-1)*bzg(j0-1, k0-1, l-1) + sx0(0)*bzg(j0, k0-1, l-1) +                 &
+      sx0(1)*bzg(j0+1, k0-1, l-1))*sy0(-1)  
+      a = a + (sx0(-1)*bzg(j0-1, k0, l-1) + sx0(0)*bzg(j0, k0, l-1) +                 &
+      sx0(1)*bzg(j0+1, k0, l-1))*sy0(0)  
+      a = a + (sx0(-1)*bzg(j0-1, k0+1, l-1) + sx0(0)*bzg(j0, k0+1, l-1) +             &
+      sx0(1)*bzg(j0+1, k0+1, l-1))*sy0(1)  
       bz(nn) = bz(nn) + a*sz(-1)
-      a = (sx0(-1)*bzg(j0-1,k0-1,l) &
-      + sx0(0)*bzg(j0,k0-1,l) &
-      + sx0(1)*bzg(j0+1,k0-1,l))*sy0(-1)
-      a = a + (sx0(-1)*bzg(j0-1,k0,l) &
-      + sx0(0)*bzg(j0,k0,l) &
-      + sx0(1)*bzg(j0+1,k0,l))*sy0(0)
-      a = a + (sx0(-1)*bzg(j0-1,k0+1,l) &
-      + sx0(0)*bzg(j0,k0+1,l) &
-      + sx0(1)*bzg(j0+1,k0+1,l))*sy0(1)
+      a = (sx0(-1)*bzg(j0-1, k0-1, l) + sx0(0)*bzg(j0, k0-1, l) + sx0(1)*bzg(j0+1,    &
+      k0-1, l))*sy0(-1)  
+      a = a + (sx0(-1)*bzg(j0-1, k0, l) + sx0(0)*bzg(j0, k0, l) + sx0(1)*bzg(j0+1,    &
+      k0, l))*sy0(0)  
+      a = a + (sx0(-1)*bzg(j0-1, k0+1, l) + sx0(0)*bzg(j0, k0+1, l) +                 &
+      sx0(1)*bzg(j0+1, k0+1, l))*sy0(1)  
       bz(nn) = bz(nn) + a*sz(0)
-      a = (sx0(-1)*bzg(j0-1,k0-1,l+1) &
-      + sx0(0)*bzg(j0,k0-1,l+1) &
-      + sx0(1)*bzg(j0+1,k0-1,l+1))*sy0(-1)
-      a = a + (sx0(-1)*bzg(j0-1,k0,l+1) &
-      + sx0(0)*bzg(j0,k0,l+1) &
-      + sx0(1)*bzg(j0+1,k0,l+1))*sy0(0)
-      a = a + (sx0(-1)*bzg(j0-1,k0+1,l+1) &
-      + sx0(0)*bzg(j0,k0+1,l+1) &
-      + sx0(1)*bzg(j0+1,k0+1,l+1))*sy0(1)
+      a = (sx0(-1)*bzg(j0-1, k0-1, l+1) + sx0(0)*bzg(j0, k0-1, l+1) +                 &
+      sx0(1)*bzg(j0+1, k0-1, l+1))*sy0(-1)  
+      a = a + (sx0(-1)*bzg(j0-1, k0, l+1) + sx0(0)*bzg(j0, k0, l+1) +                 &
+      sx0(1)*bzg(j0+1, k0, l+1))*sy0(0)  
+      a = a + (sx0(-1)*bzg(j0-1, k0+1, l+1) + sx0(0)*bzg(j0, k0+1, l+1) +             &
+      sx0(1)*bzg(j0+1, k0+1, l+1))*sy0(1)  
       bz(nn) = bz(nn) + a*sz(1)
-      a = (sx0(-1)*bzg(j0-1,k0-1,l+2) &
-      + sx0(0)*bzg(j0,k0-1,l+2) &
-      + sx0(1)*bzg(j0+1,k0-1,l+2))*sy0(-1)
-      a = a + (sx0(-1)*bzg(j0-1,k0,l+2) &
-      + sx0(0)*bzg(j0,k0,l+2) &
-      + sx0(1)*bzg(j0+1,k0,l+2))*sy0(0)
-      a = a + (sx0(-1)*bzg(j0-1,k0+1,l+2) &
-      + sx0(0)*bzg(j0,k0+1,l+2) &
-      + sx0(1)*bzg(j0+1,k0+1,l+2))*sy0(1)
+      a = (sx0(-1)*bzg(j0-1, k0-1, l+2) + sx0(0)*bzg(j0, k0-1, l+2) +                 &
+      sx0(1)*bzg(j0+1, k0-1, l+2))*sy0(-1)  
+      a = a + (sx0(-1)*bzg(j0-1, k0, l+2) + sx0(0)*bzg(j0, k0, l+2) +                 &
+      sx0(1)*bzg(j0+1, k0, l+2))*sy0(0)  
+      a = a + (sx0(-1)*bzg(j0-1, k0+1, l+2) + sx0(0)*bzg(j0, k0+1, l+2) +             &
+      sx0(1)*bzg(j0+1, k0+1, l+2))*sy0(1)  
       bz(nn) = bz(nn) + a*sz(2)
       
       
@@ -2474,98 +2313,83 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     SELECT CASE (particle_pusher)
       !! Vay pusher -- Full push
     CASE (1_idp)
-      CALL pxr_ebcancelpush3d(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1), &
-      uzp(ip:ip+blocksize-1), &
-      gaminv(ip:ip+blocksize-1), &
-      ex(ip:ip+blocksize-1),  &
-      ey(ip:ip+blocksize-1),  &
-      ez(ip:ip+blocksize-1),  &
-      bx(ip:ip+blocksize-1),  &
-      by(ip:ip+blocksize-1),  &
-      bz(ip:ip+blocksize-1),q,m,dt,0_idp)
+      CALL pxr_ebcancelpush3d(blocksize, uxp(ip:ip+blocksize-1),                      &
+      uyp(ip:ip+blocksize-1), uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1),      &
+      ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
+      bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt,  &
+      0_idp)         
       
       !! Boris pusher -- Full push
     CASE DEFAULT
       
       !! Push momentum using the Boris method in a single subroutine
       
-      CALL pxr_boris_push_u_3d(blocksize, &
-      uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),uzp(ip:ip+blocksize-1), &
-      gaminv(ip:ip+blocksize-1), &
-      ex(ip:ip+blocksize-1),ey(ip:ip+blocksize-1),ez(ip:ip+blocksize-1),&
-      bx(ip:ip+blocksize-1),by(ip:ip+blocksize-1),bz(ip:ip+blocksize-1),&
-      q,m,dt)
+      CALL pxr_boris_push_u_3d(blocksize, uxp(ip:ip+blocksize-1),                     &
+      uyp(ip:ip+blocksize-1), uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1),      &
+      ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
+      bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt)     
       
       !! Push momentum using the Boris method with several subroutines
       
       ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
       !                                  uyp(ip:ip+blocksize-1), &
       !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1),  &
-      !                                  ey(ip:ip+blocksize-1),  &
-      !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+      !                                  ex(ip:ip+blocksize-1), &
+      !                                  ey(ip:ip+blocksize-1), &
+      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
       
       ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1),   &
-      gaminv(ip:ip+blocksize-1))
+      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
+      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
       
       ! ___ Push with B ___
-      !       CALL pxr_bpush_v(blocksize,uxp(ip:ip+blocksize-1),   &
-      !                                  uyp(ip:ip+blocksize-1),   &
-      !                                  uzp(ip:ip+blocksize-1),   &
-      !                                  gaminv(ip:ip+blocksize-1),&
-      !                                  bx(ip:ip+blocksize-1),    &
-      !                                  by(ip:ip+blocksize-1),    &
-      !                                  bz(ip:ip+blocksize-1),q,m,dt)
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize,uxp(ip:ip+blocksize-1), &
+      !       CALL pxr_bpush_v(blocksize, uxp(ip:ip+blocksize-1), &
       !                                  uyp(ip:ip+blocksize-1), &
       !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1),  &
-      !                                  ey(ip:ip+blocksize-1),  &
-      !                                  ez(ip:ip+blocksize-1),q,m,0.5_num*dt)
+      !                                  gaminv(ip:ip+blocksize-1), &
+      !                                  bx(ip:ip+blocksize-1), &
+      !                                  by(ip:ip+blocksize-1), &
+      !                                  bz(ip:ip+blocksize-1), q, m, dt)
+      
+      ! ___ Push with E ___
+      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
+      !                                  uyp(ip:ip+blocksize-1), &
+      !                                  uzp(ip:ip+blocksize-1), &
+      !                                  ex(ip:ip+blocksize-1), &
+      !                                  ey(ip:ip+blocksize-1), &
+      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
       
       ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize,uxp(ip:ip+blocksize-1), &
-      uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1),   &
-      gaminv(ip:ip+blocksize-1))
+      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
+      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
       
     END SELECT
     
     ! ___ Update position ___
-    CALL pxr_pushxyz(blocksize,xp(ip:ip+blocksize-1),  &
-    yp(ip:ip+blocksize-1),  &
-    zp(ip:ip+blocksize-1),  &
-    uxp(ip:ip+blocksize-1), &
-    uyp(ip:ip+blocksize-1),  &
-    uzp(ip:ip+blocksize-1),  &
-    gaminv(ip:ip+blocksize-1),dt)
+    CALL pxr_pushxyz(blocksize, xp(ip:ip+blocksize-1), yp(ip:ip+blocksize-1),         &
+    zp(ip:ip+blocksize-1), uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),            &
+    uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1), dt)      
     ! ___ Push with E + gamma ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,ex,ey,ez)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, ex, ey, ez)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       uxp(nn) = uxp(nn) + ex(nn)*const1
     !       uyp(nn) = uyp(nn) + ey(nn)*const1
     !       uzp(nn) = uzp(nn) + ez(nn)*const1
@@ -2583,22 +2407,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Push with B ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       const2 = gaminv(nn)*const1
     !       tx = bx(nn)*const2
     !       ty = by(nn)*const2
@@ -2623,24 +2447,24 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Push with E + gamma ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,ex,ey,ez)
-    !       !IBM* ALIGN(64,bx,by,bz)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, ex, ey, ez)
+    !       !IBM* ALIGN(64, bx, by, bz)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       uxp(nn) = uxp(nn) + ex(nn)*const1
     !       uyp(nn) = uyp(nn) + ey(nn)*const1
     !       uzp(nn) = uzp(nn) + ez(nn)*const1
@@ -2657,22 +2481,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np,xp,yp,zp,uxp,uyp,uzp,ga
     
     ! ___ Update position ___
     ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED xp:64,yp:64,zp:64
-    !       !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
+    !       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
     !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp,yp,zp,ex,ey,ez,bx,by,bz,uxp,uyp,uzp,gaminv)
+    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
     !       !DIR$ SIMD VECREMAINDER
     ! #elif  defined _OPENMP && _OPENMP>=201307
     ! #ifndef NOVEC
     !   !$OMP SIMD
     ! #endif
     ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64,xp,yp,zp)
-    !       !IBM* ALIGN(64,uxp,uyp,uzp)
-    !       !IBM* ALIGN(64,gaminv)
+    !       !IBM* ALIGN(64, xp, yp, zp)
+    !       !IBM* ALIGN(64, uxp, uyp, uzp)
+    !       !IBM* ALIGN(64, gaminv)
     !       !IBM* SIMD_LEVEL
     ! #endif
-    !     DO nn=ip,ip+MIN(lvect,np-ip+1)-1
+    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
     !       const2 = gaminv(nn)*dtt
     !       xp(nn) = xp(nn) + uxp(nn)*const2
     !       yp(nn) = yp(nn) + uyp(nn)*const2

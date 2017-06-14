@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -26,8 +25,7 @@
 
 ! ______________________________________________________________________________
 !> @brief
-!> Push the particle velocity with E and B fields, assuming Vmid = 0.5*(Vold+Vnew),
-!> solving directly for the new gamma.
+!> Push the particle velocity with E and B fields, assuming Vmid = 0.5*(Vold+Vnew), !> solving directly for the new gamma.
 !>
 !> @details
 !> This offers better cancellation of E+VxB than the Boris velocity push.
@@ -42,33 +40,32 @@
 !
 !>
 !> @param[in] np number of super-particles
-!> @param[in] uxp,uyp,uzp normalized momentum in each direction
+!> @param[in] uxp, uyp, uzp normalized momentum in each direction
 !> @param[in] gi
-!> @param[in] exp,eyp,ezp particle electric field values in each direction
-!> @param[in] bxp,byp,bzp particle electric field values in each direction
+!> @param[in] exp, eyp, ezp particle electric field values in each direction
+!> @param[in] bxp, byp, bzp particle electric field values in each direction
 !> @param[in] q charge
 !> @param[in] m masse
 !> @param[in] dt time step
 !> @param[in] which algorithm
 !
-SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
-  exp,eyp,ezp,bxp,byp,bzp,&
-  q,m,dt,which)
+SUBROUTINE pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, &
+m, dt, which)  
   ! ______________________________________________________________________________
   
   USE constants
   
   ! Input/Ooutput parameters
-  INTEGER(idp), INTENT(IN) :: np,which
-  REAL(num), INTENT(INOUT) :: uxp(np),uyp(np),uzp(np),gi(np)
-  REAL(num), INTENT(IN)    :: exp(np),eyp(np),ezp(np),bxp(np),byp(np),bzp(np)
-  REAL(num), INTENT(IN)    :: q,m,dt
+  INTEGER(idp), INTENT(IN) :: np, which
+  REAL(num), INTENT(INOUT) :: uxp(np), uyp(np), uzp(np), gi(np)
+  REAL(num), INTENT(IN)    :: exp(np), eyp(np), ezp(np), bxp(np), byp(np), bzp(np)
+  REAL(num), INTENT(IN)    :: q, m, dt
   
   ! Local parameters
   INTEGER(idp) :: ip
-  REAL(num)    :: const,bconst,s,gisq,invclight,invclightsq,gprsq
-  REAL(num)    :: tx,ty,tz,tu,uxpr,uypr,uzpr,bg,vx,vy,vz
-  REAL(num)    :: taux,tauy,tauz,tausq,ust,sigma
+  REAL(num)    :: const, bconst, s, gisq, invclight, invclightsq, gprsq
+  REAL(num)    :: tx, ty, tz, tu, uxpr, uypr, uzpr, bg, vx, vy, vz
+  REAL(num)    :: taux, tauy, tauz, tausq, ust, sigma
   
   invclight   = 1./clight
   invclightsq = 1./(clight*clight)
@@ -80,15 +77,15 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     
 #ifndef NOVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
-    !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
+    !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !DIR$ ASSUME_ALIGNED exp:64, eyp:64, ezp:64
+    !DIR$ ASSUME_ALIGNED bxp:64, byp:64, bzp:64
     !DIR$ ASSUME_ALIGNED gi:64
 #elif defined __IBMBGQ__
-    !IBM* ALIGN(64,uxp,uyp,uzp)
-    !IBM* ALIGN(64,exp,eyp,ezp)
-    !IBM* ALIGN(64,bxp,byp,bzp)
-    !IBM* ALIGN(64,gi)
+    !IBM* ALIGN(64, uxp, uyp, uzp)
+    !IBM* ALIGN(64, exp, eyp, ezp)
+    !IBM* ALIGN(64, bxp, byp, bzp)
+    !IBM* ALIGN(64, gi)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP SIMD
@@ -98,13 +95,13 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     !DIR$ SIMD
 #endif
 #endif
-    DO ip=1,np
+    DO ip=1, np
       ! --- get tau
       taux = bconst*bxp(ip)
       tauy = bconst*byp(ip)
       tauz = bconst*bzp(ip)
       tausq = taux*taux+tauy*tauy+tauz*tauz
-      ! --- get U',gamma'^2
+      ! --- get U', gamma'^2
       uxpr = uxp(ip) + const*exp(ip) + (uyp(ip)*tauz-uzp(ip)*tauy)*gi(ip)
       uypr = uyp(ip) + const*eyp(ip) + (uzp(ip)*taux-uxp(ip)*tauz)*gi(ip)
       uzpr = uzp(ip) + const*ezp(ip) + (uxp(ip)*tauy-uyp(ip)*taux)*gi(ip)
@@ -115,7 +112,7 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
       sigma = gprsq-tausq
       gisq = 2._num/(sigma+sqrt(sigma*sigma+4._num*(tausq+ust*ust)))
       gi(ip) = sqrt(gisq)
-      !       --- get t,s
+      !       --- get t, s
       bg = bconst*gi(ip)
       tx = bg*bxp(ip)
       ty = bg*byp(ip)
@@ -143,15 +140,15 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     
 #ifndef NOVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED uxp:64,uyp:64,uzp:64
-    !DIR$ ASSUME_ALIGNED exp:64,eyp:64,ezp:64
-    !DIR$ ASSUME_ALIGNED bxp:64,byp:64,bzp:64
+    !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !DIR$ ASSUME_ALIGNED exp:64, eyp:64, ezp:64
+    !DIR$ ASSUME_ALIGNED bxp:64, byp:64, bzp:64
     !DIR$ ASSUME_ALIGNED gi:64
 #elif defined __IBMBGQ__
-    !IBM* ALIGN(64,uxp,uyp,uzp)
-    !IBM* ALIGN(64,exp,eyp,ezp)
-    !IBM* ALIGN(64,bxp,byp,bzp)
-    !IBM* ALIGN(64,gi)
+    !IBM* ALIGN(64, uxp, uyp, uzp)
+    !IBM* ALIGN(64, exp, eyp, ezp)
+    !IBM* ALIGN(64, bxp, byp, bzp)
+    !IBM* ALIGN(64, gi)
 #endif
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP SIMD
@@ -161,7 +158,7 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     !DIR$ SIMD
 #endif
 #endif
-    DO ip=1,np
+    DO ip=1, np
       ! --- get new U
       vx = uxp(ip)*gi(ip)
       vy = uyp(ip)*gi(ip)
@@ -169,7 +166,8 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
       uxp(ip) = uxp(ip) + const*( exp(ip) + vy*bzp(ip)-vz*byp(ip) )
       uyp(ip) = uyp(ip) + const*( eyp(ip) + vz*bxp(ip)-vx*bzp(ip) )
       uzp(ip) = uzp(ip) + const*( ezp(ip) + vx*byp(ip)-vy*bxp(ip) )
-      gi(ip) = 1./sqrt(1.+(uxp(ip)*uxp(ip)+uyp(ip)*uyp(ip)+uzp(ip)*uzp(ip))*invclightsq)
+      gi(ip) =                                                                        &
+      1./sqrt(1.+(uxp(ip)*uxp(ip)+uyp(ip)*uyp(ip)+uzp(ip)*uzp(ip))*invclightsq)
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -193,7 +191,7 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
     !DIR$ SIMD
 #endif
     
-    DO ip=1,np
+    DO ip=1, np
       !     --- get U'
       uxpr = uxp(ip) + const*exp(ip)
       uypr = uyp(ip) + const*eyp(ip)
@@ -210,7 +208,7 @@ SUBROUTINE pxr_ebcancelpush3d(np,uxp,uyp,uzp,gi,&
       sigma = gprsq-tausq
       gisq = 2._num/(sigma+sqrt(sigma*sigma+4._num*(tausq+ust*ust)))
       gi(ip) = sqrt(gisq)
-      !       --- get t,s
+      !       --- get t, s
       bg = bconst*gi(ip)
       tx = bg*bxp(ip)
       ty = bg*byp(ip)

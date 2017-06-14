@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -53,47 +52,43 @@
 !> Creation 2016
 !
 !> @param[in] np Number of particles
-!> @param[in] xp,zp particle position arrays
-!> @param[inout] ex,ey,ez electric field particle arrays
-!> @param[in] xmin,zmin tile boundaries
-!> @param[in] dx,dz space steps
-!> @param[in] nx,nz space discretization
+!> @param[in] xp, zp particle position arrays
+!> @param[inout] ex, ey, ez electric field particle arrays
+!> @param[in] xmin, zmin tile boundaries
+!> @param[in] dx, dz space steps
+!> @param[in] nx, nz space discretization
 !> @param[in] nxguard, nzguard number of guard cells
-!> @param[in] exg, eyg,ezg field arrays
+!> @param[in] exg, eyg, ezg field arrays
 !> @param[in] lvect vector size for the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_gete2dxz_n_energy_conserving(          &
-  np,xp,yp,zp,ex,ey,ez,xmin,zmin,dx,dz,nox,noz,       &
-  exg,exg_nguard,exg_nvalid,                          &
-  eyg,eyg_nguard,eyg_nvalid,                          &
-  ezg,ezg_nguard,ezg_nvalid,                          &
-  l4symtry,l_2drz,l_lower_order_in_v) !#do not wrap
+subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, zmin,  &
+dx, dz, nox, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,      &
+ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
   ! ______________________________________________________________________________
   use constants
   implicit none
   
-  integer(idp)             :: np,nox,noz
-  integer(idp), intent(IN) :: exg_nguard(2),exg_nvalid(2),&
-  eyg_nguard(2),eyg_nvalid(2),&
-  ezg_nguard(2),ezg_nvalid(2)
-  real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-  logical(idp)             :: l4symtry,l_2drz,l_lower_order_in_v
-  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,1, &
-  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
-  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,1, &
-  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
-  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,1, &
-  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
-  real(num)                :: xmin,zmin,dx,dz,costheta,sintheta
-  integer(idp)             :: ip, j, l, ixmin, ixmax, izmin, izmax, &
-  ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
-  real(num) :: dxi, dzi, x, y, z, r, xint, zint, &
-  xintsq,oxint,zintsq,ozint,oxintsq,ozintsq,signx
+  integer(idp)             :: np, nox, noz
+  integer(idp), intent(IN) :: exg_nguard(2), exg_nvalid(2), eyg_nguard(2),            &
+  eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)  
+  real(num), dimension(np) :: xp, yp, zp, ex, ey, ez
+  logical(idp)             :: l4symtry, l_2drz, l_lower_order_in_v
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
+  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1) 
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
+  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1) 
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, 1,        &
+  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1) 
+  real(num)                :: xmin, zmin, dx, dz, costheta, sintheta
+  integer(idp)             :: ip, j, l, ixmin, ixmax, izmin, izmax, ixmin0, ixmax0,   &
+  izmin0, izmax0, jj, ll, j0, l0 
+  real(num) :: dxi, dzi, x, y, z, r, xint, zint, xintsq, oxint, zintsq, ozint,        &
+  oxintsq, ozintsq, signx 
   real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-  real(num), dimension(:), allocatable :: sx0,sz0
-  real(num), parameter :: onesixth=1./6.,twothird=2./3.
+  real(num), dimension(:), allocatable :: sx0, sz0
+  real(num), parameter :: onesixth=1./6., twothird=2./3.
   
   dxi = 1./dx
   dzi = 1./dz
@@ -114,11 +109,11 @@ subroutine pxr_gete2dxz_n_energy_conserving(          &
     izmin0 = -int((noz)/2)
     izmax0 =  int((noz+1)/2)
   end if
-  allocate(sx0(ixmin0:ixmax0),sz0(izmin0:izmax0))
+  allocate(sx0(ixmin0:ixmax0), sz0(izmin0:izmax0))
   
   signx = 1.
   
-  do ip=1,np
+  do ip=1, np
     
     if (l_2drz) then
       x = xp(ip)
@@ -289,12 +284,14 @@ subroutine pxr_gete2dxz_n_energy_conserving(          &
     
     if (l_2drz) then
       
-      !          write(0,*) 'field gathering needs to be done for fstype=4 in EM-RZ'
+      !          write(0, *) 'field gathering needs to be done for fstype=4 in EM-RZ'
       !          stop
       do ll = izmin, izmax+1
         do jj = ixmin0, ixmax0
-          ex(ip) = ex(ip) + sz(ll)*sx0(jj)*(exg(j0+jj,1,l+ll)*costheta-eyg(j0+jj,1,l+ll)*sintheta)
-          ey(ip) = ey(ip) + sz(ll)*sx0(jj)*(exg(j0+jj,1,l+ll)*sintheta+eyg(j0+jj,1,l+ll)*costheta)
+          ex(ip) = ex(ip) + sz(ll)*sx0(jj)*(exg(j0+jj, 1, l+ll)*costheta-eyg(j0+jj,   &
+          1, l+ll)*sintheta)
+          ey(ip) = ey(ip) + sz(ll)*sx0(jj)*(exg(j0+jj, 1, l+ll)*sintheta+eyg(j0+jj,   &
+          1, l+ll)*costheta)
         end do
       end do
       
@@ -302,13 +299,13 @@ subroutine pxr_gete2dxz_n_energy_conserving(          &
       
       do ll = izmin, izmax+1
         do jj = ixmin0, ixmax0
-          ex(ip) = ex(ip) + sx0(jj)*sz(ll)*exg(j0+jj,1,l+ll)*signx
+          ex(ip) = ex(ip) + sx0(jj)*sz(ll)*exg(j0+jj, 1, l+ll)*signx
         end do
       end do
       
       do ll = izmin, izmax+1
         do jj = ixmin, ixmax+1
-          ey(ip) = ey(ip) + sx(jj)*sz(ll)*eyg(j+jj,1,l+ll)
+          ey(ip) = ey(ip) + sx(jj)*sz(ll)*eyg(j+jj, 1, l+ll)
         end do
       end do
       
@@ -316,12 +313,12 @@ subroutine pxr_gete2dxz_n_energy_conserving(          &
     
     do ll = izmin0, izmax0
       do jj = ixmin, ixmax+1
-        ez(ip) = ez(ip) + sx(jj)*sz0(ll)*ezg(j+jj,1,l0+ll)
+        ez(ip) = ez(ip) + sx(jj)*sz0(ll)*ezg(j+jj, 1, l0+ll)
       end do
     end do
     
   end do
-  deallocate(sx0,sz0)
+  deallocate(sx0, sz0)
   
   return
 end subroutine pxr_gete2dxz_n_energy_conserving
@@ -340,51 +337,46 @@ end subroutine pxr_gete2dxz_n_energy_conserving
 !> 12/01/2016
 !
 !> @param[in] np Number of particles
-!> @param[in] xp,zp particle position arrays
-!> @param[inout] ex,ey,ez electric field particle arrays
-!> @param[in] xmin,zmin tile boundaries
-!> @param[in] dx,dz space steps
-!> @param[in] nx,nz space discretization
+!> @param[in] xp, zp particle position arrays
+!> @param[inout] ex, ey, ez electric field particle arrays
+!> @param[in] xmin, zmin tile boundaries
+!> @param[in] dx, dz space steps
+!> @param[in] nx, nz space discretization
 !> @param[in] nxguard, nzguard number of guard cells
-!> @param[in] exg, eyg,ezg field arrays
-!> @param[in] nox,noz interpolation order
+!> @param[in] exg, eyg, ezg field arrays
+!> @param[in] nox, noz interpolation order
 !> @param[in] l4symtry
 !> @param[in] l_2drz use the 2d cylindrical geometry system
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_getb2dxz_n_energy_conserving(          &
-  np,xp,yp,zp,bx,by,bz,xmin,zmin,dx,dz,nox,noz,       &
-  bxg,bxg_nguard,bxg_nvalid,                          &
-  byg,byg_nguard,byg_nvalid,                          &
-  bzg,bzg_nguard,bzg_nvalid,                          &
-  l4symtry,l_2drz,l_lower_order_in_v) !#do not wrap
+subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, zmin,  &
+dx, dz, nox, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,      &
+bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
   ! ______________________________________________________________________________
   
   use constants
   implicit none
   
-  integer(idp) :: np,nox,noz
-  integer(idp), intent(IN)                :: bxg_nguard(2),bxg_nvalid(2),&
-  byg_nguard(2),byg_nvalid(2),&
-  bzg_nguard(2),bzg_nvalid(2)
-  real(num), dimension(np) :: xp,yp,zp,bx,by,bz
-  logical(idp) :: l4symtry,l_2drz,l_lower_order_in_v
-  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,1, &
-  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
-  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,1, &
-  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
-  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,1, &
-  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
-  real(num) :: xmin,zmin,dx,dz
-  integer(idp) :: ip, j, l, ixmin, ixmax, izmin, izmax, &
-  ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
-  real(num) :: dxi, dzi, x, y, z, xint, zint, &
-  xintsq,oxint,zintsq,ozint,oxintsq,ozintsq,signx, &
-  r, costheta, sintheta
+  integer(idp) :: np, nox, noz
+  integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &
+  byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)  
+  real(num), dimension(np) :: xp, yp, zp, bx, by, bz
+  logical(idp) :: l4symtry, l_2drz, l_lower_order_in_v
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
+  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1) 
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &
+  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1) 
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, 1,        &
+  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1) 
+  real(num) :: xmin, zmin, dx, dz
+  integer(idp) :: ip, j, l, ixmin, ixmax, izmin, izmax, ixmin0, ixmax0, izmin0,       &
+  izmax0, jj, ll, j0, l0 
+  real(num) :: dxi, dzi, x, y, z, xint, zint, xintsq, oxint, zintsq, ozint, oxintsq,  &
+  ozintsq, signx, r, costheta, sintheta  
   real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-  real(num), dimension(:), allocatable :: sx0,sz0
-  real(num), parameter :: onesixth=1./6.,twothird=2./3.
+  real(num), dimension(:), allocatable :: sx0, sz0
+  real(num), parameter :: onesixth=1./6., twothird=2./3.
   
   dxi = 1./dx
   dzi = 1./dz
@@ -405,7 +397,7 @@ subroutine pxr_getb2dxz_n_energy_conserving(          &
     izmin0 = -int((noz)/2)
     izmax0 =  int((noz+1)/2)
   end if
-  allocate(sx0(ixmin0:ixmax0),sz0(izmin0:izmax0))
+  allocate(sx0(ixmin0:ixmax0), sz0(izmin0:izmax0))
   
   signx = 1.
   
@@ -414,7 +406,7 @@ subroutine pxr_getb2dxz_n_energy_conserving(          &
   sx0=0.
   sz0=0.
   
-  do ip=1,np
+  do ip=1, np
     
     if (l_2drz) then
       x = xp(ip)
@@ -587,8 +579,10 @@ subroutine pxr_getb2dxz_n_energy_conserving(          &
       
       do ll = izmin0, izmax0
         do jj = ixmin, ixmax+1
-          bx(ip) = bx(ip) + sx(jj)*sz0(ll)*(bxg(j+jj,1,l0+ll)*costheta-byg(j+jj,1,l0+ll)*sintheta)
-          by(ip) = by(ip) + sx(jj)*sz0(ll)*(bxg(j+jj,1,l0+ll)*sintheta+byg(j+jj,1,l0+ll)*costheta)
+          bx(ip) = bx(ip) + sx(jj)*sz0(ll)*(bxg(j+jj, 1, l0+ll)*costheta-byg(j+jj, 1, &
+          l0+ll)*sintheta)
+          by(ip) = by(ip) + sx(jj)*sz0(ll)*(bxg(j+jj, 1, l0+ll)*sintheta+byg(j+jj, 1, &
+          l0+ll)*costheta)
         end do
       end do
       
@@ -596,13 +590,13 @@ subroutine pxr_getb2dxz_n_energy_conserving(          &
       
       do ll = izmin0, izmax0
         do jj = ixmin, ixmax+1
-          bx(ip) = bx(ip) + sx(jj)*sz0(ll)*bxg(j+jj,1,l0+ll)*signx
+          bx(ip) = bx(ip) + sx(jj)*sz0(ll)*bxg(j+jj, 1, l0+ll)*signx
         end do
       end do
       
       do ll = izmin0, izmax0
         do jj = ixmin0, ixmax0
-          by(ip) = by(ip) + sx0(jj)*sz0(ll)*byg(j0+jj,1,l0+ll)
+          by(ip) = by(ip) + sx0(jj)*sz0(ll)*byg(j0+jj, 1, l0+ll)
         end do
       end do
       
@@ -610,12 +604,12 @@ subroutine pxr_getb2dxz_n_energy_conserving(          &
     
     do ll = izmin, izmax+1
       do jj = ixmin0, ixmax0
-        bz(ip) = bz(ip) + sx0(jj)*sz(ll)*bzg(j0+jj,1,l+ll)
+        bz(ip) = bz(ip) + sx0(jj)*sz(ll)*bzg(j0+jj, 1, l+ll)
       end do
     end do
     
   end do
-  deallocate(sx0,sz0)
+  deallocate(sx0, sz0)
   
   return
 end subroutine pxr_getb2dxz_n_energy_conserving

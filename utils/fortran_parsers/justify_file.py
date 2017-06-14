@@ -1,12 +1,46 @@
+"""
+ _______________________________________________________________________________
+
+  *** Copyright Notice ***
+
+ "Particle In Cell Scalable Application Resource (PICSAR) v2", Copyright (c)
+ 2016, The Regents of the University of California, through Lawrence Berkeley
+ National Laboratory (subject to receipt of any required approvals from the
+ U.S. Dept. of Energy). All rights reserved.
+
+ If you have questions about your rights to use or distribute this software,
+ please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+
+ NOTICE.
+ This Software was developed under funding from the U.S. Department of Energy
+ and the U.S. Government consequently retains certain rights. As such, the U.S.
+ Government has been granted for itself and others acting on its behalf a
+ paid-up, nonexclusive, irrevocable, worldwide license in the Software to
+ reproduce, distribute copies to the public, prepare derivative works, and
+ perform publicly and display publicly, and to permit other to do so.
+
+ PARSER FOR CORRECTING INDENTATION IN FORTRAN FILES 
+ H. VINCENTI - June, 2017
+
+
+ The function justify_file below reads Fortran 90 files and correct their justification 
+ according to guidelines detailed in CONTRIBUTING.md 
+
+ Input arguments: filename
+
+ Outputs:
+ 1. New fortran file guidelines compliant
+
+ Developers:
+ Henri Vincenti
+
+ Date:
+ Creation: June 14 2017
+ _______________________________________________________________________________
+"""
+
 import re
 
-# Size of indent (in number of spaces) for Fortran blocks
-# A Fortran block starts either with a SUBROUTINE,MODULE,PROGRAM, FUNCTION etc. key word
-indent_block=2
-# Input file name to parse 
-input_file="test_file.F90"
-#Output file name 
-output_file="test_output.F90"
 #Maximum columns of characters in a code line 
 max_chars=85
 # Ampersand column location 
@@ -152,7 +186,7 @@ def justify_file(input_file,output_file):
 	fin=open(input_file,"r")
 	list_of_output_lines=[]
 	curr_line=fin.readline()
-	split_char=", "
+	split_char=" "
 	while (curr_line != ""):
 	   # Get indentation lever of current line 
 	   curr_indent=get_current_indent(curr_line)
@@ -217,5 +251,4 @@ listfiles=["modules/modules.F90", \
 
 for file in listfiles: 
     justify_file(file,file)
-#justify_file(input_file,output_file)
 
