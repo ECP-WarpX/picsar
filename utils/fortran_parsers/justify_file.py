@@ -44,6 +44,7 @@ def parse_commas(input_filename):
        code. If yes, a directive key-word has to be inserted after each continuation line.  
      - ampersand_col: position of the ampersand char & (in number of characters) 
        for line continuation 
+     - split_char: string containing splitting character used to truncate source lines 
  --- Output parameters: 
      - python string containing a new line properly truncated
 """
@@ -146,6 +147,7 @@ def justify_file(input_file,output_file):
 	fin=open(input_file,"r")
 	list_of_output_lines=[]
 	curr_line=fin.readline()
+    split_char=" "
 	while (curr_line != ""):
 	   # Get indentation lever of current line 
 	   curr_indent=get_current_indent(curr_line)
@@ -156,7 +158,7 @@ def justify_file(input_file,output_file):
 	   preproc_line= directive+codepart#+commentpart+"\n"
 	   # Check pre-processed line length and truncate recursively if necessary
 	   output_line = operate_truncation(preproc_line,max_chars,curr_indent,directive, \
-       ampersand_col, " ")
+       ampersand_col, split_char)
 	   # Add potential existing comments at EOL
 	   output_line = output_line+commentpart+"\n"
 	   #fout.write(output_line)
