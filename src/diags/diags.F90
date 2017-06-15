@@ -491,8 +491,8 @@ MODULE diagnostics
   !
   !> @creation
   !> June 2017
-  SUBROUTINE getquantity(ispecies, quantity, nptot, quantityarray)
   ! ____________________________________________________________________________
+  SUBROUTINE getquantity(ispecies, quantity, nptot, quantityarray)
       USE particle_tilemodule
       USE particle_speciesmodule
       USE tile_params
@@ -552,8 +552,8 @@ MODULE diagnostics
   !
   !> @creation
   !> June 2017
-  SUBROUTINE getquantity_pid(ispecies, quantitypid, nptot, quantityarray)
   ! ____________________________________________________________________________
+  SUBROUTINE getquantity_pid(ispecies, quantitypid, nptot, quantityarray)
       USE particle_tilemodule
       USE particle_speciesmodule
       USE tile_params
@@ -586,88 +586,7 @@ MODULE diagnostics
       END DO
 
   END SUBROUTINE getquantity_pid
-
-  ! __________________________________________________________________________
-  !> @brief
-  !> This subroutine returns the old position x of particles in the domain
-  !> from species of index is.
-  !
-  !> @author
-  !> Guillaume Blaclard
-  !
-  !> @creation
-  !> June 2017
-  SUBROUTINE getxold(ispecies, xoldtot)
-  ! __________________________________________________________________________
-      USE particle_tilemodule
-      USE particle_speciesmodule
-      USE tile_params
-      USE particles
-      USE particle_properties
-      !USE mpi_derived_types
-      !USE shared_data
-      USE tiling
-      IMPLICIT NONE
-
-      INTEGER(idp), INTENT(IN) :: ispecies
-      REAL(num),dimension(:),allocatable :: xoldtot
-      INTEGER(idp) :: nptot
-      INTEGER(idp) :: ix,iy,iz,np
-      INTEGER(idp) :: xoldcompt
-      TYPE(particle_tile), POINTER :: curr_tile
-      TYPE(particle_species), POINTER :: curr
-
-      curr=>species_parray(ispecies)
-      xoldcompt = 1
-
-      ! Loop over the tiles
-      DO iz=1, ntilez
-          DO iy=1, ntiley
-              DO ix=1, ntilex
-                  curr_tile=>curr%array_of_tiles(ix,iy,iz)
-                  np = curr_tile%np_tile(1)
-
-                  xoldtot(xoldcompt:xoldcompt+np) = curr_tile%pid(1:np,xoldpid)
-                  xoldcompt = xoldcompt + np
-              END DO
-          END DO
-      END DO
-
-  END SUBROUTINE getxold
-
-  ! ____________________________________________________________________________________
-  !> @brief
-  !> This subroutine determine the total number of particles all species included
-  !
-  !> @author
-  !> Mathieu Lobet
-  !
-  !> @date
-  !> Creation: May 2016
-  SUBROUTINE get_tot_number_of_particles(nptot)
-    ! ____________________________________________________________________________________
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
-    USE mpi_derived_types
-    USE shared_data
-    USE tiling
-    IMPLICIT NONE
-
-    INTEGER(idp), INTENT(OUT) :: nptot
-    INTEGER(idp)              :: is, nptottmp
-
-    nptot = 0
-
-    DO is=1,nspecies
-      nptottmp = 0
-      CALL get_tot_number_of_particles_from_species(is,nptottmp)
-      nptot = nptot + nptottmp
-    ENDDO
-
-  END SUBROUTINE
-
+  
   ! ____________________________________________________________________________________
   !> @brief
   !> Determine the local kinetic energy for the species ispecies.
