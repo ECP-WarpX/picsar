@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -8,7 +8,7 @@
 ! U.S. Dept. of Energy). All rights reserved.
 !
 ! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+ ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -27,10 +27,10 @@
 ! - pxr_gete2dxz_energy_conserving_vect_2_2
 ! - pxr_getb2dxz_energy_conserving_vect_2_2
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering cartesian in 2D for the electric field at order 2
 !
@@ -44,47 +44,44 @@
 !> 12/01/2016
 !
 !> @param[in] np Number of particles
-!> @param[in] xp,zp particle position arrays
-!> @param[inout] ex,ey,ez electric field particle arrays
-!> @param[in] xmin,zmin tile boundaries
-!> @param[in] dx,dz space steps
-!> @param[in] exg,eyg,ezg electric field grids
-!> @param[in] exg_nguard,eyg_nguard,ezg_nguard number of guard cells of the exg,eyg,ezg arrays in each direction (1d arrays containing 2 integers)
-!> @param[in] exg_nvalid,eyg_nvalid,ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg,eyg,ezg arrays (1d arrays containing 2 integers)
+!> @param[in] xp, zp particle position arrays
+!> @param[inout] ex, ey, ez electric field particle arrays
+!> @param[in] xmin, zmin tile boundaries
+!> @param[in] dx, dz space steps
+!> @param[in] exg, eyg, ezg electric field grids
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> exg, eyg, ezg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 2 integers)
 !> @param[in] lvect vector size for the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
-  np,xp,zp,ex,ey,ez,xmin,zmin,dx,dz,                  &
-  exg,exg_nguard,exg_nvalid,                          &
-  eyg,eyg_nguard,eyg_nvalid,                          &
-  ezg,ezg_nguard,ezg_nvalid,                          &
-  lvect,l_lower_order_in_v)  !#do not wrap
-  ! ______________________________________________________________________________
+! ________________________________________________________________________________________
+subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin,     &
+zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
+ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
   use constants
   implicit none
-  
   integer(idp)                  :: np
-  integer(idp), intent(IN)      :: exg_nguard(2),exg_nvalid(2),&
-  eyg_nguard(2),eyg_nvalid(2),&
-  ezg_nguard(2),ezg_nvalid(2)
+  integer(idp), intent(IN)      :: exg_nguard(2), exg_nvalid(2), eyg_nguard(2),       &
+  eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)  
   integer(idp)                  :: lvect
-  real(num), dimension(np)      :: xp,zp,ex,ey,ez
+  real(num), dimension(np)      :: xp, zp, ex, ey, ez
   logical(idp)                  :: l_lower_order_in_v
-  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,1, &
-  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
-  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,1, &
-  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
-  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,1, &
-  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
-  real(num)                     :: xmin,zmin,dx,dz
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
+  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1) 
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
+  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1) 
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, 1,        &
+  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1) 
+  real(num)                     :: xmin, zmin, dx, dz
   integer(isp)                  :: ip, j, l, j0, l0
-  integer(isp)                  :: nn,n
+  integer(isp)                  :: nn, n
   real(num)                     :: dxi, dzi, x, z, xint, zint
-  real(num)                     :: xintsq,zintsq
-  real(num), DIMENSION(lvect,-1:1)    :: sx,sx0
-  real(num), DIMENSION(lvect,-1:1)    :: sz,sz0
-  real(num), parameter          :: onesixth=1./6.,twothird=2./3.
+  real(num)                     :: xintsq, zintsq
+  real(num), DIMENSION(lvect, -1:1)    :: sx, sx0
+  real(num), DIMENSION(lvect, -1:1)    :: sz, sz0
+  real(num), parameter          :: onesixth=1./6., twothird=2./3.
   
   dxi = 1./dx
   dzi = 1./dz
@@ -93,15 +90,15 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
   IF (l_lower_order_in_v) THEN
     
     ! Loop over the particles by block
-    DO ip=1,np,lvect
+    DO ip=1, np, lvect
       
 #if defined __INTEL_COMPILER
       !!DIR$ IVDEP
       !!DIR$ DISTRIBUTE POINT
-      !DIR$ ASSUME_ALIGNED xp:64,zp:64
-      !DIR$ ASSUME_ALIGNED sx:64,sz:64
-      !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED xp:64, zp:64
+      !DIR$ ASSUME_ALIGNED sx:64, sz:64
+      !DIR$ ASSUME_ALIGNED sx0:64, sz0:64
+      !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -113,7 +110,7 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
       !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
-      DO n=1,MIN(lvect,np-ip+1)
+      DO n=1, MIN(lvect, np-ip+1)
         
         nn=ip+n-1
         
@@ -130,11 +127,11 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
         
         ! Compute shape factors
         xintsq = xint*xint
-        sx(n,-1) = 0.5_num*(0.5_num-xint)**2
+        sx(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx(n, 0) = 0.75_num-xintsq
         sx(n, 1) = 0.5_num*(0.5_num+xint)**2
         zintsq = zint*zint
-        sz(n,-1) = 0.5_num*(0.5_num-zint)**2
+        sz(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
         
@@ -148,31 +145,31 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
         sz0(n, 1) = zint
         
         ! Compute Ex on particle
-        ex(nn) = ex(nn) + sx0(n,0)*sz(n,-1)*exg(j0,1,l-1)
-        ex(nn) = ex(nn) + sx0(n,1)*sz(n,-1)*exg(j0+1,1,l-1)
-        ex(nn) = ex(nn) + sx0(n,0)*sz(n,0)*exg(j0,1,l)
-        ex(nn) = ex(nn) + sx0(n,1)*sz(n,0)*exg(j0+1,1,l)
-        ex(nn) = ex(nn) + sx0(n,0)*sz(n,1)*exg(j0,1,l+1)
-        ex(nn) = ex(nn) + sx0(n,1)*sz(n,1)*exg(j0+1,1,l+1)
+        ex(nn) = ex(nn) + sx0(n, 0)*sz(n, -1)*exg(j0, 1, l-1)
+        ex(nn) = ex(nn) + sx0(n, 1)*sz(n, -1)*exg(j0+1, 1, l-1)
+        ex(nn) = ex(nn) + sx0(n, 0)*sz(n, 0)*exg(j0, 1, l)
+        ex(nn) = ex(nn) + sx0(n, 1)*sz(n, 0)*exg(j0+1, 1, l)
+        ex(nn) = ex(nn) + sx0(n, 0)*sz(n, 1)*exg(j0, 1, l+1)
+        ex(nn) = ex(nn) + sx0(n, 1)*sz(n, 1)*exg(j0+1, 1, l+1)
         
         ! Compute Ey on particle
-        ey(nn) = ey(nn) + sx(n,-1)*sz(n,-1)*eyg(j-1,1,l-1)
-        ey(nn) = ey(nn) + sx(n,0)*sz(n,-1)*eyg(j,1,l-1)
-        ey(nn) = ey(nn) + sx(n,1)*sz(n,-1)*eyg(j+1,1,l-1)
-        ey(nn) = ey(nn) + sx(n,-1)*sz(n,0)*eyg(j-1,1,l)
-        ey(nn) = ey(nn) + sx(n,0)*sz(n,0)*eyg(j,1,l)
-        ey(nn) = ey(nn) + sx(n,1)*sz(n,0)*eyg(j+1,1,l)
-        ey(nn) = ey(nn) + sx(n,-1)*sz(n,1)*eyg(j-1,1,l+1)
-        ey(nn) = ey(nn) + sx(n,0)*sz(n,1)*eyg(j,1,l+1)
-        ey(nn) = ey(nn) + sx(n,1)*sz(n,1)*eyg(j+1,1,l+1)
+        ey(nn) = ey(nn) + sx(n, -1)*sz(n, -1)*eyg(j-1, 1, l-1)
+        ey(nn) = ey(nn) + sx(n, 0)*sz(n, -1)*eyg(j, 1, l-1)
+        ey(nn) = ey(nn) + sx(n, 1)*sz(n, -1)*eyg(j+1, 1, l-1)
+        ey(nn) = ey(nn) + sx(n, -1)*sz(n, 0)*eyg(j-1, 1, l)
+        ey(nn) = ey(nn) + sx(n, 0)*sz(n, 0)*eyg(j, 1, l)
+        ey(nn) = ey(nn) + sx(n, 1)*sz(n, 0)*eyg(j+1, 1, l)
+        ey(nn) = ey(nn) + sx(n, -1)*sz(n, 1)*eyg(j-1, 1, l+1)
+        ey(nn) = ey(nn) + sx(n, 0)*sz(n, 1)*eyg(j, 1, l+1)
+        ey(nn) = ey(nn) + sx(n, 1)*sz(n, 1)*eyg(j+1, 1, l+1)
         
         ! Compute Ez on particle
-        ez(nn) = ez(nn) + sx(n,-1)*sz0(n,0)*ezg(j-1,1,l0)
-        ez(nn) = ez(nn) + sx(n,0)*sz0(n,0)*ezg(j,1,l0)
-        ez(nn) = ez(nn) + sx(n,1)*sz0(n,0)*ezg(j+1,1,l0)
-        ez(nn) = ez(nn) + sx(n,-1)*sz0(n,1)*ezg(j-1,1,l0+1)
-        ez(nn) = ez(nn) + sx(n,0)*sz0(n,1)*ezg(j,1,l0+1)
-        ez(nn) = ez(nn) + sx(n,1)*sz0(n,1)*ezg(j+1,1,l0+1)
+        ez(nn) = ez(nn) + sx(n, -1)*sz0(n, 0)*ezg(j-1, 1, l0)
+        ez(nn) = ez(nn) + sx(n, 0)*sz0(n, 0)*ezg(j, 1, l0)
+        ez(nn) = ez(nn) + sx(n, 1)*sz0(n, 0)*ezg(j+1, 1, l0)
+        ez(nn) = ez(nn) + sx(n, -1)*sz0(n, 1)*ezg(j-1, 1, l0+1)
+        ez(nn) = ez(nn) + sx(n, 0)*sz0(n, 1)*ezg(j, 1, l0+1)
+        ez(nn) = ez(nn) + sx(n, 1)*sz0(n, 1)*ezg(j+1, 1, l0+1)
         
       END DO
 #if defined _OPENMP && _OPENMP>=201307
@@ -185,15 +182,15 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
   ELSE
     
     ! Loop over the particles by block
-    DO ip=1,np,lvect
+    DO ip=1, np, lvect
       
 #if defined __INTEL_COMPILER
       !!DIR$ IVDEP
       !!DIR$ DISTRIBUTE POINT
-      !DIR$ ASSUME_ALIGNED xp:64,zp:64
-      !DIR$ ASSUME_ALIGNED sx:64,sz:64
-      !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
-      !DIR$ ASSUME_ALIGNED ex:64,ey:64,ez:64
+      !DIR$ ASSUME_ALIGNED xp:64, zp:64
+      !DIR$ ASSUME_ALIGNED sx:64, sz:64
+      !DIR$ ASSUME_ALIGNED sx0:64, sz0:64
+      !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -205,7 +202,7 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
       !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
-      DO n=1,MIN(lvect,np-ip+1)
+      DO n=1, MIN(lvect, np-ip+1)
         
         nn=ip+n-1
         
@@ -222,11 +219,11 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
         
         ! Compute shape factors
         xintsq = xint*xint
-        sx(n,-1) = 0.5_num*(0.5_num-xint)**2
+        sx(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx(n, 0) = 0.75_num-xintsq
         sx(n, 1) = 0.5_num*(0.5_num+xint)**2
         zintsq = zint*zint
-        sz(n,-1) = 0.5_num*(0.5_num-zint)**2
+        sz(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
         
@@ -234,60 +231,57 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2(     &
         zint=z-0.5_num-l0
         
         xintsq = xint*xint
-        sx0(n,-1) = 0.5_num*(0.5_num-xint)**2
+        sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx0(n, 0) = 0.75_num-xintsq
         sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
         
         zintsq = zint*zint
-        sz0(n,-1) = 0.5_num*(0.5_num-zint)**2
+        sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
         
         ! Compute Ex on particle
-        ex(nn) = ex(nn) + sx0(n,-1)*sz(n,-1)*exg(j0-1,1,l-1)
-        ex(nn) = ex(nn) + sx0(n,0)*sz(n,-1)*exg(j0,1,l-1)
-        ex(nn) = ex(nn) + sx0(n,1)*sz(n,-1)*exg(j0+1,1,l-1)
-        ex(nn) = ex(nn) + sx0(n,-1)*sz(n,0)*exg(j0-1,1,l)
-        ex(nn) = ex(nn) + sx0(n,0)*sz(n,0)*exg(j0,1,l)
-        ex(nn) = ex(nn) + sx0(n,1)*sz(n,0)*exg(j0+1,1,l)
-        ex(nn) = ex(nn) + sx0(n,-1)*sz(n,1)*exg(j0-1,1,l+1)
-        ex(nn) = ex(nn) + sx0(n,0)*sz(n,1)*exg(j0,1,l+1)
-        ex(nn) = ex(nn) + sx0(n,1)*sz(n,1)*exg(j0+1,1,l+1)
+        ex(nn) = ex(nn) + sx0(n, -1)*sz(n, -1)*exg(j0-1, 1, l-1)
+        ex(nn) = ex(nn) + sx0(n, 0)*sz(n, -1)*exg(j0, 1, l-1)
+        ex(nn) = ex(nn) + sx0(n, 1)*sz(n, -1)*exg(j0+1, 1, l-1)
+        ex(nn) = ex(nn) + sx0(n, -1)*sz(n, 0)*exg(j0-1, 1, l)
+        ex(nn) = ex(nn) + sx0(n, 0)*sz(n, 0)*exg(j0, 1, l)
+        ex(nn) = ex(nn) + sx0(n, 1)*sz(n, 0)*exg(j0+1, 1, l)
+        ex(nn) = ex(nn) + sx0(n, -1)*sz(n, 1)*exg(j0-1, 1, l+1)
+        ex(nn) = ex(nn) + sx0(n, 0)*sz(n, 1)*exg(j0, 1, l+1)
+        ex(nn) = ex(nn) + sx0(n, 1)*sz(n, 1)*exg(j0+1, 1, l+1)
         
         ! Compute Ey on particle
-        ey(nn) = ey(nn) + sx(n,-1)*sz(n,-1)*eyg(j-1,1,l-1)
-        ey(nn) = ey(nn) + sx(n,0)*sz(n,-1)*eyg(j,1,l-1)
-        ey(nn) = ey(nn) + sx(n,1)*sz(n,-1)*eyg(j+1,1,l-1)
-        ey(nn) = ey(nn) + sx(n,-1)*sz(n,0)*eyg(j-1,1,l)
-        ey(nn) = ey(nn) + sx(n,0)*sz(n,0)*eyg(j,1,l)
-        ey(nn) = ey(nn) + sx(n,1)*sz(n,0)*eyg(j+1,1,l)
-        ey(nn) = ey(nn) + sx(n,-1)*sz(n,1)*eyg(j-1,1,l+1)
-        ey(nn) = ey(nn) + sx(n,0)*sz(n,1)*eyg(j,1,l+1)
-        ey(nn) = ey(nn) + sx(n,1)*sz(n,1)*eyg(j+1,1,l+1)
+        ey(nn) = ey(nn) + sx(n, -1)*sz(n, -1)*eyg(j-1, 1, l-1)
+        ey(nn) = ey(nn) + sx(n, 0)*sz(n, -1)*eyg(j, 1, l-1)
+        ey(nn) = ey(nn) + sx(n, 1)*sz(n, -1)*eyg(j+1, 1, l-1)
+        ey(nn) = ey(nn) + sx(n, -1)*sz(n, 0)*eyg(j-1, 1, l)
+        ey(nn) = ey(nn) + sx(n, 0)*sz(n, 0)*eyg(j, 1, l)
+        ey(nn) = ey(nn) + sx(n, 1)*sz(n, 0)*eyg(j+1, 1, l)
+        ey(nn) = ey(nn) + sx(n, -1)*sz(n, 1)*eyg(j-1, 1, l+1)
+        ey(nn) = ey(nn) + sx(n, 0)*sz(n, 1)*eyg(j, 1, l+1)
+        ey(nn) = ey(nn) + sx(n, 1)*sz(n, 1)*eyg(j+1, 1, l+1)
         
         ! Compute Ez on particle
-        ez(nn) = ez(nn) + sx(n,-1)*sz0(n,-1)*ezg(j-1,1,l0-1)
-        ez(nn) = ez(nn) + sx(n,0)*sz0(n,-1)*ezg(j,1,l0-1)
-        ez(nn) = ez(nn) + sx(n,1)*sz0(n,-1)*ezg(j+1,1,l0-1)
-        ez(nn) = ez(nn) + sx(n,-1)*sz0(n,0)*ezg(j-1,1,l0)
-        ez(nn) = ez(nn) + sx(n,0)*sz0(n,0)*ezg(j,1,l0)
-        ez(nn) = ez(nn) + sx(n,1)*sz0(n,0)*ezg(j+1,1,l0)
-        ez(nn) = ez(nn) + sx(n,-1)*sz0(n,1)*ezg(j-1,1,l0+1)
-        ez(nn) = ez(nn) + sx(n,0)*sz0(n,1)*ezg(j,1,l0+1)
-        ez(nn) = ez(nn) + sx(n,1)*sz0(n,1)*ezg(j+1,1,l0+1)
+        ez(nn) = ez(nn) + sx(n, -1)*sz0(n, -1)*ezg(j-1, 1, l0-1)
+        ez(nn) = ez(nn) + sx(n, 0)*sz0(n, -1)*ezg(j, 1, l0-1)
+        ez(nn) = ez(nn) + sx(n, 1)*sz0(n, -1)*ezg(j+1, 1, l0-1)
+        ez(nn) = ez(nn) + sx(n, -1)*sz0(n, 0)*ezg(j-1, 1, l0)
+        ez(nn) = ez(nn) + sx(n, 0)*sz0(n, 0)*ezg(j, 1, l0)
+        ez(nn) = ez(nn) + sx(n, 1)*sz0(n, 0)*ezg(j+1, 1, l0)
+        ez(nn) = ez(nn) + sx(n, -1)*sz0(n, 1)*ezg(j-1, 1, l0+1)
+        ez(nn) = ez(nn) + sx(n, 0)*sz0(n, 1)*ezg(j, 1, l0+1)
+        ez(nn) = ez(nn) + sx(n, 1)*sz0(n, 1)*ezg(j+1, 1, l0+1)
         
       END DO
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD
 #endif
-    ENDDO
-    
+    ENDDO    
   ENDIF
-  
 end subroutine
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering cartesian in 2D for the magnetic field at order 2
 !
@@ -301,50 +295,44 @@ end subroutine
 !> 12/01/2016
 !
 !> @param[in] np Number of particles
-!> @param[in] xp,zp particle position arrays
-!> @param[inout] bx,by,bz magnetic field particle arrays
-!> @param[in] xmin,zmin tile boundaries
-!> @param[in] dx,dz space steps
-!> @param[in] bxg,byg,bzg magnetic field grids
-!> @param[in] bxg_nguard,byg_nguard,bzg_nguard number of guard cells of the bxg,byg,bzg arrays in each direction (1d arrays containing 2 integers)
-!> @param[in] bxg_nvalid,byg_nvalid,bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg,byg,bzg arrays (1d arrays containing 2 integers)
+!> @param[in] xp, zp particle position arrays
+!> @param[inout] bx, by, bz magnetic field particle arrays
+!> @param[in] xmin, zmin tile boundaries
+!> @param[in] dx, dz space steps
+!> @param[in] bxg, byg, bzg magnetic field grids
+!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the bxg, byg, bzg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 2 integers)
 !> @param[in] lvect the vector length of the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
-subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
-  np,xp,zp,bx,by,bz,xmin,zmin,dx,dz,                  &
-  bxg,bxg_nguard,bxg_nvalid,                          &
-  byg,byg_nguard,byg_nvalid,                          &
-  bzg,bzg_nguard,bzg_nvalid,                          &
-  lvect,l_lower_order_in_v) !#do not wrap
-  ! ______________________________________________________________________________
-  
+! ________________________________________________________________________________________
+subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin,     &
+zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,          &
+bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
   use constants
   implicit none
-  
   ! __ Parameter declaration ___________________________________________
   integer(idp)                       :: np
-  integer(idp), intent(IN)                :: bxg_nguard(2),bxg_nvalid(2),&
-  byg_nguard(2),byg_nvalid(2),&
-  bzg_nguard(2),bzg_nvalid(2)
+  integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &
+  byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)  
   integer(idp)                       :: lvect
-  real(num), dimension(np)           :: xp,zp,bx,by,bz
+  real(num), dimension(np)           :: xp, zp, bx, by, bz
   logical(idp)                       :: l_lower_order_in_v
-  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,1, &
-  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
-  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,1, &
-  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
-  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,1, &
-  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
-  real(num)                          :: xmin,zmin,dx,dz
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
+  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1) 
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &
+  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1) 
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, 1,        &
+  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1) 
+  real(num)                          :: xmin, zmin, dx, dz
   integer(idp)                       :: ip, j, l
   integer(idp)                       :: j0, l0
-  integer(idp)                       :: n,nn
+  integer(idp)                       :: n, nn
   real(num)                          :: dxi, dzi, x, z, xint, zint
-  real(num)                          :: xintsq,zintsq
-  real(num), DIMENSION(lvect,-1:1)   :: sx, sx0
-  real(num), DIMENSION(lvect,-1:1)   :: sz, sz0
-  real(num), parameter               :: onesixth=1./6.,twothird=2./3.
+  real(num)                          :: xintsq, zintsq
+  real(num), DIMENSION(lvect, -1:1)   :: sx, sx0
+  real(num), DIMENSION(lvect, -1:1)   :: sz, sz0
+  real(num), parameter               :: onesixth=1./6., twothird=2./3.
   
   ! ___________________________
   ! Compute parameters
@@ -361,15 +349,15 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
   IF (l_lower_order_in_v) THEN
     
     ! Loop over the particles by block
-    DO ip=1,np,lvect
+    DO ip=1, np, lvect
       
 #if defined __INTEL_COMPILER
       !!DIR$ IVDEP
       !!DIR$ DISTRIBUTE POINT
-      !DIR$ ASSUME_ALIGNED xp:64,zp:64
-      !DIR$ ASSUME_ALIGNED sx:64,sz:64
-      !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+      !DIR$ ASSUME_ALIGNED xp:64, zp:64
+      !DIR$ ASSUME_ALIGNED sx:64, sz:64
+      !DIR$ ASSUME_ALIGNED sx0:64, sz0:64
+      !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -381,7 +369,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
       !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
-      DO n=1,MIN(lvect,np-ip+1)
+      DO n=1, MIN(lvect, np-ip+1)
         
         nn=ip+n-1
         
@@ -399,11 +387,11 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
         
         ! Compute shape factors
         xintsq = xint*xint
-        sx(n,-1) = 0.5_num*(0.5_num-xint)**2
+        sx(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx(n, 0) = 0.75_num-xintsq
         sx(n, 1) = 0.5_num*(0.5_num+xint)**2
         zintsq = zint*zint
-        sz(n,-1) = 0.5_num*(0.5_num-zint)**2
+        sz(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
         
@@ -416,26 +404,26 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
         sz0(n, 1) = zint
         
         ! Compute Bx on particle
-        bx(nn) = bx(nn) + sx(n,-1)*sz0(n,0)*bxg(j-1,1,l0)
-        bx(nn) = bx(nn) + sx(n,0)*sz0(n,0)*bxg(j,1,l0)
-        bx(nn) = bx(nn) + sx(n,1)*sz0(n,0)*bxg(j+1,1,l0)
-        bx(nn) = bx(nn) + sx(n,-1)*sz0(n,1)*bxg(j-1,1,l0+1)
-        bx(nn) = bx(nn) + sx(n,0)*sz0(n,1)*bxg(j,1,l0+1)
-        bx(nn) = bx(nn) + sx(n,1)*sz0(n,1)*bxg(j+1,1,l0+1)
+        bx(nn) = bx(nn) + sx(n, -1)*sz0(n, 0)*bxg(j-1, 1, l0)
+        bx(nn) = bx(nn) + sx(n, 0)*sz0(n, 0)*bxg(j, 1, l0)
+        bx(nn) = bx(nn) + sx(n, 1)*sz0(n, 0)*bxg(j+1, 1, l0)
+        bx(nn) = bx(nn) + sx(n, -1)*sz0(n, 1)*bxg(j-1, 1, l0+1)
+        bx(nn) = bx(nn) + sx(n, 0)*sz0(n, 1)*bxg(j, 1, l0+1)
+        bx(nn) = bx(nn) + sx(n, 1)*sz0(n, 1)*bxg(j+1, 1, l0+1)
         
         ! Compute By on particle
-        by(nn) = by(nn) + sx0(n,0)*sz0(n,0)*byg(j0,1,l0)
-        by(nn) = by(nn) + sx0(n,1)*sz0(n,0)*byg(j0+1,1,l0)
-        by(nn) = by(nn) + sx0(n,0)*sz0(n,1)*byg(j0,1,l0+1)
-        by(nn) = by(nn) + sx0(n,1)*sz0(n,1)*byg(j0+1,1,l0+1)
+        by(nn) = by(nn) + sx0(n, 0)*sz0(n, 0)*byg(j0, 1, l0)
+        by(nn) = by(nn) + sx0(n, 1)*sz0(n, 0)*byg(j0+1, 1, l0)
+        by(nn) = by(nn) + sx0(n, 0)*sz0(n, 1)*byg(j0, 1, l0+1)
+        by(nn) = by(nn) + sx0(n, 1)*sz0(n, 1)*byg(j0+1, 1, l0+1)
         
         ! Compute Bz on particle
-        bz(nn) = bz(nn) + sx0(n,0)*sz(n,-1)*bzg(j0,1,l-1)
-        bz(nn) = bz(nn) + sx0(n,1)*sz(n,-1)*bzg(j0+1,1,l-1)
-        bz(nn) = bz(nn) + sx0(n,0)*sz(n,0)*bzg(j0,1,l)
-        bz(nn) = bz(nn) + sx0(n,1)*sz(n,0)*bzg(j0+1,1,l)
-        bz(nn) = bz(nn) + sx0(n,0)*sz(n,1)*bzg(j0,1,l+1)
-        bz(nn) = bz(nn) + sx0(n,1)*sz(n,1)*bzg(j0+1,1,l+1)
+        bz(nn) = bz(nn) + sx0(n, 0)*sz(n, -1)*bzg(j0, 1, l-1)
+        bz(nn) = bz(nn) + sx0(n, 1)*sz(n, -1)*bzg(j0+1, 1, l-1)
+        bz(nn) = bz(nn) + sx0(n, 0)*sz(n, 0)*bzg(j0, 1, l)
+        bz(nn) = bz(nn) + sx0(n, 1)*sz(n, 0)*bzg(j0+1, 1, l)
+        bz(nn) = bz(nn) + sx0(n, 0)*sz(n, 1)*bzg(j0, 1, l+1)
+        bz(nn) = bz(nn) + sx0(n, 1)*sz(n, 1)*bzg(j0+1, 1, l+1)
         
       end do
 #if defined _OPENMP && _OPENMP>=201307
@@ -448,15 +436,15 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
   else
     
     ! Loop over the particles by block
-    DO ip=1,np,lvect
+    DO ip=1, np, lvect
       
 #if defined __INTEL_COMPILER
       !!DIR$ IVDEP
       !!DIR$ DISTRIBUTE POINT
-      !DIR$ ASSUME_ALIGNED xp:64,zp:64
-      !DIR$ ASSUME_ALIGNED sx:64,sz:64
-      !DIR$ ASSUME_ALIGNED sx0:64,sz0:64
-      !DIR$ ASSUME_ALIGNED bx:64,by:64,bz:64
+      !DIR$ ASSUME_ALIGNED xp:64, zp:64
+      !DIR$ ASSUME_ALIGNED sx:64, sz:64
+      !DIR$ ASSUME_ALIGNED sx0:64, sz0:64
+      !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -468,7 +456,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
       !DIR$ SIMD
 #endif
       ! Loop over the particles inside a block
-      DO n=1,MIN(lvect,np-ip+1)
+      DO n=1, MIN(lvect, np-ip+1)
         
         nn=ip+n-1
         
@@ -486,12 +474,12 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
         
         ! Compute shape factors
         xintsq = xint*xint
-        sx(n,-1) = 0.5_num*(0.5_num-xint)**2
+        sx(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx(n, 0) = 0.75_num-xintsq
         sx(n, 1) = 0.5_num*(0.5_num+xint)**2
         
         zintsq = zint*zint
-        sz(n,-1) = 0.5_num*(0.5_num-zint)**2
+        sz(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
         
@@ -499,44 +487,41 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2(     &
         zint=z-0.5_num-l0
         
         xintsq = xint*xint
-        sx0(n,-1) = 0.5_num*(0.5_num-xint)**2
+        sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx0(n, 0) = 0.75_num-xintsq
         sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
         
         zintsq = zint*zint
-        sz0(n,-1) = 0.5_num*(0.5_num-zint)**2
+        sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
         
         ! Compute Bx on particle
-        bx(nn) = bx(nn) + sx(n,-1)*sz0(n,0)*bxg(j-1,1,l0)
-        bx(nn) = bx(nn) + sx(n,0)*sz0(n,0)*bxg(j,1,l0)
-        bx(nn) = bx(nn) + sx(n,1)*sz0(n,0)*bxg(j+1,1,l0)
-        bx(nn) = bx(nn) + sx(n,-1)*sz0(n,1)*bxg(j-1,1,l0+1)
-        bx(nn) = bx(nn) + sx(n,0)*sz0(n,1)*bxg(j,1,l0+1)
-        bx(nn) = bx(nn) + sx(n,1)*sz0(n,1)*bxg(j+1,1,l0+1)
+        bx(nn) = bx(nn) + sx(n, -1)*sz0(n, 0)*bxg(j-1, 1, l0)
+        bx(nn) = bx(nn) + sx(n, 0)*sz0(n, 0)*bxg(j, 1, l0)
+        bx(nn) = bx(nn) + sx(n, 1)*sz0(n, 0)*bxg(j+1, 1, l0)
+        bx(nn) = bx(nn) + sx(n, -1)*sz0(n, 1)*bxg(j-1, 1, l0+1)
+        bx(nn) = bx(nn) + sx(n, 0)*sz0(n, 1)*bxg(j, 1, l0+1)
+        bx(nn) = bx(nn) + sx(n, 1)*sz0(n, 1)*bxg(j+1, 1, l0+1)
         
         ! Compute By on particle
-        by(nn) = by(nn) + sx0(n,0)*sz0(n,0)*byg(j0,1,l0)
-        by(nn) = by(nn) + sx0(n,1)*sz0(n,0)*byg(j0+1,1,l0)
-        by(nn) = by(nn) + sx0(n,0)*sz0(n,1)*byg(j0,1,l0+1)
-        by(nn) = by(nn) + sx0(n,1)*sz0(n,1)*byg(j0+1,1,l0+1)
+        by(nn) = by(nn) + sx0(n, 0)*sz0(n, 0)*byg(j0, 1, l0)
+        by(nn) = by(nn) + sx0(n, 1)*sz0(n, 0)*byg(j0+1, 1, l0)
+        by(nn) = by(nn) + sx0(n, 0)*sz0(n, 1)*byg(j0, 1, l0+1)
+        by(nn) = by(nn) + sx0(n, 1)*sz0(n, 1)*byg(j0+1, 1, l0+1)
         
         ! Compute Bz on particle
-        bz(nn) = bz(nn) + sx0(n,0)*sz(n,-1)*bzg(j0,1,l-1)
-        bz(nn) = bz(nn) + sx0(n,1)*sz(n,-1)*bzg(j0+1,1,l-1)
-        bz(nn) = bz(nn) + sx0(n,0)*sz(n,0)*bzg(j0,1,l)
-        bz(nn) = bz(nn) + sx0(n,1)*sz(n,0)*bzg(j0+1,1,l)
-        bz(nn) = bz(nn) + sx0(n,0)*sz(n,1)*bzg(j0,1,l+1)
-        bz(nn) = bz(nn) + sx0(n,1)*sz(n,1)*bzg(j0+1,1,l+1)
-        
+        bz(nn) = bz(nn) + sx0(n, 0)*sz(n, -1)*bzg(j0, 1, l-1)
+        bz(nn) = bz(nn) + sx0(n, 1)*sz(n, -1)*bzg(j0+1, 1, l-1)
+        bz(nn) = bz(nn) + sx0(n, 0)*sz(n, 0)*bzg(j0, 1, l)
+        bz(nn) = bz(nn) + sx0(n, 1)*sz(n, 0)*bzg(j0+1, 1, l)
+        bz(nn) = bz(nn) + sx0(n, 0)*sz(n, 1)*bzg(j0, 1, l+1)
+        bz(nn) = bz(nn) + sx0(n, 1)*sz(n, 1)*bzg(j0+1, 1, l+1)
       enddo
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD
 #endif
     end do
-    
   ENDIF
   return
-  
 end subroutine

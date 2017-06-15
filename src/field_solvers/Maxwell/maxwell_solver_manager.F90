@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
+! If you have questions about your rights to use or distribute this software, 
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -29,9 +29,9 @@
 !
 ! Date:
 ! Creation 2015
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> PUSH B field half a time step
 !
@@ -40,8 +40,8 @@
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE push_bfield
-  ! ______________________________________________________________________________
   USE constants
   USE params
   USE fields
@@ -57,17 +57,14 @@ SUBROUTINE push_bfield
   
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em3d_bvec(ex,ey,ez,bx,by,bz,                   &
-    0.5_num*dt/dx,0.5_num*dt/dy,0.5_num*dt/dz,&
-    nx,ny,nz,nxguards,nyguards,nzguards,nxs,nys,nzs, &
-    l_nodalgrid)
+    CALL pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0.5_num*dt/dy,      &
+    0.5_num*dt/dz, nx, ny, nz, nxguards, nyguards, nzguards, nxs, nys, nzs,           &
+    l_nodalgrid)   
     ! Yee scheme arbitrary order
   ELSE
-    CALL pxrpush_em3d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
-    0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-    nx,ny,nz, norderx,nordery,norderz,                                  &
-    nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-    l_nodalgrid)
+    CALL pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx*xcoeffs,      &
+    0.5_num*dt/dy*ycoeffs, 0.5_num*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery,       &
+    norderz, nxguards, nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)    
   ENDIF
   
   IF (it.ge.timestat_itstart) THEN
@@ -77,7 +74,7 @@ SUBROUTINE push_bfield
 END SUBROUTINE push_bfield
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> PUSH E field a full  time step
 !
@@ -86,8 +83,8 @@ END SUBROUTINE push_bfield
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE push_efield
-  ! ______________________________________________________________________________
   USE constants
   USE params
   USE fields
@@ -102,20 +99,16 @@ SUBROUTINE push_efield
   
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em3d_evec(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-    clight**2*dt/dx,clight**2*dt/dy,                           &
-    clight**2*dt/dz,nx,ny,nz,                                          &
-    nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
-    l_nodalgrid)
+    CALL pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, clight**2*mu0*dt,      &
+    clight**2*dt/dx, clight**2*dt/dy, clight**2*dt/dz, nx, ny, nz, nxguards,          &
+    nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)    
     
   ELSE
     ! Yee scheme arbitrary order
-    CALL pxrpush_em3d_evec_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,clight**2*mu0*dt,        &
-    clight**2*dt/dx*xcoeffs,clight**2*dt/dy*ycoeffs,                           &
-    clight**2*dt/dz*zcoeffs,nx,ny,nz,                                          &
-    norderx,nordery,norderz,                                                   &
-    nxguards,nyguards,nzguards,nxs,nys,nzs,                                    &
-    l_nodalgrid)
+    CALL pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz,                 &
+    clight**2*mu0*dt, clight**2*dt/dx*xcoeffs, clight**2*dt/dy*ycoeffs,               &
+    clight**2*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery, norderz, nxguards,         &
+    nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)     
   ENDIF
   
   IF (it.ge.timestat_itstart) THEN
@@ -124,7 +117,7 @@ SUBROUTINE push_efield
 END SUBROUTINE push_efield
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> PUSH B field half a time step in 2D
 !
@@ -133,9 +126,8 @@ END SUBROUTINE push_efield
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE push_bfield_2d
-  ! ______________________________________________________________________________
-  
   USE constants
   USE params
   USE fields
@@ -151,19 +143,16 @@ SUBROUTINE push_bfield_2d
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2)) then
     
-    CALL pxrpush_em2d_bvec(ex,ey,ez,bx,by,bz,                  &
-    0.5_num*dt/dx,0._num,0.5_num*dt/dz,nx,0_idp,nz,&
-    nxguards,0_idp,nzguards,nxs,0_idp,nzs, &
-    l_nodalgrid)
+    CALL pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0._num,             &
+    0.5_num*dt/dz, nx, 0_idp, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
+    l_nodalgrid)   
     
     ! Yee scheme arbitrary order
   ELSE
     
-    CALL pxrpush_em2d_bvec_norder(ex,ey,ez,bx,by,bz,                       &
-    0.5_num*dt/dx*xcoeffs,0.5_num*dt/dy*ycoeffs,0.5_num*dt/dz*zcoeffs,  &
-    nx,ny,nz, norderx,nordery,norderz,                                  &
-    nxguards,nyguards,nzguards,nxs,nys,nzs,                             &
-    l_nodalgrid)
+    CALL pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx*xcoeffs,      &
+    0.5_num*dt/dy*ycoeffs, 0.5_num*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery,       &
+    norderz, nxguards, nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)    
     
   ENDIF
   
@@ -173,9 +162,9 @@ SUBROUTINE push_bfield_2d
   
 END SUBROUTINE push_bfield_2d
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
-!> PUSH E,B PSAOTD a full time step 
+!> PUSH E, B PSAOTD a full time step 
 !> This subroutine pushes the electric and the magnetic fields using
 !> the PSATD solver.
 !
@@ -188,9 +177,8 @@ END SUBROUTINE push_bfield_2d
 !
 !> @date
 !> Creation March 29 2017
+! ________________________________________________________________________________________
 SUBROUTINE push_psatd_ebfield_3d
-  ! ______________________________________________________________________________
-  
   USE constants
   USE time_stat
   USE params
@@ -206,24 +194,22 @@ SUBROUTINE push_psatd_ebfield_3d
   ENDIF
 #if defined(FFTW)
   ! - Fourier Transform R2C
-  IF (fftw_with_mpi) THEN 
-    CALL get_Ffields_mpi ! - global FFT 
+  IF (fftw_with_mpi) THEN
+    CALL get_Ffields_mpi! - global FFT 
   ELSE
-    CALL get_Ffields ! - local FFT  
-  ENDIF 
+    CALL get_Ffields! - local FFT  
+  ENDIF
   
-  CALL push_psaotd_ebfielfs ! - PUSH PSATD 
+  CALL push_psaotd_ebfielfs! - PUSH PSATD 
   
   ! - Inverse Fourier Transform C2R
-  IF (fftw_with_mpi) THEN 
-    CALL get_fields_mpi  ! global IFFT
+  IF (fftw_with_mpi) THEN
+    CALL get_fields_mpi! global IFFT
   ELSE
-    CALL get_fields  ! local IFFT
-  ENDIF 
+    CALL get_fields! local IFFT
+  ENDIF
 #endif 
   IF (it.ge.timestat_itstart) THEN
     localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
   ENDIF
-  
 END SUBROUTINE
-

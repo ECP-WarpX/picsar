@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
+! If you have questions about your rights to use or distribute this software, 
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -21,10 +21,9 @@
 ! BORIS_2D.F90
 !
 ! Subroutines for the Boris particle pushers in 2d.
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Advance particle positions 2D Case, serial version.
 !
@@ -35,32 +34,29 @@
 !> Creation 2016
 !
 !> @param[in] np number of particles
-!> @param[inout] xp,zp particle position arrays
-!> @param[in] uxp,uzp particle momentum arrays
+!> @param[inout] xp, zp particle position arrays
+!> @param[in] uxp, uzp particle momentum arrays
 !> @param[in] gaminv particle inverse Lorentz factor
 !> @param[in] dt time step
-SUBROUTINE pxr_pushxz(np,xp,zp,uxp,uzp,gaminv,dt)
-  ! ______________________________________________________________________________
+! ________________________________________________________________________________________
+SUBROUTINE pxr_pushxz(np, xp, zp, uxp, uzp, gaminv, dt)
   USE constants
-  
   IMPLICIT NONE
   INTEGER(idp)   :: np
-  REAL(num) :: xp(np),zp(np),uxp(np),uzp(np), gaminv(np)
+  REAL(num) :: xp(np), zp(np), uxp(np), uzp(np), gaminv(np)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
-  
-  !!$OMP PARALLEL DO PRIVATE(ip)
-  DO ip=1,np
+
+  DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
   ENDDO
-  !!$OMP END PARALLEL DO
-  
+
   RETURN
 END SUBROUTINE pxr_pushxz
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Advance particle positions 2D Case, vectorized version.
 !
@@ -71,17 +67,16 @@ END SUBROUTINE pxr_pushxz
 !> Creation 2016
 !
 !> @param[in] np number of particles
-!> @param[inout] xp,zp particle position arrays
-!> @param[in] uxp,uzp particle momentum arrays
+!> @param[inout] xp, zp particle position arrays
+!> @param[in] uxp, uzp particle momentum arrays
 !> @param[in] gaminv particle inverse Lorentz factor
 !> @param[in] dt time step
-SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
-  ! ______________________________________________________________________________
+! ________________________________________________________________________________________
+SUBROUTINE pxr_push2dxz(np, xp, zp, uxp, uyp, uzp, gaminv, dt)
   USE constants
-  
   IMPLICIT NONE
   INTEGER(idp)   :: np
-  REAL(num) :: xp(np),zp(np),uxp(np),uyp(np),uzp(np), gaminv(np)
+  REAL(num) :: xp(np), zp(np), uxp(np), uyp(np), uzp(np), gaminv(np)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
   
@@ -93,7 +88,7 @@ SUBROUTINE pxr_push2dxz(np,xp,zp,uxp,uyp,uzp,gaminv,dt)
 #elif defined __INTEL_COMPILER
   !$DIR SIMD
 #endif
-  DO ip=1,np
+  DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
     
