@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
+! If you have questions about your rights to use or distribute this software, 
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -35,7 +35,7 @@
 !
 ! - pxr_getb3d_n_energy_conserving
 ! - pxr_gete3d_n_energy_conserving
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
 ! ______________________________________________________________________________
@@ -51,43 +51,38 @@
 !
 !> @date
 !> 2015
-SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp, &
-  ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
-  exg,exg_nguard,exg_nvalid, &
-  eyg,eyg_nguard,eyg_nvalid, &
-  ezg,ezg_nguard,ezg_nvalid, &
-  l_lower_order_in_v) !#do not wrap
-  ! ______________________________________________________________________________
+! ________________________________________________________________________________________
+SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,      &
+zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
+eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE omp_lib
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp)             :: np
-  INTEGER(idp), intent(in) :: exg_nguard(3),exg_nvalid(3),&
-  eyg_nguard(3),eyg_nvalid(3),&
-  ezg_nguard(3),ezg_nvalid(3)
-  INTEGER(idp)             :: nox,noy,noz
-  REAL(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
-  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
-  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
-  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
-  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
-  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
-  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
-  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
-  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
+  INTEGER(idp), intent(in) :: exg_nguard(3), exg_nvalid(3), eyg_nguard(3),            &
+  eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)  
+  INTEGER(idp)             :: nox, noy, noz
+  REAL(num), dimension(np) :: xp, yp, zp, ex, ey, ez
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
+  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
+  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)  
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
+  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1,                                       &
+  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)  
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
+  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
+  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)  
   LOGICAL(lp)              :: l_lower_order_in_v
-  REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-  INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-  ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-  REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-  xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
+  REAL(num) :: xmin, ymin, zmin, dx, dy, dz
+  INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, ixmin0,      &
+  ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0 
+  REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, xintsq, oxint, yintsq,       &
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq, signx, signy 
   REAL(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
   REAL(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
   REAL(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-  REAL(num), dimension(:), allocatable :: sx0,sy0,sz0
-  REAL(num), parameter :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+  REAL(num), dimension(:), allocatable :: sx0, sy0, sz0
+  REAL(num), parameter :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   
   
   dxi = 1.0_num/dx
@@ -117,13 +112,11 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp, &
     izmax0 =  int((noz+1)/2)
   END IF
   
-  ALLOCATE(sx0(ixmin0:ixmax0),sy0(iymin0:iymax0),sz0(izmin0:izmax0))
+  ALLOCATE(sx0(ixmin0:ixmax0), sy0(iymin0:iymax0), sz0(izmin0:izmax0))
   
   signx = 1.0_num
   signy = 1.0_num
-  !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint, &
-  !!$OMP   sx,sy,sz,sx0,sy0,sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq,ozint,zintsq,ozintsq)
-  DO ip=1,np
+  DO ip=1, np
     
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -336,7 +329,7 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp, &
     DO ll = izmin, izmax+1
       DO kk = iymin, iymax+1
         DO jj = ixmin0, ixmax0
-          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)*signx
+          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj, k+kk, l+ll)*signx
         END DO
       END DO
     END DO
@@ -344,7 +337,7 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp, &
     DO ll = izmin, izmax+1
       DO kk = iymin0, iymax0
         DO jj = ixmin, ixmax+1
-          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)*signy
+          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj, k0+kk, l+ll)*signy
         END DO
       END DO
     END DO
@@ -352,57 +345,52 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np,xp,yp,zp, &
     DO ll = izmin0, izmax0
       DO kk = iymin, iymax+1
         DO jj = ixmin, ixmax+1
-          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj, k+kk, l0+ll)
         END DO
       END DO
     END DO
     
   END DO
-  !!$OMP END PARALLEL DO
-  DEALLOCATE(sx0,sy0,sz0)
+  DEALLOCATE(sx0, sy0, sz0)
   
   RETURN
 END SUBROUTINE pxrgete3d_n_energy_conserving
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Gathering of Magnetic field from Yee grid ("energy conserving") on particles
 !> At arbitrary order. WARNING: Highly unoptimized routine
-SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
-  bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
-  bxg,bxg_nguard,bxg_nvalid, &
-  byg,byg_nguard,byg_nvalid, &
-  bzg,bzg_nguard,bzg_nvalid, &
-  l_lower_order_in_v) !#do not wrap
-  ! ______________________________________________________________________________
+! ________________________________________________________________________________________
+SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,      &
+zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
+byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE omp_lib
   USE constants
   IMPLICIT NONE
-  INTEGER(idp) :: np,nox,noy,noz
-  INTEGER(idp), intent(in)             :: bxg_nguard(3),bxg_nvalid(3),&
-  byg_nguard(3),byg_nvalid(3),&
-  bzg_nguard(3),bzg_nvalid(3)
-  REAL(num), DIMENSION(np) :: xp,yp,zp,bx,by,bz
+  INTEGER(idp) :: np, nox, noy, noz
+  INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
+  byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)  
+  REAL(num), DIMENSION(np) :: xp, yp, zp, bx, by, bz
   LOGICAL(lp)  :: l_lower_order_in_v
-  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
-  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
-  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
-  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
-  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
-  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
-  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
-  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
-  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
-  REAL(num) :: xmin,ymin,zmin,dx,dy,dz
-  INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-  ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-  REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-  xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
+  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
+  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)  
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
+  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1,                                       &
+  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)  
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,           &
+  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1,                                       &
+  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)  
+  REAL(num) :: xmin, ymin, zmin, dx, dy, dz
+  INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, ixmin0,      &
+  ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0 
+  REAL(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, xintsq, oxint, yintsq,       &
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq, signx, signy 
   REAL(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
   REAL(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
   REAL(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sx0,sy0,sz0
-  REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num,twothird=2.0_num/3.0_num
+  REAL(num), DIMENSION(:), ALLOCATABLE :: sx0, sy0, sz0
+  REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -431,7 +419,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
     izmin0 = -int((noz)/2)
     izmax0 =  int((noz+1)/2)
   END IF
-  ALLOCATE(sx0(ixmin0:ixmax0),sy0(iymin0:iymax0),sz0(izmin0:izmax0))
+  ALLOCATE(sx0(ixmin0:ixmax0), sy0(iymin0:iymax0), sz0(izmin0:izmax0))
   
   signx = 1.0_num
   signy = 1.0_num
@@ -442,9 +430,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  !!$OMP PARALLEL DO PRIVATE(ip,ll,jj,kk,x,y,z,j,k,l,j0,k0,l0,xint,yint,zint,sx,sy,sz,sx0,sy0, &
-  !!$OMP sz0,oxint,xintsq,oxintsq,oyint,yintsq,oyintsq, ozint,zintsq,ozintsq)
-  DO ip=1,np
+  DO ip=1, np
     
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -654,7 +640,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
     DO ll = izmin0, izmax0
       DO kk = iymin0, iymax0
         DO jj = ixmin, ixmax+1
-          bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)*signx
+          bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj, k0+kk, l0+ll)*signx
         END DO
       END DO
     END DO
@@ -662,7 +648,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
     DO ll = izmin0, izmax0
       DO kk = iymin, iymax+1
         DO jj = ixmin0, ixmax0
-          by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)*signy
+          by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj, k+kk, l0+ll)*signy
         END DO
       END DO
     END DO
@@ -670,18 +656,17 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np,xp,yp,zp, &
     DO ll = izmin, izmax+1
       DO kk = iymin0, iymax0
         DO jj = ixmin0, ixmax0
-          bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
+          bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj, k0+kk, l+ll)
         END DO
       END DO
     END DO
   END DO
-  !!OMP END PARALLEL DO
-  DEALLOCATE(sx0,sz0)
+  DEALLOCATE(sx0, sz0)
   
   RETURN
 END SUBROUTINE pxrgetb3d_n_energy_conserving
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Gathering of magnetic field from Yee grid ("energy conserving") on particles
 !> at arbitrary order. WARNING: Highly unoptimized routine
@@ -694,41 +679,36 @@ END SUBROUTINE pxrgetb3d_n_energy_conserving
 !
 !> @date
 !> 2015
-subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
-  bx,by,bz,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
-  bxg,bxg_nguard,bxg_nvalid, &
-  byg,byg_nguard,byg_nvalid, &
-  bzg,bzg_nguard,bzg_nvalid, &
-  l4symtry,l_lower_order_in_v) !#do not wrap
-  ! ______________________________________________________________________________
+! ________________________________________________________________________________________
+subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,     &
+zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
+byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
   use constants
   implicit none
-  
-  integer(idp)                     :: np,nox,noy,noz
-  INTEGER(idp), intent(in)             :: bxg_nguard(3),bxg_nvalid(3),&
-  byg_nguard(3),byg_nvalid(3),&
-  bzg_nguard(3),bzg_nvalid(3)
-  real(num), dimension(np)         :: xp,yp,zp,bx,by,bz
-  LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
-  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, &
-  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1, &
-  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
-  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, &
-  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1, &
-  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
-  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1, &
-  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1, &
-  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
-  real(num) :: xmin,ymin,zmin,dx,dy,dz
-  integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-  ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-  real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-  xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
+  integer(idp)                     :: np, nox, noy, noz
+  INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
+  byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)  
+  real(num), dimension(np)         :: xp, yp, zp, bx, by, bz
+  LOGICAL(lp)       :: l4symtry, l_lower_order_in_v
+  REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
+  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
+  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)  
+  REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
+  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1,                                       &
+  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)  
+  REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,           &
+  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1,                                       &
+  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)  
+  real(num) :: xmin, ymin, zmin, dx, dy, dz
+  integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, ixmin0,      &
+  ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0 
+  real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, xintsq, oxint, yintsq,       &
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq, signx, signy 
   real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
   real(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-  real(num), dimension(:), allocatable :: sx0,sy0,sz0
-  real(num), parameter :: onesixth=1./6.,twothird=2./3.
+  real(num), dimension(:), allocatable :: sx0, sy0, sz0
+  real(num), parameter :: onesixth=1./6., twothird=2./3.
   
   dxi = 1./dx
   dyi = 1./dy
@@ -757,7 +737,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
     izmin0 = -int((noz)/2)
     izmax0 =  int((noz+1)/2)
   end if
-  allocate(sx0(ixmin0:ixmax0),sy0(iymin0:iymax0),sz0(izmin0:izmax0))
+  allocate(sx0(ixmin0:ixmax0), sy0(iymin0:iymax0), sz0(izmin0:izmax0))
   
   signx = 1.
   signy = 1.
@@ -769,7 +749,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
   sy0=0.
   sz0=0.
   
-  do ip=1,np
+  do ip=1, np
     
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -997,7 +977,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
     do ll = izmin0, izmax0
       do kk = iymin0, iymax0
         do jj = ixmin, ixmax+1
-          bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj,k0+kk,l0+ll)*signx
+          bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj, k0+kk, l0+ll)*signx
         end do
       end do
     end do
@@ -1005,7 +985,7 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
     do ll = izmin0, izmax0
       do kk = iymin, iymax+1
         do jj = ixmin0, ixmax0
-          by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj,k+kk,l0+ll)*signy
+          by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj, k+kk, l0+ll)*signy
         end do
       end do
     end do
@@ -1013,18 +993,18 @@ subroutine pxr_getb3d_n_energy_conserving(np,xp,yp,zp, &
     do ll = izmin, izmax+1
       do kk = iymin0, iymax0
         do jj = ixmin0, ixmax0
-          bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj,k0+kk,l+ll)
+          bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj, k0+kk, l+ll)
         end do
       end do
     end do
     
   end do
-  deallocate(sx0,sz0)
+  deallocate(sx0, sz0)
   
   return
 end subroutine pxr_getb3d_n_energy_conserving
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> Gathering of electric field from Yee grid ("energy conserving") on particles
 !> at arbitrary order. WARNING: Highly unoptimized routine
 !> @brief
@@ -1037,41 +1017,37 @@ end subroutine pxr_getb3d_n_energy_conserving
 !
 !> @date
 !> 2015
-subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
-  ex,ey,ez,xmin,ymin,zmin,dx,dy,dz,nox,noy,noz, &
-  exg,exg_nguard,exg_nvalid, &
-  eyg,eyg_nguard,eyg_nvalid, &
-  ezg,ezg_nguard,ezg_nvalid, &
-  l4symtry,l_lower_order_in_v) !#do not wrap
-  ! ______________________________________________________________________________
+! ________________________________________________________________________________________
+subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,     &
+zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
+eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
   use constants
   USE params
   implicit none
-  integer(idp) :: np,nox,noy,noz
-  INTEGER(idp), intent(in) :: exg_nguard(3),exg_nvalid(3),&
-  eyg_nguard(3),eyg_nvalid(3),&
-  ezg_nguard(3),ezg_nvalid(3)
-  real(num), dimension(np) :: xp,yp,zp,ex,ey,ez
-  LOGICAL(lp)       :: l4symtry,l_lower_order_in_v
-  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, &
-  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1, &
-  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
-  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, &
-  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1, &
-  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
-  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, &
-  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1, &
-  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
-  real(num) :: xmin,ymin,zmin,dx,dy,dz
-  integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-  ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
-  real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, &
-  xintsq,oxint,yintsq,oyint,zintsq,ozint,oxintsq,oyintsq,ozintsq,signx,signy
+  integer(idp) :: np, nox, noy, noz
+  INTEGER(idp), intent(in) :: exg_nguard(3), exg_nvalid(3), eyg_nguard(3),            &
+  eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)  
+  real(num), dimension(np) :: xp, yp, zp, ex, ey, ez
+  LOGICAL(lp)       :: l4symtry, l_lower_order_in_v
+  REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
+  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
+  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)  
+  REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
+  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1,                                       &
+  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)  
+  REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
+  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
+  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)  
+  real(num) :: xmin, ymin, zmin, dx, dy, dz
+  integer(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, ixmin0,      &
+  ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0 
+  real(num) :: dxi, dyi, dzi, x, y, z, xint, yint, zint, xintsq, oxint, yintsq,       &
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq, signx, signy 
   real(num), DIMENSION(-int(nox/2):int((nox+1)/2)) :: sx
   real(num), DIMENSION(-int(noy/2):int((noy+1)/2)) :: sy
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
-  real(num), dimension(:), allocatable :: sx0,sy0,sz0
-  real(num), parameter :: onesixth=1./6.,twothird=2./3.
+  real(num), dimension(:), allocatable :: sx0, sy0, sz0
+  real(num), parameter :: onesixth=1./6., twothird=2./3.
   
   dxi = 1./dx
   dyi = 1./dy
@@ -1100,12 +1076,12 @@ subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
     izmax0 =  int((noz+1)/2)
   end if
   
-  allocate(sx0(ixmin0:ixmax0),sy0(iymin0:iymax0),sz0(izmin0:izmax0))
+  allocate(sx0(ixmin0:ixmax0), sy0(iymin0:iymax0), sz0(izmin0:izmax0))
   
   signx = 1.
   signy = 1.
   
-  do ip=1,np
+  do ip=1, np
     
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -1334,7 +1310,7 @@ subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
     do ll = izmin, izmax+1
       do kk = iymin, iymax+1
         do jj = ixmin0, ixmax0
-          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj,k+kk,l+ll)*signx
+          ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj, k+kk, l+ll)*signx
         end do
       end do
     end do
@@ -1342,7 +1318,7 @@ subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
     do ll = izmin, izmax+1
       do kk = iymin0, iymax0
         do jj = ixmin, ixmax+1
-          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj,k0+kk,l+ll)*signy
+          ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj, k0+kk, l+ll)*signy
         end do
       end do
     end do
@@ -1350,27 +1326,13 @@ subroutine pxr_gete3d_n_energy_conserving(np,xp,yp,zp, &
     do ll = izmin0, izmax0
       do kk = iymin, iymax+1
         do jj = ixmin, ixmax+1
-          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj,k+kk,l0+ll)
+          ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj, k+kk, l0+ll)
         end do
       end do
     end do
     
-    ! Debugging
-    !     IF (it.gt.0) THEN
-    !       print*,'ex,ey,ez',ex(ip),ey(ip),ez(ip)
-    !       print*,'j',j,k,l
-    !       print*,'j0',j0,k0,l0
-    !       print*,'sx',sx(:)
-    !       print*,'sy',sy(:)
-    !       print*,'sz',sz(:)
-    !       print*,'sx0',sx0(:)
-    !       print*,'sy0',sy0(:)
-    !       print*,'sz0',sz0(:)
-    !       read*
-    !     ENDIF
-    
   end do
-  deallocate(sx0,sy0,sz0)
+  deallocate(sx0, sy0, sz0)
   
   return
 end subroutine pxr_gete3d_n_energy_conserving

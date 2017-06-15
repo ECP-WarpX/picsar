@@ -1,5 +1,5 @@
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the electric field with the 3D Yee FDTD
 !> scheme (order 2).
@@ -25,19 +25,26 @@
 !> @param[in] zlo the lowest indices (in 3D) at which to update the Ez field
 !> @param[in] zhi the highest indices (in 3D) at which to update the Ez field
 !> @param[inout] ex the array of values of the Ex field
-!> @param[in] exlo the lowest bound (in 3D) of the array `ex` (`exlo` is always lower than `xlo`)
-!> @param[in] exhi the highest bound (in 3D) of the array `ex` (`exlo` is always higher than `xlo`)
+!> @param[in] exlo the lowest bound (in 3D) of the array `ex`
+!> (`exlo` is always lower than `xlo`)
+!> @param[in] exhi the highest bound (in 3D) of the array `ex` 
+!> (`exlo` is always higher than `xlo`)
 !> @param[inout] ey the array of values of the Ey field
-!> @param[in] eylo the lowest bound (in 3D) of the array `ey` (`eylo` is always lower than `ylo`)
-!> @param[in] eyhi the highest bound (in 3D) of the array `ey` (`eylo` is always higher than `ylo`)
+!> @param[in] eylo the lowest bound (in 3D) of the array `ey` 
+!> (`eylo` is always lower than `ylo`)
+!> @param[in] eyhi the highest bound (in 3D) of the array `ey` 
+!> (`eylo` is always higher than `ylo`)
 !> @param[inout] ez the array of values of the Ez field
-!> @param[in] ezlo the lowest bound (in 3D) of the array `ez` (`ezlo` is always lower than `zlo`)
-!> @param[in] ezhi the highest bound (in 3D) of the array `ez` (`ezlo` is always higher than `zlo`)
+!> @param[in] ezlo the lowest bound (in 3D) of the array `ez` 
+!> (`ezlo` is always lower than `zlo`)
+!> @param[in] ezhi the highest bound (in 3D) of the array `ez` 
+!> (`ezlo` is always higher than `zlo`)
 !>
 !>
 !>
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine warpx_pxr_push_em3d_evec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
@@ -111,7 +118,7 @@ end subroutine warpx_pxr_push_em3d_evec
 
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the magnetic field with the 3D Yee FDTD
 !> scheme (order 2).
@@ -136,14 +143,20 @@ end subroutine warpx_pxr_push_em3d_evec
 !> @param[in] zlo the lowest indices (in 3D) at which to update the Bz field
 !> @param[in] zhi the highest indices (in 3D) at which to update the Bz field
 !> @param[inout] bx the array of values of the Bx field
-!> @param[in] bxlo the lowest bound (in 3D) of the array `bx` (`bxlo` is always lower than `xlo`)
-!> @param[in] bxhi the highest bound (in 3D) of the array `bx` (`bxlo` is always higher than `xlo`)
+!> @param[in] bxlo the lowest bound (in 3D) of the array `bx` 
+!> (`bxlo` is always lower than `xlo`)
+!> @param[in] bxhi the highest bound (in 3D) of the array `bx` 
+!> (`bxlo` is always higher than `xlo`)
 !> @param[inout] by the array of values of the by field
-!> @param[in] bylo the lowest bound (in 3D) of the array `by` (`bylo` is always lower than `ylo`)
-!> @param[in] byhi the highest bound (in 3D) of the array `by` (`bylo` is always higher than `ylo`)
+!> @param[in] bylo the lowest bound (in 3D) of the array `by` 
+!> (`bylo` is always lower than `ylo`)
+!> @param[in] byhi the highest bound (in 3D) of the array `by`
+!>  (`bylo` is always higher than `ylo`)
 !> @param[inout] bz the array of values of the bz field
-!> @param[in] bzlo the lowest bound (in 3D) of the array `bz` (`bzlo` is always lower than `zlo`)
-!> @param[in] bzhi the highest bound (in 3D) of the array `bz` (`bzlo` is always higher than `zlo`)
+!> @param[in] bzlo the lowest bound (in 3D) of the array `bz` 
+!> (`bzlo` is always lower than `zlo`)
+!> @param[in] bzhi the highest bound (in 3D) of the array `bz` 
+!> (`bzlo` is always higher than `zlo`)
 !>
 !> @author
 !> Weiqun Zhang
@@ -151,6 +164,7 @@ end subroutine warpx_pxr_push_em3d_evec
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine warpx_pxr_push_em3d_bvec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
@@ -212,7 +226,7 @@ subroutine warpx_pxr_push_em3d_bvec( &
 end subroutine warpx_pxr_push_em3d_bvec
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the electric field with the 2D Yee FDTD
 !> scheme (order 2).
@@ -225,6 +239,7 @@ end subroutine warpx_pxr_push_em3d_bvec
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine warpx_pxr_push_em2d_evec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex, exlo, exhi, &
@@ -239,7 +254,6 @@ subroutine warpx_pxr_push_em2d_evec( &
      mudt,    &
      dtsdx,dtsdy,dtsdz,&
      norder) bind(c) !#do not parse
-! ______________________________________________________________________________
 
   use constants
 
@@ -291,7 +305,7 @@ end subroutine warpx_pxr_push_em2d_evec
 
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the magnetic field with the 2D Yee FDTD
 !> scheme (order 2).
@@ -304,6 +318,7 @@ end subroutine warpx_pxr_push_em2d_evec
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine warpx_pxr_push_em2d_bvec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&

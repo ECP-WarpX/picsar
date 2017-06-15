@@ -29,7 +29,7 @@
  Input arguments: filename
 
  Outputs:
- 1. New fortran file filename_forthon.F90 guidelines compliant
+ 1. New fortran file guidelines compliant
 
  Developers:
  Henri Vincenti
