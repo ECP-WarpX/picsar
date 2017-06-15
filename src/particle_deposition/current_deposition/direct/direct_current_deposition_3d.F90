@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -79,24 +80,27 @@
 !> @param[in] dy mesh size along y (scalar)
 !> @param[in] dz mesh size along z (scalar)
 !> @param[inout] jx x-current component (3D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> jx array (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
+!>  (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> jy array (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> jz array (1d array containing 3 integers)
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
-  ! ______________________________________________________________________________
-  
   USE constants
-  IMPLICIT NONE
-  
+  IMPLICIT NONE  
   INTEGER(idp)             :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
   jz_nguard(3), jz_nvalid(3)  
@@ -220,13 +224,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   RETURN
 END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 
-
-
-
-
-
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 1 3D vector direct current deposition routine (rho*v)
 !> This versions have good performances on SIMD architectures
@@ -265,14 +263,12 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 !> @param[inout] jy y-current component (3D array)
 !> @param[inout] jz z-current component (3D array)
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
-  
   ! ___ Parameter declaration ______________________________________
   INTEGER(idp)             :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
@@ -586,7 +582,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 1 3D vector current deposition routine (rho*v) with no reduction
 !
@@ -629,14 +625,11 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 !> @param[in] nzguard number of guard cells along z (scalar)
 !> @param[in] ncx, ncy, ncz tile cell extended number (depends on the order)
 !> @param[in] lvect vector length
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, xp,   &
 yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
 nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  
-  !
-  ! ______________________________________________________________________________
   USE constants
-  
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
   INTEGER(idp), INTENT(IN)                      :: nxguard, nyguard, nzguard
@@ -647,7 +640,6 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   REAL(num), INTENT(IN)                         :: q, dt, dx, dy, dz, xmin, ymin,     &
   zmin
   REAL(num)                                     :: x, y, z, xmid, ymid, zmid
-  
   INTEGER(isp)                                  :: j, k, l, j0, k0, l0, ip
   INTEGER(isp)                                  :: n, nn, nv
   REAL(num)                                     :: mx(1:8), my(1:8), mz(1:8),         &
@@ -807,8 +799,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 2 3D scalar current deposition routine (jx*v)
 !
@@ -820,11 +811,10 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 !
 !> @date
 !> 2015
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np
@@ -1017,7 +1007,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
 END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 2 3D vector direct current deposition routine (rho*v)
 !
@@ -1058,18 +1048,14 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 !> @param[inout] jy y-current component (3D array)
 !> @param[inout] jz z-current component (3D array)
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
 gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
 nzguard)  
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
   
   INTEGER(idp)             :: np, nx, ny, nz, nxguard, nyguard, nzguard
-  !REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)), INTENT(IN OUT) :: jx
-  !REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)), INTENT(IN OUT) :: jy
-  !REAL(num), DIMENSION(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard)), INTENT(IN OUT) :: jz
   REAL(num), INTENT(IN OUT) ::                                                        &
   jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -1349,12 +1335,6 @@ nzguard)
       !$DIR SIMD
 #endif
       DO nv=1, 4
-        ! Other algorithm
-        !jxcells(1, IG(n, 1)+nv-2) = jxcells(1, IG(n, 1)+nv-2) + ww0x(n, nv)
-        !jycells(1, IG(n, 2)+nv-2) = jycells(1, IG(n, 2)+nv-2) + ww0y(n, nv)
-        !jzcells(1, IG(n, 3)+nv-2) = jzcells(1, IG(n, 3)+nv-2) + ww0z(n, nv)
-        
-        ! Old but correct and efficient
         jx(orig+IG(n, 1)+nv-2)=jx(orig+IG(n, 1)+nv-2)+ww0x(n, nv)
         jy(orig+IG(n, 2)+nv-2)=jy(orig+IG(n, 2)+nv-2)+ww0y(n, nv)
         jz(orig+IG(n, 3)+nv-2)=jz(orig+IG(n, 3)+nv-2)+ww0z(n, nv)
@@ -1438,7 +1418,7 @@ nzguard)
 END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 ! depose_jxjyjz_vecHV_vnr_2_2_2
 !
 !> @brief
@@ -1470,15 +1450,13 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 !> @param[in] nxguard, nyguard, nzguard guard cells
 !> @param[in] ncx, ncy, ncz tile cell extended number (depends on the order)
 !> @param[in] lvect vector length
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, xp,   &
 yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
 nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
-  
   ! ____ Parameter initialization _____________________________________
-  
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
   INTEGER(idp), INTENT(IN)                      :: ncx, ncy, ncz
   INTEGER(idp)                                  :: nxguard, nyguard, nzguard
@@ -1488,7 +1466,6 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   w
   REAL(num)                                     :: q, dt, dx, dy, dz, xmin, ymin,     &
   zmin
-  
   REAL(num)                                     :: xint, yint, zint
   REAL(num)                                     :: xintsq, yintsq, zintsq
   REAL(num)                                     :: x, y, z, xmid, ymid, zmid
@@ -1779,11 +1756,10 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np
@@ -2123,10 +2099,10 @@ END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
 gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
 nzguard) 
-  !  _______________________________________________________________________________________
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2517,14 +2493,12 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
 !> @param[in] nx, ny, nz number of cells
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
 gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
 nzguard) 
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   ! ___ Parameter declaration _______________________________________
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -2906,7 +2880,7 @@ nzguard)
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 3 3D vector current deposition routine (rho*v).
 !
@@ -2938,11 +2912,10 @@ END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 !> @param[in] nxguard, nyguard, nzguard guard cells
 !> @param[in] ncx, ncy, ncz tile cell extended number (depends on the order)
 !> @param[in] lvect vector size
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, xp,   &
 yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
 nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
   
@@ -3288,7 +3261,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
 END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine performs the reduction of jxcellx, jycells and jzcells
 !> into jx, jy and jz.
@@ -3309,10 +3282,9 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 !> @param[in] nx, ny, nz: tile cell numbers in each direction
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] ncx, ncy, ncz
-!
+! ________________________________________________________________________________________
 SUBROUTINE current_reduction_1_1_1(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
 ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) 
-  ! ______________________________________________________________________________
   USE constants
   USE precomputed
   IMPLICIT NONE
@@ -3326,16 +3298,11 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   REAL(num), INTENT(IN OUT) ::                                                        &
   jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   REAL(num), INTENT(IN), DIMENSION(8, ncells):: jxcells, jycells, jzcells
-  
-  
   INTEGER(isp)                             :: nnx, nnxy
   INTEGER(isp)                             :: moff(1:8)
-  
   INTEGER(isp)                             :: orig, jorig, korig, lorig
   INTEGER(isp)                             :: igrid, ic
   INTEGER(isp) :: ncxy, ix, iy, iz, ngridx, ngridy, ngx, ngxy
-  
-  
   ! _____________________________________________________________
   ! Parameters
   
@@ -3408,7 +3375,6 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   RETURN
 END SUBROUTINE current_reduction_1_1_1
 
-
 ! ______________________________________________________________________________
 !> @brief
 !> This subroutine performs the reduction of jxcellx, jycells
@@ -3430,13 +3396,12 @@ END SUBROUTINE current_reduction_1_1_1
 !> @param[in] nx, ny, nz: tile cell numbers in each direction
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] ncx, ncy, ncz
+! ________________________________________________________________________________________
 SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
 ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
-  ! ______________________________________________________________________________
   USE constants
   USE precomputed
   IMPLICIT NONE
-  
   INTEGER(idp), INTENT(IN)               :: nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp), INTENT(IN)               :: ncx, ncy, ncz
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -3447,7 +3412,6 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   INTEGER(idp), INTENT(IN)               :: ncells
   REAL(num), INTENT(IN), DIMENSION(8, ncells)  :: jxcells, jycells, jzcells
-  
   INTEGER(isp)                           :: ic
   INTEGER(isp)                           :: moff(1:8)
   INTEGER(isp)                           :: igrid, orig, jorig, korig, lorig
@@ -3525,7 +3489,7 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   RETURN
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine performs the reduction of jxcellx, jycells and jzcells
 !> into jx, jy and jz.
@@ -3546,9 +3510,9 @@ END SUBROUTINE
 !> @param[in] nx, ny, nz: tile cell numbers in each direction
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] ncx, ncy, ncz
+! ________________________________________________________________________________________
 SUBROUTINE current_reduction_3_3_3(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
 ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) 
-  ! ______________________________________________________________________________
   USE constants
   USE precomputed
   IMPLICIT NONE

@@ -2,16 +2,19 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, ! The Regents of the University of California, through Lawrence Berkeley National
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
+! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
 ! and the U.S. Government consequently retains certain rights. As such, the U.S.
-! Government has been granted for itself and others acting on its behalf a paid-up, ! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! Government has been granted for itself and others acting on its behalf a paid-up, 
+! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
 ! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
@@ -62,8 +65,8 @@ END MODULE matrix_data
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 MODULE matrix_coefficients!#do not parse
-  ! ________________________________________________________________________________________
   USE matrix_data
   IMPLICIT NONE
   TYPE block3d
@@ -80,7 +83,8 @@ MODULE matrix_coefficients!#do not parse
     INTEGER(idp) :: nblocks
   END TYPE vector_blocks
   
-  ! Array of 2D block matrixes (contaning 3d blocks coefficients for GPSTD_Maxwell, GPSTD_Maxwell_PML etc.)
+  ! Array of 2D block matrixes 
+  ! (contaning 3d blocks coefficients for GPSTD_Maxwell, GPSTD_Maxwell_PML etc.)
   TYPE(matrix_blocks), POINTER, DIMENSION(:) :: cc_mat
   ! Arrays of 1D block vectors  (containing 3d blocks Ex, Ey, Ez etc.)
   TYPE(vector_blocks), POINTER, DIMENSION(:) :: vnew, vold
@@ -100,8 +104,8 @@ END MODULE matrix_coefficients
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE point_to_matrix_block_p2f(ain, n1, n2, n3, bid1, bid2, mat_index)
-  ! ________________________________________________________________________________________
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1, bid2
@@ -126,8 +130,8 @@ END SUBROUTINE point_to_matrix_block_p2f
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE point_to_matrix_block(ain, n1, n2, n3, mat_index, bid1, bid2)
-  ! ________________________________________________________________________________________
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1, bid2
@@ -149,8 +153,8 @@ END SUBROUTINE point_to_matrix_block
 !> @date
 !> Creation 2016
 !
+! ________________________________________________________________________________________
 SUBROUTINE point_to_vec_block(ain, n1, n2, n3, mat_index, bid1, old)
-  ! ________________________________________________________________________________________
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1
@@ -176,8 +180,8 @@ END SUBROUTINE point_to_vec_block
 !> @date
 !> Creation 2016
 !
+! ________________________________________________________________________________________
 SUBROUTINE modify_vec_block(value, mat_index, bid1, old)
-  ! ________________________________________________________________________________________
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN)   :: mat_index, bid1
@@ -204,8 +208,8 @@ END SUBROUTINE modify_vec_block
 !> @date
 !> Creation 2016
 !
+! ________________________________________________________________________________________
 SUBROUTINE point_to_vector_block_p2f(ain, n1, n2, n3, iv, mat_index, old, is_source)
-  ! ________________________________________________________________________________________
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: n1, n2, n3, mat_index, iv
@@ -240,8 +244,8 @@ END SUBROUTINE point_to_vector_block_p2f
 !> @date
 !> Creation 2016
 !
+! ________________________________________________________________________________________
 SUBROUTINE nullify_vector_block(bid, mat_index)
-  ! ________________________________________________________________________________________
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: mat_index, bid
@@ -263,8 +267,8 @@ END SUBROUTINE nullify_vector_block
 !> @date
 !> Creation 2016
 !
+! ________________________________________________________________________________________
 SUBROUTINE allocate_new_matrix_vector(nvar)
-  ! ________________________________________________________________________________________
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nvar
@@ -303,9 +307,8 @@ END SUBROUTINE allocate_new_matrix_vector
 !> @date
 !> Creation 2016
 !
-SUBROUTINE multiply_mat_vector(matrix_index)
-  ! ________________________________________________________________________________________
-  
+! ________________________________________________________________________________________
+SUBROUTINE multiply_mat_vector(matrix_index)  
   USE matrix_coefficients
 #ifdef _OPENMP
   USE omp_lib
@@ -379,10 +382,9 @@ END SUBROUTINE
 !> @date
 !> Creation 2016
 !
+! ________________________________________________________________________________________
 SUBROUTINE multiply_unit_blocks(anew, block1, n1, n2, n3, coeff1, nc1, nc2, nc3,      &
 nthreads)
-  ! ________________________________________________________________________________________
-  
   USE constants
 #ifdef _OPENMP
   USE omp_lib

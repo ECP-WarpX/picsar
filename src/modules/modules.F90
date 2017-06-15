@@ -1,4 +1,4 @@
-! ==============================================================================
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -21,19 +22,19 @@
 !
 ! This file contains several modules with parameters for different purposes.
 !
-! ==============================================================================
+! ________________________________________________________________________________________
 
 
-!===============================================================================
+! ________________________________________________________________________________________
 ! Contains shared data
-!===============================================================================
+! ________________________________________________________________________________________
 
+! ________________________________________________________________________________________
 !> @brief
 !> Module containing precision parameters (double, single, complex etc.)
 !> for declaration of ints, floats etc.
+! ________________________________________________________________________________________
 MODULE PICSAR_precision
-  !===============================================================================
-  !>
   !> Float precision
   INTEGER, PARAMETER :: num = 8
   !> Integer 4 byte precision
@@ -46,10 +47,11 @@ MODULE PICSAR_precision
   INTEGER, PARAMETER :: cpx = 8
 END MODULE PICSAR_precision
 
+! ________________________________________________________________________________________
 !> @brief
 !> Module containing the Picsar constant parameters
+! ________________________________________________________________________________________
 MODULE constants
-  !===============================================================================
   USE PICSAR_precision
   !> Electron mass
   REAL(num), PARAMETER :: emass   = 9.10938291e-31_num
@@ -84,11 +86,11 @@ MODULE constants
   INTEGER(idp), PARAMETER :: LVEC = 8
 END MODULE constants
 
-!=========================================================================================
+! ________________________________________________________________________________________
 !> @brief
 !> Module containing useful pre-computed parameters for some subroutines
+! ________________________________________________________________________________________
 MODULE precomputed
-  !=========================================================================================
   USE constants
   !> Inverse of the space discretization:
   !> \f$ 1/dx \f$
@@ -106,11 +108,11 @@ MODULE precomputed
   REAL(num) :: clightsq
 END MODULE precomputed
 
-!=========================================================================================
+! ________________________________________________________________________________________
 !> @brief
 !> Module containing parameters and data structures for the fields
+! ________________________________________________________________________________________
 MODULE fields
-  !=========================================================================================
   USE constants
   !> Flag: interpolation at a lower order for the field gathering
   LOGICAL(lp) :: l_lower_order_in_v
@@ -225,11 +227,9 @@ END MODULE fields
 ! ________________________________________________________________________________________
 !> @brief
 !> Module containing the field tile data structure.
+! ________________________________________________________________________________________
 MODULE grid_tilemodule!#do not parse
-  ! ________________________________________________________________________________________
-  
   USE constants
-  
   !> This object contains 3D field grids for one tile
   TYPE grid_tile
     !> Tile Electric field grid in x
@@ -267,19 +267,6 @@ MODULE grid_tilemodule!#do not parse
     !dir$ attributes align:64 :: jztile
     !dir$ attributes align:64 :: rhotile
 #endif
-    ! FastMEM attributes to manage where the data are allocated (DDR/MCDRAM)
-    ! This is not activated.
-    !!DIR ATTRIBUTES FASTMEM  :: extile
-    !!DIR ATTRIBUTES FASTMEM  :: eytile
-    !!DIR ATTRIBUTES FASTMEM  :: eztile
-    !!DIR ATTRIBUTES FASTMEM  :: bxtile
-    !!DIR ATTRIBUTES FASTMEM  :: bytile
-    !!DIR ATTRIBUTES FASTMEM  :: bztile
-    !!DIR ATTRIBUTES FASTMEM  :: jxtile
-    !!DIR ATTRIBUTES FASTMEM  :: jytile
-    !!DIR ATTRIBUTES FASTMEM  :: jztile
-    !!DIR ATTRIBUTES FASTMEM  :: rhotile
-    
   END TYPE
   
   !> This array contains a list of tile field grids.
@@ -289,14 +276,13 @@ MODULE grid_tilemodule!#do not parse
   
 END MODULE grid_tilemodule
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> @brief
 !> Module containing the Fortran object descriptor representing a particle tile.
 !> Also see tiling.F90 for the definition of the tile properties.
+! ________________________________________________________________________________________
 MODULE particle_tilemodule!#do not parse
-  !===============================================================================
   USE constants
-  
   !> Object that contains tile particle arrays and particle tile properties.
   TYPE particle_tile
     !> Flag: tile arrays are allocated
@@ -409,26 +395,12 @@ MODULE particle_tilemodule!#do not parse
     !dir$ attributes align:64 :: part_bz
     !dir$ attributes align:64 :: pid
 #endif
-    ! FastMEM attributes to manage where the data are allocated (DDR/MCDRAM)
-    ! This is not activated.
-    !DIR ATTRIBUTES FASTMEM  :: part_x
-    !DIR ATTRIBUTES FASTMEM  :: part_y
-    !DIR ATTRIBUTES FASTMEM  :: part_z
-    !DIR ATTRIBUTES FASTMEM  :: part_ux
-    !DIR ATTRIBUTES FASTMEM  :: part_uy
-    !DIR ATTRIBUTES FASTMEM  :: part_uz
-    !DIR ATTRIBUTES FASTMEM  :: part_gaminv
-    !DIR ATTRIBUTES FASTMEM  :: part_ex
-    !DIR ATTRIBUTES FASTMEM  :: part_ey
-    !DIR ATTRIBUTES FASTMEM  :: part_ez
-    !DIR ATTRIBUTES FASTMEM  :: part_bx
-    !DIR ATTRIBUTES FASTMEM  :: part_by
-    !DIR ATTRIBUTES FASTMEM  :: part_bz
-    !DIR ATTRIBUTES FASTMEM  :: pid
   END TYPE
 END MODULE particle_tilemodule
 
+! ________________________________________________________________________________________
 !> Module defining particle_antenna type 
+! ________________________________________________________________________________________
 MODULE antenna!#do not parse 
   USE constants
   TYPE particle_antenna
@@ -451,7 +423,8 @@ MODULE antenna!#do not parse
     REAL(num)         :: inv_w02! 1./w0**2
     COMPLEX(cpx)      :: q_z! complex curv on the plan
     COMPLEX(cpx)      :: q_0! complex_curv at focus
-    REAL(num)         :: laser_ctau! length of the pulse(length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
+    REAL(num)         :: laser_ctau! length of the pulse ---> 
+    ! ---> (length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
     REAL(num)         :: laser_tau! time duration of the pulse
     REAL(num)         :: t_peak
     REAL(num)         :: laser_z0! initial position with respect to (spot, vector)
@@ -461,7 +434,8 @@ MODULE antenna!#do not parse
     REAL(num)         :: focal_length! focal length of the lens
     REAL(num)         :: zr! rayleigh length of the laser  
     REAL(num)         :: inv_zr!1/zr  
-    REAL(num)         :: polangle! phase shift between laser along povector2 and polvector1
+    REAL(num)         :: polangle! phase shift between laser along povector2 --> 
+    ! --> and polvector1
     REAL(num)         :: lambda_laser
     REAL(num)         :: k0_laser
     COMPLEX(cpx)      :: diffract_factor
@@ -469,11 +443,11 @@ MODULE antenna!#do not parse
   END TYPE particle_antenna
 END MODULE antenna
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> @brief
 !> Module containing the Fortran object descriptor representing a particle species
+! ________________________________________________________________________________________
 MODULE particle_speciesmodule!#do not parse
-  !===============================================================================
   USE particle_tilemodule
   USE constants
   USE antenna
@@ -540,11 +514,11 @@ MODULE particle_speciesmodule!#do not parse
   END TYPE
 END MODULE particle_speciesmodule
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> @brief
 !> Module for the tile parameters
+! ________________________________________________________________________________________
 MODULE tile_params
-  !===============================================================================
   ! # of particle tiles in each dimension
   USE constants
   !> Number of tile in the x direction
@@ -556,10 +530,10 @@ MODULE tile_params
 END MODULE tile_params
 
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module containing useful properties for the particles
+! ________________________________________________________________________________________
 MODULE particle_properties
-  !===============================================================================
   USE constants
   !> Number of elements per particle in the pid particle array
   !> Default is 1 i.e only particle weights are recorded
@@ -604,12 +578,10 @@ MODULE particle_properties
   LOGICAL(lp) :: l_plasma = .TRUE.
 END MODULE particle_properties
 
-
-
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module containing the array of species
+! ________________________________________________________________________________________
 MODULE particles!#do not parse
-  !===============================================================================
   USE constants
   USE tile_params
   USE particle_tilemodule
@@ -622,12 +594,11 @@ MODULE particles!#do not parse
   
 END MODULE particles
 
-!=========================================================================================
+! ________________________________________________________________________________________
 !> Module containing useful configuration and simulation parameters
+! ________________________________________________________________________________________
 MODULE params
-  !=========================================================================================
   USE constants
-  
   !> iteration number
   INTEGER(idp)         :: it
   !> Total number of steps
@@ -695,10 +666,10 @@ MODULE params
   
 END MODULE params
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module containing MPI parameters
+! ________________________________________________________________________________________
 MODULE mpi_type_constants!#do not parse
-  !===============================================================================
   use mpi
   use constants
   !> Variable with a short name that contains the double size
@@ -718,12 +689,11 @@ MODULE mpi_type_constants!#do not parse
   LOGICAL(lp), DIMENSION(100) :: is_dtype_init = .TRUE.
 END MODULE mpi_type_constants
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module for the communications
+! ________________________________________________________________________________________
 MODULE communications!#do not parse
-  !===============================================================================
   use constants
-  
   INTEGER(isp) :: reqperjxx(4)
   INTEGER(isp) :: reqperjxy(4)
   INTEGER(isp) :: reqperjxz(4)
@@ -847,16 +817,13 @@ MODULE communications!#do not parse
     !> Number of particles to be exchanged in each direction
     INTEGER(idp), dimension(27) :: npart
   END TYPE
-  
-  
 END MODULE communications
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module for the time statistics
+! ________________________________________________________________________________________
 MODULE time_stat!#do not parse
-  !===============================================================================
   use constants
-  
   !> Activation of the outputs
   INTEGER(idp)                           :: timestat_activated
   !> Period for the outputs
@@ -867,26 +834,22 @@ MODULE time_stat!#do not parse
   INTEGER(idp)                           :: timestat_perit
   !> MPI local times for the initialization
   REAL(num), dimension(5)                :: init_localtimes
-  
-  
   !> MPI local times for the main loop
   REAL(num), dimension(20)               :: localtimes
   REAL(num), DIMENSION(20)               :: mintimes, init_mintimes
   REAL(num), DIMENSION(20)               :: maxtimes, init_maxtimes
   REAL(num), DIMENSION(20)               :: avetimes, init_avetimes
-  
   !> Buffer for the output
   REAL(num), DIMENSION(:, :), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat
   !> Number of entries in the buffer
   INTEGER(idp)                           :: nbuffertimestat
-  
 END MODULE
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module for the outputs
+! ________________________________________________________________________________________
 MODULE output_data!#do not parse
-  !===============================================================================
   use constants
   
   ! Simulation time statistics
@@ -1029,10 +992,10 @@ MODULE output_data!#do not parse
 END MODULE output_data
 
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module for the data shared with Python.
+! ________________________________________________________________________________________
 MODULE shared_data
-  !===============================================================================
   use mpi_type_constants
   USE output_data
   !----------------------------------------------------------------------------
@@ -1085,7 +1048,6 @@ MODULE shared_data
   INTEGER(idp) :: nprocz
   !> This parameter is not used
   INTEGER(isp) :: nprocdir(3)
-  
   ! Boundary data
   !> This flag is true if the MPI rank is at the inferior x grid boundary
   LOGICAL(lp)  :: x_min_boundary
@@ -1099,7 +1061,6 @@ MODULE shared_data
   LOGICAL(lp)  :: z_min_boundary
   !> This flag is true if the MPI rank is at the superior z grid boundary
   LOGICAL(lp)  :: z_max_boundary
-  
   !> This flag is true if the MPI rank is at the inferior x part boundary
   LOGICAL(lp)  :: x_min_boundary_part
   !> This flag is true if the MPI rank is at the superior x part boundary
@@ -1111,9 +1072,7 @@ MODULE shared_data
   !> This flag is true if the MPI rank is at the inferior z part boundary
   LOGICAL(lp)  :: z_min_boundary_part
   !> This flag is true if the MPI rank is at the superior z part boundary
-  LOGICAL(lp)  :: z_max_boundary_part
-  
-  
+  LOGICAL(lp)  :: z_max_boundary_part  
   !> Type of particle boundary condition at the inferior x boundary
   INTEGER(idp) :: pbound_x_min
   !> Type of boundary condition at the superior x boundary
@@ -1126,8 +1085,6 @@ MODULE shared_data
   INTEGER(idp) :: pbound_z_min
   !> Type of boundary condition at the superior z boundary
   INTEGER(idp) :: pbound_z_max
-  
-  
   ! The location of the processors
   !> Minimum cell number in x for each MPI process
   INTEGER(idp), DIMENSION(:), POINTER :: cell_x_min
@@ -1153,7 +1110,6 @@ MODULE shared_data
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_min
   !> Used in em3dsolverPXR.py
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_z_max
-  
   !> Minimum node number in x in the current MPI process
   INTEGER(idp)                        :: nx_global_grid_min
   !> Maximal node number in x in the current MPI process
@@ -1166,7 +1122,6 @@ MODULE shared_data
   INTEGER(idp)                        :: nz_global_grid_min
   !> Maximal node number in z in the current MPI process
   INTEGER(idp)                        :: nz_global_grid_max
-  
   ! Domain axis
   !> Flag true when arrays of axis (x, y, z, x_global, y_global, z_global)
   !> are allocated (see mpi_routines.F90)
@@ -1177,8 +1132,6 @@ MODULE shared_data
   REAL(num), DIMENSION(:), POINTER    :: y_global
   !> Global z axis cell array with guard cells (-nzguards:nz_global+nzguards)
   REAL(num), DIMENSION(:), POINTER    :: z_global
-  
-  
   ! domain limits and size
   !> local number of cells in x
   INTEGER(idp)                        :: nx
@@ -1210,7 +1163,6 @@ MODULE shared_data
   INTEGER(idp)                        :: ny_global_grid
   !> global number of grid points in z
   INTEGER(idp)                        :: nz_global_grid
-  
   !> Space step in x
   REAL(num)                           :: dx
   !> Global grid minimal limit in x
@@ -1247,9 +1199,6 @@ MODULE shared_data
   REAL(num)                           :: z_min_local
   !> Local maximal grid limit in z
   REAL(num)                           :: z_max_local
-  
-  
-  
   !> Local minimal particle domain limit in x
   REAL(num)                           :: x_min_local_part
   !> Local maximal particle domain limit in x
@@ -1262,7 +1211,6 @@ MODULE shared_data
   REAL(num)                           :: z_min_local_part
   !> Local maximal particle domain limit in x
   REAL(num)                           :: z_max_local_part
-  
   !> Global minimal particle domain limit in x
   REAL(num)                           :: xmin_part
   !> Global maximal particle domain limit in x
@@ -1275,14 +1223,12 @@ MODULE shared_data
   REAL(num)                           :: zmin_part
   !> Global  maximal particle domain limit in x
   REAL(num)                           :: zmax_part
-  
   !> global particle domain length in x: xmax_part - xmin_part
   REAL(num)                           :: length_x_part
   !> global particle domain length in y: ymax_part - ymin_part
   REAL(num)                           :: length_y_part
   !> global particle domain length in z: zmax_part - zmin_part
   REAL(num)                           :: length_z_part
-  
   !> Offset between grid and particle limits (x min bound)
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
@@ -1302,7 +1248,6 @@ MODULE shared_data
   !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
   !> particle boundary conditions. Forced to 0 otherwise 
   REAL(num)                           :: offset_grid_part_z_max =0.0_num
-  
   ! Sorting
   !> Activation of the sorting
   INTEGER(idp) :: sorting_activated
@@ -1320,7 +1265,6 @@ MODULE shared_data
   REAL(NUM)    :: sorting_shiftz
   !> verbose for the sorting (depreciated)
   LOGICAL(lp)  :: sorting_verbose
-  
   ! Axis
   !> Space dimension
   INTEGER(idp) :: c_dim = 3
@@ -1330,7 +1274,6 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:) :: y
   !> Local z axis cell array with guard cells (-nzguards:nz+nzguards)
   REAL(num), POINTER, DIMENSION(:) :: z
-  
   !> Local grid minimum in x for each processor (1:nprocx)
   REAL(num), DIMENSION(:), POINTER :: x_grid_mins
   !> Local grid maximum in x for each processor (1:nprocx)
@@ -1343,7 +1286,6 @@ MODULE shared_data
   REAL(num), DIMENSION(:), POINTER :: z_grid_mins
   !> Local grid maximum in z for each processor (1:nprocz)
   REAL(num), DIMENSION(:), POINTER :: z_grid_maxs
-  
   !> Minimal global grid limit in x
   REAL(num) :: x_grid_min
   !> Maximal global grid limit in x
@@ -1368,7 +1310,6 @@ MODULE shared_data
   REAL(num) :: z_grid_min_local
   !> Maximal local grid limit in z
   REAL(num) :: z_grid_max_local
-  
   !> Total charge density
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho, rhoold
   !> Electric Field divergence
@@ -1413,10 +1354,10 @@ MODULE fourier!#do not parse
 END MODULE fourier
 #endif
 
-!===============================================================================
+! ________________________________________________________________________________________
 !> Module for the Maxwell Solver coefficients
+! ________________________________________________________________________________________
 MODULE kyee_em3d
-  !===============================================================================
   USE constants
   !> alphax Maxwell coefficient = 7./12.
   REAL(num) :: alphax = 0.58333333333333337_num
@@ -1446,10 +1387,10 @@ MODULE kyee_em3d
   REAL(num) :: deltaz = 0.000000000000000000_num
 END MODULE kyee_em3d
 
-!=========================================================================================
+! ________________________________________________________________________________________
 !> Module containing pointer to the python arrays (used in em3dsolverPXR.py)
+! ________________________________________________________________________________________
 MODULE python_pointers
-  !=========================================================================================
   USE constants
   !> Equivalent of pg.nps, the number of particles for each species
   INTEGER(idp), POINTER :: partn(:)
@@ -1473,7 +1414,6 @@ MODULE python_pointers
   INTEGER(idp) :: nyct
   !> Number of cells in z, equivalent of particle_tile%nz_cells_tile
   INTEGER(idp) :: nzct
-  
   !> Minimal cell index in x, equivalent of particle_tile%nx_tile_min
   INTEGER(idp) :: nxmin
   !> Maximal cell index in x, equivalent of particle_tile%nx_tile_max
@@ -1486,7 +1426,6 @@ MODULE python_pointers
   INTEGER(idp) :: nzmin
   !> Maximal cell index in z, equivalent of particle_tile%nz_tile_max
   INTEGER(idp) :: nzmax
-  
   ! Tile position
   !> Minimal tile limit in x: equivalent of particle_tile%x_tile_min
   REAL(num) :: xtmin
@@ -1500,7 +1439,6 @@ MODULE python_pointers
   REAL(num) :: ytmax
   !> Maximal tile limit in z: equivalent of particle_tile%z_tile_max
   REAL(num) :: ztmax
-  
   !> Minimal grid tile boundary in x
   REAL(num) :: xgtmin
   !> Minimal grid tile boundary in y
@@ -1513,7 +1451,6 @@ MODULE python_pointers
   REAL(num) :: ygtmax
   !> Maximal grid tile boundary in z
   REAL(num) :: zgtmax
-  
   !> array for particle x position
   REAL(num), DIMENSION(:), POINTER :: partx
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER

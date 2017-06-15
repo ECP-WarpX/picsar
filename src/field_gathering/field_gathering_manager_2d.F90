@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -28,10 +29,10 @@
 ! List of subroutines:
 ! - geteb2dxz_energy_conserving
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> General subroutines for the 2D cartesian field gathering
 !
@@ -56,11 +57,10 @@
 !> @param[in] field_gathe_algo Gathering algorithm
 !> @param[in] lvect vector length
 !
+! ________________________________________________________________________________________
 SUBROUTINE geteb2dxz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
 ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
 eyg, ezg, bxg, byg, bzg, l4symtry, l_lower_order_in_v, lvect, field_gathe_algo)         
-  ! ______________________________________________________________________________
-  
   USE constants
   USE params
   implicit none
@@ -88,7 +88,7 @@ eyg, ezg, bxg, byg, bzg, l4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
   nvalid, l4symtry, l_lower_order_in_v, lvect, field_gathe_algo)            
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> General subroutines for the 3D field gathering, adapted for field
 !> arrays having different sizes depending on their nodal/cell-centered nature
@@ -99,23 +99,27 @@ END SUBROUTINE
 !> @param[inout] bx, by, bz magnetic field particle arrays
 !> @param[in] xmin, zmin tile boundaries
 !> @param[in] dx, dz space steps
-!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the exg, eyg, ezg arrays in each direction (1d arrays containing 2 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 2 integers)
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> exg, eyg, ezg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints
+!>  (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 2 integers)
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the bxg, byg, bzg arrays in each direction (1d arrays containing 2 integers)
-!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 2 integers)
+!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the 
+!> bxg, byg, bzg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 2 integers)
 !> @param[in] l4symetry
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !> @param[in] field_gathe_algo Gathering algorithm
 !> @param[in] lvect vector length
 !> @param[in] exg, eyg, ezg electric field grid
 !>
+! ________________________________________________________________________________________
 SUBROUTINE geteb2dxz_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by,    &
 bz, xmin, ymin, zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg,    &
 eyg_nguard, eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid,     &
 byg, byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry,                   &
 l_lower_order_in_v, lvect, field_gathe_algo)            !#do not wrap
-  ! ______________________________________________________________________________
   USE constants
   USE particles
   USE params

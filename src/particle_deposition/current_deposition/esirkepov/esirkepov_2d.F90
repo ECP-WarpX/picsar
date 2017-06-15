@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -32,10 +33,10 @@
 ! - pxr_depose_jxjyjz_esirkepov2d_2_2
 ! - pxr_depose_jxjyjz_esirkepov2d_3_3
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> 2D Current deposition esirkepov n order (from 0 to 3)
 !
@@ -52,14 +53,20 @@
 
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
+!>  (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array 
+!> (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array 
+!> (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position arrays
 !> @param[in] uxp, uyp, uzp particle momentum arrays
@@ -73,12 +80,11 @@
 !> @param[in] l4symtry (useless here bur kept for common interface)
 !> @param[in] l_2drz (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
-!
+! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,  &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, zmin, dt, dx, dz, nox, noz, l_particles_weight, l4symtry, l_2drz,               &
 type_rz_depose)      !#do not wrap
-  ! ______________________________________________________________________________
   use constants
   implicit none
   integer(idp) :: np, nox, noz, type_rz_depose
@@ -300,7 +306,8 @@ type_rz_depose)      !#do not wrap
       dix = iixp-iixp0
       diz = ikxp-ikxp0
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients 
+      ! --- (needed because of different dix and diz for each particle)
       sx=0.;sz=0.
       
       ! --- computes coefficients for quantities centered between nodes
@@ -395,7 +402,7 @@ type_rz_depose)      !#do not wrap
   return
 end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> 2D Current deposition with the method of Esirkepov at order 1
 !
@@ -413,14 +420,20 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array
+!>  (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array
+!>  (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position arrays
 !> @param[in] uxp, uyp, uzp particle momentum arrays
@@ -434,17 +447,13 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !> @param[in] l4symtry (useless here but kept for common interface)
 !> @param[in] l_2drz  (useless here but kept for common interface)
 !> @param[in] type_rz_depose (useless here but kept for common interface)
-!
+! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,           &
 jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
 q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
 type_rz_depose)      !#do not wrap
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   implicit none
-  
   ! __ Parameter declaration ________________________________________________________
   integer(idp)                          :: np, type_rz_depose
   integer(idp)                          :: lvect
@@ -534,7 +543,8 @@ type_rz_depose)      !#do not wrap
     dix = iixp-iixp0
     diz = ikxp-ikxp0
     
-    ! --- zero out coefficients (needed because of different dix and diz for each particle)
+    ! --- zero out coefficients 
+    ! --- (needed because of different dix and diz for each particle)
     sx(-1)=0.0_num
     sx(0)=0.0_num
     sx(1)=0.0_num
@@ -593,7 +603,7 @@ type_rz_depose)      !#do not wrap
   
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> 2D Current deposition with the method of Esirkepov at order 2
 !> This function is not optimized but provides better performances than
@@ -607,14 +617,20 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 !
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array
+!>  (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array
+!>  (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position arrays
 !> @param[in] uxp, uyp, uzp particle momentum arrays
@@ -627,17 +643,13 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 !> @param[in] l4symtry (useless here bur kept for common interface)
 !> @param[in] l_2drz  (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
-!
+! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,           &
 jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
 q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
 type_rz_depose)      !#do not wrap
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   implicit none
-  
   ! __ Parameter declaration ________________________________________________________
   integer(idp)                          :: np, type_rz_depose
   integer(idp)                          :: lvect
@@ -732,7 +744,8 @@ type_rz_depose)      !#do not wrap
     dix = iixp-iixp0
     diz = ikxp-ikxp0
     
-    ! --- zero out coefficients (needed because of different dix and diz for each particle)
+    ! --- zero out coefficients 
+    ! --- (needed because of different dix and diz for each particle)
     sx(-2)=0.0_num
     sx(-1)=0.0_num
     sx(0)=0.0_num
@@ -811,14 +824,20 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 !
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 2 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 2 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 2 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> jy array (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 2 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 2 integers)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> (1d array containing 2 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) 
+!> of the jz array (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position arrays
 !> @param[in] uxp, uyp, uzp particle momentum arrays
@@ -832,16 +851,13 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 !> @param[in] l_2drz  (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 !
+! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,           &
 jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
 q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
 type_rz_depose)      !#do not wrap
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   implicit none
-  
   ! __ Parameter declaration _______________________________________________
   integer(idp)                          :: np, type_rz_depose
   integer(idp)                          :: lvect
@@ -942,7 +958,8 @@ type_rz_depose)      !#do not wrap
     dix = iixp-iixp0
     diz = ikxp-ikxp0
     
-    ! --- zero out coefficients (needed because of different dix and diz for each particle)
+    ! --- zero out coefficients 
+    ! --- (needed because of different dix and diz for each particle)
     sx(-2)=0.0_num
     sx(-1)=0.0_num
     sx(0)=0.0_num
@@ -1002,19 +1019,10 @@ type_rz_depose)      !#do not wrap
         
         ! --- Jz
         IF(k<izmax) THEN
-          sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov&
+          sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov
           if (k>izmin) sdz(i, k)=sdz(i, k)+sdz(i, k-1)! Integration of Wz along z
           jz(ic, kc) = jz(ic, kc) + sdz(i, k)! Deposition on the current
         END IF
-        
-        ! __ DEbug _______________________________
-        !  print*, 'sum', sum(jx), sum(jy), sum(jz)
-        !  print*, 'j', jy(ic, kc)
-        !  print*, 'sdx', sdx(i, k), sdz(i, k)
-        !  print*, 'wq', wqx, wqz, wq
-        !  print*, 's', sz0(k), sx0(i)
-        !  print*, 'dsx', dsx(i), dsz(k)
-        !  read*
         
       END DO
     END DO
@@ -1028,7 +1036,7 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3
 
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> 2D Current deposition with the method of Esirkepov at order 3
 !> This function is semi-vectorized: only the first part
@@ -1058,16 +1066,12 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3
 !> @param[in] l4symtry (useless here bur kept for common interface)
 !> @param[in] l_2drz  (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
-!
+! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx, jy, jz, np, xp, zp, uxp, uyp,   &
 uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
 l_particles_weight, l4symtry, l_2drz, type_rz_depose)  
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   implicit none
-  
   ! __ Parameter declaration _______________________________________________
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard,    &
   type_rz_depose
@@ -1191,7 +1195,8 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       dix = iixp-iixp0(n)
       diz = ikxp-ikxp0(n)
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients 
+      ! --- (needed because of different dix and diz for each particle)
       sx(-2)=0.0_num
       sx(-1)=0.0_num
       sx(0)=0.0_num
@@ -1424,39 +1429,31 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sdz(n, 2, 2)=sdz(n, 2, 2)+sdz(n, 2, 2-1)
       sdz(n, 3, 2)=wqz*dsz(2)*(sx0(3)+0.5*dsx(3))
       sdz(n, 3, 2)=sdz(n, 3, 2)+sdz(n, 3, 2-1)
-      
     ENDDO
     
     ! Inner loop on particle
     DO n=1, MIN(LVECT, np-ip+1)
-      
       ! --- add current contributions
       DO k=izmin(n), izmax(n)
         DO i=ixmin(n), ixmax(n)
           ic = iixp0(n)+i
           kc = ikxp0(n)+k
-          
           ! --- Jx
           jx(ic, kc) = jx(ic, kc) + sdx(n, i, k)! Deposition on the current
-          
           ! -- Jy (2D Esirkepov scheme)
           jy(ic, kc) = jy(ic, kc) + sdy(n, i, k)
-          
           ! --- Jz
           jz(ic, kc) = jz(ic, kc) + sdz(n, i, k)! Deposition on the current
-          
         END DO
       END DO
-      
     ENDDO
   END DO
   DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
-  
 End subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3
 #endif
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Vectorized 2D Current deposition with the method of Esirkepov at order 3.
 !
@@ -1484,15 +1481,12 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3
 !> @param[in] l4symtry (useless here bur kept for common interface)
 !> @param[in] l_2drz  (useless here bur kept for common interface)
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
+! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx, jy, jz, np, xp, zp, uxp, uyp,  &
 uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
 l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   implicit none
-  
   ! __ Parameter declaration ____________________________________________________
   ! In/out parameters
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard,    &
@@ -1503,7 +1497,6 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
   real(num), dimension(np)              :: xp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
-  
   ! Local parameters
   real(num)                             :: dxi, dzi, dtsdx, dtsdz, xint, zint
   real(num)                             :: xold, zold, rold, xmid, zmid, x, z, c, s,  &
@@ -1645,7 +1638,8 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       dix = iixp-iixp0
       diz = ikxp-ikxp0
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients (needed because of different dix and diz 
+      ! --- for each particle)
       sx(-2)=0.0_num
       sx(-1)=0.0_num
       sx(0)=0.0_num
@@ -1876,17 +1870,13 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       sdz(n, 37) = sdz(n, 37)+sdz(n, 36)
       sdz(n, 38)  = wqz*dsz(2)*(sx0(3)+0.5*dsx(3))
       sdz(n, 38) = sdz(n, 38)+sdz(n, 37)
-      
-      !print*, 'Particle:', nn, n, ip
-      
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP END SIMD
 #endif
-    
+
     ! Add weights to nearest vertices
     DO n=1, MIN(LVECT, np-ip+1)
-      
       ! Alignment
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
@@ -1937,17 +1927,13 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
         nv+24)
         jzcells(nv, ICELL(n, 1)+4*ncx) = jzcells(nv, ICELL(n, 1)+4*ncx) + sdz(n,      &
         nv+32)
-        
-        
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD
 #endif
     ENDDO
   ENDDO
-  
-  !print*, 'Reduction of jxcells, jycells, jzcells in jx, jy, jz'
-  
+
   ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
   DO iz=1, ncz-2
 #if defined _OPENMP && _OPENMP>=201307
@@ -1958,15 +1944,8 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
     !$DIR SIMD
 #endif
     DO ix=1, ncx-8!! VECTOR (take ncx multiple of vector length)
-      
       ic=ix+(iz-1)*ncx
       igrid =orig+ix+(iz-1)*nnx
-      
-      !print*
-      !print*, 'ic', ic
-      !print*, 'ix/ncx', ix, ncx, 'iz/ncz', iz, ncz
-      !print*, 'igrid', igrid
-      
       ! jx
       jx(igrid)=jx(igrid)+jxcells(1, ic)
       jx(igrid+1)=jx(igrid+1)+jxcells(2, ic)
@@ -1994,7 +1973,6 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       jz(igrid+5)=jz(igrid+5)+jzcells(6, ic)
       jz(igrid+6)=jz(igrid+6)+jzcells(7, ic)
       jz(igrid+7)=jz(igrid+7)+jzcells(8, ic)
-      
     END DO
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP END SIMD
@@ -2003,8 +1981,6 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
   
   DEALLOCATE(jxcells, jycells, jzcells)
   DEALLOCATE(sdx, sdy, sdz)
-  
-  !print*, 'finished'
-  
+
 End subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3
 #endif

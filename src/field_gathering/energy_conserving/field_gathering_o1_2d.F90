@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -26,10 +27,10 @@
 ! - pxr_gete2dxz_energy_conserving_vect_1_1
 ! - pxr_getb2dxz_energy_conserving_vect_1_1
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering cartesian in 2D for the electric field at order 1
 !
@@ -53,10 +54,10 @@
 !> @param[in] lvect vector size for the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
+! ________________________________________________________________________________________
 subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin,     &
 zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
 ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
   use constants
   implicit none
   
@@ -239,7 +240,7 @@ ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
 end subroutine
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering cartesian in 2D for the magnetic field at order 1
 !
@@ -258,20 +259,19 @@ end subroutine
 !> @param[in] xmin, zmin tile boundaries
 !> @param[in] dx, dz space steps
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the bxg, byg, bzg arrays in each direction (1d arrays containing 2 integers)
-!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 2 integers)
+!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the 
+!> bxg, byg, bzg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 2 integers)
 !> @param[in] lvect the vector length of the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
+! ________________________________________________________________________________________
 subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin,     &
 zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,          &
 bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
-  
-  
   use constants
   implicit none
-  
   ! __ Parameter declaration ___________________________________________
   integer(idp), intent(in)                :: np
   integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &
@@ -443,9 +443,6 @@ bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
         
       ENDDO
     ENDDO
-    
-    
   ENDIF
   return
-  
 end subroutine

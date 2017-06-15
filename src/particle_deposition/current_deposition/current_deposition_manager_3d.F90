@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -34,14 +35,15 @@
 ! - pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 ! - pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Generic subroutine for current deposition on one tile
 !>
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy,    &
 noz, current_depo_algo)  
@@ -53,22 +55,22 @@ noz, current_depo_algo)
   -nzguard:nz+nzguard), intent(in out) :: jx, jy, jz
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
-  
   ! Build array of guard cells and valid cells, to pass them to the generic routine
   integer(idp)                       :: nguard(3), nvalid(3)
   nguard = (/ nxguard, nyguard, nzguard /)
   nvalid = (/ nx+1, ny+1, nz+1 /)
-  
+
   call depose_jxjyjz_generic( jx, nguard, nvalid, jy, nguard, nvalid, jz, nguard,     &
   nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy,  &
   dz, nox, noy, noz, current_depo_algo)     
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov subroutine for current deposition on one tile
 !>
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, &
 w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,   &
 noy, noz)  
@@ -90,7 +92,7 @@ noy, noz)
   dx, dy, dz, nox, noy, noz, .TRUE._idp, .FALSE._idp)     
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Generic subroutines for current deposition, adapted for field
 !> arrays having different sizes depending on their nodal/cell-centered nature
@@ -99,6 +101,7 @@ END SUBROUTINE
 !> This routine calls the relevant current deposition routine depending
 !> on the order of the particle shape and the selected algorithm.
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nvalid, &
 jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin,    &
 zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
@@ -131,7 +134,6 @@ zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
   nzguard = jx_nguard(3)
   
   Select CASE(current_depo_algo)
-    
     ! Scalar classical current deposition subroutines
   CASE(3)
     
@@ -152,7 +154,6 @@ zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
       q, xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, .TRUE._idp, .FALSE._idp)     
     ENDIF
-    
     ! Optimized classical current deposition
   CASE(2)
     
@@ -173,14 +174,12 @@ zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
       q, xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, .TRUE._idp, .FALSE._idp)     
     ENDIF
-    
     ! Esirkepov non optimized
   CASE(1)
     
     CALL pxr_depose_jxjyjz_esirkepov_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
     jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
     xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, .TRUE._idp, .FALSE._idp)     
-    
     ! Optimized Esirkepov
   CASE DEFAULT
     
@@ -206,7 +205,7 @@ zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
   
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Main subroutine for managing the current deposition across tiles
 !
@@ -219,8 +218,8 @@ END SUBROUTINE
 !
 !> @date
 !> 2015-2016
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
-  ! ______________________________________________________________________________
   USE fields
   USE particles
   USE shared_data
@@ -232,15 +231,12 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 #if defined(SDE) && SDE==2
   USE SDE_FORTRAN
 #endif
-  
   IMPLICIT NONE
   REAL(num) :: tdeb, tend
-  
   
   ! ___________________________________________________________________________
   ! Interfaces for func_order
   INTERFACE
-    
     ! ____________________________________________________________________________________
     ! Generic current deposition routine
     SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
@@ -366,15 +362,13 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 #if SDE==2
   CALL start_vtune_collection()
 #endif
-  
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
   jx = 0.0_num
   jy = 0.0_num
   jz = 0.0_num
   
   ! Current deposition branches
-  
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/no tiling
   IF (currdepo.EQ.5) THEN
@@ -383,12 +377,14 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(depose_jxjyjz, jx, jy, &
       jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, &
       3_idp) 
-      ! The last argument is 3: this means the scalar routines will be used inside `depose_jxjyjz`
+      ! The last argument is 3: 
+      ! this means the scalar routines will be used inside `depose_jxjyjz`
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, jx,  &
       jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
       dt, 1_idp)  
-      ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz`
+      ! The last argument is 1: 
+      ! this means the generic esirkepov routine will be used inside `depose_jxjyjz`
     ENDIF
     
     
@@ -400,12 +396,14 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz, jx,  &
       jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
       dt, 3_idp) 
-      ! The last argument is 3: this means the scalar routines will be used inside `depose_jxjyjz`
+      ! The last argument is 3: 
+      ! this means the scalar routines will be used inside `depose_jxjyjz`
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, jx,  &
       jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
       dt, 1_idp)  
-      ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz`
+      ! The last argument is 1: 
+      ! this means the generic esirkepov routine will be used inside `depose_jxjyjz`
     ENDIF
     
     ! _______________________________________________________
@@ -413,29 +411,20 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   ELSE IF (currdepo.EQ.3) THEN
     
     IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
-      ! Old version with reduction for each species
-      !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_vecHVv3_3_3_3, &
-      !jx, jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt)
+      ! Version with reduction for each species
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2(                 &
       depose_jxjyjz_vecHV_vnr_3_3_3, current_reduction_3_3_3, jx, jy, jz, nx, ny, nz, &
       nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, lvec_curr_depo)  
     ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
-      ! Old version with reduction for each species
-      !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_vecHVv2_2_2_2, &
-      !jx, jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt)
+      ! Version with reduction for each species
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2(                 &
       depose_jxjyjz_vecHV_vnr_2_2_2, current_reduction_2_2_2, jx, jy, jz, nx, ny, nz, &
       nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, lvec_curr_depo)  
     ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
-      ! Old version with reduction for each species
-      !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(depose_jxjyjz_vecHVv2_1_1_1, &
-      !jx, jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt)
+      ! Version with reduction for each species
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2(                 &
       depose_jxjyjz_vecHV_vnr_1_1_1, current_reduction_1_1_1, jx, jy, jz, nx, ny, nz, &
       nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, lvec_curr_depo)  
-      !CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( &
-      !     depose_jxjyjz_vecHV_vnr_1_1_1, current_reduction_1_1_1, &
-      !     jx, jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, lvec_curr_depo)
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, jx,  &
       jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
@@ -455,7 +444,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, jx,    &
     jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz,   &
     dt, 0_idp)  
-    ! The last argument is 0: this means the optimized esirkepov routine will be used inside `depose_jxjyjz`
+    ! The last argument is 0: 
+    ! this means the optimized esirkepov routine will be used inside `depose_jxjyjz`
     
     ! _______________________________________________________
     ! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
@@ -464,15 +454,16 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, jx,    &
     jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz,   &
     dt, 0_idp)  
-    ! The last argument is 1: this means the optimized esirkepov routine will be used inside `depose_jxjyjz`
-    
+    ! The last argument is 1: 
+    ! this means the optimized esirkepov routine will be used inside `depose_jxjyjz`
+
     ! Arbitrary order
   ELSE
-    
     CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(depose_jxjyjz, jx,    &
     jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz,   &
     dt, 1_idp)  
-    ! The last argument is 1: this means the generic esirkepov routine will be used inside `depose_jxjyjz`
+    ! The last argument is 1: 
+    ! this means the generic esirkepov routine will be used inside `depose_jxjyjz`
   ENDIF
   
   !!! --- Stop Vtune analysis
@@ -494,10 +485,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
-
-
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Deposit current in each tile with the classical method using an external given function
 !
@@ -513,17 +501,15 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jxg,    &
 jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
 dzz, dtt, current_depo_algo)  
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
-  
   USE time_stat
   IMPLICIT NONE
-  
   ! Interfaces for func_order
   INTERFACE
     SUBROUTINE func_order(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,    &
@@ -792,7 +778,7 @@ dzz, dtt, current_depo_algo)
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Deposit current in each tile with the classical method with an external given function.
 !> In this second version, the transient current arrays are reduced
@@ -809,24 +795,23 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 !> @date
 !> 2016
 !
-!> @param[in] func_order represent the subroutine to be used for current deposition depending on the selected order
+!> @param[in] func_order represent the subroutine to be used for current 
+!> deposition depending on the selected order
 !> @param[in] jxg, jyg, jzg current arrays
 !> @param[in] nxx, nyy, nzz cell number in each direction
 !> @param[in] nxjguard, nyjguard, nzjguard guard cells
 !> @param[in] noxx, noyy, nozz orders for current deposition
 !> @param[in] dxx, dyy, dzz, dtt space and time steps
 !> @param[in] lvect vector size
-!
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_sub,  &
 curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
 noyy, nozz, dxx, dyy, dzz, dtt, lvect)  
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
   USE time_stat
   IMPLICIT NONE
-  
   ! _______________________________________________________________________
   ! Interfaces for curr_depo_sub and curr_reduc_sub
   INTERFACE
@@ -1147,7 +1132,7 @@ noyy, nozz, dxx, dyy, dzz, dtt, lvect)
   
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 !> @brief
 !> Deposit current in each tile with the classical method version 3
@@ -1163,7 +1148,8 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 !> Mathieu Lobet
 !> Henri Vincenti
 !
-!> @param[in] func_order represent the subroutine to be used for current deposition depending on the selected order
+!> @param[in] func_order represent the subroutine to be used for current 
+!> deposition depending on the selected order
 !> @param[in] curr_reduc_sub subroutine to be used for the reduction
 !> @param[in] jxg, jyg, jzg current arrays
 !> @param[in] nxx, nyy, nzz cell number in each direction
@@ -1172,6 +1158,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 !> @param[in] dxx, dyy, dzz, dtt space and time steps
 !> @param[in] lvect vector size
 !
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_sub,  &
 curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
 noyy, nozz, dxx, dyy, dzz, dtt, lvect)  
@@ -1503,7 +1490,7 @@ noyy, nozz, dxx, dyy, dzz, dtt, lvect)
   
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Deposit current in each tile with Esirkepov method
 !
@@ -1517,17 +1504,15 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3
 !
 !> @date
 !> 2016
-!
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jxg,    &
 jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
 dzz, dtt, current_depo_algo)  
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
   USE time_stat
   IMPLICIT NONE
-  
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz
   REAL(num), INTENT(IN) :: dxx, dyy, dzz, dtt
@@ -1796,7 +1781,7 @@ dzz, dtt, current_depo_algo)
   
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Deposit current in each tile with Esirkepov method
 !
@@ -1811,9 +1796,9 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy, nzz, &
 nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)  
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -2082,7 +2067,7 @@ nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
   
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Deposit current in each tile sequentially
 !
@@ -2092,11 +2077,10 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 !
 !> @date
 !> Creation 2015
-!
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, jyg,  &
 jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz,    &
 dtt, currrent_depo_algo )  
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -2192,7 +2176,7 @@ dtt, currrent_depo_algo )
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Deposit current in each tile
 !> Sequential version
@@ -2204,9 +2188,9 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nxx,    &
 nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)  
-  ! ______________________________________________________________________________
   
   USE particles
   USE constants

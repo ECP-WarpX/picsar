@@ -40,9 +40,8 @@
 !
 !> @date
 !> Creation: 2015
+! ________________________________________________________________________________________
 MODULE tiling
-  ! ________________________________________________________________________________________
-  
   USE constants
   USE particles
   USE shared_data
@@ -62,9 +61,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE set_tile_split()
-    ! ______________________________________________________________________________________
-    
     IMPLICIT NONE
     
     ! Set tile split for species arrays
@@ -88,9 +86,9 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE set_tile_split_for_species(species_array, nspec, ntx, nty, ntz, nxgrid,  &
   nygrid, nzgrid, xminlocal, yminlocal, zminlocal, xmaxlocal, ymaxlocal, zmaxlocal) 
-    ! ______________________________________________________________________________________
     
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec, nxgrid, nygrid, nzgrid
@@ -268,10 +266,9 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, partux, partuy, partuz, &
   gaminv, partpid) 
-    ! ______________________________________________________________________________________
-    
     IMPLICIT NONE
     REAL(num) :: partx, partz, partux, partuy, partuz, gaminv
     REAL(num), DIMENSION(:) :: partpid
@@ -311,9 +308,9 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE add_particle_to_species(currsp, partx, party, partz, partux, partuy,     &
   partuz, gaminv, partpid) 
-    ! ______________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz
     REAL(num), INTENT(IN) :: gaminv
@@ -321,7 +318,6 @@ MODULE tiling
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     INTEGER(idp) :: nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     INTEGER(idp) :: ixtile, iytile, iztile
-    
     
     ! Get first tiles dimensions (may be different from last tile)
     nx0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nx_grid_tile
@@ -335,10 +331,6 @@ MODULE tiling
     ntiley)
     iztile = MIN(FLOOR((partz-(z_min_local)+dz/2_num)/(nz0_grid_tile*dz), idp)+1,     &
     ntilez)
-    
-    
-    ! Point to current tile arr_of_tiles(ixtile, iytile, iztile)
-    !curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
     
     CALL add_particle_at_tile(currsp, ixtile, iytile, iztile, partx, party, partz,    &
     partux, partuy, partuz, gaminv, partpid) 
@@ -357,11 +349,10 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE add_particle_at_tile_2d(currsp, ixt, izt, partx, partz, partux, partuy,  &
   partuz, gaminv, partpid) 
-    ! ______________________________________________________________________________________
     IMPLICIT NONE
-    
     ! ___ Arguments _________________________________________________________
     INTEGER(idp) :: count, nmax, ixt, izt
     REAL(num), INTENT(IN)    :: partx, partz, partux, partuy, partuz
@@ -414,10 +405,9 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE add_particle_at_tile(currsp, ixt, iyt, izt, partx, party, partz, partux, &
   partuy, partuz, gaminv, partpid) 
-    ! ______________________________________________________________________________________
-    
     IMPLICIT NONE
     INTEGER(idp) :: count, nmax, ixt, iyt, izt
     REAL(num), INTENT(IN) :: partx, party, partz, partux, partuy, partuz
@@ -468,10 +458,9 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE add_group_of_particles_at_tile(currsp, ixt, iyt, izt, np, npiid, partx,  &
   party, partz, partux, partuy, partuz, gaminv, partpid) 
-    ! ______________________________________________________________________________________
-    
     IMPLICIT NONE
     INTEGER(idp) :: count, nmax, ixt, iyt, izt, np, npnew, npiid
     REAL(num), DIMENSION(np) :: partx, party, partz, partux, partuy, partuz, gaminv
@@ -523,10 +512,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  !
+  ! ______________________________________________________________________________________
   SUBROUTINE rm_particles_from_species_with_mask(currsp, ixt, iyt, izt, mask)
-    ! ______________________________________________________________________________________
-    
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     LOGICAL(lp), DIMENSION (:), INTENT(IN) :: mask
     INTEGER(idp), INTENT(IN) :: ixt, iyt, izt
@@ -552,9 +539,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  !
+  ! ______________________________________________________________________________________
   SUBROUTINE rm_particles_from_species_2d(currsp, ixt, izt, ipart)
-    ! ______________________________________________________________________________________
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     INTEGER(idp), INTENT(IN) :: ipart, ixt, izt
     
@@ -572,9 +558,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  !
+  ! ______________________________________________________________________________________
   SUBROUTINE rm_particles_from_species(currsp, ixt, iyt, izt, ipart)
-    ! ______________________________________________________________________________________
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     INTEGER(idp), INTENT(IN) :: ipart, ixt, iyt, izt
     
@@ -592,9 +577,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  !
+  ! ______________________________________________________________________________________
   SUBROUTINE rm_particle_at_tile_2d(currsp, ixt, izt, index)
-    ! ______________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                        :: index, ixt, izt
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
@@ -617,7 +601,6 @@ MODULE tiling
       curr%pid(index, 1:npid)=curr%pid(curr%np_tile(1), 1:npid)
       curr%np_tile=curr%np_tile(1)-1
     END IF
-    
     ! Avoid memory leaks
     ! Reduce array size if # of particles in array lower than
     ! 30% of array size
@@ -640,9 +623,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  !
+  ! ______________________________________________________________________________________
   SUBROUTINE rm_particle_at_tile(currsp, ixt, iyt, izt, index)
-    ! ______________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                        :: index, ixt, iyt, izt
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
@@ -690,8 +672,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE allocate_tile_arrays(curr_tile)
-    ! ______________________________________________________________________________________
     TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr_tile
     INTEGER(idp) :: nmax
     ! ALLOCATE PARTICLE ARRAYS
@@ -715,10 +697,8 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
-  !
+  ! ______________________________________________________________________________________
   SUBROUTINE init_tile_arrays()
-    ! ______________________________________________________________________________________
-    
     IMPLICIT NONE
     
     CALL init_tile_arrays_for_species(nspecies, species_parray, aofgrid_tiles,        &
@@ -727,7 +707,7 @@ MODULE tiling
   END SUBROUTINE init_tile_arrays
   
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !
   !> This subroutine allocates and initialize (first touch) the particle property arrays
   !> for each tile.
@@ -742,10 +722,9 @@ MODULE tiling
   !
   !> @date
   !> Creation: 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE init_tile_arrays_for_species(nspec2, species_array, aofgtiles, ntx2,     &
   nty2, ntz2)
-    ! ____________________________________________________________________________________
-    
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
     TYPE(grid_tile), DIMENSION(ntx2, nty2, ntz2), INTENT(IN OUT)        :: aofgtiles
@@ -868,7 +847,7 @@ MODULE tiling
     END DO! END LOOP ON TILES
   END SUBROUTINE init_tile_arrays_for_species
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Initialize the particle properties (positions and velocities) according to
   !> the specified distribution.
@@ -879,8 +858,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE load_particles
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     TYPE(particle_species), POINTER :: curr
     INTEGER(idp) :: ispecies, l, k, j, ipart
@@ -893,7 +872,8 @@ MODULE tiling
     REAL(num), DIMENSION(6) :: rng=0_num
     clightsq=1/clight**2
     ALLOCATE(partpid(npid))
-    !!! --- Sets-up particle space distribution (homogeneous case, uniform space distribution - default)
+    !!! --- Sets-up particle space distribution 
+    !!! --- (homogeneous case, uniform space distribution - default)
     IF (pdistr .EQ. 1) THEN
       DO ispecies=1, nspecies
         curr=>species_parray(ispecies)
@@ -1089,7 +1069,7 @@ MODULE tiling
     RETURN
   END SUBROUTINE load_particles
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Resize particle arrays when they reach a threshold.
   !
@@ -1099,8 +1079,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE resize_particle_arrays(curr, old_size, new_size)
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     
     TYPE(particle_tile), POINTER, INTENT(IN OUT) :: curr
@@ -1123,7 +1103,7 @@ MODULE tiling
     CALL resize_1D_array_real(curr%part_bz, old_size, new_size)
   END SUBROUTINE resize_particle_arrays
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Resize a 1D array of reals.
   !
@@ -1133,8 +1113,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE resize_1D_array_real(arr, old_size, new_size)
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), DIMENSION(:), ALLOCATABLE, INTENT(IN OUT) :: arr
     REAL(num), DIMENSION(:), ALLOCATABLE :: temp
@@ -1153,7 +1133,7 @@ MODULE tiling
     DEALLOCATE(temp)
   END SUBROUTINE resize_1D_array_real
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Resize a 2D array of reals.
   !
@@ -1163,8 +1143,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE resize_2D_array_real(arr, nx_old, nx_new, ny_old, ny_new)
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nx_new, ny_new
@@ -1191,7 +1171,7 @@ MODULE tiling
     DEALLOCATE(temp)
   END SUBROUTINE resize_2D_array_real
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Resize a 3D array of reals.
   !
@@ -1201,9 +1181,9 @@ MODULE tiling
   !> @date
   !> Creation: 2017
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE resize_3D_array_real(arr, nx_old, nx_new, ny_old, ny_new, nz_old,        &
   nz_new) 
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nz_old, nx_new, ny_new, nz_new 
@@ -1245,8 +1225,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_local_number_of_part(npart)
-    ! ____________________________________________________________________________________
     INTEGER(idp), INTENT(IN OUT) :: npart
     INTEGER(idp) :: ispecies
     TYPE(particle_species), POINTER :: curr
@@ -1259,13 +1239,13 @@ MODULE tiling
     
   END SUBROUTINE get_local_number_of_part
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !
   !      SUBROUTINES DEDICATED FOR PYTHON INTERFACE
   !
-  ! ____________________________________________________________________________________
-  
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
+  ! ______________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine returns pointer arrays on a given tile
   !> of a given species (USED mainly by python interface)
@@ -1276,8 +1256,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE point_to_tile(ispecies, ix, iy, iz)
-    ! ____________________________________________________________________________________
     USE python_pointers
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: ix, iy, iz, ispecies
@@ -1335,7 +1315,7 @@ MODULE tiling
     
   END SUBROUTINE point_to_tile
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine returns pointer arrays on a given tile
   !> of a given species (USED mainly by python interface)
@@ -1346,10 +1326,10 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE set_particle_species_properties(nsp, sname, mss, chrg, nppc, xsmin,      &
   ysmin, zsmin, xsmax, ysmax, zsmax, vdxs, vdys, vdzs, vthxs, vthys, vthzs,           &
   sorting_period, sorting_start, dodepos) 
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nsp, nppc
     REAL(num), INTENT(IN)    :: mss, chrg, xsmin, ysmin, zsmin, xsmax, ysmax, zsmax
@@ -1379,21 +1359,10 @@ MODULE tiling
     currsp%sorting_period=sorting_period
     currsp%sorting_start=sorting_start
     currsp%ldodepos=dodepos
-    
-    ! this part poses problems for the python version compiled on Cori
-    !IF (rank .EQ. 0) THEN
-    !  PRINT *, "species name: ", trim(adjustl(sname))
-    !  PRINT *, "species mass: ", mss
-    !  PRINT *, "species charge: ", chrg
-    !  PRINT *, "sorting period: ", currsp%sorting_period
-    !  PRINT *, "sorting start: ", currsp%sorting_start
-    !  PRINT *, ""
-    !ENDIF
-    
   END SUBROUTINE set_particle_species_properties
   
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Add particle to array of tiles
   !> (USED mainly by python interface)
@@ -1404,9 +1373,9 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE py_add_particles_to_species(nsp, npart, npiid, partx, party, partz,      &
   partux, partuy, partuz, gaminv, partpid) 
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nsp, npart, npiid
     REAL(num), DIMENSION(npart), INTENT(IN) :: partx, party, partz, partux, partuy,   &
@@ -1422,7 +1391,7 @@ MODULE tiling
     END DO
   END SUBROUTINE py_add_particles_to_species
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Get logical array are_tiles_reallocated for a given species
   !> (USED mainly by python interface)
@@ -1433,8 +1402,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nsp, ntx, nty, ntz
     INTEGER(idp), DIMENSION(ntx, nty, ntz), INTENT(IN OUT) :: atrealloc
@@ -1445,7 +1414,7 @@ MODULE tiling
     
   END SUBROUTINE get_are_tiles_reallocated
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Set logical array are_tiles_reallocated for a given species
   !> (USED mainly by python interface)
@@ -1456,19 +1425,18 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE set_are_tiles_reallocated(nsp, ntx, nty, ntz, atrealloc)
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nsp, ntx, nty, ntz
     INTEGER(idp), DIMENSION(ntx, nty, ntz), INTENT(IN) :: atrealloc
     TYPE(particle_species), POINTER :: currsp
-    currsp=>species_parray(nsp)
-    
+
+    currsp=>species_parray(nsp)    
     currsp%are_tiles_reallocated=atrealloc
-    
   END SUBROUTINE set_are_tiles_reallocated
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Estimate the memory that will be used in the simulation.
   !
@@ -1478,8 +1446,8 @@ MODULE tiling
   !> @date
   !> Creation: 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE estimate_memory_consumption
-    ! ____________________________________________________________________________________
     USE shared_data
     USE constants
     USE particles
@@ -1529,12 +1497,12 @@ MODULE tiling
               nyg=curr_tile%nyg_tile
               nzg=curr_tile%nzg_tile
               
-              mpipartsize = mpipartsize + nbp*8*14! 8 for double, 14 for x, y, z, px, py, pz, gam, pid, ex, ey, ez, bx, by, bz
+              mpipartsize = mpipartsize + nbp*8*14! 8 for double, 14 for x, y, z, px, py,
+              !pz, gam, pid, ex, ey, ez, bx, by, bz
               ncloc = ncloc + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)
               
               tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nyc + 2*nyg +        &
               1)*(nzc + 2*nzg + 1)*8.
-              
             END DO! END LOOP ON SPECIES
           END DO
         END DO
@@ -1562,7 +1530,8 @@ MODULE tiling
             nxg=curr_tile%nxg_tile
             nzg=curr_tile%nzg_tile
             
-            mpipartsize = mpipartsize + nbp*8*13! 8 for double, 13 for x, z, px, py, pz, gam, pid, ex, ey, ez, bx, by, bz
+            mpipartsize = mpipartsize + nbp*8*13! 8 for double, 13 for x, z, px, py, pz,
+            ! gam, pid, ex, ey, ez, bx, by, bz
             ncloc = ncloc + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)
             
             tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)*8.
@@ -1588,10 +1557,8 @@ MODULE tiling
     
     IF (c_dim.eq.3) THEN
       mpifieldsize = (nx+2*nxguards+1)*(ny+2*nyguards+1)*(nz+2*nzguards+1)*8.
-      !tilefieldsize = (real(nx)/ntilex+1+2*nxguard)*(real(ny)/ntiley+1+2*nyguard)*(real(nz)/ntilez+1+2*nzguard))*8.*
     ELSE IF (c_dim.eq.2) THEN
       mpifieldsize = (nx+2*nxguards+1)*(nz+2*nzguards+1)*8.
-      !tilefieldsize = mpifieldsize/(ntilex*ntilez)
     ENDIF
     
     ! _________________________________________
@@ -1838,5 +1805,4 @@ MODULE tiling
       ENDDO
     ENDDO
   END SUBROUTINE
-  
 END MODULE tiling

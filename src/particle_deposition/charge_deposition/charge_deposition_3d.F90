@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -44,10 +45,10 @@
 !
 ! General order:
 ! - pxr_depose_rho_n
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 1 3D scalar charge deposition routine
 !
@@ -72,21 +73,17 @@
 !> @param[in] nx, ny, nz number of cells
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] lvect: vector length (useless here, just for interface compatibility)
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
   -nzguard:nz+nzguard), INTENT(IN OUT) :: rho
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dx, dy, dz, xmin, ymin, zmin
   INTEGER(idp), INTENT (IN) :: lvect
-  
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint
   REAL(num) :: x, y, z, wq, invvol
   REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
@@ -136,7 +133,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
 END SUBROUTINE depose_rho_scalar_1_1_1
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 2 3D scalar charge deposition routine
 !
@@ -161,21 +158,17 @@ END SUBROUTINE depose_rho_scalar_1_1_1
 !> @param[in] nx, ny, nz number of cells
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] lvect: vector length (useless here, just for interface compatibility)
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
   -nzguard:nz+nzguard), INTENT(IN OUT) :: rho
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dx, dy, dz, xmin, ymin, zmin
   INTEGER(idp), INTENT (IN) :: lvect
-  
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, xintsq, yintsq, zintsq 
   REAL(num) :: x, y, z, wq, invvol, sx1, sx2, sx3, sx4, sx5, sx6, sx7, sx8, sx9
   REAL(num) :: sx(-1:1), sy(-1:1), sz(-1:1)
@@ -258,7 +251,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   RETURN
 END SUBROUTINE depose_rho_scalar_2_2_2
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 3 3D scalar charge deposition routine
 !
@@ -284,19 +277,17 @@ END SUBROUTINE depose_rho_scalar_2_2_2
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] lvect: vector length (useless here, just for interface compatibility)
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
   -nzguard:nz+nzguard), INTENT(IN OUT) :: rho
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dx, dy, dz, xmin, ymin, zmin
   INTEGER(idp), INTENT (IN) :: lvect
-  
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
   zintsq, oxintsq, oyintsq, ozintsq 
   REAL(num) :: x, y, z, wq, invvol
@@ -419,7 +410,7 @@ END SUBROUTINE depose_rho_scalar_3_3_3
 
 
 #if defined (DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 1 3D vector charge deposition routine
 !
@@ -432,9 +423,9 @@ END SUBROUTINE depose_rho_scalar_3_3_3
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecSH_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,    &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard) 
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -577,7 +568,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
 END SUBROUTINE depose_rho_vecSH_1_1_1
 #endif
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 1 3D vector charge deposition routine
 !
@@ -590,11 +581,9 @@ END SUBROUTINE depose_rho_vecSH_1_1_1
 !
 !> @date
 !> Creation 2016
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecNOY_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -658,21 +647,6 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
       ww(vv, 7) = sx(0)*sy(1)*sz(1)
       ww(vv, 8) = sx(1)*sy(1)*sz(1)
     END DO
-    !            j=1;k=1;l=1
-    !            !DIR$ ASSUME_ALIGNED rho1:32
-    !            !DIR$ ASSUME_ALIGNED ww:32
-    !            !DIR$ IVDEP
-    !            DO vv=1, MIN(LVEC2, np-ip+1) !!! Vector
-    !                ! --- add charge density contributions
-    !                rho1(vv, j, k, l)      = rho1(vv, j, k, l)+ww(vv, 1)
-    !                rho1(vv, j+1, k, l)    = rho1(vv, j+1, k, l)+ww(vv, 2)
-    !                rho1(vv, j, k+1, l)    = rho1(vv, j, k+1, l)+ww(vv, 3)
-    !                rho1(vv, j+1, k+1, l)  = rho1(vv, j+1, k+1, l)+ww(vv, 4)
-    !                rho1(vv, j, k, l+1)    = rho1(vv, j, k, l+1)+ww(vv, 5)
-    !                rho1(vv, j+1, k, l+1)  = rho1(vv, j+1, k, l+1)+ww(vv, 6)
-    !                rho1(vv, j, k+1, l+1)  = rho1(vv, j, k+1, l+1)+ww(vv, 7)
-    !                rho1(vv, j+1, k+1, l+1)= rho1(vv, j+1, k+1, l+1)+ww(vv, 8)
-    !            END DO
   END DO
   
   DO jj=-nxguard, nxguard+nx!!! Vector
@@ -684,7 +658,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   RETURN
 END SUBROUTINE depose_rho_vecNOY_1_1_1
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 1 3D vector charge deposition routine
 !>
@@ -697,9 +671,9 @@ END SUBROUTINE depose_rho_vecNOY_1_1_1
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHV_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,    &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard) 
-  ! ______________________________________________________________________________
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -808,7 +782,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   RETURN
 END SUBROUTINE depose_rho_vecHV_1_1_1
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 1 3D vector charge deposition routine
 !
@@ -839,11 +813,10 @@ END SUBROUTINE depose_rho_vecHV_1_1_1
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] lvect vector length
 !
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
   !bind(C, name="depose_rho_vecHVv2_1_1_1")
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   
@@ -868,7 +841,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   INTEGER(idp) :: orig, jorig, korig, lorig
   INTEGER(idp) :: ncx, ncy, ncxy, ncz, ix, iy, iz, ngridx, ngridy, ngx, ngxy
   REAL(num), DIMENSION(:, :), ALLOCATABLE:: rhocells
-  !dir$ attributes align:64 :: rhocells
+  !DIR$ ATTRIBUTES ALIGN:64 :: rhocells
   
   ! Init parameters
   dxi = 1.0_num/dx
@@ -896,7 +869,6 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   ! ________________________________________________________________________
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1, np, lvect
-    
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64
@@ -1014,9 +986,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   RETURN
 END SUBROUTINE depose_rho_vecHVv2_1_1_1
 
-
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 2 3D vector charge deposition routine
 !
@@ -1043,12 +1013,9 @@ END SUBROUTINE depose_rho_vecHVv2_1_1_1
 !> @param[in] nx, ny, nz number of cells
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] lvect vector length
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
-  
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   
@@ -1257,7 +1224,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
 END SUBROUTINE depose_rho_vecHVv2_2_2_2
 
 #if defined (DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 3 3D vector charge deposition routine version 2
 !
@@ -1281,13 +1248,11 @@ END SUBROUTINE depose_rho_vecHVv2_2_2_2
 !> @param[in] dx, dy, dz space discretization steps
 !> @param[in] nx, ny, nz number of cells
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT) ::                                                        &
   rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -1485,7 +1450,7 @@ END SUBROUTINE depose_rho_vecHVv2_3_3_3
 #endif
 
 #if defined (DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 3 3D vector charge deposition routine
 !
@@ -1509,11 +1474,9 @@ END SUBROUTINE depose_rho_vecHVv2_3_3_3
 !> @param[in] dx, dy, dz space discretization steps
 !> @param[in] nx, ny, nz number of cells
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv3_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard) 
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   
@@ -1619,13 +1582,6 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
       sy2(n) = (twothird-yintsq*(1.0_num-yint*0.5_num))*wq
       sy3(n) = (twothird-oyintsq*(1.0_num-oyint*0.5_num))*wq
       sy4(n) = onesixth*yintsq*yint*wq
-      !                ozint = 1.0_num-zint(n)
-      !                zintsq = zint(n)*zint(n)
-      !                ozintsq = ozint*ozint
-      !                sz1 = onesixth*ozintsq*ozint*wq
-      !                sz2 = (twothird-zintsq*(1.0_num-zint(n)*0.5_num))*wq
-      !                sz3 = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
-      !                sz4 = onesixth*zintsq*zint(n)*wq
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1740,8 +1696,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
 END SUBROUTINE depose_rho_vecHVv3_3_3_3
 #endif
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Order 3 3D vector charge deposition routine
 !
@@ -1768,10 +1723,9 @@ END SUBROUTINE depose_rho_vecHVv3_3_3_3
 !> @param[in] nx, ny, nz number of cells
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 !> @param[in] lvect vector length
-!
+! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv4_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
 dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
-  ! ______________________________________________________________________________________
   USE constants
   IMPLICIT NONE
   INTEGER(idp), INTENT (IN)    :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2012,21 +1966,17 @@ END SUBROUTINE depose_rho_vecHVv4_3_3_3
 !> @param[in] nox, noy, noz interpolation order
 !> @param[in] l_particle_weight flag to activate the use of the particle weight
 !> @param[in] l4symtry
-!
+! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_rho_n(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz,  &
 nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)  
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
   -nzguard:nz+nzguard), intent(in out) :: rho
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dx, dy, dz, xmin, ymin, zmin
   LOGICAL(lp) :: l_particles_weight, l4symtry
-  
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
   zintsq, oxintsq, oyintsq, ozintsq 
   REAL(num) :: x, y, z, wq, invvol

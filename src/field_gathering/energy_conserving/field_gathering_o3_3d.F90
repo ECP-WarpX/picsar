@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -49,9 +50,9 @@
 ! - gete3d_energy_conserving_vecblock2_3_3_3
 ! - getb3d_energy_conserving_vecblock2_3_3_3
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Scalar version: gathering of electric field from Yee grid ("energy conserving")
 !> on particles at order 3
@@ -72,19 +73,18 @@
 !> @param[in] dx, dy, dz space step
 !> @param[in] dt time step
 !> @param[in] exg, eyg, ezg electric field grids
-!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
 ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
 ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   USE params
-  
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(3), exg_nvalid(3),               &
@@ -343,16 +343,12 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
-      
     ENDDO! end loop on particles
-    
   ENDIF
-  
   RETURN
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving")
 !>  on particles at order 3
@@ -373,19 +369,19 @@ END SUBROUTINE
 !> @param[in] dx, dy, dz space step
 !> @param[in] dt time step
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the bxg, byg, bzg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
+!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of
+!> guard cells of the bxg, byg, bzg arrays in each direction 
+!>(1d arrays containing 3 integers)
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
 ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
 bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)  
@@ -636,7 +632,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
 END SUBROUTINE
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Scalar version: gathering of electric field from Yee grid ("energy conserving").
 !> on particles at order 3
@@ -661,15 +657,12 @@ END SUBROUTINE
 !> @param[in] exg, eyg, ezg electric field grid
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
 ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg,         &
 l_lower_order_in_v)  
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   USE params
-  
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
@@ -917,17 +910,6 @@ l_lower_order_in_v)
       ez(ip) = ez(ip) + sx(0)*sy(2)*sz0(1)*ezg(j, k+2, l0+1)
       ez(ip) = ez(ip) + sx(1)*sy(2)*sz0(1)*ezg(j+1, k+2, l0+1)
       ez(ip) = ez(ip) + sx(2)*sy(2)*sz0(1)*ezg(j+2, k+2, l0+1)
-      
-      !     write(0, *)
-      !     write(0, *) 'Particle', ip
-      !     write(0, *) 'E:', ex(ip), ey(ip), ez(ip)
-      !     write(0, *) 'sx:', sx(:)
-      !     write(0, *) 'sy:', sy(:)
-      !     write(0, *) 'sz:', sz(:)
-      !     write(0, *) 'sx0:', sx0(:)
-      !     write(0, *) 'sy0:', sy0(:)
-      !     write(0, *) 'sz0:', sz0(:)
-      
     ENDDO
     
   ELSE
@@ -1202,17 +1184,16 @@ l_lower_order_in_v)
       
     ENDDO! end loop on particles
   ENDIF
-  
-  !   write(0, *) 'sum(ex)', sum(ex), sum(ey), sum(ez)
-  
+
   RETURN
 END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
-! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") on particles
+! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") 
+! on particles
 ! at order 3
 !
 !> @details
@@ -1236,15 +1217,12 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
 ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg,         &
 l_lower_order_in_v)  
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
   logical                              :: l_lower_order_in_v
@@ -1264,9 +1242,7 @@ l_lower_order_in_v)
   dyi = 1./dy
   dzi = 1./dz
   
-  
   if (l_lower_order_in_v) then
-    
     
     DO ip=1, np
       
@@ -1708,17 +1684,14 @@ l_lower_order_in_v)
       bz(ip) = bz(ip) + sx0(0)*sy0(2)*sz(2)*bzg(j0, k0+2, l+2)
       bz(ip) = bz(ip) + sx0(1)*sy0(2)*sz(2)*bzg(j0+1, k0+2, l+2)
       bz(ip) = bz(ip) + sx0(2)*sy0(2)*sz(2)*bzg(j0+2, k0+2, l+2)
-      
     ENDDO
-    
   ENDIF
-  
   RETURN
 END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Vectorized Gathering of electric field from Yee grid ("energy conserving") on particles
 !> at order 3.
@@ -1744,12 +1717,10 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin, ymin, &
 zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
 l_lower_order_in_v)  
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   IMPLICIT NONE
   
@@ -1784,10 +1755,6 @@ l_lower_order_in_v)
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
-  !write(0, *) 'l_lower_order_in_v ', l_lower_order_in_v
-  !write(0, *) 'sum(xp)', sum(xp), sum(yp), sum(zp)
-  !write(0, *) 'sum(exg)', sum(exg), sum(eyg), sum(ezg)
   
   IF (l_lower_order_in_v ) THEN
     
@@ -2027,17 +1994,6 @@ l_lower_order_in_v)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 2)*sz0(n, 1)*ezg(j, k+2, l0+1)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 2)*sz0(n, 1)*ezg(j+1, k+2, l0+1)
         ez(nn) = ez(nn) + sx(n, 2)*sy(n, 2)*sz0(n, 1)*ezg(j+2, k+2, l0+1)
-        
-        !     write(0, *)
-        !     write(0, *) 'Particle', ip
-        !     write(0, *) 'E:', ex(ip), ey(ip), ez(ip)
-        !     write(0, *) 'sx:', sx(:)
-        !     write(0, *) 'sy:', sy(:)
-        !     write(0, *) 'sz:', sz(:)
-        !     write(0, *) 'sx0:', sx0(:)
-        !     write(0, *) 'sy0:', sy0(:)
-        !     write(0, *) 'sz0:', sz0(:)
-        
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -2339,7 +2295,6 @@ l_lower_order_in_v)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 2)*sz0(n, 2)*ezg(j, k+2, l0+2)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 2)*sz0(n, 2)*ezg(j+1, k+2, l0+2)
         ez(nn) = ez(nn) + sx(n, 2)*sy(n, 2)*sz0(n, 2)*ezg(j+2, k+2, l0+2)
-        
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -2353,11 +2308,8 @@ l_lower_order_in_v)
 END SUBROUTINE
 #endif
 
-
-
-
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Vectorized gathering of magnetic field from Yee grid ("energy conserving") on particles
 !> at order 3
@@ -2380,12 +2332,10 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, bx, by, bz, xmin, ymin, &
 zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
 l_lower_order_in_v)  
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2617,7 +2567,6 @@ l_lower_order_in_v)
         bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, 1)*sz(n, 2)*bzg(j0-1, k0+1, l+2)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 1)*sz(n, 2)*bzg(j0, k0+1, l+2)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 1)*sz(n, 2)*bzg(j0+1, k0+1, l+2)
-        
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -2627,7 +2576,6 @@ l_lower_order_in_v)
     ENDDO
     
   ELSE
-    
     ! Loop over the particles by block
     DO ip=1, np, lvect
       
@@ -2931,9 +2879,10 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
-!> Vectorized gathering of the electric fields (version 2) from Yee grid ("energy conserving")
+!> Vectorized gathering of the electric fields (version 2) from Yee grid 
+!> ("energy conserving")
 !> on particles at order 3.
 !
 !> @details
@@ -2961,15 +2910,12 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,      &
 ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,  &
 l_lower_order_in_v)  
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                           :: lvect
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez
@@ -3192,17 +3138,6 @@ l_lower_order_in_v)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+1) + sx(n, 0)*ezg(j, k+2, l0+1) + sx(n,   &
         1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)   
         ez(nn) = ez(nn) + a*sz0(n, 1)
-        
-        !     write(0, *)
-        !     write(0, *) 'Particle', ip
-        !     write(0, *) 'E:', ex(ip), ey(ip), ez(ip)
-        !     write(0, *) 'sx:', sx(:)
-        !     write(0, *) 'sy:', sy(:)
-        !     write(0, *) 'sz:', sz(:)
-        !     write(0, *) 'sx0:', sx0(:)
-        !     write(0, *) 'sy0:', sy0(:)
-        !     write(0, *) 'sz0:', sz0(:)
-        
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -3420,8 +3355,6 @@ l_lower_order_in_v)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+2) + sx(n, 0)*ezg(j, k+2, l0+2) + sx(n,   &
         1)*ezg(j+1, k+2, l0+2) + sx(n, 2)*ezg(j+2, k+2, l0+2))*sy(n, 2)   
         ez(nn) = ez(nn) + a*sz0(n, 2)
-        
-        
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -3436,7 +3369,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Vectorized gathering of magnetic field (version 2) from Yee grid ("energy conserving")
 !> on particles at order 3.
@@ -3466,12 +3399,10 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,      &
 ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,  &
 l_lower_order_in_v)  
-  ! ______________________________________________________________________________
-  
-  
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -3904,7 +3835,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 !> @brief
 !> Vectorized field gathering at order 3 with gathering of E and B merged in a single loop
@@ -3933,14 +3864,12 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !
+! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,    &
 bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
 ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
@@ -4830,7 +4759,6 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 2)*sz(n, 2)*bzg(j0, k0+2, l+2)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 2)*sz(n, 2)*bzg(j0+1, k0+2, l+2)
         bz(nn) = bz(nn) + sx0(n, 2)*sy0(n, 2)*sz(n, 2)*bzg(j0+2, k0+2, l+2)
-        
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -4838,15 +4766,12 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
 #endif
     ENDDO
-    
   ENDIF
-  
   RETURN
 END SUBROUTINE
 #endif
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 !> @brief
 !> Vectorized field gathering at order 3 with gathering of E and B merged in a single loop
@@ -4875,14 +4800,12 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !
+! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vecV2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,  &
 bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
 ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
@@ -5540,7 +5463,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 END SUBROUTINE
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 !> @brief
 !> Vectorized field gathering at order 3 with gathering of E and B
@@ -5565,23 +5488,25 @@ END SUBROUTINE
 !> @param[in] dx, dy, dz space steps in every directions
 !> @param[in] dt time step
 !> @param[in] exg, eyg, ezg electric field grids
-!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the bxg, byg, bzg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
+!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the 
+!> bxg, byg, bzg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !
 SUBROUTINE geteb3d_energy_conserving_vecV3_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,  &
 bz, xmin, ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,       &
 eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
-byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)        !#do not wrap
-  ! ______________________________________________________________________________
-  
+byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
+l_lower_order_in_v)        !#do not wrap
   USE constants
   IMPLICIT NONE
-  
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp), intent(in)                :: np
   INTEGER(idp), intent(in)                :: exg_nguard(3), exg_nvalid(3),            &
@@ -6237,7 +6162,6 @@ byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v) 
         a = a + (sx0(-1)*bzg(j0-1, k0+2, l+2) + sx0(0)*bzg(j0, k0+2, l+2) +           &
         sx0(1)*bzg(j0+1, k0+2, l+2) + sx0(2)*bzg(j0+2, k0+2, l+2))*sy0(2)   
         bz(nn) = bz(nn) + a*sz(2)
-        
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -6245,17 +6169,12 @@ byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v) 
 #endif
 #endif
     ENDDO
-    
   ENDIF
-  
   RETURN
 END SUBROUTINE
 
-
-
-
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering by block at order 3 with gathering of E and B
 !> splited in several small subloops.
@@ -6283,14 +6202,12 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,   &
 by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
 eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
@@ -6890,7 +6807,7 @@ END SUBROUTINE
 #endif
 
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering by block at order 3 with gathering of E and B
 !> splited in several small subloops, version 2.
@@ -6922,14 +6839,12 @@ END SUBROUTINE
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
+! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,  &
 by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
 eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
@@ -7472,16 +7387,13 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n)+1, l(n)+2) + sx0(n, 0)*bzg(j0(n),        &
       k0(n)+1, l(n)+2) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)+2))*sy0(n, 1)  
       bz(nn) = bz(nn) + a*sz(n, 2)
-      
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
   ENDDO
-  
   RETURN
 END SUBROUTINE
 #endif

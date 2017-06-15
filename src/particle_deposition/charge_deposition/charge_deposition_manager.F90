@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -40,7 +41,7 @@
 !
 ! - pxrdepose_rho_on_grid_sub_openmp_3d_scalar
 ! - pxrdepose_rho_on_grid_sub_openmp_3d_vecto
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
 ! ________________________________________________________________________________________
@@ -58,8 +59,8 @@
 !> @date
 !> Creation 2015
 !> last update 09/13/2016
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid
-  ! ________________________________________________________________________________________
   USE constants
   USE fields
   USE particles
@@ -200,10 +201,7 @@ SUBROUTINE pxrdepose_rho_on_grid
         CALL pxrdepose_rho_on_grid_sub_openmp_3d_n(rho, nx, ny, nz, nxjguards,        &
         nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old) 
       ENDIF
-      
-      !     CALL pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rho, nx, ny, nz, &
-      !     nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old, LVEC_charge_depo)
-      
+
       ! ___ Scalar subroutines _______________________
     ELSE IF (rhodepo.EQ.1) THEN
       
@@ -223,9 +221,6 @@ SUBROUTINE pxrdepose_rho_on_grid
         CALL pxrdepose_rho_on_grid_sub_openmp_3d_n(rho, nx, ny, nz, nxjguards,        &
         nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old) 
       ENDIF
-      
-      !     CALL pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rho, nx, ny, nz, &
-      !     nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old)
       
       ! ___ Non-optimized general function ____________________
     ELSE
@@ -253,7 +248,8 @@ END SUBROUTINE pxrdepose_rho_on_grid
 !> Deposit rho in each tile in 3D with the subroutine pxr_depose_rho_n()
 !
 !> @details
-!> This subroutine perform the charge deposition among the tiles using OpenMP version in 3D.
+!> This subroutine perform the charge deposition among the tiles using OpenMP version  
+!> in 3D.
 !> It avoids conflict while reducing tile charge in the global charge array.
 !> This subroutine uses only the general order function pxr_depose_rho_n().
 !>
@@ -271,18 +267,15 @@ END SUBROUTINE pxrdepose_rho_on_grid
 !> @param[in] dxx, dyy, dzz space discretization steps
 !> @param[in] dtt time step
 !> @param[in] c_rho_old
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard,       &
 nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old) 
-  ! ________________________________________________________________________________________
-  
   USE particles
   USE constants
   USE tiling
   IMPLICIT NONE
-  
   ! _______________________________________________________________________
   ! Declarations
-  
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz, c_rho_old
   REAL(num), INTENT(IN)    :: dxx, dyy, dzz, dtt
@@ -489,7 +482,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n
 !> This subroutine perform the charge deposition among the tiles using OpenMP version.
 !> It avoids conflict while reducing tile charge in the global charge array.
 !>
-!> This version uses arbitrary charge deposition subroutines specified as a parameter: func_order.
+!> This version uses arbitrary charge deposition subroutines specified as a parameter: 
+!> func_order.
 !
 !> @author
 !> Mathieu Lobet
@@ -506,20 +500,17 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n
 !> @param[in] dtt time step
 !> @param[in] lvectt vector length
 !> @param[in] c_rho_old
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz,       &
 nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt,           &
 c_rho_old) 
-  ! ________________________________________________________________________________________
-  
   USE particles
   USE constants
   USE tiling
   IMPLICIT NONE
-  
   ! _______________________________________________________________________
   ! Interfaces for func_order
   INTERFACE
-    
     SUBROUTINE func_order(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz,    &
     nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
       
@@ -532,14 +523,10 @@ c_rho_old)
       INTEGER(idp), INTENT (IN)    :: lvect
       REAL(num), INTENT(IN)     :: xp(np), yp(np), zp(np), w(np)
       REAL(num), INTENT(IN)     :: q, dx, dy, dz, xmin, ymin, zmin
-      
     END SUBROUTINE
-    
   END INTERFACE
-  
-  ! _______________________________________________________________________
+  ! ______________________________________________________________________
   ! Declarations
-  
   INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN)  :: noxx, noyy, nozz, c_rho_old, lvectt
   REAL(num), INTENT(IN)     :: dxx, dyy, dzz, dtt
@@ -760,15 +747,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
 !> @param[in] dxx, dyy, dzz space discretization steps
 !> @param[in] dtt time step
 !> @param[in] c_rho_old
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,         &
 nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old) 
-  ! ________________________________________________________________________________________
   USE particles
   USE constants
   USE tiling
-  
   IMPLICIT NONE
-  
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz, c_rho_old
   REAL(num), INTENT(IN) :: dxx, dyy, dzz, dtt
@@ -998,19 +983,15 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d
 !> @param[in] dxx, dyy, dzz space discretization steps
 !> @param[in] dtt time step
 !> @param[in] c_rho_old
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjguard,  &
 nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old) 
-  ! ________________________________________________________________________________________
-  
   USE particles
   USE constants
   USE tiling
-  
   IMPLICIT NONE
-  
   ! _______________________________________________________________________
   ! Declarations
-  
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz, c_rho_old
   REAL(num), INTENT(IN)    :: dxx, dyy, dzz, dtt
@@ -1252,19 +1233,15 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar
 !> @param[in] dxx, dyy, dzz space discretization steps
 !> @param[in] dtt time step
 !> @param[in] c_rho_old
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjguard,   &
 nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect) 
-  ! ________________________________________________________________________________________
-  
   USE particles
   USE constants
   USE tiling
-  
   IMPLICIT NONE
-  
   ! _______________________________________________________________________
   ! Declarations
-  
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz, c_rho_old, lvect
   REAL(num), INTENT(IN)    :: dxx, dyy, dzz, dtt

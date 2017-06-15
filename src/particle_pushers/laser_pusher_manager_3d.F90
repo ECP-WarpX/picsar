@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Main subroutine for  laser and antenna
 !> called in the main loop (see. submain.F90)
@@ -10,8 +10,8 @@
 !> H. Vincenti
 !> @date
 !> Creation 2017
+! ________________________________________________________________________________________
 SUBROUTINE push_laser_particles
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE fields
@@ -68,17 +68,16 @@ SUBROUTINE push_laser_particles
 #endif
 END SUBROUTINE push_laser_particles
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Subroutine for pushing particles of type antenna
 !
-!> @details
-!> This routine calls the subroutines for the different
 !
 !> @author
 !> Haithem Kallala
 !> @date
 !> Creation 2017
+! ________________________________________________________________________________________
 SUBROUTINE laserp_pusher(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,      &
 lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, laser_tau,          &
 real_time, t_peak, temporal_order, polangle)  
@@ -153,10 +152,17 @@ real_time, t_peak, temporal_order, polangle)
       zp(nn)  = zp(nn) + dt*uzp(nn)! + dt*source_v(3)
     ENDDO
   ENDDO
-  !print*, it, "max v ", maxval(abs(jy))/maxval(abs(uyp)), maxval(abs(ey))/maxval(abs(jy)), maxval(abs(ey))/emax1
 END SUBROUTINE laserp_pusher
 
-
+! ________________________________________________________________________________________
+!> @brief
+!> Subroutine for computing gaussian laser profile in time and space 
+!
+!> @author
+!> Haithem Kallala
+!> @date
+!> Creation 2017
+! ________________________________________________________________________________________
 SUBROUTINE gaussian_profile(xx, yy, amp, emax, emax1, emax2, polvector1, polvector2,  &
 k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle) 
   USE shared_data

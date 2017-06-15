@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -29,10 +30,10 @@
 !
 ! Date:
 ! Creation 2015
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D arbitrary order
 !
@@ -41,11 +42,10 @@
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
 dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
 nys, nzs, l_nodalgrid)    
-  ! ______________________________________________________________________________
-  
   use constants
   
   integer(idp), intent(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
@@ -122,7 +122,7 @@ nys, nzs, l_nodalgrid)
   return
 end subroutine pxrpush_em3d_evec_norder
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 2D arbitrary order
 !
@@ -131,11 +131,10 @@ end subroutine pxrpush_em3d_evec_norder
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
 dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
 nys, nzs, l_nodalgrid)    
-  ! ______________________________________________________________________________
-  
   use constants
   integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
@@ -198,7 +197,7 @@ nys, nzs, l_nodalgrid)
 end subroutine pxrpush_em2d_evec_norder
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 2D order 2
 !
@@ -207,10 +206,9 @@ end subroutine pxrpush_em2d_evec_norder
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
 dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)   
-  ! ______________________________________________________________________________
-  
   use constants
   integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -265,7 +263,7 @@ dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
 end subroutine pxrpush_em2d_evec
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D order 2
 !
@@ -274,12 +272,10 @@ end subroutine pxrpush_em2d_evec
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
 dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)   
-  ! ______________________________________________________________________________
-  
   use constants
-  
   integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
@@ -328,7 +324,7 @@ dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
 end subroutine pxrpush_em3d_evec
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 3D arbitrary order
 !
@@ -337,13 +333,11 @@ end subroutine pxrpush_em3d_evec
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
 ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
 l_nodalgrid)    
-  ! ______________________________________________________________________________
-  
   use constants
-  
   integer(idp)          :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs,      &
   norderx, nordery, norderz
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -411,7 +405,7 @@ l_nodalgrid)
   
 end subroutine pxrpush_em3d_bvec_norder
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 2D arbitrary order
 !
@@ -420,11 +414,10 @@ end subroutine pxrpush_em3d_bvec_norder
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
 ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
 l_nodalgrid)    
-  ! ______________________________________________________________________________
-  
   use constants
   integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
@@ -481,7 +474,7 @@ l_nodalgrid)
   
 end subroutine pxrpush_em2d_bvec_norder
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 2D order 2
 !
@@ -490,9 +483,9 @@ end subroutine pxrpush_em2d_bvec_norder
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
 nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)   
-  ! ______________________________________________________________________________
   use constants
   integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -540,7 +533,7 @@ nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
   
 end subroutine pxrpush_em2d_bvec
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 3D order 2
 !
@@ -549,9 +542,9 @@ end subroutine pxrpush_em2d_bvec
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
 nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)   
-  ! ______________________________________________________________________________
   use constants
   integer(idp):: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &

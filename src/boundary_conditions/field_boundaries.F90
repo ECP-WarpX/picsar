@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -37,10 +38,10 @@
 ! - summation_bcs
 ! - summation_bcs_nonblocking
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Module that contains subroutines for boundary conditions on fields and currents.
 !
@@ -49,9 +50,8 @@
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 MODULE field_boundary
-  ! ______________________________________________________________________________
-  
   USE shared_data
   USE fields
   USE particles
@@ -65,7 +65,7 @@ MODULE field_boundary
   
   CONTAINS
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Exchange field values at processor boundaries and apply field
   !> boundary conditions
@@ -76,9 +76,8 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE field_bc(field, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-    ! ____________________________________________________________________________
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -92,9 +91,10 @@ MODULE field_boundary
     
   END SUBROUTINE field_bc
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
-  !> Routine exchanging guard regions between subdomains (blocking, version+diagonal trick)
+  !> Routine exchanging guard regions between subdomains
+  !> (blocking, version+diagonal trick)
   !
   !> @author
   !> Henri Vincenti
@@ -102,14 +102,12 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, nx_local,   &
   ny_local, nz_local) 
-    ! ____________________________________________________________________________
-    
     USE constants
     USE mpi
     IMPLICIT NONE
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -268,7 +266,7 @@ MODULE field_boundary
     
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Routine exchanging guard regions between subdomains (non-blocking version
   !> + diagonal trick)
@@ -279,12 +277,10 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking(field, nxg, nyg, nzg, &
   nx_local, ny_local, nz_local) 
-    ! ____________________________________________________________________________
-    
     USE mpi
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -390,7 +386,7 @@ MODULE field_boundary
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
   
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Routine for adding current contributions fron adjacent subdomains
   !
@@ -400,9 +396,8 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-    ! ____________________________________________________________________________
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -506,7 +501,7 @@ MODULE field_boundary
   
   
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains
   ! nonblocking version
   !
@@ -516,12 +511,10 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_nonblocking(array, nxg, nyg, nzg, nx_local, ny_local,      &
   nz_local)
-    ! ____________________________________________________________________________
-    
     USE mpi
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -636,7 +629,7 @@ MODULE field_boundary
     
   END SUBROUTINE summation_bcs_nonblocking
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Routine for adding current contributions fron adjacent subdomains persistent version
   !
@@ -646,12 +639,11 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jx(array, nxg, nyg, nzg, nx_local, ny_local,    &
   nz_local) 
-    ! ____________________________________________________________________________
     USE communications
     USE mpi
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -733,19 +725,13 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'it', it
-    !if (rank.eq.0) print*, 'summation along X'
-    
     temp1  = 0.0_num
     temp2 = 0.0_num
-    !call MPI_STARTALL(4_isp, reqperjxx, errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min_mpisp, tag, comm, reqperjxx(2),      &
     errcode) 
-    !call MPI_START(reqperjxx(2), errcode)
     call MPI_START(reqperjxx(1), errcode)
     CALL MPI_IRECV(temp2, sz, mpidbl, proc_x_max_mpisp, tag, comm, reqperjxx(4),      &
     errcode) 
-    !call MPI_START(reqperjxx(4), errcode)
     call MPI_START(reqperjxx(3), errcode)
     CALL MPI_WAITALL(4_isp, reqperjxx, MPI_STATUSES_IGNORE, errcode)
     
@@ -764,8 +750,6 @@ MODULE field_boundary
     sz = subsizes(1) * subsizes(2) * subsizes(3)
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
-    
-    !if (rank.eq.0) print*, 'summation along Y'
     
     temp1  = 0.0_num
     temp2 = 0.0_num
@@ -792,43 +776,27 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'summation along Z'
-    
     temp1  = 0.0_num
     temp2 = 0.0_num
     
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min_mpisp, tag, comm, reqperjxz(2),      &
     errcode) 
     call MPI_START(reqperjxz(1), errcode)
-    !if (rank.eq.0) print*, 'irecv 1'
     
     CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max_mpisp, tag, comm, reqperjxz(4),      &
     errcode) 
     call MPI_START(reqperjxz(3), errcode)
     CALL MPI_WAITALL(4_isp, reqperjxz, MPI_STATUSES_IGNORE, errcode)
-    !if (rank.eq.0) print*, 'irecv 2'
     
     array(:, :, 0:nzg) = array(:, :, 0:nzg) + temp1
     array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp2
-    !if (rank.eq.0) print*, 'array sum'
     
     DEALLOCATE(temp1, temp2)
     
-    !if (rank.eq.0) print*, 'deallocate'
-    
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-    
-    !if (rank.eq.0) print*, 'field_bc'
-    
-    !call MPI_REQUEST_FREE(reqperx(1), errcode)
-    !call MPI_REQUEST_FREE(reqperx(3), errcode)
-    !call MPI_REQUEST_FREE(reqpery(1), errcode)
-    !call MPI_REQUEST_FREE(reqpery(3), errcode)
-    !call MPI_REQUEST_FREE(reqperz(1), errcode)
-    !call MPI_REQUEST_FREE(reqperz(3), errcode)
   END SUBROUTINE
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Routine for adding current contributions fron adjacent subdomains persistent version
   !
@@ -838,13 +806,11 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jy(array, nxg, nyg, nzg, nx_local, ny_local,    &
   nz_local) 
-    ! ____________________________________________________________________________
-    
     USE communications
     USE mpi
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -921,9 +887,6 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'it', it
-    !if (rank.eq.0) print*, 'summation along X'
-    
     temp1  = 0.0_num
     temp2 = 0.0_num
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min_mpisp, tag, comm, reqperjyx(2),      &
@@ -950,8 +913,6 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'summation along Y'
-    
     temp1  = 0.0_num
     temp2 = 0.0_num
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min_mpisp, tag, comm, reqperjyy(2),      &
@@ -977,7 +938,6 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'summation along Z'
     
     temp1  = 0.0_num
     temp2 = 0.0_num
@@ -985,36 +945,21 @@ MODULE field_boundary
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min_mpisp, tag, comm, reqperjyz(2),      &
     errcode) 
     call MPI_START(reqperjyz(1), errcode)
-    !if (rank.eq.0) print*, 'irecv 1'
     
     CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max_mpisp, tag, comm, reqperjyz(4),      &
     errcode) 
     call MPI_START(reqperjyz(3), errcode)
     CALL MPI_WAITALL(4_isp, reqperjyz, MPI_STATUSES_IGNORE, errcode)
-    !if (rank.eq.0) print*, 'irecv 2'
     
     array(:, :, 0:nzg) = array(:, :, 0:nzg) + temp1
     array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp2
-    !if (rank.eq.0) print*, 'array sum'
     
     DEALLOCATE(temp1, temp2)
     
-    !if (rank.eq.0) print*, 'deallocate'
-    
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-    
-    !if (rank.eq.0) print*, 'field_bc'
-    
-    !call MPI_REQUEST_FREE(reqperx(1), errcode)
-    !call MPI_REQUEST_FREE(reqperx(3), errcode)
-    !call MPI_REQUEST_FREE(reqpery(1), errcode)
-    !call MPI_REQUEST_FREE(reqpery(3), errcode)
-    !call MPI_REQUEST_FREE(reqperz(1), errcode)
-    !call MPI_REQUEST_FREE(reqperz(3), errcode)
-    
   END SUBROUTINE
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Routine for adding current contributions fron adjacent subdomains persistent version
   !
@@ -1024,12 +969,11 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jz(array, nxg, nyg, nzg, nx_local, ny_local,    &
   nz_local) 
-    ! ____________________________________________________________________________
     USE communications
     USE mpi
-    
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -1106,9 +1050,6 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'it', it
-    !if (rank.eq.0) print*, 'summation along X'
-    
     temp1  = 0.0_num
     temp2 = 0.0_num
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_x_min_mpisp, tag, comm, reqperjzx(2),      &
@@ -1135,8 +1076,6 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'summation along Y'
-    
     temp1  = 0.0_num
     temp2 = 0.0_num
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_y_min_mpisp, tag, comm, reqperjzy(2),      &
@@ -1162,44 +1101,27 @@ MODULE field_boundary
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
     
-    !if (rank.eq.0) print*, 'summation along Z'
-    
     temp1  = 0.0_num
     temp2 = 0.0_num
     
     CALL MPI_IRECV(temp1, sz, mpidbl, proc_z_min_mpisp, tag, comm, reqperjzz(2),      &
     errcode) 
     call MPI_START(reqperjzz(1), errcode)
-    !if (rank.eq.0) print*, 'irecv 1'
     
     CALL MPI_IRECV(temp2, sz, mpidbl, proc_z_max_mpisp, tag, comm, reqperjzz(4),      &
     errcode) 
     call MPI_START(reqperjzz(3), errcode)
     CALL MPI_WAITALL(4_isp, reqperjzz, MPI_STATUSES_IGNORE, errcode)
-    !if (rank.eq.0) print*, 'irecv 2'
     
     array(:, :, 0:nzg) = array(:, :, 0:nzg) + temp1
     array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp2
-    !if (rank.eq.0) print*, 'array sum'
     
     DEALLOCATE(temp1, temp2)
     
-    !if (rank.eq.0) print*, 'deallocate'
-    
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-    
-    !if (rank.eq.0) print*, 'field_bc'
-    
-    !call MPI_REQUEST_FREE(reqperx(1), errcode)
-    !call MPI_REQUEST_FREE(reqperx(3), errcode)
-    !call MPI_REQUEST_FREE(reqpery(1), errcode)
-    !call MPI_REQUEST_FREE(reqpery(3), errcode)
-    !call MPI_REQUEST_FREE(reqperz(1), errcode)
-    !call MPI_REQUEST_FREE(reqperz(3), errcode)
-    
   END SUBROUTINE
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition routine for electric field
   !
@@ -1209,9 +1131,8 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE efield_bcs
-    ! ____________________________________________________________________________
-    
     REAL(num) :: tmptime
 #if defined(DEBUG)
     WRITE(0, *) "efield_bcs: start"
@@ -1232,7 +1153,7 @@ MODULE field_boundary
 #endif
   END SUBROUTINE efield_bcs
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition routine for magnetic field
   !
@@ -1242,8 +1163,8 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE bfield_bcs
-    ! ____________________________________________________________________________
     
     REAL(num) :: tmptime
 #if defined(DEBUG)
@@ -1264,7 +1185,7 @@ MODULE field_boundary
 #endif
   END SUBROUTINE bfield_bcs
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary conditions routine for currents
   !
@@ -1274,8 +1195,8 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE current_bcs
-    ! ____________________________________________________________________________
     REAL(num) :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1309,7 +1230,7 @@ MODULE field_boundary
     ENDIF
   END SUBROUTINE current_bcs
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary conditions routine for charge density.
   !
@@ -1322,8 +1243,8 @@ MODULE field_boundary
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE charge_bcs
-    ! ____________________________________________________________________________
     USE time_stat
     
     REAL(num) :: tmptime
@@ -1345,7 +1266,7 @@ MODULE field_boundary
   
   
   
-  ! ______________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Move the global, local and tile boundaries when moving window
   !
@@ -1356,8 +1277,8 @@ MODULE field_boundary
   !> Creation: 2016
   !
   !> @param[in] dxx, dyy, dzz moving window displacement
+  ! ______________________________________________________________________________________
   SUBROUTINE pxr_move_sim_boundaries(dxx, dyy, dzz)
-    ! ______________________________________________________________________________
     IMPLICIT NONE
     
     REAL(num), INTENT(IN) :: dxx, dyy, dzz
@@ -1450,6 +1371,4 @@ MODULE field_boundary
     END DO
     
   END SUBROUTINE pxr_move_sim_boundaries
-  
-  
 END MODULE field_boundary

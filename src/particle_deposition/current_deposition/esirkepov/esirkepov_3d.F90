@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -33,10 +34,10 @@
 ! - depose_jxjyjz_esirkepov_3_3_3
 ! - warp_depose_jxjyjz_esirkepov_n
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov scalar current deposition algorithm at order 1 in x, y, z (nox=noy=noz=1)
 !>
@@ -51,14 +52,20 @@
 !> Revision 10/09/2016
 !>
 !> @param[inout] jx x-current component (3D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> jx array (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> jy array (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> jz array (1d array containing 3 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, yp, zp particle position arrays
 !> @param[in] uxp, uyp, uzp particle momentum arrays
@@ -71,11 +78,10 @@
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   
@@ -132,13 +138,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
   dtsdz0 = dt*dzi
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
-  
-  !!$OMP PARALLEL DEFAULT(NONE) PRIVATE(ip, x, y, z, usq, vx, vy, vz, gaminv, xold, yold, zold, &
-  !!$OMP wq, wqx, wqy, wqz, iixp0, ijxp0, ikxp0, xint, yint, zint, oxint, xintsq, oxintsq, dix, diy, diz, &
-  !!$OMP dsx, dsy, dsz, oyint, yintsq, oyintsq, ozint, zintsq, ozintsq, ixmin, ixmax, iymin, iymax, izmin, izmax, &
-  !!$OMP k, j, i, kc, jc, ic, iixp, ijxp, ikxp, sx, sy, sz, sx0, sy0, sz0, sdx, sdy, sdz, jx1, jy1, jz1) &
-  !!$OMP SHARED(np, xp, yp, zp, uxp, uyp, uzp, w, dxi, dyi, dzi, invdtdx, invdtdy, invdtdz, xmin, ymin, zmin, clghtisq, dtsdx0, dtsdy0, dtsdz0, q, jx, jy, jz)
-  !!$OMP DO
+
   DO ip=1, np
     
     ! --- computes current position in grid units
@@ -187,7 +187,8 @@ xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
     dix = iixp-iixp0
     diy = ijxp-ijxp0
     diz = ikxp-ikxp0
-    ! --- zero out coefficients (needed because of different dix and diz for each particle)
+    ! --- zero out coefficients 
+    ! --- (needed because of different dix and diz for each particle)
     sx=0.0_num;sy=0.0_num;sz=0.0_num
     ! --- computes coefficients for quantities centered between nodes
     sx( 0+dix) = 1.0_num-xint
@@ -239,27 +240,19 @@ xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
     END DO
     
   ENDDO
-  
-  
-  !!$OMP END DO
-  !!$OMP CRITICAL
-  !jx=jx+jx1
-  !jy=jy+jy1
-  !jz=jz+jz1
-  !!$OMP END CRITICAL
-  !!$OMP END PARALLEL
   DEALLOCATE(sdx, sdy, sdz, sx, sx0, dsx, sy, sy0, dsy, sz, sz0, dsz)
   RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 
 #if defined (DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov current deposition optimized at order 1
 !
 !> @details
 !> This function gives slightly better performances with AVX512 vector registers.
-!> We can expect 30% speedup on KNL however performances are bad with small vector registers.
+!> We can expect 30% speedup on KNL however performances are bad with small vector 
+!> registers.
 !
 !> @author
 !> Mathieu Lobet
@@ -270,10 +263,10 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 !> @warning
 !> PROBLEM: CORRECTION REQUIRED
 !> DO NOT USE
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp, uyp,  &
 uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,    &
 nzguard, l_particles_weight, l4symtry)  
-  ! ______________________________________________________________________________
   USE constants
   !USE precomputed
   IMPLICIT NONE
@@ -287,8 +280,8 @@ nzguard, l_particles_weight, l4symtry)
   REAL(num), DIMENSION(:, :), ALLOCATABLE:: jxcells, jycells, jzcells
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num)                :: q, dt, dx, dy, dz, xmin, ymin, zmin
-  LOGICAL(lp)              :: l_particles_weight, l4symtry! Useless here but need to be passed in argument to match func_order arguments
-  
+  ! Useless here but need to be passed in argument to match func_order arguments
+  LOGICAL(lp)              :: l_particles_weight, l4symtry
   REAL(num)                :: xint, yint, zint
   REAL(num)                :: oxint, oyint, ozint, xintsq, yintsq, zintsq, oxintsq,   &
   oyintsq, ozintsq
@@ -456,7 +449,8 @@ nzguard, l_particles_weight, l4symtry)
       diy = ijxp-ijxp0
       diz = ikxp-ikxp0
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients 
+      ! --- (needed because of different dix and diz for each particle)
       sx(-1)=0.0_num
       sx(0)=0.0_num
       sx(1)=0.0_num
@@ -894,44 +888,7 @@ nzguard, l_particles_weight, l4symtry)
       sdz(n, 47)=sdz(n, 47)+sdz(n, 31)
       sdz(n, 48)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(2) +                      &
       (0.5_num*sx0(2)+onethird*dsx(2))*dsy(2)) 
-      sdz(n, 48)=sdz(n, 48)+sdz(n, 32)
-      
-      ! Debugging
-      !   IF (isNaN(sum(sdx(n, :))).OR.isNaN(sum(sdy(n, :))).OR.isNaN(sum(sdz(n, :))))then
-      !     print*, n, 'sum(sdx)', sum(sdx(n, :)), sum(sdy(n, :)), sum(sdz(n, :))
-      !     print*, 'sx0', sx0(:)
-      !     print*, 'sy0', sy0(:)
-      !     print*, 'sz0', sz0(:)
-      !     print*, 'dsx', dsx(:)
-      !     print*, 'dsy', dsy(:)
-      !     print*, 'dsz', dsz(:)
-      !     print*, onethird
-      !     print*
-      !     stop
-      !   ENDIF
-      
-      !   IF ((sum(sdx(n, :))+sum(sdy(n, :))+sum(sdz(n, :))).eq.0) THEN
-      !   !IF (rank.eq.1) THEN
-      !     print*, ip, n, nn, 'sum(sdx)', sum(sdx(n, :)), sum(sdy(n, :)), sum(sdz(n, :))
-      !     print*, 'sx0', sx0(:)
-      !     print*, 'sy0', sy0(:)
-      !     print*, 'sz0', sz0(:)
-      !     print*, 'sx', sx(:)
-      !     print*, 'sy', sy(:)
-      !     print*, 'sz', sz(:)
-      !     print*, 'dsx', dsx(:)
-      !     print*, 'dsy', dsy(:)
-      !     print*, 'dsz', dsz(:)
-      !     print*, 'wqx', wqx, wqy, wqz, wq
-      !     print*, 'invdtdx', invdtdx, invdtdy, invdtdz
-      !     print*, 'dtsdx0', dtsdx0, dtsdy0, dtsdz0
-      !     print*, 'x', x, y, z, xold, yold, zold
-      !     print*, onethird
-      !     print*
-      !     read*
-      !   stop
-      !   ENDIF
-      
+      sdz(n, 48)=sdz(n, 48)+sdz(n, 32)      
     END DO
     
 #if defined _OPENMP && _OPENMP>=201307
@@ -992,39 +949,13 @@ nzguard, l_particles_weight, l4symtry)
         sdy(n, nv+32)
         ! Loop on (i=-1, j=1, k=1)
         jycells(nv, ICELL(n, 1)+2*ncx+2*ncxy)=jycells(nv, ICELL(n, 1)+2*ncx+2*ncxy)+  &
-        sdy(n, nv+40)
-        
-        !                 IF (n.eq.5) then
-        !                   print*, 'before', nv
-        !                   print*, jzcells(nv, ICELL(n, 1)), sdz(n, nv)
-        !                   print*, jzcells(nv, ICELL(n, 1)+ncx), sdz(n, nv+8)
-        !                   print*, jzcells(nv, ICELL(n, 1)+ncxy), sdz(n, nv+16)
-        !                   print*, jzcells(nv, ICELL(n, 1)+2*ncx+ncxy), sdz(n, nv+24)
-        !                   print*, jzcells(nv, ICELL(n, 1)+2*ncxy), sdz(n, nv+32)
-        !                   print*, jzcells(nv, ICELL(n, 1)+2*ncx+2*ncxy), sdz(n, nv+40)
-        !                 end if
-        
-        !                 oldsum = sum(jzcells(:, :))
-        
+        sdy(n, nv+40)        
         ! --- JZ
         ! Loop on (i=-1, j=-1, k=-1)
         jzcells(nv, ICELL(n, 1))     = jzcells(nv, ICELL(n, 1)) + sdz(n, nv)
-        
-        !               IF (sum(jzcells(:, :)).ne.(oldsum+sdz(n, nv))) THEN
-        !                 print*, nv, sum(jzcells(:, :)), oldsum+sdz(n, nv)
-        !               ENDIF
-        
-        !                 oldsum = sum(jzcells(:, :))
-        
         ! Loop on (i=-1, j=1, k=-1)
         jzcells(nv, ICELL(n, 1)+2*ncx) = jzcells(nv, ICELL(n, 1)+2*ncx) + sdz(n,      &
         nv+8)
-        
-        !               IF (sum(jzcells(:, :)).ne.(oldsum+sdz(n, nv+8))) THEN
-        !                 print*, nv, sum(jzcells(:, :)), oldsum+sdz(n, nv+8)
-        !                 print*, sdz(n, nv+8)
-        !               ENDIF
-        
         !Loop on (i=-1, j=-1, k=0)
         jzcells(nv, ICELL(n, 1)+ncxy) = jzcells(nv, ICELL(n, 1)+ncxy)+ sdz(n, nv+16)
         !Loop on (i=-1, j=1, k=0)
@@ -1033,50 +964,17 @@ nzguard, l_particles_weight, l4symtry)
         ! Loop on (i=-1, j, k=1)
         jzcells(nv, ICELL(n, 1)+2*ncxy) = jzcells(nv, ICELL(n, 1)+2*ncxy) + sdz(n,    &
         nv+32)
-        
-        !                 oldsum = sum(jzcells(:, :))
-        
         ! Loop on (i=-1, j, k=1)
         jzcells(nv, ICELL(n, 1)+2*ncx+2*ncxy)=jzcells(nv, ICELL(n,                    &
         1)+2*ncx+2*ncxy)+sdz(n, nv+40)
-        
-        !               IF (sum(jzcells(:, :)).ne.(oldsum+sdz(n, nv+40))) THEN
-        !                 print*, nv, sum(jzcells(:, :)), oldsum+sdz(n, nv+40)
-        !               ENDIF
-        
-        !                 IF ((n.eq.5)) then
-        !                   print*, 'after', nv
-        !                   print*, jzcells(nv, ICELL(n, 1)), sdz(n, nv)
-        !                   print*, jzcells(nv, ICELL(n, 1)+ncx), sdz(n, nv+8)
-        !                   print*, jzcells(nv, ICELL(n, 1)+ncxy), sdz(n, nv+16)
-        !                   print*, jzcells(nv, ICELL(n, 1)+2*ncx+ncxy), sdz(n, nv+24)
-        !                   print*, jzcells(nv, ICELL(n, 1)+2*ncxy), sdz(n, nv+32)
-        !                   print*, jzcells(nv, ICELL(n, 1)+2*ncx+2*ncxy), sdz(n, nv+40)
-        !                 end if
-        
-        
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP END SIMD
 #endif
 #endif
-      
-      !     print*, ip, n, 'sum(sdx)', sum(sdx(n, :)), sum(sdy(n, :)), sum(sdz(n, :))
-      !     print*, 'jx', sum(jxcells), sum(jycells), sum(jzcells(:, :))
-      !     nn=ip+n-1
-      !     print*, 'x', xp(nn), yp(nn), zp(nn)
-      !     print*
-      !     read*
-      
     END DO
   END DO
-  
-  !#if DEBUG==1
-  !        print*, 'Reduction of jxcells, jycells, jzcells in jx, jy, jz'
-  !#endif
-  
-  !print*, 'jxcells', sum(jxcells), sum(jycells), sum(jzcells)
   
   ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
   DO iz=1, ncz-2
@@ -1128,31 +1026,6 @@ nzguard, l_particles_weight, l4symtry)
       !$OMP END SIMD
 #endif
 #endif
-      
-      !             DO ix=1, ncx-2 !! VECTOR (take ncx multiple of vector length)
-      !                 ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-      !                 !igrid=orig+ic+(iy-1)*ngx+(iz-1)*ngxy
-      !                 igrid =orig+ix+(iy-1)*nnx+(iz-1)*nnxy
-      
-      ! #if defined _OPENMP && _OPENMP>=201307
-      !       !$OMP SIMD
-      ! #elif defined __IBMBGQ__
-      !       !IBM* SIMD_LEVEL
-      ! #elif defined __INTEL_COMPILER
-      !       !$DIR SIMD
-      ! #endif
-      !                 DO nv=1, 8
-      !                   ! jx
-      !                   jx(igrid+moffjx(nv))=jx(igrid+moffjx(nv))+jxcells(nv, ic)
-      !                   ! jy
-      !                   jy(igrid+moffjy(nv))=jy(igrid+moffjy(nv))+jycells(nv, ic)
-      !                   ! jz
-      !                   jz(igrid+moffjz(nv))=jz(igrid+moffjz(nv))+jzcells(nv, ic)
-      !                 ENDDO
-      ! #if defined _OPENMP && _OPENMP>=201307
-      !        !$OMP END SIMD
-      ! #endif
-      !            END DO
     END DO
   END DO
   DEALLOCATE(jxcells, jycells, jzcells)
@@ -1164,7 +1037,7 @@ END SUBROUTINE
 
 ! __ Developer zone _________
 #if defined(DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov current deposition at order 1
 !
@@ -1179,11 +1052,10 @@ END SUBROUTINE
 !
 !> @warning
 !> DO NOT USE
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp,     &
 uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard,        &
-nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)  
-  ! ______________________________________________________________________________
-  
+nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)    
   USE constants
   USE precomputed
   IMPLICIT NONE
@@ -1214,7 +1086,8 @@ nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
   REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
   REAL(num):: wx1, wx2, wy1, wy2, wz1, wz2
   INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
-  LOGICAL(lp)  :: l_particles_weight, l4symtry! Useless here but need to be passed in argument to match func_order arguments
+  ! Useless here but need to be passed in argument to match func_order arguments
+  LOGICAL(lp)  :: l_particles_weight, l4symtry
   REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
   REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
   REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
@@ -1248,7 +1121,6 @@ nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
   iixporig=-nxguard
   ijxporig=-nyguard
   ikxporig=-nzguard
-  !orig=iixporig+nxguard+nnx*(ijxporig+nyguard)+(ikxporig+nzguard)*nnxy
   orig=(nxguard+iixporig) + (nyguard+ijxporig)*nnx + (nzguard+ikxporig)*nnxy
   
   ngx=(ngridx-ncx)
@@ -1262,11 +1134,7 @@ nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
   
   h1=(/1_num, 0_num, 1_num, 0_num/); sgn=(/1_num, -1_num, 1_num, -1_num/)
   h11=(/0_num, 1_num, 1_num, 0_num/); h12=(/1_num, 0_num, 0_num, 1_num/)
-  
-  !#if DEBUG==1
-  !        print*, 'Compute weights'
-  !#endif
-  
+
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
 #if defined __INTEL_COMPILER
@@ -1346,7 +1214,8 @@ nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
       diy = ijxp-ijxp0(n)
       diz = ikxp-ikxp0(n)
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients
+      ! ---  (needed because of different dix and diz for each particle)
       sx(-1)=0.0_num
       sx(0)=0.0_num
       sx(1)=0.0_num
@@ -1363,11 +1232,6 @@ nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
       sz(2)=0.0_num
       
       ! --- computes coefficients for quantities centered between nodes
-      !#if DEBUG==1
-      !  if ((dix>1).or.(diy>1).or.(diz>1)) then
-      !    print*, '', dix, diy, diz
-      !  end if
-      !#endif
       sx( 0+dix) = 1.0_num-xint
       sx( 1+dix) = xint
       sy( 0+diy) = 1.0_num-yint
@@ -1392,12 +1256,9 @@ nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
       dsz(2) = sz(2) - sz0(2)
       
       ! Icell like in the previous function
-      !ICELL(n, 1)=1+(iixp0-iixporig)+(ijxp0-ijxporig)*ncx+(ikxp0-ikxporig)*ncxy
       ! With the shift
       ICELL(n,                                                                        &
       1)=(iixp0(n)-iixporig)+(ijxp0(n)-ijxporig-1)*ncx+(ikxp0(n)-ikxporig-1)*ncxy
-      !ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
-      !ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
       
       ! Weight
       sdx(n, 1)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(-1) +                   &
@@ -1832,7 +1693,7 @@ nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
 END SUBROUTINE
 #endif
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov scalar current deposition algorithm at order 2 in x, y, z (nox=noy=noz=2)
 !>
@@ -1847,14 +1708,20 @@ END SUBROUTINE
 !> Revision 10/09/2016
 !>
 !> @param[inout] jx x-current component (3D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array 
+!> (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)s
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
+!>  (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array
+!>  (1d array containing 3 integers)s
 !> @param[in] np number of particles
 !> @param[in] xp, yp, zp particle position arrays
 !> @param[in] uxp, uyp, uzp particle momentum arrays
@@ -1867,11 +1734,10 @@ END SUBROUTINE
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   INTEGER :: np
@@ -1974,7 +1840,8 @@ xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
     dix = iixp-iixp0
     diy = ijxp-ijxp0
     diz = ikxp-ikxp0
-    ! --- zero out coefficients (needed because of different dix and diz for each particle)
+    ! --- zero out coefficients
+    ! ---  (needed because of different dix and diz for each particle)
     sx=0.0_num;sy=0.0_num;sz=0.0_num
     ! --- computes coefficients for quantities centered between nodes
     xintsq = xint*xint
@@ -2053,14 +1920,12 @@ END SUBROUTINE depose_jxjyjz_esirkepov_2_2_2
 !
 !> @warning
 !> PROBLEM: CORRECTION REQUIRED
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp,  &
 uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,    &
 nzguard, nox, noy, noz, l_particles_weight, l4symtry)  
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp)                             :: np, nx, ny, nz, nox, noy, noz, nxguard, &
   nyguard, nzguard
   REAL(num), INTENT(IN OUT)         ::                                                &
@@ -2227,7 +2092,8 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
       dix = iixp-iixp0
       diy = ijxp-ijxp0
       diz = ikxp-ikxp0
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients 
+      ! --- (needed because of different dix and diz for each particle)
       sx(-2)=0.0_num;sy(-2)=0.0_num;sz(-2)=0.0_num
       sx(-1)=0.0_num;sy(-1)=0.0_num;sz(-1)=0.0_num
       sx(0)=0.0_num;sy(0)=0.0_num;sz(0)=0.0_num
@@ -3150,15 +3016,12 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
       sdz(n, 118)  = 0.
       sdz(n, 119)  = 0.
       sdz(n, 120)  = 0.
-      
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
-    
     ! Add weights to nearest vertices
     DO n=1, MIN(LVEC, np-ip+1)
 #if defined __INTEL_COMPILER
@@ -3177,29 +3040,7 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
 #endif
       DO nv=1, 8
         
-        ! --- JX
-        ! ICELL = (-2, -2, -2)
-        !                 jxcells(nv, ICELL(n, 1)) = jxcells(nv, ICELL(n, 1)) + sdx(n, nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(1)) = jxcells(nv, ICELL(n, 1)+moffjxc(1)) + sdx(n, 8+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(2)) = jxcells(nv, ICELL(n, 1)+moffjxc(2)) + sdx(n, 16+nv)
-        !
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(3)) = jxcells(nv, ICELL(n, 1)+moffjxc(3)) + sdx(n, 24+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(4)) = jxcells(nv, ICELL(n, 1)+moffjxc(4)) + sdx(n, 32+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(5)) = jxcells(nv, ICELL(n, 1)+moffjxc(5)) + sdx(n, 40+nv)
-        !
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(6)) = jxcells(nv, ICELL(n, 1)+moffjxc(6)) + sdx(n, 48+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(7)) = jxcells(nv, ICELL(n, 1)+moffjxc(7)) + sdx(n, 56+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(8)) = jxcells(nv, ICELL(n, 1)+moffjxc(8)) + sdx(n, 64+nv)
-        !
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(9)) = jxcells(nv, ICELL(n, 1)+moffjxc(9)) + sdx(n, 72+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(10)) = jxcells(nv, ICELL(n, 1)+moffjxc(10)) + sdx(n, 80+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(11)) = jxcells(nv, ICELL(n, 1)+moffjxc(11)) + sdx(n, 88+nv)
-        !
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(12)) = jxcells(nv, ICELL(n, 1)+moffjxc(12)) + sdx(n, 96+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(13)) = jxcells(nv, ICELL(n, 1)+moffjxc(13)) + sdx(n, 104+nv)
-        !                 jxcells(nv, ICELL(n, 1)+moffjxc(14)) = jxcells(nv, ICELL(n, 1)+moffjxc(14)) + sdx(n, 112+nv)
-        
-        
+        ! --- JX       
         jxcells(nv, ICELL(n, 1)) = jxcells(nv, ICELL(n, 1)) + sdx(n, nv)
         jxcells(nv, ICELL(n, 1)+2*ncx) = jxcells(nv, ICELL(n, 1)+2*ncx) + sdx(n,      &
         8+nv)
@@ -3296,18 +3137,14 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
         nv+104)
         jzcells(nv, ICELL(n, 1)+4*ncx+4) = jzcells(nv, ICELL(n, 1)+4*ncx+4) + sdz(n,  &
         nv+112)
-        
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP END SIMD
 #endif
 #endif
-      
     ENDDO
-    
   END DO
-  
   ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
   DO iz=1, ncz-3
     DO iy=1, ncy-3
@@ -3322,7 +3159,6 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
 #endif
       DO ix=1, ncx-3!! VECTOR (take ncx multiple of vector length)
         ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-        !igrid=orig+ic+(iy-1)*ngx+(iz-1)*ngxy
         igrid =orig+ix+(iy-1)*nnx+(iz-1)*nnxy
         
         ! jx
@@ -3366,7 +3202,7 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
 END SUBROUTINE
 #endif
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov scalar current deposition at order 3 in x, y, z (nox=noy=noz=3)
 !>
@@ -3381,14 +3217,20 @@ END SUBROUTINE
 !> Revision 10/09/2016
 !>
 !> @param[inout] jx x-current component (3D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction (1d array containing 3 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array (1d array containing 3 integers)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction (1d array containing 3 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array (1d array containing 3 integers)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array 
+!> (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction (1d array containing 3 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array (1d array containing 3 integers)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array 
+!> (1d array containing 3 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, yp, zp particle position arrays
 !> @param[in] uxp, uyp, uzp particle momentum arrays
@@ -3401,14 +3243,12 @@ END SUBROUTINE
 !> @param[in] l_particles_weight use the particle weigth
 !> @param[in] l4symtry
 !>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   INTEGER :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
   jz_nguard(3), jz_nvalid(3)  
@@ -3516,7 +3356,8 @@ xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
     dix = iixp-iixp0
     diy = ijxp-ijxp0
     diz = ikxp-ikxp0
-    ! --- zero out coefficients (needed because of different dix and diz for each particle)
+    ! --- zero out coefficients
+    ! ---  (needed because of different dix and diz for each particle)
     sx=0.0_num;sy=0.0_num;sz=0.0_num
     ! --- computes coefficients for quantities centered between nodes
     oxint = 1.0_num-xint
@@ -3581,15 +3422,12 @@ xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
         END DO
       END DO
     END DO
-    
   END DO
   DEALLOCATE(sdx, sdy, sdz, sx, sx0, dsx, sy, sy0, dsy, sz, sz0, dsz)
   RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_3_3_3
 
-
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov current deposition algorithm for linear, quadratic or cubic splines
 !
@@ -3602,10 +3440,11 @@ END SUBROUTINE depose_jxjyjz_esirkepov_3_3_3
 !
 !> @date
 !> 2016
+! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_jxjyjz_esirkepov_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, l_particles_weight, l4symtry)     !#do not wrap
-  ! ______________________________________________________________________________
+xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, l_particles_weight,                  &
+l4symtry)!#do not wrap
   
   USE constants
   IMPLICIT NONE
@@ -3842,7 +3681,8 @@ xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, l_particles_weight, l4symtry)  
       diy = ijxp-ijxp0
       diz = ikxp-ikxp0
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients 
+      ! --- (needed because of different dix and diz for each particle)
       sx=0.0_num;sy=0.0_num;sz=0.0_num
       
       ! --- computes coefficients for quantities centered between nodes
@@ -3959,7 +3799,7 @@ xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, l_particles_weight, l4symtry)  
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
 
 #if defined (DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Warp fonction for esirkepov
 !
@@ -3968,11 +3808,10 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine warp_depose_jxjyjz_esirkepov_n(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,  &
 w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,   &
 noy, noz, l_particles_weight, l4symtry)  
-  ! ______________________________________________________________________________
-  
   use constants
   implicit none
   integer(8) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
@@ -3999,8 +3838,6 @@ noy, noz, l_particles_weight, l4symtry)
   integer(8) :: iixp0, ijxp0, ikxp0, iixp, ijxp, ikxp, ip, dix, diy, diz, idx, idy,   &
   idz, i, j, k, ic, jc, kc, ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells,  &
   ndtodx, ndtody, ndtodz, xl, xu, yl, yu, zl, zu  
-  PRINT *, "warp depose_jxjyjz_esirkepov_n in PXR: np, l_particles_wight, l4symtry",  &
-  np, l_particles_weight, l4symtry
   ndtodx = int(clight*dt/dx)
   ndtody = int(clight*dt/dy)
   ndtodz = int(clight*dt/dz)
@@ -4210,7 +4047,8 @@ noy, noz, l_particles_weight, l4symtry)
       diy = ijxp-ijxp0
       diz = ikxp-ikxp0
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients 
+      ! (needed because of different dix and diz for each particle)
       sx=0.;sy=0.;sz=0.
       
       ! --- computes coefficients for quantities centered between nodes
@@ -4330,7 +4168,7 @@ end subroutine warp_depose_jxjyjz_esirkepov_n
 #endif
 
 #if defined (DEV)
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Warp fonction for esirkepov
 !
@@ -4339,10 +4177,10 @@ end subroutine warp_depose_jxjyjz_esirkepov_n
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 subroutine picsar_depose_jxjyjz_esirkepov_n(cj, np, xp, yp, zp, uxp, uyp, uzp,        &
 gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
 nzguard, nox, noy, noz, l_particles_weight, l4symtry)  
-  ! ______________________________________________________________________________
   use constants
   implicit none
   integer(8) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
@@ -4365,8 +4203,6 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
   integer(8) :: iixp0, ijxp0, ikxp0, iixp, ijxp, ikxp, ip, dix, diy, diz, idx, idy,   &
   idz, i, j, k, ic, jc, kc, ixmin, ixmax, iymin, iymax, izmin, izmax, icell, ncells,  &
   ndtodx, ndtody, ndtodz, xl, xu, yl, yu, zl, zu  
-  PRINT *, "pxr depose_jxjyjz_esirkepov_n: np, l_particles_wight, l4symtry", np,      &
-  l_particles_weight, l4symtry
   ndtodx = int(clight*dt/dx)
   ndtody = int(clight*dt/dy)
   ndtodz = int(clight*dt/dz)
@@ -4575,7 +4411,8 @@ nzguard, nox, noy, noz, l_particles_weight, l4symtry)
       diy = ijxp-ijxp0
       diz = ikxp-ikxp0
       
-      ! --- zero out coefficients (needed because of different dix and diz for each particle)
+      ! --- zero out coefficients
+      ! --- (needed because of different dix and diz for each particle)
       sx=0.;sy=0.;sz=0.
       
       ! --- computes coefficients for quantities centered between nodes

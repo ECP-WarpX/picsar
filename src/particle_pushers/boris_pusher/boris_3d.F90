@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -25,10 +26,10 @@
 ! Henri Vincenti
 ! Mathieu Lobet
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the momentum to the next step using the Boris pusher.
 !
@@ -46,20 +47,17 @@
 !> @param[in] bx, by, bz particle magnetic field arrays
 !> @param[in] dt time step
 !
+! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
 m, dt)    
-  ! ______________________________________________________________________________
   USE constants
-  
   IMPLICIT NONE
-  
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
   REAL(num), INTENT(INOUT) :: uxp(np), uyp(np), uzp(np), gaminv(np)
   REAL(num), INTENT(IN)    :: ex(np), ey(np), ez(np)
   REAL(num), INTENT(IN)    :: bx(np), by(np), bz(np)
   REAL(num), INTENT(IN)    :: q, m, dt
-  
   ! Local variables
   INTEGER(idp)             :: ip
   REAL(num)                :: const
@@ -68,13 +66,11 @@ m, dt)
   REAL(num)                :: sx, sy, sz
   REAL(num)                :: uxppr, uyppr, uzppr
   REAL(num)                :: gaminvtmp
-  
   ! Initialization
   const = q*dt*0.5_num/m
   clghtisq = 1.0_num/clight**2
   
   ! Loop over the particles
-  
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
   !DIR$ ASSUME_ALIGNED gaminv:64
@@ -96,7 +92,6 @@ m, dt)
   !DIR$ SIMD
 #endif
   DO ip=1, np
-    
     ! Push using the electric field
     uxp(ip) = uxp(ip) + ex(ip)*const
     uyp(ip) = uyp(ip) + ey(ip)*const
@@ -140,7 +135,7 @@ m, dt)
 END SUBROUTINE
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the momentum to the next step using the Boris pusher.
 !> The particle loop is divided by block of particles for 
@@ -160,13 +155,11 @@ END SUBROUTINE
 !> @param[in] bx, by, bz particle magnetic field arrays
 !> @param[in] dt time step
 !
+! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,   &
 bz, q, m, dt, lvect)    
-  ! ______________________________________________________________________________
-  USE constants
-  
+  USE constants 
   IMPLICIT NONE
-  
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
   REAL(num), INTENT(INOUT) :: uxp(np), uyp(np), uzp(np), gaminv(np)
@@ -174,7 +167,6 @@ bz, q, m, dt, lvect)
   REAL(num), INTENT(IN)    :: bx(np), by(np), bz(np)
   REAL(num), INTENT(IN)    :: q, m, dt
   INTEGER(idp), INTENT(IN) :: lvect
-  
   ! Local variables
   INTEGER(idp)             :: ip, nn, n, blocksize
   REAL(num)                :: const
@@ -251,20 +243,17 @@ bz, q, m, dt, lvect)
       ! Compute final Gamma
       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-      
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
   ENDDO
-  
 END SUBROUTINE
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Advance particle positions
 !
@@ -280,16 +269,14 @@ END SUBROUTINE
 !> @param[in] uxp, uyp, uzp normalized momentum in each direction
 !> @param[in] gaminv particle Lorentz factors
 !> @param[in] dt time step
+! ________________________________________________________________________________________
 SUBROUTINE pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
-  ! ______________________________________________________________________________
   USE constants
-  
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)   :: np
   REAL(num), INTENT(INOUT)   :: xp(np), yp(np), zp(np)
   REAL(num), INTENT(IN)      :: uxp(np), uyp(np), uzp(np), gaminv(np)
   REAL(num), INTENT(IN)      :: dt
-  
   ! Local parameters
   INTEGER(idp)               :: ip
   
@@ -325,8 +312,7 @@ SUBROUTINE pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
   RETURN
 END SUBROUTINE pxr_pushxyz
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push the particle velocity with E field
 !
@@ -347,18 +333,15 @@ END SUBROUTINE pxr_pushxyz
 !> @param[in] q charge
 !> @param[in] m masse
 !> @param[in] dt time step
+! ________________________________________________________________________________________
 SUBROUTINE pxr_epush_v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
   REAL(num), INTENT(INOUT) :: uxp(np), uyp(np), uzp(np)
   REAL(num), INTENT(IN)    :: ex(np), ey(np), ez(np)
   REAL(num), INTENT(IN)    :: q, m, dt
-  
   ! Local parameters
   INTEGER(idp) :: ip
   REAL(num)    :: const
@@ -395,7 +378,7 @@ SUBROUTINE pxr_epush_v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
 END SUBROUTINE pxr_epush_v
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Push the particle velocity with B field (Boris algorithm)
 !
@@ -416,18 +399,15 @@ END SUBROUTINE pxr_epush_v
 !> @param[in] q charge
 !> @param[in] m masse
 !> @param[in] dt time step
+! ________________________________________________________________________________________
 SUBROUTINE pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
-  
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN)   :: np
   REAL(num), INTENT(INOUT)   :: uxp(np), uyp(np), uzp(np), gaminv(np)
   REAL(num), INTENT(IN)      :: bx(np), by(np), bz(np)
   REAL(num), INTENT(IN)      :: q, m, dt
-  
   ! Local parameters
   INTEGER(idp)   :: ip
   REAL(num)      :: const, sx, sy, sz, tx, ty, tz, tsqi, uxppr, uyppr, uzppr
@@ -478,7 +458,7 @@ SUBROUTINE pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
 END SUBROUTINE pxr_bpush_v
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !>  Push the particle velocity with B field (Boris algorithm)
 !
@@ -496,9 +476,8 @@ END SUBROUTINE pxr_bpush_v
 !> @param[in] uxp, uyp, uzp normalized momentum in each direction
 !> @param[in] gaminv particle Lorentz factors
 !
+! ________________________________________________________________________________________
 SUBROUTINE pxr_set_gamma(np, uxp, uyp, uzp, gaminv)
-  ! ______________________________________________________________________________
-  
   USE constants
   IMPLICIT NONE
   
@@ -540,7 +519,5 @@ SUBROUTINE pxr_set_gamma(np, uxp, uyp, uzp, gaminv)
   !$OMP END SIMD
 #endif
 #endif
-  
   RETURN
-  
 END SUBROUTINE pxr_set_gamma

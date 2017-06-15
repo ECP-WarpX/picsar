@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -20,9 +21,9 @@
 ! MPI_ROUTINES.F90
 !
 ! This file contains functions for MPI.
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 !> @brief
 !> This module contains subroutines for MPI
@@ -32,21 +33,18 @@
 !
 !> @date
 !> Creation 2015
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 MODULE mpi_routines
   USE shared_data
   USE fields
   USE mpi
   USE params
   IMPLICIT NONE
-  !PRIVATE
-  !PUBLIC :: mpi_initialise, mpi_close, mpi_minimal_init, setup_communicator
-  
   REAL(num) :: start_time, end_time
   
   CONTAINS
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine performs a minimal initialization for MPI.
   !> It calls the MPI init subroutine and determine the ranks
@@ -57,28 +55,20 @@ MODULE mpi_routines
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE mpi_minimal_init()
-    ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
     INTEGER(isp) :: iret
-    !print*, 'start mpi_minimal_init()'
-    !print*, 'MPI_INITIALIZED'
     CALL MPI_INITIALIZED(isinitialized, errcode)
     IF (.NOT. isinitialized) THEN
-      !print*, 'MPI_INIT_THREAD' 
       CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE, provided, errcode)
-      !CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE, provided, errcode)
     ENDIF
-    !print*, 'MPI_COMM_DUP'
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
-    !print*, 'MPI_COMM_SIZE'
     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
     nproc=INT(nproc_comm, idp)
-    !print*, 'MPI_COMM_RANK'
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
     rank=INT(rank_in_comm, idp)
-    !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init
   
   
@@ -86,12 +76,9 @@ MODULE mpi_routines
 #if defined(FFTW)
     USE mpi_fftw3
 #endif 
-    ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
     INTEGER(isp) :: iret
-    !print*, 'start mpi_minimal_init()'
-    !print*, 'MPI_INITIALIZED'
     CALL MPI_INITIALIZED(isinitialized, errcode)
     IF (.NOT. isinitialized) THEN
       CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED, provided, errcode)
@@ -105,18 +92,14 @@ MODULE mpi_routines
       CALL FFTW_MPI_INIT()
 #endif 
     ENDIF
-    !print*, 'MPI_COMM_DUP'
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
-    !print*, 'MPI_COMM_SIZE'
     CALL MPI_COMM_SIZE(comm, nproc_comm, errcode)
     nproc=INT(nproc_comm, idp)
-    !print*, 'MPI_COMM_RANK'
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
     rank=INT(rank_in_comm, idp)
-    !print*, 'end mpi_minimal_init'
   END SUBROUTINE mpi_minimal_init_fftw
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Minimal initialization when using Python.
   !
@@ -125,8 +108,8 @@ MODULE mpi_routines
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE mpi_minimal_init_python(comm_in)
-    ! ____________________________________________________________________________
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
     INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in
@@ -147,7 +130,7 @@ MODULE mpi_routines
     
   END SUBROUTINE mpi_minimal_init_python
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine creates the MPI process decomposition
   !> according to the specified topology and compite the related parameters.
@@ -163,9 +146,8 @@ MODULE mpi_routines
   !> Mathieu Lobet - March 2016: implementation of a random and home-made cartesian
   !>                             topology for efficiency comparison with the MPI
   !>                             Cartesian topology.
+  ! ______________________________________________________________________________________
   SUBROUTINE setup_communicator
-    ! ____________________________________________________________________________
-    
     INTEGER(isp), PARAMETER :: ndims = 3
     INTEGER(idp) :: idim
     INTEGER(isp) :: nproc_comm, dims(ndims), old_comm, ierr, neighb
@@ -184,7 +166,6 @@ MODULE mpi_routines
     nx_global=nx_global_grid-1
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
-    
     
     !!! --- NB: CPU Split performed on number of grid points (not cells)
     
@@ -286,10 +267,7 @@ MODULE mpi_routines
               topo_array(x_coords, y_coords, z_coords) = rankyz
             ENDDO
           ENDDO
-        ENDDO
-        
-        !print*, 'rank', rank, 'topo_array', topo_array
-        
+        ENDDO    
       ENDIF
       
       ! Sharing of the topology
@@ -361,9 +339,6 @@ MODULE mpi_routines
             
             neighbour(ix, iy, iz) = topo_array(x_coords_neight, y_coords_neight,      &
             z_coords_neight)
-            
-            !print*, 'rank', rank, ix, iy, iz, neighbour(ix, iy, iz)
-            
           ENDDO
         ENDDO
       ENDDO
@@ -386,8 +361,6 @@ MODULE mpi_routines
       x_coords = MOD(rank, nprocx)
       y_coords = MOD((rank-x_coords)/nprocx, nprocy)
       z_coords = (rank-x_coords - y_coords*nprocx)/(nprocx*nprocy)
-      
-      !print*, 'rank:', rank, rankyz, x_coords, y_coords, z_coords
       
       x_min_boundary = .FALSE.
       x_max_boundary = .FALSE.
@@ -490,15 +463,10 @@ MODULE mpi_routines
       ! Checking of the new topology
       CALL MPI_BARRIER(comm, errcode)
       new_rank = rank
-      !new_rank_array(old_rank) = rank
-      !IF (new_rank.NE.old_rank) WRITE(0, '(A, I5, A, I5)') 'Rank switched from ', old_rank, ' to ', new_rank
-      !WRITE(0, '(X, A, I5, A, I5)') 'Rank switched from ', old_rank, ' to ', new_rank
       ! We first fill the x direction, then y and finally z
       x_coords = MOD(rank, nprocx)
       y_coords = MOD((rank-x_coords)/nprocx, nprocy)
       z_coords = (rank-x_coords - y_coords*nprocx)/(nprocx*nprocy)
-      !WRITE(0, '(X, A30, 3(X, I5))') 'Coordinates from MPI_CART_COORDS:', coordinates(1:3)
-      !WRITE(0, '(X, A30, 3(X, I5))') 'Theoretical coordinates:', z_coords, y_coords, x_coords
       CALL MPI_BARRIER(comm, errcode)
       ! -------------------------------------------------------------
       
@@ -529,11 +497,9 @@ MODULE mpi_routines
             test_coords(2) = test_coords(2)+iy
             test_coords(3) = test_coords(3)+ix
             op = .TRUE.
-            ! MPI_CART_RANK returns an error rather than
-            ! MPI_PROC_NULL if the coords are out of range.
             DO idim = 1, ndims
               IF ((test_coords(idim) .LT. 0 .OR. test_coords(idim) .GE. dims(idim))   &
-              .AND. .NOT. periods(idim)) op = .FALSE.! If outside the grid ! If outside the grid ! And periodic or not in this direction
+              .AND. .NOT. periods(idim)) op = .FALSE.
             ENDDO
             IF (op) THEN
               ! Then determine the rank of the neighbor processor
@@ -550,9 +516,7 @@ MODULE mpi_routines
     
   END SUBROUTINE setup_communicator
   
-  
-  
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the space domain decomposition and
   !> related parameters for each MPI process.
@@ -563,6 +527,7 @@ MODULE mpi_routines
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE mpi_initialise
 #if defined(FFTW)
     USE mpi_fftw3
@@ -576,7 +541,6 @@ MODULE mpi_routines
     INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs
 #endif 
     ! Init number of guard cells of subdomains in each dimension
-    
     IF (l_smooth_compensate) THEN
       nxguards = nxguards + 1
       nyguards = nyguards + 1
@@ -601,16 +565,6 @@ MODULE mpi_routines
       ALLOCATE(nz_procs(nproc))
       CALL MPI_ALLGATHER(INT(local_nz, idp), 1_isp, MPI_INTEGER8, nz_procs, INT(1,    &
       isp), MPI_INTEGER8, comm, errcode) 
-      !            cell_x_min(1)=0
-      !            cell_x_max(1)=nx_global-1
-      !            cell_y_min(1)=0
-      !            cell_y_max(1)=ny_global-1
-      !            cell_z_min(1)=0
-      !            cell_z_max(1)=nz_procs(1)-1
-      !            DO idim = 2, nprocz
-      !                    cell_z_min(idim) = cell_z_max(idim-1)+1
-      !                    cell_z_max(idim) = cell_z_min(idim)+nz_procs(idim)-1
-      !            ENDDO
       ! Regular CPU split 
       ! If the total number of gridpoints cannot be exactly subdivided then fix
       ! The first nxp processors have nx0 cells
@@ -837,7 +791,7 @@ MODULE mpi_routines
     length_z_part = zmax_part - zmin_part
   END SUBROUTINE mpi_initialise
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine allocates and computes the MPI process local and global
   !> grid minima and maxima.
@@ -849,8 +803,8 @@ MODULE mpi_routines
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_simulation_axis()
-    ! ____________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, iproc
     
@@ -892,7 +846,7 @@ MODULE mpi_routines
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine allocates grid quantities such as fields, currents, charge
   !> and electric field divergence.
@@ -904,6 +858,7 @@ MODULE mpi_routines
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE allocate_grid_quantities()
 #if defined(FFTW)
     USE fourier
@@ -914,8 +869,6 @@ MODULE mpi_routines
     TYPE(C_PTR) :: cdata, cin
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
 #endif 
-    ! ____________________________________________________________________________
-    
     ! --- Allocate regular grid quantities (in real space)
     ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
     ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -1055,7 +1008,7 @@ MODULE mpi_routines
     ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
   END SUBROUTINE
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> This subroutine finalizes MPI with some time information.
   !
   !> @author
@@ -1063,9 +1016,8 @@ MODULE mpi_routines
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE mpi_close
-    ! ____________________________________________________________________________
-    
     INTEGER :: seconds, minutes, hours, total
     
     IF (rank .EQ. 0) THEN
@@ -1080,7 +1032,7 @@ MODULE mpi_routines
     
   END SUBROUTINE mpi_close
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Subroutine dedicated to the time report at the end of the simulation.
   !> This subroutines gathers time statistics from all processes and print a summary
@@ -1091,8 +1043,8 @@ MODULE mpi_routines
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE time_statistics
-    ! ____________________________________________________________________________
     USE time_stat
     USE params
 #ifdef _OPENMP
@@ -1244,9 +1196,8 @@ MODULE mpi_routines
   !
   !> @date
   !> 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE time_statistics_per_iteration
-    ! ____________________________________________________________________________
-    
     USE time_stat
     USE params
 #ifdef _OPENMP
@@ -1339,9 +1290,6 @@ MODULE mpi_routines
         WRITE(0, '(X, A25, X, F8.2, X, F8.2, X, F8.2)') "Total time:", mintimes(20),  &
         avetimes(20), maxtimes(20)
       ENDIF
-      
     ENDIF
-    
   END SUBROUTINE
-  
 END MODULE mpi_routines

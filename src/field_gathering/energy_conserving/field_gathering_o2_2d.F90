@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software,
+ ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -26,10 +27,10 @@
 ! - pxr_gete2dxz_energy_conserving_vect_2_2
 ! - pxr_getb2dxz_energy_conserving_vect_2_2
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering cartesian in 2D for the electric field at order 2
 !
@@ -48,18 +49,19 @@
 !> @param[in] xmin, zmin tile boundaries
 !> @param[in] dx, dz space steps
 !> @param[in] exg, eyg, ezg electric field grids
-!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the exg, eyg, ezg arrays in each direction (1d arrays containing 2 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 2 integers)
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> exg, eyg, ezg arrays in each direction (1d arrays containing 2 integers)
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 2 integers)
 !> @param[in] lvect vector size for the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
+! ________________________________________________________________________________________
 subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin,     &
 zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
 ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
   use constants
   implicit none
-  
   integer(idp)                  :: np
   integer(idp), intent(IN)      :: exg_nguard(2), exg_nvalid(2), eyg_nguard(2),       &
   eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)  
@@ -275,14 +277,11 @@ ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD
 #endif
-    ENDDO
-    
+    ENDDO    
   ENDIF
-  
 end subroutine
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering cartesian in 2D for the magnetic field at order 2
 !
@@ -306,14 +305,12 @@ end subroutine
 !> @param[in] lvect the vector length of the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
+! ________________________________________________________________________________________
 subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin,     &
 zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,          &
 bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
-  
   use constants
   implicit none
-  
   ! __ Parameter declaration ___________________________________________
   integer(idp)                       :: np
   integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &
@@ -520,14 +517,11 @@ bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
         bz(nn) = bz(nn) + sx0(n, 1)*sz(n, 0)*bzg(j0+1, 1, l)
         bz(nn) = bz(nn) + sx0(n, 0)*sz(n, 1)*bzg(j0, 1, l+1)
         bz(nn) = bz(nn) + sx0(n, 1)*sz(n, 1)*bzg(j0+1, 1, l+1)
-        
       enddo
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP END SIMD
 #endif
     end do
-    
   ENDIF
   return
-  
 end subroutine

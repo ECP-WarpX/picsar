@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -31,10 +32,10 @@
 ! General order:
 ! - pxr_depose_rho_n_2dxy
 ! - pxr_depose_rhoold_n_2dxy
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> 2D Charge deposition at nth order
 !>
@@ -43,9 +44,9 @@
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 subroutine pxr_depose_rho_n_2dxz(rho, np, xp, yp, zp, w, q, xmin, zmin, dx, dz, nx,   &
 nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_depose)   
-  ! ______________________________________________________________________________
   use constants
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard, type_rz_depose
@@ -176,8 +177,7 @@ nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_de
   return
 end subroutine pxr_depose_rho_n_2dxz
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Old 2D Charge deposition subroutine at nth order
 !>
@@ -186,10 +186,10 @@ end subroutine pxr_depose_rho_n_2dxz
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 subroutine pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q,     &
 xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, l_particles_weight,       &
 l4symtry)   
-  ! ______________________________________________________________________________
   use constants
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard

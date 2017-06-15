@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -35,15 +36,15 @@
 ! - field_gathering_sub
 ! - geteb3d_energy_conserving
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Field gathering main subroutine in 3D called in the main loop when not coupled
 !> with the particle pusher.
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering
-  ! ______________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -66,13 +67,13 @@ SUBROUTINE field_gathering
 END SUBROUTINE field_gathering
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine performs the field gathering in 3D only
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard,  &
 nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, &
 l_lower_order_in_v_in)  
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -217,7 +218,7 @@ l_lower_order_in_v_in)
 END SUBROUTINE field_gathering_sub
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> General subroutines for the 3D field gathering
 !
@@ -249,11 +250,10 @@ END SUBROUTINE field_gathering_sub
 !> @param[in] field_gathe_algo gathering algorithm
 !> @param[in] lvect vector length
 !
+! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,    &
 ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
 eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, lvect, field_gathe_algo)         
-  ! ______________________________________________________________________________
-  
   USE constants
   USE particles
   USE params
@@ -282,7 +282,7 @@ eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
   nvalid, ll4symtry, l_lower_order_in_v, lvect, field_gathe_algo)            
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> General subroutines for the 3D field gathering, adapted for field
 !> arrays having different sizes depending on their nodal/cell-centered nature
@@ -295,22 +295,26 @@ END SUBROUTINE
 !> @param[in] dx, dy, dz space discretization
 !> @param[in] nox, noy, noz shape factor order
 !> @param[in] exg, eyg, ezg electric field grids
-!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the bxg, byg, bzg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
+!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of 
+!> the bxg, byg, bzg arrays in each direction (1d arrays containing 3 integers)
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints 
+!> (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
 !> @param[in] ll4symtry
 !> @param[in] l_lower_order_in_v
 !> @param[in] field_gathe_algo gathering algorithm
 !> @param[in] lvect vector length
 !>
+! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by, bz,  &
 xmin, ymin, zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg,        &
 eyg_nguard, eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid,     &
 byg, byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, ll4symtry,                  &
 l_lower_order_in_v, lvect, field_gathe_algo)            !#do not wrap
-  ! ______________________________________________________________________________
   USE constants
   USE particles
   USE params
@@ -595,7 +599,5 @@ l_lower_order_in_v, lvect, field_gathe_algo)            !#do not wrap
       zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,  &
       byg_nvalid, bzg, bzg_nguard, bzg_nvalid, ll4symtry, l_lower_order_in_v)     
     ENDIF
-    
   END SELECT
-  
 END SUBROUTINE

@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -28,9 +29,9 @@
 !
 ! Date:
 ! Creation 2015
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> PUSH B field half a time step
 !
@@ -39,8 +40,8 @@
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE push_bfield
-  ! ______________________________________________________________________________
   USE constants
   USE params
   USE fields
@@ -73,7 +74,7 @@ SUBROUTINE push_bfield
 END SUBROUTINE push_bfield
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> PUSH E field a full  time step
 !
@@ -82,8 +83,8 @@ END SUBROUTINE push_bfield
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE push_efield
-  ! ______________________________________________________________________________
   USE constants
   USE params
   USE fields
@@ -116,7 +117,7 @@ SUBROUTINE push_efield
 END SUBROUTINE push_efield
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> PUSH B field half a time step in 2D
 !
@@ -125,9 +126,8 @@ END SUBROUTINE push_efield
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE push_bfield_2d
-  ! ______________________________________________________________________________
-  
   USE constants
   USE params
   USE fields
@@ -162,7 +162,7 @@ SUBROUTINE push_bfield_2d
   
 END SUBROUTINE push_bfield_2d
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> PUSH E, B PSAOTD a full time step 
 !> This subroutine pushes the electric and the magnetic fields using
@@ -177,9 +177,8 @@ END SUBROUTINE push_bfield_2d
 !
 !> @date
 !> Creation March 29 2017
+! ________________________________________________________________________________________
 SUBROUTINE push_psatd_ebfield_3d
-  ! ______________________________________________________________________________
-  
   USE constants
   USE time_stat
   USE params
@@ -213,6 +212,4 @@ SUBROUTINE push_psatd_ebfield_3d
   IF (it.ge.timestat_itstart) THEN
     localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
   ENDIF
-  
 END SUBROUTINE
-

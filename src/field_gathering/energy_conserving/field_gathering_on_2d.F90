@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -34,10 +35,10 @@
 !
 ! - pxr_gete2dxz_n_energy_conserving
 ! - pxr_getb2dxz_n_energy_conserving
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> 2D electric field non-optimized gathering routine
 !
@@ -62,10 +63,10 @@
 !> @param[in] lvect vector size for the block of particles
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
+! ________________________________________________________________________________________
 subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, zmin,  &
 dx, dz, nox, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,      &
 ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
   use constants
   implicit none
   
@@ -323,7 +324,7 @@ ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
   return
 end subroutine pxr_gete2dxz_n_energy_conserving
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> 2D magnetic field gathering routine for arbitrary orders
 !
@@ -349,14 +350,12 @@ end subroutine pxr_gete2dxz_n_energy_conserving
 !> @param[in] l_2drz use the 2d cylindrical geometry system
 !> @param[in] l_lower_order_in_v flag to determine if we interpolate at a lower order
 !
+! ________________________________________________________________________________________
 subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, zmin,  &
 dx, dz, nox, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,      &
 bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
-  
   use constants
   implicit none
-  
   integer(idp) :: np, nox, noz
   integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &
   byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)  
@@ -610,6 +609,5 @@ bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
     
   end do
   deallocate(sx0, sz0)
-  
   return
 end subroutine pxr_getb2dxz_n_energy_conserving

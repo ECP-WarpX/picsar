@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -48,7 +49,7 @@ MODULE simple_io
   
   CONTAINS
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine manages all diagnostic outputs.
   !
@@ -57,7 +58,7 @@ MODULE simple_io
   !
   !> @date
   !> Creation 2015
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   SUBROUTINE output_routines()
     USE shared_data
     USE params
@@ -85,10 +86,7 @@ MODULE simple_io
       !! -- Write grid quantities
       IF (c_output_ex .EQ. 1) THEN
         ! - Write current density ex
-        
-        !CALL write_single_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))// &
-        !TRIM(ADJUSTL(strtemp))//'.pxr', ex, nxguards, nyguards, nzguards, nx, ny, nz, offset, err)
-        
+
         IF (rank.eq.0) WRITE(0, *) "Write electric field ex"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', ex, xmin, xmax, ymin, ymax, zmin, zmax,       &
@@ -198,7 +196,7 @@ MODULE simple_io
   
 END SUBROUTINE output_routines
 
-! ____________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine outputs temporal diagnostics
 !> (evolution of integrated quantities as a function of the time)
@@ -208,7 +206,7 @@ END SUBROUTINE output_routines
 !
 !> @date
 !> Creation 2015
-! ____________________________________________________________________________________
+! ________________________________________________________________________________________
 SUBROUTINE output_temporal_diagnostics
   USE shared_data
   USE params
@@ -242,7 +240,6 @@ SUBROUTINE output_temporal_diagnostics
         local_values(temdiag_i_list(1)+ispecies-1))
         local_values(temdiag_i_list(1)+ispecies-1) =                                  &
         local_values(temdiag_i_list(1)+ispecies-1)*emass*clight**2
-        !if (local_values(temdiag_i_list(1)+ispecies-1) .lt. 1E-15) local_values(temdiag_i_list(1)+ispecies-1)=1e-15
       ENDDO
     end if
     
@@ -339,17 +336,6 @@ SUBROUTINE output_temporal_diagnostics
       global_values(temdiag_i_list(10)) = sqrt(global_values(temdiag_i_list(10)))
     end if
     
-    ! _____________
-    ! Debug
-    !IF (rank==0) THEN
-    !  write(0, *) temdiag_totvalues
-    !  write(0, *) local_values(temdiag_i_list(1):temdiag_i_list(1)+temdiag_nb_values(1)-1)
-    !  write(0, *) global_values(temdiag_i_list(1):temdiag_i_list(1)+temdiag_nb_values(1)-1)
-    !  write(0, *) 'exE', global_values(temdiag_i_list(2):temdiag_i_list(2)+temdiag_nb_values(2)-1)
-    !  write(0, *) 'eyE', global_values(temdiag_i_list(3):temdiag_i_list(3)+temdiag_nb_values(3)-1)
-    !  write(0, *) 'ezE', global_values(temdiag_i_list(4):temdiag_i_list(4)+temdiag_nb_values(4)-1)
-    !ENDIF
-    
     ! Output
     ! Each mpi task will write in a given file according to their rank
     IF (nproc.ge.temdiag_nb) then
@@ -357,7 +343,6 @@ SUBROUTINE output_temporal_diagnostics
         
         ! Ascii format
         IF (temdiag_format.eq.1) then
-          !write(42, '(X, 3(E14.10E3, X))') local_values(temdiag_i_list(rank+1):temdiag_i_list(rank+1)+temdiag_nb_values(rank+1)-1)
           write(42, *)                                                                &
           global_values(temdiag_i_list(rank+1):temdiag_i_list(rank+1)+temdiag_nb_values(rank+1)-1)
 
@@ -374,7 +359,6 @@ SUBROUTINE output_temporal_diagnostics
       if (rank.eq.0) then
         DO i=1, temdiag_nb
           IF (temdiag_format.eq.1) then
-            !write(42, '(X, 3(E14.10, X))') local_values(temdiag_i_list(i):temdiag_i_list(i)+temdiag_nb_values(i)-1)
             write(42+i, *)                                                            &
             global_values(temdiag_i_list(i):temdiag_i_list(i)+temdiag_nb_values(i)-1)
             ! Binary format
@@ -385,9 +369,6 @@ SUBROUTINE output_temporal_diagnostics
         ENDDO
       ENDIF
     ENDIF
-    
-    !CALL get_kinetic_energy(ispecies, temp_diag(1))
-    !if (rank==0) write(0, *) "kinetic energy", temp_diag(1)
     
     localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
     
@@ -400,7 +381,7 @@ SUBROUTINE output_temporal_diagnostics
 END SUBROUTINE
 
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine writes the field arrays (e.g EM fields, Currents)
 !> to disk using MPI-IO.
@@ -434,13 +415,11 @@ END SUBROUTINE
 !> @param[in] ny_global2 global size in y
 !> @param[in] nz_global2 global size in z
 !
+! ________________________________________________________________________________________
 SUBROUTINE write_3d_field_array_to_file(filename, array, xmin2, xmax2, ymin2, ymax2,  &
 zmin2, zmax2, nxg, nyg, nzg, nx_local, ny_local, nz_local, nx_global2, ny_global2,    &
 nz_global2)  
-  ! ______________________________________________________________________________________
-  
   IMPLICIT NONE
-  
   CHARACTER(LEN=*), INTENT(IN)              :: filename
   INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
   INTEGER(idp), INTENT(IN)                  :: nx_local, ny_local, nz_local
@@ -472,7 +451,7 @@ nz_global2)
   
 END SUBROUTINE write_3d_field_array_to_file
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine writes a grid quantity (e.g EM fields, Currents)
 !> to disk using MPI-IO
@@ -495,10 +474,9 @@ END SUBROUTINE write_3d_field_array_to_file
 !> @param[in] offset offset for the header
 !> @param[inout] err error parameter
 !
+! ________________________________________________________________________________________
 SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local,       &
 ny_local, nz_local, offset, err) 
-  ! ______________________________________________________________________________________
-  
   CHARACTER(LEN=*), INTENT(IN)              :: filename
   INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
   INTEGER(idp), INTENT(IN)                  :: nx_local, ny_local, nz_local
@@ -536,7 +514,7 @@ ny_local, nz_local, offset, err)
 END SUBROUTINE write_single_array_to_file
 
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine dumps the particle properties in a file.
 !>
@@ -545,8 +523,8 @@ END SUBROUTINE write_single_array_to_file
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE write_particles_to_file
-  ! ______________________________________________________________________________________
   USE particles
   USE constants
   USE params
@@ -642,7 +620,7 @@ SUBROUTINE write_particles_to_file
   
 END SUBROUTINE write_particles_to_file
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine dumps the particle properties in a file.
 !>
@@ -651,9 +629,8 @@ END SUBROUTINE write_particles_to_file
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE get_particles_to_dump(idump, mask, narr, ndump)
-  ! ______________________________________________________________________________________
-  
   USE constants
   USE particles
   USE tiling
@@ -704,7 +681,7 @@ END DO!END LOOP ON TILES
 
 END SUBROUTINE get_particles_to_dump
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine creates a new array of particles (narr)
 !> from the current particle array (arr) and a list of flags (mask) for filtering.
@@ -714,9 +691,8 @@ END SUBROUTINE get_particles_to_dump
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE concatenate_particle_variable(idump, var, arr, narr, mask, nmask)
-! ______________________________________________________________________________________
-
 USE particles
 USE constants
 USE tiling
@@ -805,7 +781,7 @@ END DO!END LOOP ON TILES
 
 END SUBROUTINE concatenate_particle_variable
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine writes a particle array property (e.g x, y, z, px etc.)
 !> in the file  of file handler fh. The array is appended at offset (in bytes) in fh.
@@ -815,8 +791,8 @@ END SUBROUTINE concatenate_particle_variable
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE write_particle_variable(fh, array, narr, mpitype, err, offset)
-! ______________________________________________________________________________________
 INTEGER(isp), INTENT(IN) :: fh
 INTEGER(idp), INTENT(IN) :: narr
 REAL(num), DIMENSION(narr), INTENT(IN) :: array
@@ -824,16 +800,13 @@ INTEGER(idp), INTENT(IN) :: offset
 INTEGER(isp), INTENT(IN) :: mpitype
 INTEGER(isp), INTENT(INOUT) :: err
 
-!CALL MPI_FILE_OPEN(comm, TRIM(filename), MPI_MODE_CREATE + MPI_MODE_WRONLY, &
-!MPI_INFO_NULL, fh, err)
-
 CALL MPI_FILE_SET_VIEW(fh, offset, MPI_BYTE, mpitype, 'native', MPI_INFO_NULL, err) 
 
 CALL MPI_FILE_WRITE_ALL(fh, array, INT(narr, isp), mpitype, MPI_STATUS_IGNORE, err)
 
 END SUBROUTINE write_particle_variable
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Output of the time statistics
 !
@@ -842,14 +815,12 @@ END SUBROUTINE write_particle_variable
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE output_time_statistics
-! ______________________________________________________________________________________
-
 USE time_stat
 USE params
 USE shared_data
 IMPLICIT NONE
-
 
 #if defined(DEBUG)
 WRITE(0, *) "output_time_statistic: start"
@@ -890,7 +861,7 @@ WRITE(0, *) "output_time_statistic: stop"
 END SUBROUTINE
 
 
-! ______________________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Output of the time statistics at the end of the simulation.
 !> Purge the buffer.
@@ -900,9 +871,8 @@ END SUBROUTINE
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE final_output_time_statistics
-! ______________________________________________________________________________________
-
 USE time_stat
 USE params
 USE shared_data
@@ -915,5 +885,4 @@ IF (timestat_activated.gt.0) THEN
 END IF
 
 END SUBROUTINE
-
 END MODULE simple_io

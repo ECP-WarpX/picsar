@@ -2,16 +2,19 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, ! The Regents of the University of California, through Lawrence Berkeley National
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
+! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software,
+ ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
 ! and the U.S. Government consequently retains certain rights. As such, the U.S.
-! Government has been granted for itself and others acting on its behalf a paid-up, ! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! Government has been granted for itself and others acting on its behalf a paid-up, 
+! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
 ! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
@@ -36,17 +39,15 @@
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 MODULE diagnostics
-  ! ________________________________________________________________________________________
-  
   USE constants
   USE mpi
   IMPLICIT NONE
   
-  
   CONTAINS
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Computes derived physical quantities from simulation
   !
@@ -57,8 +58,8 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE calc_diags
-    ! ____________________________________________________________________________________
     USE fields
     USE field_boundary
     USE particle_boundary
@@ -109,7 +110,7 @@ MODULE diagnostics
     
   END SUBROUTINE calc_diags
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Computes field divergence.
   !
@@ -120,9 +121,9 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard,       &
   nzguard, dx, dy, dz)
-    ! ____________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp) ::  j, k, l
     INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
@@ -150,7 +151,7 @@ MODULE diagnostics
     
   END SUBROUTINE calc_field_div
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Initialization of the different diags.
   !
@@ -161,8 +162,8 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE init_diags
-    ! ____________________________________________________________________________________
     USE shared_data
     IMPLICIT NONE
     
@@ -187,7 +188,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Init temporal diags
   !
@@ -198,8 +199,8 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE init_temp_diags
-    ! ____________________________________________________________________________________
     USE output_data
     USE particle_properties
     USE shared_data
@@ -364,7 +365,7 @@ MODULE diagnostics
     ENDIF
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Initialize outputs of the time statistics
   !
@@ -375,8 +376,8 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE init_time_stat_output
-    ! ____________________________________________________________________________________
     USE time_stat
     USE shared_data
     USE params
@@ -405,7 +406,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine determine the total number of particles in the domain
   !> from species of index is.
@@ -415,8 +416,8 @@ MODULE diagnostics
   !
   !> @creation
   !> May 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_tot_number_of_particles_from_species(is, nptot)
-    ! ____________________________________________________________________________________
     USE particle_tilemodule
     USE particle_speciesmodule
     USE tile_params
@@ -459,7 +460,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine determine the total number of particles all species included
   !
@@ -468,8 +469,8 @@ MODULE diagnostics
   !
   !> @date
   !> Creation: May 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_tot_number_of_particles(nptot)
-    ! ____________________________________________________________________________________
     USE particle_tilemodule
     USE particle_speciesmodule
     USE tile_params
@@ -492,7 +493,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Determine the local kinetic energy for the species ispecies.
   !
@@ -503,8 +504,8 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_loc_kinetic_energy(ispecies, kinetic_energy_loc)
-    ! ____________________________________________________________________________________
     USE particle_tilemodule
     USE particle_speciesmodule
     USE tile_params
@@ -585,7 +586,7 @@ MODULE diagnostics
     
   end subroutine
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Determine the total kinetic energy for the species ispecies.
   !
@@ -596,8 +597,8 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_kinetic_energy(ispecies, total_kinetic_energy)
-    ! ____________________________________________________________________________________
     USE particle_tilemodule
     USE particle_speciesmodule
     USE tile_params
@@ -670,7 +671,7 @@ MODULE diagnostics
     
   END SUBROUTINE get_kinetic_energy
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Determine the local field energy for the given field in 2d.
   !
@@ -681,9 +682,9 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,     &
   field_energy)
-    ! ____________________________________________________________________________________
     USE constants
     IMPLICIT NONE
     
@@ -713,7 +714,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Determine the local field energy for the given field.
   !
@@ -724,9 +725,9 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard,       &
   nyguard, nzguard, field_energy)
-    ! ____________________________________________________________________________________
     USE constants
     IMPLICIT NONE
     INTEGER(idp)     :: nx2, ny2, nz2
@@ -757,7 +758,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Determine the total field energy for the given field
   !
@@ -768,9 +769,9 @@ MODULE diagnostics
   !> @date
   !> Creation 2015
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,         &
   field_energy)
-    ! ____________________________________________________________________________________
     USE constants
     USE mpi_derived_types
     USE mpi_type_constants
@@ -807,7 +808,7 @@ MODULE diagnostics
   END SUBROUTINE
   
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Get the energy of the field component field
   !
@@ -823,9 +824,9 @@ MODULE diagnostics
   !> @param[in] nxguard, nyguard, nzguard number of guard cells
   !> @param[out] field_energy energy og the corresponding field
   !
+  ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard, nyguard,  &
   nzguard, field_energy)
-    ! ____________________________________________________________________________________
     USE constants
     USE mpi_derived_types
     USE mpi_type_constants
@@ -864,7 +865,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Compute norm of dF/dt = divE -rho/eps0 local to the MPI domain (parallel function)
   !
@@ -873,9 +874,9 @@ MODULE diagnostics
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_loc_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard,      &
   nzguard, norm)
-    ! ____________________________________________________________________________________
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
@@ -906,17 +907,18 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
-  !> Compute the  square of the norm of array local to the MPI domain (OpenMP parallel function)
+  !> Compute the  square of the norm of array local to the MPI domain 
+  !> (OpenMP parallel function)
   !
   !> @author
   !> Mathieu Lobet
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_loc_norm_2(array, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)
-    ! ____________________________________________________________________________________
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
@@ -947,7 +949,7 @@ MODULE diagnostics
     
   END SUBROUTINE
   
-  ! ____________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Compute norm of dF/dt = divE -rho/eps0 (parallel function)
   !
@@ -956,9 +958,9 @@ MODULE diagnostics
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, &
   norm)
-    ! ____________________________________________________________________________________
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data

@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -20,16 +21,18 @@
 ! VAY_3D.F90
 !
 ! Subroutines for the J.L. Vay particle pusher in 3D
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
-!> Push the particle velocity with E and B fields, assuming Vmid = 0.5*(Vold+Vnew), !> solving directly for the new gamma.
+!> Push the particle velocity with E and B fields, assuming Vmid = 0.5*(Vold+Vnew),
+!> solving directly for the new gamma.
 !>
 !> @details
 !> This offers better cancellation of E+VxB than the Boris velocity push.
-!> Question: should we recompute gamma from the new u, in order to prevent roundoff errors
+!> Question: should we recompute gamma from the new u, in order to prevent 
+!> roundoff errors
 !> to create mismatched values of u and gamma?
 !
 !> @author
@@ -49,12 +52,10 @@
 !> @param[in] dt time step
 !> @param[in] which algorithm
 !
+! ________________________________________________________________________________________
 SUBROUTINE pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, exp, eyp, ezp, bxp, byp, bzp, q, &
 m, dt, which)  
-  ! ______________________________________________________________________________
-  
   USE constants
-  
   ! Input/Ooutput parameters
   INTEGER(idp), INTENT(IN) :: np, which
   REAL(num), INTENT(INOUT) :: uxp(np), uyp(np), uzp(np), gi(np)

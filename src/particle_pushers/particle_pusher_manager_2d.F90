@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -28,7 +29,7 @@
 ! Date:
 ! Creation 2015
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
 ! ________________________________________________________________________________________
@@ -44,17 +45,18 @@
 !
 !> @param[in] exg, eyg, ezg electric field grids
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids, nyy should be equal to 1.
-!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids, 
+!> nyy should be equal to 1.
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction 
+!> for the grids
 !> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
 !> @param[in] noxx, noyy, nozz interpolation orders
 !> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
-!
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, bzg,  &
 nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,   &
 nozz, dxx, dyy, dzz, dtt)     
-  ! ________________________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -97,7 +99,6 @@ nozz, dxx, dyy, dzz, dtt)
 #if PROFILING==3
   CALL start_collection()
 #endif
-  
   
   !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
@@ -164,7 +165,6 @@ nozz, dxx, dyy, dzz, dtt)
             noyy, nozz, currg%extile, currg%eytile, currg%eztile, currg%bxtile,       &
             currg%bytile, currg%bztile , .FALSE., .TRUE., LVEC_fieldgathe,            &
             fieldgathe)            
-            
           end if
           
           !! --- Push velocity with E half step

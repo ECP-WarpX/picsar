@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -20,10 +21,10 @@
 ! PARTICLE_PUSHER_MANAGER.F90
 !
 ! Subroutines for managing the particle pushers.
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Main subroutine for the field subroutine + particle pusher called
 !> in the main loop (in submain.F90)
@@ -45,9 +46,8 @@
 !> @date
 !> Creation 2015
 !> Revision 10.06.2015
-
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher
-  ! ______________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -109,7 +109,7 @@ SUBROUTINE field_gathering_plus_particle_pusher
 END SUBROUTINE field_gathering_plus_particle_pusher
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle
 !
@@ -124,18 +124,18 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 !> @param[in] exg, eyg, ezg electric field grids
 !> @param[in] bxg, byg, bzg magnetic field grids
 !> @param[in] nxx, nyy, nzz number of cells in each direction for the grids
-!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in 
+!> each direction for the grids
 !> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
 !> @param[in] noxx, noyy, nozz interpolation orders
 !> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !>
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg,     &
 nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,   &
 nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)  
-  ! ______________________________________________________________________________
-  
   USE particles
   USE constants
   USE tiling
@@ -292,29 +292,6 @@ nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)     
-              
-              !! Push momentum using the Boris method with several subroutines
-              !! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
-              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
-              !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_gaminv)
-              !! --- Push velocity with B half step
-              !               CALL pxr_bpush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_bx, &
-              !               curr_tile%part_by, &
-              !               curr_tile%part_bz, curr%charge, curr%mass, dtt)
-              !!! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
-              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
-              !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_gaminv)
-              
-              
             END SELECT
             !!!! --- push particle species positions a time step
             CALL pxr_pushxyz(count, curr_tile%part_x, curr_tile%part_y,               &
@@ -341,9 +318,10 @@ nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
 END SUBROUTINE field_gathering_plus_particle_pusher_sub
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
-!> Particle pusher in 3D called by the main function push_particle for the subroutines with cache blocking
+!> Particle pusher in 3D called by the main function push_particle for the subroutines 
+!> with cache blocking
 !
 !> @author
 !> Mathieu Lobet
@@ -356,18 +334,18 @@ END SUBROUTINE field_gathering_plus_particle_pusher_sub
 !> @param[in] exg, eyg, ezg electric field grids
 !> @param[in] bxg, byg, bzg electric field grids
 !> @param[in] nxx, nyy, nzz number of cells in each direction for the grids
-!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction 
+!> for the grids
 !> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
 !> @param[in] noxx, noyy, nozz interpolation orders
 !> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !>
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bxg,    &
 byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard,     &
 noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in) 
-  ! ______________________________________________________________________________
-  
   USE particles
   USE constants
   USE tiling
@@ -538,8 +516,7 @@ noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
   pushtime=pushtime+(tend-tdeb)
 END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Particle pusher in 3D called by the main function push_particle
 !
@@ -553,17 +530,18 @@ END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 !> @param[in] exg, eyg, ezg electric field grids
 !> @param[in] bxg, byg, bzg electric field grids
 !> @param[in] nxx, nyy, nzz number of cells in each direction for the grids
-!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction for the grids
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction 
+!> for the grids
 !> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
 !> @param[in] noxx, noyy, nozz interpolation orders
 !> @param[in] dxx, dyy, dzz space steps
 !> @param[in] dtt time step
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !
+! ________________________________________________________________________________________
 SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard,  &
 nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, &
 l_lower_order_in_v_in)  
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
@@ -573,7 +551,6 @@ l_lower_order_in_v_in)
   USE ITT_SDE_FORTRAN
 #endif
   IMPLICIT NONE
-  
   ! ___ Parameter declaration __________________________________________
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
   nyjguard, nzjguard
@@ -612,7 +589,6 @@ l_lower_order_in_v_in)
   
 #if defined(DEBUG)
 #endif
-  
   
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
@@ -678,29 +654,6 @@ l_lower_order_in_v_in)
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)     
-              
-              !! Push momentum using the Boris method with several subroutines
-              !! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
-              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
-              !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_gaminv)
-              !! --- Push velocity with B half step
-              !               CALL pxr_bpush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_bx, &
-              !               curr_tile%part_by, &
-              !               curr_tile%part_bz, curr%charge, curr%mass, dtt)
-              !!! --- Push velocity with E half step
-              !               CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, &
-              !               curr_tile%part_ez, curr%charge, curr%mass, dtt*0.5_num)
-              !! --- Set gamma of particles
-              !               CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy, &
-              !               curr_tile%part_uz, curr_tile%part_gaminv)
-              
-              
             END SELECT
             !!!! --- push particle species positions a time step
             CALL pxr_pushxyz(count, curr_tile%part_x, curr_tile%part_y,               &
@@ -712,7 +665,6 @@ l_lower_order_in_v_in)
     END DO
   END DO! END LOOP ON TILES
   !$OMP END PARALLEL DO
-  
   
 #if VTUNE==3
   CALL stop_vtune_collection()
@@ -730,8 +682,7 @@ l_lower_order_in_v_in)
   
 END SUBROUTINE particle_pusher_sub
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !>  Field gathering+ (E & B) Push half a time step
 !
@@ -743,8 +694,8 @@ END SUBROUTINE particle_pusher_sub
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part1
-  ! ______________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -764,8 +715,7 @@ SUBROUTINE pxrpush_particles_part1
   
 END SUBROUTINE pxrpush_particles_part1
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Perform the field gathering + (E & B) Push half a time step
 !
@@ -787,11 +737,10 @@ END SUBROUTINE pxrpush_particles_part1
 !> @param[in] l4symtry_in
 !> @param[in] l_lower_order_in_v_in flag to activate interpolation at a lower order
 !>
+! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,   &
 nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,  &
 dzz, dtt, l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)  
-  ! ______________________________________________________________________________
-  
   USE particles
   USE constants
   USE tiling
@@ -947,8 +896,7 @@ dzz, dtt, l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
   
 END SUBROUTINE pxrpush_particles_part1_sub
 
-
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> (B & E) Push half a time step + XYZ push half a time step
 !>
@@ -958,8 +906,8 @@ END SUBROUTINE pxrpush_particles_part1_sub
 !> @date
 !> Creation 2015
 !> Revision 06.10.2016
+! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part2
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE fields
@@ -1045,7 +993,7 @@ END SUBROUTINE pxrpush_particles_part2
 
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This function combined the field gathering and the particle pusher
 !> in 3D for CIC (order 1) shape factor.
@@ -1080,13 +1028,11 @@ END SUBROUTINE pxrpush_particles_part2
 !> @param[in] bxg, byg, bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
-!
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np, xp, yp, zp, uxp, uyp, uzp,  &
 gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
 nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
 l_lower_order_in_v)   
-  ! ______________________________________________________________________________
-  
   USE omp_lib
   USE constants
   USE params
@@ -1265,195 +1211,22 @@ l_lower_order_in_v)
       ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
       bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt)     
       
-      !! Push momentum using the Boris method with several subroutines
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1), &
-      !                                  ey(ip:ip+blocksize-1), &
-      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
-      
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
       uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
-      
-      
-      ! ___ Push with B ___
-      !       CALL pxr_bpush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  gaminv(ip:ip+blocksize-1), &
-      !                                  bx(ip:ip+blocksize-1), &
-      !                                  by(ip:ip+blocksize-1), &
-      !                                  bz(ip:ip+blocksize-1), q, m, dt)
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1), &
-      !                                  ey(ip:ip+blocksize-1), &
-      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
-      
-      ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
-      
+
     END SELECT
     ! ___ Update position ___
     CALL pxr_pushxyz(blocksize, xp(ip:ip+blocksize-1), yp(ip:ip+blocksize-1),         &
     zp(ip:ip+blocksize-1), uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),            &
     uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1), dt)      
-    
-    ! ___ Push with E + gamma ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, ex, ey, ez)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       uxp(nn) = uxp(nn) + ex(nn)*const1
-    !       uyp(nn) = uyp(nn) + ey(nn)*const1
-    !       uzp(nn) = uzp(nn) + ez(nn)*const1
-    !
-    !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-    !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    !
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Push with B ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       const2 = gaminv(nn)*const1
-    !       tx = bx(nn)*const2
-    !       ty = by(nn)*const2
-    !       tz = bz(nn)*const2
-    !       tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-    !       wx = tx*tsqi
-    !       wy = ty*tsqi
-    !       wz = tz*tsqi
-    !       uxppr = uxp(nn) + uyp(nn)*tz - uzp(nn)*ty
-    !       uyppr = uyp(nn) + uzp(nn)*tx - uxp(nn)*tz
-    !       uzppr = uzp(nn) + uxp(nn)*ty - uyp(nn)*tx
-    !       uxp(nn) = uxp(nn) + uyppr*wz - uzppr*wy
-    !       uyp(nn) = uyp(nn) + uzppr*wx - uxppr*wz
-    !       uzp(nn) = uzp(nn) + uxppr*wy - uyppr*wx
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Push with E + gamma ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, ex, ey, ez)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       uxp(nn) = uxp(nn) + ex(nn)*const1
-    !       uyp(nn) = uyp(nn) + ey(nn)*const1
-    !       uzp(nn) = uzp(nn) + ez(nn)*const1
-    !
-    !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-    !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Update position ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       const2 = gaminv(nn)*dtt
-    !       xp(nn) = xp(nn) + uxp(nn)*const2
-    !       yp(nn) = yp(nn) + uyp(nn)*const2
-    !       zp(nn) = zp(nn) + uzp(nn)*const2
-    !
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! End loop on particles
   ENDDO
   
   RETURN
 END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 !> @brief
 !> This function combined the field gathering and the particle pusher
@@ -1489,19 +1262,16 @@ END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
 !> @param[in] bxg, byg, bzg magnetic field grid
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, uzp,  &
 gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
 nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
 l_lower_order_in_v)   
-  ! ______________________________________________________________________________
-  
   USE omp_lib
   USE constants
   USE params
   USE particles
-  
   IMPLICIT NONE
-  
   ! Input/Output parameters  
   INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
   nzguard
@@ -1736,37 +1506,6 @@ l_lower_order_in_v)
       ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
       bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt)     
       
-      !! Push momentum using the Boris method with several subroutines
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1), &
-      !                                  ey(ip:ip+blocksize-1), &
-      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
-      
-      ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
-      
-      ! ___ Push with B ___
-      !       CALL pxr_bpush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  gaminv(ip:ip+blocksize-1), &
-      !                                  bx(ip:ip+blocksize-1), &
-      !                                  by(ip:ip+blocksize-1), &
-      !                                  bz(ip:ip+blocksize-1), q, m, dt)
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1), &
-      !                                  ey(ip:ip+blocksize-1), &
-      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
-      
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
       uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
@@ -1776,148 +1515,6 @@ l_lower_order_in_v)
     CALL pxr_pushxyz(blocksize, xp(ip:ip+blocksize-1), yp(ip:ip+blocksize-1),         &
     zp(ip:ip+blocksize-1), uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),            &
     uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1), dt)      
-    
-    ! ___ Push with E + gamma ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, ex, ey, ez)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       uxp(nn) = uxp(nn) + ex(nn)*const1
-    !       uyp(nn) = uyp(nn) + ey(nn)*const1
-    !       uzp(nn) = uzp(nn) + ez(nn)*const1
-    !
-    !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-    !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    !
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Push with B ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       const2 = gaminv(nn)*const1
-    !       tx = bx(nn)*const2
-    !       ty = by(nn)*const2
-    !       tz = bz(nn)*const2
-    !       tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-    !       wx = tx*tsqi
-    !       wy = ty*tsqi
-    !       wz = tz*tsqi
-    !       uxppr = uxp(nn) + uyp(nn)*tz - uzp(nn)*ty
-    !       uyppr = uyp(nn) + uzp(nn)*tx - uxp(nn)*tz
-    !       uzppr = uzp(nn) + uxp(nn)*ty - uyp(nn)*tx
-    !       uxp(nn) = uxp(nn) + uyppr*wz - uzppr*wy
-    !       uyp(nn) = uyp(nn) + uzppr*wx - uxppr*wz
-    !       uzp(nn) = uzp(nn) + uxppr*wy - uyppr*wx
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Push with E + gamma ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, ex, ey, ez)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       uxp(nn) = uxp(nn) + ex(nn)*const1
-    !       uyp(nn) = uyp(nn) + ey(nn)*const1
-    !       uzp(nn) = uzp(nn) + ez(nn)*const1
-    !
-    !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-    !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Update position ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       const2 = gaminv(nn)*dtt
-    !       xp(nn) = xp(nn) + uxp(nn)*const2
-    !       yp(nn) = yp(nn) + uyp(nn)*const2
-    !       zp(nn) = zp(nn) + uzp(nn)*const2
-    !
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! End loop on particles
   ENDDO
   
   RETURN
@@ -1925,7 +1522,7 @@ l_lower_order_in_v)
 END SUBROUTINE field_gathering_plus_particle_pusher_2_2_2
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This function combined the field gathering and the particle pusher
 !> in 3D for CIC (order 1) shape factor.
@@ -1962,19 +1559,16 @@ END SUBROUTINE field_gathering_plus_particle_pusher_2_2_2
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v performe the field interpolation at a lower order
 !
+! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, uzp,  &
 gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
 nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
 l_lower_order_in_v)   
-  ! ______________________________________________________________________________
-  
   USE omp_lib
   USE constants
   USE params
   USE particles
-  
   IMPLICIT NONE
-  
   ! Input/Output parameters  
   INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
   nzguard
@@ -1989,7 +1583,6 @@ l_lower_order_in_v)
   -nzguard:nz+nzguard), INTENT(IN)                              :: exg, eyg, ezg,     &
   bxg, byg, bzg  
   REAL(num), INTENT(IN)                   :: xmin, ymin, zmin, dx, dy, dz, dtt
-  
   ! Local parameters
   INTEGER(isp)                         :: ip
   INTEGER(idp)                         :: blocksize
@@ -2298,8 +1891,6 @@ l_lower_order_in_v)
       a = a + (sx0(-1)*bzg(j0-1, k0+1, l+2) + sx0(0)*bzg(j0, k0+1, l+2) +             &
       sx0(1)*bzg(j0+1, k0+1, l+2))*sy0(1)  
       bz(nn) = bz(nn) + a*sz(2)
-      
-      
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -2328,189 +1919,16 @@ l_lower_order_in_v)
       uyp(ip:ip+blocksize-1), uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1),      &
       ex(ip:ip+blocksize-1), ey(ip:ip+blocksize-1), ez(ip:ip+blocksize-1),            &
       bx(ip:ip+blocksize-1), by(ip:ip+blocksize-1), bz(ip:ip+blocksize-1), q, m, dt)     
-      
-      !! Push momentum using the Boris method with several subroutines
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1), &
-      !                                  ey(ip:ip+blocksize-1), &
-      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
-      
+
       ! ___ compute Gamma ___
       CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
-      
-      ! ___ Push with B ___
-      !       CALL pxr_bpush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  gaminv(ip:ip+blocksize-1), &
-      !                                  bx(ip:ip+blocksize-1), &
-      !                                  by(ip:ip+blocksize-1), &
-      !                                  bz(ip:ip+blocksize-1), q, m, dt)
-      
-      ! ___ Push with E ___
-      !       CALL pxr_epush_v(blocksize, uxp(ip:ip+blocksize-1), &
-      !                                  uyp(ip:ip+blocksize-1), &
-      !                                  uzp(ip:ip+blocksize-1), &
-      !                                  ex(ip:ip+blocksize-1), &
-      !                                  ey(ip:ip+blocksize-1), &
-      !                                  ez(ip:ip+blocksize-1), q, m, 0.5_num*dt)
-      
-      ! ___ compute Gamma ___
-      CALL pxr_set_gamma(blocksize, uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),   &
-      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))   
-      
+      uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1))     
     END SELECT
     
     ! ___ Update position ___
     CALL pxr_pushxyz(blocksize, xp(ip:ip+blocksize-1), yp(ip:ip+blocksize-1),         &
     zp(ip:ip+blocksize-1), uxp(ip:ip+blocksize-1), uyp(ip:ip+blocksize-1),            &
     uzp(ip:ip+blocksize-1), gaminv(ip:ip+blocksize-1), dt)      
-    ! ___ Push with E + gamma ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, ex, ey, ez)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       uxp(nn) = uxp(nn) + ex(nn)*const1
-    !       uyp(nn) = uyp(nn) + ey(nn)*const1
-    !       uzp(nn) = uzp(nn) + ez(nn)*const1
-    !
-    !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-    !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    !
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Push with B ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       const2 = gaminv(nn)*const1
-    !       tx = bx(nn)*const2
-    !       ty = by(nn)*const2
-    !       tz = bz(nn)*const2
-    !       tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-    !       wx = tx*tsqi
-    !       wy = ty*tsqi
-    !       wz = tz*tsqi
-    !       uxppr = uxp(nn) + uyp(nn)*tz - uzp(nn)*ty
-    !       uyppr = uyp(nn) + uzp(nn)*tx - uxp(nn)*tz
-    !       uzppr = uzp(nn) + uxp(nn)*ty - uyp(nn)*tx
-    !       uxp(nn) = uxp(nn) + uyppr*wz - uzppr*wy
-    !       uyp(nn) = uyp(nn) + uzppr*wx - uxppr*wz
-    !       uzp(nn) = uzp(nn) + uxppr*wy - uyppr*wx
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Push with E + gamma ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, ex, ey, ez)
-    !       !IBM* ALIGN(64, bx, by, bz)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       uxp(nn) = uxp(nn) + ex(nn)*const1
-    !       uyp(nn) = uyp(nn) + ey(nn)*const1
-    !       uzp(nn) = uzp(nn) + ez(nn)*const1
-    !
-    !       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
-    !       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! ___ Update position ___
-    ! #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
-    !       !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
-    !       !DIR$ ASSUME_ALIGNED gaminv:64
-    !       !DIR VECTOR NONTEMPORAL(xp, yp, zp, ex, ey, ez, bx, by, bz, uxp, uyp, uzp, gaminv)
-    !       !DIR$ SIMD VECREMAINDER
-    ! #elif  defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP SIMD
-    ! #endif
-    ! #elif defined __IBMBGQ__
-    !       !IBM* ALIGN(64, xp, yp, zp)
-    !       !IBM* ALIGN(64, uxp, uyp, uzp)
-    !       !IBM* ALIGN(64, gaminv)
-    !       !IBM* SIMD_LEVEL
-    ! #endif
-    !     DO nn=ip, ip+MIN(lvect, np-ip+1)-1
-    !       const2 = gaminv(nn)*dtt
-    !       xp(nn) = xp(nn) + uxp(nn)*const2
-    !       yp(nn) = yp(nn) + uyp(nn)*const2
-    !       zp(nn) = zp(nn) + uzp(nn)*const2
-    !
-    !     END DO
-    ! #if defined __INTEL_COMPILER
-    ! #elif defined _OPENMP && _OPENMP>=201307
-    ! #ifndef NOVEC
-    !   !$OMP END SIMD
-    ! #endif
-    ! #endif
-    
-    ! End loop on particles
   ENDDO
   
   RETURN

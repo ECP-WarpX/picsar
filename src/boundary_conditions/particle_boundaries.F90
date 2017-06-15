@@ -1,12 +1,14 @@
-! ______________________________________________________________________________
+  ! ______________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, ! The Regents of the University of California, through Lawrence Berkeley National
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
+! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software,
+ ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -32,8 +34,7 @@
 ! List of suboutines:
 ! - particle_bcs_tiles_and_mpi_3d
 !
-! ______________________________________________________________________________
-
+! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -45,6 +46,7 @@
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 MODULE particle_boundary
   
   USE shared_data
@@ -60,7 +62,7 @@ MODULE particle_boundary
   
   CONTAINS
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition routine on particles in 3d
   !
@@ -76,8 +78,8 @@ MODULE particle_boundary
   !> @date
   !> Creation: 2015
   !> last modified: 09/12/2016
+  ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs
-    ! ____________________________________________________________________________
 #ifdef _OPENMP
     USE omp_lib
 #endif
@@ -241,7 +243,7 @@ MODULE particle_boundary
     
   END SUBROUTINE particle_bcs
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition routine on particles in 2d
   !
@@ -250,9 +252,8 @@ MODULE particle_boundary
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs_2d
-    ! ____________________________________________________________________________
-    
 #ifdef _OPENMP
     USE omp_lib
 #endif
@@ -330,7 +331,7 @@ MODULE particle_boundary
   END SUBROUTINE particle_bcs_2d
   
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition on tiles - 3D version Wihtout OpenMP.
   !
@@ -340,10 +341,8 @@ MODULE particle_boundary
   !
   !> @date
   !> Creation 2015
+  ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs_tiles
-    ! ____________________________________________________________________________
-    
-    
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indy, indz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
@@ -407,7 +406,7 @@ MODULE particle_boundary
     DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> Boundary condition on tiles - 3D version with OpenMP
   !> @brief
   !
@@ -420,9 +419,8 @@ MODULE particle_boundary
   !
   !> @date
   !> 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs_tiles_openmp()
-    ! ______________________________________________________________________________
-    
 #ifdef _OPENMP
     USE omp_lib
 #endif
@@ -531,7 +529,7 @@ MODULE particle_boundary
     DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_openmp
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition on tiles - 2D version without OpenMP
   !
@@ -540,8 +538,8 @@ MODULE particle_boundary
   !
   !> @date
   !> 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs_tiles_2d
-    ! ____________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp):: i, ispecies, ix, iy, iz, indx, indz
     INTEGER(idp) :: nptile, nx0_grid_tile, nz0_grid_tile
@@ -598,7 +596,7 @@ MODULE particle_boundary
     DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_2d
   
-  ! ____________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition on tiles - 2D version with OpenMP
   !
@@ -611,9 +609,8 @@ MODULE particle_boundary
   !
   !> @date
   !> 2016
-  SUBROUTINE particle_bcs_tiles_2d_openmp
-    ! ____________________________________________________________________________
-    
+  ! ______________________________________________________________________________________
+  SUBROUTINE particle_bcs_tiles_2d_openmp    
 #ifdef _OPENMP
     USE omp_lib
 #endif
@@ -715,7 +712,7 @@ MODULE particle_boundary
   
   ! Experimental subroutine
 #if defined(DEV)
-  ! __________________________________________________________________
+  ! ______________________________________________________________________________________
   ! ********** EXPERIMENTAL subroutine ****************************
   ! => should not be used
   ! This subroutine process the particle boundary conditions
@@ -724,8 +721,8 @@ MODULE particle_boundary
   ! Exchanges between tiles and between MPI domains is combined for better efficiency
   ! This subroutine is less efficient that particle_bcs_tiles_openmp
   ! Mathieu Lobet, 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE particle_bsc_openmp_reordering
-    ! __________________________________________________________________
     
 #ifdef _OPENMP
     USE omp_lib
@@ -807,15 +804,6 @@ MODULE particle_boundary
                   is)%bin_pos(0:27))          
                   
                   buffer(ix, iy, iz, is)%bin_npart(:) = 0
-                  
-                  !buffer(ix, iy, iz, is)%part_x(1:nptile) = curr_tile%part_x(1:nptile)
-                  !buffer(ix, iy, iz, is)%part_y(1:nptile) = curr_tile%part_y(1:nptile)
-                  !buffer%part_z(1:nptile) = curr_tile%part_z(1:nptile)
-                  !buffer%part_ux(1:nptile) = curr_tile%part_ux(1:nptile)
-                  !buffer%part_uy(1:nptile) = curr_tile%part_uy(1:nptile)
-                  !buffer%part_uz(1:nptile) = curr_tile%part_uz(1:nptile)
-                  !buffer%part_gaminv(1:nptile) = curr_tile%part_gaminv(1:nptile)
-                  !buffer%pid(1:nptile, 1) = curr_tile%pid(1:nptile, wpid)
                   
                   ! Particle reordering
                   ! Step 1 - determine the number of particles in each bin
@@ -953,7 +941,7 @@ MODULE particle_boundary
   !$OMP END PARALLEL DO
   
   
-  ! ___________________________________________________
+  ! ______________________________________________________________________________________
   ! Exchange between tiles
   ! Reordered buffer are copied in parallel
   
@@ -1032,7 +1020,7 @@ DEALLOCATE(partpid)
 END SUBROUTINE particle_bsc_openmp_reordering
 #endif
 
-! ____________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> MPI Boundary condition routine on particles
 !
@@ -1042,11 +1030,9 @@ END SUBROUTINE particle_bsc_openmp_reordering
 !> @date
 !> Creation 2015
 !
+! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_mpi_blocking
-! ____________________________________________________________________________
-
 USE mpi
-
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
 REAL(num), ALLOCATABLE, DIMENSION(:, :, :, :) :: sendbuf
@@ -1356,7 +1342,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
 END DO! End loop on species
 END SUBROUTINE particle_bcs_mpi_blocking
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> MPI Boundary condition routine on particles with non blocking mpi
 !> communication subroutine
@@ -1370,13 +1356,10 @@ END SUBROUTINE particle_bcs_mpi_blocking
 !>
 !> Modifications:
 !> Mathieu - 11/09/2016 - add use mpi for compatibility with my version of mpi
+! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_mpi_non_blocking
-! ______________________________________________________________________________
-
 USE mpi
-
 IMPLICIT NONE
-
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
 REAL(num), ALLOCATABLE, DIMENSION(:, :, :, :) :: sendbuff, recvbuff
@@ -1754,7 +1737,7 @@ END DO
 DEALLOCATE(sendbuff, recvbuff, npart_send, npart_recv, requests)
 END SUBROUTINE particle_bcs_mpi_non_blocking
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 !> @brief
 !> MPI Boundary condition routine for particles in 2D x, z geometry
@@ -1769,11 +1752,9 @@ END SUBROUTINE particle_bcs_mpi_non_blocking
 !> @warning
 !> Need to add reflecting boundary conditions to be consistent with
 !> other MPI particle exchange routines
+! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_mpi_non_blocking_2d
-! ______________________________________________________________________________
-
 USE mpi
-
 INTEGER(isp)                  :: nvar! Simple implementation
 INTEGER(isp), DIMENSION(-1:1, -1:1)       :: nptoexch
 REAL(num), ALLOCATABLE, DIMENSION(:, :, :) :: sendbuff, recvbuff
@@ -2056,7 +2037,7 @@ DEALLOCATE(sendbuff, recvbuff, npart_send, npart_recv, requests)
 END SUBROUTINE particle_bcs_mpi_non_blocking_2d
 
 
-! ____________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> This subroutine combined in a single routine the particle communications
 !> between tiles and between MPI domains for 3D
@@ -2067,9 +2048,8 @@ END SUBROUTINE particle_bcs_mpi_non_blocking_2d
 !> @date
 !> Creation: May 2016
 !
+! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_tiles_and_mpi_3d
-! ____________________________________________________________________________
-
 #ifdef _OPENMP
 USE omp_lib
 #endif
@@ -2077,7 +2057,6 @@ USE communications
 USE params
 USE mpi
 IMPLICIT NONE
-
 INTEGER(idp)                    :: is, ix, iy, iz
 INTEGER(idp)                    :: i, i2, i3
 INTEGER(idp)                    :: indx, indy, indz, ipx, ipy, ipz
@@ -2110,56 +2089,6 @@ INTEGER(isp)                                      :: stats(2)
 INTEGER(idp)                                      :: recvbuf_index(27)
 INTEGER(idp)                                      :: lvect
 REAL(num)                                         :: dxs2, dys2, dzs2
-
-! ________________________________________
-! Checking
-! #if defined(DEBUG)
-!   WRITE(0, *) " Checking before particle boundary condition: start"
-!   DO is=1, nspecies
-!     curr=> species_parray(is)
-!     DO iz=1, ntilez
-!       DO iy=1, ntiley
-!         DO ix=1, ntilex
-!
-!           curr_tile=>curr%array_of_tiles(ix, iy, iz)
-!           nptile=curr_tile%np_tile(1)
-!
-!           DO i=1, nptile
-!             partx=curr_tile%part_x(i)
-!             party=curr_tile%part_y(i)
-!             partz=curr_tile%part_z(i)
-!             partux=curr_tile%part_ux(i)
-!             partuy=curr_tile%part_uy(i)
-!             partuz=curr_tile%part_uz(i)
-!             gaminv=curr_tile%part_gaminv(i)
-!             partw=curr_tile%pid(i, wpid)
-!
-!             IF ((partx .LT. curr_tile%x_tile_min) .OR.   &
-!                 (partx .GE. curr_tile%x_tile_max) .OR.   &
-!                 (party .LT. curr_tile%y_tile_min) .OR.   &
-!                 (party .GE. curr_tile%y_tile_max) .OR.  &
-!                 (partz .LT. curr_tile%z_tile_min+zgrid) .OR. &
-!                 (partz .GE. curr_tile%z_tile_max+zgrid)) THEN
-!
-!
-!                 WRITE(0, '("ERROR: particle outside the domain")')
-!                 WRITE(0, '("Particle id:", I7, " of species ", I7)') i, is
-!                 WRITE(0, '("In tile: ", I3, X, I3, X, I3)') ix, iy, iz
-!                 WRITE(0, '("x:", E12.5, X, E12.5, X, E12.5)') curr_tile%x_tile_min, partx, curr_tile%x_tile_max
-!                 WRITE(0, '("y:", E12.5, X, E12.5, X, E12.5)') curr_tile%y_tile_min, party, curr_tile%y_tile_max
-!                 WRITE(0, '("z:", E12.5, X, E12.5, X, E12.5)') curr_tile%z_tile_min, partz, curr_tile%z_tile_max
-!                 WRITE(0, *)
-!
-!             ENDIF
-!
-!           ENDDO
-!
-!         ENDDO
-!       ENDDO
-!     ENDDO
-!   ENDDO
-!   WRITE(0, *) " Checking before particle boundary condition: stop"
-! #endif
 
 ! _________________________________________________________
 ! Determine number of threads to be used for nested parallel region
@@ -2206,34 +2135,6 @@ other MPI domains"
 ALLOCATE(mpi_npart(27, nspecies))
 ALLOCATE(tilebuf(ntilex, ntiley, ntilez, nspecies))
 ALLOCATE(partpid(npid))
-!   DO is=1, nspecies
-!     curr=> species_parray(is)
-!     DO iz=1, ntilez
-!       DO iy=1, ntiley
-!         DO ix=1, ntilex
-!
-!           curr_tile=>curr%array_of_tiles(ix, iy, iz)
-!           nptile=curr_tile%np_tile(1)
-!
-!           ! Allocation of the buffer
-!           IF (curr_tile%subdomain_bound) THEN
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%part_x(mpi_buf_size, 27))
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%part_y(mpi_buf_size, 27))
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%part_z(mpi_buf_size, 27))
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%part_ux(mpi_buf_size, 27))
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%part_uy(mpi_buf_size, 27))
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%part_uz(mpi_buf_size, 27))
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%part_gaminv(mpi_buf_size, 27))
-!             ALLOCATE(tilebuf(ix, iy, iz, is)%pid(mpi_buf_size, 27))
-!           ENDIF
-!           tilebuf(ix, iy, iz, is)%npart(1:27) = 0
-!
-!         ENDDO
-!       ENDDO
-!     ENDDO
-!   ENDDO
-
-
 
 !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, is, ib, k, nx0_grid_tile,               &
 !$OMP ny0_grid_tile, nz0_grid_tile, ipx, ipy, ipz, nx0_grid_tile_dx,                  &
@@ -2601,18 +2502,8 @@ DO is=1, nspecies
               ntiley)
               indz = MIN(FLOOR((partz-(z_min_local)+dzs2)*(nz0_grid_tile_dz), idp)+1, &
               ntilez)
-              !if ((indx.le.0).or.(indy.le.0).or.(indz.le.0)) THEN
-              !print*, 'xmin', x_min_local, 'xmax', x_max_local, 'x', partx, xbd
-              !print*, 'ymin', y_min_local, 'ymax', y_max_local, 'y', party, ybd
-              !print*, 'zmin', z_min_local, 'zmax', z_max_local, 'z', partz, zbd
-              !endif
               CALL rm_particle_at_tile(curr, ix, iy, iz, i)
-              
-              !IF ((indx < 1).OR.(indy < 1).OR.(indz < 1)) THEN
-              !  Write(0, *) indx, indy, indz
-              !  Write(0, *) partx, party, partz
-              !  Write(0, *) i, nptile
-              !ENDIF
+
               
               CALL add_particle_at_tile(curr, indx, indy, indz, partx, party, partz,  &
               partux, partuy, partuz, gaminv, partpid) 
@@ -2651,7 +2542,7 @@ END DO! END LOOP ON SPECIES
 write(0, *) "Part 2 - Creation of the send buffer for the MPI communications"
 #endif
 
-! ____________________________________________________________________________________
+! ________________________________________________________________________________________
 ! Part 2 - Creation of the send buffer for the MPI communications
 !
 ! Here, a global buffer is created for the MPI communications. We copy in parallel
@@ -2664,14 +2555,7 @@ write(0, *) "Part 2 - Creation of the send buffer for the MPI communications"
 ! For drifted plasmas, this method is not the most efficient
 
 ALLOCATE(bufsend(MAXVAL(mpi_npart(:, :)), 7+npid, 27, nspecies))
-!print*, 'max part', MAXVAL(mpi_npart(:, :)), MINVAL(mpi_npart(:, :))
-!print*, mpi_npart(:, 1)
-!print*
-!print*, mpi_npart(:, 2)
-!print*
 
-
-!print*, 'Creation of the send buffer'
 !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, is, nx0_grid_tile, ny0_grid_tile,       &
 !$OMP nz0_grid_tile, ipx, ipy, ipz, ib, k, j) SHARED(nspecies, npid, nthreads_loop2,  &
 !$OMP species_parray, ntilex, ntiley, ntilez, dx, dy, dz, mpi_npart, bufsend,         &
@@ -2729,50 +2613,6 @@ write(0, *) "Part 3 - MPI Communications"
 
 ! _______________________________________
 ! Part 3 - MPI Communications
-
-!     Old sequential version
-!     print*, 'MPI Communications'
-!     DO is=1, nspecies ! LOOP ON SPECIES
-!       curr=> species_parray(is)
-!       DO iz = -1, 1
-!         DO iy = -1, 1
-!           DO ix = -1, 1
-!             IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-!                ib = 2+ix + (1+iy)*3 + (1+iz)*9
-!                ipx = -ix
-!                ipy = -iy
-!                ipz = -iz
-!                ! SEND - RECEIVE PARTICLES IN BUFFERS
-!                !- Get number of particles in recvbuff
-!                nrecv_buf=0
-!                dest = INT(neighbour(ix, iy, iz), isp)
-!                src  = INT(neighbour(ipx, ipy, ipz), isp)
-!                k = mpi_npart(ib, is)
-!                CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, tag, nrecv_buf, 1_isp, &
-!                     MPI_INTEGER, src, tag, comm, status, errcode)
-!                ALLOCATE(recvbuf(1:nrecv_buf, 8))
-!                CALL MPI_SENDRECV(bufsend(1:k, 1:8, ib, is), 8*k, mpidbl, dest, tag, &
-!                     recvbuf, nrecv_buf*8, mpidbl, src, tag, comm, status, errcode)
-!               ! Add received particles to particle arrays
-!               DO i = 1, nrecv_buf
-!               CALL add_particle_to_species(curr, &
-!               recvbuf(i, 1), &
-!               recvbuf(i, 2), &
-!               recvbuf(i, 3), &
-!               recvbuf(i, 4), &
-!               recvbuf(i, 5), &
-!               recvbuf(i, 6), &
-!               recvbuf(i, 7), &
-!               recvbuf(i, 8))
-!               ENDDO
-!
-!               DEALLOCATE(recvbuf)
-!           ENDDO
-!         ENDDO
-!       ENDDO
-!     ENDDO
-
-
 ! First, we determine the number of particles to receive
 
 ALLOCATE(nrecv_buf(27, nspecies))
@@ -2820,10 +2660,6 @@ DO is=1, nspecies! LOOP ON SPECIES
         errcode) 
         
         CALL MPI_Waitall(2_isp, reqs, MPI_STATUSES_IGNORE, errcode)
-        
-        !CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, ib, nrecv_buf(ib, is), 1_isp, &
-        !     MPI_INTEGER, src, ib, comm, status, errcode)
-        
       ENDDO
     ENDDO
   ENDDO
@@ -2867,97 +2703,15 @@ DO is=1, nspecies! LOOP ON SPECIES
         ireq = ireq + 1
         CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib, isp), comm, reqs(ireq),   &
         errcode) 
-        
-        !CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, ib, nrecv_buf(ib, is), 1_isp, &
-        !     MPI_INTEGER, src, ib, comm, status, errcode)
+
       ENDDO
     ENDDO
   ENDDO
   CALL MPI_Waitall(ireq, reqs, MPI_STATUSES_IGNORE, errcode)
 ENDDO
 
-! First irecv and then isend
-!    ALLOCATE(reqs(54*nspecies))
-!    DO is=1, nspecies ! LOOP ON SPECIES
-!      ireq = 0
-!       DO iz = -1, 1
-!         DO iy = -1, 1
-!           DO ix = -1, 1
-!             IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-!                ! index of the communication direction
-!                ib = 2+ix + (1+iy)*3 + (1+iz)*9
-!                ! Number of particle
-!                k = mpi_npart(ib, is)
-!                ! Exchange
-!               src  = INT(neighbour(-ix, -iy, -iz), isp)
-!               ireq = ireq + 1
-!               CALL MPI_Irecv( nrecv_buf(ib, is), 1_isp, MPI_INTEGER, src, &
-!               INT(ib, isp), comm, reqs(ireq), errcode)
-!
-!           ENDDO
-!         ENDDO
-!       ENDDO
-!       DO iz = -1, 1
-!         DO iy = -1, 1
-!           DO ix = -1, 1
-!             IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-!                ! index of the communication direction
-!                ib = 2+ix + (1+iy)*3 + (1+iz)*9
-!                ! Number of particle
-!                k = mpi_npart(ib, is)
-!                ! Exchange
-!                dest = INT(neighbour(ix, iy, iz), isp)
-!                ireq = ireq + 1
-!                CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib, isp), &
-!                  comm, reqs(ireq), errcode)
-!           ENDDO
-!         ENDDO
-!       ENDDO
-!      CALL MPI_Waitall(ireq, reqs, MPI_STATUSES_IGNORE, errcode)
-!    ENDDO
-
-! Wait all is done inside the loops
-!     ALLOCATE(reqs(2))
-!     DO is=1, nspecies ! LOOP ON SPECIES
-!       !curr=> species_parray(is)
-!       DO iz = -1, 1
-!         DO iy = -1, 1
-!           DO ix = -1, 1
-!             IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-!                ! index of the communication direction
-!                ib = 2+ix + (1+iy)*3 + (1+iz)*9
-!
-!                ! indexes of the source/destination mpi task
-!                ipx = -ix
-!                ipy = -iy
-!                ipz = -iz
-!                !ibs = 2+ipx + (1+ipy)*3 + (1+ipz)*9
-!                dest = INT(neighbour(ix, iy, iz), isp)
-!                src  = INT(neighbour(ipx, ipy, ipz), isp)
-!
-!                ! Number of particle
-!                k = mpi_npart(ib, is)
-!
-!                ! Exchange
-!                CALL MPI_Irecv( nrecv_buf(ib, is), 1_isp, MPI_INTEGER, src, &
-!                INT(ib, isp), comm, reqs(1), errcode)
-!                CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib, isp), &
-!                comm, reqs(2), errcode)
-!                CALL MPI_Waitall(2_isp, reqs, MPI_STATUSES_IGNORE, errcode)
-!                !CALL MPI_SENDRECV(k, 1_isp, MPI_INTEGER, dest, ib, nrecv_buf(ib, is), 1_isp, &
-!                !     MPI_INTEGER, src, ib, comm, status, errcode)
-!
-!           ENDDO
-!         ENDDO
-!       ENDDO
-!     ENDDO
-
-
 ENDIF
-! ______________________________________________
-
-
-
+! ________________________________________________________________________________________
 ! Then we exchange the buffers
 ! The communication can be performed in sequential or with multiple thread
 
@@ -3034,56 +2788,6 @@ IF (.FALSE.) THEN
   
 ELSE
   
-  ! ________________________________________________
-  ! Sequential version
-  
-  ! Wait all done outside
-  ! I do not know why this version skips particles
-  !       npos=1
-  !       ireq = 0
-  !       DO iz = -1, 1
-  !         DO iy = -1, 1
-  !           DO ix = -1, 1
-  !
-  !             IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-  !
-  !             ib = 2+ix + (1+iy)*3 + (1+iz)*9
-  !
-  !             k = mpi_npart(ib, is)
-  !             j = nrecv_buf(ib, is)
-  !
-  !             dest = INT(neighbour(ix, iy, iz), isp)
-  !             src  = INT(neighbour(-ix, -iy, -iz), isp)
-  !
-  !
-  !             !IF (j.gt.0) THEN
-  !               CALL MPI_TYPE_VECTOR(8_isp, INT(j, isp), INT(nrecv_buf_tot+1, isp), mpidbl, typebuffer, errcode)
-  !               call MPI_TYPE_COMMIT(typebuffer, errcode)
-  !               ! Exchange
-  !               ireq = ireq + 1
-  !               CALL MPI_Irecv(recvbuf(npos, 1), 1_isp, typebuffer, src, &
-  !               INT(ib, isp), comm, reqs(ireq), errcode)
-  !             !ENDIF
-  !
-  !             !IF (k.gt.0) THEN
-  !               ireq = ireq + 1
-  !               CALL MPI_Isend(bufsend(1:k, 1:8, ib, is), 8_isp*k, mpidbl, dest, INT(ib, isp), &
-  !               comm, reqs(ireq), errcode)
-  !               !CALL MPI_SENDRECV(bufsend(1:k, 1:8, ib, is), 8_isp*k, mpidbl, dest, tag, &
-  !               !recvbuf(npos, 1), 1_isp, typebuffer, src, tag, comm, status, errcode)
-  !
-  !             !ENDIF
-  !
-  !             CALL MPI_TYPE_FREE(typebuffer, errcode)
-  !
-  !             npos = npos + j
-  !             !print*, ib, npos, j, iz, iy, ix
-  !
-  !           ENDDO
-  !         ENDDO
-  !       ENDDO
-  !       CALL MPI_Waitall(ireq, reqs, MPI_STATUSES_IGNORE, errcode)
-  
   ! Wait all is done inside the loop
   npos=1
   DO iz = -1, 1
@@ -3109,9 +2813,6 @@ ELSE
         CALL MPI_Isend(bufsend(1:k, 1:7+npid, ib, is), INT((7_idp+npid)*k, isp),      &
         mpidbl, dest, INT(ib, isp), comm, reqs(2), errcode)  
         CALL MPI_Waitall(2_isp, reqs, MPI_STATUSES_IGNORE, errcode)
-        
-        !CALL MPI_SENDRECV(bufsend(1:k, 1:8, ib, is), 8_isp*k, mpidbl, dest, tag, &
-        !recvbuf(npos, 1), 1_isp, typebuffer, src, tag, comm, status, errcode)
         
         call MPI_TYPE_FREE(typebuffer, errcode)
         npos = npos + j
@@ -3167,15 +2868,7 @@ IF (nrecv_buf_tot.gt.0) THEN
           idp)+1, ntiley)
           indz = MIN(FLOOR((recvbuf(i, 3)-(z_min_local)+dzs2)*(nz0_grid_tile_dz),     &
           idp)+1, ntilez)
-          
-          !         IF (((recvbuf(i, 1) .LT. x_min_local) .OR. (recvbuf(i, 1) .GE. x_max_local)) .OR. &
-          !            ((recvbuf(i, 2) .LT. y_min_local) .OR. (recvbuf(i, 2) .GE. y_max_local)) .OR. &
-          !           ((recvbuf(i, 3) .LT. z_min_local) .OR. (recvbuf(i, 3) .GE. z_max_local))) THEN
-          !
-          !           print*, i, nrecv_buf_tot, indx, indy, indz, recvbuf(i, 1), recvbuf(i, 2), recvbuf(i, 3), recvbuf(i, 4)
-          !
-          !         ENDIF
-          
+
           ! If the particle is in the current tile
           IF ((indx.eq.ix).AND.(indy.eq.iy).AND.(indz.eq.iz)) THEN
             
@@ -3226,7 +2919,7 @@ ENDDO
 DEALLOCATE(mpi_npart)
 DEALLOCATE(reqs)
 
-! ________________________________________
+! ________________________________________________________________________________________
 ! Checking
 #if defined(DEBUG)
 WRITE(0, *) " Checking after particle boundary conditions: start"

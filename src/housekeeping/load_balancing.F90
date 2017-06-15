@@ -2,16 +2,19 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, ! The Regents of the University of California, through Lawrence Berkeley National
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
+! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
 ! and the U.S. Government consequently retains certain rights. As such, the U.S.
-! Government has been granted for itself and others acting on its behalf a paid-up, ! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! Government has been granted for itself and others acting on its behalf a paid-up, 
+! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
 ! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
@@ -36,8 +39,8 @@
 !
 !> @date
 !> Creation March 2016
+! ________________________________________________________________________________________
 MODULE load_balance
-  ! ________________________________________________________________________________________
   USE fields
   USE shared_data
   USE tiling
@@ -45,7 +48,7 @@ MODULE load_balance
   
   CONTAINS
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine needs a description.
   !
@@ -54,8 +57,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_currproc_array_dimensions(nnew, ncmin, ncmax, np, mpi_rank)
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN OUT) :: nnew
     INTEGER(idp), INTENT(IN) :: np, mpi_rank
@@ -65,7 +68,7 @@ MODULE load_balance
     
   END SUBROUTINE compute_currproc_array_dimensions
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine needs a description.
   !
@@ -74,9 +77,9 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_1Darray_proclimits(ix1, ix2, iy1, iy2, iz1, iz2, cxmin, cymin,       &
   czmin, cxmax, cymax, czmax, npx, npy, npz, np, l_cart_comm) 
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, np
     LOGICAL(lp)  :: l_cart_comm
@@ -86,7 +89,6 @@ MODULE load_balance
     INTEGER(idp), INTENT(IN), DIMENSION(0:npz-1) :: czmin, czmax
     INTEGER(idp) :: ix, iy, iz
     INTEGER(idp) :: curr_rank
-    
     
     DO iz=0, npz-1
       DO iy=0, npy-1
@@ -105,7 +107,7 @@ MODULE load_balance
     
   END SUBROUTINE get_1Darray_proclimits
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine converts indexes of a rank in a rank number.
   !
@@ -114,10 +116,9 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE pxr_convertindtoproc(mpi_comm_in, ix, iy, iz, npx, npy, npz, curr_rank,  &
   l_cart_comm)
-    ! ________________________________________________________________________________________
-    
     IMPLICIT NONE
     INTEGER(isp), INTENT(IN) :: mpi_comm_in
     INTEGER(idp), INTENT(IN) :: npx, npy, npz, ix, iy, iz
@@ -146,8 +147,7 @@ MODULE load_balance
     
   END SUBROUTINE pxr_convertindtoproc
   
-  
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Remap fields based on new split
   !
@@ -156,10 +156,10 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE mpi_remap_2D_field_component(field_new, nx_new, nz_new, field_old,       &
   nx_old, nz_old, nxg, nzg, ix1old, ix2old, iz1old, iz2old, ix1new, ix2new, iz1new,   &
   iz2new, iproc, np)     
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg, 1, -nzg:nz_new+nzg) ::      &
     field_new
@@ -177,7 +177,7 @@ MODULE load_balance
     comm, errcode)   
   END SUBROUTINE mpi_remap_2D_field_component
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Remap fields based on new split
   !
@@ -186,10 +186,10 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE mpi_remap_3D_field_component(field_new, nx_new, ny_new, nz_new,          &
   field_old, nx_old, ny_old, nz_old, nxg, nyg, nzg, ix1old, ix2old, iy1old, iy2old,   &
   iz1old, iz2old, ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, iproc, np)     
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg, -nyg:ny_new+nyg,            &
     -nzg:nz_new+nzg) :: field_new
@@ -211,7 +211,7 @@ MODULE load_balance
   END SUBROUTINE mpi_remap_3D_field_component
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine remaps emfield_old in emfield_new and
   !> takes care of all MPI exchanges between different MPI_PROCESSES
@@ -221,11 +221,11 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE remap_em_3Dfields(emfield_old, nxold, nyold, nzold, ix1old, ix2old,      &
   iy1old, iy2old, iz1old, iz2old, emfield_new, nxnew, nynew, nznew, nxg, nyg, nzg,    &
   ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, iproc, nprocs, communicator,        &
   ierrcode)    
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxold, nyold, nzold, nxnew, nynew, nznew, iproc,      &
     nprocs
@@ -379,7 +379,7 @@ MODULE load_balance
   END SUBROUTINE remap_em_3Dfields
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine remaps emfield_old in emfield_new and
   !> takes care of all MPI exchanges between different MPI_PROCESSES
@@ -390,10 +390,10 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE remap_em_2Dfields(emfield_old, nxold, nzold, ix1old, ix2old, iz1old,     &
   iz2old, emfield_new, nxnew, nznew, nxg, nzg, ix1new, ix2new, iz1new, iz2new, iproc, &
   nprocs, communicator, ierrcode)    
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxold, nzold, nxnew, nznew, iproc, nprocs
     INTEGER(idp), INTENT(IN) :: nxg, nzg
@@ -539,7 +539,7 @@ MODULE load_balance
   END SUBROUTINE remap_em_2Dfields
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine get intersection area between two 3D domains
   !> If no intersection l_is_intersection is .FALSE.
@@ -550,10 +550,10 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_3Dintersection(ix1min, ix1max, iy1min, iy1max, iz1min, iz1max,       &
   ix2min, ix2max, iy2min, iy2max, iz2min, iz2max, ix3min, ix3max, iy3min, iy3max,     &
   iz3min, iz3max, l_is_intersection)   
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iy1min, iy1max, iz1min, iz1max
     INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iy2min, iy2max, iz2min, iz2max
@@ -618,7 +618,7 @@ MODULE load_balance
   END SUBROUTINE get_3Dintersection
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine get intersection area between two 2D domains
   !> If no intersection l_is_intersection is .FALSE.
@@ -629,9 +629,9 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_2Dintersection(ix1min, ix1max, iz1min, iz1max, ix2min, ix2max,       &
   iz2min, iz2max, ix3min, ix3max, iz3min, iz3max, l_is_intersection)   
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iz1min, iz1max
     INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iz2min, iz2max
@@ -678,7 +678,7 @@ MODULE load_balance
   END SUBROUTINE get_2Dintersection
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the total time per part for particle subroutines
   !> (i.e  mainly particle push, field gathering and current deposition)
@@ -688,8 +688,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_time_per_part()
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num) :: global_time_part
     CALL get_local_number_of_part(npart_local)
@@ -710,7 +710,7 @@ MODULE load_balance
   END SUBROUTINE compute_time_per_part
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the total time per cell for em field subroutines
   !> (i.e field pusher)
@@ -720,8 +720,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_time_per_cell()
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num) :: global_time_cell
     global_time_cell=0.
@@ -734,11 +734,10 @@ MODULE load_balance
     CASE DEFAULT! #3D Case
       global_time_per_cell=global_time_cell/(nx_global*ny_global*nz_global)
     END SELECT
-    !PRINT *, "rank, local_time_cell, ncell_loc, local_time_part, npart_local", rank, local_time_cell, nx*nz, rank, local_time_part, npart_local
   END SUBROUTINE compute_time_per_cell
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Get the maximum time of all process per iteration.
   !
@@ -747,18 +746,16 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_max_time_per_it()
-    ! ________________________________________________________________________________________
-    
     IMPLICIT NONE
     ! Get max time per it
-    !PRINT *, "rank, mpitime_per_it", rank, mpitime_per_it
     CALL MPI_ALLREDUCE(mpitime_per_it, max_time_per_it, 1_isp, MPI_REAL8, MPI_MAX,    &
     comm, errcode)
     
   END SUBROUTINE get_max_time_per_it
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> Get the minimum time of all process per iteration.
   !
@@ -767,15 +764,15 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_min_time_per_it()
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     ! Get max time per it
     CALL MPI_ALLREDUCE(mpitime_per_it, min_time_per_it, 1_isp, MPI_REAL8, MPI_MIN,    &
     comm, errcode)
   END SUBROUTINE get_min_time_per_it
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine needs a better description.
   !
@@ -784,9 +781,9 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_new_split_2D(tppart, tpcell, nx_glob, nz_glob, ncxmin, ncxmax,   &
   nczmin, nczmax, npx, npz) 
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN) :: tppart, tpcell
     INTEGER(idp), INTENT(IN) :: nx_glob, nz_glob, npx, npz
@@ -807,7 +804,7 @@ MODULE load_balance
     
   END SUBROUTINE compute_new_split_2D
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine needs a better description.
   !
@@ -816,9 +813,9 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_new_split(tppart, tpcell, nx_glob, ny_glob, nz_glob, ncxmin,     &
   ncxmax, ncymin, ncymax, nczmin, nczmax, npx, npy, npz) 
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), INTENT(IN) :: tppart, tpcell
     INTEGER(idp), INTENT(IN) :: nx_glob, ny_glob, nz_glob, npx, npy, npz
@@ -847,7 +844,7 @@ MODULE load_balance
   
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes new load in direction dir based on the projected
   !> load_in_dir
@@ -857,8 +854,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirmax)
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     REAL(num), DIMENSION(0:ncellmaxdir-1), INTENT(IN) :: load_in_dir
     INTEGER(idp), DIMENSION(0:nproc_in_dir-1), INTENT(IN OUT) :: idirmin, idirmax
@@ -902,7 +899,7 @@ MODULE load_balance
   END SUBROUTINE balance_in_dir
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the computational load projected on X-Axis
   !
@@ -911,8 +908,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_projected_load_on_x(nxg, load_on_x, time_per_part, time_per_cell)
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxg
     REAL(num), INTENT(IN OUT), DIMENSION(0:nxg-1) :: load_on_x
@@ -961,7 +958,7 @@ MODULE load_balance
   END SUBROUTINE get_projected_load_on_x
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the computational load projected on Y-Axis
   !
@@ -970,8 +967,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_projected_load_on_y(nyg, load_on_y, time_per_part, time_per_cell)
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nyg
     REAL(num), INTENT(IN OUT), DIMENSION(0:nyg-1) :: load_on_y
@@ -1009,13 +1006,12 @@ MODULE load_balance
     ! Computes load_in_y
     load_on_y = load_part_sum*time_per_part + nx_global * nz_global*time_per_cell
     
-    
     DEALLOCATE(load_part, load_part_sum)
     
   END SUBROUTINE get_projected_load_on_y
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the computational load projected on Z-Axis
   !
@@ -1024,8 +1020,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE get_projected_load_on_z(nzg, load_on_z, time_per_part, time_per_cell)
-    ! ________________________________________________________________________________________
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nzg
     REAL(num), INTENT(IN OUT), DIMENSION(0:nzg-1) :: load_on_z
@@ -1067,15 +1063,12 @@ MODULE load_balance
     CASE DEFAULT! 3D CASE
       load_on_z = load_part_sum*time_per_part + nx_global * ny_global*time_per_cell
     END SELECT
-    
-    
-    
     DEALLOCATE(load_part, load_part_sum)
     
   END SUBROUTINE get_projected_load_on_z
   
   
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine create new array_of_tiles for each species
   !
@@ -1084,9 +1077,8 @@ MODULE load_balance
   !
   !> @date
   !> Creation 2016
+  ! ______________________________________________________________________________________
   SUBROUTINE create_new_tile_split()
-    ! ________________________________________________________________________________________
-    
 #ifdef _OPENMP
     USE omp_lib
 #endif
@@ -1126,7 +1118,6 @@ MODULE load_balance
       ntilez_new = 1
     ENDIF
     
-    
     ! Allocate new species array
     ALLOCATE(new_species_parray(nspecies))
     ! Copy properties of each species from old array to new array
@@ -1149,7 +1140,6 @@ MODULE load_balance
       currsp_new%vdrift_z=currsp%vdrift_z
       currsp_new%nppcell=currsp%nppcell
     END DO
-    
     
     CALL set_tile_split_for_species(new_species_parray, nspecies, ntilex_new,         &
     ntiley_new, ntilez_new, nx_grid, ny_grid, nz_grid, x_min_local, y_min_local,      &
@@ -1194,7 +1184,8 @@ MODULE load_balance
                 (partz .LT. z_min_local) .OR. (partz .GE. z_max_local)) THEN 
                 CALL add_particle_at_tile(currsp_new, 1_idp, 1_idp, 1_idp, partx,     &
                 party, partz, partux, partuy, partuz, gaminv, partpid) 
-                ! CASE 2: particle is in the new domain just add it to proper tile of new species array
+                ! CASE 2: particle is in the new domain just add 
+                ! it to proper tile of new species array
               ELSE
                 indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),     &
                 idp)+1, ntilex_new)
@@ -1224,7 +1215,8 @@ MODULE load_balance
               z_min_local) .OR. (partz .GE. z_max_local)) THEN  
               CALL add_particle_at_tile(currsp_new, 1_idp, 1_idp, 1_idp, partx,       &
               party, partz, partux, partuy, partuz, gaminv, partpid) 
-              ! CASE 2: particle is in the new domain just add it to proper tile of new species array
+              ! CASE 2: particle is in the new domain just add it
+              !  to proper tile of new species array
             ELSE
               indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),       &
               idp)+1, ntilex_new)
@@ -1333,10 +1325,10 @@ END SUBROUTINE create_new_tile_split
 !
 !> @date
 !> Creation 2016
+  ! ______________________________________________________________________________________
 SUBROUTINE remap_particles(ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, ix1new,    &
 ix2new, iy1new, iy2new, iz1new, iz2new, ncxmin, ncxmax, ncymin, ncymax, nczmin,       &
 nczmax, iproc, ncpus, npx, npy, npz, l_cart_comm)   
-! ________________________________________________________________________________________
 
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npy, npz
@@ -1575,9 +1567,10 @@ END SUBROUTINE remap_particles
 !
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE remap_particles_2D(ix1old, ix2old, iz1old, iz2old, ix1new, ix2new, iz1new, &
 iz2new, ncxmin, ncxmax, nczmin, nczmax, iproc, ncpus, npx, npz, l_cart_comm)   
-! ________________________________________________________________________________________
+
 
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npz
@@ -1802,8 +1795,8 @@ END SUBROUTINE remap_particles_2D
 !
 !> @date
 !> Creation 2016
-SUBROUTINE get_proc_interval(iproc, ic, ncmin, ncmax, ncpus)
 ! ________________________________________________________________________________________
+SUBROUTINE get_proc_interval(iproc, ic, ncmin, ncmax, ncpus)
 
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN OUT) :: iproc
@@ -1841,8 +1834,9 @@ END SUBROUTINE get_proc_interval
 !
 !> @date
 !> Creation 2016
-SUBROUTINE binary_search(isend, crank, arr, narr)
 ! ________________________________________________________________________________________
+SUBROUTINE binary_search(isend, crank, arr, narr)
+
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN OUT) :: isend
 INTEGER(isp), INTENT(IN) :: crank
@@ -1870,6 +1864,5 @@ DO WHILE((is_not_found) .AND. (imax .GE. imin) )
 END DO
 
 END SUBROUTINE binary_search
-
 
 END MODULE load_balance

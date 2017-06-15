@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -34,7 +35,7 @@
 !
 ! - pxr_getb3d_n_energy_conserving
 ! - pxr_gete3d_n_energy_conserving
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
 
 ! ______________________________________________________________________________
@@ -50,14 +51,13 @@
 !
 !> @date
 !> 2015
+! ________________________________________________________________________________________
 SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,      &
 zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
 eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
-  
   INTEGER(idp)             :: np
   INTEGER(idp), intent(in) :: exg_nguard(3), exg_nvalid(3), eyg_nguard(3),            &
   eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)  
@@ -116,8 +116,6 @@ eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   
   signx = 1.0_num
   signy = 1.0_num
-  !!$OMP PARALLEL DO PRIVATE(ip, ll, jj, kk, x, y, z, j, k, l, j0, k0, l0, xint, yint, zint, &
-  !!$OMP   sx, sy, sz, sx0, sy0, sz0, oxint, xintsq, oxintsq, oyint, yintsq, oyintsq, ozint, zintsq, ozintsq)
   DO ip=1, np
     
     x = (xp(ip)-xmin)*dxi
@@ -353,20 +351,19 @@ eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
     END DO
     
   END DO
-  !!$OMP END PARALLEL DO
   DEALLOCATE(sx0, sy0, sz0)
   
   RETURN
 END SUBROUTINE pxrgete3d_n_energy_conserving
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Gathering of Magnetic field from Yee grid ("energy conserving") on particles
 !> At arbitrary order. WARNING: Highly unoptimized routine
+! ________________________________________________________________________________________
 SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,      &
 zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
 byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
   USE omp_lib
   USE constants
   IMPLICIT NONE
@@ -433,8 +430,6 @@ byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  !!$OMP PARALLEL DO PRIVATE(ip, ll, jj, kk, x, y, z, j, k, l, j0, k0, l0, xint, yint, zint, sx, sy, sz, sx0, sy0, &
-  !!$OMP sz0, oxint, xintsq, oxintsq, oyint, yintsq, oyintsq, ozint, zintsq, ozintsq)
   DO ip=1, np
     
     x = (xp(ip)-xmin)*dxi
@@ -666,13 +661,12 @@ byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       END DO
     END DO
   END DO
-  !!OMP END PARALLEL DO
   DEALLOCATE(sx0, sz0)
   
   RETURN
 END SUBROUTINE pxrgetb3d_n_energy_conserving
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Gathering of magnetic field from Yee grid ("energy conserving") on particles
 !> at arbitrary order. WARNING: Highly unoptimized routine
@@ -685,13 +679,12 @@ END SUBROUTINE pxrgetb3d_n_energy_conserving
 !
 !> @date
 !> 2015
+! ________________________________________________________________________________________
 subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,     &
 zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
 byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
   use constants
   implicit none
-  
   integer(idp)                     :: np, nox, noy, noz
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)  
@@ -1011,7 +1004,7 @@ byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry, l_lower_order_in_v)     !#do 
   return
 end subroutine pxr_getb3d_n_energy_conserving
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> Gathering of electric field from Yee grid ("energy conserving") on particles
 !> at arbitrary order. WARNING: Highly unoptimized routine
 !> @brief
@@ -1024,10 +1017,10 @@ end subroutine pxr_getb3d_n_energy_conserving
 !
 !> @date
 !> 2015
+! ________________________________________________________________________________________
 subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,     &
 zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
 eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
-  ! ______________________________________________________________________________
   use constants
   USE params
   implicit none
@@ -1337,20 +1330,6 @@ eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l4symtry, l_lower_order_in_v)     !#do 
         end do
       end do
     end do
-    
-    ! Debugging
-    !     IF (it.gt.0) THEN
-    !       print*, 'ex, ey, ez', ex(ip), ey(ip), ez(ip)
-    !       print*, 'j', j, k, l
-    !       print*, 'j0', j0, k0, l0
-    !       print*, 'sx', sx(:)
-    !       print*, 'sy', sy(:)
-    !       print*, 'sz', sz(:)
-    !       print*, 'sx0', sx0(:)
-    !       print*, 'sy0', sy0(:)
-    !       print*, 'sz0', sz0(:)
-    !       read*
-    !     ENDIF
     
   end do
   deallocate(sx0, sy0, sz0)

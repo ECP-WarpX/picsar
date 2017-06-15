@@ -1,4 +1,4 @@
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -28,16 +29,16 @@
 ! List of subroutines
 ! - pxrdepose_currents_on_grid_jxjyjz_2d
 !
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Generic subroutine for current deposition on one tile
 !>
 !> @details
 !> This routine calls the relevant current deposition routine depending
 !> on the order of the particle shape and the selected algorithm.
-!>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
 xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)  
   USE constants
@@ -68,7 +69,7 @@ END SUBROUTINE
 !> @details
 !> This routine calls the relevant current deposition routine depending
 !> on the order of the particle shape and the selected algorithm.
-!>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,         &
 jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
 xmin, zmin, dt, dx, dz, nox, noz, lvect)     !#do not wrap
@@ -107,11 +108,11 @@ xmin, zmin, dt, dx, dz, nox, noz, lvect)     !#do not wrap
   
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Esirkepov subroutine for current deposition on one tile
 !>
-!>
+! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,      &
 gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz)  
   USE constants
@@ -133,7 +134,7 @@ gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz)
   
 END SUBROUTINE
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Main subroutine for the current deposition called in submain in 2d.
 
@@ -147,10 +148,8 @@ END SUBROUTINE
 
 !> @date
 !> Creation 2016
-
-
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
-  ! ______________________________________________________________________________
   USE fields
   USE shared_data
   USE params
@@ -168,7 +167,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   INTERFACE
     
     SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, &
-    q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse !#do not parse !#do not parse
+    q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse
       USE constants
       implicit none
       integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -223,8 +222,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   IF (currdepo.EQ.2) THEN
     CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx, jy, jz, nx, ny, nz,         &
     nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt) 
-    ! _______________________________________________________
-    ! Esirkepov OpenMP/tiling version non-vectorized but more optimized than the general order subroutine
+    ! _________________________________________________________________
+    ! Esirkepov OpenMP/tiling version non-vectorized but more optimized 
+    ! than the general order subroutine
   ELSE IF (currdepo.EQ.1) THEN
     
     IF ((nox.eq.noz)) THEN
@@ -237,7 +237,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt) 
     ENDIF
     
-    ! _______________________________________________________
+    ! _________________________________________________________________________
     ! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE
     
@@ -271,7 +271,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 
 
 
-! ______________________________________________________________________________
+! ________________________________________________________________________________________
 !> @brief
 !> Deposit current in each tile with Esirkepov method in 2D
 !
@@ -286,17 +286,16 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 
 !> @date
 !> Creation 2016
+! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_sub,    &
 jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx,    &
 dyy, dzz, dtt, lvect) 
-  ! ______________________________________________________________________________
   USE particles
   USE constants
   USE tiling
   USE time_stat
   IMPLICIT NONE
-  
-  ! __ Parameter declaration _______________________________________________________________
+  ! __ Parameter declaration _____________________________________________________________
   INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN)  :: noxx, noyy, nozz
   INTEGER(idp), INTENT(IN)  :: lvect
@@ -316,7 +315,7 @@ dyy, dzz, dtt, lvect)
   INTEGER(idp)              :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)               :: isdeposited=.FALSE.
   
-  ! ___ Interface _________________________________________________
+  ! ___ Interface ________________________________________________________________________
   ! For the func_order input function
   INTERFACE
     SUBROUTINE curr_depo_sub(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
