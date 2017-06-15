@@ -42,14 +42,14 @@
 !> Creation 2015
 MODULE diagnostics
   ! ________________________________________________________________________________________
-  
+
   USE constants
   USE mpi
   IMPLICIT NONE
-  
-  
+
+
   CONTAINS
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Computes derived physical quantities from simulation
@@ -72,46 +72,46 @@ MODULE diagnostics
     USE tiling
     USE time_stat
     IMPLICIT NONE
-    
+
     REAL(num) :: tmptime
-    
+
 #if defined(DEBUG)
     WRITE(0,*) "Calc_diags: start"
 #endif
-    IF (l_plasma) THEN 
+    IF (l_plasma) THEN
       ! - Computes total charge density
       CALL pxrdepose_rho_on_grid()
-      
+
       ! - Charge boundary conditions
       CALL charge_bcs()
-    ENDIF 
+    ENDIF
     ! - Computes electric field divergence on grid at n+1
     IF (.False.) THEN
-      
+
       IF (it.ge.timestat_itstart) THEN
         tmptime = MPI_WTIME()
       ENDIF
-      
+
       IF (.not.(divE_computed))  then
         CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards, nzguards, dx, dy, dz)
         divE_computed = .true.
       ENDIF
-      
+
       ! Get the total number of particles
       !CALL get_tot_number_of_particles(ntot)
-      
+
       IF (it.ge.timestat_itstart) THEN
         localtimes(9) = localtimes(9) + (MPI_WTIME() - tmptime)
       ENDIF
-      
+
     ENDIF
-    
+
 #if defined(DEBUG)
     WRITE(0,*) "Calc_diags: stop"
 #endif
-    
+
   END SUBROUTINE calc_diags
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Computes field divergence.
@@ -131,7 +131,7 @@ MODULE diagnostics
     REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in) :: eex,eey,eez
     REAL(num), DIMENSION(-nxguard:nx+nxguard,-nyguard:ny+nyguard,-nzguard:nz+nzguard), intent(in out) :: divee
     REAL(num)    :: dx, dy, dz, invdx, invdy, invdz
-    
+
     invdx=1.0_num/dx
     invdy=1.0_num/dy
     invdz=1.0_num/dz
@@ -147,9 +147,9 @@ MODULE diagnostics
     END DO
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
   END SUBROUTINE calc_field_div
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Initialization of the different diags.
@@ -165,12 +165,12 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     USE shared_data
     IMPLICIT NONE
-    
+
     IF (rank.eq.0) THEN
       WRITE(0,*)
       WRITE(0,*) ' Initilization of the diags'
     ENDIF
-    
+
     ! Creation of the result folder
 #if (defined(VTUNE) || defined(SDE) || defined(DFP) || defined(ALLINEA))
 #else
@@ -179,14 +179,14 @@ MODULE diagnostics
 #endif
     ! Initialization of the temporal diags
     CALL init_temp_diags
-    
+
     ! Init time statistics
     CALL init_time_stat_output
-    
+
     IF (rank.eq.0) WRITE(0,*)
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Init temporal diags
@@ -204,18 +204,18 @@ MODULE diagnostics
     USE particle_properties
     USE shared_data
     USE params
-    
+
     IMPLICIT NONE
-    
+
     INTEGER :: i
-    
+
     IF (temdiag_frequency.gt.0) THEN
-      
+
       i = 1
       temdiag_nb_part = 0
       temdiag_nb_field = 0
       temdiag_nb = 0
-      
+
       ! Determine the number of diags for the particles
       ! Kinetic energy
       if (temdiag_act_list(1).gt.0) then
@@ -309,13 +309,13 @@ MODULE diagnostics
         i = i+1
       end if
       temdiag_totvalues = i - 1
-      
+
       if (temdiag_nb.gt.0) then
         if (rank.eq.0) then
           write(0,'(" Initialization of the temporal diagnostics")')
         end if
       end if
-      
+
       ! Each mpi task will write in a given file according to their rank
       IF (nproc.ge.temdiag_nb) then
         IF ((rank.ge.0).and.(rank.le.temdiag_nb)) then
@@ -329,7 +329,7 @@ MODULE diagnostics
               FORM="unformatted",ACCESS='stream',STATUS='new')
               write(42) temdiag_nb_values(rank+1), temdiag_frequency*dt
             end if
-            
+
           end if
         ENDIF
         ! If there is not enough proc, only the first one deals with it
@@ -350,12 +350,12 @@ MODULE diagnostics
           end do
         end if
       end if
-      
+
       CALL MPI_BARRIER(comm,errcode)
-      
+
     ENDIF
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Initialize outputs of the time statistics
@@ -373,40 +373,40 @@ MODULE diagnostics
     USE shared_data
     USE params
     IMPLICIT NONE
-    
+
     INTEGER :: nb_timestat
-    
+
     IF (timestat_activated.gt.0) THEN
-      
+
       nb_timestat = 13
-      
+
       OPEN(unit=41,file="./RESULTS/time_stat",FORM="unformatted",ACCESS='stream')
       WRITE(41) nb_timestat
       WRITE(41) timestat_period*dt
-      
+
       IF (rank.eq.0) WRITE(0,*) ' Initialization of the time statistics output: ',nb_timestat
-      
+
       itimestat = 1 ! index in the buffer
-      
+
       ALLOCATE(buffer_timestat(nb_timestat,nbuffertimestat)) ! Buffer before output
-      
+
     ELSE
       timestat_period = 0
     ENDIF
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
-  !> This subroutine determine the total number of particles in the domain
+  !> This subroutine determine the total number of particles in one MPI domain
   !> from species of index is.
   !
   !> @author
-  !> Mathieu Lobet
+  !> Guillaume Blaclard
   !
   !> @creation
-  !> May 2016
-  SUBROUTINE get_tot_number_of_particles_from_species(is,nptot)
+  !> June 2017
+  SUBROUTINE get_local_number_of_particles_from_species(is, nptot_loc)
     ! ____________________________________________________________________________________
     USE particle_tilemodule
     USE particle_speciesmodule
@@ -416,19 +416,16 @@ MODULE diagnostics
     USE shared_data
     USE tiling
     IMPLICIT NONE
-    
-    INTEGER(idp), INTENT(INOUT) :: nptot
+
+    INTEGER(idp), DIMENSION(1), INTENT(INOUT) :: nptot_loc
     INTEGER(idp), INTENT(IN) :: is
-    INTEGER(idp) :: nptot_loc
     INTEGER(idp) :: ix,iy,iz,ip,n
     TYPE(particle_tile), POINTER :: curr_tile
     TYPE(particle_species), POINTER :: curr
-    
-    nptot = 0
-    
+
     ! Current species
     curr=>species_parray(is)
-    
+
     ! Loop over the tiles
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(curr, ntilex,ntiley,ntilez) &
@@ -437,20 +434,207 @@ MODULE diagnostics
     DO iz=1, ntilez
       DO iy=1, ntiley
         DO ix=1, ntilex
-          
+
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
-          nptot_loc = nptot_loc + curr_tile%np_tile(1)
-          
+          nptot_loc(1) = nptot_loc(1) + curr_tile%np_tile(1)
+
         End do
       End do
     End do
     !$OMP END PARALLEL DO
-    
+
+  END SUBROUTINE get_local_number_of_particles_from_species
+
+  ! ____________________________________________________________________________________
+  !> @brief
+  !> This subroutine determine the total number of particles in the MPI domain
+  !> from species of index is.
+  !
+  !> @author
+  !> Mathieu Lobet
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> May 2016
+  ! ____________________________________________________________________________________
+  SUBROUTINE get_tot_number_of_particles_from_species(is,nptot)
+    USE particle_tilemodule
+    USE particle_speciesmodule
+    USE tile_params
+    USE particles
+    USE mpi_derived_types
+    USE shared_data
+    USE tiling
+    IMPLICIT NONE
+
+    INTEGER(idp), DIMENSION(1), INTENT(INOUT) :: nptot
+    INTEGER(idp), INTENT(IN) :: is
+    INTEGER(idp), DIMENSION(1) :: nptot_loc
+
+    nptot_loc(1) = 0
+    CALL get_local_number_of_particles_from_species(is, nptot_loc)
+
     ! All MPI reduction
-    call MPI_ALLREDUCE(nptot_loc,nptot,1_isp,mpidbl,MPI_SUM,comm,errcode)
-    
+    call MPI_ALLREDUCE(nptot_loc(1),nptot(1),1_isp,MPI_INTEGER8,MPI_SUM,comm,errcode)
+
   END SUBROUTINE
-  
+
+  ! ____________________________________________________________________________
+  !> @brief
+  !> This subroutine returns a given position or the momentum of particles in
+  !> the domain from species of index ispecies.
+  !> For x, y, z, ux, uy, uz, quantity must be egal respectively to 1, 2, 3, 4,
+  !> 5, 6.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  SUBROUTINE getquantity(ispecies, quantity, nptot, quantityarray)
+  ! ____________________________________________________________________________
+      USE particle_tilemodule
+      USE particle_speciesmodule
+      USE tile_params
+      USE particles
+      USE tiling
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: ispecies
+      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: quantity
+      INTEGER(idp) :: ix,iy,iz,np
+      INTEGER(idp) :: compt
+      TYPE(particle_tile), POINTER :: curr_tile
+      TYPE(particle_species), POINTER :: curr
+
+      curr=>species_parray(ispecies)
+      compt = 1
+
+      ! Loop over the tiles
+      DO iz=1, ntilez
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            np = curr_tile%np_tile(1)
+
+            SELECT CASE (quantity)
+              CASE (1)
+                quantityarray(compt:compt+np) = curr_tile%part_x(1:np)
+              CASE (2)
+                quantityarray(compt:compt+np) = curr_tile%part_y(1:np)
+              CASE (3)
+                quantityarray(compt:compt+np) = curr_tile%part_z(1:np)
+              CASE (4)
+                quantityarray(compt:compt+np) = curr_tile%part_ux(1:np)
+              CASE (5)
+                quantityarray(compt:compt+np) = curr_tile%part_uy(1:np)
+              CASE (6)
+                quantityarray(compt:compt+np) = curr_tile%part_uz(1:np)
+            END SELECT
+
+            compt = compt + np
+          END DO
+        END DO
+      END DO
+
+  END SUBROUTINE getquantity
+
+  ! ____________________________________________________________________________
+  !> @brief
+  !> This subroutine returns the given variable from pid arrays of particles in
+  !> the domain from species of index ispecies.
+  !> Then quantity_pid corresponds to something like xoldpid, wpid etc..
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  SUBROUTINE getquantity_pid(ispecies, quantitypid, nptot, quantityarray)
+  ! ____________________________________________________________________________
+      USE particle_tilemodule
+      USE particle_speciesmodule
+      USE tile_params
+      USE particles
+      USE tiling
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: ispecies
+      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: quantitypid
+      INTEGER(idp) :: ix,iy,iz,np
+      INTEGER(idp) :: compt
+      TYPE(particle_tile), POINTER :: curr_tile
+      TYPE(particle_species), POINTER :: curr
+
+      curr=>species_parray(ispecies)
+      compt = 1
+
+      ! Loop over the tiles
+      DO iz=1, ntilez
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            np = curr_tile%np_tile(1)
+            quantityarray(compt:compt+np) = curr_tile%pid(1:np,quantitypid)
+            compt = compt + np
+          END DO
+        END DO
+      END DO
+
+  END SUBROUTINE getquantity_pid
+
+  ! __________________________________________________________________________
+  !> @brief
+  !> This subroutine returns the old position x of particles in the domain
+  !> from species of index is.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  SUBROUTINE getxold(ispecies, xoldtot)
+  ! __________________________________________________________________________
+      USE particle_tilemodule
+      USE particle_speciesmodule
+      USE tile_params
+      USE particles
+      USE particle_properties
+      !USE mpi_derived_types
+      !USE shared_data
+      USE tiling
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: ispecies
+      REAL(num),dimension(:),allocatable :: xoldtot
+      INTEGER(idp) :: nptot
+      INTEGER(idp) :: ix,iy,iz,np
+      INTEGER(idp) :: xoldcompt
+      TYPE(particle_tile), POINTER :: curr_tile
+      TYPE(particle_species), POINTER :: curr
+
+      curr=>species_parray(ispecies)
+      xoldcompt = 1
+
+      ! Loop over the tiles
+      DO iz=1, ntilez
+          DO iy=1, ntiley
+              DO ix=1, ntilex
+                  curr_tile=>curr%array_of_tiles(ix,iy,iz)
+                  np = curr_tile%np_tile(1)
+
+                  xoldtot(xoldcompt:xoldcompt+np) = curr_tile%pid(1:np,xoldpid)
+                  xoldcompt = xoldcompt + np
+              END DO
+          END DO
+      END DO
+
+  END SUBROUTINE getxold
+
   ! ____________________________________________________________________________________
   !> @brief
   !> This subroutine determine the total number of particles all species included
@@ -470,20 +654,20 @@ MODULE diagnostics
     USE shared_data
     USE tiling
     IMPLICIT NONE
-    
+
     INTEGER(idp), INTENT(OUT) :: nptot
     INTEGER(idp)              :: is, nptottmp
-    
+
     nptot = 0
-    
+
     DO is=1,nspecies
       nptottmp = 0
       CALL get_tot_number_of_particles_from_species(is,nptottmp)
       nptot = nptot + nptottmp
     ENDDO
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Determine the local kinetic energy for the species ispecies.
@@ -506,7 +690,7 @@ MODULE diagnostics
     USE tiling
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
-    
+
     REAL(num) :: kinetic_energy_loc
     INTEGER(idp) :: ix,iy,iz,np,ip,n
     TYPE(particle_tile), POINTER :: curr_tile
@@ -514,35 +698,35 @@ MODULE diagnostics
     INTEGER(idp),parameter :: LVEC2=16
     REAL(num)                          :: partgam
     REAL(num),dimension(:),allocatable :: gaminv
-    
+
     kinetic_energy_loc = 0
-    
+
     ! current species
     curr=>species_parray(ispecies)
-    
+
     ! Loop over the tiles
     !$OMP PARALLEL &
     !$OMP DEFAULT(NONE) &
     !$OMP SHARED(curr, ntilex, ntiley, ntilez) &
     !$OMP PRIVATE(ix,iy,iz,ispecies,curr_tile,ip,np,n,gaminv,partgam) &
     !$OMP reduction(+:kinetic_energy_loc)
-    
+
     !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
     DO iz=1, ntilez
       DO iy=1, ntiley
         DO ix=1, ntilex
-          
+
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
           np = curr_tile%np_tile(1)
-          
+
           allocate(gaminv(np))
           gaminv(1:np) = curr_tile%part_gaminv(1:np)
-          
+
           !write(0,*) " Tile total kinetic energy for tile:",ix,iy,iz
           !write(0,*) " Number of particles:",np
           !write(0,*) " partx:",curr_tile%part_x(1:10)
           !write(0,*) " gaminv:",1./curr_tile%part_gaminv(1:10)
-          
+
           ! Loop over the particles
           DO ip=1,np,LVEC2
 #if defined __INTEL_COMPILER
@@ -558,26 +742,26 @@ MODULE diagnostics
             !$DIR SIMD
 #endif
             DO n=1,MIN(LVEC2,np-ip+1)
-              
+
               partgam = 1./gaminv(ip+(n-1))
-              
+
               kinetic_energy_loc = kinetic_energy_loc + (partgam-1.)*curr_tile%pid(ip+(n-1),wpid)
-              
+
             end do
-            
+
           End do
-          
+
           deallocate(gaminv)
           !write(0,*) " Total Local kinetic energy",total_kinetic_energy_loc
-          
+
         End do
       End do
     End do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
   end subroutine
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Determine the total kinetic energy for the species ispecies.
@@ -601,17 +785,17 @@ MODULE diagnostics
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
     REAL(num) :: total_kinetic_energy
-    
+
     REAL(num) :: total_kinetic_energy_loc
     INTEGER(idp) :: ix,iy,iz,np,ip,n
     TYPE(particle_tile), POINTER :: curr_tile
     TYPE(particle_species), POINTER :: curr
     INTEGER(idp),parameter :: LVEC2=16
     REAL(num) :: partgam
-    
+
     ! current species
     curr=>species_parray(ispecies)
-    
+
     ! Loop over the tiles
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(curr, ntilex, ntiley, ntilez) &
@@ -620,15 +804,15 @@ MODULE diagnostics
     DO iz=1, ntilez
       DO iy=1, ntiley
         DO ix=1, ntilex
-          
+
           curr_tile=>curr%array_of_tiles(ix,iy,iz)
           np = curr_tile%np_tile(1)
-          
+
           !write(0,*) " Tile total kinetic energy for tile:",ix,iy,iz
           !write(0,*) " Number of particles:",np
           !write(0,*) " partx:",curr_tile%part_x(1:10)
           !write(0,*) " gaminv:",1./curr_tile%part_gaminv(1:10)
-          
+
           ! Loop over the particles (cache)
           DO ip=1,np,LVEC2
 #if defined _OPENMP && _OPENMP>=201307
@@ -640,28 +824,28 @@ MODULE diagnostics
             !DIR ASSUME_ALIGNED partgaminv:64
 #endif
             DO n=1,MIN(LVEC2,np-ip+1)
-              
+
               partgam = 1./curr_tile%part_gaminv(ip+(n-1))
               total_kinetic_energy_loc = total_kinetic_energy_loc + (partgam-1.)*curr_tile%pid(ip+(n-1),wpid)
-              
+
             end do
-            
+
           End do
-          
+
           !write(0,*) " Total Local kinetic energy",total_kinetic_energy_loc
-          
+
         End do
       End do
     End do
     !$OMP END PARALLEL DO
-    
+
     ! All MPI reduction
     call MPI_ALLREDUCE(total_kinetic_energy_loc,total_kinetic_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
-    
+
     !print*,total_kinetic_energy
-    
+
   END SUBROUTINE get_kinetic_energy
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Determine the local field energy for the given field in 2d.
@@ -677,7 +861,7 @@ MODULE diagnostics
     ! ____________________________________________________________________________________
     USE constants
     IMPLICIT NONE
-    
+
     ! __ Parameters ________________________________
     INTEGER(idp)                :: nx2,nz2
     INTEGER(idp)                :: nxguard,nzguard
@@ -686,23 +870,23 @@ MODULE diagnostics
     REAL(num)                   :: dx2,dz2
     REAL(num), dimension(-nxguard:nx2+nxguard,1,-nzguard:nz2+nzguard), intent(in) :: field
     field_energy = 0
-    
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
     !$OMP DO COLLAPSE(2) REDUCTION(+:field_energy)
     do l = 1, nz2
       do j = 1, nx2
-        
+
         field_energy = field_energy + field(j,1,l)*field(j,1,l)*0.5
-        
+
       end do
     end do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
     field_energy = field_energy*dx2*dz2
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Determine the local field energy for the given field.
@@ -725,26 +909,26 @@ MODULE diagnostics
     REAL(num)                   :: dx2,dy2,dz2
     REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard), intent(in) :: field
     field_energy = 0
-    
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
     !$OMP DO COLLAPSE(3) REDUCTION(+:field_energy)
-    
+
     do l = 1, nz2
       do k = 1, ny2
         do j = 1, nx2
-          
+
           field_energy = field_energy + field(j,k,l)*field(j,k,l)*0.5
-          
+
         end do
       end do
     end do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
     field_energy = field_energy*dx2*dy2*dz2
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Determine the total field energy for the given field
@@ -762,7 +946,7 @@ MODULE diagnostics
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
-    
+
     ! __ Parameters _____________________________________
     IMPLICIT NONE
     INTEGER(idp)                :: nx2,nz2
@@ -771,10 +955,10 @@ MODULE diagnostics
     REAL(num)                   :: field_energy,field_energy_loc
     INTEGER(idp)                :: j,k,l
     REAL(num)                   :: dx2,dz2
-    
+
     field_energy = 0
     field_energy_loc = 0
-    
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
     !$OMP DO COLLAPSE(2) REDUCTION(+:field_energy_loc)
     do l = 1, nz2
@@ -784,15 +968,15 @@ MODULE diagnostics
     end do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
     ! All MPI reduction
     call MPI_ALLREDUCE(field_energy_loc,field_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
-    
+
     field_energy = field_energy*dx2*dz2
-    
+
   END SUBROUTINE
-  
-  
+
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Get the energy of the field component field
@@ -822,31 +1006,31 @@ MODULE diagnostics
     REAL(num)                   :: field_energy,field_energy_loc
     INTEGER(idp)                :: j,k,l
     REAL(num)                   :: dx2,dy2,dz2
-    
+
     field_energy = 0
     field_energy_loc = 0
-    
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
     !$OMP DO COLLAPSE(3) REDUCTION(+:field_energy_loc)
     do l = 1, nz2
       do k = 1, ny2
         do j = 1, nx2
-          
+
           field_energy_loc = field_energy_loc + field(j,k,l)*field(j,k,l)*0.5
-          
+
         end do
       end do
     end do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
     ! All MPI reduction
     call MPI_ALLREDUCE(field_energy_loc,field_energy,1_isp,mpidbl,MPI_SUM,comm,errcode)
-    
+
     field_energy = field_energy*dx2*dy2*dz2
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Compute norm of dF/dt = divE -rho/eps0 local to the MPI domain (parallel function)
@@ -863,30 +1047,30 @@ MODULE diagnostics
     USE shared_data
     USE constants
     IMPLICIT NONE
-    
+
     INTEGER(idp)                :: j,k,l
     INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
     REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: divee2,rho2
     REAL(num), intent(out)      :: norm
-    
+
     norm = 0
-    
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
     !$OMP DO COLLAPSE(3) REDUCTION(+:norm)
     do l = 1, nz2
       do k = 1, ny2
         do j = 1, nx2
-          
+
           norm = norm + (divee2(j,k,l)*eps0 - rho2(j,k,l))**2
-          
+
         end do
       end do
     end do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Compute the  square of the norm of array local to the MPI domain (OpenMP parallel function)
@@ -903,30 +1087,30 @@ MODULE diagnostics
     USE shared_data
     USE constants
     IMPLICIT NONE
-    
+
     INTEGER(idp)                :: j,k,l
     INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
     REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: array
     REAL(num), intent(out)      :: norm
-    
+
     norm = 0
-    
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
     !$OMP DO COLLAPSE(3) REDUCTION(+:norm)
     do l = 1, nz2
       do k = 1, ny2
         do j = 1, nx2
-          
+
           norm = norm+ (array(j,k,l))**2
-          
+
         end do
       end do
     end do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
   END SUBROUTINE
-  
+
   ! ____________________________________________________________________________________
   !> @brief
   !> Compute norm of dF/dt = divE -rho/eps0 (parallel function)
@@ -943,34 +1127,35 @@ MODULE diagnostics
     USE shared_data
     USE constants
     IMPLICIT NONE
-    
+
     INTEGER(idp)                :: j,k,l
     INTEGER(idp)                :: nx2,ny2,nz2,nxguard,nyguard,nzguard
     REAL(num), dimension(-nxguard:nx2+nxguard,-nyguard:ny2+nyguard,-nzguard:nz2+nzguard),intent(in) :: divee2,rho2
     REAL(num)                   :: norm_loc
     REAL(num), intent(out)      :: norm
-    
+
     norm_loc = 0
     norm = 0
-    
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l,k,j)
     !$OMP DO COLLAPSE(3) REDUCTION(+:norm_loc)
     do l = 1, nz2
       do k = 1, ny2
         do j = 1, nx2
-          
+
           norm_loc = norm_loc + (divee2(j,k,l)*eps0 - rho2(j,k,l))**2
-          
+
         end do
       end do
     end do
     !$OMP END DO
     !$OMP END PARALLEL
-    
+
     ! All MPI reduction
     call MPI_ALLREDUCE(norm_loc,norm,1_isp,mpidbl,MPI_SUM,comm,errcode)
-    
+
     norm = sqrt(norm)
-    
+
   END SUBROUTINE
+
 END MODULE diagnostics
