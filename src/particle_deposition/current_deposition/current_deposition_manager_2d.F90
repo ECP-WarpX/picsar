@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -40,7 +40,7 @@
 !> on the order of the particle shape and the selected algorithm.
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
-xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)  
+  xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)
   USE constants
   implicit none
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -49,16 +49,16 @@ xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)
   jx, jy, jz
   real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
-  
+
   ! Build array of guard cells and valid cells, to pass them to the generic routine
   integer(idp)                       :: nguard(2), nvalid(2)
   nguard = (/ nxguard, nzguard /)
   nvalid = (/ nx+1, nz+1 /)
-  
+
   call depose_jxjyjz_generic_2d( jx, nguard, nvalid, jy, nguard, nvalid, jz, nguard,  &
   nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nox,   &
-  noz, lvect)     
-  
+  noz, lvect)
+
 END SUBROUTINE
 
 ! ______________________________________________________________________________
@@ -71,41 +71,41 @@ END SUBROUTINE
 !> on the order of the particle shape and the selected algorithm.
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,         &
-jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-xmin, zmin, dt, dx, dz, nox, noz, lvect)     !#do not wrap
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, zmin, dt, dx, dz, nox, noz, lvect)     !#do not wrap
   USE constants
   implicit none
   integer(idp)                          :: np, nox, noz
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), jy_nguard(2),  &
-  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)  
+  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)
   integer(idp)                          :: lvect
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
-  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 ) 
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
-  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 ) 
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
-  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 ) 
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
-  
+
   IF ((nox.eq.1).and.(noz.eq.1)) THEN
     CALL pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,  &
     jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-    xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)      
+    xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
   ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
     CALL pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,  &
     jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-    xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)      
+    xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
   ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
     CALL pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,  &
     jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-    xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)      
+    xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
   ELSE
     CALL pxr_depose_jxjyjz_esirkepov2d_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
     jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
-    xmin, zmin, dt, dx, dz, nox, noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)      
+    xmin, zmin, dt, dx, dz, nox, noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
   ENDIF
-  
+
 END SUBROUTINE
 
 ! ________________________________________________________________________________________
@@ -114,7 +114,7 @@ END SUBROUTINE
 !>
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,      &
-gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz)  
+  gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz)
   USE constants
   IMPLICIT NONE
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -122,16 +122,16 @@ gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz)
   jx, jy, jz
   real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
-  
+
   ! Build array of guard cells and valid cells, to pass them to the generic routine
   integer(idp)                       :: nguard(2), nvalid(2)
   nguard = (/ nxguard, nzguard /)
   nvalid = (/ nx+1, nz+1 /)
-  
+
   CALL pxr_depose_jxjyjz_esirkepov2d_n( jx, nguard, nvalid, jy, nguard, nvalid, jz,   &
   nguard, nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx,    &
-  dz, nox, noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)      
-  
+  dz, nox, noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+
 END SUBROUTINE
 
 ! ________________________________________________________________________________________
@@ -158,16 +158,16 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   USE ITT_SDE_FORTRAN
 #endif
   IMPLICIT NONE
-  
+
   ! __ Parameter declaration __________________________________________________
   REAL(num) :: tdeb, tend
-  
+
   ! ___________________________________________________________________________
   ! Interfaces for func_order
   INTERFACE
-    
+
     SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, &
-    q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse
+      q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse
       USE constants
       implicit none
       integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -177,11 +177,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
       real(num)                             :: q, dt, dx, dz, xmin, zmin
     END SUBROUTINE
-    
+
 #if defined(DEV)
     subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx, jy, jz, np, xp, zp, uxp,   &
-    uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox,    &
-    noz, lvect, l_particles_weight, l4symtry, l_2drz, type_rz_depose)    !#do not parse
+      uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox,    &
+      noz, lvect, l_particles_weight, l4symtry, l_2drz, type_rz_depose)    !#do not parse
       USE constants
       implicit none
       integer(idp)                          :: np, nx, nz, nox, noz, nxguard,         &
@@ -194,79 +194,79 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
       LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
     END SUBROUTINE
 #endif
-    
+
   END INTERFACE
   ! ___________________________________________________________________________
-  
+
   ! For debugging
 #if defined(DEBUG)
   WRITE(0, *) "Depose_currents_on_grid: start"
 #endif
-  
+
   ! For time statistics
   tdeb=MPI_WTIME()
-  
+
   ! For profiling with Vtune/SDE
 #if PROFILING==2
   CALL start_collection()
 #endif
-  
+
   jx = 0.0_num
   jy = 0.0_num
   jz = 0.0_num
-  
+
   ! __ Current deposition ________________________________________________________________
-  
+
   ! _______________________________________________________
   ! Esirkepov general order subroutine
   IF (currdepo.EQ.2) THEN
     CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx, jy, jz, nx, ny, nz,         &
-    nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt) 
+    nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt)
     ! _________________________________________________________________
-    ! Esirkepov OpenMP/tiling version non-vectorized but more optimized 
+    ! Esirkepov OpenMP/tiling version non-vectorized but more optimized
     ! than the general order subroutine
   ELSE IF (currdepo.EQ.1) THEN
-    
+
     IF ((nox.eq.noz)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_2d, &
       jx, jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, &
-      dz, dt, lvec_curr_depo) 
+      dz, dt, lvec_curr_depo)
       ! Order n
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx, jy, jz, nx, ny, nz,       &
-      nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt) 
+      nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt)
     ENDIF
-    
+
     ! _________________________________________________________________________
     ! Default - Esirkepov parallel version with OPENMP/tiling and optimizations
   ELSE
-    
+
     IF ((nox.eq.noz)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(depose_jxjyjz_2d, &
       jx, jy, jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, &
-      dz, dt, lvec_curr_depo) 
+      dz, dt, lvec_curr_depo)
       ! Order n
     ELSE
       CALL pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jx, jy, jz, nx, ny, nz,       &
-      nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt) 
+      nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt)
     ENDIF
-    
+
   ENDIF
-  
+
   ! Stop Vtune/SDE analysis
 #if PROFILING==2
   CALL stop_collection()
 #endif
-  
+
   ! For time statistics
   tend = MPI_WTIME()
   localtimes(3)=localtimes(3)+(tend-tdeb)
-  
+
   ! For debugging
 #if defined(DEBUG)
   WRITE(0, *) "Depose_current_on_grid: stop"
 #endif
-  
+
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 
 
@@ -288,8 +288,8 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_sub,    &
-jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx,    &
-dyy, dzz, dtt, lvect) 
+  jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx,    &
+  dyy, dzz, dtt, lvect)
   USE particles
   USE constants
   USE tiling
@@ -314,12 +314,12 @@ dyy, dzz, dtt, lvect)
   TYPE(grid_tile), POINTER  :: currg
   INTEGER(idp)              :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)               :: isdeposited=.FALSE.
-  
+
   ! ___ Interface ________________________________________________________________________
   ! For the func_order input function
   INTERFACE
     SUBROUTINE curr_depo_sub(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
-    xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse !#do not parse !#do not parse
+      xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse !#do not parse !#do not parse
       USE constants
       implicit none
       integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -330,13 +330,13 @@ dyy, dzz, dtt, lvect)
       real(num)                             :: q, dt, dx, dz, xmin, zmin
     END SUBROUTINE
   END INTERFACE
-  
+
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, jxg, jyg,   &
   !$OMP jzg, noxx, noyy, nozz, aofgrid_tiles, c_dim, lvect) PRIVATE(ix, iy, iz,       &
   !$OMP ispecies, curr, currg, curr_tile, count, jmin, jmax, kmin, kmax, lmin, lmax,  &
   !$OMP jminc, jmaxc, kminc, kmaxc, lminc, lmaxc, nxc, nyc, nzc, nxjg, nyjg, nzjg,    &
-  !$OMP isdeposited)    
+  !$OMP isdeposited)
   !! Current deposition
   !$OMP DO COLLAPSE(2) SCHEDULE(runtime)
   DO iz=1, ntilez
@@ -369,14 +369,14 @@ dyy, dzz, dtt, lvect)
         ELSE
           isdeposited=.TRUE.
         ENDIF
-        
+
         ! Depose current in jtile
         CALL curr_depo_sub( currg%jxtile, currg%jytile, currg%jztile, count,          &
         curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,      &
         curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%pid(1, &
         wpid), curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min,     &
-        dtt, dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz, lvect)      
-        
+        dtt, dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz, lvect)
+
       END DO! END LOOP ON SPECIES
       IF (isdeposited) THEN
         jxg(jmin:jmax, 0, lmin:lmax)=jxg(jmin:jmax, 0, lmin:lmax)+currg%jxtile(0:nxc, &
@@ -424,26 +424,26 @@ dyy, dzz, dtt, lvect)
           ! - FACES +/- X
           jxg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jxg(jminc:jmin-1,             &
           kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(-nxjg:-1, -nyjg:nyc+nyjg,           &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           jxg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jxg(jmax+1:jmaxc,             &
           kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- X
           jyg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jyg(jminc:jmin-1,             &
           kminc:kmaxc, lminc:lmaxc)+ currg%jytile(-nxjg:-1, -nyjg:nyc+nyjg,           &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           jyg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jyg(jmax+1:jmaxc,             &
           kminc:kmaxc, lminc:lmaxc)+ currg%jytile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- X
           jzg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jzg(jminc:jmin-1,             &
           kminc:kmaxc, lminc:lmaxc)+ currg%jztile(-nxjg:-1, -nyjg:nyc+nyjg,           &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           jzg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jzg(jmax+1:jmaxc,             &
           kminc:kmaxc, lminc:lmaxc)+ currg%jztile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
         ENDIF
       END DO
     END DO
@@ -482,21 +482,21 @@ dyy, dzz, dtt, lvect)
           ! --- JX
           ! - FACES +/- Y
           jxg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jxg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%jxtile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jxg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jxg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%jxtile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Y
           jyg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jyg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%jytile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jyg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jyg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%jytile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Y
           jzg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jzg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%jztile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jzg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jzg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%jztile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -535,26 +535,26 @@ dyy, dzz, dtt, lvect)
           ! --- JX
           ! - FACES +/- Z
           jxg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jxg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jxtile(0:nxc, 0:nyc, -nzjg:-1) 
+          lminc:lmin-1)+ currg%jxtile(0:nxc, 0:nyc, -nzjg:-1)
           jxg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jxg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jxtile(0:nxc, 0:nyc, nzc+1:nzc+nzjg) 
+          lmax+1:lmaxc)+ currg%jxtile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Z
           jyg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jyg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jytile(0:nxc, 0:nyc, -nzjg:-1) 
+          lminc:lmin-1)+ currg%jytile(0:nxc, 0:nyc, -nzjg:-1)
           jyg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jyg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jytile(0:nxc, 0:nyc, nzc+1:nzc+nzjg) 
+          lmax+1:lmaxc)+ currg%jytile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Z
           jzg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jzg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jztile(0:nxc, 0:nyc, -nzjg:-1) 
+          lminc:lmin-1)+ currg%jztile(0:nxc, 0:nyc, -nzjg:-1)
           jzg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jzg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jztile(0:nxc, 0:nyc, nzc+1:nzc+nzjg) 
+          lmax+1:lmaxc)+ currg%jztile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
   END DO!END LOOP ON TILES
   !$OMP END DO
   !$OMP END PARALLEL
-  
+
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp

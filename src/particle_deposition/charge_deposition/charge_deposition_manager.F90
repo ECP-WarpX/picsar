@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -68,14 +68,14 @@ SUBROUTINE pxrdepose_rho_on_grid
   USE params
   USE time_stat
   IMPLICIT NONE
-  
+
   INTEGER(idp) :: c_rho_old
   REAL(num)    :: tmptime
-  
+
   INTERFACE
-    
+
     SUBROUTINE depose_rho_scalar_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,   &
-    dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -84,11 +84,11 @@ SUBROUTINE pxrdepose_rho_on_grid
       INTEGER(idp), INTENT (IN) :: lvect
       REAL(num), INTENT (IN) :: q, dx, dy, dz, xmin, ymin, zmin
       REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
-      
+
     END SUBROUTINE
-    
+
     SUBROUTINE depose_rho_scalar_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,   &
-    dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -97,11 +97,11 @@ SUBROUTINE pxrdepose_rho_on_grid
       INTEGER(idp), INTENT (IN) :: lvect
       REAL(num), INTENT (IN) :: q, dx, dy, dz, xmin, ymin, zmin
       REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
-      
+
     END SUBROUTINE
-    
+
     SUBROUTINE depose_rho_scalar_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,   &
-    dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -110,11 +110,11 @@ SUBROUTINE pxrdepose_rho_on_grid
       INTEGER(idp), INTENT (IN) :: lvect
       REAL(num), INTENT (IN) :: q, dx, dy, dz, xmin, ymin, zmin
       REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
-      
+
     END SUBROUTINE
-    
+
     SUBROUTINE depose_rho_vecHVv2_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,  &
-    dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -123,11 +123,11 @@ SUBROUTINE pxrdepose_rho_on_grid
       INTEGER(idp), INTENT (IN) :: lvect
       REAL(num), INTENT (IN) :: q, dx, dy, dz, xmin, ymin, zmin
       REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
-      
+
     END SUBROUTINE
-    
+
     SUBROUTINE depose_rho_vecHVv2_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,  &
-    dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -137,9 +137,9 @@ SUBROUTINE pxrdepose_rho_on_grid
       REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
       REAL(num), INTENT (IN) :: q, dx, dy, dz, xmin, ymin, zmin
     END SUBROUTINE
-    
+
     SUBROUTINE depose_rho_vecHVv4_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,  &
-    dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -148,98 +148,98 @@ SUBROUTINE pxrdepose_rho_on_grid
       rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), INTENT (IN) :: xp(np), yp(np), zp(np), w(np)
       REAL(num), INTENT (IN) :: q, dx, dy, dz, xmin, ymin, zmin
-      
+
     END SUBROUTINE
-    
+
   END INTERFACE
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
   ! ______________________________________
   ! Parameters
-  
+
   ! For debugging
 #if defined(DEBUG)
   WRITE(0, *) "pxrdepose_rho_on_grid: start"
 #endif
-  
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
-  
+
   c_rho_old = 0
   rho = 0.0_num
-  
+
   ! ______________________________________
   ! DEPOSIT Charge on the grid
-  
+
   SELECT CASE (c_dim)
     ! ___ In 2D _________________________________________
   CASE (2)
-    
+
     CALL pxrdepose_rho_on_grid_sub_openmp_2d(rho, nx, ny, nz, nxjguards, nyjguards,   &
-    nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old) 
-    
+    nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old)
+
     ! ___ In 3D _________________________________________
   CASE DEFAULT
-    
+
     ! ___ Optimized functions ______________________
     IF (rhodepo.EQ.0) THEN
-      
+
       IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
         CALL pxrdepose_rho_on_grid_sub_openmp_3d(depose_rho_vecHVv4_3_3_3, rho, nx,   &
         ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt,       &
-        LVEC_charge_depo, c_rho_old) 
+        LVEC_charge_depo, c_rho_old)
       ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
         CALL pxrdepose_rho_on_grid_sub_openmp_3d(depose_rho_vecHVv2_2_2_2, rho, nx,   &
         ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt,       &
-        LVEC_charge_depo, c_rho_old) 
+        LVEC_charge_depo, c_rho_old)
       ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
         CALL pxrdepose_rho_on_grid_sub_openmp_3d(depose_rho_vecHVv2_1_1_1, rho, nx,   &
         ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt,       &
-        LVEC_charge_depo, c_rho_old) 
+        LVEC_charge_depo, c_rho_old)
       ELSE
         CALL pxrdepose_rho_on_grid_sub_openmp_3d_n(rho, nx, ny, nz, nxjguards,        &
-        nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old) 
+        nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old)
       ENDIF
 
       ! ___ Scalar subroutines _______________________
     ELSE IF (rhodepo.EQ.1) THEN
-      
+
       IF ((nox.eq.3).AND.(noy.eq.3).AND.(noz.eq.3)) THEN
         CALL pxrdepose_rho_on_grid_sub_openmp_3d(depose_rho_scalar_3_3_3, rho, nx,    &
         ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt,       &
-        LVEC_charge_depo, c_rho_old) 
+        LVEC_charge_depo, c_rho_old)
       ELSE IF ((nox.eq.2).AND.(noy.eq.2).AND.(noz.eq.2)) THEN
         CALL pxrdepose_rho_on_grid_sub_openmp_3d(depose_rho_scalar_2_2_2, rho, nx,    &
         ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt,       &
-        LVEC_charge_depo, c_rho_old) 
+        LVEC_charge_depo, c_rho_old)
       ELSE IF ((nox.eq.1).AND.(noy.eq.1).AND.(noz.eq.1)) THEN
         CALL pxrdepose_rho_on_grid_sub_openmp_3d(depose_rho_scalar_1_1_1, rho, nx,    &
         ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt,       &
-        LVEC_charge_depo, c_rho_old) 
+        LVEC_charge_depo, c_rho_old)
       ELSE
         CALL pxrdepose_rho_on_grid_sub_openmp_3d_n(rho, nx, ny, nz, nxjguards,        &
-        nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old) 
+        nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old)
       ENDIF
-      
+
       ! ___ Non-optimized general function ____________________
     ELSE
-      
+
       CALL pxrdepose_rho_on_grid_sub_openmp_3d_n(rho, nx, ny, nz, nxjguards,          &
-      nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old) 
-      
+      nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, c_rho_old)
+
     ENDIF
-    
+
   END SELECT
   IF (it.ge.timestat_itstart) THEN
     localtimes(12) = localtimes(12) + (MPI_WTIME() - tmptime)
   ENDIF
-  
+
   ! For debugging
 #if defined(DEBUG)
   WRITE(0, *) "pxrdepose_rho_on_grid: stop"
 #endif
-  
+
 END SUBROUTINE pxrdepose_rho_on_grid
 
 
@@ -248,7 +248,7 @@ END SUBROUTINE pxrdepose_rho_on_grid
 !> Deposit rho in each tile in 3D with the subroutine pxr_depose_rho_n()
 !
 !> @details
-!> This subroutine perform the charge deposition among the tiles using OpenMP version  
+!> This subroutine perform the charge deposition among the tiles using OpenMP version
 !> in 3D.
 !> It avoids conflict while reducing tile charge in the global charge array.
 !> This subroutine uses only the general order function pxr_depose_rho_n().
@@ -269,7 +269,7 @@ END SUBROUTINE pxrdepose_rho_on_grid
 !> @param[in] c_rho_old
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard,       &
-nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old) 
+  nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   USE particles
   USE constants
   USE tiling
@@ -289,14 +289,14 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   TYPE(grid_tile), POINTER        :: currg
   INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)                     :: isdeposited=.FALSE._lp
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, rhog, noxx, &
   !$OMP noyy, nozz, aofgrid_tiles, c_dim, c_rho_old) PRIVATE(ix, iy, iz, ispecies,    &
   !$OMP curr, currg, curr_tile, count, jmin, jmax, kmin, kmax, lmin, lmax, jminc,     &
   !$OMP jmaxc, kminc, kmaxc, lminc, lmaxc, nxc, nyc, nzc, nxjg, nyjg, nzjg,           &
-  !$OMP isdeposited)    
+  !$OMP isdeposited)
   !! Current deposition
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
   DO iz=1, ntilez
@@ -334,7 +334,7 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,    &
           curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                       &
           curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg, nzjg,  &
-          noxx, noyy, nozz, .TRUE._lp, .FALSE._lp)     
+          noxx, noyy, nozz, .TRUE._lp, .FALSE._lp)
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)=rhog(jmin:jmax, kmin:kmax,            &
@@ -379,10 +379,10 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
         ENDIF
       END DO
     END DO
@@ -421,9 +421,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -462,9 +462,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1) 
+          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg) 
+          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -482,7 +482,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n
 !> This subroutine perform the charge deposition among the tiles using OpenMP version.
 !> It avoids conflict while reducing tile charge in the global charge array.
 !>
-!> This version uses arbitrary charge deposition subroutines specified as a parameter: 
+!> This version uses arbitrary charge deposition subroutines specified as a parameter:
 !> func_order.
 !
 !> @author
@@ -502,8 +502,8 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n
 !> @param[in] c_rho_old
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz,       &
-nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt,           &
-c_rho_old) 
+  nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt,           &
+  c_rho_old)
   USE particles
   USE constants
   USE tiling
@@ -512,11 +512,11 @@ c_rho_old)
   ! Interfaces for func_order
   INTERFACE
     SUBROUTINE func_order(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz,    &
-    nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
-      
+      nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+
       USE constants
       IMPLICIT NONE
-      
+
       INTEGER(idp), INTENT (IN)    :: np, nx, ny, nz, nxguard, nyguard, nzguard
       REAL(num), INTENT(IN OUT) ::                                                    &
       rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -540,15 +540,15 @@ c_rho_old)
   TYPE(grid_tile), POINTER        :: currg
   INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)  :: isdeposited=.FALSE._lp
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
-  
+
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, rhog, noxx, &
   !$OMP noyy, nozz, aofgrid_tiles, c_dim, c_rho_old) FIRSTPRIVATE(lvectt) PRIVATE(ix, &
   !$OMP iy, iz, ispecies, curr, currg, curr_tile, count, jmin, jmax, kmin, kmax,      &
   !$OMP lmin, lmax, jminc, jmaxc, kminc, kmaxc, lminc, lmaxc, nxc, nyc, nzc, nxjg,    &
-  !$OMP nyjg, nzjg, isdeposited)      
+  !$OMP nyjg, nzjg, isdeposited)
   !! Current deposition
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
   DO iz=1, ntilez
@@ -585,11 +585,11 @@ c_rho_old)
           curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,                      &
           curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                       &
           curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg, nzjg,  &
-          lvectt)     
+          lvectt)
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)= rhog(jmin:jmax, kmin:kmax,           &
-          lmin:lmax)+currg%rhotile(0:nxc, 0:nyc, 0:nzc) 
+          lmin:lmax)+currg%rhotile(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -630,10 +630,10 @@ c_rho_old)
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
         ENDIF
       END DO
     END DO
@@ -672,9 +672,9 @@ c_rho_old)
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -713,9 +713,9 @@ c_rho_old)
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1) 
+          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg) 
+          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -749,7 +749,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
 !> @param[in] c_rho_old
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,         &
-nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old) 
+  nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   USE particles
   USE constants
   USE tiling
@@ -767,14 +767,14 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   TYPE(grid_tile), POINTER :: currg
   INTEGER(idp) :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)  :: isdeposited=.FALSE._lp
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, rhog, noxx, &
   !$OMP noyy, nozz, aofgrid_tiles, c_dim, c_rho_old) PRIVATE(ix, iy, iz, ispecies,    &
   !$OMP curr, currg, curr_tile, count, jmin, jmax, kmin, kmax, lmin, lmax, jminc,     &
   !$OMP jmaxc, kminc, kmaxc, lminc, lmaxc, nxc, nyc, nzc, nxjg, nyjg, nzjg,           &
-  !$OMP isdeposited)    
+  !$OMP isdeposited)
   !! Current deposition
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
   DO iz=1, ntilez
@@ -813,18 +813,18 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
             curr_tile%part_x, curr_tile%part_z, curr_tile%part_ux, curr_tile%part_uy, &
             curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%pid(1, wpid),         &
             curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dtt,   &
-            dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz, .TRUE._lp, .FALSE._lp)      
+            dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz, .TRUE._lp, .FALSE._lp)
           CASE DEFAULT! Rho at current time
             CALL pxr_depose_rho_n_2dxz(currg%rhotile(:, 0, :), count,                 &
             curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1,    &
             wpid), curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, &
             dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz, .TRUE._lp, .FALSE._lp,        &
-            .FALSE._lp, 0_idp)    
+            .FALSE._lp, 0_idp)
           END SELECT
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)= rhog(jmin:jmax, kmin:kmax,           &
-          lmin:lmax)+ currg%rhotile(0:nxc, 0:nyc, 0:nzc)  
+          lmin:lmax)+ currg%rhotile(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -865,10 +865,10 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
-          -nzjg:nzc+nzjg)  
+          -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
-          -nzjg:nzc+nzjg)  
+          -nzjg:nzc+nzjg)
         ENDIF
       END DO
     END DO
@@ -907,9 +907,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)  
+          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)  
+          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -948,9 +948,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)  
+          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)  
+          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -985,7 +985,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d
 !> @param[in] c_rho_old
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjguard,  &
-nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old) 
+  nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   USE particles
   USE constants
   USE tiling
@@ -1005,14 +1005,14 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   TYPE(grid_tile), POINTER        :: currg
   INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)                     :: isdeposited=.FALSE._lp
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, rhog, noxx, &
   !$OMP noyy, nozz, aofgrid_tiles, c_dim, c_rho_old) PRIVATE(ix, iy, iz, ispecies,    &
   !$OMP curr, currg, curr_tile, count, jmin, jmax, kmin, kmax, lmin, lmax, jminc,     &
   !$OMP jmaxc, kminc, kmaxc, lminc, lmaxc, nxc, nyc, nzc, nxjg, nyjg, nzjg,           &
-  !$OMP isdeposited)    
+  !$OMP isdeposited)
   !! Current deposition
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
   DO iz=1, ntilez
@@ -1050,25 +1050,25 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, 0_idp)     
+            nzjg, 0_idp)
           ELSE IF ((noxx.eq.2).AND.(noyy.eq.2).AND.(nozz.eq.2)) THEN
             CALL depose_rho_scalar_2_2_2(currg%rhotile, count, curr_tile%part_x,      &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, 0_idp)     
+            nzjg, 0_idp)
           ELSE IF ((noxx.eq.1).AND.(noyy.eq.1).AND.(nozz.eq.1)) THEN
             CALL depose_rho_scalar_1_1_1(currg%rhotile, count, curr_tile%part_x,      &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, 0_idp)     
+            nzjg, 0_idp)
           ELSE
             CALL pxr_depose_rho_n(currg%rhotile, count, curr_tile%part_x,             &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, noxx, noyy, nozz, .TRUE._lp, .FALSE._lp)     
+            nzjg, noxx, noyy, nozz, .TRUE._lp, .FALSE._lp)
           ENDIF
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
@@ -1079,7 +1079,7 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
     END DO
   END DO!END LOOP ON TILES
   !$OMP END DO
-  
+
   !! Adding charge from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
   !+/- X
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
@@ -1115,10 +1115,10 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
         ENDIF
       END DO
     END DO
@@ -1157,9 +1157,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1198,9 +1198,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1) 
+          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg) 
+          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1235,7 +1235,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar
 !> @param[in] c_rho_old
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjguard,   &
-nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect) 
+  nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
   USE particles
   USE constants
   USE tiling
@@ -1255,14 +1255,14 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
   TYPE(grid_tile), POINTER        :: currg
   INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)                     :: isdeposited=.FALSE._lp
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, rhog, noxx, &
   !$OMP noyy, nozz, aofgrid_tiles, c_dim, c_rho_old, lvect) PRIVATE(ix, iy, iz,       &
   !$OMP ispecies, curr, currg, curr_tile, count, jmin, jmax, kmin, kmax, lmin, lmax,  &
   !$OMP jminc, jmaxc, kminc, kmaxc, lminc, lmaxc, nxc, nyc, nzc, nxjg, nyjg, nzjg,    &
-  !$OMP isdeposited)    
+  !$OMP isdeposited)
   !! Current deposition
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
   DO iz=1, ntilez
@@ -1300,25 +1300,25 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, LVECT)     
+            nzjg, LVECT)
           ELSE IF ((noxx.eq.2).AND.(noyy.eq.2).AND.(nozz.eq.2)) THEN
             CALL depose_rho_vecHVv2_2_2_2(currg%rhotile, count, curr_tile%part_x,     &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, lvect)     
+            nzjg, lvect)
           ELSE IF ((noxx.eq.1).AND.(noyy.eq.1).AND.(nozz.eq.1)) THEN
             CALL depose_rho_vecHVv2_1_1_1(currg%rhotile, count, curr_tile%part_x,     &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, lvect)     
+            nzjg, lvect)
           ELSE
             CALL pxr_depose_rho_n(currg%rhotile, count, curr_tile%part_x,             &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
-            nzjg, noxx, noyy, nozz, .TRUE._lp, .FALSE._lp)     
+            nzjg, noxx, noyy, nozz, .TRUE._lp, .FALSE._lp)
           ENDIF
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
@@ -1329,7 +1329,7 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
     END DO
   END DO!END LOOP ON TILES
   !$OMP END DO
-  
+
   !! Adding charge from guard cells of adjacent subdomains (AVOIDS REDUCTION OPERATION)
   !+/- X
   !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
@@ -1365,10 +1365,10 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
           kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
-          -nzjg:nzc+nzjg) 
+          -nzjg:nzc+nzjg)
         ENDIF
       END DO
     END DO
@@ -1407,9 +1407,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg) 
+          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1448,9 +1448,9 @@ nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1) 
+          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg) 
+          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO

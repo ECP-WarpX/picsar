@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -45,9 +45,9 @@
 !
 !> @param[in] exg, eyg, ezg electric field grids
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids, 
+!> @param[in] nxx, nyy, nzz number of cells in each direction for the grids,
 !> nyy should be equal to 1.
-!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction 
+!> @param[in] nxguard, nyguard, nzguard number of guard cells in each direction
 !> for the grids
 !> @param[in] nxjguard, nyjguard, nzjguard number of guard cells for the current grids
 !> @param[in] noxx, noyy, nozz interpolation orders
@@ -55,18 +55,18 @@
 !> @param[in] dtt time step
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, bzg,  &
-nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,   &
-nozz, dxx, dyy, dzz, dtt)     
+  nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,   &
+  nozz, dxx, dyy, dzz, dtt)
   USE particles
   USE constants
   USE tiling
   USE time_stat
-  
+
   ! Vtune/SDE profiling
 #if defined(PROFILING) && PROFILING==3
   USE ITT_SDE_FORTRAN
 #endif
-  
+
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
   nyjguard, nzjguard
@@ -93,29 +93,29 @@ nozz, dxx, dyy, dzz, dtt)
   INTEGER(idp) :: nxc, nyc, nzc, ipmin, ipmax, ip
   INTEGER(idp) :: nxjg, nyjg, nzjg
   LOGICAL(lp)  :: isgathered=.FALSE.
-  
+
   tdeb=MPI_WTIME()
-  
+
 #if PROFILING==3
   CALL start_collection()
 #endif
-  
+
   !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, fieldgathe, LVEC_fieldgathe) PRIVATE(ix,   &
   !$OMP iy, iz, ispecies, curr, curr_tile, currg, count, jmin, jmax, kmin, kmax,      &
-  !$OMP lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg, isgathered)     
+  !$OMP lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg, isgathered)
   DO iz=1, ntilez! LOOP ON TILES
     DO ix=1, ntilex
       curr=>species_parray(1)
       curr_tile=>curr%array_of_tiles(ix, 1, iz)
       nxjg=curr_tile%nxg_tile
-      
+
       nzjg=curr_tile%nzg_tile
       jmin=curr_tile%nx_tile_min-nxjg
       jmax=curr_tile%nx_tile_max+nxjg
-      kmin=0! 2D Case 
+      kmin=0! 2D Case
       kmax=0! 2D case
       lmin=curr_tile%nz_tile_min-nzjg
       lmax=curr_tile%nz_tile_max+nzjg
@@ -142,9 +142,9 @@ nozz, dxx, dyy, dzz, dtt)
           curr=>species_parray(ispecies)
           curr_tile=>curr%array_of_tiles(ix, 1, iz)
           count=curr_tile%np_tile(1)
-          
+
           IF (count .EQ. 0) CYCLE
-          
+
           IF (fieldgathe.gt.-1) then
             curr_tile%part_ex(1:count) = 0.0_num
             curr_tile%part_ey(1:count) = 0.0_num
@@ -154,7 +154,7 @@ nozz, dxx, dyy, dzz, dtt)
             curr_tile%part_bz(1:count)=0.0_num
             !!! ---- Loop by blocks over particles in a tile (blocking)
             !!! --- Gather electric field on particles
-            
+
             !!! --- Gather electric and magnetic fields on particles
             CALL geteb2dxz_energy_conserving(count, curr_tile%part_x,                 &
             curr_tile%part_y, curr_tile%part_z, curr_tile%part_ex, curr_tile%part_ey, &
@@ -164,42 +164,42 @@ nozz, dxx, dyy, dzz, dtt)
             curr_tile%ny_cells_tile, curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, &
             noyy, nozz, currg%extile, currg%eytile, currg%eztile, currg%bxtile,       &
             currg%bytile, currg%bztile , .FALSE., .TRUE., LVEC_fieldgathe,            &
-            fieldgathe)            
+            fieldgathe)
           end if
-          
+
           !! --- Push velocity with E half step
           CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy,               &
           curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, curr_tile%part_ez, &
-          curr%charge, curr%mass, dtt*0.5_num)  
+          curr%charge, curr%mass, dtt*0.5_num)
           !! --- Set gamma of particles
           CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy,             &
-          curr_tile%part_uz, curr_tile%part_gaminv) 
+          curr_tile%part_uz, curr_tile%part_gaminv)
           !! --- Push velocity with B half step
           CALL pxr_bpush_v(count, curr_tile%part_ux, curr_tile%part_uy,               &
           curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_bx,                &
-          curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)  
+          curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
           !!! --- Push velocity with E half step
           CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy,               &
           curr_tile%part_uz, curr_tile%part_ex, curr_tile%part_ey, curr_tile%part_ez, &
-          curr%charge, curr%mass, dtt*0.5_num)  
+          curr%charge, curr%mass, dtt*0.5_num)
           !! --- Set gamma of particles
           CALL pxr_set_gamma(count, curr_tile%part_ux, curr_tile%part_uy,             &
-          curr_tile%part_uz, curr_tile%part_gaminv) 
+          curr_tile%part_uz, curr_tile%part_gaminv)
           !!!! --- push particle species positions a time step
           CALL pxr_push2dxz(count, curr_tile%part_x, curr_tile%part_z,                &
           curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                    &
-          curr_tile%part_gaminv, dtt)  
-          
+          curr_tile%part_gaminv, dtt)
+
         END DO! END LOOP ON SPECIES
       ENDIF
     END DO
   END DO! END LOOP ON TILES
   !$OMP END PARALLEL DO
-  
+
 #if PROFILING==3
   CALL stop_collection()
 #endif
-  
+
   tend=MPI_WTIME()
   pushtime=pushtime+(tend-tdeb)
   localtimes(1) = localtimes(1) + (tend-tdeb)

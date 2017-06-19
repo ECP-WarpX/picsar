@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -75,7 +75,7 @@
 !> @param[in] lvect: vector length (useless here, just for interface compatibility)
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -89,12 +89,12 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   REAL(num), DIMENSION(2) :: sx(0:1), sy(0:1), sz(0:1)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, ip
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
   invvol = dxi*dyi*dzi
-  
+
   ! Prevent the compiler to vectorize (dependencies)
   !DIR$ NOVECTOR
   DO ip=1, np
@@ -160,7 +160,7 @@ END SUBROUTINE depose_rho_scalar_1_1_1
 !> @param[in] lvect: vector length (useless here, just for interface compatibility)
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -169,19 +169,19 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dx, dy, dz, xmin, ymin, zmin
   INTEGER(idp), INTENT (IN) :: lvect
-  REAL(num) :: dxi, dyi, dzi, xint, yint, zint, xintsq, yintsq, zintsq 
+  REAL(num) :: dxi, dyi, dzi, xint, yint, zint, xintsq, yintsq, zintsq
   REAL(num) :: x, y, z, wq, invvol, sx1, sx2, sx3, sx4, sx5, sx6, sx7, sx8, sx9
   REAL(num) :: sx(-1:1), sy(-1:1), sz(-1:1)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, ip
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
   invvol = dxi*dyi*dzi
   !DIR$ NOVECTOR
   DO ip=1, np
-    
+
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -279,7 +279,7 @@ END SUBROUTINE depose_rho_scalar_2_2_2
 !>
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -289,12 +289,12 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   REAL(num) :: q, dx, dy, dz, xmin, ymin, zmin
   INTEGER(idp), INTENT (IN) :: lvect
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
-  zintsq, oxintsq, oyintsq, ozintsq 
+  zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, wq, invvol
   REAL(num) :: sx(-1:2), sy(-1:2), sz(-1:2)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, ip
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -425,7 +425,7 @@ END SUBROUTINE depose_rho_scalar_3_3_3
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecSH_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,    &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -434,7 +434,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
-  zintsq, oxintsq, oyintsq, ozintsq 
+  zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, wq, invvol, sx0, sy0, sz0, sx1, sy1, sz1
   REAL(num), ALLOCATABLE :: ww(:, :)
   INTEGER(idp), ALLOCATABLE :: ll(:, :)
@@ -443,7 +443,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   INTEGER(idp) :: nblk
   INTEGER(idp) :: nnx, nnxy, ind0
   INTEGER(idp) :: moff(1:8)
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -451,7 +451,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   ! Vectorization parameters init
   nblk=4! multiple of vector instruction length (32 bytes on Avx)
   ALLOCATE(ww(1:8, 1:nblk), ll(1:8, 1:nblk))
-  
+
   nnx = nx + 1 + 2*nxguard
   nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
   moff(1) = 0_idp
@@ -462,9 +462,9 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   moff(6) = nnxy+1_idp
   moff(7) = nnxy+nnx
   moff(8) = nnxy+nnx+1_idp
-  
+
   DO ip=1, np, nblk
-    
+
     ! Alignement
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
@@ -474,7 +474,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
     !IBM* ALIGN(64, ww, xp, yp, zp, w)
 #endif
 #endif
-    
+
     ! Vectorization
 #ifndef NOVEC
 #if defined _OPENMP && _OPENMP>=201307
@@ -535,7 +535,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
 #endif
     ! --- add charge density contributions
     DO m= 1, MIN(nblk, np-ip+1)
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED ww:64
@@ -543,7 +543,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
       !IBM* ALIGN(64, ww)
 #endif
 #endif
-      
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -583,7 +583,7 @@ END SUBROUTINE depose_rho_vecSH_1_1_1
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecNOY_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -599,13 +599,13 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   INTEGER(idp) :: j, k, l, vv, n, ip, jj
   INTEGER(idp), INTENT(IN) :: lvect
   REAL(num), DIMENSION(lvect, 8) :: ww
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
   invvol = dxi*dyi*dzi
   ALLOCATE(rho1(1:lvect, -nxguard:nx+nxguard, -nyguard:ny+nyguard,                    &
-  -nzguard:nz+nzguard)) 
+  -nzguard:nz+nzguard))
   rho1=0.0_num
   DO ip=1, np, lvect
     !DIR$ ASSUME_ALIGNED xp:32
@@ -648,7 +648,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
       ww(vv, 8) = sx(1)*sy(1)*sz(1)
     END DO
   END DO
-  
+
   DO jj=-nxguard, nxguard+nx!!! Vector
     DO vv=1, lvect
       rho(jj, :, :)=rho(jj, :, :)+rho1(vv, jj, :, :)
@@ -673,7 +673,7 @@ END SUBROUTINE depose_rho_vecNOY_1_1_1
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHV_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,    &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -695,7 +695,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   INTEGER(idp) :: ic, j, k, l, n, ip, nv, nn
   INTEGER(idp) :: nnx, nnxy
   INTEGER(idp) :: moff(1:8)
-  
+
   ! Init parameters
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -714,7 +714,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   moff(6) = nnxy+1_idp
   moff(7) = nnxy+nnx
   moff(8) = nnxy+nnx+1_idp
-  
+
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1, np, LVEC2
     !DIR$ ASSUME_ALIGNED xp:64
@@ -815,18 +815,18 @@ END SUBROUTINE depose_rho_vecHV_1_1_1
 !
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   !bind(C, name="depose_rho_vecHVv2_1_1_1")
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT)  ::                                                       &
   rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   INTEGER(idp), INTENT (IN) :: lvect
   REAL(num), INTENT (IN)    :: xp(np), yp(np), zp(np), w(np)
   REAL(num), INTENT (IN)    :: q, dx, dy, dz, xmin, ymin, zmin
-  
+
   INTEGER(idp), DIMENSION(lvect) :: ICELL
   REAL(num)                 :: ww
   INTEGER(idp) :: NCELLS
@@ -842,7 +842,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   INTEGER(idp) :: ncx, ncy, ncxy, ncz, ix, iy, iz, ngridx, ngridy, ngx, ngxy
   REAL(num), DIMENSION(:, :), ALLOCATABLE:: rhocells
   !DIR$ ATTRIBUTES ALIGN:64 :: rhocells
-  
+
   ! Init parameters
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -865,7 +865,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! ________________________________________________________________________
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1, np, lvect
@@ -880,7 +880,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
     !IBM* ALIGN(64, xp, yp, zp, w, ICELL)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP SIMD
@@ -918,7 +918,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
     DO n=1, MIN(lvect, np-ip+1)
       ! --- add charge density contributions to vertices of the current cell
       ic=ICELL(n)
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED rhocells:64
@@ -929,7 +929,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
       !IBM* ALIGN(64, rhocells, sx, sy, sz)
 #endif
 #endif
-      
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -940,7 +940,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
       !$DIR SIMD
 #endif
       DO nv=1, 8!!! - VECTOR
-        ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* (-mz(nv)+sz(n))*wq(n)*sgn(nv) 
+        ww=(-mx(nv)+sx(n))*(-my(nv)+sy(n))* (-mz(nv)+sz(n))*wq(n)*sgn(nv)
         rhocells(nv, ic)=rhocells(nv, ic)+ww
       END DO
 #if defined _OPENMP && _OPENMP>=201307
@@ -950,7 +950,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
 #endif
     END DO
   END DO
-  
+
   ! - reduction of rhocells in rho
   DO iz=1, ncz
     DO iy=1, ncy
@@ -1015,17 +1015,17 @@ END SUBROUTINE depose_rho_vecHVv2_1_1_1
 !> @param[in] lvect vector length
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(idp), INTENT (IN)    :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp), INTENT (IN)    :: lvect
   REAL(num), INTENT(IN OUT)     ::                                                    &
   rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   REAL(num), INTENT (IN)       :: xp(np), yp(np), zp(np), w(np)
   REAL(num), INTENT (IN)       :: q, dx, dy, dz, xmin, ymin, zmin
-  
+
   REAL(num), DIMENSION(:, :), ALLOCATABLE :: rhocells
   INTEGER(idp), DIMENSION(lvect) :: ICELL, IG
   REAL(num)                      :: ww
@@ -1041,7 +1041,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   REAL(num):: ww0(1:lvect, 1:8), www(1:lvect, 1:8)
   INTEGER(idp) :: orig, jorig, korig, lorig
   INTEGER(idp) :: ncx, ncy, ncxy, ncz, ix, iy, iz, ngridx, ngridy, ngx, ngxy
-  
+
   ! Init parameters
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1062,10 +1062,10 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1, np, lvect
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
@@ -1075,7 +1075,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
     !IBM* ALIGN(64, xp, yp, zp, w, sx0, sx1, sx2, ICELL, IG)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP SIMD
@@ -1137,7 +1137,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
     ! Current deposition on vertices
     DO n=1, MIN(lvect, np-ip+1)
       ! --- add charge density contributions to vertices of the current cell
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED rhocells:64
@@ -1145,7 +1145,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
       !IBM* ALIGN(64, rhocells)
 #endif
 #endif
-      
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1250,7 +1250,7 @@ END SUBROUTINE depose_rho_vecHVv2_2_2_2
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1264,7 +1264,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
-  zintsq, oxintsq, oyintsq, ozintsq 
+  zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, invvol, wq0, wq
   REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2), sx4(LVEC2)
   REAL(num) :: sy(-1:2), sz(-1:2)
@@ -1273,7 +1273,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   INTEGER(idp) :: nnx, nnxy, off0, ind0
   INTEGER(idp) :: moff(1:16)
   REAL(num):: www(1:LVEC2, 1:16)
-  
+
   ! Init parameters
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1287,12 +1287,12 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   nnxy = (nx+1+2*nxguard)*(ny+1+2*nyguard)
   moff = (/-1_idp-nnx-nnxy, -nnx-nnxy, 1_idp-nnx-nnxy, -1_idp-nnxy, -nnxy,            &
   1_idp-nnxy, -1_idp+nnx-nnxy, nnx-nnxy, -1_idp-nnx-nnxy, -nnx-nnxy, 1_idp-nnx-nnxy,  &
-  -1_idp-nnxy, -nnxy, 1_idp-nnxy, -1_idp+nnx-nnxy, nnx-nnxy/) 
+  -1_idp-nnxy, -nnxy, 1_idp-nnxy, -1_idp+nnx-nnxy, nnx-nnxy/)
   off0=1+nnx+nnxy
-  
+
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1, np, LVEC2
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
@@ -1302,7 +1302,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
     !IBM* ALIGN(64, xp, yp, zp, w, ICELL)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP SIMD
@@ -1377,7 +1377,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
     DO n=1, MIN(LVEC2, np-ip+1)
       ! --- add charge density contributions to vertices of the current cell
       ic=ICELL(n)
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED rhocells:64
@@ -1385,7 +1385,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
       !IBM* ALIGN(64, rhocells)
 #endif
 #endif
-      
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1416,7 +1416,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   END DO
   DO nv=1, 16
     ind0=off0+moff(nv)
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED rhocells:64
@@ -1425,7 +1425,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
     !IBM* ALIGN(64, rhocells, rho)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP SIMD
@@ -1476,10 +1476,10 @@ END SUBROUTINE depose_rho_vecHVv2_3_3_3
 !> @param[in] nxguard, nyguard, nzguard number of guard cells
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv3_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT) ::                                                        &
   rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -1491,10 +1491,10 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   REAL(num) :: xp(np), yp(np), zp(np), w(np)
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint(1:LVEC2), oxint, oyint, ozint, xintsq, &
-  yintsq, zintsq, oxintsq, oyintsq, ozintsq 
+  yintsq, zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, invvol, wq0, wq
   REAL(num) :: sx1(LVEC2), sx2(LVEC2), sx3(LVEC2), sx4(LVEC2), sy1(LVEC2),            &
-  sy2(LVEC2), sy3(LVEC2), sy4(LVEC2), sz1, sz2, sz3, sz4 
+  sy2(LVEC2), sy3(LVEC2), sy4(LVEC2), sz1, sz2, sz3, sz4
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: ic, igrid, ic0, j, k, l, vv, n, ip, jj, kk, ll, nv, nn
   INTEGER(idp) :: nnx, nnxy, off0, ind0
@@ -1503,7 +1503,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   szz(1:8)
   INTEGER(idp) :: orig, jorig, korig, lorig
   INTEGER(idp) :: ncx, ncy, ncxy, ncz, ix, iy, iz, ngridx, ngridy, ngx, ngxy
-  
+
   ! Init parameters
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1523,13 +1523,13 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   h1(1:4)=(/1_num, 0_num, 1_num, 0_num/); sgn(1:4)=(/1_num, -1_num, 1_num, -1_num/)
   h11(1:4)=(/0_num, 1_num, 1_num, 0_num/); h12(1:4)=(/1_num, 0_num, 0_num, 1_num/)
-  
+
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1, np, LVEC2
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
@@ -1540,7 +1540,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
     !IBM* ALIGN(64, xp, yp, zp, w, sx1, sx2, sx3, sx4, sy1, sy2, sy3, sy4, ICELL)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP SIMD
@@ -1589,7 +1589,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
 #endif
 #endif
     DO n=1, MIN(LVEC2, np-ip+1)
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
       !$DIR ASSUME_ALIGNED www:64, h1:64, h11:64, h12:64, zdec:64, sgn:64, szz:64
@@ -1597,7 +1597,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
       !IBM* ALIGN(64, www, h1, h11, h12, zdec, sgn, szz)
 #endif
 #endif
-      
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1610,7 +1610,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
       DO nv=1, 4!!! Vector
         zdec(nv)     = (h1(nv)-zint(n))*sgn(nv)
         szz(nv)      = (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv)+     &
-        onesixth*zdec(nv)**3*h12(nv) 
+        onesixth*zdec(nv)**3*h12(nv)
         www(nv, n)    = szz(nv)*sy1(n)
         www(nv+4, n)  = szz(nv)*sy2(n)
         www(nv+8, n)  = szz(nv)*sy3(n)
@@ -1725,7 +1725,7 @@ END SUBROUTINE depose_rho_vecHVv3_3_3_3
 !> @param[in] lvect vector length
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv4_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
-dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) 
+  dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   USE constants
   IMPLICIT NONE
   INTEGER(idp), INTENT (IN)    :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1734,15 +1734,15 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   rho(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   REAL(num), INTENT (IN)       :: xp(np), yp(np), zp(np), w(np)
   REAL(num), INTENT (IN)       :: q, dx, dy, dz, xmin, ymin, zmin
-  
+
   REAL(num), DIMENSION(:, :), ALLOCATABLE:: rhocells
   INTEGER(idp), DIMENSION(lvect) :: ICELL
   INTEGER(idp) :: NCELLS
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint(1:lvect), oxint, oyint, ozint, xintsq, &
-  yintsq, zintsq, oxintsq, oyintsq, ozintsq 
+  yintsq, zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, invvol, wq0, wq
   REAL(num) :: sx1(lvect), sx2(lvect), sx3(lvect), sx4(lvect), sy1, sy2, sy3, sy4,    &
-  sz1, sz2, sz3, sz4, w1, w2 
+  sz1, sz2, sz3, sz4, w1, w2
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp):: ic, igrid, j, k, l, n, ip, nv, nn
   INTEGER(idp) :: nnx, nnxy
@@ -1750,7 +1750,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   REAL(num):: www1(lvect, 8), www2(lvect, 8)
   INTEGER(idp) :: orig, jorig, korig, lorig
   INTEGER(idp) :: ncx, ncy, ncxy, ncz, ix, iy, iz, ngridx, ngridy, ngx, ngxy
-  
+
   ! Init parameters
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1770,10 +1770,10 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! FIRST LOOP: computes cell index of particle and their weight on vertices
   DO ip=1, np, lvect
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
@@ -1783,7 +1783,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
     !IBM* ALIGN(64, xp, yp, zp, w, sx1, sx2, sx3, sx4, ICELL, www1, www2)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP SIMD
@@ -1858,7 +1858,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
     DO n=1, MIN(lvect, np-ip+1)
       ! --- add charge density contributions to vertices of the current cell
       ic=ICELL(n)
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED rhocells:64, www1:64, www2:64
@@ -1866,7 +1866,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
       !IBM* ALIGN(64, rhocells, www1, www2)
 #endif
 #endif
-      
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1886,7 +1886,7 @@ dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
         rhocells(nv, ic-ncx+1) = rhocells(nv, ic-ncx+1) + w1*sx3(n)
         !Loop on (i=1, j, k)
         rhocells(nv, ic-ncx+2) = rhocells(nv, ic-ncx+2) + w1*sx4(n)
-        
+
         w2=www2(n, nv)
         ! Loop on (i=-1, j, k)
         rhocells(nv, ic+ncx-1) = rhocells(nv, ic+ncx-1) + w2*sx1(n)
@@ -1968,7 +1968,7 @@ END SUBROUTINE depose_rho_vecHVv4_3_3_3
 !> @param[in] l4symtry
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_rho_n(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz,  &
-nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)  
+  nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
@@ -1978,38 +1978,38 @@ nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symt
   REAL(num) :: q, dx, dy, dz, xmin, ymin, zmin
   LOGICAL(lp) :: l_particles_weight, l4symtry
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
-  zintsq, oxintsq, oyintsq, ozintsq 
+  zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, wq, invvol
   REAL(num) :: sx(-int(nox/2):int((nox+1)/2)), sy(-int(noy/2):int((noy+1)/2)),        &
-  sz(-int(noz/2):int((noz+1)/2))  
+  sz(-int(noz/2):int((noz+1)/2))
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, ip, jj, kk, ll, ixmin, ixmax, iymin, iymax, izmin, izmax
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
   invvol = dxi*dyi*dzi
-  
+
   ixmin = -int(nox/2)
   ixmax = int((nox+1)/2)
   iymin = -int(noy/2)
   iymax = int((noy+1)/2)
   izmin = -int(noz/2)
   izmax = int((noz+1)/2)
-  
+
   DO ip=1, np
-    
+
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
-    
+
     ! --- applies 4-fold symmetry
     IF (l4symtry) THEN
       x=abs(x)
       y=abs(y)
     END IF
-    
+
     ! --- finds node of cell containing particles for current positions
     ! --- (different for odd/even spline orders)
     IF (nox==2*(nox/2)) THEN
@@ -2027,19 +2027,19 @@ nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symt
     ELSE
       l=floor(z)
     END IF
-    
+
     ! --- computes distance between particle and node for current positions
     xint = x-j
     yint = y-k
     zint = z-l
-    
+
     ! --- computes particles "weights"
     IF (l_particles_weight) THEN
       wq=q*w(ip)*invvol
     ELSE
       wq=q*invvol*w(1)
     ENDIF
-    
+
     ! --- computes coefficients for node centered quantities
     SELECT CASE(nox)
     CASE(0)
@@ -2061,7 +2061,7 @@ nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symt
       sx( 1) = twothird-oxintsq*(1.0_num-oxint/2.0_num)
       sx( 2) = onesixth*xintsq*xint
     END SELECT
-    
+
     SELECT CASE(noy)
     CASE(0)
       sy( 0) = 1.0_num
@@ -2082,7 +2082,7 @@ nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symt
       sy( 1) = twothird-oyintsq*(1.0_num-oyint/2.0_num)
       sy( 2) = onesixth*yintsq*yint
     END SELECT
-    
+
     SELECT CASE(noz)
     CASE(0)
       sz( 0) = 1.0_num
@@ -2103,7 +2103,7 @@ nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symt
       sz( 1) = twothird-ozintsq*(1.0_num-ozint/2.0_num)
       sz( 2) = onesixth*zintsq*zint
     END SELECT
-    
+
     ! --- add charge density contributions
     DO ll = izmin, izmax
       DO kk = iymin, iymax

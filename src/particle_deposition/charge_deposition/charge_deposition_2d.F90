@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -46,7 +46,7 @@
 !> Creation 2016
 ! ________________________________________________________________________________________
 subroutine pxr_depose_rho_n_2dxz(rho, np, xp, yp, zp, w, q, xmin, zmin, dx, dz, nx,   &
-nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_depose)   
+  nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_depose)
   use constants
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard, type_rz_depose
@@ -55,29 +55,29 @@ nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_de
   real(num), dimension(np) :: xp, yp, zp, w
   real(num) :: q, dx, dz, xmin, zmin
   LOGICAL(lp)  :: l_particles_weight, l4symtry, l_2drz
-  
-  real(num) :: dxi, dzi, xint, zint, oxint, ozint, xintsq, zintsq, oxintsq, ozintsq 
+
+  real(num) :: dxi, dzi, xint, zint, oxint, ozint, xintsq, zintsq, oxintsq, ozintsq
   real(num) :: x, z, r, wq, invvol
-  real(num) :: sx(-int(nox/2):int((nox+1)/2)), sz(-int(noz/2):int((noz+1)/2)) 
+  real(num) :: sx(-int(nox/2):int((nox+1)/2)), sz(-int(noz/2):int((noz+1)/2))
   real(num), parameter :: onesixth=1./6., twothird=2./3.
   integer(idp) :: j, l, ip, jj, ll, ixmin, ixmax, izmin, izmax
-  
+
   dxi = 1./dx
   dzi = 1./dz
   invvol = dxi*dzi
-  
+
   ! Davoine method : limited to order 1 in r
   if (type_rz_depose==2) then
     nox = 1
   endif
-  
+
   ixmin = -int(nox/2)
   ixmax = int((nox+1)/2)
   izmin = -int(noz/2)
   izmax = int((noz+1)/2)
-  
+
   do ip=1, np
-    
+
     ! --- computes current position in grid units
     if (l_2drz) then
       r = sqrt(xp(ip)*xp(ip)+yp(ip)*yp(ip))
@@ -87,12 +87,12 @@ nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_de
       x = (xp(ip)-xmin)*dxi
       z = (zp(ip)-zmin)*dzi
     end if
-    
+
     ! --- applies 4-fold symmetry
     if (l4symtry) then
       x=abs(x)
     end if
-    
+
     ! --- finds node of cell containing particles for current positions
     ! --- (different for odd/even spline orders)
     if (nox==2*(nox/2)) then
@@ -105,18 +105,18 @@ nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_de
     else
       l=floor(z)
     end if
-    
+
     ! --- computes distance between particle and node for current positions
     xint = x-j
     zint = z-l
-    
+
     ! --- computes particles "weights"
     if (l_particles_weight) then
       wq=q*w(ip)*invvol
     else
       wq=q*invvol
     end if
-    
+
     ! --- computes coefficients for node centered quantities
     if (type_rz_depose == 2) then! Davoine method, modified particle shapes in r
       sx(0) = 1. - xint  + 1./(4*j+2)*( -xint + xint**2 )
@@ -143,7 +143,7 @@ nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_de
         sx( 2) = onesixth*xintsq*xint
       end select
     endif
-    
+
     select case(noz)
     case(0)
       sz( 0) = 1.
@@ -164,16 +164,16 @@ nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_de
       sz( 1) = twothird-ozintsq*(1.-ozint/2)
       sz( 2) = onesixth*zintsq*zint
     end select
-    
+
     ! --- add charge density contributions
     do ll = izmin, izmax
       do jj = ixmin, ixmax
         rho(j+jj, 0, l+ll)=rho(j+jj, 0, l+ll)+sx(jj)*sz(ll)*wq
       end do
     end do
-    
+
   end do
-  
+
   return
 end subroutine pxr_depose_rho_n_2dxz
 
@@ -188,8 +188,8 @@ end subroutine pxr_depose_rho_n_2dxz
 !> Creation 2016
 ! ________________________________________________________________________________________
 subroutine pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q,     &
-xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, l_particles_weight,       &
-l4symtry)   
+  xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, l_particles_weight,       &
+  l4symtry)
   use constants
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -198,57 +198,57 @@ l4symtry)
   real(num), dimension(np) :: xp, zp, w, ux, uy, uz, gaminv
   real(num) :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp) :: l_particles_weight, l4symtry
-  
-  real(num) :: dxi, dzi, xint, zint, oxint, ozint, xintsq, zintsq, oxintsq, ozintsq 
-  real(num) :: xintold, zintold, oxintold, ozintold 
+
+  real(num) :: dxi, dzi, xint, zint, oxint, ozint, xintsq, zintsq, oxintsq, ozintsq
+  real(num) :: xintold, zintold, oxintold, ozintold
   real(num) :: x, z, xold, zold, wq, invvol, vx, vy, vz
-  real(num) :: sx(-int(nox/2):int((nox+1)/2)), sz(-int(noz/2):int((noz+1)/2)) 
-  real(num) :: sxold(-int(nox/2):int((nox+1)/2)), szold(-int(noz/2):int((noz+1)/2)) 
+  real(num) :: sx(-int(nox/2):int((nox+1)/2)), sz(-int(noz/2):int((noz+1)/2))
+  real(num) :: sxold(-int(nox/2):int((nox+1)/2)), szold(-int(noz/2):int((noz+1)/2))
   real(num), parameter :: onesixth=1./6., twothird=2./3.
   integer(idp) :: j, l, ip, jj, ll, jold, lold, ixmin, ixmax, izmin, izmax, ndt, idt
   real(num) :: dxp, dzp, x0, z0, x1, z1
-  
+
   dxi = 1./dx
   dzi = 1./dz
   invvol = dxi*dzi
-  
+
   ixmin = -int(nox/2)
   ixmax = int((nox+1)/2)
   izmin = -int(noz/2)
   izmax = int((noz+1)/2)
   ndt = 1
-  
+
   do ip=1, np
-    
+
     vx = ux(ip)*gaminv(ip)
     vy = uy(ip)*gaminv(ip)
     vz = uz(ip)*gaminv(ip)
-    
+
     x1 = (xp(ip)-xmin)*dxi
     z1 = (zp(ip)-zmin)*dzi
     x0 = x1 - vx*dt*dxi
     z0 = z1 - vz*dt*dzi
-    
+
     dxp=(x1-x0)/ndt
     dzp=(z1-z0)/ndt
-    
+
     xold=x0
     zold=z0
-    
+
     do idt=1, ndt
-      
+
       if (idt>1) then
         xold=x
         zold=z
       end if
       x=xold+dxp
       z=zold+dzp
-      
+
       if (l4symtry) then
         x=abs(x)
         xold=abs(xold)
       end if
-      
+
       ! --- finds node of cell containing particles for current positions
       ! --- (different for odd/even spline orders)
       if (nox==2*(nox/2)) then
@@ -261,7 +261,7 @@ l4symtry)
       else
         l=floor(z)
       end if
-      
+
       if (nox==2*(nox/2)) then
         jold=nint(xold)
       else
@@ -272,18 +272,18 @@ l4symtry)
       else
         lold=floor(zold)
       end if
-      
+
       xint = x-j
       zint = z-l
       xintold = xold-jold
       zintold = zold-lold
-      
+
       if (l_particles_weight) then
         wq=q*w(ip)*invvol
       else
         wq=q*w(1)*invvol
       end if
-      
+
       select case(nox)
       case(0)
         sxold( 0) = 1.
@@ -304,7 +304,7 @@ l4symtry)
         sxold( 1) = twothird-oxintsq*(1.-oxintold/2)
         sxold( 2) = onesixth*xintsq*xintold
       end select
-      
+
       select case(noz)
       case(0)
         szold( 0) = 1.
@@ -325,7 +325,7 @@ l4symtry)
         szold( 1) = twothird-ozintsq*(1.-ozintold/2)
         szold( 2) = onesixth*zintsq*zintold
       end select
-      
+
       select case(nox)
       case(0)
         sx( 0) = 1.
@@ -346,7 +346,7 @@ l4symtry)
         sx( 1) = twothird-oxintsq*(1.-oxint/2)
         sx( 2) = onesixth*xintsq*xint
       end select
-      
+
       select case(noz)
       case(0)
         sz( 0) = 1.
@@ -367,17 +367,17 @@ l4symtry)
         sz( 1) = twothird-ozintsq*(1.-ozint/2)
         sz( 2) = onesixth*zintsq*zint
       end select
-      
+
       do ll = izmin, izmax
         do jj = ixmin, ixmax
-          
+
           rhoold(jold+jj, 0, lold+ll) = rhoold(jold+jj, 0, lold+ll) +                 &
           sxold(jj)*szold(ll)*wq
-          
+
         end do
       end do
     end do
   end do
-  
+
   return
 end subroutine pxr_depose_rhoold_n_2dxz
