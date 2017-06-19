@@ -56,7 +56,7 @@ def correct_indentation(input_file,output_file,indent_block):
 	pattern_block_start="^\s*(DO|SUBROUTINE|MODULE|PROGRAM|IF.*THEN|FUNCTION|SELECT|INTERFACE|TYPE ).*"
 	pattern_block_end="^\s*(END |ENDDO|ENDIF|END$|END\!)"
 	pattern_block_intermediate="^\s*(CASE|ELSE)"
-	pattern_no_trailing_spaces="^\s*(.*)"
+	pattern_no_trailing_spaces="^\s*(.*)(?<=\S)\s*$"
 	pattern_comp_directive="^#"
 	# -- Sequentially go through input list of lines to identify blocks to indent 
 	# - Some init first 
@@ -69,7 +69,9 @@ def correct_indentation(input_file,output_file,indent_block):
 		match_block_intermediate  =re.search(pattern_block_intermediate,line,re.IGNORECASE)
 		match_block_end  =re.search(pattern_block_end,line,re.IGNORECASE)
 		match_block_comp_dir=re.search(pattern_comp_directive,line,re.IGNORECASE)
-		if match_block_start is not None: # Current line starts a Fortran block		
+		if match_line_no_space is None: # Line contains only spaces; replace with empty line
+			listlines_output.append("\n")
+		elif match_block_start is not None: # Current line starts a Fortran block		
 			nwspaces=' ' * curr_indent
 			listlines_output.append(nwspaces+match_line_no_space.group(1)+"\n")
 			curr_indent+=indent_block
@@ -138,7 +140,7 @@ listfiles=["modules/modules.F90", \
            "diags/diags.F90", \
            "submain.F90", \
            "parallelization/mpi/mpi_routines.F90",\
-           "initilization/control_file.F90", \
+           "initialization/control_file.F90", \
            "housekeeping/load_balancing.F90"]
 
 for file in listfiles: 
