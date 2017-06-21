@@ -4,7 +4,7 @@
 !> called in the main loop (see. submain.F90)
 !
 !> @details
-!> This subroutine calls subroutines for the laser pusher 
+!> This subroutine calls subroutines for the laser pusher
 !
 !> @author
 !> H. Vincenti
@@ -25,17 +25,17 @@ SUBROUTINE push_laser_particles
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                       :: tdeb, tend, real_time
   INTEGER(idp)                    :: nxc, nyc, nzc
-  
+
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles: start"
 #endif
   real_time=it*dt
-  
+
   IF (nspecies .EQ. 0_idp) RETURN
   tdeb=MPI_WTIME()
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, npid, dt, real_time) PRIVATE(ix,    &
-  !$OMP iy, iz, ispecies, curr, curr_tile, count)  
+  !$OMP iy, iz, ispecies, curr, curr_tile, count)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -55,7 +55,7 @@ SUBROUTINE push_laser_particles
           curr%antenna_params%polvector2, curr%antenna_params%k0_laser,               &
           curr%antenna_params%q_z, curr%antenna_params%laser_tau, real_time,          &
           curr%antenna_params%t_peak, curr%antenna_params%temporal_order,             &
-          curr%antenna_params%polangle)                
+          curr%antenna_params%polangle)
         END DO! END LOOP ON SPECIES
       END DO
     END DO
@@ -79,8 +79,8 @@ END SUBROUTINE push_laser_particles
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE laserp_pusher(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,      &
-lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, laser_tau,          &
-real_time, t_peak, temporal_order, polangle)  
+  lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, laser_tau,          &
+  real_time, t_peak, temporal_order, polangle)
   USE shared_data
   USE omp_lib
   USE constants
@@ -100,27 +100,27 @@ real_time, t_peak, temporal_order, polangle)
   REAL(num), INTENT(IN)                   :: dtt
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
   REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, laser_tau,  &
-  real_time, t_peak, polangle 
+  real_time, t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order
   INTEGER(idp)                            :: n, nn, ip, i, j, k, blocksize
   REAL(num), DIMENSION(3)                 :: amp
   REAL(num)                               :: xx, yy, clightsq, usq, coeff_ampli,      &
   disp_max
-  
+
   disp_max   = 0.01_num*clight
   coeff_ampli = disp_max / emax
   clightsq = 1._num/clight**2
-  
+
   !____________________________________________________________________________
   ! Loop on block of particles of size lvect
   DO ip=1, np, lvect
     blocksize = MIN(lvect, np-ip+1)
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef defined __IBMBGQ__
     !IBM* ALIGN(64, xp, yp, zp)
@@ -134,20 +134,20 @@ real_time, t_peak, temporal_order, polangle)
     !!DIR DISTRIBUTE POINT
 #endif
     DO n=1, blocksize
-      
+
       nn=ip+n-1
       xx = pid(nn, 2)
       yy = pid(nn, 3)
       CALL gaussian_profile(xx, yy, amp, emax, emax1, emax2, polvector1, polvector2,  &
-      k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle) 
-      ! --- Update particle momenta based on laser electric field 
+      k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
+      ! --- Update particle momenta based on laser electric field
       uxp(nn) = amp(1)*coeff_ampli
       uyp(nn) = amp(2)*coeff_ampli
       uzp(nn) = amp(3)*coeff_ampli
-      ! --- Update gaminv 
+      ! --- Update gaminv
       gaminv(nn) = 1.0_num
       ! --- Push x, y, z
-      xp(nn)  = xp(nn) + dt*uxp(nn)! + dt*source_v(1) 
+      xp(nn)  = xp(nn) + dt*uxp(nn)! + dt*source_v(1)
       yp(nn)  = yp(nn) + dt*uyp(nn)! + dt*source_v(2)
       zp(nn)  = zp(nn) + dt*uzp(nn)! + dt*source_v(3)
     ENDDO
@@ -156,7 +156,7 @@ END SUBROUTINE laserp_pusher
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Subroutine for computing gaussian laser profile in time and space 
+!> Subroutine for computing gaussian laser profile in time and space
 !
 !> @author
 !> Haithem Kallala
@@ -164,7 +164,7 @@ END SUBROUTINE laserp_pusher
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE gaussian_profile(xx, yy, amp, emax, emax1, emax2, polvector1, polvector2,  &
-k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle) 
+  k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
   USE shared_data
   USE omp_lib
   USE constants
@@ -174,7 +174,7 @@ k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
   REAL(num), DIMENSION(3), INTENT(INOUT) :: amp
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
   REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, laser_tau,  &
-  real_time, t_peak, polangle 
+  real_time, t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
   REAL(num), INTENT(IN)                   :: xx, yy
   INTEGER(idp), INTENT(IN)                :: temporal_order
@@ -183,10 +183,10 @@ k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
   INTEGER(idp)                            :: i
   j=(0., 1.)
   u1 = j*k0_laser*clight*(real_time-t_peak)- j*k0_laser*(xx**2+yy**2)/(2*q_z) -       &
-  ((real_time - t_peak )/laser_tau)**temporal_order 
-  
+  ((real_time - t_peak )/laser_tau)**temporal_order
+
   u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
-  ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2_num*pi 
+  ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2_num*pi
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
   DO i=1, 3

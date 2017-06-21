@@ -1,14 +1,14 @@
-  ! ______________________________________________________________________________________
+! ______________________________________________________________________________________
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
 ! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
 ! If you have questions about your rights to use or distribute this software,
- ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -48,7 +48,7 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 MODULE particle_boundary
-  
+
   USE shared_data
   USE fields
   USE particles
@@ -57,11 +57,11 @@ MODULE particle_boundary
   USE constants
   USE time_stat
   USE params
-  
+
   IMPLICIT NONE
-  
+
   CONTAINS
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition routine on particles in 3d
@@ -85,23 +85,23 @@ MODULE particle_boundary
 #endif
     USE time_stat
     IMPLICIT NONE
-    
+
     REAL(num) :: tdeb, tend
     REAL(num) :: tmptime
-    
+
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
     tdeb=MPI_WTIME()
-    
+
     ! ___________________________________________
     ! Tile and MPI exchanges are done separately without OpenMP
     IF (partcom.eq.2) THEN
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_tiles: start"
 #endif
-      
+
       SELECT CASE (c_dim)
         ! __________________________
         ! 2D
@@ -112,37 +112,37 @@ MODULE particle_boundary
       CASE DEFAULT
         CALL particle_bcs_tiles()
       END SELECT
-      
+
       IF (it.ge.timestat_itstart) THEN
         localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
       tend = MPI_WTIME()
       local_time_part=local_time_part+(tend-tdeb)
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_mpi: start"
 #endif
-      
+
       IF (mpicom_curr .EQ. 1) THEN
         ! Then exchange particle between MPI domains
         CALL particle_bcs_mpi_blocking()
       ELSE
         CALL particle_bcs_mpi_non_blocking()
       ENDIF
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_mpi: stop"
 #endif
-      
+
       IF (it.ge.timestat_itstart) THEN
         localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
       ENDIF
-      
+
       ! ___________________________________________
       ! OpenMP and MPI exchanges are done separately
     ELSE IF (partcom.eq.1) THEN
-      
+
       ! First exchange particles between tiles (NO MPI at that point)
 #if defined(DEBUG)
 #ifdef _OPENMP
@@ -172,14 +172,14 @@ MODULE particle_boundary
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_tiles: stop"
 #endif
-      
+
       IF (it.ge.timestat_itstart) THEN
         localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
       tend = MPI_WTIME()
       local_time_part=local_time_part+(tend-tdeb)
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_mpi: start"
 #endif
@@ -189,60 +189,60 @@ MODULE particle_boundary
       ELSE
         CALL particle_bcs_mpi_non_blocking()
       ENDIF
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_mpi: stop"
 #endif
-      
+
       IF (it.ge.timestat_itstart) THEN
         localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
       ENDIF
-      
+
       ! _____________________________________________
       ! Tile and MPI com in one
       ! Default
     ELSE
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_tiles_and_mpi: start"
 #endif
-      
+
       IF (it.ge.timestat_itstart) THEN
         tmptime = MPI_WTIME()
       ENDIF
-      
+
       SELECT CASE (c_dim)
         ! __________________________
         ! 2D
       CASE(2)
-        
+
 #ifdef _OPENMP
         CALL particle_bcs_tiles_2d_openmp()
 #else
         CALL particle_bcs_tiles_2d()
 #endif
-        
+
         CALL particle_bcs_mpi_non_blocking_2d()
-        
+
         ! __________________________
         ! 3D
       CASE DEFAULT
-        
+
         CALL particle_bcs_tiles_and_mpi_3d
-        
+
       END SELECT
-      
+
       IF (it.ge.timestat_itstart) THEN
         localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
       ENDIF
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_tiles_and_mpi: stop"
 #endif
     ENDIF
-    
+
   END SUBROUTINE particle_bcs
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition routine on particles in 2d
@@ -259,17 +259,17 @@ MODULE particle_boundary
 #endif
     USE time_stat
     USE tiling
-    
+
     IMPLICIT NONE
     REAL(num) :: tdeb, tend
     REAL(num) :: tmptime
     tmptime = MPI_WTIME()
     tdeb=MPI_WTIME()
-    
+
     ! ___________________________________________
     ! OpenMP and MPI exchanges are done separately
     IF (partcom.eq.1) THEN
-      
+
       ! First exchange particles between tiles (NO MPI at that point)
 #if defined(DEBUG)
 #ifdef _OPENMP
@@ -278,59 +278,59 @@ MODULE particle_boundary
       WRITE(0, *) "particle_bcs_tiles: start"
 #endif
 #endif
-      
+
 #ifdef _OPENMP
       CALL particle_bcs_tiles_2d_openmp()
 #else
       CALL particle_bcs_tiles_2d()
 #endif
-      
+
       localtimes(11) = localtimes(11) + (MPI_WTIME() - tmptime)
       tmptime = MPI_WTIME()
       tend = MPI_WTIME()
       local_time_part=local_time_part+(tend-tdeb)
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_mpi: start"
 #endif
-      
+
       CALL particle_bcs_mpi_non_blocking_2d()
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_mpi: stop"
 #endif
-      
+
       localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
-      
+
       ! _____________________________________________
       ! Tile and MPI com in one
       ! Default
     ELSE
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_tiles_and_mpi: start"
 #endif
-      
+
       tmptime = MPI_WTIME()
-      
+
 #ifdef _OPENMP
       CALL particle_bcs_tiles_2d_openmp()
 #else
       CALL particle_bcs_tiles_2d()
 #endif
-      
+
       CALL particle_bcs_mpi_non_blocking_2d()
-      
+
       localtimes(2) = localtimes(2) + (MPI_WTIME() - tmptime)
-      
+
 #if defined(DEBUG)
       WRITE(0, *) "particle_bcs_tiles_and_mpi: stop"
 #endif
     ENDIF
-    
+
   END SUBROUTINE particle_bcs_2d
-  
-  
+
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition on tiles - 3D version Wihtout OpenMP.
@@ -350,7 +350,7 @@ MODULE particle_boundary
     TYPE(particle_tile), POINTER :: curr_tile
     REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
-    
+
     ALLOCATE(partpid(1:npid))
     DO ispecies=1, nspecies! LOOP ON SPECIES
       curr=> species_parray(ispecies)
@@ -372,13 +372,13 @@ MODULE particle_boundary
               partuz=curr_tile%part_uz(i)
               gaminv=curr_tile%part_gaminv(i)
               partpid=curr_tile%pid(i, 1:npid)
-              
+
               ! Case 1: if particle did not leave tile nothing to do
               IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT.                &
               curr_tile%x_tile_max)) .AND. ((party .GE. curr_tile%y_tile_min) .AND.   &
               (party .LT. curr_tile%y_tile_max)) .AND. ((partz .GE.                   &
-              curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) CYCLE   
-              
+              curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) CYCLE
+
               ! Case 2: if particle left MPI domain nothing to do now
               IF ((partx .LT. x_min_local_part) .OR. (partx .GE. x_max_local_part))   &
               CYCLE
@@ -386,7 +386,7 @@ MODULE particle_boundary
               CYCLE
               IF ((partz .LT. z_min_local_part) .OR. (partz .GE. z_max_local_part))   &
               CYCLE
-              
+
               ! Case 3: particles changed tile. Tranfer particle to new tile
               ! Get new indexes of particle in array of tiles
               indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),       &
@@ -397,7 +397,7 @@ MODULE particle_boundary
               idp)+1, ntilez)
               CALL rm_particle_at_tile(curr, ix, iy, iz, i)
               CALL add_particle_at_tile(curr, indx, indy, indz, partx, party, partz,  &
-              partux, partuy, partuz, gaminv, partpid) 
+              partux, partuy, partuz, gaminv, partpid)
             END DO!END LOOP ON PARTICLES
           END DO
         END DO
@@ -405,7 +405,7 @@ MODULE particle_boundary
     END DO! END LOOP ON SPECIES
     DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles
-  
+
   ! ______________________________________________________________________________________
   !> Boundary condition on tiles - 3D version with OpenMP
   !> @brief
@@ -432,7 +432,7 @@ MODULE particle_boundary
     REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
     INTEGER(idp) :: nthreads_tot, nthreads_loop1, nthreads_loop2
-    
+
 #ifdef _OPENMP
     nthreads_tot=OMP_GET_MAX_THREADS()
     !nthreads_tot=OMP_GET_NUM_THREADS()
@@ -440,7 +440,7 @@ MODULE particle_boundary
 #else
     nthreads_tot=1
 #endif
-    
+
     IF (nthreads_tot .GT. 1) THEN
       nthreads_loop1=MIN(nspecies, nthreads_tot)
       nthreads_loop2=MAX(1_idp, nthreads_tot/nthreads_loop1)
@@ -448,7 +448,7 @@ MODULE particle_boundary
       nthreads_loop1=1
       nthreads_loop2=1
     ENDIF
-    
+
     ALLOCATE(partpid(npid))
     !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, ispecies, nx0_grid_tile,            &
     !$OMP ny0_grid_tile, nz0_grid_tile, ipx, ipy, ipz, partx, party, partz, partux,   &
@@ -456,7 +456,7 @@ MODULE particle_boundary
     !$OMP SHARED(nspecies, npid, nthreads_loop2, species_parray, ntilex, ntiley,      &
     !$OMP ntilez, x_min_local, y_min_local, z_min_local, x_min_local_part,            &
     !$OMP y_min_local_part, z_min_local_part, x_max_local_part, y_max_local_part,     &
-    !$OMP z_max_local_part, dx, dy, dz) NUM_THREADS(nthreads_loop1)    
+    !$OMP z_max_local_part, dx, dy, dz) NUM_THREADS(nthreads_loop1)
     DO ispecies=1, nspecies! LOOP ON SPECIES
       curr=> species_parray(ispecies)
       ! Get first tiles dimensions (may be different from last tile)
@@ -473,7 +473,7 @@ MODULE particle_boundary
             !$OMP ny0_grid_tile, nz0_grid_tile) FIRSTPRIVATE(ipx, ipy, ipz)           &
             !$OMP PRIVATE(ix, iy, iz, i, curr_tile, nptile, partx, party, partz,      &
             !$OMP partux, partuy, partuz, gaminv, partpid, indx, indy, indz)          &
-            !$OMP COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)     
+            !$OMP COLLAPSE(3) SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
             DO iz=ipz, ntilez, 3! LOOP ON TILES
               DO iy=ipy, ntiley, 3
                 DO ix=ipx, ntilex, 3
@@ -488,14 +488,14 @@ MODULE particle_boundary
                     partuz=curr_tile%part_uz(i)
                     gaminv=curr_tile%part_gaminv(i)
                     partpid=curr_tile%pid(i, 1:npid)
-                    
+
                     ! Case 1: if particle did not leave tile nothing to do
                     IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT.          &
                     curr_tile%x_tile_max)) .AND. ((party .GE. curr_tile%y_tile_min)   &
                     .AND. (party .LT. curr_tile%y_tile_max)) .AND. ((partz .GE.       &
                     curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max)))   &
-                    CYCLE   
-                    
+                    CYCLE
+
                     ! Case 2: if particle left MPI domain nothing to do now
                     IF ((partx .LT. x_min_local_part) .OR. (partx .GE.                &
                     x_max_local_part)) CYCLE
@@ -503,7 +503,7 @@ MODULE particle_boundary
                     y_max_local_part)) CYCLE
                     IF ((partz .LT. z_min_local_part) .OR. (partz .GE.                &
                     z_max_local_part)) CYCLE
-                    
+
                     ! Case 3: particles changed tile. Tranfer particle to new tile
                     ! Get new indexes of particle in array of tiles
                     indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx), &
@@ -515,7 +515,7 @@ MODULE particle_boundary
                     idp)+1, ntilez)
                     CALL rm_particle_at_tile(curr, ix, iy, iz, i)
                     CALL add_particle_at_tile(curr, indx, indy, indz, partx, party,   &
-                    partz, partux, partuy, partuz, gaminv, partpid) 
+                    partz, partux, partuy, partuz, gaminv, partpid)
                   END DO!END LOOP ON PARTICLES
                 END DO
               END DO
@@ -528,7 +528,7 @@ MODULE particle_boundary
     !$OMP END PARALLEL DO
     DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_openmp
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition on tiles - 2D version without OpenMP
@@ -547,7 +547,7 @@ MODULE particle_boundary
     TYPE(particle_tile), POINTER :: curr_tile
     REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
-    
+
     ALLOCATE(partpid(npid))
     iy=1
     DO ispecies=1, nspecies! LOOP ON SPECIES
@@ -568,18 +568,18 @@ MODULE particle_boundary
             partuz=curr_tile%part_uz(i)
             gaminv=curr_tile%part_gaminv(i)
             partpid=curr_tile%pid(i, 1:npid)
-            
+
             ! Case 1: if particle did not leave tile nothing to do
             IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT.                  &
             curr_tile%x_tile_max)) .AND. ((partz .GE. curr_tile%z_tile_min) .AND.     &
-            (partz .LT. curr_tile%z_tile_max))) CYCLE  
-            
+            (partz .LT. curr_tile%z_tile_max))) CYCLE
+
             ! Case 2: if particle left MPI domain nothing to do now
             IF ((partx .LT. x_min_local_part) .OR. (partx .GE. x_max_local_part))     &
             CYCLE
             IF ((partz .LT. z_min_local_part) .OR. (partz .GE. z_max_local_part))     &
             CYCLE
-            
+
             ! Case 3: particles changed tile. Tranfer particle to new tile
             ! Get new indexes of particle in array of tiles
             indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx), idp)+1, &
@@ -588,14 +588,14 @@ MODULE particle_boundary
             idp)+1, ntilez)
             CALL rm_particle_at_tile(curr, ix, iy, iz, i)
             CALL add_particle_at_tile(curr, indx, iy, indz, partx, party, partz,      &
-            partux, partuy, partuz, gaminv, partpid) 
+            partux, partuy, partuz, gaminv, partpid)
           END DO!END LOOP ON PARTICLES
         END DO
       END DO! END LOOP ON TILES
     END DO! END LOOP ON SPECIES
     DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_2d
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Boundary condition on tiles - 2D version with OpenMP
@@ -610,7 +610,7 @@ MODULE particle_boundary
   !> @date
   !> 2016
   ! ______________________________________________________________________________________
-  SUBROUTINE particle_bcs_tiles_2d_openmp    
+  SUBROUTINE particle_bcs_tiles_2d_openmp
 #ifdef _OPENMP
     USE omp_lib
 #endif
@@ -622,14 +622,14 @@ MODULE particle_boundary
     REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
     INTEGER(idp) :: nthreads_tot, nthreads_loop1, nthreads_loop2
-    
+
 #ifdef _OPENMP
     nthreads_tot=OMP_GET_MAX_THREADS()
     CALL OMP_SET_NESTED(.TRUE.)
 #else
     nthreads_tot=1
 #endif
-    
+
     IF (nthreads_tot .GT. 1) THEN
       nthreads_loop1=MIN(nspecies, nthreads_tot)
       nthreads_loop2=MAX(1_idp, nthreads_tot/nthreads_loop1)
@@ -645,7 +645,7 @@ MODULE particle_boundary
     !$OMP SHARED(iy, nspecies, npid, nthreads_loop2, species_parray, ntilex, ntiley,  &
     !$OMP ntilez, x_min_local, y_min_local, z_min_local, x_min_local_part,            &
     !$OMP y_min_local_part, z_min_local_part, x_max_local_part, y_max_local_part,     &
-    !$OMP z_max_local_part, dx, dy, dz) NUM_THREADS(nthreads_loop1)     
+    !$OMP z_max_local_part, dx, dy, dz) NUM_THREADS(nthreads_loop1)
     DO ispecies=1, nspecies! LOOP ON SPECIES
       curr=> species_parray(ispecies)
       ! Get first tiles dimensions (may be different from last tile)
@@ -661,7 +661,7 @@ MODULE particle_boundary
           !$OMP nz0_grid_tile) FIRSTPRIVATE(ipx, ipz) PRIVATE(ix, iz, i, curr_tile,   &
           !$OMP nptile, partx, party, partz, partux, partuy, partuz, gaminv, partpid, &
           !$OMP indx, indy, indz) COLLAPSE(2) SCHEDULE(runtime)                       &
-          !$OMP NUM_THREADS(nthreads_loop2)      
+          !$OMP NUM_THREADS(nthreads_loop2)
           DO iz=ipz, ntilez, 3! LOOP ON TILES
             DO ix=ipx, ntilex, 3
               curr_tile=>curr%array_of_tiles(ix, iy, iz)
@@ -675,18 +675,18 @@ MODULE particle_boundary
                 partuz=curr_tile%part_uz(i)
                 gaminv=curr_tile%part_gaminv(i)
                 partpid=curr_tile%pid(i, 1:npid)
-                
+
                 ! Case 1: if particle did not leave tile nothing to do
                 IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT.              &
                 curr_tile%x_tile_max)) .AND. ((partz .GE. curr_tile%z_tile_min) .AND. &
-                (partz .LT. curr_tile%z_tile_max))) CYCLE  
-                
+                (partz .LT. curr_tile%z_tile_max))) CYCLE
+
                 ! Case 2: if particle left MPI domain nothing to do now
                 IF ((partx .LT. x_min_local_part) .OR. (partx .GE. x_max_local_part)) &
                 CYCLE
                 IF ((partz .LT. z_min_local_part) .OR. (partz .GE. z_max_local_part)) &
                 CYCLE
-                
+
                 ! Case 3: particles changed tile. Tranfer particle to new tile
                 ! Get new indexes of particle in array of tiles
                 indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),     &
@@ -698,7 +698,7 @@ MODULE particle_boundary
                 !CALL add_particle_at_tile(curr, indx, iy, indz, &
                 !   partx, party, partz, partux, partuy, partuz, gaminv, partpid)
                 CALL add_particle_at_tile_2d(curr, indx, indz, partx, partz, partux,  &
-                partuy, partuz, gaminv, partpid) 
+                partuy, partuz, gaminv, partpid)
               END DO!END LOOP ON PARTICLES
             END DO
           END DO! END LOOP ON TILES
@@ -709,7 +709,7 @@ MODULE particle_boundary
     !$OMP END PARALLEL DO
     DEALLOCATE(partpid)
   END SUBROUTINE particle_bcs_tiles_2d_openmp
-  
+
   ! Experimental subroutine
 #if defined(DEV)
   ! ______________________________________________________________________________________
@@ -723,13 +723,13 @@ MODULE particle_boundary
   ! Mathieu Lobet, 2016
   ! ______________________________________________________________________________________
   SUBROUTINE particle_bsc_openmp_reordering
-    
+
 #ifdef _OPENMP
     USE omp_lib
 #endif
     USE communications
     IMPLICIT NONE
-    
+
     INTEGER(idp) :: i, is, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
     INTEGER(idp) :: nptile, nx0_grid_tile, ny0_grid_tile, nz0_grid_tile
     TYPE(particle_species), POINTER :: curr
@@ -741,16 +741,16 @@ MODULE particle_boundary
     INTEGER(idp) :: k, ib
     INTEGER(idp) :: ipmin, ipmax
     type(part_com_buffer), ALLOCATABLE, DIMENSION(:, :, :, :) :: buffer
-    
-    
+
+
 #ifdef _OPENMP
     nthreads_tot=OMP_GET_MAX_THREADS()
     CALL OMP_SET_NESTED(.TRUE.)
 #else
     nthreads_tot=1
 #endif
-    
-    
+
+
     IF (nthreads_tot .GT. 1) THEN
       nthreads_loop1=MIN(nspecies, nthreads_tot)
       nthreads_loop2=MAX(1_idp, nthreads_tot/nthreads_loop1)
@@ -758,17 +758,17 @@ MODULE particle_boundary
       nthreads_loop1=1
       nthreads_loop2=1
     ENDIF
-    
+
     ALLOCATE(buffer(ntilex, ntiley, ntilez, nspecies))
     ALLOCATE(partpid(npid))
-    
+
     !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, is, nx0_grid_tile, ny0_grid_tile,   &
     !$OMP nz0_grid_tile, ipx, ipy, ipz, indx, indy, indz, partpid, ib, k, dirx, diry, &
     !$OMP dirz, partx, party, partz, curr_tile, nptile, partux, partuy, partuz)       &
     !$OMP SHARED(nspecies, npid, nthreads_loop2, species_parray, ntilex, ntiley,      &
     !$OMP ntilez, x_min_local, y_min_local, z_min_local, x_min_local_part,            &
     !$OMP y_min_local_part, z_min_local_part, x_max_local_part, y_max_local_part,     &
-    !$OMP z_max_local_part, dx, dy, dz, buffer) NUM_THREADS(nthreads_loop1)    
+    !$OMP z_max_local_part, dx, dy, dz, buffer) NUM_THREADS(nthreads_loop1)
     DO is=1, nspecies! LOOP ON SPECIES
       curr=> species_parray(is)
       ! Get first tiles dimensions (may be different from last tile)
@@ -786,13 +786,13 @@ MODULE particle_boundary
             !$OMP PRIVATE(ix, iy, iz, i, curr_tile, nptile, partx, party, partz,      &
             !$OMP partux, partuy, partuz, gaminv, partpid, indx, indy, indz, dirx,    &
             !$OMP diry, dirz, ib, k) COLLAPSE(3) SCHEDULE(runtime)                    &
-            !$OMP NUM_THREADS(nthreads_loop2)      
+            !$OMP NUM_THREADS(nthreads_loop2)
             DO iz=ipz, ntilez, 3! LOOP ON TILES
               DO iy=ipy, ntiley, 3
                 DO ix=ipx, ntilex, 3
                   curr_tile=>curr%array_of_tiles(ix, iy, iz)
                   nptile=curr_tile%np_tile(1)
-                  
+
                   ! Temporary array
                   ALLOCATE(buffer(ix, iy, iz, is)%part_x(nptile), buffer(ix, iy, iz,  &
                   is)%part_y(nptile), buffer(ix, iy, iz, is)%part_z(nptile),          &
@@ -801,10 +801,10 @@ MODULE particle_boundary
                   buffer(ix, iy, iz, is)%part_gaminv(nptile), buffer(ix, iy, iz,      &
                   is)%pid(nptile, 1), buffer(ix, iy, iz, is)%boundid(nptile),         &
                   buffer(ix, iy, iz, is)%bin_npart(0:27), buffer(ix, iy, iz,          &
-                  is)%bin_pos(0:27))          
-                  
+                  is)%bin_pos(0:27))
+
                   buffer(ix, iy, iz, is)%bin_npart(:) = 0
-                  
+
                   ! Particle reordering
                   ! Step 1 - determine the number of particles in each bin
                   DO i=1, nptile
@@ -816,79 +816,79 @@ MODULE particle_boundary
                     partuz=curr_tile%part_uz(i)
                     gaminv=curr_tile%part_gaminv(i)
                     partpid=curr_tile%pid(i, 1:npid)
-                    
-                    
+
+
                     ! Case 1: if particle did not leave tile nothing to do
                     IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT.          &
                     curr_tile%x_tile_max)) .AND. ((party .GE. curr_tile%y_tile_min)   &
                     .AND. (party .LT. curr_tile%y_tile_max)) .AND. ((partz .GE.       &
                     curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max)))   &
-                    THEN   
-                    
+                    THEN
+
                     buffer(ix, iy, iz, is)%bin_npart(0) = buffer(ix, iy, iz,          &
-                    is)%bin_npart(0) + 1 
-                    
+                    is)%bin_npart(0) + 1
+
                     buffer(ix, iy, iz, is)%boundid(i) = 0
-                    
+
                     CYCLE
-                    
+
                     ! Case 2: if particle left MPI domain nothing to do now
                   ELSE IF ((partx .LT. x_min_local_part) .OR. (partx .GE.             &
-                  x_max_local_part).AND. (party .LT. y_min_local_part) .OR. (party    &
-                  .GE. y_max_local_part).AND. (partz .LT. z_min_local_part) .OR.      &
-                  (partz .GE. z_max_local_part)) THEN  
-                    
+                    x_max_local_part).AND. (party .LT. y_min_local_part) .OR. (party    &
+                    .GE. y_max_local_part).AND. (partz .LT. z_min_local_part) .OR.      &
+                    (partz .GE. z_max_local_part)) THEN
+
                     buffer(ix, iy, iz, is)%bin_npart(0) = buffer(ix, iy, iz,          &
-                    is)%bin_npart(0) + 1 
-                    
+                    is)%bin_npart(0) + 1
+
                     buffer(ix, iy, iz, is)%boundid(i) = 0
-                    
+
                     CYCLE
-                    
+
                   ENDIF
-                  
+
                   indx = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx),   &
                   idp)+1, ntilex)
                   indy = MIN(FLOOR((party-y_min_local+dy/2_num)/(ny0_grid_tile*dy),   &
                   idp)+1, ntiley)
                   indz = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz),   &
                   idp)+1, ntilez)
-                  
+
                   ! Direction of the particle
                   dirx = indx - ix
                   diry = indy - iy
                   dirz = indz - iz
-                  
+
                   buffer(ix, iy, iz, is)%boundid(i) = (2+dirx) + (1+diry)*3 +         &
                   (1+dirz)*9
-                  
+
                   !if (buffer(ix, iy, iz, is)%boundid(i)>27) then
                   !print*, indx, indy, indz
                   !print*, dirx, diry, dirz
                   !end if
-                  
+
                   buffer(ix, iy, iz, is)%bin_npart(buffer(ix, iy, iz, is)%boundid(i)) &
                   = buffer(ix, iy, iz, is)%bin_npart(buffer(ix, iy, iz,               &
-                  is)%boundid(i)) + 1 
-                  
+                  is)%boundid(i)) + 1
+
                 ENDDO
-                
+
                 ! Particle reordering
                 ! Step 2 - Determine bin positions
                 buffer(ix, iy, iz, is)%bin_pos(0) = 1
                 Do i=1, 27
-                  
-                  
+
+
                   buffer(ix, iy, iz, is)%bin_pos(i) = buffer(ix, iy, iz,              &
-                  is)%bin_pos(i-1) + buffer(ix, iy, iz, is)%bin_npart(i-1) 
+                  is)%bin_pos(i-1) + buffer(ix, iy, iz, is)%bin_npart(i-1)
                 ENDDO
-                
+
                 ! Particle reordering
                 ! Step 3 - reorder the particles
                 DO i=1, nptile
                   ib = buffer(ix, iy, iz, is)%boundid(i)
                   k = buffer(ix, iy, iz, is)%bin_pos(ib)
-                  
+
                   buffer(ix, iy, iz, is)%part_x(k) = curr_tile%part_x(i)
                   buffer(ix, iy, iz, is)%part_y(k) = curr_tile%part_y(i)
                   buffer(ix, iy, iz, is)%part_z(k) = curr_tile%part_z(i)
@@ -897,39 +897,39 @@ MODULE particle_boundary
                   buffer(ix, iy, iz, is)%part_uz(k) = curr_tile%part_uz(i)
                   buffer(ix, iy, iz, is)%part_gaminv(k) = curr_tile%part_gaminv(i)
                   buffer(ix, iy, iz, is)%pid(k, 1:npid) = curr_tile%pid(i, 1:npid)
-                  
+
                   buffer(ix, iy, iz, is)%bin_pos(ib) = buffer(ix, iy, iz,             &
-                  is)%bin_pos(ib) + 1 
+                  is)%bin_pos(ib) + 1
                 ENDDO
-                
+
                 buffer(ix, iy, iz, is)%bin_pos(0) = 1
                 Do i=1, 27
                   buffer(ix, iy, iz, is)%bin_pos(i) = buffer(ix, iy, iz,              &
-                  is)%bin_pos(i-1) + buffer(ix, iy, iz, is)%bin_npart(i-1) 
+                  is)%bin_pos(i-1) + buffer(ix, iy, iz, is)%bin_npart(i-1)
                 ENDDO
-                
+
                 ! Particle that will stay in the domain
                 curr_tile%part_x(1:buffer(ix, iy, iz, is)%bin_npart(0)) = buffer(ix,  &
-                iy, iz, is)%part_x(1:buffer(ix, iy, iz, is)%bin_npart(0)) 
+                iy, iz, is)%part_x(1:buffer(ix, iy, iz, is)%bin_npart(0))
                 curr_tile%part_y(1:buffer(ix, iy, iz, is)%bin_npart(0)) = buffer(ix,  &
-                iy, iz, is)%part_y(1:buffer(ix, iy, iz, is)%bin_npart(0)) 
+                iy, iz, is)%part_y(1:buffer(ix, iy, iz, is)%bin_npart(0))
                 curr_tile%part_z(1:buffer(ix, iy, iz, is)%bin_npart(0)) = buffer(ix,  &
-                iy, iz, is)%part_z(1:buffer(ix, iy, iz, is)%bin_npart(0)) 
+                iy, iz, is)%part_z(1:buffer(ix, iy, iz, is)%bin_npart(0))
                 curr_tile%part_ux(1:buffer(ix, iy, iz, is)%bin_npart(0)) = buffer(ix, &
-                iy, iz, is)%part_ux(1:buffer(ix, iy, iz, is)%bin_npart(0)) 
+                iy, iz, is)%part_ux(1:buffer(ix, iy, iz, is)%bin_npart(0))
                 curr_tile%part_uy(1:buffer(ix, iy, iz, is)%bin_npart(0)) = buffer(ix, &
-                iy, iz, is)%part_uy(1:buffer(ix, iy, iz, is)%bin_npart(0)) 
+                iy, iz, is)%part_uy(1:buffer(ix, iy, iz, is)%bin_npart(0))
                 curr_tile%part_uz(1:buffer(ix, iy, iz, is)%bin_npart(0)) = buffer(ix, &
-                iy, iz, is)%part_uz(1:buffer(ix, iy, iz, is)%bin_npart(0)) 
+                iy, iz, is)%part_uz(1:buffer(ix, iy, iz, is)%bin_npart(0))
                 curr_tile%part_gaminv(1:buffer(ix, iy, iz, is)%bin_npart(0)) =        &
                 buffer(ix, iy, iz, is)%part_gaminv(1:buffer(ix, iy, iz,               &
-                is)%bin_npart(0)) 
+                is)%bin_npart(0))
                 curr_tile%pid(1:buffer(ix, iy, iz, is)%bin_npart(0), 1:npid) =        &
                 buffer(ix, iy, iz, is)%pid(1:buffer(ix, iy, iz, is)%bin_npart(0),     &
-                1:npid) 
-                
+                1:npid)
+
                 curr_tile%np_tile(1) = buffer(ix, iy, iz, is)%bin_npart(0)
-                
+
               END DO
             END DO
           END DO! END LOOP ON TILES
@@ -939,17 +939,17 @@ MODULE particle_boundary
     END DO
   END DO! END LOOP ON SPECIES
   !$OMP END PARALLEL DO
-  
-  
+
+
   ! ______________________________________________________________________________________
   ! Exchange between tiles
   ! Reordered buffer are copied in parallel
-  
+
   !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, is, nx0_grid_tile, ny0_grid_tile,     &
   !$OMP nz0_grid_tile, ipx, ipy, ipz, ib, indx, indy, indz, nptile, ipmin, ipmax,     &
   !$OMP curr_tile) SHARED(nspecies, npid, nthreads_loop2, species_parray, ntilex,     &
   !$OMP ntiley, ntilez, x_min_local, y_min_local, z_min_local, x_max_local,           &
-  !$OMP y_max_local, z_max_local, dx, dy, dz, buffer) NUM_THREADS(nthreads_loop1)    
+  !$OMP y_max_local, z_max_local, dx, dy, dz, buffer) NUM_THREADS(nthreads_loop1)
   DO is=1, nspecies! LOOP ON SPECIES
     curr=> species_parray(is)
     ! Get first tiles dimensions (may be different from last tile)
@@ -965,31 +965,31 @@ MODULE particle_boundary
           !$OMP nz0_grid_tile) FIRSTPRIVATE(ipx, ipy, ipz, is) PRIVATE(ix, iy, iz, i, &
           !$OMP curr_tile, nptile, partx, party, partz, partux, partuy, partuz,       &
           !$OMP gaminv, indx, indy, indz, ipmin, ipmax, ib) COLLAPSE(3)               &
-          !$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)     
+          !$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
           DO iz=ipz, ntilez, 3! LOOP ON TILES
             DO iy=ipy, ntiley, 3
               DO ix=ipx, ntilex, 3
                 curr_tile=>curr%array_of_tiles(ix, iy, iz)
                 nptile=curr_tile%np_tile(1)
-                
+
                 ! Copy of the buffers in every directions
                 DO dirz = -1, 1
                   DO diry = -1, 1
                     DO dirx = -1, 1
-                      
+
                       indx = ix+dirx
                       indy = iy+diry
                       indz = iz+dirz
-                      
+
                       IF((indx>=1).and.(indx<=ntilex).and.                            &
                       (indy>=1).and.(indy<=ntiley).and. (indz>=1).and.(indz<=ntilez)) &
-                      THEN  
-                      
+                      THEN
+
                       ib = 2+dirx + (1+diry)*3 + (1+dirz)*9
-                      
+
                       ipmin = buffer(ix, iy, iz, is)%bin_pos(ib)
                       ipmax = ipmin+buffer(ix, iy, iz, is)%bin_npart(ib)-1
-                      
+
                       CALL add_group_of_particles_at_tile(curr, indx, indy, indz,     &
                       buffer(ix, iy, iz, is)%bin_npart(ib), npid, buffer(ix, iy, iz,  &
                       is)%part_x(ipmin:ipmax), buffer(ix, iy, iz,                     &
@@ -999,14 +999,14 @@ MODULE particle_boundary
                       is)%part_uy(ipmin:ipmax), buffer(ix, iy, iz,                    &
                       is)%part_uz(ipmin:ipmax), buffer(ix, iy, iz,                    &
                       is)%part_gaminv(ipmin:ipmax), buffer(ix, iy, iz,                &
-                      is)%pid(ipmin:ipmax, 1:npid))         
-                      
+                      is)%pid(ipmin:ipmax, 1:npid))
+
                     ENDIF
-                    
+
                   ENDDO
                 ENDDO
               ENDDO
-              
+
             END DO
           END DO
         END DO! END LOOP ON TILES
@@ -1120,7 +1120,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           ! Particle has left this processor +x
           IF (part_xyz .GE. x_max_local_part) THEN
             xbd = 1
@@ -1152,7 +1152,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           part_xyz = curr%part_y(i)
           ! Particle has left this processor -y
           IF ((part_xyz .LT. y_min_local_part) .AND. (c_dim .EQ. 3)) THEN
@@ -1185,7 +1185,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           ! Particle has left this processor
           IF ((part_xyz .GE. y_max_local_part) .AND. (c_dim .EQ. 3)) THEN
             ybd = 1
@@ -1217,7 +1217,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           part_xyz = curr%part_z(i)
           ! Particle has left this processor
           IF (part_xyz .LT. z_min_local_part) THEN
@@ -1250,7 +1250,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           ! Particle has left this processor
           IF (part_xyz .GE. z_max_local_part) THEN
             zbd = 1
@@ -1283,7 +1283,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
             ! Particle has left processor, send it to its neighbour
             mask(i)=.FALSE.
@@ -1324,15 +1324,15 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
         dest = INT(neighbour(ix, iy, iz), isp)
         src  = INT(neighbour(ixp, iyp, izp), isp)
         CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER, dest, tag, nrecv_buf, 1_isp, &
-        MPI_INTEGER, src, tag, comm, status, errcode) 
+        MPI_INTEGER, src, tag, comm, status, errcode)
         ALLOCATE(recvbuf(1:nrecv_buf))
         CALL MPI_SENDRECV(sendbuf(ix, iy, iz, 1:nsend_buf), nsend_buf, mpidbl, dest,  &
-        tag, recvbuf, nrecv_buf, mpidbl, src, tag, comm, status, errcode) 
+        tag, recvbuf, nrecv_buf, mpidbl, src, tag, comm, status, errcode)
         ! Add received particles to particle arrays
         DO i =1, nrecv_buf, nvar
           CALL add_particle_to_species(currsp, recvbuf(i), recvbuf(i+1),              &
           recvbuf(i+2), recvbuf(i+3), recvbuf(i+4), recvbuf(i+5), recvbuf(i+6),       &
-          recvbuf(i+7:i+6+npid)) 
+          recvbuf(i+7:i+6+npid))
         END DO
         DEALLOCATE(recvbuf)
       ENDDO
@@ -1394,7 +1394,7 @@ DO iz = -1, 1
       count=nspecies
       dest = neighbour(ix, iy, iz)
       CALL MPI_IRECV(npart_recv(1:count, ix, iy, iz), count, MPI_INTEGER8, dest,      &
-      mpitag, comm, requests(ireq), errcode) 
+      mpitag, comm, requests(ireq), errcode)
       ireq=ireq+1
     END DO
   END DO
@@ -1499,7 +1499,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           part_xyz = curr%part_y(i)
           ! Particle has left this processor
           IF ((part_xyz .LT. y_min_local_part) .AND. (c_dim .EQ. 3)) THEN
@@ -1531,7 +1531,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           ! Particle has left this processor
           IF ((part_xyz .GE. y_max_local_part) .AND. (c_dim .EQ. 3)) THEN
             ybd = 1
@@ -1562,7 +1562,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           part_xyz = curr%part_z(i)
           ! Particle has left this processor
           IF (part_xyz .LT. z_min_local_part) THEN
@@ -1594,7 +1594,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           ! Particle has left this processor
           IF (part_xyz .GE. z_max_local_part) THEN
             zbd = 1
@@ -1626,7 +1626,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               END SELECT
             ENDIF
           ENDIF
-          
+
           IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
             ! Particle has left processor, send it to its neighbour
             IF (.NOT. remove_from_sim) THEN
@@ -1650,7 +1650,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
       ENDDO
     ENDDO
   ENDDO! END LOOP ON TILES
-  
+
 ENDDO! END LOOP ON SPECIES
 
 ! ----- POST ISEND FOR THE NUMBER OF PARTICLES
@@ -1661,7 +1661,7 @@ DO iz = -1, 1
       count=nspecies
       src = INT(neighbour(ix, iy, iz), isp)
       CALL MPI_ISEND(npart_send(1:count, ix, iy, iz), count, MPI_INTEGER8, src,       &
-      mpitag, comm, requests(ireq), errcode) 
+      mpitag, comm, requests(ireq), errcode)
       ireq=ireq+1
     END DO
   END DO
@@ -1682,7 +1682,7 @@ DO iz = -1, 1
       IF (count .GT. 0) THEN
         src = INT(neighbour(ix, iy, iz), isp)
         CALL MPI_IRECV(recvbuff(1:count, ix, iy, iz), count, MPI_DOUBLE_PRECISION,    &
-        src, MPI_ANY_TAG, comm, requests(ireq), errcode) 
+        src, MPI_ANY_TAG, comm, requests(ireq), errcode)
         ireq=ireq+1
       ENDIF
     END DO
@@ -1698,7 +1698,7 @@ DO iz = -1, 1
       IF (count .GT. 0) THEN
         dest = INT(neighbour(ix, iy, iz), isp)
         CALL MPI_ISEND(sendbuff(1:count, ix, iy, iz), count, MPI_DOUBLE_PRECISION,    &
-        dest, mpitag, comm, requests(ireq), errcode) 
+        dest, mpitag, comm, requests(ireq), errcode)
         ireq=ireq+1
       ENDIF
     END DO
@@ -1725,7 +1725,7 @@ DO iz = -1, 1
           recvbuff(ibuff+1, ix, iy, iz), recvbuff(ibuff+2, ix, iy, iz),               &
           recvbuff(ibuff+3, ix, iy, iz), recvbuff(ibuff+4, ix, iy, iz),               &
           recvbuff(ibuff+5, ix, iy, iz), recvbuff(ibuff+6, ix, iy, iz),               &
-          recvbuff(ibuff+7:ibuff+6+npid, ix, iy, iz))    
+          recvbuff(ibuff+7:ibuff+6+npid, ix, iy, iz))
         END DO
         ispec=ispec+nvar*npart_recv(ispecies, ix, iy, iz)
       END DO
@@ -1789,7 +1789,7 @@ DO iz = -1, 1
     count=nspecies
     dest = neighbour(ix, 0, iz)
     CALL MPI_IRECV(npart_recv(1:count, ix, iz), count, MPI_INTEGER8, dest,            &
-    MPI_ANY_TAG, comm, requests(ireq), errcode) 
+    MPI_ANY_TAG, comm, requests(ireq), errcode)
     ireq=ireq+1
   END DO
 END DO
@@ -1836,7 +1836,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
           IF (x_min_boundary_part) THEN
             SELECT CASE (pbound_x_min)
             CASE (1_idp)! absorbing
-              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i) 
+              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i)
               CYCLE
             CASE (3_idp)! Reinjecting (not thermal for now)
               curr%part_x(i)=2.0_num*xmin_part-curr%part_x(i)
@@ -1861,7 +1861,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
           IF (x_max_boundary_part) THEN
             SELECT CASE (pbound_x_max)
             CASE (1_idp)! absorbing
-              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i) 
+              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i)
               CYCLE
             CASE (3_idp)! Reinjecting (not thermal for now)
               curr%part_x(i)= 2.0_num*xmax_part-curr%part_x(i)
@@ -1880,7 +1880,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
             END SELECT
           ENDIF
         ENDIF
-        
+
         part_xyz = curr%part_z(i)
         ! Particle has left this processor
         IF (part_xyz .LT. z_min_local_part) THEN
@@ -1888,7 +1888,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
           IF (z_min_boundary_part) THEN
             SELECT CASE (pbound_z_min)
             CASE (1_idp)! absorbing
-              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i) 
+              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i)
               CYCLE
             CASE (3_idp)! Reinjecting (not thermal for now)
               curr%part_z(i)= 2.0_num*zmin_part-curr%part_z(i)
@@ -1908,7 +1908,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
             END SELECT
           ENDIF
         ENDIF
-        
+
         ! Particle has left this processor
         IF (part_xyz .GE. z_max_local_part) THEN
           zbd = 1
@@ -1916,7 +1916,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
           IF (z_max_boundary_part) THEN
             SELECT CASE (pbound_z_max)
             CASE (1_idp)! absorbing
-              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i) 
+              CALL rm_particles_from_species_2d(currsp, ixtile, iztile, i)
               CYCLE
             CASE (3_idp)! Reinjecting (not thermal for now)
               curr%part_z(i)= 2.0_num*zmax_part-curr%part_z(i)
@@ -1935,7 +1935,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
             END SELECT
           ENDIF
         ENDIF
-        
+
         IF (ABS(xbd) + ABS(zbd) .GT. 0) THEN
           ! Particle has left processor, send it to its neighbour
           ibuff=nptoexch(xbd, zbd)*nvar+1
@@ -1964,7 +1964,7 @@ DO iz = -1, 1
     count=nspecies
     src = INT(neighbour(ix, 0, iz), isp)
     CALL MPI_ISEND(npart_send(1:count, ix, iz), count, MPI_INTEGER8, src, mpitag,     &
-    comm, requests(ireq), errcode) 
+    comm, requests(ireq), errcode)
     ireq=ireq+1
   END DO
 END DO
@@ -1984,7 +1984,7 @@ DO iz = -1, 1
     IF (count .GT. 0) THEN
       src = INT(neighbour(ix, 0, iz), isp)
       CALL MPI_IRECV(recvbuff(1:count, ix, iz), count, MPI_DOUBLE_PRECISION, src,     &
-      MPI_ANY_TAG, comm, requests(ireq), errcode) 
+      MPI_ANY_TAG, comm, requests(ireq), errcode)
       ireq=ireq+1
     ENDIF
   END DO
@@ -1999,7 +1999,7 @@ DO iz = -1, 1
     IF (count .GT. 0) THEN
       dest = INT(neighbour(ix, 0, iz), isp)
       CALL MPI_ISEND(sendbuff(1:count, ix, iz), count, MPI_DOUBLE_PRECISION, dest,    &
-      mpitag, comm, requests(ireq), errcode) 
+      mpitag, comm, requests(ireq), errcode)
       ireq=ireq+1
     ENDIF
   END DO
@@ -2025,7 +2025,7 @@ DO iz = -1, 1
         CALL add_particle_to_species_2d(currsp, recvbuff(ibuff, ix, iz),              &
         recvbuff(ibuff+1, ix, iz), recvbuff(ibuff+2, ix, iz), recvbuff(ibuff+3, ix,   &
         iz), recvbuff(ibuff+4, ix, iz), recvbuff(ibuff+5, ix, iz),                    &
-        recvbuff(ibuff+6:ibuff+5+npid, ix, iz))   
+        recvbuff(ibuff+6:ibuff+5+npid, ix, iz))
       END DO
       ispec=ispec+nvar*npart_recv(ispecies, ix, iz)
     END DO
@@ -2149,27 +2149,27 @@ ALLOCATE(partpid(npid))
 !$OMP pbound_y_min, pbound_y_max, pbound_z_min, pbound_z_max, x_min_local,            &
 !$OMP y_min_local, z_min_local, x_max_local_part, y_max_local_part, z_max_local_part, &
 !$OMP dx, dy, dz, mpi_npart, tilebuf, mpi_buf_size, lvect)                            &
-!$OMP NUM_THREADS(nthreads_loop1)           
+!$OMP NUM_THREADS(nthreads_loop1)
 ! LOOP ON SPECIES
 DO is=1, nspecies
-  
+
   curr=> species_parray(is)
   ! Get first tiles dimensions (may be different from last tile)
   nx0_grid_tile = curr%array_of_tiles(1, 1, 1)%nx_grid_tile
   ny0_grid_tile = curr%array_of_tiles(1, 1, 1)%ny_grid_tile
   nz0_grid_tile = curr%array_of_tiles(1, 1, 1)%nz_grid_tile
-  
+
   nx0_grid_tile_dx = 1._num/(nx0_grid_tile*dx)
   ny0_grid_tile_dy = 1._num/(ny0_grid_tile*dy)
   nz0_grid_tile_dz = 1._num/(nz0_grid_tile*dz)
-  
+
   mpi_npart(:, is) = 0
   ! LOOP ON TILES
   DO ipz=1, 3
     DO ipy=1, 3
       DO ipx=1, 3
-        
-        
+
+
         !$OMP PARALLEL DO DEFAULT(NONE) SHARED(npid, curr, ntilex, ntiley, ntilez,    &
         !$OMP x_min_local_part, y_min_local_part, z_min_local_part, x_max_local_part, &
         !$OMP y_max_local_part, z_max_local_part, dx, dy, dz, nx0_grid_tile,          &
@@ -2185,14 +2185,14 @@ DO is=1, nspecies
         !$OMP curr_tile, nptile, partx, party, partz, partux, partuy, partuz, gaminv, &
         !$OMP partpid, indx, indy, indz, xbd, ybd, zbd, i2, i3, new_mpi_buf_size,     &
         !$OMP old_mpi_buf_size) COLLAPSE(3) SCHEDULE(runtime)                         &
-        !$OMP NUM_THREADS(nthreads_loop2)             
+        !$OMP NUM_THREADS(nthreads_loop2)
         ! LOOP ON TILES
         DO iz=ipz, ntilez, 3
           DO iy=ipy, ntiley, 3
             DO ix=ipx, ntilex, 3
               curr_tile=>curr%array_of_tiles(ix, iy, iz)
               nptile=curr_tile%np_tile(1)
-              
+
               ! Allocation of the buffer
               IF (curr_tile%subdomain_bound) THEN
                 ALLOCATE(tilebuf(ix, iy, iz, is)%part_x(mpi_buf_size, 27))
@@ -2205,19 +2205,19 @@ DO is=1, nspecies
                 ALLOCATE(tilebuf(ix, iy, iz, is)%pid(mpi_buf_size, npid, 27))
               ENDIF
               tilebuf(ix, iy, iz, is)%npart(1:27) = 0
-              
+
 #if defined(DEBUG) && (DEBUG==3)
               write(0, '("Loop on particles inside tiles: ", I2, X, I2, X, I2)')ix,   &
               iy, iz
 #endif
-              
+
               ! Loop on particles inside tiles
               DO i=nptile, 1, -1
-                
+
                 !                 DO i2=nptile, 1, -lvect
                 !                   DO i3 = MIN(lvect, i2), 1, -1
                 !                   i = i2 - i3 + 1
-                
+
                 partx=curr_tile%part_x(i)
                 party=curr_tile%part_y(i)
                 partz=curr_tile%part_z(i)
@@ -2226,24 +2226,24 @@ DO is=1, nspecies
                 partuz=curr_tile%part_uz(i)
                 gaminv=curr_tile%part_gaminv(i)
                 partpid=curr_tile%pid(i, 1:npid)
-                
+
                 ! Case 1: if particle did not leave tile nothing to do
                 IF (((partx .GE. curr_tile%x_tile_min) .AND. (partx .LT.              &
                 curr_tile%x_tile_max)) .AND. ((party .GE. curr_tile%y_tile_min) .AND. &
                 (party .LT. curr_tile%y_tile_max)) .AND. ((partz .GE.                 &
-                curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) CYCLE   
-                
+                curr_tile%z_tile_min) .AND. (partz .LT. curr_tile%z_tile_max))) CYCLE
+
                 ! Case 2: if particle left MPI domain
                 IF (((partx .LT. x_min_local_part) .OR. (partx .GE.                   &
                 x_max_local_part)) .OR. ((party .LT. y_min_local_part) .OR. (party    &
                 .GE. y_max_local_part)) .OR. ((partz .LT. z_min_local_part) .OR.      &
-                (partz .GE. z_max_local_part))) THEN  
-                
+                (partz .GE. z_max_local_part))) THEN
+
                 ! Then we determine in which domain this particle is going
                 xbd = 0
                 ybd = 0
                 zbd = 0
-                
+
                 ! Particle has left this processor -x
                 IF (partx .LT. x_min_local_part) THEN
                   xbd = -1
@@ -2251,7 +2251,7 @@ DO is=1, nspecies
                     SELECT CASE (pbound_x_min)
                     CASE (1_idp)! absorbing
                       CALL rm_particle_at_tile(curr, ix, iy, iz, i)
-                      CYCLE! If particle has been removed CYCLE to next particle 
+                      CYCLE! If particle has been removed CYCLE to next particle
                     CASE (3_idp)! Reinjecting (not thermal for now)
                       curr_tile%part_x(i)=2*xmin_part-curr_tile%part_x(i)
                       curr_tile%part_ux(i)=0.
@@ -2276,7 +2276,7 @@ DO is=1, nspecies
                       curr_tile%part_x(i) = partx + length_x_part
                     END SELECT
                   ENDIF
-                  
+
                   ! Particle has left this processor +x
                 ELSE IF (partx .GE. x_max_local_part) THEN
                   xbd = 1
@@ -2284,7 +2284,7 @@ DO is=1, nspecies
                     SELECT CASE (pbound_x_max)
                     CASE (1_idp)! absorbing
                       CALL rm_particle_at_tile(curr, ix, iy, iz, i)
-                      CYCLE! If particle has been removed CYCLE to next particle 
+                      CYCLE! If particle has been removed CYCLE to next particle
                     CASE (3_idp)! Reinjecting (not thermal for now)
                       curr_tile%part_x(i)=2*xmax_part-curr_tile%part_x(i)
                       curr_tile%part_ux(i)=0.
@@ -2310,7 +2310,7 @@ DO is=1, nspecies
                     END SELECT
                   ENDIF
                 ENDIF
-                
+
                 ! Particle has left this processor -y
                 IF ((party .LT. y_min_local_part)) THEN
                   ybd = -1
@@ -2318,7 +2318,7 @@ DO is=1, nspecies
                     SELECT CASE (pbound_y_min)! absorbing
                     CASE (1_idp)
                       CALL rm_particle_at_tile(curr, ix, iy, iz, i)
-                      CYCLE! If particle has been removed CYCLE to next particle 
+                      CYCLE! If particle has been removed CYCLE to next particle
                     CASE (3_idp)! Reinjecting (not thermal for now)
                       curr_tile%part_y(i)=2*ymin_part-curr_tile%part_y(i)
                       curr_tile%part_ux(i)=0.
@@ -2350,7 +2350,7 @@ DO is=1, nspecies
                     SELECT CASE (pbound_y_max)
                     CASE (1_idp)! absorbing
                       CALL rm_particle_at_tile(curr, ix, iy, iz, i)
-                      CYCLE! If particle has been removed CYCLE to next particle 
+                      CYCLE! If particle has been removed CYCLE to next particle
                     CASE (3_idp)! Reinjecting (not thermal for now)
                       curr_tile%part_y(i)=2*ymax_part-curr_tile%part_y(i)
                       curr_tile%part_ux(i)=0.
@@ -2376,7 +2376,7 @@ DO is=1, nspecies
                     END SELECT
                   ENDIF
                 ENDIF
-                
+
                 ! Particle has left this processor -z
                 IF (partz .LT. z_min_local_part) THEN
                   zbd = -1
@@ -2384,7 +2384,7 @@ DO is=1, nspecies
                     SELECT CASE (pbound_z_min)
                     CASE (1_idp)! absorbing
                       CALL rm_particle_at_tile(curr, ix, iy, iz, i)
-                      CYCLE! If particle has been removed CYCLE to next particle 
+                      CYCLE! If particle has been removed CYCLE to next particle
                     CASE (3_idp)! Reinjecting (not thermal for now)
                       curr_tile%part_z(i)=2*zmin_part-curr_tile%part_z(i)
                       curr_tile%part_ux(i)=0.
@@ -2417,7 +2417,7 @@ DO is=1, nspecies
                     SELECT CASE (pbound_z_max)
                     CASE (1_idp)! absorbing
                       CALL rm_particle_at_tile(curr, ix, iy, iz, i)
-                      CYCLE! If particle has been removed CYCLE to next particle 
+                      CYCLE! If particle has been removed CYCLE to next particle
                     CASE (3_idp)! Reinjecting (not thermal for now)
                       curr_tile%part_z(i)=2*zmax_part-curr_tile%part_z(i)
                       curr_tile%part_ux(i)=0.
@@ -2443,14 +2443,14 @@ DO is=1, nspecies
                     END SELECT
                   ENDIF
                 ENDIF
-                
-                
+
+
                 ! Particle has left processor, we put it in a local buffer
                 ! Boundary index 1-27
                 ib = 2+xbd + (1+ybd)*3 + (1+zbd)*9
                 ! Current particle available index
                 k = tilebuf(ix, iy, iz, is)%npart(ib) + 1
-                
+
                 ! Particle properties are placed in a buffer for each com direction
                 tilebuf(ix, iy, iz, is)%part_x(k, ib) = curr_tile%part_x(i)
                 tilebuf(ix, iy, iz, is)%part_y(k, ib) = curr_tile%part_y(i)
@@ -2460,12 +2460,12 @@ DO is=1, nspecies
                 tilebuf(ix, iy, iz, is)%part_uz(k, ib) = curr_tile%part_uz(i)
                 tilebuf(ix, iy, iz, is)%part_gaminv(k, ib) = curr_tile%part_gaminv(i)
                 tilebuf(ix, iy, iz, is)%pid(k, 1:npid, ib) = curr_tile%pid(i, 1:npid)
-                
+
                 IF (k.eq.SIZE(tilebuf(ix, iy, iz, is)%part_x, 1)) THEN
                   old_mpi_buf_size = SIZE(tilebuf(ix, iy, iz, is)%part_x, 1)
                   new_mpi_buf_size = SIZE(tilebuf(ix, iy, iz, is)%part_x, 1)*2
                   WRITE(0, '(" WARNING: Tile buffer array has been resized: nbpart =  &
-                  ", I7, " new buffer size = ", I7)') k, new_mpi_buf_size 
+                  ", I7, " new buffer size = ", I7)') k, new_mpi_buf_size
                   CALL resize_2D_array_real(tilebuf(ix, iy, iz, is)%part_x,           &
                   old_mpi_buf_size, new_mpi_buf_size, 27_idp, 27_idp)
                   CALL resize_2D_array_real(tilebuf(ix, iy, iz, is)%part_y,           &
@@ -2483,17 +2483,17 @@ DO is=1, nspecies
                   CALL resize_3D_array_real(tilebuf(ix, iy, iz, is)%pid,              &
                   old_mpi_buf_size, new_mpi_buf_size, npid, npid, 27_idp, 27_idp)
                 ENDIF
-                
+
                 ! Update of the number of particles
                 tilebuf(ix, iy, iz, is)%npart(ib) = k
-                
+
                 ! The particle is deleted
                 CALL rm_particle_at_tile(curr, ix, iy, iz, i)
                 CYCLE
-                
+
               ENDIF!end if particle left MPI domain
-              
-              
+
+
               ! Case 3: particles changed tile. Tranfer particle to new tile
               ! Get new indexes of particle in array of tiles
               indx = MIN(FLOOR((partx-x_min_local+dxs2)*(nx0_grid_tile_dx), idp)+1,   &
@@ -2504,15 +2504,15 @@ DO is=1, nspecies
               ntilez)
               CALL rm_particle_at_tile(curr, ix, iy, iz, i)
 
-              
+
               CALL add_particle_at_tile(curr, indx, indy, indz, partx, party, partz,  &
-              partux, partuy, partuz, gaminv, partpid) 
-              
-              
+              partux, partuy, partuz, gaminv, partpid)
+
+
               !ENDDO
               !End loop on particles
             END DO
-            
+
             ! Reduction of the total number of particle to be
             ! exchanged in every direction for MPI
             ! Here we use a critical region since we expect the thread
@@ -2523,14 +2523,14 @@ DO is=1, nspecies
               mpi_npart(1:27, is) = mpi_npart(1:27, is) + tilebuf(ix, iy, iz,         &
               is)%npart(1:27)
               !OMP END CRITICAL
-              
+
             ENDIF
-            
+
           END DO
         END DO
       END DO! END LOOP ON TILES
       !$OMP END PARALLEL DO
-      
+
     END DO
   END DO
 END DO
@@ -2559,30 +2559,30 @@ ALLOCATE(bufsend(MAXVAL(mpi_npart(:, :)), 7+npid, 27, nspecies))
 !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, is, nx0_grid_tile, ny0_grid_tile,       &
 !$OMP nz0_grid_tile, ipx, ipy, ipz, ib, k, j) SHARED(nspecies, npid, nthreads_loop2,  &
 !$OMP species_parray, ntilex, ntiley, ntilez, dx, dy, dz, mpi_npart, bufsend,         &
-!$OMP tilebuf) NUM_THREADS(nthreads_loop1)     
+!$OMP tilebuf) NUM_THREADS(nthreads_loop1)
 DO is=1, nspecies! LOOP ON SPECIES
 
 mpi_npart(:, is) = 0
 
 !$OMP PARALLEL DO DEFAULT(NONE) SHARED(npid, is, tilebuf, mpi_npart, bufsend, ntilez, &
 !$OMP ntiley, ntilex) PRIVATE(ix, iy, iz, k, xbd, ybd, zbd, j, ib) COLLAPSE(3)        &
-!$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)    
+!$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
 DO xbd = -1, 1
   DO ybd = -1, 1
     DO zbd = -1, 1
-      
+
       IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .EQ. 0) CYCLE
-      
+
       ib = 2+xbd + (1+ybd)*3 + (1+zbd)*9
-      
+
       DO iz=1, ntilez! LOOP ON TILES
         DO iy=1, ntiley
           DO ix=1, ntilex
             k = tilebuf(ix, iy, iz, is)%npart(ib)
             !print*, 'iz, iy, ix, ib:', iz, iy, ix, ib, 'k', k
-            
+
             IF (k.eq.0) CYCLE
-            
+
             j = mpi_npart(ib, is)
             bufsend(j+1:j+k, 1, ib, is) = tilebuf(ix, iy, iz, is)%part_x(1:k, ib)
             bufsend(j+1:j+k, 2, ib, is) = tilebuf(ix, iy, iz, is)%part_y(1:k, ib)
@@ -2626,39 +2626,39 @@ ALLOCATE(reqs(2))
 
 DO is=1, nspecies! LOOP ON SPECIES
   !curr=> species_parray(is)
-  
+
   !$OMP PARALLEL DO DEFAULT(NONE) SHARED(is, mpi_npart, comm, neighbour, nrecv_buf)   &
   !$OMP FIRSTPRIVATE(tag, status, stats, reqs, MPI_STATUSES_IGNORE) PRIVATE(ix, iy,   &
   !$OMP iz, k, ipx, ipy, ipz, dest, src, ib, ibs, errcode) COLLAPSE(3)                &
-  !$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)     
-  
+  !$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
+
   DO iz = -1, 1
     DO iy = -1, 1
       DO ix = -1, 1
         IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
         ! index of the communication direction
         ib = 2+ix + (1+iy)*3 + (1+iz)*9
-        
+
         ! indexes of the source/destination mpi task
         ipx = -ix
         ipy = -iy
         ipz = -iz
-        
+
         !ibs = 2+ipx + (1+ipy)*3 + (1+ipz)*9
-        
+
         dest = INT(neighbour(ix, iy, iz), isp)
         src  = INT(neighbour(ipx, ipy, ipz), isp)
-        
+
         ! Number of particle
         k = mpi_npart(ib, is)
-        
+
         ! Exchange
         CALL MPI_Irecv( nrecv_buf(ib, is), 1_isp, MPI_INTEGER, src, INT(ib, isp),     &
-        comm, reqs(1), errcode) 
-        
+        comm, reqs(1), errcode)
+
         CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib, isp), comm, reqs(2),      &
-        errcode) 
-        
+        errcode)
+
         CALL MPI_Waitall(2_isp, reqs, MPI_STATUSES_IGNORE, errcode)
       ENDDO
     ENDDO
@@ -2682,27 +2682,27 @@ DO is=1, nspecies! LOOP ON SPECIES
         IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
         ! index of the communication direction
         ib = 2+ix + (1+iy)*3 + (1+iz)*9
-        
+
         ! indexes of the source/destination mpi task
         ipx = -ix
         ipy = -iy
         ipz = -iz
-        
+
         !ibs = 2+ipx + (1+ipy)*3 + (1+ipz)*9
-        
+
         dest = INT(neighbour(ix, iy, iz), isp)
         src  = INT(neighbour(ipx, ipy, ipz), isp)
-        
+
         ! Number of particle
         k = mpi_npart(ib, is)
-        
+
         ! Exchange
         ireq = ireq + 1
         CALL MPI_Irecv( nrecv_buf(ib, is), 1_isp, MPI_INTEGER, src, INT(ib, isp),     &
-        comm, reqs(ireq), errcode) 
+        comm, reqs(ireq), errcode)
         ireq = ireq + 1
         CALL MPI_Isend(k, 1_isp, MPI_INTEGER, dest, INT(ib, isp), comm, reqs(ireq),   &
-        errcode) 
+        errcode)
 
       ENDDO
     ENDDO
@@ -2725,7 +2725,7 @@ ALLOCATE(recvbuf(1:nrecv_buf_tot+1, 7+npid))
 
 ! Multithread version
 IF (.FALSE.) THEN
-  
+
   ! ________________________________________________
   ! Multiple thread version
   ! Determine the position of each received buffer in recvbuf
@@ -2739,92 +2739,92 @@ IF (.FALSE.) THEN
       ENDDO
     ENDDO
   ENDDO
-  
+
   !$OMP PARALLEL DO DEFAULT(NONE) SHARED(is, mpi_npart, npid, comm, neighbour,        &
   !$OMP nrecv_buf, nrecv_buf_tot, recvbuf_index, MPI_STATUSES_IGNORE, bufsend,        &
   !$OMP mpidbl, recvbuf) FIRSTPRIVATE(tag, status, stats, reqs) PRIVATE(ix, iy, iz,   &
   !$OMP k, j, ipx, ipy, ipz, dest, src, ib, ibs, errcode, typebuffer) COLLAPSE(3)     &
-  !$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)      
+  !$OMP SCHEDULE(runtime) NUM_THREADS(nthreads_loop2)
   DO iz = -1, 1
     DO iy = -1, 1
       DO ix = -1, 1
-        
+
         IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-        
+
         ib = 2+ix + (1+iy)*3 + (1+iz)*9
-        
+
         k = mpi_npart(ib, is)
         j = nrecv_buf(ib, is)
-        
+
         dest = INT(neighbour(ix, iy, iz), isp)
         src  = INT(neighbour(-ix, -iy, -iz), isp)
-        
+
         CALL MPI_TYPE_VECTOR(7_isp+INT(npid, isp), INT(j, isp), INT(nrecv_buf_tot+1,  &
-        isp), MPI_DOUBLE_PRECISION, typebuffer, errcode)  
+        isp), MPI_DOUBLE_PRECISION, typebuffer, errcode)
         call MPI_TYPE_COMMIT(typebuffer, errcode)
-        
+
         ! Exchange
         CALL MPI_Irecv(recvbuf(recvbuf_index(ib), 1), 1_isp, typebuffer, src, INT(ib, &
-        isp), comm, reqs(1), errcode) 
-        
+        isp), comm, reqs(1), errcode)
+
         CALL MPI_Isend(bufsend(1:k, 1:7+npid, ib, is), INT((7_idp+npid)*k, isp),      &
-        mpidbl, dest, INT(ib, isp), comm, reqs(2), errcode) 
-        
+        mpidbl, dest, INT(ib, isp), comm, reqs(2), errcode)
+
         CALL MPI_Waitall(2_isp, reqs, MPI_STATUSES_IGNORE, errcode)
-        
+
         !CALL MPI_SENDRECV(bufsend(1:k, 1:8, ib, is), 8_isp*k, mpidbl, dest, INT(ib, isp), &
         !recvbuf(recvbuf_index(ib), 1), 1_isp, typebuffer, src, INT(ib, isp), comm, status, errcode)
-        
+
         call MPI_TYPE_FREE(typebuffer, errcode)
-        
+
         !npos = npos + j
         !print*, ib, npos, j, iz, iy, ix
-        
+
       ENDDO
     ENDDO
   ENDDO
   !$OMP END PARALLEL DO
   ! ________________________________________________
-  
+
 ELSE
-  
+
   ! Wait all is done inside the loop
   npos=1
   DO iz = -1, 1
     DO iy = -1, 1
       DO ix = -1, 1
-        
+
         IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
-        
+
         ib = 2+ix + (1+iy)*3 + (1+iz)*9
-        
+
         k = mpi_npart(ib, is)
         j = nrecv_buf(ib, is)
-        
+
         dest = INT(neighbour(ix, iy, iz), isp)
         src  = INT(neighbour(-ix, -iy, -iz), isp)
-        
+
         CALL MPI_TYPE_VECTOR(7_isp+INT(npid, isp), INT(j, isp), INT(nrecv_buf_tot+1,  &
-        isp), MPI_DOUBLE_PRECISION, typebuffer, errcode) 
+        isp), MPI_DOUBLE_PRECISION, typebuffer, errcode)
         call MPI_TYPE_COMMIT(typebuffer, errcode)
         ! Exchange
         CALL MPI_Irecv(recvbuf(npos, 1), 1_isp, typebuffer, src, INT(ib, isp), comm,  &
-        reqs(1), errcode) 
+        reqs(1), errcode)
         CALL MPI_Isend(bufsend(1:k, 1:7+npid, ib, is), INT((7_idp+npid)*k, isp),      &
-        mpidbl, dest, INT(ib, isp), comm, reqs(2), errcode)  
+        mpidbl, dest, INT(ib, isp), comm, reqs(2), errcode)
         CALL MPI_Waitall(2_isp, reqs, MPI_STATUSES_IGNORE, errcode)
-        
+
         call MPI_TYPE_FREE(typebuffer, errcode)
         npos = npos + j
         !print*, ib, npos, j, iz, iy, ix
-        
+
       ENDDO
     ENDDO
   ENDDO
-  
+
   ! ________________________________________________
-  
-  
+
+
 ENDIF
 
 #if defined(DEBUG) && (DEBUG==3)
@@ -2833,34 +2833,34 @@ write(0, *) " Copy of the buffers in the tile particle arrays"
 
 ! If the buffer is not empty...
 IF (nrecv_buf_tot.gt.0) THEN
-  
+
   ! Get first tile dimensions (may be different from last tile)
   nx0_grid_tile_dx = 1._num/(curr%array_of_tiles(1, 1, 1)%nx_grid_tile*dx)
   ny0_grid_tile_dy = 1._num/(curr%array_of_tiles(1, 1, 1)%ny_grid_tile*dy)
   nz0_grid_tile_dz = 1._num/(curr%array_of_tiles(1, 1, 1)%nz_grid_tile*dz)
-  
+
   ! Parallelization on the tiles:
   ! Each tile will read the buffer and copy particles which belong
   ! to it into its own particle array
-  
+
   !$OMP PARALLEL DO DEFAULT(NONE) SHARED(is, npid, ntilez, ntiley, ntilex,            &
   !$OMP nrecv_buf_tot, recvbuf, curr, dxs2, dys2, dzs2, nx0_grid_tile_dx,             &
   !$OMP ny0_grid_tile_dy, nz0_grid_tile_dz, x_min_local, y_min_local, z_min_local)    &
   !$OMP PRIVATE(ix, iy, iz, i, k, indx, indy, indz, curr_tile, nptile) COLLAPSE(3)    &
-  !$OMP SCHEDULE(runtime)     
+  !$OMP SCHEDULE(runtime)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
-        
+
         curr_tile=>curr%array_of_tiles(ix, iy, iz)
         !nptile=curr_tile%np_tile(1)
-        
+
         ! If the tile is not at the boundary, no particle will be transfer
         IF (.NOT.curr_tile%subdomain_bound) CYCLE
-        
+
         ! Add received particles to particle arrays
         DO i = 1, nrecv_buf_tot
-          
+
           ! Get particle index in array of tile
           indx = MIN(FLOOR((recvbuf(i, 1)-x_min_local+dxs2)*(nx0_grid_tile_dx),       &
           idp)+1, ntilex)
@@ -2871,7 +2871,7 @@ IF (nrecv_buf_tot.gt.0) THEN
 
           ! If the particle is in the current tile
           IF ((indx.eq.ix).AND.(indy.eq.iy).AND.(indz.eq.iz)) THEN
-            
+
             ! Sanity check for max number of particles in tile
             nptile = curr_tile%np_tile(1)+1! Current number of particles in the tile
             k  = curr_tile%npmax_tile! Max number of particles in the tile
@@ -2880,7 +2880,7 @@ IF (nrecv_buf_tot.gt.0) THEN
               curr%are_tiles_reallocated(ix, iy, iz)=1
               CALL resize_particle_arrays(curr_tile, k, NINT(resize_factor*k+1, idp))
             ENDIF
-            
+
             ! Finally, add particle to tile
             curr_tile%np_tile(1)=nptile
             curr_tile%part_x(nptile)  = recvbuf(i, 1)
@@ -2897,19 +2897,19 @@ IF (nrecv_buf_tot.gt.0) THEN
             curr_tile%part_bx(nptile)  = 0._num
             curr_tile%part_by(nptile)  = 0._num
             curr_tile%part_bz(nptile)  = 0._num
-            
+
           ENDIF
-          
+
         ENDDO
-        
+
       ENDDO
     ENDDO
   ENDDO
   !!$OMP END PARALLEL DO
-  
+
   ! Update total number of particle species
   curr%species_npart=curr%species_npart+nrecv_buf_tot
-  
+
 ENDIF
 
 DEALLOCATE(recvbuf)
@@ -2928,10 +2928,10 @@ curr=> species_parray(is)
 DO iz=1, ntilez
   DO iy=1, ntiley
     DO ix=1, ntilex
-      
+
       curr_tile=>curr%array_of_tiles(ix, iy, iz)
       nptile=curr_tile%np_tile(1)
-      
+
       DO i=1, nptile
         partx=curr_tile%part_x(i)
         party=curr_tile%part_y(i)
@@ -2941,13 +2941,13 @@ DO iz=1, ntilez
         partuz=curr_tile%part_uz(i)
         gaminv=curr_tile%part_gaminv(i)
         partpid=curr_tile%pid(i, 1:npid)
-        
+
         IF ((partx .LT. curr_tile%x_tile_min) .OR. (partx .GE. curr_tile%x_tile_max)  &
         .OR. (party .LT. curr_tile%y_tile_min) .OR. (party .GE. curr_tile%y_tile_max) &
         .OR. (partz .LT. curr_tile%z_tile_min) .OR. (partz .GE.                       &
-        curr_tile%z_tile_max)) THEN     
-        
-        
+        curr_tile%z_tile_max)) THEN
+
+
         WRITE(0, '("ERROR: particle outside the domain")')
         WRITE(0, '("Particle id:", I7, " of species ", I7)') i, is
         WRITE(0, '("In tile: ", I3, X, I3, X, I3)') ix, iy, iz
@@ -2958,11 +2958,11 @@ DO iz=1, ntilez
         WRITE(0, '("z:", E12.5, X, E12.5, X, E12.5)') curr_tile%z_tile_min, partz,    &
         curr_tile%z_tile_max
         WRITE(0, *)
-        
+
       ENDIF
-      
+
     ENDDO
-    
+
   ENDDO
 ENDDO
 ENDDO

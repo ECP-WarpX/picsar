@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -47,9 +47,9 @@
 ! ________________________________________________________________________________________
 MODULE sorting
   IMPLICIT NONE
-  
+
   CONTAINS
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Main subroutine called to sort the particles in the Fortran PIC loop
@@ -72,10 +72,10 @@ MODULE sorting
     USE time_stat
     USE params
     IMPLICIT NONE
-    
+
     !LOGICAL(lp)  :: verbose=.TRUE.
     REAL(num) :: tdeb, tend
-    
+
     IF ((sorting_activated.gt.0)) THEN
       IF (it.ge.timestat_itstart) THEN
         tdeb=MPI_WTIME()
@@ -86,9 +86,9 @@ MODULE sorting
         localtimes(10) = localtimes(10) + (tend-tdeb)
       ENDIF
     ENDIF
-    
+
   END SUBROUTINE
-  
+
   ! ______________________________________________________________________________________
   ! particle_sorting_sub
   !
@@ -111,9 +111,9 @@ MODULE sorting
     USE time_stat
     USE params
     IMPLICIT NONE
-    
+
     INTEGER(idp)                    :: ispecies, ix, iy, iz, count
-    
+
     TYPE(particle_species), POINTER :: curr
     TYPE(particle_tile), POINTER    :: curr_tile
     TYPE(grid_tile), POINTER        :: currg
@@ -121,13 +121,13 @@ MODULE sorting
     INTEGER(idp)                    :: nxjg, nyjg, nzjg
     LOGICAL(lp)                     :: isgathered=.FALSE.
     REAL(num)                       :: sxmin, symin, szmin
-    
+
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,      &
     !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, dx, dy, dz, it,    &
     !$OMP rank, sorting_shiftx, sorting_shifty, sorting_shiftz, sorting_dx,           &
     !$OMP sorting_dy, sorting_dz, sorting_verbose) PRIVATE(ix, iy, iz, ispecies,      &
     !$OMP curr, curr_tile, currg, count, nxc, nyc, nzc, nxjg, nyjg, nzjg, isgathered, &
-    !$OMP sxmin, symin, szmin)    
+    !$OMP sxmin, symin, szmin)
     DO iz=1, ntilez! LOOP ON TILES
       DO iy=1, ntiley
         DO ix=1, ntilex
@@ -140,8 +140,8 @@ MODULE sorting
           nyc=curr_tile%ny_cells_tile
           nzc=curr_tile%nz_cells_tile
           isgathered=.FALSE.
-          
-          
+
+
           ! Loop over the species
           DO ispecies=1, nspecies
             curr=>species_parray(ispecies)
@@ -149,196 +149,196 @@ MODULE sorting
             count=curr_tile%np_tile(1)
             IF (count .GT. 0) isgathered=.TRUE.
           END DO
-          
+
           !if (rank.eq.0) print*, ix, iy, iz
-          
+
           IF (isgathered) THEN
             currg=>aofgrid_tiles(ix, iy, iz)
-            
+
             ! Loop over the species
             DO ispecies=1, nspecies
-              
+
               curr=>species_parray(ispecies)
-              
-              ! If the sorting period > 0 and the current iteration corresponds 
+
+              ! If the sorting period > 0 and the current iteration corresponds
               ! to a multiple of the period
               IF                                                                      &
               ((it.ge.curr%sorting_start).AND.(curr%sorting_period.gt.0).AND.(MOD(it, &
               curr%sorting_period).eq.0)) THEN
-                
-                ! - Get current tile properties
-                ! - Init current tile variables
-                curr_tile=>curr%array_of_tiles(ix, iy, iz)
-                count=curr_tile%np_tile(1)
-                
-                IF (count .EQ. 0) CYCLE
-                
-                ! Sorting algorithm inside the tiles
-                
-                sxmin = curr_tile%x_tile_min + sorting_shiftx
-                symin = curr_tile%y_tile_min + sorting_shifty
-                szmin = curr_tile%z_tile_min + sorting_shiftz
-                
-                CALL pxr_particle_bin_sorting(count, curr_tile%part_x,                &
-                curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,                &
-                curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,          &
-                curr_tile%pid, wpid, sxmin, symin, szmin, curr_tile%x_tile_max +      &
-                sorting_dx, curr_tile%y_tile_max + sorting_dy, curr_tile%z_tile_max + &
-                sorting_dz, sorting_dx, sorting_dy, sorting_dz)            
-              ENDIF
-            END DO! END LOOP ON SPECIES
-          ENDIF
-        END DO
+
+              ! - Get current tile properties
+              ! - Init current tile variables
+              curr_tile=>curr%array_of_tiles(ix, iy, iz)
+              count=curr_tile%np_tile(1)
+
+              IF (count .EQ. 0) CYCLE
+
+              ! Sorting algorithm inside the tiles
+
+              sxmin = curr_tile%x_tile_min + sorting_shiftx
+              symin = curr_tile%y_tile_min + sorting_shifty
+              szmin = curr_tile%z_tile_min + sorting_shiftz
+
+              CALL pxr_particle_bin_sorting(count, curr_tile%part_x,                &
+              curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,                &
+              curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,          &
+              curr_tile%pid, wpid, sxmin, symin, szmin, curr_tile%x_tile_max +      &
+              sorting_dx, curr_tile%y_tile_max + sorting_dy, curr_tile%z_tile_max + &
+              sorting_dz, sorting_dx, sorting_dy, sorting_dz)
+            ENDIF
+          END DO! END LOOP ON SPECIES
+        ENDIF
       END DO
-    END DO! END LOOP ON TILES
-    !$OMP END PARALLEL DO
-    
-  END SUBROUTINE particle_sorting_sub
-  
-  
-  ! ______________________________________________________________________________________
-  ! pxr_particle_bin_sorting
-  !
-  !>
-  !> @brief
-  !> Particle cell sorting subroutine using the bin sorting algorithm
-  !>
-  !> @details
-  !> This subroutine uses a bin sorting algorithm to sort particles
-  !> (including their property arrays).
-  !> Here, the bins corresponds to the cells of a cartesian array.
-  !> The cell size is specified by the user.
-  !>
-  !> @author
-  !> Mathieu Lobet
-  !
-  !> @date 2016
-  !
-  !> @param[in] np2 number of particles
-  !> @param[inout] xp, yp, zp particle positions
-  !> @param[inout] ux, uy, uz particle momenta
-  !> @param[inout] gam particle gamma factor
-  !> @param[inout] pid particle id
-  !> @param[inout] wpid particle weight
-  !> @param[in] xmin2, ymin2, zmin2 minimum point position on the local grid
-  !> @param[in] xmax2, ymax2, zmax2 maximum point position on the local grid
-  !> @param[in] dxf, dyf, dzf bin space steps
-  !
-  ! ______________________________________________________________________________________
-  SUBROUTINE pxr_particle_bin_sorting(np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,    &
-  xmin2, ymin2, zmin2, xmax2, ymax2, zmax2, dxf, dyf, dzf) 
-    USE constants
-    implicit none
-    integer(idp) :: ip, np2
-    integer(idp) :: k, ic, nbhc
-    integer(idp) :: ix, iy, iz
-    integer(idp) :: nx3, ny3, nz3
-    integer(idp) :: wpid
-    real(num)    :: dxi, dyi, dzi
-    real(num)    :: dxf, dyf, dzf
-    real(num)    :: x2, y2, z2
-    real(num)    :: xmin2, ymin2, zmin2
-    real(num)    :: xmax2, ymax2, zmax2
-    real(num), dimension(np2), intent(inout)      :: xp, yp, zp
-    real(num), dimension(np2), intent(inout)      :: ux, uy, uz
-    real(num), dimension(np2), intent(inout)      :: gam
-    REAL(num), DIMENSION(np2, 1), intent(inout)    :: pid
-    real(num), dimension(np2)                     :: xps, yps, zps
-    real(num), dimension(np2)                     :: uxs, uys, uzs
-    real(num), dimension(np2)                     :: gams
-    real(num), dimension(np2, wpid)                :: pids
-    integer(idp), dimension(np2)                  :: hcnb! Cell number
-    integer(idp), dimension(:), allocatable        :: piihc! Particle indexes in the grid
-    integer(idp), dimension(:), allocatable        :: nbppc! Number of particles per cells
-    
-    ! Bin sizes
-    dxi = 1./dxf
-    dyi = 1./dyf
-    dzi = 1./dzf
-    
-    nx3 = ceiling((xmax2-xmin2)*dxi)
-    ny3 = ceiling((ymax2-ymin2)*dyi)
-    nz3 = ceiling((zmax2-zmin2)*dzi)
-    
-    ! Number of bins
-    nbhc = nx3*ny3*nz3
-    
-    allocate(piihc(nbhc))
-    allocate(nbppc(nbhc))
-    
-    hcnb = 0
-    piihc = 0
-    nbppc = 0
-    
-    ! Counting sort
-    ! The criteria is the position in term of bin position
-    DO ip=1, np2
-      x2 = (xp(ip)-xmin2)*dxi
-      y2 = (yp(ip)-ymin2)*dyi
-      z2 = (zp(ip)-zmin2)*dzi
-      
-      ix = floor(x2)
-      iy = floor(y2)
-      iz = floor(z2)
-      
-      ! Bin id
-      hcnb(ip) = iz*nx3*ny3 + iy*nx3 + ix+1
+    END DO
+  END DO! END LOOP ON TILES
+  !$OMP END PARALLEL DO
+
+END SUBROUTINE particle_sorting_sub
+
+
+! ______________________________________________________________________________________
+! pxr_particle_bin_sorting
+!
+!>
+!> @brief
+!> Particle cell sorting subroutine using the bin sorting algorithm
+!>
+!> @details
+!> This subroutine uses a bin sorting algorithm to sort particles
+!> (including their property arrays).
+!> Here, the bins corresponds to the cells of a cartesian array.
+!> The cell size is specified by the user.
+!>
+!> @author
+!> Mathieu Lobet
+!
+!> @date 2016
+!
+!> @param[in] np2 number of particles
+!> @param[inout] xp, yp, zp particle positions
+!> @param[inout] ux, uy, uz particle momenta
+!> @param[inout] gam particle gamma factor
+!> @param[inout] pid particle id
+!> @param[inout] wpid particle weight
+!> @param[in] xmin2, ymin2, zmin2 minimum point position on the local grid
+!> @param[in] xmax2, ymax2, zmax2 maximum point position on the local grid
+!> @param[in] dxf, dyf, dzf bin space steps
+!
+! ______________________________________________________________________________________
+SUBROUTINE pxr_particle_bin_sorting(np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,    &
+  xmin2, ymin2, zmin2, xmax2, ymax2, zmax2, dxf, dyf, dzf)
+  USE constants
+  implicit none
+  integer(idp) :: ip, np2
+  integer(idp) :: k, ic, nbhc
+  integer(idp) :: ix, iy, iz
+  integer(idp) :: nx3, ny3, nz3
+  integer(idp) :: wpid
+  real(num)    :: dxi, dyi, dzi
+  real(num)    :: dxf, dyf, dzf
+  real(num)    :: x2, y2, z2
+  real(num)    :: xmin2, ymin2, zmin2
+  real(num)    :: xmax2, ymax2, zmax2
+  real(num), dimension(np2), intent(inout)      :: xp, yp, zp
+  real(num), dimension(np2), intent(inout)      :: ux, uy, uz
+  real(num), dimension(np2), intent(inout)      :: gam
+  REAL(num), DIMENSION(np2, 1), intent(inout)    :: pid
+  real(num), dimension(np2)                     :: xps, yps, zps
+  real(num), dimension(np2)                     :: uxs, uys, uzs
+  real(num), dimension(np2)                     :: gams
+  real(num), dimension(np2, wpid)                :: pids
+  integer(idp), dimension(np2)                  :: hcnb! Cell number
+  integer(idp), dimension(:), allocatable        :: piihc! Particle indexes in the grid
+  integer(idp), dimension(:), allocatable        :: nbppc! Number of particles per cells
+
+  ! Bin sizes
+  dxi = 1./dxf
+  dyi = 1./dyf
+  dzi = 1./dzf
+
+  nx3 = ceiling((xmax2-xmin2)*dxi)
+  ny3 = ceiling((ymax2-ymin2)*dyi)
+  nz3 = ceiling((zmax2-zmin2)*dzi)
+
+  ! Number of bins
+  nbhc = nx3*ny3*nz3
+
+  allocate(piihc(nbhc))
+  allocate(nbppc(nbhc))
+
+  hcnb = 0
+  piihc = 0
+  nbppc = 0
+
+  ! Counting sort
+  ! The criteria is the position in term of bin position
+  DO ip=1, np2
+    x2 = (xp(ip)-xmin2)*dxi
+    y2 = (yp(ip)-ymin2)*dyi
+    z2 = (zp(ip)-zmin2)*dzi
+
+    ix = floor(x2)
+    iy = floor(y2)
+    iz = floor(z2)
+
+    ! Bin id
+    hcnb(ip) = iz*nx3*ny3 + iy*nx3 + ix+1
 #if defined(DEBUG)
-      IF ((hcnb(ip) > nbhc).OR.(hcnb(ip)<1)) THEN
-        print*, 'Bin id', ip, hcnb(ip), nbhc
-        print*, 'Particle ix, iy, iz', ix, iy, iz
-        print*, 'Particle x, y, z', xp(ip), yp(ip), zp(ip)
-        print*, 'Particle x2, y2, z2', x2, y2, z2
-        print*, 'xmin, ymin, zmin', xmin2, ymin2, zmin2
-        print*, 'xmax, ymax, zmax', xmax2, ymax2, zmax2
-        print*, 'Particle dx, dy, dz', dxi, dyi, dzi
-        print*, 'Particle nx, ny, nz', nx3, ny3, nz3
-        stop
-      ENDIF
+    IF ((hcnb(ip) > nbhc).OR.(hcnb(ip)<1)) THEN
+      print*, 'Bin id', ip, hcnb(ip), nbhc
+      print*, 'Particle ix, iy, iz', ix, iy, iz
+      print*, 'Particle x, y, z', xp(ip), yp(ip), zp(ip)
+      print*, 'Particle x2, y2, z2', x2, y2, z2
+      print*, 'xmin, ymin, zmin', xmin2, ymin2, zmin2
+      print*, 'xmax, ymax, zmax', xmax2, ymax2, zmax2
+      print*, 'Particle dx, dy, dz', dxi, dyi, dzi
+      print*, 'Particle nx, ny, nz', nx3, ny3, nz3
+      stop
+    ENDIF
 #endif
-      ! We count the number of particles in each bin
-      nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1
-      
-    ENDDO
-    
-    ! Determine particle indexes in the bin grid
-    k=0
-    DO ic = 1, nbhc
-      piihc(ic) = k
-      k = k+nbppc(ic)
-    END DO
-    
-    ! Sorting of the particles including their properties
-    !if (rank.eq.0) print*, 'Counting sort, phase 3'
-    DO ip=1, np2
-      
-      k = hcnb(ip)
-      piihc(k) = piihc(k) + 1
-      pids(piihc(k), :) = pid(ip, :)
-      
-      xps(piihc(k)) = xp(ip)
-      yps(piihc(k)) = yp(ip)
-      zps(piihc(k)) = zp(ip)
-      
-      uxs(piihc(k)) = ux(ip)
-      uys(piihc(k)) = uy(ip)
-      uzs(piihc(k)) = uz(ip)
-      
-      gams(piihc(k)) = gam(ip)
-    END DO
-    
-    ! Copy back to the original arrays
-    pid = pids
-    xp = xps
-    yp = yps
-    zp = zps
-    ux = uxs
-    uy = uys
-    uz = uzs
-    gam = gams
-    
-    deallocate(piihc, nbppc)
-    
-  END SUBROUTINE
-  
+    ! We count the number of particles in each bin
+    nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1
+
+  ENDDO
+
+  ! Determine particle indexes in the bin grid
+  k=0
+  DO ic = 1, nbhc
+    piihc(ic) = k
+    k = k+nbppc(ic)
+  END DO
+
+  ! Sorting of the particles including their properties
+  !if (rank.eq.0) print*, 'Counting sort, phase 3'
+  DO ip=1, np2
+
+    k = hcnb(ip)
+    piihc(k) = piihc(k) + 1
+    pids(piihc(k), :) = pid(ip, :)
+
+    xps(piihc(k)) = xp(ip)
+    yps(piihc(k)) = yp(ip)
+    zps(piihc(k)) = zp(ip)
+
+    uxs(piihc(k)) = ux(ip)
+    uys(piihc(k)) = uy(ip)
+    uzs(piihc(k)) = uz(ip)
+
+    gams(piihc(k)) = gam(ip)
+  END DO
+
+  ! Copy back to the original arrays
+  pid = pids
+  xp = xps
+  yp = yps
+  zp = zps
+  ux = uxs
+  uy = uys
+  uz = uzs
+  gam = gams
+
+  deallocate(piihc, nbppc)
+
+END SUBROUTINE
+
 END MODULE sorting
