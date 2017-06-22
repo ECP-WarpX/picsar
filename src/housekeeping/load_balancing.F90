@@ -1094,11 +1094,11 @@ MODULE load_balance
     REAL(num), DIMENSION(npid) :: partpid
     INTEGER(idp) :: ntilex_new, ntiley_new, ntilez_new, nthreads_tot
 
-    #ifdef _OPENMP
+#ifdef _OPENMP
     nthreads_tot=OMP_GET_MAX_THREADS()
-    #else
+#else
     nthreads_tot=1
-    #endif
+#endif
 
     IF (nthreads_tot .GT. 1) THEN
       ! Udpate optimal number of tiles
