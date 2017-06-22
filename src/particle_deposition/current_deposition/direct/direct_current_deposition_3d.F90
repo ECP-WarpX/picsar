@@ -1136,13 +1136,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   ALLOCATE(jxcells(8, NCELLS), jycells(8, NCELLS), jzcells(8, NCELLS))
   jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num
 
-
-
   jorig=-2; korig=-2;lorig=-2
-  orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-  ngx=(ngridx-ncx)
-  ngxy=(ngridx*ngridy-ncx*ncy)
-  ncxy=ncx*ncy
 
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
@@ -1205,9 +1199,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 
       ! Store integer positions of the LVEC particles with respect to
       ! the staggered grids of jx, jy and jz
-      pos_jx(n,:) = (\ j0, k, l \)
-      pos_jy(n,:) = (\ j, k0, l \)
-      pos_jz(n,:) = (\ j, k, l0 \)
+      pos_jx(n,:) = (/ j0, k, l /)
+      pos_jy(n,:) = (/ j, k0, l /)
+      pos_jz(n,:) = (/ j, k, l0 /)
 
       ! --- computes set of coefficients for node centered quantities
       xint = xmid-j
@@ -1288,7 +1282,6 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
       ww0z(n, 2)=syz*sx1(n)
       ww0z(n, 3)=syz*sx2(n)
 
-
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1366,12 +1359,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
       ! Fig. 3, for order 2). These 3 points are 3 consecutive gridpoints in x
       ! (and correspond to the same position in y and z)
       DO nv=1, 4
-        jx( pos_jx(n,0)+nv-2, pos_jx(n,1), pos_jx(n,2) ) = &
-        jx( pos_jx(n,0)+nv-2, pos_jx(n,1), pos_jx(n,2) ) + ww0x(n, nv)
-        jy( pos_jy(n,0)+nv-2, pos_jy(n,1), pos_jy(n,2) ) = &
-        jy( pos_jy(n,0)+nv-2, pos_jy(n,1), pos_jy(n,2) ) + ww0y(n, nv)
-        jz( pos_jz(n,0)+nv-2, pos_jz(n,1), pos_jz(n,2) ) = &
-        jz( pos_jz(n,0)+nv-2, pos_jz(n,1), pos_jz(n,2) ) + ww0z(n, nv)
+        jx( pos_jx(n,1)+nv-2, pos_jx(n,2), pos_jx(n,3) ) = &
+        jx( pos_jx(n,1)+nv-2, pos_jx(n,2), pos_jx(n,3) ) + ww0x(n, nv)
+        jy( pos_jy(n,1)+nv-2, pos_jy(n,2), pos_jy(n,3) ) = &
+        jy( pos_jy(n,1)+nv-2, pos_jy(n,2), pos_jy(n,3) ) + ww0y(n, nv)
+        jz( pos_jz(n,1)+nv-2, pos_jz(n,2), pos_jz(n,3) ) = &
+        jz( pos_jz(n,1)+nv-2, pos_jz(n,2), pos_jz(n,3) ) + ww0z(n, nv)
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1389,8 +1382,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   ! Because of the +/- 1 offset in y and z for the 8 nodes (see myoff, mzoff),
   ! the loops in iz and iy don't span the full extent of the grid,
   ! but the loop in ix does.
-  DO iz=-jx_guard(3)+1,jx_nvalid(3)+jx_guard(3)-1
-    DO iy=-jx_guard(2)+1,jx_nvalid(2)+jx_guard(2)-1
+  DO iz=-jx_nguard(3)+1,jx_nvalid(3)+jx_nguard(3)-1
+    DO iy=-jx_nguard(2)+1,jx_nvalid(2)+jx_nguard(2)-1
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1400,7 +1393,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-jx_guard(1),jx_nvalid(1)+jx_guard(1)
+      DO ix=-jx_nguard(1),jx_nvalid(1)+jx_nguard(1)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jx(ix,iy+myoff(1),iz+mzoff(1))=jx(ix,iy+myoff(1),iz+mzoff(1))+jxcells(1, ic)
@@ -1424,18 +1417,18 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   ! Because of the +/- 1 offset in y and z for the 8 nodes (see myoff, mzoff),
   ! the loops in iz and iy don't span the full extent of the grid,
   ! but the loop in ix does.
-  DO iz=-jy_guard(3)+1,jy_nvalid(3)+jy_guard(3)-1
-    DO iy=-jy_guard(2)+1,jy_nvalid(2)+jy_guard(2)-1
-      #if defined _OPENMP && _OPENMP>=201307
-      #ifndef NOVEC
+  DO iz=-jy_nguard(3)+1,jy_nvalid(3)+jy_nguard(3)-1
+    DO iy=-jy_nguard(2)+1,jy_nvalid(2)+jy_nguard(2)-1
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
       !$OMP SIMD
-      #endif
-      #elif defined __IBMBGQ__
+#endif
+#elif defined __IBMBGQ__
       !IBM* SIMD_LEVEL
-      #elif defined __INTEL_COMPILER
+#elif defined __INTEL_COMPILER
       !$DIR SIMD
-      #endif
-      DO ix=-jy_guard(2),jy_nvalid(2)+jy_guard(2)
+#endif
+      DO ix=-jy_nguard(2),jy_nvalid(2)+jy_nguard(2)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jy(ix,iy+myoff(1),iz+mzoff(1))=jy(ix,iy+myoff(1),iz+mzoff(1))+jycells(1, ic)
@@ -1447,11 +1440,11 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
         jy(ix,iy+myoff(7),iz+mzoff(7))=jy(ix,iy+myoff(7),iz+mzoff(7))+jycells(7, ic)
         jy(ix,iy+myoff(8),iz+mzoff(8))=jy(ix,iy+myoff(8),iz+mzoff(8))+jycells(8, ic)
       END DO
-      #if defined _OPENMP && _OPENMP>=201307
-      #ifndef NOVEC
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
       !$OMP END SIMD
-      #endif
-      #endif
+#endif
+#endif
     END DO
   END DO
 
@@ -1459,8 +1452,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   ! Because of the +/- 1 offset in y and z for the 8 nodes (see myoff, mzoff),
   ! the loops in iz and iy don't span the full extent of the grid,
   ! but the loop in ix does.
-  DO iz=-jz_guard(3)+1,jz_nvalid(3)+jz_guard(3)-1
-    DO iy=-jz_guard(2)+1,jz_nvalid(2)+jz_guard(2)-1
+  DO iz=-jz_nguard(3)+1,jz_nvalid(3)+jz_nguard(3)-1
+    DO iy=-jz_nguard(2)+1,jz_nvalid(2)+jz_nguard(2)-1
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1470,7 +1463,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-jz_guard(2),jz_nvalid(2)+jz_guard(2)
+      DO ix=-jz_nguard(2),jz_nvalid(2)+jz_nguard(2)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jz(ix,iy+myoff(1),iz+mzoff(1))=jz(ix,iy+myoff(1),iz+mzoff(1))+jzcells(1, ic)
