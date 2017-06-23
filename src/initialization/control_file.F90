@@ -2,18 +2,18 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, 
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
 ! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
 ! and the U.S. Government consequently retains certain rights. As such, the U.S.
-! Government has been granted for itself and others acting on its behalf a paid-up, 
+! Government has been granted for itself and others acting on its behalf a paid-up,
 ! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
 ! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
@@ -57,12 +57,12 @@ MODULE control_file
   INTEGER(idp), PARAMETER :: fh_input = 15
   CHARACTER(LEN=string_length) :: buffer
   CHARACTER(LEN=string_length) :: section_name
-  
+
   CONTAINS
-  
+
   ! ______________________________________________________________________________________
   !> @brief
-  !> Routine that proceeds to default init of parameters of the PIC loop.   
+  !> Routine that proceeds to default init of parameters of the PIC loop.
   !> This init is performed first in the main program.  It is called by ::main
   !>
   !> @author
@@ -71,22 +71,22 @@ MODULE control_file
   !> @date
   !> Creation 2015
   ! ______________________________________________________________________________________
-  SUBROUTINE default_init    
+  SUBROUTINE default_init
     ! --- Dimension
     c_dim = 3
-    
+
     ! --- Init particle tiling split
     ntilex = 1
     ntiley = 1
     ntilez = 1
-    
+
     ! --- Order of Maxwell field solver (default is 2 in x, y, z)
     norderx = 2
     nordery = 2
     norderz = 2
     l_nodalgrid = .FALSE.
-    l_spectral = .FALSE.! (no spectral solver by default) 
-    l_staggered = .TRUE.! (staggered scheme by default - for spectral ) 
+    l_spectral = .FALSE.! (no spectral solver by default)
+    l_staggered = .TRUE.! (staggered scheme by default - for spectral )
     ! --- Order of current deposition/ field gathering
     ! (default is 1 in x, y, z)
     nox = 1
@@ -98,43 +98,43 @@ MODULE control_file
     nxjguards=MAX(nox, 2_idp)
     nyjguards=MAX(noy, 2_idp)
     nzjguards=MAX(noz, 2_idp)
-    
+
     ! Topology
     topology = 0
-    
+
     ! MPI communication
     mpicom_curr = 1
-    
+
     ! Current deposition algorithm
     currdepo = 0
-    
+
     ! Charge deposition algorithm
     rhodepo = 0
-    
+
     ! Field gathering algorithm
     fieldgathe = 0
-    
+
     ! Particle communication routine
     partcom = 0
-    
+
     ! Particle pusher algorithm
     particle_pusher = 0
-    
+
     ! Field gathering + part. pusher
     fg_p_pp_separated = 0
-    
+
     ! Vector length current deposition
     lvec_curr_depo = 8
-    
+
     ! Vector length charge deposition
     LVEC_charge_depo = 64
-    
+
     ! Vector length field gathering
     LVEC_fieldgathe = 256
-    
+
     ! Size of the particle mpi buffer
     mpi_buf_size = 2000
-    
+
     ! Sorting activation (not activated by default)
     sorting_activated = 0
     sorting_dx = 1.
@@ -144,16 +144,16 @@ MODULE control_file
     sorting_shifty = 0.
     sorting_shiftz = 0.
     sorting_verbose = .TRUE.
-    
+
     ! Time stats output activation
     timestat_activated = 0
     timestat_period = 0
     timestat_itstart = 0
     timestat_perit = 0
     nbuffertimestat = 1
-    
+
     l_lower_order_in_v = .TRUE.
-    
+
     ! --- sets coefficient multiplying Courant time step
     dtcoef = 0.7_num
     ! --- smoothing
@@ -162,11 +162,11 @@ MODULE control_file
     ! --- sets max time in the simulation (in 1/w0)
     tmax = 0._num
     nsteps = 0
-    
+
     !-------------------------------------------------------------------------------
     ! plasma parameters (cold plasma)
     l_particles_weight = .FALSE.! .TRUE. if particles have different weights
-    
+
     ! --- quantities in plasma (or lab) frame
     !-------------------------------------------------------------------------------
     nlab  = 1.e23_num! plasma density in lab frame
@@ -202,22 +202,22 @@ MODULE control_file
     pbound_x_max=0
     pbound_y_max=0
     pbound_z_max=0
-    
+
     ! Temporal output
     temdiag_frequency = 0
     temdiag_format = 0
-    
-    ! SET FFTW WITH MPI FLAG 
+
+    ! SET FFTW WITH MPI FLAG
     fftw_with_mpi = .FALSE.
   END SUBROUTINE default_init
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Routine that reads command line arguments.
   !
   !> @details
-  !> This routine allow to pass command line arguments to PXR 
-  !> and is very useful when performing parametric studies. 
+  !> This routine allow to pass command line arguments to PXR
+  !> and is very useful when performing parametric studies.
   !> This init is performed after every other init and thus overwrites parameters
   !> defined in default_init or read_input_file. It is called by ::main
   !
@@ -325,7 +325,7 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_from_cl
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Routine that reads simulation parameters from an input file (of name input_file.pixr)
@@ -376,7 +376,7 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_input_file
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Routine that reads the cpu section in the input file
@@ -387,7 +387,7 @@ MODULE control_file
   !> @date
   !> Creation 2015
   ! ______________________________________________________________________________________
-  SUBROUTINE read_cpusplit_section    
+  SUBROUTINE read_cpusplit_section
     INTEGER :: ix = 0
     LOGICAL(lp)  :: end_section = .FALSE.
     ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -442,7 +442,7 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_cpusplit_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Routine that reads the plasma main properties section in the input file
@@ -453,7 +453,7 @@ MODULE control_file
   !> @date
   !> Creation 2015
   ! ______________________________________________________________________________________
-  SUBROUTINE read_plasma_section    
+  SUBROUTINE read_plasma_section
     INTEGER :: ix = 0
     LOGICAL(lp)  :: end_section = .FALSE.
     ! READS CPUSPLIT SECTION OF INPUT FILE
@@ -481,7 +481,7 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_plasma_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Routine that reads the solver parameters section in the input file
@@ -552,7 +552,7 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_solver_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Routine that reads the particle sorting parameters section in the input file
@@ -603,10 +603,10 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_sorting_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
-  !> Routine that reads the time statistics parameters section in the input file 
+  !> Routine that reads the time statistics parameters section in the input file
   !
   !> @author
   !> Henri Vincenti
@@ -645,11 +645,11 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_timestat_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
-  !> Routine that reads the general parameters section in the input file 
-  !> including the domain extension, the discretization, the tiling, the guard cells 
+  !> Routine that reads the general parameters section in the input file
+  !> including the domain extension, the discretization, the tiling, the guard cells
   !
   !> @author
   !> Henri Vincenti
@@ -754,10 +754,10 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_main_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
-  !> Routine that reads the species properties section in the input file 
+  !> Routine that reads the species properties section in the input file
   !
   !> @author
   !> Henri Vincenti
@@ -871,10 +871,10 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_species_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
-  !> Routine that reads the particle dump parameters section 
+  !> Routine that reads the particle dump parameters section
   !
   !> @author
   !> Henri Vincenti
@@ -934,7 +934,7 @@ MODULE control_file
         END DO
         IF (dp%ispecies .EQ. -1) THEN
           WRITE(0, *) "ERROR IN SPECIES NAME PARTICLE DUMP SECTION"
-          
+
         ENDIF
       ELSE IF (INDEX(buffer, 'dump_y_min') .GT. 0) THEN
         ix = INDEX(buffer, "=")
@@ -975,11 +975,11 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_particle_dumps_section
-  
-  
+
+
   ! ______________________________________________________________________________________
   !> @brief
-  !> Routine that field output parameters section 
+  !> Routine that field output parameters section
   !
   !> @author
   !> Henri Vincenti
@@ -1045,10 +1045,10 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_output_section
-  
+
   ! ______________________________________________________________________________________
   !> @brief
-  !> Routine that reads parameters for temporal diagnistics in the input file 
+  !> Routine that reads parameters for temporal diagnistics in the input file
   !> Temporal diagnostics are the temporal evolution of some quantities
   !> such as the particle energies and the field energies.
   !
@@ -1061,7 +1061,7 @@ MODULE control_file
   SUBROUTINE read_temporal_output_section
     INTEGER :: ix = 0
     LOGICAL(lp)  :: end_section = .FALSE.
-    
+
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       !WRITE(0, *), TRIM(ADJUSTL(buffer))
@@ -1108,7 +1108,7 @@ MODULE control_file
     ENDDO
     RETURN
   END SUBROUTINE
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Initialization Laser (and antenna) section.
@@ -1148,7 +1148,7 @@ MODULE control_file
     curr%sorting_period = 0
     curr%sorting_start = 0
     curr%species_npart=0
-    ! --- Init default value for antenna params 
+    ! --- Init default value for antenna params
     curr%is_antenna=.TRUE.
     curr%antenna_params%is_lens=.FALSE.
     curr%antenna_params%laser_z0 = 0._num
@@ -1253,12 +1253,12 @@ MODULE control_file
   !> Creation 2015
   ! ______________________________________________________________________________________
   SUBROUTINE init_species_section
-    
+
     IF (.NOT. l_species_allocated) THEN
       nspecies=0
       ALLOCATE(species_parray(1:nspecies_max))
       l_species_allocated=.TRUE.
     ENDIF
   END SUBROUTINE init_species_section
-  
+
 END MODULE control_file

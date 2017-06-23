@@ -8,7 +8,7 @@
 ! All rights reserved.
 !
 ! If you have questions about your rights to use or distribute this software,
- ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -123,7 +123,7 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE calc_field_div(divee, eex, eey, eez, nx, ny, nz, nxguard, nyguard,       &
-  nzguard, dx, dy, dz)
+    nzguard, dx, dy, dz)
     IMPLICIT NONE
     INTEGER(idp) ::  j, k, l
     INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
@@ -435,7 +435,7 @@ MODULE diagnostics
 
     ! Current species
     curr=>species_parray(is)
-
+    nptot_loc(1) = 0_idp
     ! Loop over the tiles
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(curr, ntilex,ntiley,ntilez) &
@@ -454,6 +454,7 @@ MODULE diagnostics
     !$OMP END PARALLEL DO
 
   END SUBROUTINE get_local_number_of_particles_from_species
+
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -481,7 +482,7 @@ MODULE diagnostics
     INTEGER(idp), INTENT(IN) :: is
     INTEGER(idp), DIMENSION(1) :: nptot_loc
 
-    nptot_loc(1) = 0
+    nptot_loc(1) = 0_idp
     CALL get_local_number_of_particles_from_species(is, nptot_loc)
 
     ! All MPI reduction
@@ -642,6 +643,7 @@ MODULE diagnostics
     DO iz=1, ntilez
       DO iy=1, ntiley
         DO ix=1, ntilex
+
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np = curr_tile%np_tile(1)
 
@@ -730,6 +732,7 @@ MODULE diagnostics
     DO iz=1, ntilez
       DO iy=1, ntiley
         DO ix=1, ntilex
+
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np = curr_tile%np_tile(1)
 
@@ -786,7 +789,7 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,     &
-  field_energy)
+    field_energy)
     USE constants
     IMPLICIT NONE
 
@@ -799,6 +802,7 @@ MODULE diagnostics
     REAL(num), dimension(-nxguard:nx2+nxguard, 1, -nzguard:nz2+nzguard), intent(in)   &
     :: field
     field_energy = 0
+
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
     !$OMP DO COLLAPSE(2) REDUCTION(+:field_energy)
     do l = 1, nz2
@@ -828,7 +832,7 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard,       &
-  nyguard, nzguard, field_energy)
+    nyguard, nzguard, field_energy)
     USE constants
     IMPLICIT NONE
     INTEGER(idp)     :: nx2, ny2, nz2
@@ -848,7 +852,6 @@ MODULE diagnostics
         do j = 1, nx2
 
           field_energy = field_energy + field(j, k, l)*field(j, k, l)*0.5
-
 
         end do
       end do
@@ -873,7 +876,7 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,         &
-  field_energy)
+    field_energy)
     USE constants
     USE mpi_derived_types
     USE mpi_type_constants
@@ -927,7 +930,7 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard, nyguard,  &
-  nzguard, field_energy)
+    nzguard, field_energy)
     USE constants
     USE mpi_derived_types
     USE mpi_type_constants
@@ -977,7 +980,7 @@ MODULE diagnostics
   !> Creation 2016
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard,      &
-  nzguard, norm)
+    nzguard, norm)
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
@@ -1061,7 +1064,7 @@ MODULE diagnostics
   !> Creation 2016
   ! ______________________________________________________________________________________
   SUBROUTINE get_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, &
-  norm)
+    norm)
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
@@ -1094,7 +1097,7 @@ MODULE diagnostics
 
     ! All MPI reduction
     call MPI_ALLREDUCE(norm_loc, norm, 1_isp, mpidbl, MPI_SUM, comm, errcode)
-    
+
     norm = sqrt(norm)
 
   END SUBROUTINE

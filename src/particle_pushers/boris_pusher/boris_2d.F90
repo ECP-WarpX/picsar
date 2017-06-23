@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -79,8 +79,8 @@ SUBROUTINE pxr_push2dxz(np, xp, zp, uxp, uyp, uzp, gaminv, dt)
   REAL(num) :: xp(np), zp(np), uxp(np), uyp(np), uzp(np), gaminv(np)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
-  
-  
+
+
 #if defined _OPENMP && _OPENMP>=201307
   !$OMP SIMD
 #elif defined __IBMBGQ__
@@ -91,11 +91,11 @@ SUBROUTINE pxr_push2dxz(np, xp, zp, uxp, uyp, uzp, gaminv, dt)
   DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-    
+
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
   !$OMP END SIMD
 #endif
-  
+
   RETURN
 END SUBROUTINE pxr_push2dxz

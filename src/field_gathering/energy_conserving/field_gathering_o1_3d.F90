@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -66,31 +66,31 @@
 !> @param[in] exg, eyg, ezg electric field grids
 !> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the
 !>  exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints
 !> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmin,    &
-ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
-ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
+  ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
+  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE constants
   USE params
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(3), exg_nvalid(3),               &
-  eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)  
+  eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
   LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
-  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)  
+  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
   -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1,                                       &
-  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)  
+  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
   -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
-  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)  
+  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: ixmin, ixmax, iymin, iymax, izmin, izmax
@@ -104,53 +104,53 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   REAL(num), DIMENSION(0:1)            :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   ixmin = 0
   ixmax = 0
   iymin = 0
   iymax = 0
   izmin = 0
   izmax = 0
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     ixmin0 = 0
     ixmax0 = 0
     iymin0 = 0
     iymax0 = 0
     izmin0 = 0
     izmax0 = 0
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
-      
+
       j=floor(x)
       j0=floor(x)
       k=floor(y)
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-      
+
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       sx( 0) = 1.0_num-xint
       sx( 1) = xint
@@ -158,15 +158,15 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy( 1) = yint
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       sx0( 0) = 1.0_num
       sy0( 0) = 1.0_num
       sz0( 0) = 1.0_num
-      
+
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -176,7 +176,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           !DIR$ NOVECTOR
@@ -185,7 +185,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           !DIR$ NOVECTOR
@@ -193,25 +193,25 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
             ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj, k+kk, l0+ll)
           end do
         end do
-      end do      
+      end do
     END DO
-    
+
     ! __ l_lower_order_in_v false  _____________________________
   ELSE
-    
+
     ixmin0 = 0
     ixmax0 = 1
     iymin0 = 0
     iymax0 = 1
     izmin0 = 0
     izmax0 = 1
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -222,7 +222,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       sx( 0) = 1.0_num-xint
       sx( 1) = xint
@@ -239,7 +239,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy0( 1) = yint
       sz0( 0) = 1.0_num-zint
       sz0( 1) = zint
-      
+
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -249,7 +249,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -259,7 +259,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -269,7 +269,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
     END DO
   ENDIF
   RETURN
@@ -303,68 +303,68 @@ END SUBROUTINE gete3d_energy_conserving_scalar_1_1_1
 !
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmin,    &
-ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
-bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
+  ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
+  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)                :: bxg_nguard(3), bxg_nvalid(3),            &
-  byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)  
+  byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
   LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
-  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)  
+  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
   -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1,                                       &
-  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)  
+  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
   REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,           &
   -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1,                                       &
-  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)  
+  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax,    &
   izmin, izmax, ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0,   &
-  l0 
+  l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint
   REAL(num), DIMENSION(0:1)            :: sx, sx0
   REAL(num), DIMENSION(0:1)            :: sy, sy0
   REAL(num), DIMENSION(0:1)            :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   ixmin = 0
   ixmax = 0
   iymin = 0
   iymax = 0
   izmin = 0
   izmax = 0
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     ixmin0 = 0
     ixmax0 = 0
     iymin0 = 0
     iymax0 = 0
     izmin0 = 0
     izmax0 = 0
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x)
@@ -372,11 +372,11 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-      
+
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       sx( 0) = 1.0_num-xint
       sx( 1) = xint
@@ -384,15 +384,15 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy( 1) = yint
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       sx0( 0) = 1.0_num
       sy0( 0) = 1.0_num
       sz0( 0) = 1.0_num
-      
+
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -402,7 +402,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -412,7 +412,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -422,24 +422,24 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
     END DO
-    
+
   ELSE
-    
+
     ixmin0 = 0
     ixmax0 = 1
     iymin0 = 0
     iymax0 = 1
     izmin0 = 0
     izmax0 = 1
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -447,7 +447,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       k0=floor(y-0.5_num)
       l=floor(z)
       l0=floor(z-0.5_num)
-      
+
       ! Compute shape factors
       xint=x-j
       yint=y-k
@@ -458,18 +458,18 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy( 1) = yint
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       sx0( 0) = 1.0_num-xint
       sx0( 1) = xint
       sy0( 0) = 1.0_num-yint
       sy0( 1) = yint
       sz0( 0) = 1.0_num-zint
       sz0( 1) = zint
-      
+
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -479,7 +479,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -489,7 +489,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -533,8 +533,8 @@ END SUBROUTINE getb3d_energy_conserving_scalar_1_1_1
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_vec_1_1_1(np, xp, yp, zp, ex, ey, ez, xmin, ymin, &
-zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
-l_lower_order_in_v)  
+  zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
+  l_lower_order_in_v)
   USE constants
   USE params
   IMPLICIT NONE
@@ -550,29 +550,29 @@ l_lower_order_in_v)
   INTEGER(isp)                           :: n, nn
   REAL(num)                              :: dxi, dyi, dzi, x, y, z
   REAL(num)                              :: xint, yint, zint, xintsq, oxint, yintsq,  &
-  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq 
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq
   REAL(num), DIMENSION(lvect, 0:1)        :: sx, sx0
   REAL(num), DIMENSION(lvect, 0:1)        :: sy, sy0
   REAL(num), DIMENSION(lvect, 0:1)        :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
@@ -592,16 +592,16 @@ l_lower_order_in_v)
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -609,11 +609,11 @@ l_lower_order_in_v)
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -621,33 +621,33 @@ l_lower_order_in_v)
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         sx0(n, 0) = 1.0_num
         sy0(n, 0) = 1.0_num
         sz0(n, 0) = 1.0_num
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 0)*exg(j0, k, l)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 0)*exg(j0, k+1, l)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 1)*exg(j0, k, l+1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 1)*exg(j0, k+1, l+1)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 0)*eyg(j, k0, l)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 0)*eyg(j+1, k0, l)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 1)*eyg(j, k0, l+1)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 1)*eyg(j+1, k0, l+1)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 0)*sz0(n, 0)*ezg(j, k, l0)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 0)*sz0(n, 0)*ezg(j+1, k, l0)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 1)*sz0(n, 0)*ezg(j, k+1, l0)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 1)*sz0(n, 0)*ezg(j+1, k+1, l0)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -655,13 +655,13 @@ l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
     ! l_lower_order_in_v false
   ELSE
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
@@ -681,16 +681,16 @@ l_lower_order_in_v)
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -701,7 +701,7 @@ l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -718,7 +718,7 @@ l_lower_order_in_v)
         sy0(n, 1) = yint
         sz0(n, 0) = 1.0_num-zint
         sz0(n, 1) = zint
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 0)*exg(j0, k, l)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 0)*sz(n, 0)*exg(j0+1, k, l)
@@ -728,7 +728,7 @@ l_lower_order_in_v)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 0)*sz(n, 1)*exg(j0+1, k, l+1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 1)*exg(j0, k+1, l+1)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 1)*sz(n, 1)*exg(j0+1, k+1, l+1)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 0)*eyg(j, k0, l)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 0)*eyg(j+1, k0, l)
@@ -738,7 +738,7 @@ l_lower_order_in_v)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 1)*eyg(j+1, k0, l+1)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 1)*sz(n, 1)*eyg(j, k0+1, l+1)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 1)*sz(n, 1)*eyg(j+1, k0+1, l+1)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 0)*sz0(n, 0)*ezg(j, k, l0)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 0)*sz0(n, 0)*ezg(j+1, k, l0)
@@ -748,7 +748,7 @@ l_lower_order_in_v)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 0)*sz0(n, 1)*ezg(j+1, k, l0+1)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 1)*sz0(n, 1)*ezg(j, k+1, l0+1)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 1)*sz0(n, 1)*ezg(j+1, k+1, l0+1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -757,7 +757,7 @@ l_lower_order_in_v)
 #endif
     ENDDO
   ENDIF
-  
+
   RETURN
 END SUBROUTINE
 #endif
@@ -793,8 +793,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_vec_1_1_1(np, xp, yp, zp, bx, by, bz, xmin, ymin, &
-zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
-l_lower_order_in_v)  
+  zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
+  l_lower_order_in_v)
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -810,33 +810,33 @@ l_lower_order_in_v)
   INTEGER(isp)                         :: n, nn
   REAL(num)                            :: dxi, dyi, dzi
   REAL(num)                            :: x, y, z, xint, yint, zint, xintsq, oxint,   &
-  yintsq, oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq 
+  yintsq, oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq
   REAL(num), DIMENSION(lvect, 0:1)      :: sx, sx0
   REAL(num), DIMENSION(lvect, 0:1)      :: sy, sy0
   REAL(num), DIMENSION(lvect, 0:1)      :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     sx0(:, 0) = 1.0_num
     sy0(:, 0) = 1.0_num
     sz0(:, 0) = 1.0_num
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
@@ -856,16 +856,16 @@ l_lower_order_in_v)
       ! !DIR IVDEP
       ! !DIR DISTRIBUTE POINT
       ! #endif
-      
+
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -873,11 +873,11 @@ l_lower_order_in_v)
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -885,23 +885,23 @@ l_lower_order_in_v)
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 0)*sz0(n, 0)*bxg(j, k0, l0)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 0)*sz0(n, 0)*bxg(j+1, k0, l0)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 0)*sz0(n, 0)*byg(j0, k, l0)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 1)*sz0(n, 0)*byg(j0, k+1, l0)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 0)*bzg(j0, k0, l)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 1)*bzg(j0, k0, l+1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -909,12 +909,12 @@ l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
@@ -936,13 +936,13 @@ l_lower_order_in_v)
       ! #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -950,7 +950,7 @@ l_lower_order_in_v)
         k0=floor(y-0.5_num)
         l=floor(z)
         l0=floor(z-0.5_num)
-        
+
         ! Compute shape factors
         xint=x-j
         yint=y-k
@@ -961,18 +961,18 @@ l_lower_order_in_v)
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
         sy0(n, 0) = 1.0_num-yint
         sy0(n, 1) = yint
         sz0(n, 0) = 1.0_num-zint
         sz0(n, 1) = zint
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 0)*sz0(n, 0)*bxg(j, k0, l0)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 0)*sz0(n, 0)*bxg(j+1, k0, l0)
@@ -982,7 +982,7 @@ l_lower_order_in_v)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 0)*sz0(n, 1)*bxg(j+1, k0, l0+1)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 1)*sz0(n, 1)*bxg(j, k0+1, l0+1)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 1)*sz0(n, 1)*bxg(j+1, k0+1, l0+1)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 0)*sz0(n, 0)*byg(j0, k, l0)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 0)*sz0(n, 0)*byg(j0+1, k, l0)
@@ -992,7 +992,7 @@ l_lower_order_in_v)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 0)*sz0(n, 1)*byg(j0+1, k, l0+1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 1)*sz0(n, 1)*byg(j0, k+1, l0+1)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 1)*sz0(n, 1)*byg(j0+1, k+1, l0+1)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 0)*bzg(j0, k0, l)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 0)*sz(n, 0)*bzg(j0+1, k0, l)
@@ -1002,7 +1002,7 @@ l_lower_order_in_v)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 0)*sz(n, 1)*bzg(j0+1, k0, l+1)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 1)*sz(n, 1)*bzg(j0, k0+1, l+1)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 1)*sz(n, 1)*bzg(j0+1, k0+1, l+1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1045,8 +1045,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vecV1_1_1_1(np, xp, yp, zp, ex, ey, ez, bx, by,  &
-bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)  
+  bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
   USE constants
   USE params
   IMPLICIT NONE
@@ -1068,24 +1068,24 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
   REAL(num), DIMENSION(lvect, 0:1)      :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     sx0(:, 0) = 1.0_num
     sy0(:, 0) = 1.0_num
     sz0(:, 0) = 1.0_num
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1109,29 +1109,29 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
-        
+
         j=floor(x)
         j0=floor(x)
         k=floor(y)
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -1139,41 +1139,41 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 0)*exg(j0, k, l)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 0)*exg(j0, k+1, l)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 1)*exg(j0, k, l+1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 1)*exg(j0, k+1, l+1)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 0)*eyg(j, k0, l)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 0)*eyg(j+1, k0, l)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 1)*eyg(j, k0, l+1)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 1)*eyg(j+1, k0, l+1)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 0)*sz0(n, 0)*ezg(j, k, l0)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 0)*sz0(n, 0)*ezg(j+1, k, l0)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 1)*sz0(n, 0)*ezg(j, k+1, l0)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 1)*sz0(n, 0)*ezg(j+1, k+1, l0)
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 0)*sz0(n, 0)*bxg(j, k0, l0)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 0)*sz0(n, 0)*bxg(j+1, k0, l0)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 0)*sz0(n, 0)*byg(j0, k, l0)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 1)*sz0(n, 0)*byg(j0, k+1, l0)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 0)*bzg(j0, k0, l)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 1)*bzg(j0, k0, l+1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1181,9 +1181,9 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1207,16 +1207,16 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -1227,7 +1227,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -1235,18 +1235,18 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
         sy0(n, 0) = 1.0_num-yint
         sy0(n, 1) = yint
         sz0(n, 0) = 1.0_num-zint
         sz0(n, 1) = zint
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 0)*exg(j0, k, l)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 0)*sz(n, 0)*exg(j0+1, k, l)
@@ -1256,7 +1256,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 0)*sz(n, 1)*exg(j0+1, k, l+1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 1)*exg(j0, k+1, l+1)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 1)*sz(n, 1)*exg(j0+1, k+1, l+1)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 0)*eyg(j, k0, l)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 0)*eyg(j+1, k0, l)
@@ -1266,7 +1266,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 1)*eyg(j+1, k0, l+1)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 1)*sz(n, 1)*eyg(j, k0+1, l+1)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 1)*sz(n, 1)*eyg(j+1, k0+1, l+1)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 0)*sz0(n, 0)*ezg(j, k, l0)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 0)*sz0(n, 0)*ezg(j+1, k, l0)
@@ -1276,7 +1276,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 0)*sz0(n, 1)*ezg(j+1, k, l0+1)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 1)*sz0(n, 1)*ezg(j, k+1, l0+1)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 1)*sz0(n, 1)*ezg(j+1, k+1, l0+1)
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 0)*sz0(n, 0)*bxg(j, k0, l0)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 0)*sz0(n, 0)*bxg(j+1, k0, l0)
@@ -1286,7 +1286,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 0)*sz0(n, 1)*bxg(j+1, k0, l0+1)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 1)*sz0(n, 1)*bxg(j, k0+1, l0+1)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 1)*sz0(n, 1)*bxg(j+1, k0+1, l0+1)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 0)*sz0(n, 0)*byg(j0, k, l0)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 0)*sz0(n, 0)*byg(j0+1, k, l0)
@@ -1296,7 +1296,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 0)*sz0(n, 1)*byg(j0+1, k, l0+1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 1)*sz0(n, 1)*byg(j0, k+1, l0+1)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 1)*sz0(n, 1)*byg(j0+1, k+1, l0+1)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 0)*bzg(j0, k0, l)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 0)*sz(n, 0)*bzg(j0+1, k0, l)
@@ -1306,7 +1306,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 0)*sz(n, 1)*bzg(j0+1, k0, l+1)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 1)*sz(n, 1)*bzg(j0, k0+1, l+1)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 1)*sz(n, 1)*bzg(j0+1, k0+1, l+1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1349,8 +1349,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vecV2_1_1_1(np, xp, yp, zp, ex, ey, ez, bx, by,  &
-bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
+  bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -1382,19 +1382,19 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
-  
+
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   ! ___ Loop on all the partciles by block of size lvect _______________________
-  
+
   DO ip=1, np, lvect
-    
+
     ! ____________________________________________________________________________________
     ! Field gathering
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -1418,11 +1418,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Compute index of particle
       j(n)=floor(x)
       j0(n)=floor(x)
@@ -1430,11 +1430,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       k0(n)=floor(y)
       l(n)=floor(z)
       l0(n)=floor(z)
-      
+
       xint=x-j(n)
       yint=y-k(n)
       zint=z-l(n)
-      
+
       ! Compute shape factors
       sx(n, 0) = 1.0_num-xint
       sx(n, 1) = xint
@@ -1442,11 +1442,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       sy(n, 1) = yint
       sz(n, 0) = 1.0_num-zint
       sz(n, 1) = zint
-      
+
       xint=x-0.5_num-j0(n)
       yint=y-0.5_num-k0(n)
       zint=z-0.5_num-l0(n)
-      
+
       sx0(n, 0) = 1.0_num
       sy0(n, 0) = 1.0_num
       sz0(n, 0) = 1.0_num
@@ -1456,7 +1456,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -1480,32 +1480,32 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Ex on particle
       ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 0)*exg(j0(n), k(n), l(n))
       ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 0)*exg(j0(n), k(n)+1, l(n))
       ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 0)*sz(n, 1)*exg(j0(n), k(n), l(n)+1)
       ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 1)*sz(n, 1)*exg(j0(n), k(n)+1, l(n)+1)
-      
+
       ! Compute Ey on particle
       ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 0)*eyg(j(n), k0(n), l(n))
       ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 0)*eyg(j(n)+1, k0(n), l(n))
       ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 0)*sz(n, 1)*eyg(j(n), k0(n), l(n)+1)
       ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 0)*sz(n, 1)*eyg(j(n)+1, k0(n), l(n)+1)
-      
+
       ! Compute Ez on particle
       ez(nn) = ez(nn) + sx(n, 0)*sy(n, 0)*sz0(n, 0)*ezg(j(n), k(n), l0(n))
       ez(nn) = ez(nn) + sx(n, 1)*sy(n, 0)*sz0(n, 0)*ezg(j(n)+1, k(n), l0(n))
       ez(nn) = ez(nn) + sx(n, 0)*sy(n, 1)*sz0(n, 0)*ezg(j(n), k(n)+1, l0(n))
       ez(nn) = ez(nn) + sx(n, 1)*sy(n, 1)*sz0(n, 0)*ezg(j(n)+1, k(n)+1, l0(n))
-      
+
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -1529,28 +1529,28 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Bx on particle
       bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 0)*sz0(n, 0)*bxg(j(n), k0(n), l0(n))
       bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 0)*sz0(n, 0)*bxg(j(n)+1, k0(n), l0(n))
-      
+
       ! Compute By on particle
       by(nn) = by(nn) + sx0(n, 0)*sy(n, 0)*sz0(n, 0)*byg(j0(n), k(n), l0(n))
       by(nn) = by(nn) + sx0(n, 0)*sy(n, 1)*sz0(n, 0)*byg(j0(n), k(n)+1, l0(n))
-      
+
       ! Compute Bz on particle
       bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 0)*bzg(j0(n), k0(n), l(n))
       bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 0)*sz(n, 1)*bzg(j0(n), k0(n), l(n)+1)
-      
+
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
   ENDDO
-  
+
   RETURN
 END SUBROUTINE
 
@@ -1584,12 +1584,12 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vecV3_1_1_1(np, xp, yp, zp, ex, ey, ez, bx, by,  &
-bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)  
+  bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
   USE constants
   USE params
   IMPLICIT NONE
-  
+
   ! __ Parameter declaration _____________________________________________________
   INTEGER(idp), intent(in)                         :: np, nx, ny, nz, nxguard,        &
   nyguard, nzguard
@@ -1598,8 +1598,8 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
   REAL(num), DIMENSION(np), intent(inout)          :: ex, ey, ez, bx, by, bz
   LOGICAL(lp), intent(in)                          :: l_lower_order_in_v
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
-  -nzguard:nz+nzguard), intent(in) :: exg, eyg, ezg, bxg, byg, bzg 
-  
+  -nzguard:nz+nzguard), intent(in) :: exg, eyg, ezg, bxg, byg, bzg
+
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: nn, n
@@ -1612,24 +1612,24 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
   REAL(num), DIMENSION(lvect, 0:1)      :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     sx0(:, 0) = 1.0_num
     sy0(:, 0) = 1.0_num
     sz0(:, 0) = 1.0_num
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1653,29 +1653,29 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
-        
+
         j=floor(x)
         j0=floor(x)
         k=floor(y)
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -1683,38 +1683,38 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         ! Compute Ex on particle
         a = (sy(n, 0)*exg(j0, k, l)   + sy(n, 1)*exg(j0, k+1, l))*sz(n, 0) + (sy(n,   &
-        0)*exg(j0, k, l+1) + sy(n, 1)*exg(j0, k+1, l+1))*sz(n, 1) 
+        0)*exg(j0, k, l+1) + sy(n, 1)*exg(j0, k+1, l+1))*sz(n, 1)
         ex(nn) = ex(nn) + a
-        
+
         ! Compute Ey on particle
         a = (sx(n, 0)*eyg(j, k0, l) + sx(n, 1)*eyg(j+1, k0, l))*sz(n, 0) + (sx(n,     &
-        0)*eyg(j, k0, l+1) + sx(n, 1)*eyg(j+1, k0, l+1))*sz(n, 1) 
+        0)*eyg(j, k0, l+1) + sx(n, 1)*eyg(j+1, k0, l+1))*sz(n, 1)
         ey(nn) = ey(nn) + a
-        
+
         ! Compute Ez on particle
         a = (sx(n, 0)*ezg(j, k, l0) + sx(n, 1)*ezg(j+1, k, l0))*sy(n, 0) + (sx(n,     &
-        0)*ezg(j, k+1, l0) + sx(n, 1)*ezg(j+1, k+1, l0))*sy(n, 1) 
+        0)*ezg(j, k+1, l0) + sx(n, 1)*ezg(j+1, k+1, l0))*sy(n, 1)
         ez(nn) = ez(nn) + a
-        
+
         ! Compute Bx on particle
         a = (sx(n, 0)*bxg(j, k0, l0) + sx(n, 1)*bxg(j+1, k0, l0))
         bx(nn) = bx(nn) + a
-        
+
         ! Compute By on particle
         a = (sy(n, 0)*byg(j0, k, l0) + sy(n, 1)*byg(j0, k+1, l0))
         by(nn) = by(nn) + a
-        
+
         ! Compute Bz on particle
         a = (sz(n, 0)*bzg(j0, k0, l) + sz(n, 1)*bzg(j0, k0, l+1))
         bz(nn) = bz(nn) + a
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1722,10 +1722,10 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
-    
+
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1749,16 +1749,16 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -1769,7 +1769,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(n, 0) = 1.0_num-xint
         sx(n, 1) = xint
@@ -1777,70 +1777,70 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
         sy(n, 1) = yint
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
         sy0(n, 0) = 1.0_num-yint
         sy0(n, 1) = yint
         sz0(n, 0) = 1.0_num-zint
         sz0(n, 1) = zint
-        
+
         ! Compute Ex on particle
-        a = (sx0(n, 0)*exg(j0, k, l) + sx0(n, 1)*exg(j0+1, k, l))*sy(n, 0) 
-        a = a + (sx0(n, 0)*exg(j0, k+1, l) + sx0(n, 1)*exg(j0+1, k+1, l))*sy(n, 1) 
+        a = (sx0(n, 0)*exg(j0, k, l) + sx0(n, 1)*exg(j0+1, k, l))*sy(n, 0)
+        a = a + (sx0(n, 0)*exg(j0, k+1, l) + sx0(n, 1)*exg(j0+1, k+1, l))*sy(n, 1)
         ex(nn) = ex(nn) + a*sz(n, 0)
-        a = (sx0(n, 0)*exg(j0, k, l+1) + sx0(n, 1)*exg(j0+1, k, l+1))*sy(n, 0) 
+        a = (sx0(n, 0)*exg(j0, k, l+1) + sx0(n, 1)*exg(j0+1, k, l+1))*sy(n, 0)
         a = a + (sx0(n, 0)*exg(j0, k+1, l+1) + sx0(n, 1)*exg(j0+1, k+1, l+1))*sy(n,   &
-        1) 
+        1)
         ex(nn) = ex(nn) + a*sz(n, 1)
-        
+
         ! Compute Ey on particle
-        a = (sx(n, 0)*eyg(j, k0, l) + sx(n, 1)*eyg(j+1, k0, l))*sy0(n, 0) 
-        a = a + (sx(n, 0)*eyg(j, k0+1, l) + sx(n, 1)*eyg(j+1, k0+1, l))*sy0(n, 1) 
+        a = (sx(n, 0)*eyg(j, k0, l) + sx(n, 1)*eyg(j+1, k0, l))*sy0(n, 0)
+        a = a + (sx(n, 0)*eyg(j, k0+1, l) + sx(n, 1)*eyg(j+1, k0+1, l))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 0)
-        a = (sx(n, 0)*eyg(j, k0, l+1) + sx(n, 1)*eyg(j+1, k0, l+1))*sy0(n, 0) 
-        a = a + (sx(n, 0)*eyg(j, k0+1, l+1) + sx(n, 1)*eyg(j+1, k0+1, l+1))*sy0(n, 1) 
+        a = (sx(n, 0)*eyg(j, k0, l+1) + sx(n, 1)*eyg(j+1, k0, l+1))*sy0(n, 0)
+        a = a + (sx(n, 0)*eyg(j, k0+1, l+1) + sx(n, 1)*eyg(j+1, k0+1, l+1))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 1)
-        
+
         ! Compute Ez on particle
-        a = (sx(n, 0)*ezg(j, k, l0) + sx(n, 1)*ezg(j+1, k, l0))*sy(n, 0) 
-        a = a + (sx(n, 0)*ezg(j, k+1, l0) + sx(n, 1)*ezg(j+1, k+1, l0))*sy(n, 1) 
+        a = (sx(n, 0)*ezg(j, k, l0) + sx(n, 1)*ezg(j+1, k, l0))*sy(n, 0)
+        a = a + (sx(n, 0)*ezg(j, k+1, l0) + sx(n, 1)*ezg(j+1, k+1, l0))*sy(n, 1)
         ez(nn) = ez(nn) + a*sz0(n, 0)
-        a = (sx(n, 0)*ezg(j, k, l0+1) + sx(n, 1)*ezg(j+1, k, l0+1))*sy(n, 0) 
-        a = a + (sx(n, 0)*ezg(j, k+1, l0+1) + sx(n, 1)*ezg(j+1, k+1, l0+1))*sy(n, 1) 
+        a = (sx(n, 0)*ezg(j, k, l0+1) + sx(n, 1)*ezg(j+1, k, l0+1))*sy(n, 0)
+        a = a + (sx(n, 0)*ezg(j, k+1, l0+1) + sx(n, 1)*ezg(j+1, k+1, l0+1))*sy(n, 1)
         ez(nn) = ez(nn) + a*sz0(n, 1)
-        
+
         ! Compute Bx on particle
-        a = (sx(n, 0)*bxg(j, k0, l0) + sx(n, 1)*bxg(j+1, k0, l0))*sy0(n, 0) 
-        a = a + (sx(n, 0)*bxg(j, k0+1, l0) + sx(n, 1)*bxg(j+1, k0+1, l0))*sy0(n, 1) 
+        a = (sx(n, 0)*bxg(j, k0, l0) + sx(n, 1)*bxg(j+1, k0, l0))*sy0(n, 0)
+        a = a + (sx(n, 0)*bxg(j, k0+1, l0) + sx(n, 1)*bxg(j+1, k0+1, l0))*sy0(n, 1)
         bx(nn) = bx(nn) + a*sz0(n, 0)
-        a = (sx(n, 0)*bxg(j, k0, l0+1) + sx(n, 1)*bxg(j+1, k0, l0+1))*sy0(n, 0) 
+        a = (sx(n, 0)*bxg(j, k0, l0+1) + sx(n, 1)*bxg(j+1, k0, l0+1))*sy0(n, 0)
         a = a + (sx(n, 0)*bxg(j, k0+1, l0+1) + sx(n, 1)*bxg(j+1, k0+1, l0+1))*sy0(n,  &
-        1) 
+        1)
         bx(nn) = bx(nn) + a*sz0(n, 1)
-        
+
         ! Compute By on particle
-        a = (sx0(n, 0)*byg(j0, k, l0) + sx0(n, 1)*byg(j0+1, k, l0))*sy(n, 0) 
-        a = a + (sx0(n, 0)*byg(j0, k+1, l0) + sx0(n, 1)*byg(j0+1, k+1, l0))*sy(n, 1) 
+        a = (sx0(n, 0)*byg(j0, k, l0) + sx0(n, 1)*byg(j0+1, k, l0))*sy(n, 0)
+        a = a + (sx0(n, 0)*byg(j0, k+1, l0) + sx0(n, 1)*byg(j0+1, k+1, l0))*sy(n, 1)
         by(nn) = by(nn) + a*sz0(n, 0)
-        a = (sx0(n, 0)*byg(j0, k, l0+1) + sx0(n, 1)*byg(j0+1, k, l0+1))*sy(n, 0) 
+        a = (sx0(n, 0)*byg(j0, k, l0+1) + sx0(n, 1)*byg(j0+1, k, l0+1))*sy(n, 0)
         a = a + (sx0(n, 0)*byg(j0, k+1, l0+1) + sx0(n, 1)*byg(j0+1, k+1, l0+1))*sy(n, &
-        1) 
+        1)
         by(nn) = by(nn) + a*sz0(n, 1)
-        
+
         ! Compute Bz on particle
-        a = (sx0(n, 0)*bzg(j0, k0, l) + sx0(n, 1)*bzg(j0+1, k0, l))*sy0(n, 0) 
-        a = a + (sx0(n, 0)*bzg(j0, k0+1, l) + sx0(n, 1)*bzg(j0+1, k0+1, l))*sy0(n, 1) 
+        a = (sx0(n, 0)*bzg(j0, k0, l) + sx0(n, 1)*bzg(j0+1, k0, l))*sy0(n, 0)
+        a = a + (sx0(n, 0)*bzg(j0, k0+1, l) + sx0(n, 1)*bzg(j0+1, k0+1, l))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 0)
-        a = (sx0(n, 0)*bzg(j0, k0, l+1) + sx0(n, 1)*bzg(j0+1, k0, l+1))*sy0(n, 0) 
+        a = (sx0(n, 0)*bzg(j0, k0, l+1) + sx0(n, 1)*bzg(j0+1, k0, l+1))*sy0(n, 0)
         a = a + (sx0(n, 0)*bzg(j0, k0+1, l+1) + sx0(n, 1)*bzg(j0+1, k0+1,             &
-        l+1))*sy0(n, 1) 
+        l+1))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1887,10 +1887,10 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vecV4_1_1_1(np, xp, yp, zp, ex, ey, ez, bx, by,  &
-bz, xmin, ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,       &
-eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
-byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
-l_lower_order_in_v)        !#do not wrap
+  bz, xmin, ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,       &
+  eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
+  byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
+  l_lower_order_in_v)        !#do not wrap
   USE constants
   USE params
   IMPLICIT NONE
@@ -1898,30 +1898,30 @@ l_lower_order_in_v)        !#do not wrap
   INTEGER(idp), intent(in)                :: np
   INTEGER(idp), intent(in)                :: exg_nguard(3), exg_nvalid(3),            &
   eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3), bxg_nguard(3),          &
-  bxg_nvalid(3), byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)     
+  bxg_nvalid(3), byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   INTEGER(idp), intent(in)                :: lvect
   REAL(num), DIMENSION(np), intent(in)    :: xp, yp, zp
   REAL(num), DIMENSION(np), intent(inout) :: ex, ey, ez, bx, by, bz
   LOGICAL(lp), intent(in)                 :: l_lower_order_in_v
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
-  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)  
+  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
   -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1,                                       &
-  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)  
+  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
   -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
-  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)  
+  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
-  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)  
+  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
   -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1,                                       &
-  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)  
+  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
   REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,           &
   -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1,                                       &
-  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)  
-  
+  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
+
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: nn
@@ -1934,24 +1934,24 @@ l_lower_order_in_v)        !#do not wrap
   REAL(num), DIMENSION(0:1)            :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     sx0(0) = 1.0_num
     sy0(0) = 1.0_num
     sz0(0) = 1.0_num
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1975,27 +1975,27 @@ l_lower_order_in_v)        !#do not wrap
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO nn=ip, MIN(ip+lvect-1, np)
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
-        
+
         j=floor(x)
         j0=floor(x)
         k=floor(y)
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(0) = 1.0_num-xint
         sx(1) = xint
@@ -2003,38 +2003,38 @@ l_lower_order_in_v)        !#do not wrap
         sy(1) = yint
         sz(0) = 1.0_num-zint
         sz(1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         ! Compute Ex on particle
         a = (sy(0)*exg(j0, k, l)   + sy(1)*exg(j0, k+1, l))*sz(0) + (sy(0)*exg(j0, k, &
-        l+1) + sy(1)*exg(j0, k+1, l+1))*sz(1) 
+        l+1) + sy(1)*exg(j0, k+1, l+1))*sz(1)
         ex(nn) = ex(nn) + a
-        
+
         ! Compute Ey on particle
         a = (sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0, l))*sz(0) + (sx(0)*eyg(j, k0,   &
-        l+1) + sx(1)*eyg(j+1, k0, l+1))*sz(1) 
+        l+1) + sx(1)*eyg(j+1, k0, l+1))*sz(1)
         ey(nn) = ey(nn) + a
-        
+
         ! Compute Ez on particle
         a = (sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k, l0))*sy(0) + (sx(0)*ezg(j, k+1,  &
-        l0) + sx(1)*ezg(j+1, k+1, l0))*sy(1) 
+        l0) + sx(1)*ezg(j+1, k+1, l0))*sy(1)
         ez(nn) = ez(nn) + a
-        
+
         ! Compute Bx on particle
         a = (sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0, l0))
         bx(nn) = bx(nn) + a
-        
+
         ! Compute By on particle
         a = (sy(0)*byg(j0, k, l0) + sy(1)*byg(j0, k+1, l0))
         by(nn) = by(nn) + a
-        
+
         ! Compute Bz on particle
         a = (sz(0)*bzg(j0, k0, l) + sz(1)*bzg(j0, k0, l+1))
         bz(nn) = bz(nn) + a
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -2042,9 +2042,9 @@ l_lower_order_in_v)        !#do not wrap
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -2068,14 +2068,14 @@ l_lower_order_in_v)        !#do not wrap
       !DIR$ IVDEP
       ! !DIR DISTRIBUTE POINT
 #endif
-      
+
       ! Loop over the particles inside a block
       DO nn=ip, MIN(ip-1+lvect, np)
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -2086,7 +2086,7 @@ l_lower_order_in_v)        !#do not wrap
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         sx(0) = 1.0_num-xint
         sx(1) = xint
@@ -2094,66 +2094,66 @@ l_lower_order_in_v)        !#do not wrap
         sy(1) = yint
         sz(0) = 1.0_num-zint
         sz(1) = zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         sx0(0) = 1.0_num-xint
         sx0(1) = xint
         sy0(0) = 1.0_num-yint
         sy0(1) = yint
         sz0(0) = 1.0_num-zint
         sz0(1) = zint
-        
+
         ! Compute Ex on particle
-        a = (sx0(0)*exg(j0, k, l) + sx0(1)*exg(j0+1, k, l))*sy(0) 
-        a = a + (sx0(0)*exg(j0, k+1, l) + sx0(1)*exg(j0+1, k+1, l))*sy(1) 
+        a = (sx0(0)*exg(j0, k, l) + sx0(1)*exg(j0+1, k, l))*sy(0)
+        a = a + (sx0(0)*exg(j0, k+1, l) + sx0(1)*exg(j0+1, k+1, l))*sy(1)
         ex(nn) = ex(nn) + a*sz(0)
-        a = (sx0(0)*exg(j0, k, l+1) + sx0(1)*exg(j0+1, k, l+1))*sy(0) 
-        a = a + (sx0(0)*exg(j0, k+1, l+1) + sx0(1)*exg(j0+1, k+1, l+1))*sy(1) 
+        a = (sx0(0)*exg(j0, k, l+1) + sx0(1)*exg(j0+1, k, l+1))*sy(0)
+        a = a + (sx0(0)*exg(j0, k+1, l+1) + sx0(1)*exg(j0+1, k+1, l+1))*sy(1)
         ex(nn) = ex(nn) + a*sz(1)
-        
+
         ! Compute Ey on particle
-        a = (sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0, l))*sy0(0) 
-        a = a + (sx(0)*eyg(j, k0+1, l) + sx(1)*eyg(j+1, k0+1, l))*sy0(1) 
+        a = (sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0, l))*sy0(0)
+        a = a + (sx(0)*eyg(j, k0+1, l) + sx(1)*eyg(j+1, k0+1, l))*sy0(1)
         ey(nn) = ey(nn) + a*sz(0)
-        a = (sx(0)*eyg(j, k0, l+1) + sx(1)*eyg(j+1, k0, l+1))*sy0(0) 
-        a = a + (sx(0)*eyg(j, k0+1, l+1) + sx(1)*eyg(j+1, k0+1, l+1))*sy0(1) 
+        a = (sx(0)*eyg(j, k0, l+1) + sx(1)*eyg(j+1, k0, l+1))*sy0(0)
+        a = a + (sx(0)*eyg(j, k0+1, l+1) + sx(1)*eyg(j+1, k0+1, l+1))*sy0(1)
         ey(nn) = ey(nn) + a*sz(1)
-        
+
         ! Compute Ez on particle
-        a = (sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k, l0))*sy(0) 
-        a = a + (sx(0)*ezg(j, k+1, l0) + sx(1)*ezg(j+1, k+1, l0))*sy(1) 
+        a = (sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k, l0))*sy(0)
+        a = a + (sx(0)*ezg(j, k+1, l0) + sx(1)*ezg(j+1, k+1, l0))*sy(1)
         ez(nn) = ez(nn) + a*sz0(0)
-        a = (sx(0)*ezg(j, k, l0+1) + sx(1)*ezg(j+1, k, l0+1))*sy(0) 
-        a = a + (sx(0)*ezg(j, k+1, l0+1) + sx(1)*ezg(j+1, k+1, l0+1))*sy(1) 
+        a = (sx(0)*ezg(j, k, l0+1) + sx(1)*ezg(j+1, k, l0+1))*sy(0)
+        a = a + (sx(0)*ezg(j, k+1, l0+1) + sx(1)*ezg(j+1, k+1, l0+1))*sy(1)
         ez(nn) = ez(nn) + a*sz0(1)
-        
+
         ! Compute Bx on particle
-        a = (sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0, l0))*sy0(0) 
-        a = a + (sx(0)*bxg(j, k0+1, l0) + sx(1)*bxg(j+1, k0+1, l0))*sy0(1) 
+        a = (sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0, l0))*sy0(0)
+        a = a + (sx(0)*bxg(j, k0+1, l0) + sx(1)*bxg(j+1, k0+1, l0))*sy0(1)
         bx(nn) = bx(nn) + a*sz0(0)
-        a = (sx(0)*bxg(j, k0, l0+1) + sx(1)*bxg(j+1, k0, l0+1))*sy0(0) 
-        a = a + (sx(0)*bxg(j, k0+1, l0+1) + sx(1)*bxg(j+1, k0+1, l0+1))*sy0(1) 
+        a = (sx(0)*bxg(j, k0, l0+1) + sx(1)*bxg(j+1, k0, l0+1))*sy0(0)
+        a = a + (sx(0)*bxg(j, k0+1, l0+1) + sx(1)*bxg(j+1, k0+1, l0+1))*sy0(1)
         bx(nn) = bx(nn) + a*sz0(1)
-        
+
         ! Compute By on particle
-        a = (sx0(0)*byg(j0, k, l0) + sx0(1)*byg(j0+1, k, l0))*sy(0) 
-        a = a + (sx0(0)*byg(j0, k+1, l0) + sx0(1)*byg(j0+1, k+1, l0))*sy(1) 
+        a = (sx0(0)*byg(j0, k, l0) + sx0(1)*byg(j0+1, k, l0))*sy(0)
+        a = a + (sx0(0)*byg(j0, k+1, l0) + sx0(1)*byg(j0+1, k+1, l0))*sy(1)
         by(nn) = by(nn) + a*sz0(0)
-        a = (sx0(0)*byg(j0, k, l0+1) + sx0(1)*byg(j0+1, k, l0+1))*sy(0) 
-        a = a + (sx0(0)*byg(j0, k+1, l0+1) + sx0(1)*byg(j0+1, k+1, l0+1))*sy(1) 
+        a = (sx0(0)*byg(j0, k, l0+1) + sx0(1)*byg(j0+1, k, l0+1))*sy(0)
+        a = a + (sx0(0)*byg(j0, k+1, l0+1) + sx0(1)*byg(j0+1, k+1, l0+1))*sy(1)
         by(nn) = by(nn) + a*sz0(1)
-        
+
         ! Compute Bz on particle
-        a = (sx0(0)*bzg(j0, k0, l) + sx0(1)*bzg(j0+1, k0, l))*sy0(0) 
-        a = a + (sx0(0)*bzg(j0, k0+1, l) + sx0(1)*bzg(j0+1, k0+1, l))*sy0(1) 
+        a = (sx0(0)*bzg(j0, k0, l) + sx0(1)*bzg(j0+1, k0, l))*sy0(0)
+        a = a + (sx0(0)*bzg(j0, k0+1, l) + sx0(1)*bzg(j0+1, k0+1, l))*sy0(1)
         bz(nn) = bz(nn) + a*sz(0)
-        a = (sx0(0)*bzg(j0, k0, l+1) + sx0(1)*bzg(j0+1, k0, l+1))*sy0(0) 
-        a = a + (sx0(0)*bzg(j0, k0+1, l+1) + sx0(1)*bzg(j0+1, k0+1, l+1))*sy0(1) 
+        a = (sx0(0)*bzg(j0, k0, l+1) + sx0(1)*bzg(j0+1, k0, l+1))*sy0(0)
+        a = a + (sx0(0)*bzg(j0, k0+1, l+1) + sx0(1)*bzg(j0+1, k0+1, l+1))*sy0(1)
         bz(nn) = bz(nn) + a*sz(1)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -2196,8 +2196,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_v2(np, xp, yp, zp, ex, ey, ez, bx, by, &
-bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
+  bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -2213,11 +2213,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   INTEGER(isp)                           :: ip, ipmax
   INTEGER(idp)                           :: size
   REAL(num)                              :: dxi, dyi, dzi
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   ! ___ Loop on all the partciles by block of size lvect _______________________
   DO ip=1, np, lvect
     size = MIN(lvect, np-ip+1)
@@ -2226,10 +2226,10 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     CALL geteb3d_energy_conserving_vec_1_1_1_sub(size, xp(ip:ipmax), yp(ip:ipmax),    &
     zp(ip:ipmax), ex(ip:ipmax), ey(ip:ipmax), ez(ip:ipmax), bx(ip:ipmax),             &
     by(ip:ipmax), bz(ip:ipmax), xmin, ymin, zmin, dxi, dyi, dzi, nx, ny, nz, nxguard, &
-    nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg)      
-    
+    nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg)
+
   ENDDO
-  
+
   RETURN
 END SUBROUTINE
 #endif
@@ -2263,8 +2263,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vec_1_1_1_sub(size, xp, yp, zp, ex, ey, ez, bx,  &
-by, bz, xmin, ymin, zmin, dxi, dyi, dzi, nx, ny, nz, nxguard, nyguard, nzguard, exg,  &
-eyg, ezg, bxg, byg, bzg)   
+  by, bz, xmin, ymin, zmin, dxi, dyi, dzi, nx, ny, nz, nxguard, nyguard, nzguard, exg,  &
+  eyg, ezg, bxg, byg, bzg)
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -2294,9 +2294,9 @@ eyg, ezg, bxg, byg, bzg)
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   ! ___ Computation _________________________________________________
-  
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
   !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -2319,11 +2319,11 @@ eyg, ezg, bxg, byg, bzg)
   !!DIR DISTRIBUTE POINT
 #endif
   DO n=1, size
-    
+
     x = (xp(n)-xmin)*dxi
     y = (yp(n)-ymin)*dyi
     z = (zp(n)-zmin)*dzi
-    
+
     ! Compute index of particle
     j(n)=floor(x)
     j0(n)=floor(x)
@@ -2331,11 +2331,11 @@ eyg, ezg, bxg, byg, bzg)
     k0(n)=floor(y)
     l(n)=floor(z)
     l0(n)=floor(z)
-    
+
     xint=x-j(n)
     yint=y-k(n)
     zint=z-l(n)
-    
+
     ! Compute shape factors
     sx(n, 0) = 1.0_num-xint
     sx(n, 1) = xint
@@ -2343,22 +2343,22 @@ eyg, ezg, bxg, byg, bzg)
     sy(n, 1) = yint
     sz(n, 0) = 1.0_num-zint
     sz(n, 1) = zint
-    
+
     xint=x-0.5_num-j0(n)
     yint=y-0.5_num-k0(n)
     zint=z-0.5_num-l0(n)
-    
+
     sx0(n, 0) = 1.0_num
     sy0(n, 0) = 1.0_num
     sz0(n, 0) = 1.0_num
-    
+
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD
 #endif
 #endif
-  
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
   !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -2381,32 +2381,32 @@ eyg, ezg, bxg, byg, bzg)
   !!DIR DISTRIBUTE POINT
 #endif
   DO n=1, size
-    
+
     ! Compute Ex on particle
     ex(n) = ex(n) + sx0(n, 0)*sy(n, 0)*sz(n, 0)*exg(j0(n), k(n), l(n))
     ex(n) = ex(n) + sx0(n, 0)*sy(n, 1)*sz(n, 0)*exg(j0(n), k(n)+1, l(n))
     ex(n) = ex(n) + sx0(n, 0)*sy(n, 0)*sz(n, 1)*exg(j0(n), k(n), l(n)+1)
     ex(n) = ex(n) + sx0(n, 0)*sy(n, 1)*sz(n, 1)*exg(j0(n), k(n)+1, l(n)+1)
-    
+
     ! Compute Ey on particle
     ey(n) = ey(n) + sx(n, 0)*sy0(n, 0)*sz(n, 0)*eyg(j(n), k0(n), l(n))
     ey(n) = ey(n) + sx(n, 1)*sy0(n, 0)*sz(n, 0)*eyg(j(n)+1, k0(n), l(n))
     ey(n) = ey(n) + sx(n, 0)*sy0(n, 0)*sz(n, 1)*eyg(j(n), k0(n), l(n)+1)
     ey(n) = ey(n) + sx(n, 1)*sy0(n, 0)*sz(n, 1)*eyg(j(n)+1, k0(n), l(n)+1)
-    
+
     ! Compute Ez on particle
     ez(n) = ez(n) + sx(n, 0)*sy(n, 0)*sz0(n, 0)*ezg(j(n), k(n), l0(n))
     ez(n) = ez(n) + sx(n, 1)*sy(n, 0)*sz0(n, 0)*ezg(j(n)+1, k(n), l0(n))
     ez(n) = ez(n) + sx(n, 0)*sy(n, 1)*sz0(n, 0)*ezg(j(n), k(n)+1, l0(n))
     ez(n) = ez(n) + sx(n, 1)*sy(n, 1)*sz0(n, 0)*ezg(j(n)+1, k(n)+1, l0(n))
-    
+
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD
 #endif
 #endif
-  
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
   !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -2429,25 +2429,25 @@ eyg, ezg, bxg, byg, bzg)
   !!DIR DISTRIBUTE POINT
 #endif
   DO n=1, size
-    
+
     ! Compute Bx on particle
     bx(n) = bx(n) + sx(n, 0)*sy0(n, 0)*sz0(n, 0)*bxg(j(n), k0(n), l0(n))
     bx(n) = bx(n) + sx(n, 1)*sy0(n, 0)*sz0(n, 0)*bxg(j(n)+1, k0(n), l0(n))
-    
+
     ! Compute By on particle
     by(n) = by(n) + sx0(n, 0)*sy(n, 0)*sz0(n, 0)*byg(j0(n), k(n), l0(n))
     by(n) = by(n) + sx0(n, 0)*sy(n, 1)*sz0(n, 0)*byg(j0(n), k(n)+1, l0(n))
-    
+
     ! Compute Bz on particle
     bz(n) = bz(n) + sx0(n, 0)*sy0(n, 0)*sz(n, 0)*bzg(j0(n), k0(n), l(n))
     bz(n) = bz(n) + sx0(n, 0)*sy0(n, 0)*sz(n, 1)*bzg(j0(n), k0(n), l(n)+1)
-    
+
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD
 #endif
 #endif
-  
+
 END SUBROUTINE
 #endif

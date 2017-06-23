@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -80,39 +80,39 @@
 !> @param[in] dy mesh size along y (scalar)
 !> @param[in] dz mesh size along z (scalar)
 !> @param[inout] jx x-current component (3D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction
 !> (1d array containing 3 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the
 !> jx array (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
 !> @param[in] jy_nguard number of guard cells of the jy array in each direction
 !>  (1d array containing 3 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the
 !> jy array (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
 !> (1d array containing 3 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the
 !> jz array (1d array containing 3 integers)
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
-jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   USE constants
-  IMPLICIT NONE  
+  IMPLICIT NONE
   INTEGER(idp)             :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
-  jz_nguard(3), jz_nvalid(3)  
+  jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
   -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1,                                          &
-  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )  
+  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1,                                          &
-  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )  
+  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1,                                          &
-  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )  
+  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num)                :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num)                :: dxi, dyi, dzi, xint, yint, zint
@@ -122,7 +122,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   REAL(num), DIMENSION(2)  :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
   REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp)             :: j, k, l, j0, k0, l0, ip
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -133,33 +133,33 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   clightsq = 1.0_num/clight**2
   sx=0.0_num;sy=0.0_num;sz=0.0_num;
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
-  
+
   ! LOOP ON PARTICLES
   ! Prevent loop to vectorize (dependencies)
   !DIR$ NOVECTOR
   DO ip=1, np
-    
+
     ! --- computes position in  grid units at (n+1)
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
-    
+
     ! Computes velocity
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
-    
+
     ! --- computes particles weights
     wq=q*w(ip)
     wqx=wq*invvol*vx
     wqy=wq*invvol*vy
     wqz=wq*invvol*vz
-    
+
     ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
     xmid=x-dts2dx*vx
     ymid=y-dts2dy*vy
     zmid=z-dts2dz*vz
-    
+
     ! --- finds node of cell containing particles for current positions
     j=floor(xmid)
     k=floor(ymid)
@@ -167,7 +167,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     j0=floor(xmid-0.5_num)
     k0=floor(ymid-0.5_num)
     l0=floor(zmid-0.5_num)
-    
+
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
     yint = ymid-k
@@ -178,7 +178,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     sy( 1) = yint
     sz( 0) = 1.0_num-zint
     sz( 1) = zint
-    
+
     ! --- computes set of coefficients for staggered quantities
     xint = xmid-j0-0.5_num
     yint = ymid-k0-0.5_num
@@ -189,7 +189,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     sy0( 1) = yint
     sz0( 0) = 1.0_num-zint
     sz0( 1) = zint
-    
+
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
     ! - JX
     jx(j0, k, l  )    = jx(j0, k, l  )  +   sx0(0)*sy(0)*sz(0)*wqx
@@ -200,7 +200,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     jx(j0+1, k, l+1)    = jx(j0+1, k, l+1)  +   sx0(1)*sy(0)*sz(1)*wqx
     jx(j0, k+1, l+1)    = jx(j0, k+1, l+1)  +   sx0(0)*sy(1)*sz(1)*wqx
     jx(j0+1, k+1, l+1)    = jx(j0+1, k+1, l+1)  +   sx0(1)*sy(1)*sz(1)*wqx
-    
+
     ! - JY
     jy(j, k0, l  )    = jy(j, k0, l  )  +   sx(0)*sy0(0)*sz(0)*wqy
     jy(j+1, k0, l  )    = jy(j+1, k0, l  )  +   sx(1)*sy0(0)*sz(0)*wqy
@@ -210,7 +210,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     jy(j+1, k0, l+1)    = jy(j+1, k0, l+1)  +   sx(1)*sy0(0)*sz(1)*wqy
     jy(j, k0+1, l+1)    = jy(j, k0+1, l+1)  +   sx(0)*sy0(1)*sz(1)*wqy
     jy(j+1, k0+1, l+1)    = jy(j+1, k0+1, l+1)  +   sx(1)*sy0(1)*sz(1)*wqy
-    
+
     ! - JZ
     jz(j, k, l0  )    = jz(j, k, l0  )  +   sx(0)*sy(0)*sz0(0)*wqz
     jz(j+1, k, l0  )    = jz(j+1, k, l0  )  +   sx(1)*sy(0)*sz0(0)*wqz
@@ -265,30 +265,30 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
-jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration ______________________________________
   INTEGER(idp)             :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
-  jz_nguard(3), jz_nvalid(3)  
+  jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
   -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1,                                          &
-  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )  
+  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1,                                          &
-  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )  
+  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1,                                          &
-  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )  
+  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(:, :), ALLOCATABLE:: jxcells, jycells, jzcells
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   REAL(num)                :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num)                :: dxi, dyi, dzi
   REAL(num)                :: x, y, z, xmid, ymid, zmid, invvol, dts2dx, dts2dy,      &
   dts2dz
-  
+
   INTEGER(idp)                    :: j, k, l, j0, k0, l0, ip, NCELLS, ic
   INTEGER(idp)                    :: n, nn, nv
   INTEGER(idp), DIMENSION(LVEC, 3) :: ICELL
@@ -313,7 +313,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   0_idp, 0_idp, 1_idp, 1_idp/)
   INTEGER(idp), DIMENSION(8), PARAMETER  :: mzoff=(/0_idp, 0_idp, 0_idp, 0_idp,       &
   1_idp, 1_idp, 1_idp, 1_idp/)
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -326,18 +326,18 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   ! Find the maximal number of cells in each direction, so as to
   ! allocate the linearized 1D arrays
   ncx = MAX( jx_nvalid(1)+2*jx_nguard(1), jy_nvalid(1)+2*jy_nguard(1),                &
-  jz_nvalid(1)+2*jz_nguard(1) )  
+  jz_nvalid(1)+2*jz_nguard(1) )
   ncy = MAX( jx_nvalid(2)+2*jx_nguard(2), jy_nvalid(2)+2*jy_nguard(2),                &
-  jz_nvalid(2)+2*jz_nguard(2) )  
+  jz_nvalid(2)+2*jz_nguard(2) )
   ncz = MAX( jx_nvalid(3)+2*jx_nguard(3), jy_nvalid(3)+2*jy_nguard(3),                &
-  jz_nvalid(3)+2*jz_nguard(3) )  
+  jz_nvalid(3)+2*jz_nguard(3) )
   ncxy = ncx*ncy
   NCELLS = ncx*ncy*ncz
   ALLOCATE(jxcells(8, NCELLS), jycells(8, NCELLS), jzcells(8, NCELLS))
   jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
-  
+
   jorig=-2; korig=-2;lorig=-2
-  
+
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -369,23 +369,23 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Computes velocity
       vx = uxp(nn)*gaminv(nn)
       vy = uyp(nn)*gaminv(nn)
       vz = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes particles weights
       wq=q*w(nn)*invvol
       wqx(n)=wq*vx
       wqy(n)=wq*vy
       wqz(n)=wq*vz
-      
+
       ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
       xmid=x-dts2dx*vx
       ymid=y-dts2dy*vy
       zmid=z-dts2dz*vz
-      
+
       ! --- finds node of cell containing particles for current positions
       j=floor(xmid)
       k=floor(ymid)
@@ -396,12 +396,12 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
-      
+
       ! --- computes set of coefficients for node centered quantities
       sx(n) = xmid-j
       sy(n) = ymid-k
       sz(n) = zmid-l
-      
+
       ! --- computes set of coefficients for staggered quantities
       sx0(n) = xmid-j0-0.5_num
       sy0(n) = ymid-k0-0.5_num
@@ -413,7 +413,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
 #endif
 #endif
     DO n=1, MIN(LVEC, np-ip+1)
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
 #elif defined __IBMBGQ__
@@ -453,11 +453,11 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
 #endif
     END DO
   END DO
-  
+
   ! ----------------------------------------------------
   ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
   ! ----------------------------------------------------
-  
+
   ! Reduction of jxcells in jx
   DO iz=-1, jx_nvalid(3)-1
     DO iy=-1, jx_nvalid(2)-1
@@ -497,7 +497,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
 #endif
     END DO
   END DO
-  
+
   ! Reduction of jycells in jy
   DO iz=-1, jy_nvalid(3)-1
     DO iy=-1, jy_nvalid(2)-1
@@ -537,7 +537,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
 #endif
     END DO
   END DO
-  
+
   ! Reduction of jzcells in jz
   DO iz=-1, jz_nvalid(3)-1
     DO iy=-1, jz_nvalid(2)-1
@@ -577,7 +577,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
 #endif
     END DO
   END DO
-  
+
   DEALLOCATE(jxcells, jycells, jzcells)
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
@@ -627,8 +627,8 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 !> @param[in] lvect vector length
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, xp,   &
-yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  
+  yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   USE constants
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -652,11 +652,11 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   REAL(num) :: wwx, wwy, wwz, wq, vx, vy, vz, wx, wx0, wy, wy0, wz, wz0
   INTEGER(isp)                                  :: jorig, korig, lorig
   INTEGER(isp)                                  :: ncx, ncy, ncxy, ncz
-  
+
   ! _____________________________________________
   ! Computation of the parameters
   ncxy=ncx*ncy
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -664,19 +664,19 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   dts2dx = 0.5_num*dt*dxi
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
-  
+
   sx=0.0_num;sy=0.0_num;sz=0.0_num
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-  
+
   mx=(/1_num, 0_num, 1_num, 0_num, 1_num, 0_num, 1_num, 0_num/)
   my=(/1_num, 1_num, 0_num, 0_num, 1_num, 1_num, 0_num, 0_num/)
   mz=(/1_num, 1_num, 1_num, 1_num, 0_num, 0_num, 0_num, 0_num/)
   sgn=(/-1_num, 1_num, 1_num, -1_num, 1_num, -1_num, -1_num, 1_num/)
-  
+
   jorig=-2
   korig=-2
   lorig=-2
-  
+
   ! ____________________________________________
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
@@ -710,23 +710,23 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! --- Computes velocity
       vx = uxp(nn)*gaminv(nn)
       vy = uyp(nn)*gaminv(nn)
       vz = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes particles weights
       wq=q*w(nn)*invvol
       wqx(n)=wq*vx
       wqy(n)=wq*vy
       wqz(n)=wq*vz
-      
+
       ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
       xmid=x-dts2dx*vx
       ymid=y-dts2dy*vy
       zmid=z-dts2dz*vz
-      
+
       ! --- finds node of cell containing particles for current positions
       j=floor(xmid)
       k=floor(ymid)
@@ -737,12 +737,12 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
-      
+
       ! --- computes set of coefficients for node centered quantities
       sx(n) = xmid-j
       sy(n) = ymid-k
       sz(n) = zmid-l
-      
+
       ! --- computes set of coefficients for staggered quantities
       sx0(n) = xmid-j0-0.5_num
       sy0(n) = ymid-k0-0.5_num
@@ -795,7 +795,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
 #endif
     END DO
   END DO
-  
+
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 
@@ -813,22 +813,22 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 !> 2015
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
-jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
-  jz_nguard(3), jz_nvalid(3)  
+  jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
   -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1,                                          &
-  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )  
+  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1,                                          &
-  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )  
+  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1,                                          &
-  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )  
+  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint
@@ -849,30 +849,30 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   clightsq = 1.0_num/clight**2
   sx=0.0_num;sy=0.0_num;sz=0.0_num;
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
-  
+
   ! LOOP ON PARTICLES
   DO ip=1, np
     ! --- computes position in  grid units at (n+1)
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
-    
+
     ! Computes velocity
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
-    
+
     ! --- computes particles weights
     wq=q*w(ip)*invvol
     wqx=wq*vx
     wqy=wq*vy
     wqz=wq*vz
-    
+
     ! Gets position in grid units at (n+1/2) for computing jx(n+1/2)
     xmid=x-dts2dx*vx
     ymid=y-dts2dy*vy
     zmid=z-dts2dz*vz
-    
+
     ! --- finds node of cell containing particles for current positions
     j=nint(xmid)
     k=nint(ymid)
@@ -896,7 +896,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     sz(-1) = 0.5_num*(0.5_num-zint)**2
     sz( 0) = (0.75_num-zintsq)
     sz( 1) = 0.5_num*(0.5_num+zint)**2
-    
+
     ! --- computes set of coefficients for staggered quantities
     xint = xmid-j0-0.5_num
     yint = ymid-k0-0.5_num
@@ -913,7 +913,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     sz0(-1) = 0.5_num*(0.5_num-zint)**2
     sz0( 0) = (0.75_num-zintsq)
     sz0( 1) = 0.5_num*(0.5_num+zint)**2
-    
+
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
     ! --- to the 27 nearest vertices
     ! - JX
@@ -944,7 +944,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     jx(j0-1, k+1, l+1)  = jx(j0-1, k+1, l+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqx
     jx(j0, k+1, l+1)  = jx(j0, k+1, l+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqx
     jx(j0+1, k+1, l+1)  = jx(j0+1, k+1, l+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqx
-    
+
     !        ! - JY
     jy(j-1, k0-1, l-1)  = jy(j-1, k0-1, l-1)  +   sx(-1)*sy0(-1)*sz(-1)*wqy
     jy(j, k0-1, l-1)  = jy(j, k0-1, l-1)  +   sx(0 )*sy0(-1)*sz(-1)*wqy
@@ -973,7 +973,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     jy(j-1, k0+1, l+1)  = jy(j-1, k0+1, l+1)  +   sx(-1)*sy0(1 )*sz(1 )*wqy
     jy(j, k0+1, l+1)  = jy(j, k0+1, l+1)  +   sx(0 )*sy0(1 )*sz(1 )*wqy
     jy(j+1, k0+1, l+1)  = jy(j+1, k0+1, l+1)  +   sx(1 )*sy0(1 )*sz(1 )*wqy
-    
+
     ! - JZ
     jz(j-1, k-1, l0-1)  = jz(j-1, k-1, l0-1)  +   sx(-1)*sy(-1)*sz0(-1)*wqz
     jz(j, k-1, l0-1)  = jz(j, k-1, l0-1)  +   sx(0 )*sy(-1)*sz0(-1)*wqz
@@ -1050,11 +1050,11 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
-gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
-nzguard)  
+  gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
+  nzguard)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(idp)             :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT) ::                                                        &
   jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
@@ -1078,7 +1078,7 @@ nzguard)
   INTEGER(idp), DIMENSION(LVEC, 3) :: ICELL, IG
   REAL(num)                :: vx, vy, vz
   REAL(num)                :: ww0x(LVEC, 4), ww0y(LVEC, 4), ww0z(LVEC, 4), wwwx(LVEC, &
-  8), wwwy(LVEC, 8), wwwz(LVEC, 8), wq 
+  8), wwwy(LVEC, 8), wwwz(LVEC, 8), wq
   REAL(num)                :: sx0(LVEC), sx1(LVEC), sx2(LVEC)
   REAL(num)                :: sx00(LVEC), sx01(LVEC), sx02(LVEC)
   REAL(num)                :: sy0, sy1, sy2, sy00, sy01, sy02
@@ -1086,11 +1086,11 @@ nzguard)
   INTEGER(idp)             :: igrid, orig, jorig, korig, lorig
   INTEGER(idp)             :: ncx, ncy, ncxy, ncz, ix, iy, iz, ngridx, ngridy, ngx,   &
   ngxy
-  
+
   ! ___ Parameter initialization _________________
-  
+
   ww0x=0._num; ww0y=0._num; ww0z=0._num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -1098,7 +1098,7 @@ nzguard)
   dts2dx = 0.5_num*dt*dxi
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
-  
+
   ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
   ncx=nx+4;ncy=ny+4;ncz=nz+4
   NCELLS=ncx*ncy*ncz
@@ -1112,7 +1112,7 @@ nzguard)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1144,23 +1144,23 @@ nzguard)
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Computes velocity
       vx = uxp(nn)*gaminv(nn)
       vy = uyp(nn)*gaminv(nn)
       vz = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes particles weights
       wq=q*w(nn)*invvol
       wqx=wq*vx
       wqy=wq*vy
       wqz=wq*vz
-      
+
       ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
       xmid=x-dts2dx*vx
       ymid=y-dts2dy*vy
       zmid=z-dts2dz*vz
-      
+
       ! --- finds node of cell containing particles for current positions
       j=nint(xmid)
       k=nint(ymid)
@@ -1171,17 +1171,17 @@ nzguard)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
-      
+
       ! Other method
       !IG(n, 1) = ICELL(n, 1) + ncx + ncxy
       !IG(n, 2) = ICELL(n, 2) + ncx + ncxy
       !IG(n, 3) = ICELL(n, 3) + ncx + ncxy
-      
+
       ! Old IG when centered nodes are directly put in jx, jy, jz
       IG(n, 1)=ICELL(n, 1)+(k-korig)*ngx+(l-lorig)*ngxy
       IG(n, 2)=ICELL(n, 2)+(k0-korig)*ngx+(l-lorig)*ngxy
       IG(n, 3)=ICELL(n, 3)+(k-korig)*ngx+(l0-lorig)*ngxy
-      
+
       ! --- computes set of coefficients for node centered quantities
       xint = xmid-j
       yint = ymid-k
@@ -1198,7 +1198,7 @@ nzguard)
       sz0=0.5_num*(0.5_num-zint)**2
       sz1=(0.75_num-zintsq)
       sz2=0.5_num*(0.5_num+zint)**2
-      
+
       ! --- computes set of coefficients for staggered quantities
       xint = xmid-j0-0.5_num
       yint = ymid-k0-0.5_num
@@ -1215,7 +1215,7 @@ nzguard)
       sz00=0.5_num*(0.5_num-zint)**2
       sz01=(0.75_num-zintsq)
       sz02=0.5_num*(0.5_num+zint)**2
-      
+
       ! -- Weights for planes of 8  vertices
       ! Weights - X
       wwwx(n, 1) = sy0*sz0*wqx
@@ -1226,7 +1226,7 @@ nzguard)
       wwwx(n, 6) = sy0*sz2*wqx
       wwwx(n, 7) = sy1*sz2*wqx
       wwwx(n, 8) = sy2*sz2*wqx
-      
+
       ! Weights - Y
       wwwy(n, 1) = sy00*sz0*wqy
       wwwy(n, 2) = sy01*sz0*wqy
@@ -1236,7 +1236,7 @@ nzguard)
       wwwy(n, 6) = sy00*sz2*wqy
       wwwy(n, 7) = sy01*sz2*wqy
       wwwy(n, 8) = sy02*sz2*wqy
-      
+
       ! Weights - Z
       wwwz(n, 1) = sy0*sz00*wqz
       wwwz(n, 2) = sy1*sz00*wqz
@@ -1246,7 +1246,7 @@ nzguard)
       wwwz(n, 6) = sy0*sz02*wqz
       wwwz(n, 7) = sy1*sz02*wqz
       wwwz(n, 8) = sy2*sz02*wqz
-      
+
       ! -- 3 remaining central points
       syz=sz1*sy1*wqx
       ww0x(n, 1)=syz*sx00(n)
@@ -1260,8 +1260,8 @@ nzguard)
       ww0z(n, 1)=syz*sx0(n)
       ww0z(n, 2)=syz*sx1(n)
       ww0z(n, 3)=syz*sx2(n)
-      
-      
+
+
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1309,15 +1309,15 @@ nzguard)
         jzcells(nv, ICELL(n, 3))   = jzcells(nv, ICELL(n, 3))   +wwz*sx1(n)
         !Loop on (i=1, j, k)
         jzcells(nv, ICELL(n, 3)+1) = jzcells(nv, ICELL(n, 3)+1) +wwz*sx2(n)
-        
-        
+
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP END SIMD
 #endif
 #endif
-      
+
     END DO
     DO n=1, MIN(LVEC, np-ip+1)
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1388,10 +1388,10 @@ nzguard)
         jz(orig+igrid+moff(6))=jz(orig+igrid+moff(6))+jzcells(6, ic)
         jz(orig+igrid+moff(7))=jz(orig+igrid+moff(7))+jzcells(7, ic)
         jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8, ic)
-        
+
         !print*, sum(jx), sum(jy)
         !read*
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1400,7 +1400,7 @@ nzguard)
 #endif
     END DO
   END DO
-  
+
   ! ___ Debugging ___________________
   !     print*
   !     print*, 'q:', q
@@ -1411,9 +1411,9 @@ nzguard)
   !     print*, 'max gamma', minval(1/gaminv), maxval(1/gaminv)
   !     print*, 'sum jx', sum(jx), sum(jy), sum(jz)
   !     print*, 'sum jxcells', sum(jxcells), sum(jycells), sum(jzcells)
-  
+
   DEALLOCATE(jxcells, jycells, jzcells)
-  
+
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 
@@ -1452,8 +1452,8 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 !> @param[in] lvect vector length
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, xp,   &
-yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  
+  yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   USE constants
   IMPLICIT NONE
   ! ____ Parameter initialization _____________________________________
@@ -1491,14 +1491,14 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   INTEGER(isp)                                  :: orig, jorig, korig, lorig
   INTEGER(isp)                                  :: ncxy
   INTEGER(isp)                                  :: ngridx, ngridy, ngx, ngxy
-  
+
   ! __________________________________________________________
   ! Parameters
-  
+
   ww0x=0._num
   ww0y=0._num
   ww0z=0._num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -1506,13 +1506,13 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   dts2dx = 0.5_num*dt*dxi
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
-  
+
   ngridx=nx+1+2*nxguard
   ngridy=ny+1+2*nyguard
-  
+
   nnx = nx + 1 + 2*nxguard
   nnxy = nnx*(ny+1+2*nyguard)
-  
+
   jorig=-2
   korig=-2
   lorig=-2
@@ -1520,9 +1520,9 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! ___ Computation ______________________________________________
-  
+
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -1553,23 +1553,23 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Computes velocity
       vx = uxp(nn)*gaminv(nn)
       vy = uyp(nn)*gaminv(nn)
       vz = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes particles weights
       wq=q*w(nn)*invvol
       wqx=wq*vx
       wqy=wq*vy
       wqz=wq*vz
-      
+
       ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
       xmid=x-dts2dx*vx
       ymid=y-dts2dy*vy
       zmid=z-dts2dz*vz
-      
+
       ! --- finds node of cell containing particles for current positions
       j=nint(xmid)
       k=nint(ymid)
@@ -1583,7 +1583,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       IG(n, 1) = ICELL(n, 1) + ncx + ncxy
       IG(n, 2) = ICELL(n, 2) + ncx + ncxy
       IG(n, 3) = ICELL(n, 3) + ncx + ncxy
-      
+
       ! --- computes set of coefficients for node centered quantities
       xint = xmid-j
       yint = ymid-k
@@ -1600,7 +1600,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       sz0=0.5_num*(0.5_num-zint)**2
       sz1=(0.75_num-zintsq)
       sz2=0.5_num*(0.5_num+zint)**2
-      
+
       ! --- computes set of coefficients for staggered quantities
       xint = xmid-j0-0.5_num
       yint = ymid-k0-0.5_num
@@ -1617,7 +1617,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       sz00=0.5_num*(0.5_num-zint)**2
       sz01=(0.75_num-zintsq)
       sz02=0.5_num*(0.5_num+zint)**2
-      
+
       ! -- Weights for planes of 8  vertices
       ! Weights - X
       wwwx(n, 1) = sy0*sz0*wqx
@@ -1628,7 +1628,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       wwwx(n, 6) = sy0*sz2*wqx
       wwwx(n, 7) = sy1*sz2*wqx
       wwwx(n, 8) = sy2*sz2*wqx
-      
+
       ! Weights - Y
       wwwy(n, 1) = sy00*sz0*wqy
       wwwy(n, 2) = sy01*sz0*wqy
@@ -1638,7 +1638,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       wwwy(n, 6) = sy00*sz2*wqy
       wwwy(n, 7) = sy01*sz2*wqy
       wwwy(n, 8) = sy02*sz2*wqy
-      
+
       ! Weights - Z
       wwwz(n, 1) = sy0*sz00*wqz
       wwwz(n, 2) = sy1*sz00*wqz
@@ -1648,7 +1648,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       wwwz(n, 6) = sy0*sz02*wqz
       wwwz(n, 7) = sy1*sz02*wqz
       wwwz(n, 8) = sy2*sz02*wqz
-      
+
       ! -- 3 remaining central points
       syz=sz1*sy1*wqx
       ww0x(n, 1)=syz*sx00(n)
@@ -1739,7 +1739,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
 #endif
     END DO
   END DO
-  
+
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 
@@ -1758,34 +1758,34 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
-jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
-  jz_nguard(3), jz_nvalid(3)  
+  jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
   -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1,                                          &
-  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )  
+  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1,                                          &
-  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )  
+  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1,                                          &
-  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )  
+  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
-  zintsq, oxintsq, oyintsq, ozintsq 
+  zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, xmid, ymid, zmid, vx, vy, vz, invvol, dts2dx, dts2dy, dts2dz
   REAL(num) :: wq, wqx, wqy, wqz, clightsq
   REAL(num), DIMENSION(4) :: sx(-1:2), sy(-1:2), sz(-1:2), sx0(-1:2), sy0(-1:2),      &
   sz0(-1:2)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, j0, k0, l0, ip
-  
-  
+
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -1796,30 +1796,30 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   clightsq = 1.0_num/clight**2
   sx=0.0_num;sy=0.0_num;sz=0.0_num;
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
-  
+
   ! LOOP ON PARTICLES
   DO ip=1, np
     ! --- computes position in  grid units at (n+1)
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
     z = (zp(ip)-zmin)*dzi
-    
+
     ! Computes velocity
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
-    
+
     ! --- computes particles weights
     wq=q*w(ip)*invvol
     wqx=wq*vx
     wqy=wq*vy
     wqz=wq*vz
-    
+
     ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
     xmid=x-dts2dx*vx
     ymid=y-dts2dy*vy
     zmid=z-dts2dz*vz
-    
+
     ! --- finds node of cell containing particles for current positions
     j=floor(xmid)
     k=floor(ymid)
@@ -1827,7 +1827,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     j0=floor(xmid-0.5_num)
     k0=floor(ymid-0.5_num)
     l0=floor(zmid-0.5_num)
-    
+
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
     yint = ymid-k
@@ -1853,7 +1853,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
     sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
     sz( 2) = onesixth*zintsq*zint
-    
+
     ! --- computes set of coefficients for staggered quantities
     xint = xmid-j0-0.5_num
     yint = ymid-k0-0.5_num
@@ -1879,7 +1879,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
     sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
     sz0( 2) = onesixth*zintsq*zint
-    
+
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
     ! --- to the 64 nearest vertices
     ! - JX
@@ -1947,7 +1947,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     jx(j0, k+2, l+2)  = jx(j0, k+2, l+2)  +   sx0(0 )*sy(2 )*sz(2 )*wqx
     jx(j0+1, k+2, l+2)  = jx(j0+1, k+2, l+2)  +   sx0(1 )*sy(2 )*sz(2 )*wqx
     jx(j0+2, k+2, l+2)  = jx(j0+2, k+2, l+2)  +   sx0(2 )*sy(2 )*sz(2 )*wqx
-    
+
     ! - JY
     jy(j-1, k0-1, l-1)  = jy(j-1, k0-1, l-1)  +   sx(-1)*sy0(-1)*sz(-1)*wqy
     jy(j, k0-1, l-1)  = jy(j, k0-1, l-1)  +   sx(0 )*sy0(-1)*sz(-1)*wqy
@@ -2013,7 +2013,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     jy(j, k0+2, l+2)  = jy(j, k0+2, l+2)  +   sx(0 )*sy0(2 )*sz(2 )*wqy
     jy(j+1, k0+2, l+2)  = jy(j+1, k0+2, l+2)  +   sx(1 )*sy0(2 )*sz(2 )*wqy
     jy(j+2, k0+2, l+2)  = jy(j+2, k0+2, l+2)  +   sx(2 )*sy0(2 )*sz(2 )*wqy
-    
+
     ! - JZ
     jz(j-1, k-1, l0-1)  = jz(j-1, k-1, l0-1)  +   sx(-1)*sy(-1)*sz0(-1)*wqz
     jz(j, k-1, l0-1)  = jz(j, k-1, l0-1)  +   sx(0 )*sy(-1)*sz0(-1)*wqz
@@ -2079,7 +2079,7 @@ xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
     jz(j, k+2, l0+2)  = jz(j, k+2, l0+2)  +   sx(0 )*sy(2 )*sz0(2 )*wqz
     jz(j+1, k+2, l0+2)  = jz(j+1, k+2, l0+2)  +   sx(1 )*sy(2 )*sz0(2 )*wqz
     jz(j+2, k+2, l0+2)  = jz(j+2, k+2, l0+2)  +   sx(2 )*sy(2 )*sz0(2 )*wqz
-    
+
   END DO
   RETURN
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
@@ -2101,8 +2101,8 @@ END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
-gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
-nzguard) 
+  gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
+  nzguard)
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2116,7 +2116,7 @@ nzguard)
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, oxint, oyint, xintsq, yintsq, oxintsq,      &
-  oyintsq 
+  oyintsq
   REAL(num) :: x, y, z, xmid, ymid, zmid, invvol, dts2dx, dts2dy, dts2dz
   REAL(num) ::   ww, wwx, wwy, wwz, usq, clightsq
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
@@ -2134,7 +2134,7 @@ nzguard)
   REAL(num) :: sy01(LVEC2), sy02(LVEC2), sy03(LVEC2), sy04(LVEC2)
   REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
   INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -2156,7 +2156,7 @@ nzguard)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   h1=(/1_num, 0_num, 1_num, 0_num/); sgn=(/1_num, -1_num, 1_num, -1_num/)
   h11=(/0_num, 1_num, 1_num, 0_num/); h12=(/1_num, 0_num, 0_num, 1_num/)
   ! LOOP ON PARTICLES
@@ -2193,20 +2193,20 @@ nzguard)
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Computes velocity
       vx(n) = uxp(nn)*gaminv(nn)
       vy(n) = uyp(nn)*gaminv(nn)
       vz(n) = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes particles weights
       wq=q*w(nn)*invvol
-      
+
       ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
       xmid=x-dts2dx*vx(n)
       ymid=y-dts2dy*vy(n)
       zmid=z-dts2dz*vz(n)
-      
+
       ! --- finds node of cell containing particles for current positions
       j=floor(xmid)
       k=floor(ymid)
@@ -2217,7 +2217,7 @@ nzguard)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
-      
+
       ! --- computes set of coefficients for node centered quantities
       xint    = xmid-j
       yint    = ymid-k
@@ -2236,7 +2236,7 @@ nzguard)
       sy2(n)  = (twothird-yintsq*(1.0_num-yint*0.5_num))*wq
       sy3(n)  = (twothird-oyintsq*(1.0_num-oyint*0.5_num))*wq
       sy4(n)  = onesixth*yintsq*yint*wq
-      
+
       ! --- computes set of coefficients for staggered quantities
       xint     = xmid-j0-0.5_num
       yint     = ymid-k0-0.5_num
@@ -2281,7 +2281,7 @@ nzguard)
         ! - Weiths for jx
         zdec(nv)      = (h1(nv)-zint(n))*sgn(nv)
         szz(nv)       = (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv)     &
-        +onesixth*zdec(nv)**3*h12(nv) 
+        +onesixth*zdec(nv)**3*h12(nv)
         wwwx(nv, n)    = szz(nv)*sy1(n)*vx(n)
         wwwx(nv+4, n)  = szz(nv)*sy2(n)*vx(n)
         wwwx(nv+8, n)  = szz(nv)*sy3(n)*vx(n)
@@ -2294,12 +2294,12 @@ nzguard)
         ! - Weiths for jz
         zdec(nv)      = (h1(nv)-zint0(n))*sgn(nv)
         szz(nv)       = (twothird-zdec(nv)**2*(1.0_num-zdec(nv)*0.5_num))*h11(nv)     &
-        +onesixth*zdec(nv)**3*h12(nv) 
+        +onesixth*zdec(nv)**3*h12(nv)
         wwwz(nv, n)    = szz(nv)*sy1(n)*vz(n)
         wwwz(nv+4, n)  = szz(nv)*sy2(n)*vz(n)
         wwwz(nv+8, n)  = szz(nv)*sy3(n)*vz(n)
         wwwz(nv+12, n) = szz(nv)*sy4(n)*vz(n)
-        
+
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -2307,7 +2307,7 @@ nzguard)
 #endif
 #endif
     END DO
-    
+
     ! Add weights to nearest vertices
     DO n=1, MIN(LVEC2, np-ip+1)
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -2350,7 +2350,7 @@ nzguard)
         !Loop on (i=1, j, k)
         jxcells(nv, ICELL(n, 1)+ncx+2) = jxcells(nv, ICELL(n, 1)+ncx+2) + wwwx(nv+8,  &
         n)*sx04(n)
-        
+
         ! --- JY
         ! Loop on (i=-1, j, k)
         jycells(nv, ICELL(n, 2)-ncx-1) = jycells(nv, ICELL(n, 2)-ncx-1) + wwwy(nv,    &
@@ -2376,7 +2376,7 @@ nzguard)
         !Loop on (i=1, j, k)
         jycells(nv, ICELL(n, 2)+ncx+2) = jycells(nv, ICELL(n, 2)+ncx+2) + wwwy(nv+8,  &
         n)*sx4(n)
-        
+
         ! --- JZ
         ! Loop on (i=-1, j, k)
         jzcells(nv, ICELL(n, 3)-ncx-1) = jzcells(nv, ICELL(n, 3)-ncx-1) + wwwz(nv,    &
@@ -2495,8 +2495,8 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
 !>
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
-gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
-nzguard) 
+  gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
+  nzguard)
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _______________________________________
@@ -2511,7 +2511,7 @@ nzguard)
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint, oxint, oyint, ozint, xintsq, yintsq,  &
-  zintsq, oxintsq, oyintsq, ozintsq 
+  zintsq, oxintsq, oyintsq, ozintsq
   REAL(num) :: x, y, z, xmid, ymid, zmid, invvol, dts2dx, dts2dy, dts2dz
   REAL(num) ::   clightsq
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
@@ -2530,7 +2530,7 @@ nzguard)
   wwwz1(LVEC, 8), wwwz2(LVEC, 8)
   REAL(num):: wx1, wx2, wy1, wy2, wz1, wz2
   INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -2552,7 +2552,7 @@ nzguard)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   h1=(/1_num, 0_num, 1_num, 0_num/); sgn=(/1_num, -1_num, 1_num, -1_num/)
   h11=(/0_num, 1_num, 1_num, 0_num/); h12=(/1_num, 0_num, 0_num, 1_num/)
   ! LOOP ON PARTICLES
@@ -2586,20 +2586,20 @@ nzguard)
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Computes velocity
       vx(n) = uxp(nn)*gaminv(nn)
       vy(n) = uyp(nn)*gaminv(nn)
       vz(n) = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes particles weights
       wq=q*w(nn)*invvol
-      
+
       ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
       xmid=x-dts2dx*vx(n)
       ymid=y-dts2dy*vy(n)
       zmid=z-dts2dz*vz(n)
-      
+
       ! --- finds node of cell containing particles for current positions
       j=floor(xmid)
       k=floor(ymid)
@@ -2610,7 +2610,7 @@ nzguard)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
-      
+
       ! --- computes set of coefficients for node centered quantities
       xint    = xmid-j
       yint    = ymid-k
@@ -2636,7 +2636,7 @@ nzguard)
       sz2 = (twothird-zintsq*(1.0_num-zint*0.5_num))*wq
       sz3 = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
       sz4 = onesixth*zintsq*zint*wq
-      
+
       ! --- computes set of coefficients for staggered quantities
       xint     = xmid-j0-0.5_num
       yint     = ymid-k0-0.5_num
@@ -2720,7 +2720,7 @@ nzguard)
     !$OMP END SIMD
 #endif
 #endif
-    
+
     ! Add weights to nearest vertices
     DO n=1, MIN(LVEC, np-ip+1)
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -2764,7 +2764,7 @@ nzguard)
         !Loop on (i=1, j, k)
         jxcells(nv, ICELL(n, 1)+ncx+2) = jxcells(nv, ICELL(n, 1)+ncx+2) +             &
         wx2*sx04(n)*vx(n)
-        
+
         ! --- JY
         wy1=wwwy1(n, nv); wy2=wwwy2(n, nv)
         ! Loop on (i=-1, j, k)
@@ -2791,7 +2791,7 @@ nzguard)
         !Loop on (i=1, j, k)
         jycells(nv, ICELL(n, 2)+ncx+2) = jycells(nv, ICELL(n, 2)+ncx+2) +             &
         wy2*sx4(n)*vy(n)
-        
+
         ! --- JZ
         wz1=wwwz1(n, nv); wz2=wwwz2(n, nv)
         ! Loop on (i=-1, j, k)
@@ -2914,11 +2914,11 @@ END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 !> @param[in] lvect vector size
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, xp,   &
-yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  
+  yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
   INTEGER(idp), INTENT(IN)                      :: lvect
   INTEGER(idp), INTENT(IN)                      :: nxguard, nyguard, nzguard
@@ -2928,9 +2928,9 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   REAL(num), INTENT(IN)                         :: q, dt, dx, dy, dz, xmin, ymin,     &
   zmin
   INTEGER(idp), INTENT(IN)                      :: ncx, ncy, ncz
-  
+
   REAL(num)                                     :: xint, yint, zint, oxint, oyint,    &
-  ozint, xintsq, yintsq, zintsq, oxintsq, oyintsq, ozintsq 
+  ozint, xintsq, yintsq, zintsq, oxintsq, oyintsq, ozintsq
   REAL(num)                                     :: x, y, z, xmid, ymid, zmid
   REAL(num), PARAMETER                          :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                          :: twothird=2.0_num/3.0_num
@@ -2953,12 +2953,12 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   REAL(num)                                     :: wx1, wx2, wy1, wy2, wz1, wz2
   INTEGER(isp)                                  :: orig, ncxy, ngx, ngxy
   INTEGER(isp)                                  :: jorig, korig, lorig
-  
+
   ! ___________________________________________________________
   ! Parameters
   ngridx=nx+1+2*nxguard
   ngridy=ny+1+2*nyguard
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -2966,7 +2966,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   dts2dx = 0.5_num*dt*dxi
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
-  
+
   nnx = ngridx
   nnxy = ngridx*ngridy
   jorig=-2_idp
@@ -2976,14 +2976,14 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   h1=(/1_num, 0_num, 1_num, 0_num/)
   sgn=(/1_num, -1_num, 1_num, -1_num/)
   h11=(/0_num, 1_num, 1_num, 0_num/)
   h12=(/1_num, 0_num, 0_num, 1_num/)
-  
+
   ! LOOP ON PARTICLES
-  
+
   DO ip=1, np, LVEC
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
@@ -3009,26 +3009,26 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
     !$DIR SIMD
 #endif
     DO n=1, MIN(LVEC, np-ip+1)
-      
+
       nn=ip+n-1
       ! --- computes position in  grid units at (n+1)
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Computes velocity
       vx(n) = uxp(nn)*gaminv(nn)
       vy(n) = uyp(nn)*gaminv(nn)
       vz(n) = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes particles weights
       wq=q*w(nn)*invvol
-      
+
       ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
       xmid=x-dts2dx*vx(n)
       ymid=y-dts2dy*vy(n)
       zmid=z-dts2dz*vz(n)
-      
+
       ! --- finds node of cell containing particles for current positions
       j=floor(xmid)
       k=floor(ymid)
@@ -3039,7 +3039,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
-      
+
       ! --- computes set of coefficients for node centered quantities
       xint    = xmid-j
       yint    = ymid-k
@@ -3065,7 +3065,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
       sz2 = (twothird-zintsq*(1.0_num-zint*0.5_num))*wq
       sz3 = (twothird-ozintsq*(1.0_num-ozint*0.5_num))*wq
       sz4 = onesixth*zintsq*zint*wq
-      
+
       ! --- computes set of coefficients for staggered quantities
       xint     = xmid-j0-0.5_num
       yint     = ymid-k0-0.5_num
@@ -3149,9 +3149,9 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
     !$OMP END SIMD
 #endif
 #endif
-    
+
     ! Add weights to nearest vertices
-    
+
     DO n=1, MIN(LVEC, np-ip+1)
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
@@ -3194,7 +3194,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
         !Loop on (i=1, j, k)
         jxcells(nv, ICELL(n, 1)+ncx+2) = jxcells(nv, ICELL(n, 1)+ncx+2) +             &
         wx2*sx04(n)*vx(n)
-        
+
         ! --- JY
         wy1=wwwy1(n, nv); wy2=wwwy2(n, nv)
         ! Loop on (i=-1, j, k)
@@ -3221,7 +3221,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
         !Loop on (i=1, j, k)
         jycells(nv, ICELL(n, 2)+ncx+2) = jycells(nv, ICELL(n, 2)+ncx+2) +             &
         wy2*sx4(n)*vy(n)
-        
+
         ! --- JZ
         wz1=wwwz1(n, nv); wz2=wwwz2(n, nv)
         ! Loop on (i=-1, j, k)
@@ -3256,7 +3256,7 @@ nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
 #endif
     END DO
   END DO
-  
+
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 
@@ -3284,7 +3284,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 !> @param[in] ncx, ncy, ncz
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_1_1_1(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
-ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) 
+  ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   USE constants
   USE precomputed
   IMPLICIT NONE
@@ -3305,14 +3305,14 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   INTEGER(isp) :: ncxy, ix, iy, iz, ngridx, ngridy, ngx, ngxy
   ! _____________________________________________________________
   ! Parameters
-  
+
   ngridx=nx+1+2*nxguard
   ngridy=ny+1+2*nyguard
-  
+
   nnx = ngridx
   nnxy = nnx*ngridy
   moff = (/0_isp, 1_isp, nnx, nnx+1_isp, nnxy, nnxy+1_isp, nnxy+nnx, nnxy+nnx+1_isp/)
-  
+
   jorig=-2
   korig=-2
   lorig=-2
@@ -3320,7 +3320,7 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! ____________________________________________________________
   ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
   DO iz=1, ncz
@@ -3398,7 +3398,7 @@ END SUBROUTINE current_reduction_1_1_1
 !> @param[in] ncx, ncy, ncz
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
-ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
+  ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   USE constants
   USE precomputed
   IMPLICIT NONE
@@ -3417,24 +3417,24 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   INTEGER(isp)                           :: igrid, orig, jorig, korig, lorig
   INTEGER(isp)                           :: ncxy, nnx, nnxy
   INTEGER(isp)                           :: ix, iy, iz, ngridx, ngridy, ngx, ngxy
-  
+
   ngridx=nx+1+2*nxguard
   ngridy=ny+1+2*nyguard
-  
+
   nnx = nx + 1 + 2*nxguard
   nnxy = nnx*(ny+1+2*nyguard)
   moff = (/-nnx-nnxy, -nnxy, nnx-nnxy, -nnx, nnx, -nnx+nnxy, nnxy, nnx+nnxy/)
-  
+
   jorig=-2
   korig=-2
   lorig=-2
-  
+
   orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-  
+
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
   DO iz=1, ncz
     DO iy=1, ncy
@@ -3485,7 +3485,7 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
 #endif
     END DO
   END DO
-  
+
   RETURN
 END SUBROUTINE
 
@@ -3512,11 +3512,11 @@ END SUBROUTINE
 !> @param[in] ncx, ncy, ncz
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_3_3_3(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
-ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) 
+  ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   USE constants
   USE precomputed
   IMPLICIT NONE
-  
+
   INTEGER(idp)                              :: nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                              :: ncx, ncy, ncz
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -3527,31 +3527,31 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
   jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   REAL(num), INTENT(IN), DIMENSION(8, ncells) :: jxcells, jycells, jzcells
   INTEGER(idp), INTENT(IN)                  :: ncells
-  
+
   INTEGER(isp)                              :: moff(1:8)
   INTEGER(isp)                              :: ic
   INTEGER(isp)                              :: igrid, orig, jorig, korig, lorig
   INTEGER(isp)                              :: ncxy, nnx, nnxy
   INTEGER(isp)                              :: ix, iy, iz, ngridx, ngridy, ngx, ngxy
-  
+
   ngridx=nx+1+2*nxguard
   ngridy=ny+1+2*nyguard
-  
+
   nnx = ngridx
   nnxy = ngridx*ngridy
-  
+
   moff = (/-nnxy, 0_isp, nnxy, 2_isp*nnxy, nnx-nnxy, nnx, nnx+nnxy, nnx+2_isp*nnxy/)
-  
+
   jorig=-2_isp
   korig=-2_isp
   lorig=-2_isp
-  
+
   orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-  
+
   ngx=(ngridx-ncx)
   ngxy=(ngridx*ngridy-ncx*ncy)
   ncxy=ncx*ncy
-  
+
   ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
   DO iz=1, ncz
     DO iy=1, ncy
@@ -3602,6 +3602,6 @@ ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
 #endif
     END DO
   END DO
-  
+
   RETURN
 END SUBROUTINE current_reduction_3_3_3

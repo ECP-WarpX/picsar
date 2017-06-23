@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -73,33 +73,33 @@
 !> @param[in] dx, dy, dz space step
 !> @param[in] dt time step
 !> @param[in] exg, eyg, ezg electric field grids
-!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the
 !> exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints
 !> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
-ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
-ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
+  ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
+  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE constants
   USE params
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(3), exg_nvalid(3),               &
-  eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)  
+  eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
   logical                              :: l_lower_order_in_v
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
-  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)  
+  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
   -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1,                                       &
-  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)  
+  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
   -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
-  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)  
+  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(isp)                         :: ip, j, k, l
   INTEGER(isp)                         :: ixmin, ixmax, iymin, iymax, izmin, izmax
@@ -108,46 +108,46 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint, xintsq, oxint, yintsq,    &
-  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq 
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq
   REAL(num), DIMENSION(-1:2)            :: sx, sx0
   REAL(num), DIMENSION(-1:2)            :: sy, sy0
   REAL(num), DIMENSION(-1:2)            :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1._num/dx
   dyi = 1._num/dy
   dzi = 1._num/dz
-  
+
   ixmin = -1
   ixmax =  1
   iymin = -1
   iymax =  1
   izmin = -1
   izmax =  1
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     ixmin0 = -1
     ixmax0 =  1
     iymin0 = -1
     iymax0 =  1
     izmin0 = -1
     izmax0 =  1
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x)
@@ -155,11 +155,11 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-      
+
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -168,7 +168,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -176,7 +176,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -184,26 +184,26 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       xintsq = xint*xint
       sx0(-1) = 0.5_num*(0.5_num-xint)**2
       sx0( 0) = 0.75_num-xintsq
       sx0( 1) = 0.5_num*(0.5_num+xint)**2
-      
+
       yintsq = yint*yint
       sy0(-1) = 0.5_num*(0.5_num-yint)**2
       sy0( 0) = 0.75_num-yintsq
       sy0( 1) = 0.5_num*(0.5_num+yint)**2
-      
+
       zintsq = zint*zint
       sz0(-1) = 0.5_num*(0.5_num-zint)**2
       sz0( 0) = 0.75_num-zintsq
       sz0( 1) = 0.5_num*(0.5_num+zint)**2
-      
+
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -213,7 +213,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -223,7 +223,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -233,24 +233,24 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
     ENDDO
-    
+
   ELSE
-    
+
     ixmin0 = -1
     ixmax0 =  2
     iymin0 = -1
     iymax0 =  2
     izmin0 = -1
     izmax0 =  2
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -258,11 +258,11 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       k0=floor(y-0.5_num)
       l=floor(z)
       l0=floor(z-0.5_num)
-      
+
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -285,11 +285,11 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       oxint = 1.0_num-xint
       xintsq = xint*xint
       oxintsq = oxint*oxint
@@ -297,7 +297,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx0( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -305,7 +305,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy0( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy0( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy0( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -313,7 +313,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
       sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz0( 2) = onesixth*zintsq*zint
-      
+
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -323,7 +323,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -333,7 +333,7 @@ ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -370,70 +370,70 @@ END SUBROUTINE
 !> @param[in] dt time step
 !> @param[in] bxg, byg, bzg magnetic field grids
 !> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of
-!> guard cells of the bxg, byg, bzg arrays in each direction 
+!> guard cells of the bxg, byg, bzg arrays in each direction
 !>(1d arrays containing 3 integers)
-!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints 
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints
 !> (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
-ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
-bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
+  ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
+  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
-  byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)  
+  byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
   logical                              :: l_lower_order_in_v
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
-  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)  
+  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
   -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1,                                       &
-  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)  
+  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
   REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,           &
   -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1,                                       &
-  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)  
+  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(idp)                         :: ip, j, k, l, ixmin, ixmax, iymin, iymax,    &
   izmin, izmax, ixmin0, ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0,   &
-  l0 
+  l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint,   &
-  xintsq, oxint, yintsq, oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq 
+  xintsq, oxint, yintsq, oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq
   REAL(num), DIMENSION(-1:2)           :: sx, sx0
   REAL(num), DIMENSION(-1:2)           :: sy, sy0
   REAL(num), DIMENSION(-1:2)           :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1./dx
   dyi = 1./dy
   dzi = 1./dz
-  
+
   ixmin = -1
   ixmax =  1
   iymin = -1
   iymax =  1
   izmin = -1
   izmax =  1
-  
+
   if (l_lower_order_in_v) then
-    
+
     ixmin0 = -1
     ixmax0 =  1
     iymin0 = -1
     iymax0 =  1
     izmin0 = -1
     izmax0 =  1
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x)
@@ -444,7 +444,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -453,7 +453,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -461,7 +461,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -469,7 +469,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
@@ -485,7 +485,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sz0(-1) = 0.5_num*(0.5_num-zint)**2
       sz0( 0) = 0.75_num-zintsq
       sz0( 1) = 0.5_num*(0.5_num+zint)**2
-      
+
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -495,7 +495,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -505,7 +505,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -515,24 +515,24 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
     ENDDO
-    
+
   ELSE
-    
+
     ixmin0 = -1
     ixmax0 =  2
     iymin0 = -1
     iymax0 =  2
     izmin0 = -1
     izmax0 =  2
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -543,7 +543,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -569,7 +569,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       oxint = 1.0_num-xint
       xintsq = xint*xint
       oxintsq = oxint*oxint
@@ -577,7 +577,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx0( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -585,7 +585,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sy0( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy0( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy0( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -593,7 +593,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
       sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz0( 2) = onesixth*zintsq*zint
-      
+
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -603,7 +603,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -613,7 +613,7 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -623,11 +623,11 @@ bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
           end do
         end do
       end do
-      
+
     ENDDO
-    
+
   ENDIF
-  
+
   RETURN
 END SUBROUTINE
 
@@ -659,8 +659,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
-ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg,         &
-l_lower_order_in_v)  
+  ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg,         &
+  l_lower_order_in_v)
   USE constants
   USE params
   IMPLICIT NONE
@@ -674,36 +674,36 @@ l_lower_order_in_v)
   INTEGER(isp)                         :: jj, kk, ll, j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint, xintsq, oxint, yintsq,    &
-  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq 
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq
   REAL(num), DIMENSION(-1:2)           :: sx, sx0
   REAL(num), DIMENSION(-1:2)           :: sy, sy0
   REAL(num), DIMENSION(-1:2)           :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1._num/dx
   dyi = 1._num/dy
   dzi = 1._num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   !   write(0, *) 'l_lower_order_in_v ', l_lower_order_in_v
   !   write(0, *) 'sum(xp)', sum(xp), sum(yp), sum(zp)
   !   write(0, *) 'sum(exg)', sum(exg), sum(eyg), sum(ezg)
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x)
@@ -711,11 +711,11 @@ l_lower_order_in_v)
       k0=floor(y)
       l=floor(z)
       l0=floor(z)
-      
+
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -724,7 +724,7 @@ l_lower_order_in_v)
       sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -732,7 +732,7 @@ l_lower_order_in_v)
       sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -740,27 +740,27 @@ l_lower_order_in_v)
       sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       xintsq = xint*xint
       sx0(-1) = 0.5_num*(0.5_num-xint)**2
       sx0( 0) = 0.75_num-xintsq
       sx0( 1) = 0.5_num*(0.5_num+xint)**2
-      
+
       yintsq = yint*yint
       sy0(-1) = 0.5_num*(0.5_num-yint)**2
       sy0( 0) = 0.75_num-yintsq
       sy0( 1) = 0.5_num*(0.5_num+yint)**2
-      
+
       zintsq = zint*zint
       sz0(-1) = 0.5_num*(0.5_num-zint)**2
       sz0( 0) = 0.75_num-zintsq
       sz0( 1) = 0.5_num*(0.5_num+zint)**2
-      
-      
+
+
       ! Compute Ex on particle
       ex(ip) = ex(ip) + sx0(-1)*sy(-1)*sz(-1)*exg(j0-1, k-1, l-1)
       ex(ip) = ex(ip) + sx0(0)*sy(-1)*sz(-1)*exg(j0, k-1, l-1)
@@ -810,7 +810,7 @@ l_lower_order_in_v)
       ex(ip) = ex(ip) + sx0(-1)*sy(2)*sz(2)*exg(j0-1, k+2, l+2)
       ex(ip) = ex(ip) + sx0(0)*sy(2)*sz(2)*exg(j0, k+2, l+2)
       ex(ip) = ex(ip) + sx0(1)*sy(2)*sz(2)*exg(j0+1, k+2, l+2)
-      
+
       ! Compute Ey on particle
       ey(ip) = ey(ip) + sx(-1)*sy0(-1)*sz(-1)*eyg(j-1, k0-1, l-1)
       ey(ip) = ey(ip) + sx(0)*sy0(-1)*sz(-1)*eyg(j, k0-1, l-1)
@@ -860,7 +860,7 @@ l_lower_order_in_v)
       ey(ip) = ey(ip) + sx(0)*sy0(1)*sz(2)*eyg(j, k0+1, l+2)
       ey(ip) = ey(ip) + sx(1)*sy0(1)*sz(2)*eyg(j+1, k0+1, l+2)
       ey(ip) = ey(ip) + sx(2)*sy0(1)*sz(2)*eyg(j+2, k0+1, l+2)
-      
+
       ! Compute Ez on particle
       ez(ip) = ez(ip) + sx(-1)*sy(-1)*sz0(-1)*ezg(j-1, k-1, l0-1)
       ez(ip) = ez(ip) + sx(0)*sy(-1)*sz0(-1)*ezg(j, k-1, l0-1)
@@ -911,15 +911,15 @@ l_lower_order_in_v)
       ez(ip) = ez(ip) + sx(1)*sy(2)*sz0(1)*ezg(j+1, k+2, l0+1)
       ez(ip) = ez(ip) + sx(2)*sy(2)*sz0(1)*ezg(j+2, k+2, l0+1)
     ENDDO
-    
+
   ELSE
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -927,11 +927,11 @@ l_lower_order_in_v)
       k0=floor(y-0.5_num)
       l=floor(z)
       l0=floor(z-0.5_num)
-      
+
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -954,11 +954,11 @@ l_lower_order_in_v)
       sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       oxint = 1.0_num-xint
       xintsq = xint*xint
       oxintsq = oxint*oxint
@@ -966,7 +966,7 @@ l_lower_order_in_v)
       sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx0( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -974,7 +974,7 @@ l_lower_order_in_v)
       sy0( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy0( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy0( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -982,8 +982,8 @@ l_lower_order_in_v)
       sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz0( 2) = onesixth*zintsq*zint
-      
-      
+
+
       ! Compute Ex on particle
       ex(ip) = ex(ip) + sx0(-1)*sy(-1)*sz(-1)*exg(j0-1, k-1, l-1)
       ex(ip) = ex(ip) + sx0(0)*sy(-1)*sz(-1)*exg(j0, k-1, l-1)
@@ -1049,7 +1049,7 @@ l_lower_order_in_v)
       ex(ip) = ex(ip) + sx0(0)*sy(2)*sz(2)*exg(j0, k+2, l+2)
       ex(ip) = ex(ip) + sx0(1)*sy(2)*sz(2)*exg(j0+1, k+2, l+2)
       ex(ip) = ex(ip) + sx0(2)*sy(2)*sz(2)*exg(j0+2, k+2, l+2)
-      
+
       ! Compute Ey on particle
       ey(ip) = ey(ip) + sx(-1)*sy0(-1)*sz(-1)*eyg(j-1, k0-1, l-1)
       ey(ip) = ey(ip) + sx(0)*sy0(-1)*sz(-1)*eyg(j, k0-1, l-1)
@@ -1115,7 +1115,7 @@ l_lower_order_in_v)
       ey(ip) = ey(ip) + sx(0)*sy0(2)*sz(2)*eyg(j, k0+2, l+2)
       ey(ip) = ey(ip) + sx(1)*sy0(2)*sz(2)*eyg(j+1, k0+2, l+2)
       ey(ip) = ey(ip) + sx(2)*sy0(2)*sz(2)*eyg(j+2, k0+2, l+2)
-      
+
       ! Compute Ez on particle
       ez(ip) = ez(ip) + sx(-1)*sy(-1)*sz0(-1)*ezg(j-1, k-1, l0-1)
       ez(ip) = ez(ip) + sx(0)*sy(-1)*sz0(-1)*ezg(j, k-1, l0-1)
@@ -1181,7 +1181,7 @@ l_lower_order_in_v)
       ez(ip) = ez(ip) + sx(0)*sy(2)*sz0(2)*ezg(j, k+2, l0+2)
       ez(ip) = ez(ip) + sx(1)*sy(2)*sz0(2)*ezg(j+1, k+2, l0+2)
       ez(ip) = ez(ip) + sx(2)*sy(2)*sz0(2)*ezg(j+2, k+2, l0+2)
-      
+
     ENDDO! end loop on particles
   ENDIF
 
@@ -1192,7 +1192,7 @@ END SUBROUTINE
 #if defined(DEV)
 ! ________________________________________________________________________________________
 !> @brief
-! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving") 
+! Scalar version: Gathering of Magnetic field from Yee grid ("energy conserving")
 ! on particles
 ! at order 3
 !
@@ -1219,8 +1219,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
-ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg,         &
-l_lower_order_in_v)  
+  ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg,         &
+  l_lower_order_in_v)
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1231,25 +1231,25 @@ l_lower_order_in_v)
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(idp)                         :: ip, j, k, l, jj, kk, ll, j0, k0, l0
   REAL(num)                            :: dxi, dyi, dzi, x, y, z, xint, yint, zint,   &
-  xintsq, oxint, yintsq, oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq 
+  xintsq, oxint, yintsq, oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq
   REAL(num), DIMENSION(-1:2)           :: sx, sx0
   REAL(num), DIMENSION(-1:2)           :: sy, sy0
   REAL(num), DIMENSION(-1:2)           :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1./dx
   dyi = 1./dy
   dzi = 1./dz
-  
+
   if (l_lower_order_in_v) then
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x)
@@ -1260,7 +1260,7 @@ l_lower_order_in_v)
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -1269,7 +1269,7 @@ l_lower_order_in_v)
       sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -1277,7 +1277,7 @@ l_lower_order_in_v)
       sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -1285,7 +1285,7 @@ l_lower_order_in_v)
       sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
@@ -1301,7 +1301,7 @@ l_lower_order_in_v)
       sz0(-1) = 0.5_num*(0.5_num-zint)**2
       sz0( 0) = 0.75_num-zintsq
       sz0( 1) = 0.5_num*(0.5_num+zint)**2
-      
+
       ! Compute Bx on particle
       bx(ip) = bx(ip) + sx(-1)*sy0(-1)*sz0(-1)*bxg(j-1, k0-1, l0-1)
       bx(ip) = bx(ip) + sx(0)*sy0(-1)*sz0(-1)*bxg(j, k0-1, l0-1)
@@ -1339,7 +1339,7 @@ l_lower_order_in_v)
       bx(ip) = bx(ip) + sx(0)*sy0(1)*sz0(1)*bxg(j, k0+1, l0+1)
       bx(ip) = bx(ip) + sx(1)*sy0(1)*sz0(1)*bxg(j+1, k0+1, l0+1)
       bx(ip) = bx(ip) + sx(2)*sy0(1)*sz0(1)*bxg(j+2, k0+1, l0+1)
-      
+
       ! Compute By on particle
       by(ip) = by(ip) + sx0(-1)*sy(-1)*sz0(-1)*byg(j0-1, k-1, l0-1)
       by(ip) = by(ip) + sx0(0)*sy(-1)*sz0(-1)*byg(j0, k-1, l0-1)
@@ -1377,7 +1377,7 @@ l_lower_order_in_v)
       by(ip) = by(ip) + sx0(-1)*sy(2)*sz0(1)*byg(j0-1, k+2, l0+1)
       by(ip) = by(ip) + sx0(0)*sy(2)*sz0(1)*byg(j0, k+2, l0+1)
       by(ip) = by(ip) + sx0(1)*sy(2)*sz0(1)*byg(j0+1, k+2, l0+1)
-      
+
       ! Compute Bz on particle
       bz(ip) = bz(ip) + sx0(-1)*sy0(-1)*sz(-1)*bzg(j0-1, k0-1, l-1)
       bz(ip) = bz(ip) + sx0(0)*sy0(-1)*sz(-1)*bzg(j0, k0-1, l-1)
@@ -1415,17 +1415,17 @@ l_lower_order_in_v)
       bz(ip) = bz(ip) + sx0(-1)*sy0(1)*sz(2)*bzg(j0-1, k0+1, l+2)
       bz(ip) = bz(ip) + sx0(0)*sy0(1)*sz(2)*bzg(j0, k0+1, l+2)
       bz(ip) = bz(ip) + sx0(1)*sy0(1)*sz(2)*bzg(j0+1, k0+1, l+2)
-      
+
     ENDDO
-    
+
   ELSE
-    
+
     DO ip=1, np
-      
+
       x = (xp(ip)-xmin)*dxi
       y = (yp(ip)-ymin)*dyi
       z = (zp(ip)-zmin)*dzi
-      
+
       ! Compute index of particle
       j=floor(x)
       j0=floor(x-0.5_num)
@@ -1436,7 +1436,7 @@ l_lower_order_in_v)
       xint=x-j
       yint=y-k
       zint=z-l
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -1462,7 +1462,7 @@ l_lower_order_in_v)
       xint=x-0.5_num-j0
       yint=y-0.5_num-k0
       zint=z-0.5_num-l0
-      
+
       oxint = 1.0_num-xint
       xintsq = xint*xint
       oxintsq = oxint*oxint
@@ -1470,7 +1470,7 @@ l_lower_order_in_v)
       sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx0( 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -1478,7 +1478,7 @@ l_lower_order_in_v)
       sy0( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy0( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy0( 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -1486,7 +1486,7 @@ l_lower_order_in_v)
       sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz0( 2) = onesixth*zintsq*zint
-      
+
       ! Compute Bx on particle
       bx(ip) = bx(ip) + sx(-1)*sy0(-1)*sz0(-1)*bxg(j-1, k0-1, l0-1)
       bx(ip) = bx(ip) + sx(0)*sy0(-1)*sz0(-1)*bxg(j, k0-1, l0-1)
@@ -1552,7 +1552,7 @@ l_lower_order_in_v)
       bx(ip) = bx(ip) + sx(0)*sy0(2)*sz0(2)*bxg(j, k0+2, l0+2)
       bx(ip) = bx(ip) + sx(1)*sy0(2)*sz0(2)*bxg(j+1, k0+2, l0+2)
       bx(ip) = bx(ip) + sx(2)*sy0(2)*sz0(2)*bxg(j+2, k0+2, l0+2)
-      
+
       ! Compute By on particle
       by(ip) = by(ip) + sx0(-1)*sy(-1)*sz0(-1)*byg(j0-1, k-1, l0-1)
       by(ip) = by(ip) + sx0(0)*sy(-1)*sz0(-1)*byg(j0, k-1, l0-1)
@@ -1618,7 +1618,7 @@ l_lower_order_in_v)
       by(ip) = by(ip) + sx0(0)*sy(2)*sz0(2)*byg(j0, k+2, l0+2)
       by(ip) = by(ip) + sx0(1)*sy(2)*sz0(2)*byg(j0+1, k+2, l0+2)
       by(ip) = by(ip) + sx0(2)*sy(2)*sz0(2)*byg(j0+2, k+2, l0+2)
-      
+
       ! Compute Bz on particle
       bz(ip) = bz(ip) + sx0(-1)*sy0(-1)*sz(-1)*bzg(j0-1, k0-1, l-1)
       bz(ip) = bz(ip) + sx0(0)*sy0(-1)*sz(-1)*bzg(j0, k0-1, l-1)
@@ -1719,11 +1719,11 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin, ymin, &
-zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
-l_lower_order_in_v)  
+  zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
+  l_lower_order_in_v)
   USE constants
   IMPLICIT NONE
-  
+
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                           :: lvect
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez
@@ -1744,23 +1744,23 @@ l_lower_order_in_v)
   REAL(num), DIMENSION(lvect, -1:2)       :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v ) THEN
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
@@ -1782,13 +1782,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -1796,11 +1796,11 @@ l_lower_order_in_v)
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -1809,7 +1809,7 @@ l_lower_order_in_v)
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -1817,7 +1817,7 @@ l_lower_order_in_v)
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -1825,26 +1825,26 @@ l_lower_order_in_v)
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx0(n, 0) = 0.75_num-xintsq
         sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
-        
+
         yintsq = yint*yint
         sy0(n, -1) = 0.5_num*(0.5_num-yint)**2
         sy0(n, 0) = 0.75_num-yintsq
         sy0(n, 1) = 0.5_num*(0.5_num+yint)**2
-        
+
         zintsq = zint*zint
         sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, -1)*sy(n, -1)*sz(n, -1)*exg(j0-1, k-1, l-1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, -1)*sz(n, -1)*exg(j0, k-1, l-1)
@@ -1894,7 +1894,7 @@ l_lower_order_in_v)
         ex(nn) = ex(nn) + sx0(n, -1)*sy(n, 2)*sz(n, 2)*exg(j0-1, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 2)*sz(n, 2)*exg(j0, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 2)*sz(n, 2)*exg(j0+1, k+2, l+2)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, -1)*sy0(n, -1)*sz(n, -1)*eyg(j-1, k0-1, l-1)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, -1)*sz(n, -1)*eyg(j, k0-1, l-1)
@@ -1944,7 +1944,7 @@ l_lower_order_in_v)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 1)*sz(n, 2)*eyg(j, k0+1, l+2)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 1)*sz(n, 2)*eyg(j+1, k0+1, l+2)
         ey(nn) = ey(nn) + sx(n, 2)*sy0(n, 1)*sz(n, 2)*eyg(j+2, k0+1, l+2)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, -1)*sy(n, -1)*sz0(n, -1)*ezg(j-1, k-1, l0-1)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, -1)*sz0(n, -1)*ezg(j, k-1, l0-1)
@@ -2000,14 +2000,14 @@ l_lower_order_in_v)
       !$OMP END SIMD
 #endif
 #endif
-      
+
     ENDDO
-    
+
   ELSE
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
@@ -2029,13 +2029,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -2046,7 +2046,7 @@ l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -2069,11 +2069,11 @@ l_lower_order_in_v)
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         oxint = 1.0_num-xint
         xintsq = xint*xint
         oxintsq = oxint*oxint
@@ -2081,7 +2081,7 @@ l_lower_order_in_v)
         sx0(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx0(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -2089,7 +2089,7 @@ l_lower_order_in_v)
         sy0(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy0(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -2097,7 +2097,7 @@ l_lower_order_in_v)
         sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0(n, 2) = onesixth*zintsq*zint
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, -1)*sy(n, -1)*sz(n, -1)*exg(j0-1, k-1, l-1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, -1)*sz(n, -1)*exg(j0, k-1, l-1)
@@ -2163,7 +2163,7 @@ l_lower_order_in_v)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 2)*sz(n, 2)*exg(j0, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 2)*sz(n, 2)*exg(j0+1, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 2)*sy(n, 2)*sz(n, 2)*exg(j0+2, k+2, l+2)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, -1)*sy0(n, -1)*sz(n, -1)*eyg(j-1, k0-1, l-1)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, -1)*sz(n, -1)*eyg(j, k0-1, l-1)
@@ -2229,7 +2229,7 @@ l_lower_order_in_v)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 2)*sz(n, 2)*eyg(j, k0+2, l+2)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 2)*sz(n, 2)*eyg(j+1, k0+2, l+2)
         ey(nn) = ey(nn) + sx(n, 2)*sy0(n, 2)*sz(n, 2)*eyg(j+2, k0+2, l+2)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, -1)*sy(n, -1)*sz0(n, -1)*ezg(j-1, k-1, l0-1)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, -1)*sz0(n, -1)*ezg(j, k-1, l0-1)
@@ -2303,7 +2303,7 @@ l_lower_order_in_v)
 #endif
     ENDDO
   ENDIF
-  
+
   RETURN
 END SUBROUTINE
 #endif
@@ -2334,8 +2334,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, bx, by, bz, xmin, ymin, &
-zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
-l_lower_order_in_v)  
+  zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
+  l_lower_order_in_v)
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2351,29 +2351,29 @@ l_lower_order_in_v)
   INTEGER(isp)                         :: n, nn
   REAL(num)                            :: dxi, dyi, dzi, x, y, z
   REAL(num)                            :: xint, yint, zint, xintsq, oxint, yintsq,    &
-  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq 
+  oyint, zintsq, ozint, oxintsq, oyintsq, ozintsq
   REAL(num), DIMENSION(lvect, -1:2)     :: sx, sx0
   REAL(num), DIMENSION(lvect, -1:2)     :: sy, sy0
   REAL(num), DIMENSION(lvect, -1:2)     :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
@@ -2395,13 +2395,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -2412,7 +2412,7 @@ l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -2421,7 +2421,7 @@ l_lower_order_in_v)
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -2429,7 +2429,7 @@ l_lower_order_in_v)
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -2437,7 +2437,7 @@ l_lower_order_in_v)
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
@@ -2453,7 +2453,7 @@ l_lower_order_in_v)
         sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, -1)*sy0(n, -1)*sz0(n, -1)*bxg(j-1, k0-1, l0-1)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, -1)*sz0(n, -1)*bxg(j, k0-1, l0-1)
@@ -2491,7 +2491,7 @@ l_lower_order_in_v)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 1)*sz0(n, 1)*bxg(j, k0+1, l0+1)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 1)*sz0(n, 1)*bxg(j+1, k0+1, l0+1)
         bx(nn) = bx(nn) + sx(n, 2)*sy0(n, 1)*sz0(n, 1)*bxg(j+2, k0+1, l0+1)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, -1)*sy(n, -1)*sz0(n, -1)*byg(j0-1, k-1, l0-1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, -1)*sz0(n, -1)*byg(j0, k-1, l0-1)
@@ -2529,7 +2529,7 @@ l_lower_order_in_v)
         by(nn) = by(nn) + sx0(n, -1)*sy(n, 2)*sz0(n, 1)*byg(j0-1, k+2, l0+1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 2)*sz0(n, 1)*byg(j0, k+2, l0+1)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 2)*sz0(n, 1)*byg(j0+1, k+2, l0+1)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, -1)*sz(n, -1)*bzg(j0-1, k0-1, l-1)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, -1)*sz(n, -1)*bzg(j0, k0-1, l-1)
@@ -2574,11 +2574,11 @@ l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
   ELSE
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
@@ -2600,13 +2600,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -2617,7 +2617,7 @@ l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -2643,7 +2643,7 @@ l_lower_order_in_v)
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         oxint = 1.0_num-xint
         xintsq = xint*xint
         oxintsq = oxint*oxint
@@ -2651,7 +2651,7 @@ l_lower_order_in_v)
         sx0(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx0(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -2659,7 +2659,7 @@ l_lower_order_in_v)
         sy0(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy0(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -2667,7 +2667,7 @@ l_lower_order_in_v)
         sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0(n, 2) = onesixth*zintsq*zint
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, -1)*sy0(n, -1)*sz0(n, -1)*bxg(j-1, k0-1, l0-1)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, -1)*sz0(n, -1)*bxg(j, k0-1, l0-1)
@@ -2733,7 +2733,7 @@ l_lower_order_in_v)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 2)*sz0(n, 2)*bxg(j, k0+2, l0+2)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 2)*sz0(n, 2)*bxg(j+1, k0+2, l0+2)
         bx(nn) = bx(nn) + sx(n, 2)*sy0(n, 2)*sz0(n, 2)*bxg(j+2, k0+2, l0+2)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, -1)*sy(n, -1)*sz0(n, -1)*byg(j0-1, k-1, l0-1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, -1)*sz0(n, -1)*byg(j0, k-1, l0-1)
@@ -2799,7 +2799,7 @@ l_lower_order_in_v)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 2)*sz0(n, 2)*byg(j0, k+2, l0+2)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 2)*sz0(n, 2)*byg(j0+1, k+2, l0+2)
         by(nn) = by(nn) + sx0(n, 2)*sy(n, 2)*sz0(n, 2)*byg(j0+2, k+2, l0+2)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, -1)*sz(n, -1)*bzg(j0-1, k0-1, l-1)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, -1)*sz(n, -1)*bzg(j0, k0-1, l-1)
@@ -2872,7 +2872,7 @@ l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
   ENDIF
   RETURN
 END SUBROUTINE
@@ -2881,7 +2881,7 @@ END SUBROUTINE
 #if defined(DEV)
 ! ________________________________________________________________________________________
 !> @brief
-!> Vectorized gathering of the electric fields (version 2) from Yee grid 
+!> Vectorized gathering of the electric fields (version 2) from Yee grid
 !> ("energy conserving")
 !> on particles at order 3.
 !
@@ -2912,8 +2912,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,      &
-ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,  &
-l_lower_order_in_v)  
+  ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,  &
+  l_lower_order_in_v)
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2937,27 +2937,27 @@ l_lower_order_in_v)
   REAL(num), DIMENSION(lvect, -1:2)       :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   !write(0, *) 'l_lower_order_in_v ', l_lower_order_in_v
   !write(0, *) 'sum(xp)', sum(xp), sum(yp), sum(zp)
   !write(0, *) 'sum(exg)', sum(exg), sum(eyg), sum(ezg)
-  
+
   IF (l_lower_order_in_v ) THEN
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
@@ -2979,13 +2979,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -2993,11 +2993,11 @@ l_lower_order_in_v)
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -3006,7 +3006,7 @@ l_lower_order_in_v)
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -3014,7 +3014,7 @@ l_lower_order_in_v)
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -3022,121 +3022,121 @@ l_lower_order_in_v)
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx0(n, 0) = 0.75_num-xintsq
         sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
-        
+
         yintsq = yint*yint
         sy0(n, -1) = 0.5_num*(0.5_num-yint)**2
         sy0(n, 0) = 0.75_num-yintsq
         sy0(n, 1) = 0.5_num*(0.5_num+yint)**2
-        
+
         zintsq = zint*zint
         sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
-        
+
         ! Compute Ex on particle
         a = (sx0(n, -1)*exg(j0-1, k-1, l-1) + sx0(n, 0)*exg(j0, k-1, l-1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l-1))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l-1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l-1) + sx0(n, 0)*exg(j0, k, l-1) + sx0(n,    &
-        1)*exg(j0+1, k, l-1))*sy(n, 0)  
+        1)*exg(j0+1, k, l-1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l-1) + sx0(n, 0)*exg(j0, k+1, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l-1))*sy(n, 1)  
+        sx0(n, 1)*exg(j0+1, k+1, l-1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l-1) + sx0(n, 0)*exg(j0, k+2, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l-1))*sy(n, 2)  
+        sx0(n, 1)*exg(j0+1, k+2, l-1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l) + sx0(n, 0)*exg(j0, k-1, l) + sx0(n,        &
-        1)*exg(j0+1, k-1, l))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l) + sx0(n, 0)*exg(j0, k, l) + sx0(n,        &
-        1)*exg(j0+1, k, l))*sy(n, 0)  
+        1)*exg(j0+1, k, l))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l) + sx0(n, 0)*exg(j0, k+1, l) + sx0(n,    &
-        1)*exg(j0+1, k+1, l))*sy(n, 1)  
+        1)*exg(j0+1, k+1, l))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l) + sx0(n, 0)*exg(j0, k+2, l) + sx0(n,    &
-        1)*exg(j0+1, k+2, l))*sy(n, 2)  
+        1)*exg(j0+1, k+2, l))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+1) + sx0(n, 0)*exg(j0, k-1, l+1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+1))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l+1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+1) + sx0(n, 0)*exg(j0, k, l+1) + sx0(n,    &
-        1)*exg(j0+1, k, l+1))*sy(n, 0)  
+        1)*exg(j0+1, k, l+1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+1) + sx0(n, 0)*exg(j0, k+1, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+1))*sy(n, 1)  
+        sx0(n, 1)*exg(j0+1, k+1, l+1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+1) + sx0(n, 0)*exg(j0, k+2, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+1))*sy(n, 2)  
+        sx0(n, 1)*exg(j0+1, k+2, l+1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+2) + sx0(n, 0)*exg(j0, k-1, l+2) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+2))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l+2))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+2) + sx0(n, 0)*exg(j0, k, l+2) + sx0(n,    &
-        1)*exg(j0+1, k, l+2))*sy(n, 0)  
+        1)*exg(j0+1, k, l+2))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+2) + sx0(n, 0)*exg(j0, k+1, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+2))*sy(n, 1)  
+        sx0(n, 1)*exg(j0+1, k+1, l+2))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+2) + sx0(n, 0)*exg(j0, k+2, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+2))*sy(n, 2)  
+        sx0(n, 1)*exg(j0+1, k+2, l+2))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 2)
-        
+
         ! Compute Ey on particle
         a = (sx(n, -1)*eyg(j-1, k0-1, l-1) + sx(n, 0)*eyg(j, k0-1, l-1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l-1) + sx(n, 0)*eyg(j, k0, l-1) + sx(n,       &
-        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l-1) + sx(n, 0)*eyg(j, k0+1, l-1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, -1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l) + sx(n, 0)*eyg(j, k0-1, l) + sx(n,           &
-        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l) + sx(n, 0)*eyg(j, k0, l) + sx(n,           &
-        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l) + sx(n, 0)*eyg(j, k0+1, l) + sx(n,       &
-        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 0)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+1) + sx(n, 0)*eyg(j, k0-1, l+1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+1) + sx(n, 0)*eyg(j, k0, l+1) + sx(n,       &
-        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+1) + sx(n, 0)*eyg(j, k0+1, l+1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+2) + sx(n, 0)*eyg(j, k0-1, l+2) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+2) + sx(n, 0)*eyg(j, k0, l+2) + sx(n,       &
-        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+2) + sx(n, 0)*eyg(j, k0+1, l+2) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 2)
-        
+
         ! Compute Ez on particle
         a = (sx(n, -1)*ezg(j-1, k-1, l0-1) + sx(n, 0)*ezg(j, k-1, l0-1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0-1) + sx(n, 0)*ezg(j, k, l0-1) + sx(n,       &
-        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0-1) + sx(n, 0)*ezg(j, k+1, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0-1) + sx(n, 0)*ezg(j, k+2, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*ezg(j-1, k-1, l0) + sx(n, 0)*ezg(j, k-1, l0) + sx(n,           &
-        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0) + sx(n, 0)*ezg(j, k, l0) + sx(n,           &
-        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)   
+        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0) + sx(n, 0)*ezg(j, k+1, l0) + sx(n,       &
-        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0) + sx(n, 0)*ezg(j, k+2, l0) + sx(n,       &
-        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*ezg(j-1, k-1, l0+1) + sx(n, 0)*ezg(j, k-1, l0+1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0+1) + sx(n, 0)*ezg(j, k, l0+1) + sx(n,       &
-        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0+1) + sx(n, 0)*ezg(j, k+1, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+1) + sx(n, 0)*ezg(j, k+2, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 1)
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
@@ -3144,14 +3144,14 @@ l_lower_order_in_v)
       !$OMP END SIMD
 #endif
 #endif
-      
+
     ENDDO
-    
+
   ELSE
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
@@ -3173,13 +3173,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -3190,7 +3190,7 @@ l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -3213,11 +3213,11 @@ l_lower_order_in_v)
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         oxint = 1.0_num-xint
         xintsq = xint*xint
         oxintsq = oxint*oxint
@@ -3225,7 +3225,7 @@ l_lower_order_in_v)
         sx0(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx0(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -3233,7 +3233,7 @@ l_lower_order_in_v)
         sy0(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy0(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -3241,119 +3241,119 @@ l_lower_order_in_v)
         sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0(n, 2) = onesixth*zintsq*zint
-        
+
         ! Compute Ex on particle
         a = (sx0(n, -1)*exg(j0-1, k-1, l-1) + sx0(n, 0)*exg(j0, k-1, l-1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l-1) + sx0(n, 2)*exg(j0+2, k-1, l-1))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l-1) + sx0(n, 2)*exg(j0+2, k-1, l-1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l-1) + sx0(n, 0)*exg(j0, k, l-1) + sx0(n,    &
-        1)*exg(j0+1, k, l-1) + sx0(n, 2)*exg(j0+2, k, l-1))*sy(n, 0)   
+        1)*exg(j0+1, k, l-1) + sx0(n, 2)*exg(j0+2, k, l-1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l-1) + sx0(n, 0)*exg(j0, k+1, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l-1) + sx0(n, 2)*exg(j0+2, k+1, l-1))*sy(n, 1)   
+        sx0(n, 1)*exg(j0+1, k+1, l-1) + sx0(n, 2)*exg(j0+2, k+1, l-1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l-1) + sx0(n, 0)*exg(j0, k+2, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l-1) + sx0(n, 2)*exg(j0+2, k+2, l-1))*sy(n, 2)   
+        sx0(n, 1)*exg(j0+1, k+2, l-1) + sx0(n, 2)*exg(j0+2, k+2, l-1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l) + sx0(n, 0)*exg(j0, k-1, l) + sx0(n,        &
-        1)*exg(j0+1, k-1, l) + sx0(n, 2)*exg(j0+2, k-1, l))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l) + sx0(n, 2)*exg(j0+2, k-1, l))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l) + sx0(n, 0)*exg(j0, k, l) + sx0(n,        &
-        1)*exg(j0+1, k, l) + sx0(n, 2)*exg(j0+2, k, l))*sy(n, 0)   
+        1)*exg(j0+1, k, l) + sx0(n, 2)*exg(j0+2, k, l))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l) + sx0(n, 0)*exg(j0, k+1, l) + sx0(n,    &
-        1)*exg(j0+1, k+1, l) + sx0(n, 2)*exg(j0+2, k+1, l))*sy(n, 1)   
+        1)*exg(j0+1, k+1, l) + sx0(n, 2)*exg(j0+2, k+1, l))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l) + sx0(n, 0)*exg(j0, k+2, l) + sx0(n,    &
-        1)*exg(j0+1, k+2, l) + sx0(n, 2)*exg(j0+2, k+2, l))*sy(n, 2)   
+        1)*exg(j0+1, k+2, l) + sx0(n, 2)*exg(j0+2, k+2, l))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+1) + sx0(n, 0)*exg(j0, k-1, l+1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+1) + sx0(n, 2)*exg(j0+2, k-1, l+1))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l+1) + sx0(n, 2)*exg(j0+2, k-1, l+1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+1) + sx0(n, 0)*exg(j0, k, l+1) + sx0(n,    &
-        1)*exg(j0+1, k, l+1) + sx0(n, 2)*exg(j0+2, k, l+1))*sy(n, 0)   
+        1)*exg(j0+1, k, l+1) + sx0(n, 2)*exg(j0+2, k, l+1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+1) + sx0(n, 0)*exg(j0, k+1, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+1) + sx0(n, 2)*exg(j0+2, k+1, l+1))*sy(n, 1)   
+        sx0(n, 1)*exg(j0+1, k+1, l+1) + sx0(n, 2)*exg(j0+2, k+1, l+1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+1) + sx0(n, 0)*exg(j0, k+2, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+1) + sx0(n, 2)*exg(j0+2, k+2, l+1))*sy(n, 2)   
+        sx0(n, 1)*exg(j0+1, k+2, l+1) + sx0(n, 2)*exg(j0+2, k+2, l+1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+2) + sx0(n, 0)*exg(j0, k-1, l+2) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+2) + sx0(n, 2)*exg(j0+2, k-1, l+2))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l+2) + sx0(n, 2)*exg(j0+2, k-1, l+2))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+2) + sx0(n, 0)*exg(j0, k, l+2) + sx0(n,    &
-        1)*exg(j0+1, k, l+2) + sx0(n, 2)*exg(j0+2, k, l+2))*sy(n, 0)   
+        1)*exg(j0+1, k, l+2) + sx0(n, 2)*exg(j0+2, k, l+2))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+2) + sx0(n, 0)*exg(j0, k+1, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+2) + sx0(n, 2)*exg(j0+2, k+1, l+2))*sy(n, 1)   
+        sx0(n, 1)*exg(j0+1, k+1, l+2) + sx0(n, 2)*exg(j0+2, k+1, l+2))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+2) + sx0(n, 0)*exg(j0, k+2, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+2) + sx0(n, 2)*exg(j0+2, k+2, l+2))*sy(n, 2)   
+        sx0(n, 1)*exg(j0+1, k+2, l+2) + sx0(n, 2)*exg(j0+2, k+2, l+2))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 2)
-        
+
         ! Compute Ey on particle
         a = (sx(n, -1)*eyg(j-1, k0-1, l-1) + sx(n, 0)*eyg(j, k0-1, l-1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l-1) + sx(n, 0)*eyg(j, k0, l-1) + sx(n,       &
-        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l-1) + sx(n, 0)*eyg(j, k0+1, l-1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l-1) + sx(n, 0)*eyg(j, k0+2, l-1) + sx(n,   &
-        1)*eyg(j+1, k0+2, l-1) + sx(n, 2)*eyg(j+2, k0+2, l-1))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l-1) + sx(n, 2)*eyg(j+2, k0+2, l-1))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, -1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l) + sx(n, 0)*eyg(j, k0-1, l) + sx(n,           &
-        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l) + sx(n, 0)*eyg(j, k0, l) + sx(n,           &
-        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l) + sx(n, 0)*eyg(j, k0+1, l) + sx(n,       &
-        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l) + sx(n, 0)*eyg(j, k0+2, l) + sx(n,       &
-        1)*eyg(j+1, k0+2, l) + sx(n, 2)*eyg(j+2, k0+2, l))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l) + sx(n, 2)*eyg(j+2, k0+2, l))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, 0)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+1) + sx(n, 0)*eyg(j, k0-1, l+1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+1) + sx(n, 0)*eyg(j, k0, l+1) + sx(n,       &
-        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+1) + sx(n, 0)*eyg(j, k0+1, l+1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l+1) + sx(n, 0)*eyg(j, k0+2, l+1) + sx(n,   &
-        1)*eyg(j+1, k0+2, l+1) + sx(n, 2)*eyg(j+2, k0+2, l+1))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l+1) + sx(n, 2)*eyg(j+2, k0+2, l+1))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, 1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+2) + sx(n, 0)*eyg(j, k0-1, l+2) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+2) + sx(n, 0)*eyg(j, k0, l+2) + sx(n,       &
-        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+2) + sx(n, 0)*eyg(j, k0+1, l+2) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l+2) + sx(n, 0)*eyg(j, k0+2, l+2) + sx(n,   &
-        1)*eyg(j+1, k0+2, l+2) + sx(n, 2)*eyg(j+2, k0+2, l+2))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l+2) + sx(n, 2)*eyg(j+2, k0+2, l+2))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, 2)
-        
+
         ! Compute Ez on particle
         a = (sx(n, -1)*ezg(j-1, k-1, l0-1) + sx(n, 0)*ezg(j, k-1, l0-1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0-1) + sx(n, 0)*ezg(j, k, l0-1) + sx(n,       &
-        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0-1) + sx(n, 0)*ezg(j, k+1, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0-1) + sx(n, 0)*ezg(j, k+2, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*ezg(j-1, k-1, l0) + sx(n, 0)*ezg(j, k-1, l0) + sx(n,           &
-        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0) + sx(n, 0)*ezg(j, k, l0) + sx(n,           &
-        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)   
+        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0) + sx(n, 0)*ezg(j, k+1, l0) + sx(n,       &
-        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0) + sx(n, 0)*ezg(j, k+2, l0) + sx(n,       &
-        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*ezg(j-1, k-1, l0+1) + sx(n, 0)*ezg(j, k-1, l0+1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0+1) + sx(n, 0)*ezg(j, k, l0+1) + sx(n,       &
-        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0+1) + sx(n, 0)*ezg(j, k+1, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+1) + sx(n, 0)*ezg(j, k+2, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 1)
         a = (sx(n, -1)*ezg(j-1, k-1, l0+2) + sx(n, 0)*ezg(j, k-1, l0+2) + sx(n,       &
-        1)*ezg(j+1, k-1, l0+2) + sx(n, 2)*ezg(j+2, k-1, l0+2))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0+2) + sx(n, 2)*ezg(j+2, k-1, l0+2))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0+2) + sx(n, 0)*ezg(j, k, l0+2) + sx(n,       &
-        1)*ezg(j+1, k, l0+2) + sx(n, 2)*ezg(j+2, k, l0+2))*sy(n, 0)   
+        1)*ezg(j+1, k, l0+2) + sx(n, 2)*ezg(j+2, k, l0+2))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0+2) + sx(n, 0)*ezg(j, k+1, l0+2) + sx(n,   &
-        1)*ezg(j+1, k+1, l0+2) + sx(n, 2)*ezg(j+2, k+1, l0+2))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0+2) + sx(n, 2)*ezg(j+2, k+1, l0+2))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+2) + sx(n, 0)*ezg(j, k+2, l0+2) + sx(n,   &
-        1)*ezg(j+1, k+2, l0+2) + sx(n, 2)*ezg(j+2, k+2, l0+2))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0+2) + sx(n, 2)*ezg(j+2, k+2, l0+2))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 2)
       END DO
 #if defined _OPENMP && _OPENMP>=201307
@@ -3363,7 +3363,7 @@ l_lower_order_in_v)
 #endif
     ENDDO
   ENDIF
-  
+
   RETURN
 END SUBROUTINE
 #endif
@@ -3401,8 +3401,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,      &
-ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,  &
-l_lower_order_in_v)  
+  ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,  &
+  l_lower_order_in_v)
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -3426,23 +3426,23 @@ l_lower_order_in_v)
   REAL(num), DIMENSION(lvect, -1:2)     :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v) THEN
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
@@ -3464,13 +3464,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -3481,7 +3481,7 @@ l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -3490,7 +3490,7 @@ l_lower_order_in_v)
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -3498,7 +3498,7 @@ l_lower_order_in_v)
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -3506,7 +3506,7 @@ l_lower_order_in_v)
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
@@ -3522,89 +3522,89 @@ l_lower_order_in_v)
         sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
-        
+
         ! Compute Bx on particle
         a = (sx(n, -1)*bxg(j-1, k0-1, l0-1) + sx(n, 0)*bxg(j, k0-1, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0-1) + sx(n, 0)*bxg(j, k0, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0-1) + sx(n, 0)*bxg(j, k0+1, l0-1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)
         bx(nn) = bx(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0) + sx(n, 0)*bxg(j, k0-1, l0) + sx(n,         &
-        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0) + sx(n, 0)*bxg(j, k0, l0) + sx(n,         &
-        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0) + sx(n, 0)*bxg(j, k0+1, l0) + sx(n,     &
-        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)
         bx(nn) = bx(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0+1) + sx(n, 0)*bxg(j, k0-1, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0+1) + sx(n, 0)*bxg(j, k0, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0+1) + sx(n, 0)*bxg(j, k0+1, l0+1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)
         bx(nn) = bx(nn) + a*sz0(n, 1)
-        
+
         ! Compute By on particle
         a = (sx0(n, -1)*byg(j0-1, k-1, l0-1) + sx0(n, 0)*byg(j0, k-1, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0-1))*sy(n, -1)  
+        1)*byg(j0+1, k-1, l0-1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0-1) + sx0(n, 0)*byg(j0, k, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k, l0-1))*sy(n, 0)  
+        1)*byg(j0+1, k, l0-1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0-1) + sx0(n, 0)*byg(j0, k+1, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0-1))*sy(n, 1)  
+        sx0(n, 1)*byg(j0+1, k+1, l0-1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0-1) + sx0(n, 0)*byg(j0, k+2, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0-1))*sy(n, 2)  
+        sx0(n, 1)*byg(j0+1, k+2, l0-1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, -1)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0) + sx0(n, 0)*byg(j0, k-1, l0) + sx0(n,      &
-        1)*byg(j0+1, k-1, l0))*sy(n, -1)  
+        1)*byg(j0+1, k-1, l0))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0) + sx0(n, 0)*byg(j0, k, l0) + sx0(n,      &
-        1)*byg(j0+1, k, l0))*sy(n, 0)  
+        1)*byg(j0+1, k, l0))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0) + sx0(n, 0)*byg(j0, k+1, l0) + sx0(n,  &
-        1)*byg(j0+1, k+1, l0))*sy(n, 1)  
+        1)*byg(j0+1, k+1, l0))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0) + sx0(n, 0)*byg(j0, k+2, l0) + sx0(n,  &
-        1)*byg(j0+1, k+2, l0))*sy(n, 2)  
+        1)*byg(j0+1, k+2, l0))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 0)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0+1) + sx0(n, 0)*byg(j0, k-1, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0+1))*sy(n, -1)  
+        1)*byg(j0+1, k-1, l0+1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0+1) + sx0(n, 0)*byg(j0, k, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k, l0+1))*sy(n, 0)  
+        1)*byg(j0+1, k, l0+1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0+1) + sx0(n, 0)*byg(j0, k+1, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0+1))*sy(n, 1)  
+        sx0(n, 1)*byg(j0+1, k+1, l0+1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0+1) + sx0(n, 0)*byg(j0, k+2, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0+1))*sy(n, 2)  
+        sx0(n, 1)*byg(j0+1, k+2, l0+1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 1)
-        
+
         ! Compute Bz on particle
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l-1) + sx0(n, 0)*bzg(j0, k0-1, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l-1))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l-1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l-1) + sx0(n, 0)*bzg(j0, k0, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l-1))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l-1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l-1) + sx0(n, 0)*bzg(j0, k0+1, l-1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l-1))*sy0(n, 1)  
+        sx0(n, 1)*bzg(j0+1, k0+1, l-1))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l) + sx0(n, 0)*bzg(j0, k0-1, l) + sx0(n,      &
-        1)*bzg(j0+1, k0-1, l))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l) + sx0(n, 0)*bzg(j0, k0, l) + sx0(n,      &
-        1)*bzg(j0+1, k0, l))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l) + sx0(n, 0)*bzg(j0, k0+1, l) + sx0(n,  &
-        1)*bzg(j0+1, k0+1, l))*sy0(n, 1)  
+        1)*bzg(j0+1, k0+1, l))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+1) + sx0(n, 0)*bzg(j0, k0-1, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+1))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l+1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+1) + sx0(n, 0)*bzg(j0, k0, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+1))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l+1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+1) + sx0(n, 0)*bzg(j0, k0+1, l+1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+1))*sy0(n, 1)  
+        sx0(n, 1)*bzg(j0+1, k0+1, l+1))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+2) + sx0(n, 0)*bzg(j0, k0-1, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+2))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l+2))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+2) + sx0(n, 0)*bzg(j0, k0, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+2))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l+2))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+2) + sx0(n, 0)*bzg(j0, k0+1, l+2) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+2))*sy0(n, 1)  
+        sx0(n, 1)*bzg(j0+1, k0+1, l+2))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 2)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -3612,12 +3612,12 @@ l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
+
     ! Loop over the particles by block
     DO ip=1, np, lvect
-      
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
       !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
@@ -3639,13 +3639,13 @@ l_lower_order_in_v)
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -3656,7 +3656,7 @@ l_lower_order_in_v)
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -3682,7 +3682,7 @@ l_lower_order_in_v)
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         oxint = 1.0_num-xint
         xintsq = xint*xint
         oxintsq = oxint*oxint
@@ -3690,7 +3690,7 @@ l_lower_order_in_v)
         sx0(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx0(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -3698,7 +3698,7 @@ l_lower_order_in_v)
         sy0(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy0(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -3706,121 +3706,121 @@ l_lower_order_in_v)
         sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0(n, 2) = onesixth*zintsq*zint
-        
+
         ! Compute Bx on particle
         a = (sx(n, -1)*bxg(j-1, k0-1, l0-1) + sx(n, 0)*bxg(j, k0-1, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0-1) + sx(n, 0)*bxg(j, k0, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0-1) + sx(n, 0)*bxg(j, k0+1, l0-1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0-1) + sx(n, 0)*bxg(j, k0+2, l0-1) + sx(n, &
-        1)*bxg(j+1, k0+2, l0-1) + sx(n, 2)*bxg(j+2, k0+2, l0-1))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0-1) + sx(n, 2)*bxg(j+2, k0+2, l0-1))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0) + sx(n, 0)*bxg(j, k0-1, l0) + sx(n,         &
-        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0) + sx(n, 0)*bxg(j, k0, l0) + sx(n,         &
-        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0) + sx(n, 0)*bxg(j, k0+1, l0) + sx(n,     &
-        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0) + sx(n, 0)*bxg(j, k0+2, l0) + sx(n,     &
-        1)*bxg(j+1, k0+2, l0) + sx(n, 2)*bxg(j+2, k0+2, l0))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0) + sx(n, 2)*bxg(j+2, k0+2, l0))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0+1) + sx(n, 0)*bxg(j, k0-1, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0+1) + sx(n, 0)*bxg(j, k0, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0+1) + sx(n, 0)*bxg(j, k0+1, l0+1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0+1) + sx(n, 0)*bxg(j, k0+2, l0+1) + sx(n, &
-        1)*bxg(j+1, k0+2, l0+1) + sx(n, 2)*bxg(j+2, k0+2, l0+1))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0+1) + sx(n, 2)*bxg(j+2, k0+2, l0+1))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, 1)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0+2) + sx(n, 0)*bxg(j, k0-1, l0+2) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0+2) + sx(n, 2)*bxg(j+2, k0-1, l0+2))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0+2) + sx(n, 2)*bxg(j+2, k0-1, l0+2))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0+2) + sx(n, 0)*bxg(j, k0, l0+2) + sx(n,     &
-        1)*bxg(j+1, k0, l0+2) + sx(n, 2)*bxg(j+2, k0, l0+2))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0+2) + sx(n, 2)*bxg(j+2, k0, l0+2))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0+2) + sx(n, 0)*bxg(j, k0+1, l0+2) + sx(n, &
-        1)*bxg(j+1, k0+1, l0+2) + sx(n, 2)*bxg(j+2, k0+1, l0+2))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0+2) + sx(n, 2)*bxg(j+2, k0+1, l0+2))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0+2) + sx(n, 0)*bxg(j, k0+2, l0+2) + sx(n, &
-        1)*bxg(j+1, k0+2, l0+2) + sx(n, 2)*bxg(j+2, k0+2, l0+2))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0+2) + sx(n, 2)*bxg(j+2, k0+2, l0+2))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, 2)
-        
+
         ! Compute By on particle
         a = (sx0(n, -1)*byg(j0-1, k-1, l0-1) + sx0(n, 0)*byg(j0, k-1, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0-1) + sx0(n, 2)*byg(j0+2, k-1, l0-1))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0-1) + sx0(n, 2)*byg(j0+2, k-1, l0-1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0-1) + sx0(n, 0)*byg(j0, k, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k, l0-1) + sx0(n, 2)*byg(j0+2, k, l0-1))*sy(n, 0)   
+        1)*byg(j0+1, k, l0-1) + sx0(n, 2)*byg(j0+2, k, l0-1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0-1) + sx0(n, 0)*byg(j0, k+1, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0-1) + sx0(n, 2)*byg(j0+2, k+1, l0-1))*sy(n, 1)   
+        sx0(n, 1)*byg(j0+1, k+1, l0-1) + sx0(n, 2)*byg(j0+2, k+1, l0-1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0-1) + sx0(n, 0)*byg(j0, k+2, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0-1) + sx0(n, 2)*byg(j0+2, k+2, l0-1))*sy(n, 2)   
+        sx0(n, 1)*byg(j0+1, k+2, l0-1) + sx0(n, 2)*byg(j0+2, k+2, l0-1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, -1)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0) + sx0(n, 0)*byg(j0, k-1, l0) + sx0(n,      &
-        1)*byg(j0+1, k-1, l0) + sx0(n, 2)*byg(j0+2, k-1, l0))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0) + sx0(n, 2)*byg(j0+2, k-1, l0))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0) + sx0(n, 0)*byg(j0, k, l0) + sx0(n,      &
-        1)*byg(j0+1, k, l0) + sx0(n, 2)*byg(j0+2, k, l0))*sy(n, 0)   
+        1)*byg(j0+1, k, l0) + sx0(n, 2)*byg(j0+2, k, l0))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0) + sx0(n, 0)*byg(j0, k+1, l0) + sx0(n,  &
-        1)*byg(j0+1, k+1, l0) + sx0(n, 2)*byg(j0+2, k+1, l0))*sy(n, 1)   
+        1)*byg(j0+1, k+1, l0) + sx0(n, 2)*byg(j0+2, k+1, l0))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0) + sx0(n, 0)*byg(j0, k+2, l0) + sx0(n,  &
-        1)*byg(j0+1, k+2, l0) + sx0(n, 2)*byg(j0+2, k+2, l0))*sy(n, 2)   
+        1)*byg(j0+1, k+2, l0) + sx0(n, 2)*byg(j0+2, k+2, l0))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 0)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0+1) + sx0(n, 0)*byg(j0, k-1, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0+1) + sx0(n, 2)*byg(j0+2, k-1, l0+1))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0+1) + sx0(n, 2)*byg(j0+2, k-1, l0+1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0+1) + sx0(n, 0)*byg(j0, k, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k, l0+1) + sx0(n, 2)*byg(j0+2, k, l0+1))*sy(n, 0)   
+        1)*byg(j0+1, k, l0+1) + sx0(n, 2)*byg(j0+2, k, l0+1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0+1) + sx0(n, 0)*byg(j0, k+1, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0+1) + sx0(n, 2)*byg(j0+2, k+1, l0+1))*sy(n, 1)   
+        sx0(n, 1)*byg(j0+1, k+1, l0+1) + sx0(n, 2)*byg(j0+2, k+1, l0+1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0+1) + sx0(n, 0)*byg(j0, k+2, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0+1) + sx0(n, 2)*byg(j0+2, k+2, l0+1))*sy(n, 2)   
+        sx0(n, 1)*byg(j0+1, k+2, l0+1) + sx0(n, 2)*byg(j0+2, k+2, l0+1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 1)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0+2) + sx0(n, 0)*byg(j0, k-1, l0+2) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0+2) + sx0(n, 2)*byg(j0+2, k-1, l0+2))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0+2) + sx0(n, 2)*byg(j0+2, k-1, l0+2))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0+2) + sx0(n, 0)*byg(j0, k, l0+2) + sx0(n,  &
-        1)*byg(j0+1, k, l0+2) + sx0(n, 2)*byg(j0+2, k, l0+2))*sy(n, 0)   
+        1)*byg(j0+1, k, l0+2) + sx0(n, 2)*byg(j0+2, k, l0+2))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0+2) + sx0(n, 0)*byg(j0, k+1, l0+2) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0+2) + sx0(n, 2)*byg(j0+2, k+1, l0+2))*sy(n, 1)   
+        sx0(n, 1)*byg(j0+1, k+1, l0+2) + sx0(n, 2)*byg(j0+2, k+1, l0+2))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0+2) + sx0(n, 0)*byg(j0, k+2, l0+2) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0+2) + sx0(n, 2)*byg(j0+2, k+2, l0+2))*sy(n, 2)   
+        sx0(n, 1)*byg(j0+1, k+2, l0+2) + sx0(n, 2)*byg(j0+2, k+2, l0+2))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 2)
-        
+
         ! Compute Bz on particle
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l-1) + sx0(n, 0)*bzg(j0, k0-1, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l-1) + sx0(n, 2)*bzg(j0+2, k0-1, l-1))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l-1) + sx0(n, 2)*bzg(j0+2, k0-1, l-1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l-1) + sx0(n, 0)*bzg(j0, k0, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l-1) + sx0(n, 2)*bzg(j0+2, k0, l-1))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l-1) + sx0(n, 2)*bzg(j0+2, k0, l-1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l-1) + sx0(n, 0)*bzg(j0, k0+1, l-1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l-1) + sx0(n, 2)*bzg(j0+2, k0+1, l-1))*sy0(n, 1)   
+        sx0(n, 1)*bzg(j0+1, k0+1, l-1) + sx0(n, 2)*bzg(j0+2, k0+1, l-1))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l-1) + sx0(n, 0)*bzg(j0, k0+2, l-1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+2, l-1) + sx0(n, 2)*bzg(j0+2, k0+2, l-1))*sy0(n, 2)   
+        sx0(n, 1)*bzg(j0+1, k0+2, l-1) + sx0(n, 2)*bzg(j0+2, k0+2, l-1))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l) + sx0(n, 0)*bzg(j0, k0-1, l) + sx0(n,      &
-        1)*bzg(j0+1, k0-1, l) + sx0(n, 2)*bzg(j0+2, k0-1, l))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l) + sx0(n, 2)*bzg(j0+2, k0-1, l))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l) + sx0(n, 0)*bzg(j0, k0, l) + sx0(n,      &
-        1)*bzg(j0+1, k0, l) + sx0(n, 2)*bzg(j0+2, k0, l))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l) + sx0(n, 2)*bzg(j0+2, k0, l))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l) + sx0(n, 0)*bzg(j0, k0+1, l) + sx0(n,  &
-        1)*bzg(j0+1, k0+1, l) + sx0(n, 2)*bzg(j0+2, k0+1, l))*sy0(n, 1)   
+        1)*bzg(j0+1, k0+1, l) + sx0(n, 2)*bzg(j0+2, k0+1, l))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l) + sx0(n, 0)*bzg(j0, k0+2, l) + sx0(n,  &
-        1)*bzg(j0+1, k0+2, l) + sx0(n, 2)*bzg(j0+2, k0+2, l))*sy0(n, 2)   
+        1)*bzg(j0+1, k0+2, l) + sx0(n, 2)*bzg(j0+2, k0+2, l))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+1) + sx0(n, 0)*bzg(j0, k0-1, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+1) + sx0(n, 2)*bzg(j0+2, k0-1, l+1))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l+1) + sx0(n, 2)*bzg(j0+2, k0-1, l+1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+1) + sx0(n, 0)*bzg(j0, k0, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+1) + sx0(n, 2)*bzg(j0+2, k0, l+1))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l+1) + sx0(n, 2)*bzg(j0+2, k0, l+1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+1) + sx0(n, 0)*bzg(j0, k0+1, l+1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+1) + sx0(n, 2)*bzg(j0+2, k0+1, l+1))*sy0(n, 1)   
+        sx0(n, 1)*bzg(j0+1, k0+1, l+1) + sx0(n, 2)*bzg(j0+2, k0+1, l+1))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l+1) + sx0(n, 0)*bzg(j0, k0+2, l+1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+2, l+1) + sx0(n, 2)*bzg(j0+2, k0+2, l+1))*sy0(n, 2)   
+        sx0(n, 1)*bzg(j0+1, k0+2, l+1) + sx0(n, 2)*bzg(j0+2, k0+2, l+1))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+2) + sx0(n, 0)*bzg(j0, k0-1, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+2) + sx0(n, 2)*bzg(j0+2, k0-1, l+2))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l+2) + sx0(n, 2)*bzg(j0+2, k0-1, l+2))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+2) + sx0(n, 0)*bzg(j0, k0, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+2) + sx0(n, 2)*bzg(j0+2, k0, l+2))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l+2) + sx0(n, 2)*bzg(j0+2, k0, l+2))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+2) + sx0(n, 0)*bzg(j0, k0+1, l+2) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+2) + sx0(n, 2)*bzg(j0+2, k0+1, l+2))*sy0(n, 1)   
+        sx0(n, 1)*bzg(j0+1, k0+1, l+2) + sx0(n, 2)*bzg(j0+2, k0+1, l+2))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l+2) + sx0(n, 0)*bzg(j0, k0+2, l+2) +     &
-        sx0(n, 1)*bzg(j0+1, k0+2, l+2) + sx0(n, 2)*bzg(j0+2, k0+2, l+2))*sy0(n, 2)   
+        sx0(n, 1)*bzg(j0+1, k0+2, l+2) + sx0(n, 2)*bzg(j0+2, k0+2, l+2))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, 2)
-        
+
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -3828,7 +3828,7 @@ l_lower_order_in_v)
 #endif
 #endif
     ENDDO
-    
+
   ENDIF
   RETURN
 END SUBROUTINE
@@ -3866,8 +3866,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,    &
-bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
+  bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -3892,20 +3892,20 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   REAL(num), DIMENSION(lvect, -1:2)       :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v ) THEN
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -3931,13 +3931,13 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -3945,11 +3945,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -3958,7 +3958,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -3966,7 +3966,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -3974,26 +3974,26 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx0(n, 0) = 0.75_num-xintsq
         sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
-        
+
         yintsq = yint*yint
         sy0(n, -1) = 0.5_num*(0.5_num-yint)**2
         sy0(n, 0) = 0.75_num-yintsq
         sy0(n, 1) = 0.5_num*(0.5_num+yint)**2
-        
+
         zintsq = zint*zint
         sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, -1)*sy(n, -1)*sz(n, -1)*exg(j0-1, k-1, l-1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, -1)*sz(n, -1)*exg(j0, k-1, l-1)
@@ -4043,7 +4043,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         ex(nn) = ex(nn) + sx0(n, -1)*sy(n, 2)*sz(n, 2)*exg(j0-1, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 2)*sz(n, 2)*exg(j0, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 2)*sz(n, 2)*exg(j0+1, k+2, l+2)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, -1)*sy0(n, -1)*sz(n, -1)*eyg(j-1, k0-1, l-1)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, -1)*sz(n, -1)*eyg(j, k0-1, l-1)
@@ -4093,7 +4093,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 1)*sz(n, 2)*eyg(j, k0+1, l+2)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 1)*sz(n, 2)*eyg(j+1, k0+1, l+2)
         ey(nn) = ey(nn) + sx(n, 2)*sy0(n, 1)*sz(n, 2)*eyg(j+2, k0+1, l+2)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, -1)*sy(n, -1)*sz0(n, -1)*ezg(j-1, k-1, l0-1)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, -1)*sz0(n, -1)*ezg(j, k-1, l0-1)
@@ -4143,7 +4143,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 2)*sz0(n, 1)*ezg(j, k+2, l0+1)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 2)*sz0(n, 1)*ezg(j+1, k+2, l0+1)
         ez(nn) = ez(nn) + sx(n, 2)*sy(n, 2)*sz0(n, 1)*ezg(j+2, k+2, l0+1)
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, -1)*sy0(n, -1)*sz0(n, -1)*bxg(j-1, k0-1, l0-1)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, -1)*sz0(n, -1)*bxg(j, k0-1, l0-1)
@@ -4181,7 +4181,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 1)*sz0(n, 1)*bxg(j, k0+1, l0+1)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 1)*sz0(n, 1)*bxg(j+1, k0+1, l0+1)
         bx(nn) = bx(nn) + sx(n, 2)*sy0(n, 1)*sz0(n, 1)*bxg(j+2, k0+1, l0+1)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, -1)*sy(n, -1)*sz0(n, -1)*byg(j0-1, k-1, l0-1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, -1)*sz0(n, -1)*byg(j0, k-1, l0-1)
@@ -4219,7 +4219,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         by(nn) = by(nn) + sx0(n, -1)*sy(n, 2)*sz0(n, 1)*byg(j0-1, k+2, l0+1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 2)*sz0(n, 1)*byg(j0, k+2, l0+1)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 2)*sz0(n, 1)*byg(j0+1, k+2, l0+1)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, -1)*sz(n, -1)*bzg(j0-1, k0-1, l-1)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, -1)*sz(n, -1)*bzg(j0, k0-1, l-1)
@@ -4257,7 +4257,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, 1)*sz(n, 2)*bzg(j0-1, k0+1, l+2)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 1)*sz(n, 2)*bzg(j0, k0+1, l+2)
         bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 1)*sz(n, 2)*bzg(j0+1, k0+1, l+2)
-        
+
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -4265,9 +4265,9 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -4293,13 +4293,13 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -4310,7 +4310,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -4319,7 +4319,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -4327,7 +4327,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -4335,11 +4335,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         oxint = 1.0_num-xint
         xintsq = xint*xint
         oxintsq = oxint*oxint
@@ -4347,7 +4347,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sx0(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx0(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -4355,7 +4355,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sy0(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy0(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -4363,7 +4363,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0(n, 2) = onesixth*zintsq*zint
-        
+
         ! Compute Ex on particle
         ex(nn) = ex(nn) + sx0(n, -1)*sy(n, -1)*sz(n, -1)*exg(j0-1, k-1, l-1)
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, -1)*sz(n, -1)*exg(j0, k-1, l-1)
@@ -4429,7 +4429,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         ex(nn) = ex(nn) + sx0(n, 0)*sy(n, 2)*sz(n, 2)*exg(j0, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 1)*sy(n, 2)*sz(n, 2)*exg(j0+1, k+2, l+2)
         ex(nn) = ex(nn) + sx0(n, 2)*sy(n, 2)*sz(n, 2)*exg(j0+2, k+2, l+2)
-        
+
         ! Compute Ey on particle
         ey(nn) = ey(nn) + sx(n, -1)*sy0(n, -1)*sz(n, -1)*eyg(j-1, k0-1, l-1)
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, -1)*sz(n, -1)*eyg(j, k0-1, l-1)
@@ -4495,7 +4495,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         ey(nn) = ey(nn) + sx(n, 0)*sy0(n, 2)*sz(n, 2)*eyg(j, k0+2, l+2)
         ey(nn) = ey(nn) + sx(n, 1)*sy0(n, 2)*sz(n, 2)*eyg(j+1, k0+2, l+2)
         ey(nn) = ey(nn) + sx(n, 2)*sy0(n, 2)*sz(n, 2)*eyg(j+2, k0+2, l+2)
-        
+
         ! Compute Ez on particle
         ez(nn) = ez(nn) + sx(n, -1)*sy(n, -1)*sz0(n, -1)*ezg(j-1, k-1, l0-1)
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, -1)*sz0(n, -1)*ezg(j, k-1, l0-1)
@@ -4561,7 +4561,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         ez(nn) = ez(nn) + sx(n, 0)*sy(n, 2)*sz0(n, 2)*ezg(j, k+2, l0+2)
         ez(nn) = ez(nn) + sx(n, 1)*sy(n, 2)*sz0(n, 2)*ezg(j+1, k+2, l0+2)
         ez(nn) = ez(nn) + sx(n, 2)*sy(n, 2)*sz0(n, 2)*ezg(j+2, k+2, l0+2)
-        
+
         ! Compute Bx on particle
         bx(nn) = bx(nn) + sx(n, -1)*sy0(n, -1)*sz0(n, -1)*bxg(j-1, k0-1, l0-1)
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, -1)*sz0(n, -1)*bxg(j, k0-1, l0-1)
@@ -4627,7 +4627,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         bx(nn) = bx(nn) + sx(n, 0)*sy0(n, 2)*sz0(n, 2)*bxg(j, k0+2, l0+2)
         bx(nn) = bx(nn) + sx(n, 1)*sy0(n, 2)*sz0(n, 2)*bxg(j+1, k0+2, l0+2)
         bx(nn) = bx(nn) + sx(n, 2)*sy0(n, 2)*sz0(n, 2)*bxg(j+2, k0+2, l0+2)
-        
+
         ! Compute By on particle
         by(nn) = by(nn) + sx0(n, -1)*sy(n, -1)*sz0(n, -1)*byg(j0-1, k-1, l0-1)
         by(nn) = by(nn) + sx0(n, 0)*sy(n, -1)*sz0(n, -1)*byg(j0, k-1, l0-1)
@@ -4693,7 +4693,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         by(nn) = by(nn) + sx0(n, 0)*sy(n, 2)*sz0(n, 2)*byg(j0, k+2, l0+2)
         by(nn) = by(nn) + sx0(n, 1)*sy(n, 2)*sz0(n, 2)*byg(j0+1, k+2, l0+2)
         by(nn) = by(nn) + sx0(n, 2)*sy(n, 2)*sz0(n, 2)*byg(j0+2, k+2, l0+2)
-        
+
         ! Compute Bz on particle
         bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, -1)*sz(n, -1)*bzg(j0-1, k0-1, l-1)
         bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, -1)*sz(n, -1)*bzg(j0, k0-1, l-1)
@@ -4802,8 +4802,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vecV2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,  &
-bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
+  bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -4828,20 +4828,20 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   REAL(num), DIMENSION(lvect, -1:2)       :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v ) THEN
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -4873,13 +4873,13 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -4887,11 +4887,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -4900,7 +4900,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -4908,7 +4908,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -4916,205 +4916,205 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
         sx0(n, 0) = 0.75_num-xintsq
         sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
-        
+
         yintsq = yint*yint
         sy0(n, -1) = 0.5_num*(0.5_num-yint)**2
         sy0(n, 0) = 0.75_num-yintsq
         sy0(n, 1) = 0.5_num*(0.5_num+yint)**2
-        
+
         zintsq = zint*zint
         sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
         sz0(n, 0) = 0.75_num-zintsq
         sz0(n, 1) = 0.5_num*(0.5_num+zint)**2
-        
+
         ! Compute Ex on particle
         a = (sx0(n, -1)*exg(j0-1, k-1, l-1) + sx0(n, 0)*exg(j0, k-1, l-1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l-1))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l-1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l-1) + sx0(n, 0)*exg(j0, k, l-1) + sx0(n,    &
-        1)*exg(j0+1, k, l-1))*sy(n, 0)  
+        1)*exg(j0+1, k, l-1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l-1) + sx0(n, 0)*exg(j0, k+1, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l-1))*sy(n, 1)  
+        sx0(n, 1)*exg(j0+1, k+1, l-1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l-1) + sx0(n, 0)*exg(j0, k+2, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l-1))*sy(n, 2)  
+        sx0(n, 1)*exg(j0+1, k+2, l-1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l) + sx0(n, 0)*exg(j0, k-1, l) + sx0(n,        &
-        1)*exg(j0+1, k-1, l))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l) + sx0(n, 0)*exg(j0, k, l) + sx0(n,        &
-        1)*exg(j0+1, k, l))*sy(n, 0)  
+        1)*exg(j0+1, k, l))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l) + sx0(n, 0)*exg(j0, k+1, l) + sx0(n,    &
-        1)*exg(j0+1, k+1, l))*sy(n, 1)  
+        1)*exg(j0+1, k+1, l))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l) + sx0(n, 0)*exg(j0, k+2, l) + sx0(n,    &
-        1)*exg(j0+1, k+2, l))*sy(n, 2)  
+        1)*exg(j0+1, k+2, l))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+1) + sx0(n, 0)*exg(j0, k-1, l+1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+1))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l+1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+1) + sx0(n, 0)*exg(j0, k, l+1) + sx0(n,    &
-        1)*exg(j0+1, k, l+1))*sy(n, 0)  
+        1)*exg(j0+1, k, l+1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+1) + sx0(n, 0)*exg(j0, k+1, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+1))*sy(n, 1)  
+        sx0(n, 1)*exg(j0+1, k+1, l+1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+1) + sx0(n, 0)*exg(j0, k+2, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+1))*sy(n, 2)  
+        sx0(n, 1)*exg(j0+1, k+2, l+1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+2) + sx0(n, 0)*exg(j0, k-1, l+2) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+2))*sy(n, -1)  
+        1)*exg(j0+1, k-1, l+2))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+2) + sx0(n, 0)*exg(j0, k, l+2) + sx0(n,    &
-        1)*exg(j0+1, k, l+2))*sy(n, 0)  
+        1)*exg(j0+1, k, l+2))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+2) + sx0(n, 0)*exg(j0, k+1, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+2))*sy(n, 1)  
+        sx0(n, 1)*exg(j0+1, k+1, l+2))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+2) + sx0(n, 0)*exg(j0, k+2, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+2))*sy(n, 2)  
+        sx0(n, 1)*exg(j0+1, k+2, l+2))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 2)
-        
+
         ! Compute Ey on particle
         a = (sx(n, -1)*eyg(j-1, k0-1, l-1) + sx(n, 0)*eyg(j, k0-1, l-1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l-1) + sx(n, 0)*eyg(j, k0, l-1) + sx(n,       &
-        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l-1) + sx(n, 0)*eyg(j, k0+1, l-1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, -1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l) + sx(n, 0)*eyg(j, k0-1, l) + sx(n,           &
-        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l) + sx(n, 0)*eyg(j, k0, l) + sx(n,           &
-        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l) + sx(n, 0)*eyg(j, k0+1, l) + sx(n,       &
-        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 0)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+1) + sx(n, 0)*eyg(j, k0-1, l+1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+1) + sx(n, 0)*eyg(j, k0, l+1) + sx(n,       &
-        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+1) + sx(n, 0)*eyg(j, k0+1, l+1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+2) + sx(n, 0)*eyg(j, k0-1, l+2) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+2) + sx(n, 0)*eyg(j, k0, l+2) + sx(n,       &
-        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+2) + sx(n, 0)*eyg(j, k0+1, l+2) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)
         ey(nn) = ey(nn) + a*sz(n, 2)
-        
+
         ! Compute Ez on particle
         a = (sx(n, -1)*ezg(j-1, k-1, l0-1) + sx(n, 0)*ezg(j, k-1, l0-1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0-1) + sx(n, 0)*ezg(j, k, l0-1) + sx(n,       &
-        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0-1) + sx(n, 0)*ezg(j, k+1, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0-1) + sx(n, 0)*ezg(j, k+2, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*ezg(j-1, k-1, l0) + sx(n, 0)*ezg(j, k-1, l0) + sx(n,           &
-        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0) + sx(n, 0)*ezg(j, k, l0) + sx(n,           &
-        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)   
+        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0) + sx(n, 0)*ezg(j, k+1, l0) + sx(n,       &
-        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0) + sx(n, 0)*ezg(j, k+2, l0) + sx(n,       &
-        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*ezg(j-1, k-1, l0+1) + sx(n, 0)*ezg(j, k-1, l0+1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0+1) + sx(n, 0)*ezg(j, k, l0+1) + sx(n,       &
-        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0+1) + sx(n, 0)*ezg(j, k+1, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+1) + sx(n, 0)*ezg(j, k+2, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 1)
-        
+
         ! Compute Bx on particle
         a = (sx(n, -1)*bxg(j-1, k0-1, l0-1) + sx(n, 0)*bxg(j, k0-1, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0-1) + sx(n, 0)*bxg(j, k0, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0-1) + sx(n, 0)*bxg(j, k0+1, l0-1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)
         bx(nn) = bx(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0) + sx(n, 0)*bxg(j, k0-1, l0) + sx(n,         &
-        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0) + sx(n, 0)*bxg(j, k0, l0) + sx(n,         &
-        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0) + sx(n, 0)*bxg(j, k0+1, l0) + sx(n,     &
-        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)
         bx(nn) = bx(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0+1) + sx(n, 0)*bxg(j, k0-1, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0+1) + sx(n, 0)*bxg(j, k0, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0+1) + sx(n, 0)*bxg(j, k0+1, l0+1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)
         bx(nn) = bx(nn) + a*sz0(n, 1)
-        
+
         ! Compute By on particle
         a = (sx0(n, -1)*byg(j0-1, k-1, l0-1) + sx0(n, 0)*byg(j0, k-1, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0-1))*sy(n, -1)  
+        1)*byg(j0+1, k-1, l0-1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0-1) + sx0(n, 0)*byg(j0, k, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k, l0-1))*sy(n, 0)  
+        1)*byg(j0+1, k, l0-1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0-1) + sx0(n, 0)*byg(j0, k+1, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0-1))*sy(n, 1)  
+        sx0(n, 1)*byg(j0+1, k+1, l0-1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0-1) + sx0(n, 0)*byg(j0, k+2, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0-1))*sy(n, 2)  
+        sx0(n, 1)*byg(j0+1, k+2, l0-1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, -1)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0) + sx0(n, 0)*byg(j0, k-1, l0) + sx0(n,      &
-        1)*byg(j0+1, k-1, l0))*sy(n, -1)  
+        1)*byg(j0+1, k-1, l0))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0) + sx0(n, 0)*byg(j0, k, l0) + sx0(n,      &
-        1)*byg(j0+1, k, l0))*sy(n, 0)  
+        1)*byg(j0+1, k, l0))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0) + sx0(n, 0)*byg(j0, k+1, l0) + sx0(n,  &
-        1)*byg(j0+1, k+1, l0))*sy(n, 1)  
+        1)*byg(j0+1, k+1, l0))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0) + sx0(n, 0)*byg(j0, k+2, l0) + sx0(n,  &
-        1)*byg(j0+1, k+2, l0))*sy(n, 2)  
+        1)*byg(j0+1, k+2, l0))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 0)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0+1) + sx0(n, 0)*byg(j0, k-1, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0+1))*sy(n, -1)  
+        1)*byg(j0+1, k-1, l0+1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0+1) + sx0(n, 0)*byg(j0, k, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k, l0+1))*sy(n, 0)  
+        1)*byg(j0+1, k, l0+1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0+1) + sx0(n, 0)*byg(j0, k+1, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0+1))*sy(n, 1)  
+        sx0(n, 1)*byg(j0+1, k+1, l0+1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0+1) + sx0(n, 0)*byg(j0, k+2, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0+1))*sy(n, 2)  
+        sx0(n, 1)*byg(j0+1, k+2, l0+1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 1)
-        
+
         ! Compute Bz on particle
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l-1) + sx0(n, 0)*bzg(j0, k0-1, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l-1))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l-1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l-1) + sx0(n, 0)*bzg(j0, k0, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l-1))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l-1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l-1) + sx0(n, 0)*bzg(j0, k0+1, l-1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l-1))*sy0(n, 1)  
+        sx0(n, 1)*bzg(j0+1, k0+1, l-1))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l) + sx0(n, 0)*bzg(j0, k0-1, l) + sx0(n,      &
-        1)*bzg(j0+1, k0-1, l))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l) + sx0(n, 0)*bzg(j0, k0, l) + sx0(n,      &
-        1)*bzg(j0+1, k0, l))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l) + sx0(n, 0)*bzg(j0, k0+1, l) + sx0(n,  &
-        1)*bzg(j0+1, k0+1, l))*sy0(n, 1)  
+        1)*bzg(j0+1, k0+1, l))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+1) + sx0(n, 0)*bzg(j0, k0-1, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+1))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l+1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+1) + sx0(n, 0)*bzg(j0, k0, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+1))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l+1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+1) + sx0(n, 0)*bzg(j0, k0+1, l+1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+1))*sy0(n, 1)  
+        sx0(n, 1)*bzg(j0+1, k0+1, l+1))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+2) + sx0(n, 0)*bzg(j0, k0-1, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+2))*sy0(n, -1)  
+        1)*bzg(j0+1, k0-1, l+2))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+2) + sx0(n, 0)*bzg(j0, k0, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+2))*sy0(n, 0)  
+        1)*bzg(j0+1, k0, l+2))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+2) + sx0(n, 0)*bzg(j0, k0+1, l+2) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+2))*sy0(n, 1)  
+        sx0(n, 1)*bzg(j0+1, k0+1, l+2))*sy0(n, 1)
         bz(nn) = bz(nn) + a*sz(n, 2)
-        
+
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -5122,9 +5122,9 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -5150,13 +5150,13 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
       ! Loop over the particles inside a block
       DO n=1, MIN(lvect, np-ip+1)
-        
+
         nn=ip+n-1
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -5167,7 +5167,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -5176,7 +5176,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -5184,7 +5184,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -5192,11 +5192,11 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz(n, 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         oxint = 1.0_num-xint
         xintsq = xint*xint
         oxintsq = oxint*oxint
@@ -5204,7 +5204,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sx0(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx0(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0(n, 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -5212,7 +5212,7 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sy0(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy0(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0(n, 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -5220,235 +5220,235 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
         sz0(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz0(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0(n, 2) = onesixth*zintsq*zint
-        
+
         ! Compute Ex on particle
         a = (sx0(n, -1)*exg(j0-1, k-1, l-1) + sx0(n, 0)*exg(j0, k-1, l-1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l-1) + sx0(n, 2)*exg(j0+2, k-1, l-1))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l-1) + sx0(n, 2)*exg(j0+2, k-1, l-1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l-1) + sx0(n, 0)*exg(j0, k, l-1) + sx0(n,    &
-        1)*exg(j0+1, k, l-1) + sx0(n, 2)*exg(j0+2, k, l-1))*sy(n, 0)   
+        1)*exg(j0+1, k, l-1) + sx0(n, 2)*exg(j0+2, k, l-1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l-1) + sx0(n, 0)*exg(j0, k+1, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l-1) + sx0(n, 2)*exg(j0+2, k+1, l-1))*sy(n, 1)   
+        sx0(n, 1)*exg(j0+1, k+1, l-1) + sx0(n, 2)*exg(j0+2, k+1, l-1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l-1) + sx0(n, 0)*exg(j0, k+2, l-1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l-1) + sx0(n, 2)*exg(j0+2, k+2, l-1))*sy(n, 2)   
+        sx0(n, 1)*exg(j0+1, k+2, l-1) + sx0(n, 2)*exg(j0+2, k+2, l-1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l) + sx0(n, 0)*exg(j0, k-1, l) + sx0(n,        &
-        1)*exg(j0+1, k-1, l) + sx0(n, 2)*exg(j0+2, k-1, l))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l) + sx0(n, 2)*exg(j0+2, k-1, l))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l) + sx0(n, 0)*exg(j0, k, l) + sx0(n,        &
-        1)*exg(j0+1, k, l) + sx0(n, 2)*exg(j0+2, k, l))*sy(n, 0)   
+        1)*exg(j0+1, k, l) + sx0(n, 2)*exg(j0+2, k, l))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l) + sx0(n, 0)*exg(j0, k+1, l) + sx0(n,    &
-        1)*exg(j0+1, k+1, l) + sx0(n, 2)*exg(j0+2, k+1, l))*sy(n, 1)   
+        1)*exg(j0+1, k+1, l) + sx0(n, 2)*exg(j0+2, k+1, l))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l) + sx0(n, 0)*exg(j0, k+2, l) + sx0(n,    &
-        1)*exg(j0+1, k+2, l) + sx0(n, 2)*exg(j0+2, k+2, l))*sy(n, 2)   
+        1)*exg(j0+1, k+2, l) + sx0(n, 2)*exg(j0+2, k+2, l))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+1) + sx0(n, 0)*exg(j0, k-1, l+1) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+1) + sx0(n, 2)*exg(j0+2, k-1, l+1))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l+1) + sx0(n, 2)*exg(j0+2, k-1, l+1))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+1) + sx0(n, 0)*exg(j0, k, l+1) + sx0(n,    &
-        1)*exg(j0+1, k, l+1) + sx0(n, 2)*exg(j0+2, k, l+1))*sy(n, 0)   
+        1)*exg(j0+1, k, l+1) + sx0(n, 2)*exg(j0+2, k, l+1))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+1) + sx0(n, 0)*exg(j0, k+1, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+1) + sx0(n, 2)*exg(j0+2, k+1, l+1))*sy(n, 1)   
+        sx0(n, 1)*exg(j0+1, k+1, l+1) + sx0(n, 2)*exg(j0+2, k+1, l+1))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+1) + sx0(n, 0)*exg(j0, k+2, l+1) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+1) + sx0(n, 2)*exg(j0+2, k+2, l+1))*sy(n, 2)   
+        sx0(n, 1)*exg(j0+1, k+2, l+1) + sx0(n, 2)*exg(j0+2, k+2, l+1))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*exg(j0-1, k-1, l+2) + sx0(n, 0)*exg(j0, k-1, l+2) + sx0(n,    &
-        1)*exg(j0+1, k-1, l+2) + sx0(n, 2)*exg(j0+2, k-1, l+2))*sy(n, -1)   
+        1)*exg(j0+1, k-1, l+2) + sx0(n, 2)*exg(j0+2, k-1, l+2))*sy(n, -1)
         a = a + (sx0(n, -1)*exg(j0-1, k, l+2) + sx0(n, 0)*exg(j0, k, l+2) + sx0(n,    &
-        1)*exg(j0+1, k, l+2) + sx0(n, 2)*exg(j0+2, k, l+2))*sy(n, 0)   
+        1)*exg(j0+1, k, l+2) + sx0(n, 2)*exg(j0+2, k, l+2))*sy(n, 0)
         a = a + (sx0(n, -1)*exg(j0-1, k+1, l+2) + sx0(n, 0)*exg(j0, k+1, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+1, l+2) + sx0(n, 2)*exg(j0+2, k+1, l+2))*sy(n, 1)   
+        sx0(n, 1)*exg(j0+1, k+1, l+2) + sx0(n, 2)*exg(j0+2, k+1, l+2))*sy(n, 1)
         a = a + (sx0(n, -1)*exg(j0-1, k+2, l+2) + sx0(n, 0)*exg(j0, k+2, l+2) +       &
-        sx0(n, 1)*exg(j0+1, k+2, l+2) + sx0(n, 2)*exg(j0+2, k+2, l+2))*sy(n, 2)   
+        sx0(n, 1)*exg(j0+1, k+2, l+2) + sx0(n, 2)*exg(j0+2, k+2, l+2))*sy(n, 2)
         ex(nn) = ex(nn) + a*sz(n, 2)
-        
+
         ! Compute Ey on particle
         a = (sx(n, -1)*eyg(j-1, k0-1, l-1) + sx(n, 0)*eyg(j, k0-1, l-1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l-1) + sx(n, 2)*eyg(j+2, k0-1, l-1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l-1) + sx(n, 0)*eyg(j, k0, l-1) + sx(n,       &
-        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l-1) + sx(n, 2)*eyg(j+2, k0, l-1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l-1) + sx(n, 0)*eyg(j, k0+1, l-1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l-1) + sx(n, 2)*eyg(j+2, k0+1, l-1))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l-1) + sx(n, 0)*eyg(j, k0+2, l-1) + sx(n,   &
-        1)*eyg(j+1, k0+2, l-1) + sx(n, 2)*eyg(j+2, k0+2, l-1))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l-1) + sx(n, 2)*eyg(j+2, k0+2, l-1))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, -1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l) + sx(n, 0)*eyg(j, k0-1, l) + sx(n,           &
-        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l) + sx(n, 2)*eyg(j+2, k0-1, l))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l) + sx(n, 0)*eyg(j, k0, l) + sx(n,           &
-        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l) + sx(n, 2)*eyg(j+2, k0, l))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l) + sx(n, 0)*eyg(j, k0+1, l) + sx(n,       &
-        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l) + sx(n, 2)*eyg(j+2, k0+1, l))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l) + sx(n, 0)*eyg(j, k0+2, l) + sx(n,       &
-        1)*eyg(j+1, k0+2, l) + sx(n, 2)*eyg(j+2, k0+2, l))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l) + sx(n, 2)*eyg(j+2, k0+2, l))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, 0)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+1) + sx(n, 0)*eyg(j, k0-1, l+1) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+1) + sx(n, 2)*eyg(j+2, k0-1, l+1))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+1) + sx(n, 0)*eyg(j, k0, l+1) + sx(n,       &
-        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+1) + sx(n, 2)*eyg(j+2, k0, l+1))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+1) + sx(n, 0)*eyg(j, k0+1, l+1) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+1) + sx(n, 2)*eyg(j+2, k0+1, l+1))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l+1) + sx(n, 0)*eyg(j, k0+2, l+1) + sx(n,   &
-        1)*eyg(j+1, k0+2, l+1) + sx(n, 2)*eyg(j+2, k0+2, l+1))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l+1) + sx(n, 2)*eyg(j+2, k0+2, l+1))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, 1)
         a = (sx(n, -1)*eyg(j-1, k0-1, l+2) + sx(n, 0)*eyg(j, k0-1, l+2) + sx(n,       &
-        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)   
+        1)*eyg(j+1, k0-1, l+2) + sx(n, 2)*eyg(j+2, k0-1, l+2))*sy0(n, -1)
         a = a + (sx(n, -1)*eyg(j-1, k0, l+2) + sx(n, 0)*eyg(j, k0, l+2) + sx(n,       &
-        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)   
+        1)*eyg(j+1, k0, l+2) + sx(n, 2)*eyg(j+2, k0, l+2))*sy0(n, 0)
         a = a + (sx(n, -1)*eyg(j-1, k0+1, l+2) + sx(n, 0)*eyg(j, k0+1, l+2) + sx(n,   &
-        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)   
+        1)*eyg(j+1, k0+1, l+2) + sx(n, 2)*eyg(j+2, k0+1, l+2))*sy0(n, 1)
         a = a + (sx(n, -1)*eyg(j-1, k0+2, l+2) + sx(n, 0)*eyg(j, k0+2, l+2) + sx(n,   &
-        1)*eyg(j+1, k0+2, l+2) + sx(n, 2)*eyg(j+2, k0+2, l+2))*sy0(n, 2)   
+        1)*eyg(j+1, k0+2, l+2) + sx(n, 2)*eyg(j+2, k0+2, l+2))*sy0(n, 2)
         ey(nn) = ey(nn) + a*sz(n, 2)
-        
+
         ! Compute Ez on particle
         a = (sx(n, -1)*ezg(j-1, k-1, l0-1) + sx(n, 0)*ezg(j, k-1, l0-1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0-1) + sx(n, 2)*ezg(j+2, k-1, l0-1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0-1) + sx(n, 0)*ezg(j, k, l0-1) + sx(n,       &
-        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0-1) + sx(n, 2)*ezg(j+2, k, l0-1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0-1) + sx(n, 0)*ezg(j, k+1, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0-1) + sx(n, 2)*ezg(j+2, k+1, l0-1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0-1) + sx(n, 0)*ezg(j, k+2, l0-1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0-1) + sx(n, 2)*ezg(j+2, k+2, l0-1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*ezg(j-1, k-1, l0) + sx(n, 0)*ezg(j, k-1, l0) + sx(n,           &
-        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0) + sx(n, 2)*ezg(j+2, k-1, l0))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0) + sx(n, 0)*ezg(j, k, l0) + sx(n,           &
-        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)   
+        1)*ezg(j+1, k, l0) + sx(n, 2)*ezg(j+2, k, l0))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0) + sx(n, 0)*ezg(j, k+1, l0) + sx(n,       &
-        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0) + sx(n, 2)*ezg(j+2, k+1, l0))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0) + sx(n, 0)*ezg(j, k+2, l0) + sx(n,       &
-        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0) + sx(n, 2)*ezg(j+2, k+2, l0))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*ezg(j-1, k-1, l0+1) + sx(n, 0)*ezg(j, k-1, l0+1) + sx(n,       &
-        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0+1) + sx(n, 2)*ezg(j+2, k-1, l0+1))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0+1) + sx(n, 0)*ezg(j, k, l0+1) + sx(n,       &
-        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)   
+        1)*ezg(j+1, k, l0+1) + sx(n, 2)*ezg(j+2, k, l0+1))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0+1) + sx(n, 0)*ezg(j, k+1, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0+1) + sx(n, 2)*ezg(j+2, k+1, l0+1))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+1) + sx(n, 0)*ezg(j, k+2, l0+1) + sx(n,   &
-        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0+1) + sx(n, 2)*ezg(j+2, k+2, l0+1))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 1)
         a = (sx(n, -1)*ezg(j-1, k-1, l0+2) + sx(n, 0)*ezg(j, k-1, l0+2) + sx(n,       &
-        1)*ezg(j+1, k-1, l0+2) + sx(n, 2)*ezg(j+2, k-1, l0+2))*sy(n, -1)   
+        1)*ezg(j+1, k-1, l0+2) + sx(n, 2)*ezg(j+2, k-1, l0+2))*sy(n, -1)
         a = a + (sx(n, -1)*ezg(j-1, k, l0+2) + sx(n, 0)*ezg(j, k, l0+2) + sx(n,       &
-        1)*ezg(j+1, k, l0+2) + sx(n, 2)*ezg(j+2, k, l0+2))*sy(n, 0)   
+        1)*ezg(j+1, k, l0+2) + sx(n, 2)*ezg(j+2, k, l0+2))*sy(n, 0)
         a = a + (sx(n, -1)*ezg(j-1, k+1, l0+2) + sx(n, 0)*ezg(j, k+1, l0+2) + sx(n,   &
-        1)*ezg(j+1, k+1, l0+2) + sx(n, 2)*ezg(j+2, k+1, l0+2))*sy(n, 1)   
+        1)*ezg(j+1, k+1, l0+2) + sx(n, 2)*ezg(j+2, k+1, l0+2))*sy(n, 1)
         a = a + (sx(n, -1)*ezg(j-1, k+2, l0+2) + sx(n, 0)*ezg(j, k+2, l0+2) + sx(n,   &
-        1)*ezg(j+1, k+2, l0+2) + sx(n, 2)*ezg(j+2, k+2, l0+2))*sy(n, 2)   
+        1)*ezg(j+1, k+2, l0+2) + sx(n, 2)*ezg(j+2, k+2, l0+2))*sy(n, 2)
         ez(nn) = ez(nn) + a*sz0(n, 2)
-        
+
         ! Compute Bx on particle
         a = (sx(n, -1)*bxg(j-1, k0-1, l0-1) + sx(n, 0)*bxg(j, k0-1, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0-1) + sx(n, 2)*bxg(j+2, k0-1, l0-1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0-1) + sx(n, 0)*bxg(j, k0, l0-1) + sx(n,     &
-        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0-1) + sx(n, 2)*bxg(j+2, k0, l0-1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0-1) + sx(n, 0)*bxg(j, k0+1, l0-1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0-1) + sx(n, 2)*bxg(j+2, k0+1, l0-1))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0-1) + sx(n, 0)*bxg(j, k0+2, l0-1) + sx(n, &
-        1)*bxg(j+1, k0+2, l0-1) + sx(n, 2)*bxg(j+2, k0+2, l0-1))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0-1) + sx(n, 2)*bxg(j+2, k0+2, l0-1))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, -1)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0) + sx(n, 0)*bxg(j, k0-1, l0) + sx(n,         &
-        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0) + sx(n, 2)*bxg(j+2, k0-1, l0))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0) + sx(n, 0)*bxg(j, k0, l0) + sx(n,         &
-        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0) + sx(n, 2)*bxg(j+2, k0, l0))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0) + sx(n, 0)*bxg(j, k0+1, l0) + sx(n,     &
-        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0) + sx(n, 2)*bxg(j+2, k0+1, l0))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0) + sx(n, 0)*bxg(j, k0+2, l0) + sx(n,     &
-        1)*bxg(j+1, k0+2, l0) + sx(n, 2)*bxg(j+2, k0+2, l0))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0) + sx(n, 2)*bxg(j+2, k0+2, l0))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, 0)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0+1) + sx(n, 0)*bxg(j, k0-1, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0+1) + sx(n, 2)*bxg(j+2, k0-1, l0+1))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0+1) + sx(n, 0)*bxg(j, k0, l0+1) + sx(n,     &
-        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0+1) + sx(n, 2)*bxg(j+2, k0, l0+1))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0+1) + sx(n, 0)*bxg(j, k0+1, l0+1) + sx(n, &
-        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0+1) + sx(n, 2)*bxg(j+2, k0+1, l0+1))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0+1) + sx(n, 0)*bxg(j, k0+2, l0+1) + sx(n, &
-        1)*bxg(j+1, k0+2, l0+1) + sx(n, 2)*bxg(j+2, k0+2, l0+1))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0+1) + sx(n, 2)*bxg(j+2, k0+2, l0+1))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, 1)
         a = (sx(n, -1)*bxg(j-1, k0-1, l0+2) + sx(n, 0)*bxg(j, k0-1, l0+2) + sx(n,     &
-        1)*bxg(j+1, k0-1, l0+2) + sx(n, 2)*bxg(j+2, k0-1, l0+2))*sy0(n, -1)   
+        1)*bxg(j+1, k0-1, l0+2) + sx(n, 2)*bxg(j+2, k0-1, l0+2))*sy0(n, -1)
         a = a + (sx(n, -1)*bxg(j-1, k0, l0+2) + sx(n, 0)*bxg(j, k0, l0+2) + sx(n,     &
-        1)*bxg(j+1, k0, l0+2) + sx(n, 2)*bxg(j+2, k0, l0+2))*sy0(n, 0)   
+        1)*bxg(j+1, k0, l0+2) + sx(n, 2)*bxg(j+2, k0, l0+2))*sy0(n, 0)
         a = a + (sx(n, -1)*bxg(j-1, k0+1, l0+2) + sx(n, 0)*bxg(j, k0+1, l0+2) + sx(n, &
-        1)*bxg(j+1, k0+1, l0+2) + sx(n, 2)*bxg(j+2, k0+1, l0+2))*sy0(n, 1)   
+        1)*bxg(j+1, k0+1, l0+2) + sx(n, 2)*bxg(j+2, k0+1, l0+2))*sy0(n, 1)
         a = a + (sx(n, -1)*bxg(j-1, k0+2, l0+2) + sx(n, 0)*bxg(j, k0+2, l0+2) + sx(n, &
-        1)*bxg(j+1, k0+2, l0+2) + sx(n, 2)*bxg(j+2, k0+2, l0+2))*sy0(n, 2)   
+        1)*bxg(j+1, k0+2, l0+2) + sx(n, 2)*bxg(j+2, k0+2, l0+2))*sy0(n, 2)
         bx(nn) = bx(nn) + a*sz0(n, 2)
-        
+
         ! Compute By on particle
         a = (sx0(n, -1)*byg(j0-1, k-1, l0-1) + sx0(n, 0)*byg(j0, k-1, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0-1) + sx0(n, 2)*byg(j0+2, k-1, l0-1))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0-1) + sx0(n, 2)*byg(j0+2, k-1, l0-1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0-1) + sx0(n, 0)*byg(j0, k, l0-1) + sx0(n,  &
-        1)*byg(j0+1, k, l0-1) + sx0(n, 2)*byg(j0+2, k, l0-1))*sy(n, 0)   
+        1)*byg(j0+1, k, l0-1) + sx0(n, 2)*byg(j0+2, k, l0-1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0-1) + sx0(n, 0)*byg(j0, k+1, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0-1) + sx0(n, 2)*byg(j0+2, k+1, l0-1))*sy(n, 1)   
+        sx0(n, 1)*byg(j0+1, k+1, l0-1) + sx0(n, 2)*byg(j0+2, k+1, l0-1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0-1) + sx0(n, 0)*byg(j0, k+2, l0-1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0-1) + sx0(n, 2)*byg(j0+2, k+2, l0-1))*sy(n, 2)   
+        sx0(n, 1)*byg(j0+1, k+2, l0-1) + sx0(n, 2)*byg(j0+2, k+2, l0-1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, -1)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0) + sx0(n, 0)*byg(j0, k-1, l0) + sx0(n,      &
-        1)*byg(j0+1, k-1, l0) + sx0(n, 2)*byg(j0+2, k-1, l0))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0) + sx0(n, 2)*byg(j0+2, k-1, l0))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0) + sx0(n, 0)*byg(j0, k, l0) + sx0(n,      &
-        1)*byg(j0+1, k, l0) + sx0(n, 2)*byg(j0+2, k, l0))*sy(n, 0)   
+        1)*byg(j0+1, k, l0) + sx0(n, 2)*byg(j0+2, k, l0))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0) + sx0(n, 0)*byg(j0, k+1, l0) + sx0(n,  &
-        1)*byg(j0+1, k+1, l0) + sx0(n, 2)*byg(j0+2, k+1, l0))*sy(n, 1)   
+        1)*byg(j0+1, k+1, l0) + sx0(n, 2)*byg(j0+2, k+1, l0))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0) + sx0(n, 0)*byg(j0, k+2, l0) + sx0(n,  &
-        1)*byg(j0+1, k+2, l0) + sx0(n, 2)*byg(j0+2, k+2, l0))*sy(n, 2)   
+        1)*byg(j0+1, k+2, l0) + sx0(n, 2)*byg(j0+2, k+2, l0))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 0)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0+1) + sx0(n, 0)*byg(j0, k-1, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0+1) + sx0(n, 2)*byg(j0+2, k-1, l0+1))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0+1) + sx0(n, 2)*byg(j0+2, k-1, l0+1))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0+1) + sx0(n, 0)*byg(j0, k, l0+1) + sx0(n,  &
-        1)*byg(j0+1, k, l0+1) + sx0(n, 2)*byg(j0+2, k, l0+1))*sy(n, 0)   
+        1)*byg(j0+1, k, l0+1) + sx0(n, 2)*byg(j0+2, k, l0+1))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0+1) + sx0(n, 0)*byg(j0, k+1, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0+1) + sx0(n, 2)*byg(j0+2, k+1, l0+1))*sy(n, 1)   
+        sx0(n, 1)*byg(j0+1, k+1, l0+1) + sx0(n, 2)*byg(j0+2, k+1, l0+1))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0+1) + sx0(n, 0)*byg(j0, k+2, l0+1) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0+1) + sx0(n, 2)*byg(j0+2, k+2, l0+1))*sy(n, 2)   
+        sx0(n, 1)*byg(j0+1, k+2, l0+1) + sx0(n, 2)*byg(j0+2, k+2, l0+1))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 1)
         a = (sx0(n, -1)*byg(j0-1, k-1, l0+2) + sx0(n, 0)*byg(j0, k-1, l0+2) + sx0(n,  &
-        1)*byg(j0+1, k-1, l0+2) + sx0(n, 2)*byg(j0+2, k-1, l0+2))*sy(n, -1)   
+        1)*byg(j0+1, k-1, l0+2) + sx0(n, 2)*byg(j0+2, k-1, l0+2))*sy(n, -1)
         a = a + (sx0(n, -1)*byg(j0-1, k, l0+2) + sx0(n, 0)*byg(j0, k, l0+2) + sx0(n,  &
-        1)*byg(j0+1, k, l0+2) + sx0(n, 2)*byg(j0+2, k, l0+2))*sy(n, 0)   
+        1)*byg(j0+1, k, l0+2) + sx0(n, 2)*byg(j0+2, k, l0+2))*sy(n, 0)
         a = a + (sx0(n, -1)*byg(j0-1, k+1, l0+2) + sx0(n, 0)*byg(j0, k+1, l0+2) +     &
-        sx0(n, 1)*byg(j0+1, k+1, l0+2) + sx0(n, 2)*byg(j0+2, k+1, l0+2))*sy(n, 1)   
+        sx0(n, 1)*byg(j0+1, k+1, l0+2) + sx0(n, 2)*byg(j0+2, k+1, l0+2))*sy(n, 1)
         a = a + (sx0(n, -1)*byg(j0-1, k+2, l0+2) + sx0(n, 0)*byg(j0, k+2, l0+2) +     &
-        sx0(n, 1)*byg(j0+1, k+2, l0+2) + sx0(n, 2)*byg(j0+2, k+2, l0+2))*sy(n, 2)   
+        sx0(n, 1)*byg(j0+1, k+2, l0+2) + sx0(n, 2)*byg(j0+2, k+2, l0+2))*sy(n, 2)
         by(nn) = by(nn) + a*sz0(n, 2)
-        
+
         ! Compute Bz on particle
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l-1) + sx0(n, 0)*bzg(j0, k0-1, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l-1) + sx0(n, 2)*bzg(j0+2, k0-1, l-1))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l-1) + sx0(n, 2)*bzg(j0+2, k0-1, l-1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l-1) + sx0(n, 0)*bzg(j0, k0, l-1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l-1) + sx0(n, 2)*bzg(j0+2, k0, l-1))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l-1) + sx0(n, 2)*bzg(j0+2, k0, l-1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l-1) + sx0(n, 0)*bzg(j0, k0+1, l-1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l-1) + sx0(n, 2)*bzg(j0+2, k0+1, l-1))*sy0(n, 1)   
+        sx0(n, 1)*bzg(j0+1, k0+1, l-1) + sx0(n, 2)*bzg(j0+2, k0+1, l-1))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l-1) + sx0(n, 0)*bzg(j0, k0+2, l-1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+2, l-1) + sx0(n, 2)*bzg(j0+2, k0+2, l-1))*sy0(n, 2)   
+        sx0(n, 1)*bzg(j0+1, k0+2, l-1) + sx0(n, 2)*bzg(j0+2, k0+2, l-1))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, -1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l) + sx0(n, 0)*bzg(j0, k0-1, l) + sx0(n,      &
-        1)*bzg(j0+1, k0-1, l) + sx0(n, 2)*bzg(j0+2, k0-1, l))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l) + sx0(n, 2)*bzg(j0+2, k0-1, l))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l) + sx0(n, 0)*bzg(j0, k0, l) + sx0(n,      &
-        1)*bzg(j0+1, k0, l) + sx0(n, 2)*bzg(j0+2, k0, l))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l) + sx0(n, 2)*bzg(j0+2, k0, l))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l) + sx0(n, 0)*bzg(j0, k0+1, l) + sx0(n,  &
-        1)*bzg(j0+1, k0+1, l) + sx0(n, 2)*bzg(j0+2, k0+1, l))*sy0(n, 1)   
+        1)*bzg(j0+1, k0+1, l) + sx0(n, 2)*bzg(j0+2, k0+1, l))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l) + sx0(n, 0)*bzg(j0, k0+2, l) + sx0(n,  &
-        1)*bzg(j0+1, k0+2, l) + sx0(n, 2)*bzg(j0+2, k0+2, l))*sy0(n, 2)   
+        1)*bzg(j0+1, k0+2, l) + sx0(n, 2)*bzg(j0+2, k0+2, l))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, 0)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+1) + sx0(n, 0)*bzg(j0, k0-1, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+1) + sx0(n, 2)*bzg(j0+2, k0-1, l+1))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l+1) + sx0(n, 2)*bzg(j0+2, k0-1, l+1))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+1) + sx0(n, 0)*bzg(j0, k0, l+1) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+1) + sx0(n, 2)*bzg(j0+2, k0, l+1))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l+1) + sx0(n, 2)*bzg(j0+2, k0, l+1))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+1) + sx0(n, 0)*bzg(j0, k0+1, l+1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+1) + sx0(n, 2)*bzg(j0+2, k0+1, l+1))*sy0(n, 1)   
+        sx0(n, 1)*bzg(j0+1, k0+1, l+1) + sx0(n, 2)*bzg(j0+2, k0+1, l+1))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l+1) + sx0(n, 0)*bzg(j0, k0+2, l+1) +     &
-        sx0(n, 1)*bzg(j0+1, k0+2, l+1) + sx0(n, 2)*bzg(j0+2, k0+2, l+1))*sy0(n, 2)   
+        sx0(n, 1)*bzg(j0+1, k0+2, l+1) + sx0(n, 2)*bzg(j0+2, k0+2, l+1))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, 1)
         a = (sx0(n, -1)*bzg(j0-1, k0-1, l+2) + sx0(n, 0)*bzg(j0, k0-1, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0-1, l+2) + sx0(n, 2)*bzg(j0+2, k0-1, l+2))*sy0(n, -1)   
+        1)*bzg(j0+1, k0-1, l+2) + sx0(n, 2)*bzg(j0+2, k0-1, l+2))*sy0(n, -1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0, l+2) + sx0(n, 0)*bzg(j0, k0, l+2) + sx0(n,  &
-        1)*bzg(j0+1, k0, l+2) + sx0(n, 2)*bzg(j0+2, k0, l+2))*sy0(n, 0)   
+        1)*bzg(j0+1, k0, l+2) + sx0(n, 2)*bzg(j0+2, k0, l+2))*sy0(n, 0)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+1, l+2) + sx0(n, 0)*bzg(j0, k0+1, l+2) +     &
-        sx0(n, 1)*bzg(j0+1, k0+1, l+2) + sx0(n, 2)*bzg(j0+2, k0+1, l+2))*sy0(n, 1)   
+        sx0(n, 1)*bzg(j0+1, k0+1, l+2) + sx0(n, 2)*bzg(j0+2, k0+1, l+2))*sy0(n, 1)
         a = a + (sx0(n, -1)*bzg(j0-1, k0+2, l+2) + sx0(n, 0)*bzg(j0, k0+2, l+2) +     &
-        sx0(n, 1)*bzg(j0+1, k0+2, l+2) + sx0(n, 2)*bzg(j0+2, k0+2, l+2))*sy0(n, 2)   
+        sx0(n, 1)*bzg(j0+1, k0+2, l+2) + sx0(n, 2)*bzg(j0+2, k0+2, l+2))*sy0(n, 2)
         bz(nn) = bz(nn) + a*sz(n, 2)
-        
+
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -5456,9 +5456,9 @@ ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
 #endif
     ENDDO
-    
+
   ENDIF
-  
+
   RETURN
 END SUBROUTINE
 
@@ -5488,51 +5488,51 @@ END SUBROUTINE
 !> @param[in] dx, dy, dz space steps in every directions
 !> @param[in] dt time step
 !> @param[in] exg, eyg, ezg electric field grids
-!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the 
+!> @param[in] exg_nguard, eyg_nguard, ezg_nguard number of guard cells of the
 !> exg, eyg, ezg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints 
+!> @param[in] exg_nvalid, eyg_nvalid, ezg_nvalid number of valid gridpoints
 !> (i.e. not guard cells) of the exg, eyg, ezg arrays (1d arrays containing 3 integers)
 !> @param[in] bxg, byg, bzg magnetic field grids
-!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the 
+!> @param[in] bxg_nguard, byg_nguard, bzg_nguard number of guard cells of the
 !> bxg, byg, bzg arrays in each direction (1d arrays containing 3 integers)
-!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints 
+!> @param[in] bxg_nvalid, byg_nvalid, bzg_nvalid number of valid gridpoints
 !> (i.e. not guard cells) of the bxg, byg, bzg arrays (1d arrays containing 3 integers)
 !> @param[in] lvect vector size for cache blocking
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !
 SUBROUTINE geteb3d_energy_conserving_vecV3_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,  &
-bz, xmin, ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,       &
-eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
-byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
-l_lower_order_in_v)        !#do not wrap
+  bz, xmin, ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,       &
+  eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
+  byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
+  l_lower_order_in_v)        !#do not wrap
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp), intent(in)                :: np
   INTEGER(idp), intent(in)                :: exg_nguard(3), exg_nvalid(3),            &
   eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3), bxg_nguard(3),          &
-  bxg_nvalid(3), byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)     
+  bxg_nvalid(3), byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
   LOGICAL                                :: l_lower_order_in_v
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
-  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)  
+  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
   -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1,                                       &
-  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)  
+  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
   -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
-  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)  
+  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
-  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)  
+  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
   -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1,                                       &
-  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)  
+  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
   REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,           &
   -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1,                                       &
-  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)  
+  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
   REAL(num)                              :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(isp)                           :: ip, j, k, l
   INTEGER(idp)                           :: j0, k0, l0
@@ -5546,20 +5546,20 @@ l_lower_order_in_v)        !#do not wrap
   REAL(num), DIMENSION(-1:2)             :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   IF (l_lower_order_in_v ) THEN
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -5591,11 +5591,11 @@ l_lower_order_in_v)        !#do not wrap
 #endif
       ! Loop over the particles inside a block
       DO nn=ip, MIN(ip+lvect-1, np)
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x)
@@ -5603,11 +5603,11 @@ l_lower_order_in_v)        !#do not wrap
         k0=floor(y)
         l=floor(z)
         l0=floor(z)
-        
+
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -5616,7 +5616,7 @@ l_lower_order_in_v)        !#do not wrap
         sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx( 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -5624,7 +5624,7 @@ l_lower_order_in_v)        !#do not wrap
         sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy( 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -5632,205 +5632,205 @@ l_lower_order_in_v)        !#do not wrap
         sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz( 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         xintsq = xint*xint
         sx0( -1) = 0.5_num*(0.5_num-xint)**2
         sx0( 0) = 0.75_num-xintsq
         sx0( 1) = 0.5_num*(0.5_num+xint)**2
-        
+
         yintsq = yint*yint
         sy0(-1) = 0.5_num*(0.5_num-yint)**2
         sy0( 0) = 0.75_num-yintsq
         sy0( 1) = 0.5_num*(0.5_num+yint)**2
-        
+
         zintsq = zint*zint
         sz0(-1) = 0.5_num*(0.5_num-zint)**2
         sz0( 0) = 0.75_num-zintsq
         sz0( 1) = 0.5_num*(0.5_num+zint)**2
-        
+
         ! Compute Ex on particle
         a = (sx0(-1)*exg(j0-1, k-1, l-1) + sx0(0)*exg(j0, k-1, l-1) +                 &
-        sx0(1)*exg(j0+1, k-1, l-1))*sy(-1)  
+        sx0(1)*exg(j0+1, k-1, l-1))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l-1) + sx0(0)*exg(j0, k, l-1) +                 &
-        sx0(1)*exg(j0+1, k, l-1))*sy(0)  
+        sx0(1)*exg(j0+1, k, l-1))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l-1) + sx0(0)*exg(j0, k+1, l-1) +             &
-        sx0(1)*exg(j0+1, k+1, l-1))*sy(1)  
+        sx0(1)*exg(j0+1, k+1, l-1))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l-1) + sx0(0)*exg(j0, k+2, l-1) +             &
-        sx0(1)*exg(j0+1, k+2, l-1))*sy(2)  
+        sx0(1)*exg(j0+1, k+2, l-1))*sy(2)
         ex(nn) = ex(nn) + a*sz(-1)
         a = (sx0(-1)*exg(j0-1, k-1, l) + sx0(0)*exg(j0, k-1, l) + sx0(1)*exg(j0+1,    &
-        k-1, l))*sy(-1)  
+        k-1, l))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l) + sx0(0)*exg(j0, k, l) + sx0(1)*exg(j0+1, k, &
-        l))*sy(0)  
+        l))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l) + sx0(0)*exg(j0, k+1, l) +                 &
-        sx0(1)*exg(j0+1, k+1, l))*sy(1)  
+        sx0(1)*exg(j0+1, k+1, l))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l) + sx0(0)*exg(j0, k+2, l) +                 &
-        sx0(1)*exg(j0+1, k+2, l))*sy(2)  
+        sx0(1)*exg(j0+1, k+2, l))*sy(2)
         ex(nn) = ex(nn) + a*sz(0)
         a = (sx0(-1)*exg(j0-1, k-1, l+1) + sx0(0)*exg(j0, k-1, l+1) +                 &
-        sx0(1)*exg(j0+1, k-1, l+1))*sy(-1)  
+        sx0(1)*exg(j0+1, k-1, l+1))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l+1) + sx0(0)*exg(j0, k, l+1) +                 &
-        sx0(1)*exg(j0+1, k, l+1))*sy(0)  
+        sx0(1)*exg(j0+1, k, l+1))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l+1) + sx0(0)*exg(j0, k+1, l+1) +             &
-        sx0(1)*exg(j0+1, k+1, l+1))*sy(1)  
+        sx0(1)*exg(j0+1, k+1, l+1))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l+1) + sx0(0)*exg(j0, k+2, l+1) +             &
-        sx0(1)*exg(j0+1, k+2, l+1))*sy(2)  
+        sx0(1)*exg(j0+1, k+2, l+1))*sy(2)
         ex(nn) = ex(nn) + a*sz(1)
         a = (sx0(-1)*exg(j0-1, k-1, l+2) + sx0(0)*exg(j0, k-1, l+2) +                 &
-        sx0(1)*exg(j0+1, k-1, l+2))*sy(-1)  
+        sx0(1)*exg(j0+1, k-1, l+2))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l+2) + sx0(0)*exg(j0, k, l+2) +                 &
-        sx0(1)*exg(j0+1, k, l+2))*sy(0)  
+        sx0(1)*exg(j0+1, k, l+2))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l+2) + sx0(0)*exg(j0, k+1, l+2) +             &
-        sx0(1)*exg(j0+1, k+1, l+2))*sy(1)  
+        sx0(1)*exg(j0+1, k+1, l+2))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l+2) + sx0(0)*exg(j0, k+2, l+2) +             &
-        sx0(1)*exg(j0+1, k+2, l+2))*sy(2)  
+        sx0(1)*exg(j0+1, k+2, l+2))*sy(2)
         ex(nn) = ex(nn) + a*sz(2)
-        
+
         ! Compute Ey on particle
         a = (sx(-1)*eyg(j-1, k0-1, l-1) + sx(0)*eyg(j, k0-1, l-1) + sx(1)*eyg(j+1,    &
-        k0-1, l-1) + sx(2)*eyg(j+2, k0-1, l-1))*sy0(-1)   
+        k0-1, l-1) + sx(2)*eyg(j+2, k0-1, l-1))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l-1) + sx(0)*eyg(j, k0, l-1) + sx(1)*eyg(j+1,    &
-        k0, l-1) + sx(2)*eyg(j+2, k0, l-1))*sy0(0)   
+        k0, l-1) + sx(2)*eyg(j+2, k0, l-1))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l-1) + sx(0)*eyg(j, k0+1, l-1) +               &
-        sx(1)*eyg(j+1, k0+1, l-1) + sx(2)*eyg(j+2, k0+1, l-1))*sy0(1)   
+        sx(1)*eyg(j+1, k0+1, l-1) + sx(2)*eyg(j+2, k0+1, l-1))*sy0(1)
         ey(nn) = ey(nn) + a*sz(-1)
         a = (sx(-1)*eyg(j-1, k0-1, l) + sx(0)*eyg(j, k0-1, l) + sx(1)*eyg(j+1, k0-1,  &
-        l) + sx(2)*eyg(j+2, k0-1, l))*sy0(-1)   
+        l) + sx(2)*eyg(j+2, k0-1, l))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l) + sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0, l) &
-        + sx(2)*eyg(j+2, k0, l))*sy0(0)   
+        + sx(2)*eyg(j+2, k0, l))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l) + sx(0)*eyg(j, k0+1, l) + sx(1)*eyg(j+1,    &
-        k0+1, l) + sx(2)*eyg(j+2, k0+1, l))*sy0(1)   
+        k0+1, l) + sx(2)*eyg(j+2, k0+1, l))*sy0(1)
         ey(nn) = ey(nn) + a*sz(0)
         a = (sx(-1)*eyg(j-1, k0-1, l+1) + sx(0)*eyg(j, k0-1, l+1) + sx(1)*eyg(j+1,    &
-        k0-1, l+1) + sx(2)*eyg(j+2, k0-1, l+1))*sy0(-1)   
+        k0-1, l+1) + sx(2)*eyg(j+2, k0-1, l+1))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l+1) + sx(0)*eyg(j, k0, l+1) + sx(1)*eyg(j+1,    &
-        k0, l+1) + sx(2)*eyg(j+2, k0, l+1))*sy0(0)   
+        k0, l+1) + sx(2)*eyg(j+2, k0, l+1))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l+1) + sx(0)*eyg(j, k0+1, l+1) +               &
-        sx(1)*eyg(j+1, k0+1, l+1) + sx(2)*eyg(j+2, k0+1, l+1))*sy0(1)   
+        sx(1)*eyg(j+1, k0+1, l+1) + sx(2)*eyg(j+2, k0+1, l+1))*sy0(1)
         ey(nn) = ey(nn) + a*sz(1)
         a = (sx(-1)*eyg(j-1, k0-1, l+2) + sx(0)*eyg(j, k0-1, l+2) + sx(1)*eyg(j+1,    &
-        k0-1, l+2) + sx(2)*eyg(j+2, k0-1, l+2))*sy0(-1)   
+        k0-1, l+2) + sx(2)*eyg(j+2, k0-1, l+2))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l+2) + sx(0)*eyg(j, k0, l+2) + sx(1)*eyg(j+1,    &
-        k0, l+2) + sx(2)*eyg(j+2, k0, l+2))*sy0(0)   
+        k0, l+2) + sx(2)*eyg(j+2, k0, l+2))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l+2) + sx(0)*eyg(j, k0+1, l+2) +               &
-        sx(1)*eyg(j+1, k0+1, l+2) + sx(2)*eyg(j+2, k0+1, l+2))*sy0(1)   
+        sx(1)*eyg(j+1, k0+1, l+2) + sx(2)*eyg(j+2, k0+1, l+2))*sy0(1)
         ey(nn) = ey(nn) + a*sz(2)
-        
+
         ! Compute Ez on particle
         a = (sx(-1)*ezg(j-1, k-1, l0-1) + sx(0)*ezg(j, k-1, l0-1) + sx(1)*ezg(j+1,    &
-        k-1, l0-1) + sx(2)*ezg(j+2, k-1, l0-1))*sy(-1)   
+        k-1, l0-1) + sx(2)*ezg(j+2, k-1, l0-1))*sy(-1)
         a = a + (sx(-1)*ezg(j-1, k, l0-1) + sx(0)*ezg(j, k, l0-1) + sx(1)*ezg(j+1, k, &
-        l0-1) + sx(2)*ezg(j+2, k, l0-1))*sy(0)   
+        l0-1) + sx(2)*ezg(j+2, k, l0-1))*sy(0)
         a = a + (sx(-1)*ezg(j-1, k+1, l0-1) + sx(0)*ezg(j, k+1, l0-1) +               &
-        sx(1)*ezg(j+1, k+1, l0-1) + sx(2)*ezg(j+2, k+1, l0-1))*sy(1)   
+        sx(1)*ezg(j+1, k+1, l0-1) + sx(2)*ezg(j+2, k+1, l0-1))*sy(1)
         a = a + (sx(-1)*ezg(j-1, k+2, l0-1) + sx(0)*ezg(j, k+2, l0-1) +               &
-        sx(1)*ezg(j+1, k+2, l0-1) + sx(2)*ezg(j+2, k+2, l0-1))*sy(2)   
+        sx(1)*ezg(j+1, k+2, l0-1) + sx(2)*ezg(j+2, k+2, l0-1))*sy(2)
         ez(nn) = ez(nn) + a*sz0(-1)
         a = (sx(-1)*ezg(j-1, k-1, l0) + sx(0)*ezg(j, k-1, l0) + sx(1)*ezg(j+1, k-1,   &
-        l0) + sx(2)*ezg(j+2, k-1, l0))*sy(-1)   
+        l0) + sx(2)*ezg(j+2, k-1, l0))*sy(-1)
         a = a + (sx(-1)*ezg(j-1, k, l0) + sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k, l0) &
-        + sx(2)*ezg(j+2, k, l0))*sy(0)   
+        + sx(2)*ezg(j+2, k, l0))*sy(0)
         a = a + (sx(-1)*ezg(j-1, k+1, l0) + sx(0)*ezg(j, k+1, l0) + sx(1)*ezg(j+1,    &
-        k+1, l0) + sx(2)*ezg(j+2, k+1, l0))*sy(1)   
+        k+1, l0) + sx(2)*ezg(j+2, k+1, l0))*sy(1)
         a = a + (sx(-1)*ezg(j-1, k+2, l0) + sx(0)*ezg(j, k+2, l0) + sx(1)*ezg(j+1,    &
-        k+2, l0) + sx(2)*ezg(j+2, k+2, l0))*sy(2)   
+        k+2, l0) + sx(2)*ezg(j+2, k+2, l0))*sy(2)
         ez(nn) = ez(nn) + a*sz0(0)
         a = (sx(-1)*ezg(j-1, k-1, l0+1) + sx(0)*ezg(j, k-1, l0+1) + sx(1)*ezg(j+1,    &
-        k-1, l0+1) + sx(2)*ezg(j+2, k-1, l0+1))*sy(-1)   
+        k-1, l0+1) + sx(2)*ezg(j+2, k-1, l0+1))*sy(-1)
         a = a + (sx(-1)*ezg(j-1, k, l0+1) + sx(0)*ezg(j, k, l0+1) + sx(1)*ezg(j+1, k, &
-        l0+1) + sx(2)*ezg(j+2, k, l0+1))*sy(0)   
+        l0+1) + sx(2)*ezg(j+2, k, l0+1))*sy(0)
         a = a + (sx(-1)*ezg(j-1, k+1, l0+1) + sx(0)*ezg(j, k+1, l0+1) +               &
-        sx(1)*ezg(j+1, k+1, l0+1) + sx(2)*ezg(j+2, k+1, l0+1))*sy(1)   
+        sx(1)*ezg(j+1, k+1, l0+1) + sx(2)*ezg(j+2, k+1, l0+1))*sy(1)
         a = a + (sx(-1)*ezg(j-1, k+2, l0+1) + sx(0)*ezg(j, k+2, l0+1) +               &
-        sx(1)*ezg(j+1, k+2, l0+1) + sx(2)*ezg(j+2, k+2, l0+1))*sy(2)   
+        sx(1)*ezg(j+1, k+2, l0+1) + sx(2)*ezg(j+2, k+2, l0+1))*sy(2)
         ez(nn) = ez(nn) + a*sz0(1)
-        
+
         ! Compute Bx on particle
         a = (sx(-1)*bxg(j-1, k0-1, l0-1) + sx(0)*bxg(j, k0-1, l0-1) + sx(1)*bxg(j+1,  &
-        k0-1, l0-1) + sx(2)*bxg(j+2, k0-1, l0-1))*sy0(-1)   
+        k0-1, l0-1) + sx(2)*bxg(j+2, k0-1, l0-1))*sy0(-1)
         a = a + (sx(-1)*bxg(j-1, k0, l0-1) + sx(0)*bxg(j, k0, l0-1) + sx(1)*bxg(j+1,  &
-        k0, l0-1) + sx(2)*bxg(j+2, k0, l0-1))*sy0(0)   
+        k0, l0-1) + sx(2)*bxg(j+2, k0, l0-1))*sy0(0)
         a = a + (sx(-1)*bxg(j-1, k0+1, l0-1) + sx(0)*bxg(j, k0+1, l0-1) +             &
-        sx(1)*bxg(j+1, k0+1, l0-1) + sx(2)*bxg(j+2, k0+1, l0-1))*sy0(1)   
+        sx(1)*bxg(j+1, k0+1, l0-1) + sx(2)*bxg(j+2, k0+1, l0-1))*sy0(1)
         bx(nn) = bx(nn) + a*sz0(-1)
         a = (sx(-1)*bxg(j-1, k0-1, l0) + sx(0)*bxg(j, k0-1, l0) + sx(1)*bxg(j+1,      &
-        k0-1, l0) + sx(2)*bxg(j+2, k0-1, l0))*sy0(-1)   
+        k0-1, l0) + sx(2)*bxg(j+2, k0-1, l0))*sy0(-1)
         a = a + (sx(-1)*bxg(j-1, k0, l0) + sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0,  &
-        l0) + sx(2)*bxg(j+2, k0, l0))*sy0(0)   
+        l0) + sx(2)*bxg(j+2, k0, l0))*sy0(0)
         a = a + (sx(-1)*bxg(j-1, k0+1, l0) + sx(0)*bxg(j, k0+1, l0) + sx(1)*bxg(j+1,  &
-        k0+1, l0) + sx(2)*bxg(j+2, k0+1, l0))*sy0(1)   
+        k0+1, l0) + sx(2)*bxg(j+2, k0+1, l0))*sy0(1)
         bx(nn) = bx(nn) + a*sz0(0)
         a = (sx(-1)*bxg(j-1, k0-1, l0+1) + sx(0)*bxg(j, k0-1, l0+1) + sx(1)*bxg(j+1,  &
-        k0-1, l0+1) + sx(2)*bxg(j+2, k0-1, l0+1))*sy0(-1)   
+        k0-1, l0+1) + sx(2)*bxg(j+2, k0-1, l0+1))*sy0(-1)
         a = a + (sx(-1)*bxg(j-1, k0, l0+1) + sx(0)*bxg(j, k0, l0+1) + sx(1)*bxg(j+1,  &
-        k0, l0+1) + sx(2)*bxg(j+2, k0, l0+1))*sy0(0)   
+        k0, l0+1) + sx(2)*bxg(j+2, k0, l0+1))*sy0(0)
         a = a + (sx(-1)*bxg(j-1, k0+1, l0+1) + sx(0)*bxg(j, k0+1, l0+1) +             &
-        sx(1)*bxg(j+1, k0+1, l0+1) + sx(2)*bxg(j+2, k0+1, l0+1))*sy0(1)   
+        sx(1)*bxg(j+1, k0+1, l0+1) + sx(2)*bxg(j+2, k0+1, l0+1))*sy0(1)
         bx(nn) = bx(nn) + a*sz0(1)
-        
+
         ! Compute By on particle
         a = (sx0(-1)*byg(j0-1, k-1, l0-1) + sx0(0)*byg(j0, k-1, l0-1) +               &
-        sx0(1)*byg(j0+1, k-1, l0-1))*sy(-1)  
+        sx0(1)*byg(j0+1, k-1, l0-1))*sy(-1)
         a = a + (sx0(-1)*byg(j0-1, k, l0-1) + sx0(0)*byg(j0, k, l0-1) +               &
-        sx0(1)*byg(j0+1, k, l0-1))*sy(0)  
+        sx0(1)*byg(j0+1, k, l0-1))*sy(0)
         a = a + (sx0(-1)*byg(j0-1, k+1, l0-1) + sx0(0)*byg(j0, k+1, l0-1) +           &
-        sx0(1)*byg(j0+1, k+1, l0-1))*sy(1)  
+        sx0(1)*byg(j0+1, k+1, l0-1))*sy(1)
         a = a + (sx0(-1)*byg(j0-1, k+2, l0-1) + sx0(0)*byg(j0, k+2, l0-1) +           &
-        sx0(1)*byg(j0+1, k+2, l0-1))*sy(2)  
+        sx0(1)*byg(j0+1, k+2, l0-1))*sy(2)
         by(nn) = by(nn) + a*sz0(-1)
         a = (sx0(-1)*byg(j0-1, k-1, l0) + sx0(0)*byg(j0, k-1, l0) + sx0(1)*byg(j0+1,  &
-        k-1, l0))*sy(-1)  
+        k-1, l0))*sy(-1)
         a = a + (sx0(-1)*byg(j0-1, k, l0) + sx0(0)*byg(j0, k, l0) + sx0(1)*byg(j0+1,  &
-        k, l0))*sy(0)  
+        k, l0))*sy(0)
         a = a + (sx0(-1)*byg(j0-1, k+1, l0) + sx0(0)*byg(j0, k+1, l0) +               &
-        sx0(1)*byg(j0+1, k+1, l0))*sy(1)  
+        sx0(1)*byg(j0+1, k+1, l0))*sy(1)
         a = a + (sx0(-1)*byg(j0-1, k+2, l0) + sx0(0)*byg(j0, k+2, l0) +               &
-        sx0(1)*byg(j0+1, k+2, l0))*sy(2)  
+        sx0(1)*byg(j0+1, k+2, l0))*sy(2)
         by(nn) = by(nn) + a*sz0(0)
         a = (sx0(-1)*byg(j0-1, k-1, l0+1) + sx0(0)*byg(j0, k-1, l0+1) +               &
-        sx0(1)*byg(j0+1, k-1, l0+1))*sy(-1)  
+        sx0(1)*byg(j0+1, k-1, l0+1))*sy(-1)
         a = a + (sx0(-1)*byg(j0-1, k, l0+1) + sx0(0)*byg(j0, k, l0+1) +               &
-        sx0(1)*byg(j0+1, k, l0+1))*sy(0)  
+        sx0(1)*byg(j0+1, k, l0+1))*sy(0)
         a = a + (sx0(-1)*byg(j0-1, k+1, l0+1) + sx0(0)*byg(j0, k+1, l0+1) +           &
-        sx0(1)*byg(j0+1, k+1, l0+1))*sy(1)  
+        sx0(1)*byg(j0+1, k+1, l0+1))*sy(1)
         a = a + (sx0(-1)*byg(j0-1, k+2, l0+1) + sx0(0)*byg(j0, k+2, l0+1) +           &
-        sx0(1)*byg(j0+1, k+2, l0+1))*sy(2)  
+        sx0(1)*byg(j0+1, k+2, l0+1))*sy(2)
         by(nn) = by(nn) + a*sz0(1)
-        
+
         ! Compute Bz on particle
         a = (sx0(-1)*bzg(j0-1, k0-1, l-1) + sx0(0)*bzg(j0, k0-1, l-1) +               &
-        sx0(1)*bzg(j0+1, k0-1, l-1))*sy0(-1)  
+        sx0(1)*bzg(j0+1, k0-1, l-1))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l-1) + sx0(0)*bzg(j0, k0, l-1) +               &
-        sx0(1)*bzg(j0+1, k0, l-1))*sy0(0)  
+        sx0(1)*bzg(j0+1, k0, l-1))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l-1) + sx0(0)*bzg(j0, k0+1, l-1) +           &
-        sx0(1)*bzg(j0+1, k0+1, l-1))*sy0(1)  
+        sx0(1)*bzg(j0+1, k0+1, l-1))*sy0(1)
         bz(nn) = bz(nn) + a*sz(-1)
         a = (sx0(-1)*bzg(j0-1, k0-1, l) + sx0(0)*bzg(j0, k0-1, l) + sx0(1)*bzg(j0+1,  &
-        k0-1, l))*sy0(-1)  
+        k0-1, l))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l) + sx0(0)*bzg(j0, k0, l) + sx0(1)*bzg(j0+1,  &
-        k0, l))*sy0(0)  
+        k0, l))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l) + sx0(0)*bzg(j0, k0+1, l) +               &
-        sx0(1)*bzg(j0+1, k0+1, l))*sy0(1)  
+        sx0(1)*bzg(j0+1, k0+1, l))*sy0(1)
         bz(nn) = bz(nn) + a*sz(0)
         a = (sx0(-1)*bzg(j0-1, k0-1, l+1) + sx0(0)*bzg(j0, k0-1, l+1) +               &
-        sx0(1)*bzg(j0+1, k0-1, l+1))*sy0(-1)  
+        sx0(1)*bzg(j0+1, k0-1, l+1))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l+1) + sx0(0)*bzg(j0, k0, l+1) +               &
-        sx0(1)*bzg(j0+1, k0, l+1))*sy0(0)  
+        sx0(1)*bzg(j0+1, k0, l+1))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l+1) + sx0(0)*bzg(j0, k0+1, l+1) +           &
-        sx0(1)*bzg(j0+1, k0+1, l+1))*sy0(1)  
+        sx0(1)*bzg(j0+1, k0+1, l+1))*sy0(1)
         bz(nn) = bz(nn) + a*sz(1)
         a = (sx0(-1)*bzg(j0-1, k0-1, l+2) + sx0(0)*bzg(j0, k0-1, l+2) +               &
-        sx0(1)*bzg(j0+1, k0-1, l+2))*sy0(-1)  
+        sx0(1)*bzg(j0+1, k0-1, l+2))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l+2) + sx0(0)*bzg(j0, k0, l+2) +               &
-        sx0(1)*bzg(j0+1, k0, l+2))*sy0(0)  
+        sx0(1)*bzg(j0+1, k0, l+2))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l+2) + sx0(0)*bzg(j0, k0+1, l+2) +           &
-        sx0(1)*bzg(j0+1, k0+1, l+2))*sy0(1)  
+        sx0(1)*bzg(j0+1, k0+1, l+2))*sy0(1)
         bz(nn) = bz(nn) + a*sz(2)
-        
+
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -5838,9 +5838,9 @@ l_lower_order_in_v)        !#do not wrap
 #endif
 #endif
     ENDDO
-    
+
   ELSE
-    
+
     ! ___ Loop on partciles _______________________
     DO ip=1, np, lvect
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -5866,11 +5866,11 @@ l_lower_order_in_v)        !#do not wrap
 #endif
       ! Loop over the particles inside a block
       DO nn=ip, MIN(ip+lvect-1, np)
-        
+
         x = (xp(nn)-xmin)*dxi
         y = (yp(nn)-ymin)*dyi
         z = (zp(nn)-zmin)*dzi
-        
+
         ! Compute index of particle
         j=floor(x)
         j0=floor(x-0.5_num)
@@ -5881,7 +5881,7 @@ l_lower_order_in_v)        !#do not wrap
         xint=x-j
         yint=y-k
         zint=z-l
-        
+
         ! Compute shape factors
         oxint = 1.0_num-xint
         xintsq = xint*xint
@@ -5890,7 +5890,7 @@ l_lower_order_in_v)        !#do not wrap
         sx( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx( 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -5898,7 +5898,7 @@ l_lower_order_in_v)        !#do not wrap
         sy( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy( 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -5906,11 +5906,11 @@ l_lower_order_in_v)        !#do not wrap
         sz( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz( 2) = onesixth*zintsq*zint
-        
+
         xint=x-0.5_num-j0
         yint=y-0.5_num-k0
         zint=z-0.5_num-l0
-        
+
         oxint = 1.0_num-xint
         xintsq = xint*xint
         oxintsq = oxint*oxint
@@ -5918,7 +5918,7 @@ l_lower_order_in_v)        !#do not wrap
         sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
         sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
         sx0( 2) = onesixth*xintsq*xint
-        
+
         oyint = 1.0_num-yint
         yintsq = yint*yint
         oyintsq = oyint*oyint
@@ -5926,7 +5926,7 @@ l_lower_order_in_v)        !#do not wrap
         sy0( 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
         sy0( 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
         sy0( 2) = onesixth*yintsq*yint
-        
+
         ozint = 1.0_num-zint
         zintsq = zint*zint
         ozintsq = ozint*ozint
@@ -5934,233 +5934,233 @@ l_lower_order_in_v)        !#do not wrap
         sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
         sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
         sz0( 2) = onesixth*zintsq*zint
-        
+
         ! Compute Ex on particle
         a = (sx0(-1)*exg(j0-1, k-1, l-1) + sx0(0)*exg(j0, k-1, l-1) +                 &
-        sx0(1)*exg(j0+1, k-1, l-1) + sx0(2)*exg(j0+2, k-1, l-1))*sy(-1)   
+        sx0(1)*exg(j0+1, k-1, l-1) + sx0(2)*exg(j0+2, k-1, l-1))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l-1) + sx0(0)*exg(j0, k, l-1) +                 &
-        sx0(1)*exg(j0+1, k, l-1) + sx0(2)*exg(j0+2, k, l-1))*sy(0)   
+        sx0(1)*exg(j0+1, k, l-1) + sx0(2)*exg(j0+2, k, l-1))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l-1) + sx0(0)*exg(j0, k+1, l-1) +             &
-        sx0(1)*exg(j0+1, k+1, l-1) + sx0(2)*exg(j0+2, k+1, l-1))*sy(1)   
+        sx0(1)*exg(j0+1, k+1, l-1) + sx0(2)*exg(j0+2, k+1, l-1))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l-1) + sx0(0)*exg(j0, k+2, l-1) +             &
-        sx0(1)*exg(j0+1, k+2, l-1) + sx0(2)*exg(j0+2, k+2, l-1))*sy(2)   
+        sx0(1)*exg(j0+1, k+2, l-1) + sx0(2)*exg(j0+2, k+2, l-1))*sy(2)
         ex(nn) = ex(nn) + a*sz(-1)
         a = (sx0(-1)*exg(j0-1, k-1, l) + sx0(0)*exg(j0, k-1, l) + sx0(1)*exg(j0+1,    &
-        k-1, l) + sx0(2)*exg(j0+2, k-1, l))*sy(-1)   
+        k-1, l) + sx0(2)*exg(j0+2, k-1, l))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l) + sx0(0)*exg(j0, k, l) + sx0(1)*exg(j0+1, k, &
-        l) + sx0(2)*exg(j0+2, k, l))*sy(0)   
+        l) + sx0(2)*exg(j0+2, k, l))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l) + sx0(0)*exg(j0, k+1, l) +                 &
-        sx0(1)*exg(j0+1, k+1, l) + sx0(2)*exg(j0+2, k+1, l))*sy(1)   
+        sx0(1)*exg(j0+1, k+1, l) + sx0(2)*exg(j0+2, k+1, l))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l) + sx0(0)*exg(j0, k+2, l) +                 &
-        sx0(1)*exg(j0+1, k+2, l) + sx0(2)*exg(j0+2, k+2, l))*sy(2)   
+        sx0(1)*exg(j0+1, k+2, l) + sx0(2)*exg(j0+2, k+2, l))*sy(2)
         ex(nn) = ex(nn) + a*sz(0)
         a = (sx0(-1)*exg(j0-1, k-1, l+1) + sx0(0)*exg(j0, k-1, l+1) +                 &
-        sx0(1)*exg(j0+1, k-1, l+1) + sx0(2)*exg(j0+2, k-1, l+1))*sy(-1)   
+        sx0(1)*exg(j0+1, k-1, l+1) + sx0(2)*exg(j0+2, k-1, l+1))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l+1) + sx0(0)*exg(j0, k, l+1) +                 &
-        sx0(1)*exg(j0+1, k, l+1) + sx0(2)*exg(j0+2, k, l+1))*sy(0)   
+        sx0(1)*exg(j0+1, k, l+1) + sx0(2)*exg(j0+2, k, l+1))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l+1) + sx0(0)*exg(j0, k+1, l+1) +             &
-        sx0(1)*exg(j0+1, k+1, l+1) + sx0(2)*exg(j0+2, k+1, l+1))*sy(1)   
+        sx0(1)*exg(j0+1, k+1, l+1) + sx0(2)*exg(j0+2, k+1, l+1))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l+1) + sx0(0)*exg(j0, k+2, l+1) +             &
-        sx0(1)*exg(j0+1, k+2, l+1) + sx0(2)*exg(j0+2, k+2, l+1))*sy(2)   
+        sx0(1)*exg(j0+1, k+2, l+1) + sx0(2)*exg(j0+2, k+2, l+1))*sy(2)
         ex(nn) = ex(nn) + a*sz(1)
         a = (sx0(-1)*exg(j0-1, k-1, l+2) + sx0(0)*exg(j0, k-1, l+2) +                 &
-        sx0(1)*exg(j0+1, k-1, l+2) + sx0(2)*exg(j0+2, k-1, l+2))*sy(-1)   
+        sx0(1)*exg(j0+1, k-1, l+2) + sx0(2)*exg(j0+2, k-1, l+2))*sy(-1)
         a = a + (sx0(-1)*exg(j0-1, k, l+2) + sx0(0)*exg(j0, k, l+2) +                 &
-        sx0(1)*exg(j0+1, k, l+2) + sx0(2)*exg(j0+2, k, l+2))*sy(0)   
+        sx0(1)*exg(j0+1, k, l+2) + sx0(2)*exg(j0+2, k, l+2))*sy(0)
         a = a + (sx0(-1)*exg(j0-1, k+1, l+2) + sx0(0)*exg(j0, k+1, l+2) +             &
-        sx0(1)*exg(j0+1, k+1, l+2) + sx0(2)*exg(j0+2, k+1, l+2))*sy(1)   
+        sx0(1)*exg(j0+1, k+1, l+2) + sx0(2)*exg(j0+2, k+1, l+2))*sy(1)
         a = a + (sx0(-1)*exg(j0-1, k+2, l+2) + sx0(0)*exg(j0, k+2, l+2) +             &
-        sx0(1)*exg(j0+1, k+2, l+2) + sx0(2)*exg(j0+2, k+2, l+2))*sy(2)   
+        sx0(1)*exg(j0+1, k+2, l+2) + sx0(2)*exg(j0+2, k+2, l+2))*sy(2)
         ex(nn) = ex(nn) + a*sz(2)
-        
+
         ! Compute Ey on particle
         a = (sx(-1)*eyg(j-1, k0-1, l-1) + sx(0)*eyg(j, k0-1, l-1) + sx(1)*eyg(j+1,    &
-        k0-1, l-1) + sx(2)*eyg(j+2, k0-1, l-1))*sy0(-1)   
+        k0-1, l-1) + sx(2)*eyg(j+2, k0-1, l-1))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l-1) + sx(0)*eyg(j, k0, l-1) + sx(1)*eyg(j+1,    &
-        k0, l-1) + sx(2)*eyg(j+2, k0, l-1))*sy0(0)   
+        k0, l-1) + sx(2)*eyg(j+2, k0, l-1))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l-1) + sx(0)*eyg(j, k0+1, l-1) +               &
-        sx(1)*eyg(j+1, k0+1, l-1) + sx(2)*eyg(j+2, k0+1, l-1))*sy0(1)   
+        sx(1)*eyg(j+1, k0+1, l-1) + sx(2)*eyg(j+2, k0+1, l-1))*sy0(1)
         a = a + (sx(-1)*eyg(j-1, k0+2, l-1) + sx(0)*eyg(j, k0+2, l-1) +               &
-        sx(1)*eyg(j+1, k0+2, l-1) + sx(2)*eyg(j+2, k0+2, l-1))*sy0(2)   
+        sx(1)*eyg(j+1, k0+2, l-1) + sx(2)*eyg(j+2, k0+2, l-1))*sy0(2)
         ey(nn) = ey(nn) + a*sz(-1)
         a = (sx(-1)*eyg(j-1, k0-1, l) + sx(0)*eyg(j, k0-1, l) + sx(1)*eyg(j+1, k0-1,  &
-        l) + sx(2)*eyg(j+2, k0-1, l))*sy0(-1)   
+        l) + sx(2)*eyg(j+2, k0-1, l))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l) + sx(0)*eyg(j, k0, l) + sx(1)*eyg(j+1, k0, l) &
-        + sx(2)*eyg(j+2, k0, l))*sy0(0)   
+        + sx(2)*eyg(j+2, k0, l))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l) + sx(0)*eyg(j, k0+1, l) + sx(1)*eyg(j+1,    &
-        k0+1, l) + sx(2)*eyg(j+2, k0+1, l))*sy0(1)   
+        k0+1, l) + sx(2)*eyg(j+2, k0+1, l))*sy0(1)
         a = a + (sx(-1)*eyg(j-1, k0+2, l) + sx(0)*eyg(j, k0+2, l) + sx(1)*eyg(j+1,    &
-        k0+2, l) + sx(2)*eyg(j+2, k0+2, l))*sy0(2)   
+        k0+2, l) + sx(2)*eyg(j+2, k0+2, l))*sy0(2)
         ey(nn) = ey(nn) + a*sz(0)
         a = (sx(-1)*eyg(j-1, k0-1, l+1) + sx(0)*eyg(j, k0-1, l+1) + sx(1)*eyg(j+1,    &
-        k0-1, l+1) + sx(2)*eyg(j+2, k0-1, l+1))*sy0(-1)   
+        k0-1, l+1) + sx(2)*eyg(j+2, k0-1, l+1))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l+1) + sx(0)*eyg(j, k0, l+1) + sx(1)*eyg(j+1,    &
-        k0, l+1) + sx(2)*eyg(j+2, k0, l+1))*sy0(0)   
+        k0, l+1) + sx(2)*eyg(j+2, k0, l+1))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l+1) + sx(0)*eyg(j, k0+1, l+1) +               &
-        sx(1)*eyg(j+1, k0+1, l+1) + sx(2)*eyg(j+2, k0+1, l+1))*sy0(1)   
+        sx(1)*eyg(j+1, k0+1, l+1) + sx(2)*eyg(j+2, k0+1, l+1))*sy0(1)
         a = a + (sx(-1)*eyg(j-1, k0+2, l+1) + sx(0)*eyg(j, k0+2, l+1) +               &
-        sx(1)*eyg(j+1, k0+2, l+1) + sx(2)*eyg(j+2, k0+2, l+1))*sy0(2)   
+        sx(1)*eyg(j+1, k0+2, l+1) + sx(2)*eyg(j+2, k0+2, l+1))*sy0(2)
         ey(nn) = ey(nn) + a*sz(1)
         a = (sx(-1)*eyg(j-1, k0-1, l+2) + sx(0)*eyg(j, k0-1, l+2) + sx(1)*eyg(j+1,    &
-        k0-1, l+2) + sx(2)*eyg(j+2, k0-1, l+2))*sy0(-1)   
+        k0-1, l+2) + sx(2)*eyg(j+2, k0-1, l+2))*sy0(-1)
         a = a + (sx(-1)*eyg(j-1, k0, l+2) + sx(0)*eyg(j, k0, l+2) + sx(1)*eyg(j+1,    &
-        k0, l+2) + sx(2)*eyg(j+2, k0, l+2))*sy0(0)   
+        k0, l+2) + sx(2)*eyg(j+2, k0, l+2))*sy0(0)
         a = a + (sx(-1)*eyg(j-1, k0+1, l+2) + sx(0)*eyg(j, k0+1, l+2) +               &
-        sx(1)*eyg(j+1, k0+1, l+2) + sx(2)*eyg(j+2, k0+1, l+2))*sy0(1)   
+        sx(1)*eyg(j+1, k0+1, l+2) + sx(2)*eyg(j+2, k0+1, l+2))*sy0(1)
         a = a + (sx(-1)*eyg(j-1, k0+2, l+2) + sx(0)*eyg(j, k0+2, l+2) +               &
-        sx(1)*eyg(j+1, k0+2, l+2) + sx(2)*eyg(j+2, k0+2, l+2))*sy0(2)   
+        sx(1)*eyg(j+1, k0+2, l+2) + sx(2)*eyg(j+2, k0+2, l+2))*sy0(2)
         ey(nn) = ey(nn) + a*sz(2)
-        
+
         ! Compute Ez on particle
         a = (sx(-1)*ezg(j-1, k-1, l0-1) + sx(0)*ezg(j, k-1, l0-1) + sx(1)*ezg(j+1,    &
-        k-1, l0-1) + sx(2)*ezg(j+2, k-1, l0-1))*sy(-1)   
+        k-1, l0-1) + sx(2)*ezg(j+2, k-1, l0-1))*sy(-1)
         a = a + (sx(-1)*ezg(j-1, k, l0-1) + sx(0)*ezg(j, k, l0-1) + sx(1)*ezg(j+1, k, &
-        l0-1) + sx(2)*ezg(j+2, k, l0-1))*sy(0)   
+        l0-1) + sx(2)*ezg(j+2, k, l0-1))*sy(0)
         a = a + (sx(-1)*ezg(j-1, k+1, l0-1) + sx(0)*ezg(j, k+1, l0-1) +               &
-        sx(1)*ezg(j+1, k+1, l0-1) + sx(2)*ezg(j+2, k+1, l0-1))*sy(1)   
+        sx(1)*ezg(j+1, k+1, l0-1) + sx(2)*ezg(j+2, k+1, l0-1))*sy(1)
         a = a + (sx(-1)*ezg(j-1, k+2, l0-1) + sx(0)*ezg(j, k+2, l0-1) +               &
-        sx(1)*ezg(j+1, k+2, l0-1) + sx(2)*ezg(j+2, k+2, l0-1))*sy(2)   
+        sx(1)*ezg(j+1, k+2, l0-1) + sx(2)*ezg(j+2, k+2, l0-1))*sy(2)
         ez(nn) = ez(nn) + a*sz0(-1)
         a = (sx(-1)*ezg(j-1, k-1, l0) + sx(0)*ezg(j, k-1, l0) + sx(1)*ezg(j+1, k-1,   &
-        l0) + sx(2)*ezg(j+2, k-1, l0))*sy(-1)   
+        l0) + sx(2)*ezg(j+2, k-1, l0))*sy(-1)
         a = a + (sx(-1)*ezg(j-1, k, l0) + sx(0)*ezg(j, k, l0) + sx(1)*ezg(j+1, k, l0) &
-        + sx(2)*ezg(j+2, k, l0))*sy(0)   
+        + sx(2)*ezg(j+2, k, l0))*sy(0)
         a = a + (sx(-1)*ezg(j-1, k+1, l0) + sx(0)*ezg(j, k+1, l0) + sx(1)*ezg(j+1,    &
-        k+1, l0) + sx(2)*ezg(j+2, k+1, l0))*sy(1)   
+        k+1, l0) + sx(2)*ezg(j+2, k+1, l0))*sy(1)
         a = a + (sx(-1)*ezg(j-1, k+2, l0) + sx(0)*ezg(j, k+2, l0) + sx(1)*ezg(j+1,    &
-        k+2, l0) + sx(2)*ezg(j+2, k+2, l0))*sy(2)   
+        k+2, l0) + sx(2)*ezg(j+2, k+2, l0))*sy(2)
         ez(nn) = ez(nn) + a*sz0(0)
         a = (sx(-1)*ezg(j-1, k-1, l0+1) + sx(0)*ezg(j, k-1, l0+1) + sx(1)*ezg(j+1,    &
-        k-1, l0+1) + sx(2)*ezg(j+2, k-1, l0+1))*sy(-1)   
+        k-1, l0+1) + sx(2)*ezg(j+2, k-1, l0+1))*sy(-1)
         a = a + (sx(-1)*ezg(j-1, k, l0+1) + sx(0)*ezg(j, k, l0+1) + sx(1)*ezg(j+1, k, &
-        l0+1) + sx(2)*ezg(j+2, k, l0+1))*sy(0)   
+        l0+1) + sx(2)*ezg(j+2, k, l0+1))*sy(0)
         a = a + (sx(-1)*ezg(j-1, k+1, l0+1) + sx(0)*ezg(j, k+1, l0+1) +               &
-        sx(1)*ezg(j+1, k+1, l0+1) + sx(2)*ezg(j+2, k+1, l0+1))*sy(1)   
+        sx(1)*ezg(j+1, k+1, l0+1) + sx(2)*ezg(j+2, k+1, l0+1))*sy(1)
         a = a + (sx(-1)*ezg(j-1, k+2, l0+1) + sx(0)*ezg(j, k+2, l0+1) +               &
-        sx(1)*ezg(j+1, k+2, l0+1) + sx(2)*ezg(j+2, k+2, l0+1))*sy(2)   
+        sx(1)*ezg(j+1, k+2, l0+1) + sx(2)*ezg(j+2, k+2, l0+1))*sy(2)
         ez(nn) = ez(nn) + a*sz0(1)
         a = (sx(-1)*ezg(j-1, k-1, l0+2) + sx(0)*ezg(j, k-1, l0+2) + sx(1)*ezg(j+1,    &
-        k-1, l0+2) + sx(2)*ezg(j+2, k-1, l0+2))*sy(-1)   
+        k-1, l0+2) + sx(2)*ezg(j+2, k-1, l0+2))*sy(-1)
         a = a + (sx(-1)*ezg(j-1, k, l0+2) + sx(0)*ezg(j, k, l0+2) + sx(1)*ezg(j+1, k, &
-        l0+2) + sx(2)*ezg(j+2, k, l0+2))*sy(0)   
+        l0+2) + sx(2)*ezg(j+2, k, l0+2))*sy(0)
         a = a + (sx(-1)*ezg(j-1, k+1, l0+2) + sx(0)*ezg(j, k+1, l0+2) +               &
-        sx(1)*ezg(j+1, k+1, l0+2) + sx(2)*ezg(j+2, k+1, l0+2))*sy(1)   
+        sx(1)*ezg(j+1, k+1, l0+2) + sx(2)*ezg(j+2, k+1, l0+2))*sy(1)
         a = a + (sx(-1)*ezg(j-1, k+2, l0+2) + sx(0)*ezg(j, k+2, l0+2) +               &
-        sx(1)*ezg(j+1, k+2, l0+2) + sx(2)*ezg(j+2, k+2, l0+2))*sy(2)   
+        sx(1)*ezg(j+1, k+2, l0+2) + sx(2)*ezg(j+2, k+2, l0+2))*sy(2)
         ez(nn) = ez(nn) + a*sz0(2)
-        
+
         ! Compute Bx on particle
         a = (sx(-1)*bxg(j-1, k0-1, l0-1) + sx(0)*bxg(j, k0-1, l0-1) + sx(1)*bxg(j+1,  &
-        k0-1, l0-1) + sx(2)*bxg(j+2, k0-1, l0-1))*sy0(-1)   
+        k0-1, l0-1) + sx(2)*bxg(j+2, k0-1, l0-1))*sy0(-1)
         a = a + (sx(-1)*bxg(j-1, k0, l0-1) + sx(0)*bxg(j, k0, l0-1) + sx(1)*bxg(j+1,  &
-        k0, l0-1) + sx(2)*bxg(j+2, k0, l0-1))*sy0(0)   
+        k0, l0-1) + sx(2)*bxg(j+2, k0, l0-1))*sy0(0)
         a = a + (sx(-1)*bxg(j-1, k0+1, l0-1) + sx(0)*bxg(j, k0+1, l0-1) +             &
-        sx(1)*bxg(j+1, k0+1, l0-1) + sx(2)*bxg(j+2, k0+1, l0-1))*sy0(1)   
+        sx(1)*bxg(j+1, k0+1, l0-1) + sx(2)*bxg(j+2, k0+1, l0-1))*sy0(1)
         a = a + (sx(-1)*bxg(j-1, k0+2, l0-1) + sx(0)*bxg(j, k0+2, l0-1) +             &
-        sx(1)*bxg(j+1, k0+2, l0-1) + sx(2)*bxg(j+2, k0+2, l0-1))*sy0(2)   
+        sx(1)*bxg(j+1, k0+2, l0-1) + sx(2)*bxg(j+2, k0+2, l0-1))*sy0(2)
         bx(nn) = bx(nn) + a*sz0(-1)
         a = (sx(-1)*bxg(j-1, k0-1, l0) + sx(0)*bxg(j, k0-1, l0) + sx(1)*bxg(j+1,      &
-        k0-1, l0) + sx(2)*bxg(j+2, k0-1, l0))*sy0(-1)   
+        k0-1, l0) + sx(2)*bxg(j+2, k0-1, l0))*sy0(-1)
         a = a + (sx(-1)*bxg(j-1, k0, l0) + sx(0)*bxg(j, k0, l0) + sx(1)*bxg(j+1, k0,  &
-        l0) + sx(2)*bxg(j+2, k0, l0))*sy0(0)   
+        l0) + sx(2)*bxg(j+2, k0, l0))*sy0(0)
         a = a + (sx(-1)*bxg(j-1, k0+1, l0) + sx(0)*bxg(j, k0+1, l0) + sx(1)*bxg(j+1,  &
-        k0+1, l0) + sx(2)*bxg(j+2, k0+1, l0))*sy0(1)   
+        k0+1, l0) + sx(2)*bxg(j+2, k0+1, l0))*sy0(1)
         a = a + (sx(-1)*bxg(j-1, k0+2, l0) + sx(0)*bxg(j, k0+2, l0) + sx(1)*bxg(j+1,  &
-        k0+2, l0) + sx(2)*bxg(j+2, k0+2, l0))*sy0(2)   
+        k0+2, l0) + sx(2)*bxg(j+2, k0+2, l0))*sy0(2)
         bx(nn) = bx(nn) + a*sz0(0)
         a = (sx(-1)*bxg(j-1, k0-1, l0+1) + sx(0)*bxg(j, k0-1, l0+1) + sx(1)*bxg(j+1,  &
-        k0-1, l0+1) + sx(2)*bxg(j+2, k0-1, l0+1))*sy0(-1)   
+        k0-1, l0+1) + sx(2)*bxg(j+2, k0-1, l0+1))*sy0(-1)
         a = a + (sx(-1)*bxg(j-1, k0, l0+1) + sx(0)*bxg(j, k0, l0+1) + sx(1)*bxg(j+1,  &
-        k0, l0+1) + sx(2)*bxg(j+2, k0, l0+1))*sy0(0)   
+        k0, l0+1) + sx(2)*bxg(j+2, k0, l0+1))*sy0(0)
         a = a + (sx(-1)*bxg(j-1, k0+1, l0+1) + sx(0)*bxg(j, k0+1, l0+1) +             &
-        sx(1)*bxg(j+1, k0+1, l0+1) + sx(2)*bxg(j+2, k0+1, l0+1))*sy0(1)   
+        sx(1)*bxg(j+1, k0+1, l0+1) + sx(2)*bxg(j+2, k0+1, l0+1))*sy0(1)
         a = a + (sx(-1)*bxg(j-1, k0+2, l0+1) + sx(0)*bxg(j, k0+2, l0+1) +             &
-        sx(1)*bxg(j+1, k0+2, l0+1) + sx(2)*bxg(j+2, k0+2, l0+1))*sy0(2)   
+        sx(1)*bxg(j+1, k0+2, l0+1) + sx(2)*bxg(j+2, k0+2, l0+1))*sy0(2)
         bx(nn) = bx(nn) + a*sz0(1)
         a = (sx(-1)*bxg(j-1, k0-1, l0+2) + sx(0)*bxg(j, k0-1, l0+2) + sx(1)*bxg(j+1,  &
-        k0-1, l0+2) + sx(2)*bxg(j+2, k0-1, l0+2))*sy0(-1)   
+        k0-1, l0+2) + sx(2)*bxg(j+2, k0-1, l0+2))*sy0(-1)
         a = a + (sx(-1)*bxg(j-1, k0, l0+2) + sx(0)*bxg(j, k0, l0+2) + sx(1)*bxg(j+1,  &
-        k0, l0+2) + sx(2)*bxg(j+2, k0, l0+2))*sy0(0)   
+        k0, l0+2) + sx(2)*bxg(j+2, k0, l0+2))*sy0(0)
         a = a + (sx(-1)*bxg(j-1, k0+1, l0+2) + sx(0)*bxg(j, k0+1, l0+2) +             &
-        sx(1)*bxg(j+1, k0+1, l0+2) + sx(2)*bxg(j+2, k0+1, l0+2))*sy0(1)   
+        sx(1)*bxg(j+1, k0+1, l0+2) + sx(2)*bxg(j+2, k0+1, l0+2))*sy0(1)
         a = a + (sx(-1)*bxg(j-1, k0+2, l0+2) + sx(0)*bxg(j, k0+2, l0+2) +             &
-        sx(1)*bxg(j+1, k0+2, l0+2) + sx(2)*bxg(j+2, k0+2, l0+2))*sy0(2)   
+        sx(1)*bxg(j+1, k0+2, l0+2) + sx(2)*bxg(j+2, k0+2, l0+2))*sy0(2)
         bx(nn) = bx(nn) + a*sz0(2)
-        
+
         ! Compute By on particle
         a = (sx0(-1)*byg(j0-1, k-1, l0-1) + sx0(0)*byg(j0, k-1, l0-1) +               &
-        sx0(1)*byg(j0+1, k-1, l0-1) + sx0(2)*byg(j0+2, k-1, l0-1))*sy(-1)   
+        sx0(1)*byg(j0+1, k-1, l0-1) + sx0(2)*byg(j0+2, k-1, l0-1))*sy(-1)
         a = a + (sx0(-1)*byg(j0-1, k, l0-1) + sx0(0)*byg(j0, k, l0-1) +               &
-        sx0(1)*byg(j0+1, k, l0-1) + sx0(2)*byg(j0+2, k, l0-1))*sy(0)   
+        sx0(1)*byg(j0+1, k, l0-1) + sx0(2)*byg(j0+2, k, l0-1))*sy(0)
         a = a + (sx0(-1)*byg(j0-1, k+1, l0-1) + sx0(0)*byg(j0, k+1, l0-1) +           &
-        sx0(1)*byg(j0+1, k+1, l0-1) + sx0(2)*byg(j0+2, k+1, l0-1))*sy(1)   
+        sx0(1)*byg(j0+1, k+1, l0-1) + sx0(2)*byg(j0+2, k+1, l0-1))*sy(1)
         a = a + (sx0(-1)*byg(j0-1, k+2, l0-1) + sx0(0)*byg(j0, k+2, l0-1) +           &
-        sx0(1)*byg(j0+1, k+2, l0-1) + sx0(2)*byg(j0+2, k+2, l0-1))*sy(2)   
+        sx0(1)*byg(j0+1, k+2, l0-1) + sx0(2)*byg(j0+2, k+2, l0-1))*sy(2)
         by(nn) = by(nn) + a*sz0(-1)
         a = (sx0(-1)*byg(j0-1, k-1, l0) + sx0(0)*byg(j0, k-1, l0) + sx0(1)*byg(j0+1,  &
-        k-1, l0) + sx0(2)*byg(j0+2, k-1, l0))*sy(-1)   
+        k-1, l0) + sx0(2)*byg(j0+2, k-1, l0))*sy(-1)
         a = a + (sx0(-1)*byg(j0-1, k, l0) + sx0(0)*byg(j0, k, l0) + sx0(1)*byg(j0+1,  &
-        k, l0) + sx0(2)*byg(j0+2, k, l0))*sy(0)   
+        k, l0) + sx0(2)*byg(j0+2, k, l0))*sy(0)
         a = a + (sx0(-1)*byg(j0-1, k+1, l0) + sx0(0)*byg(j0, k+1, l0) +               &
-        sx0(1)*byg(j0+1, k+1, l0) + sx0(2)*byg(j0+2, k+1, l0))*sy(1)   
+        sx0(1)*byg(j0+1, k+1, l0) + sx0(2)*byg(j0+2, k+1, l0))*sy(1)
         a = a + (sx0(-1)*byg(j0-1, k+2, l0) + sx0(0)*byg(j0, k+2, l0) +               &
-        sx0(1)*byg(j0+1, k+2, l0) + sx0(2)*byg(j0+2, k+2, l0))*sy(2)   
+        sx0(1)*byg(j0+1, k+2, l0) + sx0(2)*byg(j0+2, k+2, l0))*sy(2)
         by(nn) = by(nn) + a*sz0(0)
         a = (sx0(-1)*byg(j0-1, k-1, l0+1) + sx0(0)*byg(j0, k-1, l0+1) +               &
-        sx0(1)*byg(j0+1, k-1, l0+1) + sx0(2)*byg(j0+2, k-1, l0+1))*sy(-1)   
+        sx0(1)*byg(j0+1, k-1, l0+1) + sx0(2)*byg(j0+2, k-1, l0+1))*sy(-1)
         a = a + (sx0(-1)*byg(j0-1, k, l0+1) + sx0(0)*byg(j0, k, l0+1) +               &
-        sx0(1)*byg(j0+1, k, l0+1) + sx0(2)*byg(j0+2, k, l0+1))*sy(0)   
+        sx0(1)*byg(j0+1, k, l0+1) + sx0(2)*byg(j0+2, k, l0+1))*sy(0)
         a = a + (sx0(-1)*byg(j0-1, k+1, l0+1) + sx0(0)*byg(j0, k+1, l0+1) +           &
-        sx0(1)*byg(j0+1, k+1, l0+1) + sx0(2)*byg(j0+2, k+1, l0+1))*sy(1)   
+        sx0(1)*byg(j0+1, k+1, l0+1) + sx0(2)*byg(j0+2, k+1, l0+1))*sy(1)
         a = a + (sx0(-1)*byg(j0-1, k+2, l0+1) + sx0(0)*byg(j0, k+2, l0+1) +           &
-        sx0(1)*byg(j0+1, k+2, l0+1) + sx0(2)*byg(j0+2, k+2, l0+1))*sy(2)   
+        sx0(1)*byg(j0+1, k+2, l0+1) + sx0(2)*byg(j0+2, k+2, l0+1))*sy(2)
         by(nn) = by(nn) + a*sz0(1)
         a = (sx0(-1)*byg(j0-1, k-1, l0+2) + sx0(0)*byg(j0, k-1, l0+2) +               &
-        sx0(1)*byg(j0+1, k-1, l0+2) + sx0(2)*byg(j0+2, k-1, l0+2))*sy(-1)   
+        sx0(1)*byg(j0+1, k-1, l0+2) + sx0(2)*byg(j0+2, k-1, l0+2))*sy(-1)
         a = a + (sx0(-1)*byg(j0-1, k, l0+2) + sx0(0)*byg(j0, k, l0+2) +               &
-        sx0(1)*byg(j0+1, k, l0+2) + sx0(2)*byg(j0+2, k, l0+2))*sy(0)   
+        sx0(1)*byg(j0+1, k, l0+2) + sx0(2)*byg(j0+2, k, l0+2))*sy(0)
         a = a + (sx0(-1)*byg(j0-1, k+1, l0+2) + sx0(0)*byg(j0, k+1, l0+2) +           &
-        sx0(1)*byg(j0+1, k+1, l0+2) + sx0(2)*byg(j0+2, k+1, l0+2))*sy(1)   
+        sx0(1)*byg(j0+1, k+1, l0+2) + sx0(2)*byg(j0+2, k+1, l0+2))*sy(1)
         a = a + (sx0(-1)*byg(j0-1, k+2, l0+2) + sx0(0)*byg(j0, k+2, l0+2) +           &
-        sx0(1)*byg(j0+1, k+2, l0+2) + sx0(2)*byg(j0+2, k+2, l0+2))*sy(2)   
+        sx0(1)*byg(j0+1, k+2, l0+2) + sx0(2)*byg(j0+2, k+2, l0+2))*sy(2)
         by(nn) = by(nn) + a*sz0(2)
-        
+
         ! Compute Bz on particle
         a = (sx0(-1)*bzg(j0-1, k0-1, l-1) + sx0(0)*bzg(j0, k0-1, l-1) +               &
-        sx0(1)*bzg(j0+1, k0-1, l-1) + sx0(2)*bzg(j0+2, k0-1, l-1))*sy0(-1)   
+        sx0(1)*bzg(j0+1, k0-1, l-1) + sx0(2)*bzg(j0+2, k0-1, l-1))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l-1) + sx0(0)*bzg(j0, k0, l-1) +               &
-        sx0(1)*bzg(j0+1, k0, l-1) + sx0(2)*bzg(j0+2, k0, l-1))*sy0(0)   
+        sx0(1)*bzg(j0+1, k0, l-1) + sx0(2)*bzg(j0+2, k0, l-1))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l-1) + sx0(0)*bzg(j0, k0+1, l-1) +           &
-        sx0(1)*bzg(j0+1, k0+1, l-1) + sx0(2)*bzg(j0+2, k0+1, l-1))*sy0(1)   
+        sx0(1)*bzg(j0+1, k0+1, l-1) + sx0(2)*bzg(j0+2, k0+1, l-1))*sy0(1)
         a = a + (sx0(-1)*bzg(j0-1, k0+2, l-1) + sx0(0)*bzg(j0, k0+2, l-1) +           &
-        sx0(1)*bzg(j0+1, k0+2, l-1) + sx0(2)*bzg(j0+2, k0+2, l-1))*sy0(2)   
+        sx0(1)*bzg(j0+1, k0+2, l-1) + sx0(2)*bzg(j0+2, k0+2, l-1))*sy0(2)
         bz(nn) = bz(nn) + a*sz(-1)
         a = (sx0(-1)*bzg(j0-1, k0-1, l) + sx0(0)*bzg(j0, k0-1, l) + sx0(1)*bzg(j0+1,  &
-        k0-1, l) + sx0(2)*bzg(j0+2, k0-1, l))*sy0(-1)   
+        k0-1, l) + sx0(2)*bzg(j0+2, k0-1, l))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l) + sx0(0)*bzg(j0, k0, l) + sx0(1)*bzg(j0+1,  &
-        k0, l) + sx0(2)*bzg(j0+2, k0, l))*sy0(0)   
+        k0, l) + sx0(2)*bzg(j0+2, k0, l))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l) + sx0(0)*bzg(j0, k0+1, l) +               &
-        sx0(1)*bzg(j0+1, k0+1, l) + sx0(2)*bzg(j0+2, k0+1, l))*sy0(1)   
+        sx0(1)*bzg(j0+1, k0+1, l) + sx0(2)*bzg(j0+2, k0+1, l))*sy0(1)
         a = a + (sx0(-1)*bzg(j0-1, k0+2, l) + sx0(0)*bzg(j0, k0+2, l) +               &
-        sx0(1)*bzg(j0+1, k0+2, l) + sx0(2)*bzg(j0+2, k0+2, l))*sy0(2)   
+        sx0(1)*bzg(j0+1, k0+2, l) + sx0(2)*bzg(j0+2, k0+2, l))*sy0(2)
         bz(nn) = bz(nn) + a*sz(0)
         a = (sx0(-1)*bzg(j0-1, k0-1, l+1) + sx0(0)*bzg(j0, k0-1, l+1) +               &
-        sx0(1)*bzg(j0+1, k0-1, l+1) + sx0(2)*bzg(j0+2, k0-1, l+1))*sy0(-1)   
+        sx0(1)*bzg(j0+1, k0-1, l+1) + sx0(2)*bzg(j0+2, k0-1, l+1))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l+1) + sx0(0)*bzg(j0, k0, l+1) +               &
-        sx0(1)*bzg(j0+1, k0, l+1) + sx0(2)*bzg(j0+2, k0, l+1))*sy0(0)   
+        sx0(1)*bzg(j0+1, k0, l+1) + sx0(2)*bzg(j0+2, k0, l+1))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l+1) + sx0(0)*bzg(j0, k0+1, l+1) +           &
-        sx0(1)*bzg(j0+1, k0+1, l+1) + sx0(2)*bzg(j0+2, k0+1, l+1))*sy0(1)   
+        sx0(1)*bzg(j0+1, k0+1, l+1) + sx0(2)*bzg(j0+2, k0+1, l+1))*sy0(1)
         a = a + (sx0(-1)*bzg(j0-1, k0+2, l+1) + sx0(0)*bzg(j0, k0+2, l+1) +           &
-        sx0(1)*bzg(j0+1, k0+2, l+1) + sx0(2)*bzg(j0+2, k0+2, l+1))*sy0(2)   
+        sx0(1)*bzg(j0+1, k0+2, l+1) + sx0(2)*bzg(j0+2, k0+2, l+1))*sy0(2)
         bz(nn) = bz(nn) + a*sz(1)
         a = (sx0(-1)*bzg(j0-1, k0-1, l+2) + sx0(0)*bzg(j0, k0-1, l+2) +               &
-        sx0(1)*bzg(j0+1, k0-1, l+2) + sx0(2)*bzg(j0+2, k0-1, l+2))*sy0(-1)   
+        sx0(1)*bzg(j0+1, k0-1, l+2) + sx0(2)*bzg(j0+2, k0-1, l+2))*sy0(-1)
         a = a + (sx0(-1)*bzg(j0-1, k0, l+2) + sx0(0)*bzg(j0, k0, l+2) +               &
-        sx0(1)*bzg(j0+1, k0, l+2) + sx0(2)*bzg(j0+2, k0, l+2))*sy0(0)   
+        sx0(1)*bzg(j0+1, k0, l+2) + sx0(2)*bzg(j0+2, k0, l+2))*sy0(0)
         a = a + (sx0(-1)*bzg(j0-1, k0+1, l+2) + sx0(0)*bzg(j0, k0+1, l+2) +           &
-        sx0(1)*bzg(j0+1, k0+1, l+2) + sx0(2)*bzg(j0+2, k0+1, l+2))*sy0(1)   
+        sx0(1)*bzg(j0+1, k0+1, l+2) + sx0(2)*bzg(j0+2, k0+1, l+2))*sy0(1)
         a = a + (sx0(-1)*bzg(j0-1, k0+2, l+2) + sx0(0)*bzg(j0, k0+2, l+2) +           &
-        sx0(1)*bzg(j0+1, k0+2, l+2) + sx0(2)*bzg(j0+2, k0+2, l+2))*sy0(2)   
+        sx0(1)*bzg(j0+1, k0+2, l+2) + sx0(2)*bzg(j0+2, k0+2, l+2))*sy0(2)
         bz(nn) = bz(nn) + a*sz(2)
       ENDDO
 #if defined _OPENMP && _OPENMP>=201307
@@ -6204,8 +6204,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,   &
-by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
-eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
+  by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
+  eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -6243,21 +6243,21 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   ! ___ Loop on partciles _______________________
   DO ip=1, np, lvect
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6281,11 +6281,11 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Compute index of particle
       j(n)=floor(x)
       j0(n)=floor(x)
@@ -6293,11 +6293,11 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       k0(n)=floor(y)
       l(n)=floor(z)
       l0(n)=floor(z)
-      
+
       xint=x-j(n)
       yint=y-k(n)
       zint=z-l(n)
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -6306,7 +6306,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx(n, 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -6314,7 +6314,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy(n, 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -6322,21 +6322,21 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz(n, 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0(n)
       yint=y-0.5_num-k0(n)
       zint=z-0.5_num-l0(n)
-      
+
       xintsq = xint*xint
       sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
       sx0(n, 0) = 0.75_num-xintsq
       sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
-      
+
       yintsq = yint*yint
       sy0(n, -1) = 0.5_num*(0.5_num-yint)**2
       sy0(n, 0) = 0.75_num-yintsq
       sy0(n, 1) = 0.5_num*(0.5_num+yint)**2
-      
+
       zintsq = zint*zint
       sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
       sz0(n, 0) = 0.75_num-zintsq
@@ -6347,7 +6347,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED ex:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6372,7 +6372,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Ex on particle
       ex(nn) = ex(nn) + sx0(n, -1)*sy(n, -1)*sz(n, -1)*exg(j0(n)-1, k(n)-1, l(n)-1)
       ex(nn) = ex(nn) + sx0(n, 0)*sy(n, -1)*sz(n, -1)*exg(j0(n), k(n)-1, l(n)-1)
@@ -6428,7 +6428,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED ey:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6509,7 +6509,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED ez:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6590,7 +6590,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED bx:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6616,7 +6616,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Bx on particle
       bx(nn) = bx(nn) + sx(n, -1)*sy0(n, -1)*sz0(n, -1)*bxg(j(n)-1, k0(n)-1, l0(n)-1)
       bx(nn) = bx(nn) + sx(n, 0)*sy0(n, -1)*sz0(n, -1)*bxg(j(n), k0(n)-1, l0(n)-1)
@@ -6660,7 +6660,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED by:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6729,7 +6729,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED bz:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6754,7 +6754,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Bz on particle
       bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, -1)*sz(n, -1)*bzg(j0(n)-1, k0(n)-1, l(n)-1)
       bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, -1)*sz(n, -1)*bzg(j0(n), k0(n)-1, l(n)-1)
@@ -6792,16 +6792,16 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       bz(nn) = bz(nn) + sx0(n, -1)*sy0(n, 1)*sz(n, 2)*bzg(j0(n)-1, k0(n)+1, l(n)+2)
       bz(nn) = bz(nn) + sx0(n, 0)*sy0(n, 1)*sz(n, 2)*bzg(j0(n), k0(n)+1, l(n)+2)
       bz(nn) = bz(nn) + sx0(n, 1)*sy0(n, 1)*sz(n, 2)*bzg(j0(n)+1, k0(n)+1, l(n)+2)
-      
+
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
   ENDDO
-  
+
   RETURN
 END SUBROUTINE
 #endif
@@ -6841,8 +6841,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,  &
-by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
-eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )   
+  by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
+  eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -6881,21 +6881,21 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
-  
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
-  
+
   sx=0.0_num
   sy=0.0_num
   sz=0.0_num
   sx0=0.0_num
   sy0=0.0_num
   sz0=0.0_num
-  
+
   ! ___ Loop on partciles _______________________
   DO ip=1, np, lvect
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -6919,11 +6919,11 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       x = (xp(nn)-xmin)*dxi
       y = (yp(nn)-ymin)*dyi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! Compute index of particle
       j(n)=floor(x)
       j0(n)=floor(x)
@@ -6931,11 +6931,11 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       k0(n)=floor(y)
       l(n)=floor(z)
       l0(n)=floor(z)
-      
+
       xint=x-j(n)
       yint=y-k(n)
       zint=z-l(n)
-      
+
       ! Compute shape factors
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -6944,7 +6944,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       sx(n, 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx(n, 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx(n, 2) = onesixth*xintsq*xint
-      
+
       oyint = 1.0_num-yint
       yintsq = yint*yint
       oyintsq = oyint*oyint
@@ -6952,7 +6952,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       sy(n, 0) = twothird-yintsq*(1.0_num-yint*0.5_num)
       sy(n, 1) = twothird-oyintsq*(1.0_num-oyint*0.5_num)
       sy(n, 2) = onesixth*yintsq*yint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -6960,21 +6960,21 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
       sz(n, 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz(n, 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz(n, 2) = onesixth*zintsq*zint
-      
+
       xint=x-0.5_num-j0(n)
       yint=y-0.5_num-k0(n)
       zint=z-0.5_num-l0(n)
-      
+
       xintsq = xint*xint
       sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
       sx0(n, 0) = 0.75_num-xintsq
       sx0(n, 1) = 0.5_num*(0.5_num+xint)**2
-      
+
       yintsq = yint*yint
       sy0(n, -1) = 0.5_num*(0.5_num-yint)**2
       sy0(n, 0) = 0.75_num-yintsq
       sy0(n, 1) = 0.5_num*(0.5_num+yint)**2
-      
+
       zintsq = zint*zint
       sz0(n, -1) = 0.5_num*(0.5_num-zint)**2
       sz0(n, 0) = 0.75_num-zintsq
@@ -6985,7 +6985,7 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED ex:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -7010,52 +7010,52 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Ex on particle
       a = (sx0(n, -1)*exg(j0(n)-1, k(n)-1, l(n)-1) + sx0(n, 0)*exg(j0(n), k(n)-1,     &
-      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)-1))*sy(n, -1)  
+      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)-1))*sy(n, -1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n), l(n)-1) + sx0(n, 0)*exg(j0(n), k(n),     &
-      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)-1))*sy(n, 0)  
+      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)-1))*sy(n, 0)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+1, l(n)-1) + sx0(n, 0)*exg(j0(n), k(n)+1, &
-      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)-1))*sy(n, 1)  
+      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)-1))*sy(n, 1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+2, l(n)-1) + sx0(n, 0)*exg(j0(n), k(n)+2, &
-      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)-1))*sy(n, 2)  
+      l(n)-1) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)-1))*sy(n, 2)
       ex(nn) = ex(nn) + a*sz(n, -1)
       a = (sx0(n, -1)*exg(j0(n)-1, k(n)-1, l(n)) + sx0(n, 0)*exg(j0(n), k(n)-1, l(n)) &
-      + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)))*sy(n, -1)  
+      + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)))*sy(n, -1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n), l(n)) + sx0(n, 0)*exg(j0(n), k(n), l(n)) &
-      + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)))*sy(n, 0)  
+      + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)))*sy(n, 0)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+1, l(n)) + sx0(n, 0)*exg(j0(n), k(n)+1,   &
-      l(n)) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)))*sy(n, 1)  
+      l(n)) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)))*sy(n, 1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+2, l(n)) + sx0(n, 0)*exg(j0(n), k(n)+2,   &
-      l(n)) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)))*sy(n, 2)  
+      l(n)) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)))*sy(n, 2)
       ex(nn) = ex(nn) + a*sz(n, 0)
       a = (sx0(n, -1)*exg(j0(n)-1, k(n)-1, l(n)+1) + sx0(n, 0)*exg(j0(n), k(n)-1,     &
-      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)+1))*sy(n, -1)  
+      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)+1))*sy(n, -1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n), l(n)+1) + sx0(n, 0)*exg(j0(n), k(n),     &
-      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)+1))*sy(n, 0)  
+      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)+1))*sy(n, 0)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+1, l(n)+1) + sx0(n, 0)*exg(j0(n), k(n)+1, &
-      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)+1))*sy(n, 1)  
+      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)+1))*sy(n, 1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+2, l(n)+1) + sx0(n, 0)*exg(j0(n), k(n)+2, &
-      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)+1))*sy(n, 2)  
+      l(n)+1) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)+1))*sy(n, 2)
       ex(nn) = ex(nn) + a*sz(n, 1)
       a = (sx0(n, -1)*exg(j0(n)-1, k(n)-1, l(n)+2) + sx0(n, 0)*exg(j0(n), k(n)-1,     &
-      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)+2))*sy(n, -1)  
+      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n)-1, l(n)+2))*sy(n, -1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n), l(n)+2) + sx0(n, 0)*exg(j0(n), k(n),     &
-      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)+2))*sy(n, 0)  
+      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n), l(n)+2))*sy(n, 0)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+1, l(n)+2) + sx0(n, 0)*exg(j0(n), k(n)+1, &
-      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)+2))*sy(n, 1)  
+      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n)+1, l(n)+2))*sy(n, 1)
       a = a + (sx0(n, -1)*exg(j0(n)-1, k(n)+2, l(n)+2) + sx0(n, 0)*exg(j0(n), k(n)+2, &
-      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)+2))*sy(n, 2)  
+      l(n)+2) + sx0(n, 1)*exg(j0(n)+1, k(n)+2, l(n)+2))*sy(n, 2)
       ex(nn) = ex(nn) + a*sz(n, 2)
-      
+
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED ey:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -7081,56 +7081,56 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Ey on particle
       a = (sx(n, -1)*eyg(j(n)-1, k0(n)-1, l(n)-1) + sx(n, 0)*eyg(j(n), k0(n)-1,       &
       l(n)-1) + sx(n, 1)*eyg(j(n)+1, k0(n)-1, l(n)-1) + sx(n, 2)*eyg(j(n)+2, k0(n)-1, &
-      l(n)-1))*sy0(n, -1)   
+      l(n)-1))*sy0(n, -1)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n), l(n)-1) + sx(n, 0)*eyg(j(n), k0(n),       &
       l(n)-1) + sx(n, 1)*eyg(j(n)+1, k0(n), l(n)-1) + sx(n, 2)*eyg(j(n)+2, k0(n),     &
-      l(n)-1))*sy0(n, 0)   
+      l(n)-1))*sy0(n, 0)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n)+1, l(n)-1) + sx(n, 0)*eyg(j(n), k0(n)+1,   &
       l(n)-1) + sx(n, 1)*eyg(j(n)+1, k0(n)+1, l(n)-1) + sx(n, 2)*eyg(j(n)+2, k0(n)+1, &
-      l(n)-1))*sy0(n, 1)   
+      l(n)-1))*sy0(n, 1)
       ey(nn) = ey(nn) + a*sz(n, -1)
       a = (sx(n, -1)*eyg(j(n)-1, k0(n)-1, l(n)) + sx(n, 0)*eyg(j(n), k0(n)-1, l(n)) + &
       sx(n, 1)*eyg(j(n)+1, k0(n)-1, l(n)) + sx(n, 2)*eyg(j(n)+2, k0(n)-1,             &
-      l(n)))*sy0(n, -1)   
+      l(n)))*sy0(n, -1)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n), l(n)) + sx(n, 0)*eyg(j(n), k0(n), l(n)) + &
       sx(n, 1)*eyg(j(n)+1, k0(n), l(n)) + sx(n, 2)*eyg(j(n)+2, k0(n), l(n)))*sy0(n,   &
-      0)   
+      0)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n)+1, l(n)) + sx(n, 0)*eyg(j(n), k0(n)+1,     &
       l(n)) + sx(n, 1)*eyg(j(n)+1, k0(n)+1, l(n)) + sx(n, 2)*eyg(j(n)+2, k0(n)+1,     &
-      l(n)))*sy0(n, 1)   
+      l(n)))*sy0(n, 1)
       ey(nn) = ey(nn) + a*sz(n, 0)
       a = (sx(n, -1)*eyg(j(n)-1, k0(n)-1, l(n)+1) + sx(n, 0)*eyg(j(n), k0(n)-1,       &
       l(n)+1) + sx(n, 1)*eyg(j(n)+1, k0(n)-1, l(n)+1) + sx(n, 2)*eyg(j(n)+2, k0(n)-1, &
-      l(n)+1))*sy0(n, -1)   
+      l(n)+1))*sy0(n, -1)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n), l(n)+1) + sx(n, 0)*eyg(j(n), k0(n),       &
       l(n)+1) + sx(n, 1)*eyg(j(n)+1, k0(n), l(n)+1) + sx(n, 2)*eyg(j(n)+2, k0(n),     &
-      l(n)+1))*sy0(n, 0)   
+      l(n)+1))*sy0(n, 0)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n)+1, l(n)+1) + sx(n, 0)*eyg(j(n), k0(n)+1,   &
       l(n)+1) + sx(n, 1)*eyg(j(n)+1, k0(n)+1, l(n)+1) + sx(n, 2)*eyg(j(n)+2, k0(n)+1, &
-      l(n)+1))*sy0(n, 1)   
+      l(n)+1))*sy0(n, 1)
       ey(nn) = ey(nn) + a*sz(n, 1)
       a = (sx(n, -1)*eyg(j(n)-1, k0(n)-1, l(n)+2) + sx(n, 0)*eyg(j(n), k0(n)-1,       &
       l(n)+2) + sx(n, 1)*eyg(j(n)+1, k0(n)-1, l(n)+2) + sx(n, 2)*eyg(j(n)+2, k0(n)-1, &
-      l(n)+2))*sy0(n, -1)   
+      l(n)+2))*sy0(n, -1)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n), l(n)+2) + sx(n, 0)*eyg(j(n), k0(n),       &
       l(n)+2) + sx(n, 1)*eyg(j(n)+1, k0(n), l(n)+2) + sx(n, 2)*eyg(j(n)+2, k0(n),     &
-      l(n)+2))*sy0(n, 0)   
+      l(n)+2))*sy0(n, 0)
       a = a + (sx(n, -1)*eyg(j(n)-1, k0(n)+1, l(n)+2) + sx(n, 0)*eyg(j(n), k0(n)+1,   &
       l(n)+2) + sx(n, 1)*eyg(j(n)+1, k0(n)+1, l(n)+2) + sx(n, 2)*eyg(j(n)+2, k0(n)+1, &
-      l(n)+2))*sy0(n, 1)   
+      l(n)+2))*sy0(n, 1)
       ey(nn) = ey(nn) + a*sz(n, 2)
-      
+
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED ez:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -7156,55 +7156,55 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Ez on particle
       a = (sx(n, -1)*ezg(j(n)-1, k(n)-1, l0(n)-1) + sx(n, 0)*ezg(j(n), k(n)-1,        &
       l0(n)-1) + sx(n, 1)*ezg(j(n)+1, k(n)-1, l0(n)-1) + sx(n, 2)*ezg(j(n)+2, k(n)-1, &
-      l0(n)-1))*sy(n, -1)   
+      l0(n)-1))*sy(n, -1)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n), l0(n)-1) + sx(n, 0)*ezg(j(n), k(n),        &
       l0(n)-1) + sx(n, 1)*ezg(j(n)+1, k(n), l0(n)-1) + sx(n, 2)*ezg(j(n)+2, k(n),     &
-      l0(n)-1))*sy(n, 0)   
+      l0(n)-1))*sy(n, 0)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n)+1, l0(n)-1) + sx(n, 0)*ezg(j(n), k(n)+1,    &
       l0(n)-1) + sx(n, 1)*ezg(j(n)+1, k(n)+1, l0(n)-1) + sx(n, 2)*ezg(j(n)+2, k(n)+1, &
-      l0(n)-1))*sy(n, 1)   
+      l0(n)-1))*sy(n, 1)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n)+2, l0(n)-1) + sx(n, 0)*ezg(j(n), k(n)+2,    &
       l0(n)-1) + sx(n, 1)*ezg(j(n)+1, k(n)+2, l0(n)-1) + sx(n, 2)*ezg(j(n)+2, k(n)+2, &
-      l0(n)-1))*sy(n, 2)   
+      l0(n)-1))*sy(n, 2)
       ez(nn) = ez(nn) + a*sz0(n, -1)
       a = (sx(n, -1)*ezg(j(n)-1, k(n)-1, l0(n)) + sx(n, 0)*ezg(j(n), k(n)-1, l0(n)) + &
       sx(n, 1)*ezg(j(n)+1, k(n)-1, l0(n)) + sx(n, 2)*ezg(j(n)+2, k(n)-1,              &
-      l0(n)))*sy(n, -1)   
+      l0(n)))*sy(n, -1)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n), l0(n)) + sx(n, 0)*ezg(j(n), k(n), l0(n)) + &
-      sx(n, 1)*ezg(j(n)+1, k(n), l0(n)) + sx(n, 2)*ezg(j(n)+2, k(n), l0(n)))*sy(n, 0)   
+      sx(n, 1)*ezg(j(n)+1, k(n), l0(n)) + sx(n, 2)*ezg(j(n)+2, k(n), l0(n)))*sy(n, 0)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n)+1, l0(n)) + sx(n, 0)*ezg(j(n), k(n)+1,      &
       l0(n)) + sx(n, 1)*ezg(j(n)+1, k(n)+1, l0(n)) + sx(n, 2)*ezg(j(n)+2, k(n)+1,     &
-      l0(n)))*sy(n, 1)   
+      l0(n)))*sy(n, 1)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n)+2, l0(n)) + sx(n, 0)*ezg(j(n), k(n)+2,      &
       l0(n)) + sx(n, 1)*ezg(j(n)+1, k(n)+2, l0(n)) + sx(n, 2)*ezg(j(n)+2, k(n)+2,     &
-      l0(n)))*sy(n, 2)   
+      l0(n)))*sy(n, 2)
       ez(nn) = ez(nn) + a*sz0(n, 0)
       a = (sx(n, -1)*ezg(j(n)-1, k(n)-1, l0(n)+1) + sx(n, 0)*ezg(j(n), k(n)-1,        &
       l0(n)+1) + sx(n, 1)*ezg(j(n)+1, k(n)-1, l0(n)+1) + sx(n, 2)*ezg(j(n)+2, k(n)-1, &
-      l0(n)+1))*sy(n, -1)   
+      l0(n)+1))*sy(n, -1)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n), l0(n)+1) + sx(n, 0)*ezg(j(n), k(n),        &
       l0(n)+1) + sx(n, 1)*ezg(j(n)+1, k(n), l0(n)+1) + sx(n, 2)*ezg(j(n)+2, k(n),     &
-      l0(n)+1))*sy(n, 0)   
+      l0(n)+1))*sy(n, 0)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n)+1, l0(n)+1) + sx(n, 0)*ezg(j(n), k(n)+1,    &
       l0(n)+1) + sx(n, 1)*ezg(j(n)+1, k(n)+1, l0(n)+1) + sx(n, 2)*ezg(j(n)+2, k(n)+1, &
-      l0(n)+1))*sy(n, 1)   
+      l0(n)+1))*sy(n, 1)
       a = a + (sx(n, -1)*ezg(j(n)-1, k(n)+2, l0(n)+1) + sx(n, 0)*ezg(j(n), k(n)+2,    &
       l0(n)+1) + sx(n, 1)*ezg(j(n)+1, k(n)+2, l0(n)+1) + sx(n, 2)*ezg(j(n)+2, k(n)+2, &
-      l0(n)+1))*sy(n, 2)   
+      l0(n)+1))*sy(n, 2)
       ez(nn) = ez(nn) + a*sz0(n, 1)
-      
-      
+
+
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED bx:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -7230,46 +7230,46 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Bx on particle
       a = (sx(n, -1)*bxg(j(n)-1, k0(n)-1, l0(n)-1) + sx(n, 0)*bxg(j(n), k0(n)-1,      &
       l0(n)-1) + sx(n, 1)*bxg(j(n)+1, k0(n)-1, l0(n)-1) + sx(n, 2)*bxg(j(n)+2,        &
-      k0(n)-1, l0(n)-1))*sy0(n, -1)   
+      k0(n)-1, l0(n)-1))*sy0(n, -1)
       a = a + (sx(n, -1)*bxg(j(n)-1, k0(n), l0(n)-1) + sx(n, 0)*bxg(j(n), k0(n),      &
       l0(n)-1) + sx(n, 1)*bxg(j(n)+1, k0(n), l0(n)-1) + sx(n, 2)*bxg(j(n)+2, k0(n),   &
-      l0(n)-1))*sy0(n, 0)   
+      l0(n)-1))*sy0(n, 0)
       a = a + (sx(n, -1)*bxg(j(n)-1, k0(n)+1, l0(n)-1) + sx(n, 0)*bxg(j(n), k0(n)+1,  &
       l0(n)-1) + sx(n, 1)*bxg(j(n)+1, k0(n)+1, l0(n)-1) + sx(n, 2)*bxg(j(n)+2,        &
-      k0(n)+1, l0(n)-1))*sy0(n, 1)   
+      k0(n)+1, l0(n)-1))*sy0(n, 1)
       bx(nn) = bx(nn) + a*sz0(n, -1)
       a = (sx(n, -1)*bxg(j(n)-1, k0(n)-1, l0(n)) + sx(n, 0)*bxg(j(n), k0(n)-1, l0(n)) &
       + sx(n, 1)*bxg(j(n)+1, k0(n)-1, l0(n)) + sx(n, 2)*bxg(j(n)+2, k0(n)-1,          &
-      l0(n)))*sy0(n, -1)   
+      l0(n)))*sy0(n, -1)
       a = a + (sx(n, -1)*bxg(j(n)-1, k0(n), l0(n)) + sx(n, 0)*bxg(j(n), k0(n), l0(n)) &
       + sx(n, 1)*bxg(j(n)+1, k0(n), l0(n)) + sx(n, 2)*bxg(j(n)+2, k0(n),              &
-      l0(n)))*sy0(n, 0)   
+      l0(n)))*sy0(n, 0)
       a = a + (sx(n, -1)*bxg(j(n)-1, k0(n)+1, l0(n)) + sx(n, 0)*bxg(j(n), k0(n)+1,    &
       l0(n)) + sx(n, 1)*bxg(j(n)+1, k0(n)+1, l0(n)) + sx(n, 2)*bxg(j(n)+2, k0(n)+1,   &
-      l0(n)))*sy0(n, 1)   
+      l0(n)))*sy0(n, 1)
       bx(nn) = bx(nn) + a*sz0(n, 0)
       a = (sx(n, -1)*bxg(j(n)-1, k0(n)-1, l0(n)+1) + sx(n, 0)*bxg(j(n), k0(n)-1,      &
       l0(n)+1) + sx(n, 1)*bxg(j(n)+1, k0(n)-1, l0(n)+1) + sx(n, 2)*bxg(j(n)+2,        &
-      k0(n)-1, l0(n)+1))*sy0(n, -1)   
+      k0(n)-1, l0(n)+1))*sy0(n, -1)
       a = a + (sx(n, -1)*bxg(j(n)-1, k0(n), l0(n)+1) + sx(n, 0)*bxg(j(n), k0(n),      &
       l0(n)+1) + sx(n, 1)*bxg(j(n)+1, k0(n), l0(n)+1) + sx(n, 2)*bxg(j(n)+2, k0(n),   &
-      l0(n)+1))*sy0(n, 0)   
+      l0(n)+1))*sy0(n, 0)
       a = a + (sx(n, -1)*bxg(j(n)-1, k0(n)+1, l0(n)+1) + sx(n, 0)*bxg(j(n), k0(n)+1,  &
       l0(n)+1) + sx(n, 1)*bxg(j(n)+1, k0(n)+1, l0(n)+1) + sx(n, 2)*bxg(j(n)+2,        &
-      k0(n)+1, l0(n)+1))*sy0(n, 1)   
+      k0(n)+1, l0(n)+1))*sy0(n, 1)
       bx(nn) = bx(nn) + a*sz0(n, 1)
-      
+
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED by:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -7295,44 +7295,44 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute By on particle
       a = (sx0(n, -1)*byg(j0(n)-1, k(n)-1, l0(n)-1) + sx0(n, 0)*byg(j0(n), k(n)-1,    &
-      l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n)-1, l0(n)-1))*sy(n, -1)  
+      l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n)-1, l0(n)-1))*sy(n, -1)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n), l0(n)-1) + sx0(n, 0)*byg(j0(n), k(n),    &
-      l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n), l0(n)-1))*sy(n, 0)  
+      l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n), l0(n)-1))*sy(n, 0)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n)+1, l0(n)-1) + sx0(n, 0)*byg(j0(n),        &
-      k(n)+1, l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n)+1, l0(n)-1))*sy(n, 1)  
+      k(n)+1, l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n)+1, l0(n)-1))*sy(n, 1)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n)+2, l0(n)-1) + sx0(n, 0)*byg(j0(n),        &
-      k(n)+2, l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n)+2, l0(n)-1))*sy(n, 2)  
+      k(n)+2, l0(n)-1) + sx0(n, 1)*byg(j0(n)+1, k(n)+2, l0(n)-1))*sy(n, 2)
       by(nn) = by(nn) + a*sz0(n, -1)
       a = (sx0(n, -1)*byg(j0(n)-1, k(n)-1, l0(n)) + sx0(n, 0)*byg(j0(n), k(n)-1,      &
-      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n)-1, l0(n)))*sy(n, -1)  
+      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n)-1, l0(n)))*sy(n, -1)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n), l0(n)) + sx0(n, 0)*byg(j0(n), k(n),      &
-      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n), l0(n)))*sy(n, 0)  
+      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n), l0(n)))*sy(n, 0)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n)+1, l0(n)) + sx0(n, 0)*byg(j0(n), k(n)+1,  &
-      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n)+1, l0(n)))*sy(n, 1)  
+      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n)+1, l0(n)))*sy(n, 1)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n)+2, l0(n)) + sx0(n, 0)*byg(j0(n), k(n)+2,  &
-      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n)+2, l0(n)))*sy(n, 2)  
+      l0(n)) + sx0(n, 1)*byg(j0(n)+1, k(n)+2, l0(n)))*sy(n, 2)
       by(nn) = by(nn) + a*sz0(n, 0)
       a = (sx0(n, -1)*byg(j0(n)-1, k(n)-1, l0(n)+1) + sx0(n, 0)*byg(j0(n), k(n)-1,    &
-      l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n)-1, l0(n)+1))*sy(n, -1)  
+      l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n)-1, l0(n)+1))*sy(n, -1)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n), l0(n)+1) + sx0(n, 0)*byg(j0(n), k(n),    &
-      l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n), l0(n)+1))*sy(n, 0)  
+      l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n), l0(n)+1))*sy(n, 0)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n)+1, l0(n)+1) + sx0(n, 0)*byg(j0(n),        &
-      k(n)+1, l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n)+1, l0(n)+1))*sy(n, 1)  
+      k(n)+1, l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n)+1, l0(n)+1))*sy(n, 1)
       a = a + (sx0(n, -1)*byg(j0(n)-1, k(n)+2, l0(n)+1) + sx0(n, 0)*byg(j0(n),        &
-      k(n)+2, l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n)+2, l0(n)+1))*sy(n, 2)  
+      k(n)+2, l0(n)+1) + sx0(n, 1)*byg(j0(n)+1, k(n)+2, l0(n)+1))*sy(n, 2)
       by(nn) = by(nn) + a*sz0(n, 1)
-      
-      
+
+
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED bz:64
     !DIR$ ASSUME_ALIGNED sx:64, sy:64, sz:64
@@ -7357,35 +7357,35 @@ eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
 #endif
     DO n=1, MIN(lvect, np-ip+1)
       nn=ip+n-1
-      
+
       ! Compute Bz on particle
       a = (sx0(n, -1)*bzg(j0(n)-1, k0(n)-1, l(n)-1) + sx0(n, 0)*bzg(j0(n), k0(n)-1,   &
-      l(n)-1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)-1))*sy0(n, -1)  
+      l(n)-1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)-1))*sy0(n, -1)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n), l(n)-1) + sx0(n, 0)*bzg(j0(n), k0(n),   &
-      l(n)-1) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)-1))*sy0(n, 0)  
+      l(n)-1) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)-1))*sy0(n, 0)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n)+1, l(n)-1) + sx0(n, 0)*bzg(j0(n),        &
-      k0(n)+1, l(n)-1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)-1))*sy0(n, 1)  
+      k0(n)+1, l(n)-1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)-1))*sy0(n, 1)
       bz(nn) = bz(nn) + a*sz(n, -1)
       a = (sx0(n, -1)*bzg(j0(n)-1, k0(n)-1, l(n)) + sx0(n, 0)*bzg(j0(n), k0(n)-1,     &
-      l(n)) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)))*sy0(n, -1)  
+      l(n)) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)))*sy0(n, -1)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n), l(n)) + sx0(n, 0)*bzg(j0(n), k0(n),     &
-      l(n)) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)))*sy0(n, 0)  
+      l(n)) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)))*sy0(n, 0)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n)+1, l(n)) + sx0(n, 0)*bzg(j0(n), k0(n)+1, &
-      l(n)) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)))*sy0(n, 1)  
+      l(n)) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)))*sy0(n, 1)
       bz(nn) = bz(nn) + a*sz(n, 0)
       a = (sx0(n, -1)*bzg(j0(n)-1, k0(n)-1, l(n)+1) + sx0(n, 0)*bzg(j0(n), k0(n)-1,   &
-      l(n)+1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)+1))*sy0(n, -1)  
+      l(n)+1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)+1))*sy0(n, -1)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n), l(n)+1) + sx0(n, 0)*bzg(j0(n), k0(n),   &
-      l(n)+1) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)+1))*sy0(n, 0)  
+      l(n)+1) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)+1))*sy0(n, 0)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n)+1, l(n)+1) + sx0(n, 0)*bzg(j0(n),        &
-      k0(n)+1, l(n)+1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)+1))*sy0(n, 1)  
+      k0(n)+1, l(n)+1) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)+1))*sy0(n, 1)
       bz(nn) = bz(nn) + a*sz(n, 1)
       a = (sx0(n, -1)*bzg(j0(n)-1, k0(n)-1, l(n)+2) + sx0(n, 0)*bzg(j0(n), k0(n)-1,   &
-      l(n)+2) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)+2))*sy0(n, -1)  
+      l(n)+2) + sx0(n, 1)*bzg(j0(n)+1, k0(n)-1, l(n)+2))*sy0(n, -1)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n), l(n)+2) + sx0(n, 0)*bzg(j0(n), k0(n),   &
-      l(n)+2) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)+2))*sy0(n, 0)  
+      l(n)+2) + sx0(n, 1)*bzg(j0(n)+1, k0(n), l(n)+2))*sy0(n, 0)
       a = a + (sx0(n, -1)*bzg(j0(n)-1, k0(n)+1, l(n)+2) + sx0(n, 0)*bzg(j0(n),        &
-      k0(n)+1, l(n)+2) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)+2))*sy0(n, 1)  
+      k0(n)+1, l(n)+2) + sx0(n, 1)*bzg(j0(n)+1, k0(n)+1, l(n)+2))*sy0(n, 1)
       bz(nn) = bz(nn) + a*sz(n, 2)
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307

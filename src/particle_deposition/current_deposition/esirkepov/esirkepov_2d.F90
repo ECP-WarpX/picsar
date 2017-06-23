@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -53,19 +53,19 @@
 
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction
 !> (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array
 !> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
 !> @param[in] jy_nguard number of guard cells of the jy array in each direction
 !>  (1d array containing 2 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array 
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array
 !> (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
 !> (1d array containing 2 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array 
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array
 !> (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position arrays
@@ -82,24 +82,24 @@
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,  &
-jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-xmin, zmin, dt, dx, dz, nox, noz, l_particles_weight, l4symtry, l_2drz,               &
-type_rz_depose)      !#do not wrap
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, zmin, dt, dx, dz, nox, noz, l_particles_weight, l4symtry, l_2drz,               &
+  type_rz_depose)      !#do not wrap
   use constants
   implicit none
   integer(idp) :: np, nox, noz, type_rz_depose
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), jy_nguard(2),  &
-  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)  
+  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
-  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 ) 
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
-  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 ) 
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
-  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 ) 
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np) :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   real(num)    :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)  :: l_particles_weight, l4symtry, l_2drz
-  
+
   real(num) :: dxi, dzi, dtsdx, dtsdz, xint, zint
   real(num), dimension(:, :), allocatable :: sdx, sdz
   real(num) :: xold, yold, zold, rold, x, y, z, r, c, s, wq, wqx, wqz
@@ -113,7 +113,7 @@ type_rz_depose)      !#do not wrap
   integer(idp) :: iixp0, ikxp0, iixp, ikxp, ip, dix, diz, i, k, ic, kc
   integer(idp) :: ixmin, ixmax, izmin, izmax, icell, ncells, ndtodx, ndtodz
   integer(idp) :: xl, xu, zl, zu
-  
+
   ndtodx = int(clight*dt/dx)
   ndtodz = int(clight*dt/dz)
   xl = -int(nox/2)-1-ndtodx
@@ -123,15 +123,15 @@ type_rz_depose)      !#do not wrap
   allocate(sdx(xl:xu, zl:zu), sdz(xl:xu, zl:zu))
   allocate(sx(xl:xu), sx0(xl:xu), dsx(xl:xu))
   allocate(sz(zl:zu), sz0(zl:zu), dsz(zl:zu))
-  
+
   sx0=0.;sz0=0.
   sdx=0.;sdz=0.
-  
+
   ! Davoine method : limited to order 1 in r
   if (type_rz_depose==2) then
     nox = 1
   endif
-  
+
   dxi = 1./dx
   dzi = 1./dz
   invvol = 1./(dx*dz)
@@ -141,9 +141,9 @@ type_rz_depose)      !#do not wrap
   dts2dz0 = 0.5*dtsdz0
   invdtdx = 1./(dt*dz)
   invdtdz = 1./(dt*dx)
-  
+
   do ip=1, np
-    
+
     ! --- computes current position in grid units
     x = xp(ip)
     if (l_2drz) then
@@ -160,12 +160,12 @@ type_rz_depose)      !#do not wrap
     end if
     x=x*dxi
     z = zp(ip)*dzi
-    
+
     ! --- computes velocity
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
-    
+
     ! --- computes old position in grid units
     if (l_2drz) then
       xold = xp(ip)-dt*vx
@@ -178,39 +178,39 @@ type_rz_depose)      !#do not wrap
       xold=x-dtsdx0*vx
     end if
     zold=z-dtsdz0*vz
-    
+
     ! --- applies 4-fold symmetry
     if (l4symtry) then
       x=abs(x)
       xold=abs(xold)
       vx = (x-xold)/dtsdx0
     end if
-    
+
     ! --- sets positions relative to grid  start
     x = x-xmin*dxi
     z = z-zmin*dzi
     xold = xold-xmin*dxi
     zold = zold-zmin*dzi
-    
+
     ! computes maximum number of cells traversed by particle in a given dimension
     ncells = 1!+max( int(abs(x-xold)), int(abs(z-zold)))
-    
+
     dtsdx = dtsdx0/ncells
     dtsdz = dtsdz0/ncells
     dts2dx = dts2dx0/ncells
     dts2dz = dts2dz0/ncells
-    
+
     x=xold
     z=zold
-    
+
     do icell = 1, ncells
-      
+
       xold = x
       zold = z
-      
+
       x = x+dtsdx*vx
       z = z+dtsdz*vz
-      
+
       ! --- computes particles "weights"
       if (l_particles_weight) then
         wq=q*w(ip)
@@ -219,7 +219,7 @@ type_rz_depose)      !#do not wrap
       end if
       wqx = wq*invdtdx
       wqz = wq*invdtdz
-      
+
       ! --- finds node of cell containing particles for current positions
       ! --- (different for odd/even spline orders)
       if (nox==2*(nox/2)) then
@@ -232,11 +232,11 @@ type_rz_depose)      !#do not wrap
       else
         ikxp0=floor(z)
       end if
-      
+
       ! --- computes distance between particle and node for current positions
       xint=x-iixp0
       zint=z-ikxp0
-      
+
       ! --- computes coefficients for node centered quantities
       if (type_rz_depose == 2) then! Davoine method, modified particle shapes in r
         sx0(0) = 1. - xint  + 1./(4*iixp0+2)*( -xint + xint**2 )
@@ -263,7 +263,7 @@ type_rz_depose)      !#do not wrap
           sx0( 2) = onesixth*xintsq*xint
         end select
       endif
-      
+
       select case(noz)
       case(0)
         sz0( 0) = 1.
@@ -284,7 +284,7 @@ type_rz_depose)      !#do not wrap
         sz0( 1) = twothird-ozintsq*(1.-ozint/2)
         sz0( 2) = onesixth*zintsq*zint
       end select
-      
+
       ! --- finds node of cell containing particles for old positions
       ! --- (different for odd/even spline orders)
       if (nox==2*(nox/2)) then
@@ -297,19 +297,19 @@ type_rz_depose)      !#do not wrap
       else
         ikxp=floor(zold)
       end if
-      
+
       ! --- computes distance between particle and node for old positions
       xint = xold-iixp
       zint = zold-ikxp
-      
+
       ! --- computes node separation between old and current positions
       dix = iixp-iixp0
       diz = ikxp-ikxp0
-      
-      ! --- zero out coefficients 
+
+      ! --- zero out coefficients
       ! --- (needed because of different dix and diz for each particle)
       sx=0.;sz=0.
-      
+
       ! --- computes coefficients for quantities centered between nodes
       if (type_rz_depose == 2) then! Davoine method, modified particle shapes in r
         sx(0) = 1. - xint  + 1./(4*iixp+2)*( -xint + xint**2 )
@@ -336,7 +336,7 @@ type_rz_depose)      !#do not wrap
           sx( 2+dix) = onesixth*xintsq*xint
         end select
       endif
-      
+
       select case(noz)
       case(0)
         sz( 0+diz) = 1.
@@ -357,35 +357,35 @@ type_rz_depose)      !#do not wrap
         sz( 1+diz) = twothird-ozintsq*(1.-ozint/2)
         sz( 2+diz) = onesixth*zintsq*zint
       end select
-      
+
       ! --- computes coefficients difference
       dsx = sx - sx0
       dsz = sz - sz0
-      
+
       ! --- computes min/max positions of current contributions
       ixmin = min(0_idp, dix)-int(nox/2)
       ixmax = max(0_idp, dix)+int((nox+1)/2)
       izmin = min(0_idp, diz)-int(noz/2)
       izmax = max(0_idp, diz)+int((noz+1)/2)
-      
+
       ! --- add current contributions
       ! --- NB : the current is later divided by the cylindrical cell volume in applybc_j
       do k=izmin, izmax
         do i=ixmin, ixmax
           ic = iixp0+i
           kc = ikxp0+k
-          
+
           ! -- Jx
           if(i<ixmax) then
             sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
             if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
             jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
           end if
-          
+
           ! -- Jy (2D Esirkepov scheme)
           jy(ic, kc) = jy(ic, kc) + wq*vy*invvol/ncells* ( (sz0(k)+0.5*dsz(k))*sx0(i) &
-          + (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) ) 
-          
+          + (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) )
+
           ! -- Jz
           if(k<izmax) then
             sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov
@@ -396,9 +396,9 @@ type_rz_depose)      !#do not wrap
       end do
     end do
   end do
-  
+
   deallocate(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
-  
+
   return
 end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 
@@ -420,17 +420,17 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction
 !> (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array
 !> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
 !> (1d array containing 2 integers)
 !> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array
 !>  (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
 !> (1d array containing 2 integers)
 !> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array
 !>  (1d array containing 2 integers)
@@ -449,22 +449,22 @@ end subroutine pxr_depose_jxjyjz_esirkepov2d_n
 !> @param[in] type_rz_depose (useless here but kept for common interface)
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,           &
-jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
-q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
-type_rz_depose)      !#do not wrap
+  jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
+  q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
+  type_rz_depose)      !#do not wrap
   USE constants
   implicit none
   ! __ Parameter declaration ________________________________________________________
   integer(idp)                          :: np, type_rz_depose
   integer(idp)                          :: lvect
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), jy_nguard(2),  &
-  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)  
+  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
-  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 ) 
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
-  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 ) 
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
-  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 ) 
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np)              :: xp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
@@ -480,7 +480,7 @@ type_rz_depose)      !#do not wrap
   integer(idp)                          :: iixp0, ikxp0, iixp, ikxp, ip, i, k, ic, kc
   integer(isp)                          :: dix, diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
-  
+
   ! __ Parameter initialization ______________________________
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -495,55 +495,55 @@ type_rz_depose)      !#do not wrap
   ALLOCATE(sz(-1:2), sz0(-1:2), dsz(-1:2))
   sx0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdz=0.0_num
-  
+
   DO ip=1, np
-    
+
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     z = (zp(ip)-zmin)*dzi
-    
+
     ! --- computes velocity
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
-    
+
     ! --- computes old position in grid units
     xold=x-dtsdx0*vx
     zold=z-dtsdz0*vz
-    
+
     ! --- computes particles weights
     wq=q*w(ip)
     wqx = wq*invdtdx
     wqz = wq*invdtdz
-    
+
     ! --- finds node of cell containing particles for current positions
     iixp0=floor(x)
     ikxp0=floor(z)
-    
+
     ! --- computes distance between particle and node for current positions
     xint=x-iixp0
     zint=z-ikxp0
-    
+
     ! --- computes coefficients for node centered quantities
     sx0( 0) = 1.0_num-xint
     sx0( 1) = xint
-    
+
     sz0( 0) = 1.0_num-zint
     sz0( 1) = zint
-    
+
     ! --- finds node of cell containing particles for old positions
     iixp=floor(xold)
     ikxp=floor(zold)
-    
+
     ! --- computes distance between particle and node for old positions
     xint = xold-iixp
     zint = zold-ikxp
-    
+
     ! --- computes node separation between old and current positions
     dix = iixp-iixp0
     diz = ikxp-ikxp0
-    
-    ! --- zero out coefficients 
+
+    ! --- zero out coefficients
     ! --- (needed because of different dix and diz for each particle)
     sx(-1)=0.0_num
     sx(0)=0.0_num
@@ -553,41 +553,41 @@ type_rz_depose)      !#do not wrap
     sz(0)=0.0_num
     sz(1)=0.0_num
     sz(2)=0.0_num
-    
+
     ! --- computes coefficients for quantities centered between nodes
     sx( 0+dix) = 1.0_num-xint
     sx( 1+dix) = xint
-    
+
     sz( 0+diz) = 1.0_num-zint
     sz( 1+diz) = zint
-    
+
     ! --- computes coefficients difference
     dsx = sx - sx0
     dsz = sz - sz0
-    
+
     ! --- computes min/max positions of current contributions
     ixmin = min(0, dix)-0
     ixmax = max(0, dix)+1
     izmin = min(0, diz)-0
     izmax = max(0, diz)+1
-    
+
     ! --- add current contributions
     DO k=izmin, izmax
       DO i=ixmin, ixmax
         ic = iixp0+i
         kc = ikxp0+k
-        
+
         ! --- Jx
         IF(i<ixmax) THEN
           sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
           if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
           jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
         END IF
-        
+
         ! -- Jy (2D Esirkepov scheme)
         jy(ic, kc) = jy(ic, kc) + wq*vy*invvol* ( (sz0(k)+0.5*dsz(k))*sx0(i) +        &
-        (0.5*sz0(k)+onethird*dsz(k))*dsx(i) ) 
-        
+        (0.5*sz0(k)+onethird*dsz(k))*dsx(i) )
+
         ! --- Jz
         IF(k<izmax) THEN
           sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov&
@@ -596,11 +596,11 @@ type_rz_depose)      !#do not wrap
         END IF
       END DO
     END DO
-    
+
   END DO
   DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
   RETURN
-  
+
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 
 ! ________________________________________________________________________________________
@@ -617,17 +617,17 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 !
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction
 !> (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array
 !> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
 !> (1d array containing 2 integers)
 !> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the jy array
 !>  (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
 !> (1d array containing 2 integers)
 !> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the jz array
 !>  (1d array containing 2 integers)
@@ -645,22 +645,22 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,           &
-jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
-q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
-type_rz_depose)      !#do not wrap
+  jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
+  q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
+  type_rz_depose)      !#do not wrap
   USE constants
   implicit none
   ! __ Parameter declaration ________________________________________________________
   integer(idp)                          :: np, type_rz_depose
   integer(idp)                          :: lvect
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), jy_nguard(2),  &
-  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)  
+  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
-  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 ) 
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
-  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 ) 
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
-  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 ) 
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np)              :: xp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
@@ -677,7 +677,7 @@ type_rz_depose)      !#do not wrap
   integer(idp)                          :: iixp0, ikxp0, iixp, ikxp, ip, i, k, ic, kc
   integer(isp)                          :: dix, diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
-  
+
   ! Parameter initialization
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -692,59 +692,59 @@ type_rz_depose)      !#do not wrap
   ALLOCATE(sz(-2:2), sz0(-2:2), dsz(-2:2))
   sx0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdz=0.0_num
-  
+
   DO ip=1, np
-    
+
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     z = (zp(ip)-zmin)*dzi
-    
+
     ! --- computes velocity
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
-    
+
     ! --- computes old position in grid units
     xold=x-dtsdx0*vx
     zold=z-dtsdz0*vz
-    
+
     ! --- computes particles weights
     wq=q*w(ip)
     wqx = wq*invdtdx
     wqz = wq*invdtdz
-    
+
     ! --- finds node of cell containing particles for current positions
     iixp0=nint(x)
     ikxp0=nint(z)
-    
+
     ! --- computes distance between particle and node for current positions
     xint=x-iixp0
     zint=z-ikxp0
-    
+
     ! --- computes coefficients for node centered quantities
     xintsq = xint*xint
     sx0(-1) = 0.5_num*(0.5_num-xint)**2
     sx0( 0) = 0.75_num-xintsq
     sx0( 1) = 0.5_num*(0.5_num+xint)**2
-    
+
     zintsq = zint*zint
     sz0(-1) = 0.5_num*(0.5_num-zint)**2
     sz0( 0) = 0.75_num-zintsq
     sz0( 1) = 0.5_num*(0.5_num+zint)**2
-    
+
     ! --- finds node of cell containing particles for old positions
     iixp=nint(xold)
     ikxp=nint(zold)
-    
+
     ! --- computes distance between particle and node for old positions
     xint = xold-iixp
     zint = zold-ikxp
-    
+
     ! --- computes node separation between old and current positions
     dix = iixp-iixp0
     diz = ikxp-ikxp0
-    
-    ! --- zero out coefficients 
+
+    ! --- zero out coefficients
     ! --- (needed because of different dix and diz for each particle)
     sx(-2)=0.0_num
     sx(-1)=0.0_num
@@ -756,45 +756,45 @@ type_rz_depose)      !#do not wrap
     sz(0)=0.0_num
     sz(1)=0.0_num
     sz(2)=0.0_num
-    
+
     ! --- computes coefficients for quantities centered between nodes
     xintsq = xint*xint
     sx(-1+dix) = 0.5_num*(0.5_num-xint)**2
     sx( 0+dix) = 0.75_num-xintsq
     sx( 1+dix) = 0.5_num*(0.5_num+xint)**2
-    
+
     zintsq = zint*zint
     sz(-1+diz) = 0.5_num*(0.5_num-zint)**2
     sz( 0+diz) = 0.75_num-zintsq
     sz( 1+diz) = 0.5_num*(0.5_num+zint)**2
-    
+
     ! --- computes coefficients difference
     dsx = sx - sx0
     dsz = sz - sz0
-    
+
     ! --- computes min/max positions of current contributions
     ixmin = min(0, dix)-1
     ixmax = max(0, dix)+1
     izmin = min(0, diz)-1
     izmax = max(0, diz)+1
-    
+
     ! --- add current contributions
     DO k=izmin, izmax
       DO i=ixmin, ixmax
         ic = iixp0+i
         kc = ikxp0+k
-        
+
         ! --- Jx
         IF(i<ixmax) THEN
           sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
           if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
           jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
         END IF
-        
+
         ! -- Jy (2D Esirkepov scheme)
         jy(ic, kc) = jy(ic, kc) + wq*vy*invvol* ( (sz0(k)+0.5*dsz(k))*sx0(i) +        &
-        (0.5*sz0(k)+onethird*dsz(k))*dsx(i) ) 
-        
+        (0.5*sz0(k)+onethird*dsz(k))*dsx(i) )
+
         ! --- Jz
         IF(k<izmax) THEN
           sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov&
@@ -803,11 +803,11 @@ type_rz_depose)      !#do not wrap
         END IF
       END DO
     END DO
-    
+
   END DO
   DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
   RETURN
-  
+
 End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 
 ! ______________________________________________________________________________
@@ -824,19 +824,19 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 !
 ! Input parameters:
 !> @param[inout] jx x-current component (2D array)
-!> @param[in] jx_nguard number of guard cells of the jx array in each direction 
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction
 !> (1d array containing 2 integers)
-!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array 
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the jx array
 !> (1d array containing 2 integers)
 !> @param[inout] jy y-current component (2D array)
-!> @param[in] jy_nguard number of guard cells of the jy array in each direction 
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
 !> (1d array containing 2 integers)
-!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the 
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the
 !> jy array (1d array containing 2 integers)
 !> @param[inout] jz z-current component (2D array)
-!> @param[in] jz_nguard number of guard cells of the jz array in each direction 
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
 !> (1d array containing 2 integers)
-!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) 
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells)
 !> of the jz array (1d array containing 2 integers)
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position arrays
@@ -853,22 +853,22 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
 !
 ! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,           &
-jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
-q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
-type_rz_depose)      !#do not wrap
+  jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
+  q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
+  type_rz_depose)      !#do not wrap
   USE constants
   implicit none
   ! __ Parameter declaration _______________________________________________
   integer(idp)                          :: np, type_rz_depose
   integer(idp)                          :: lvect
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), jy_nguard(2),  &
-  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)  
+  jy_nvalid(2), jz_nguard(2), jz_nvalid(2)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
-  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 ) 
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
-  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 ) 
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
-  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 ) 
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   real(num), dimension(np)              :: xp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
@@ -885,7 +885,7 @@ type_rz_depose)      !#do not wrap
   integer(idp)                          :: iixp0, ikxp0, iixp, ikxp, ip, i, k, ic, kc
   integer(isp)                          :: dix, diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
-  
+
   ! Parameter initialization
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -900,35 +900,35 @@ type_rz_depose)      !#do not wrap
   ALLOCATE(sz(-2:3), sz0(-2:3), dsz(-2:3))
   sx0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdz=0.0_num
-  
+
   DO ip=1, np
-    
+
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     z = (zp(ip)-zmin)*dzi
-    
+
     ! --- computes velocity
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
-    
+
     ! --- computes old position in grid units
     xold=x-dtsdx0*vx
     zold=z-dtsdz0*vz
-    
+
     ! --- computes particles weights
     wq=q*w(ip)
     wqx = wq*invdtdx
     wqz = wq*invdtdz
-    
+
     ! --- finds node of cell containing particles for current positions
     iixp0=floor(x)
     ikxp0=floor(z)
-    
+
     ! --- computes distance between particle and node for current positions
     xint=x-iixp0
     zint=z-ikxp0
-    
+
     ! --- computes coefficients for node centered quantities
     oxint = 1.0_num-xint
     xintsq = xint*xint
@@ -937,7 +937,7 @@ type_rz_depose)      !#do not wrap
     sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
     sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
     sx0( 2) = onesixth*xintsq*xint
-    
+
     ozint = 1.0_num-zint
     zintsq = zint*zint
     ozintsq = ozint*ozint
@@ -945,20 +945,20 @@ type_rz_depose)      !#do not wrap
     sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
     sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
     sz0( 2) = onesixth*zintsq*zint
-    
+
     ! --- finds node of cell containing particles for old positions
     iixp=floor(xold)
     ikxp=floor(zold)
-    
+
     ! --- computes distance between particle and node for old positions
     xint = xold-iixp
     zint = zold-ikxp
-    
+
     ! --- computes node separation between old and current positions
     dix = iixp-iixp0
     diz = ikxp-ikxp0
-    
-    ! --- zero out coefficients 
+
+    ! --- zero out coefficients
     ! --- (needed because of different dix and diz for each particle)
     sx(-2)=0.0_num
     sx(-1)=0.0_num
@@ -972,7 +972,7 @@ type_rz_depose)      !#do not wrap
     sz(1)=0.0_num
     sz(2)=0.0_num
     sz(3)=0.0_num
-    
+
     ! --- computes coefficients for quantities centered between nodes
     oxint = 1.0_num-xint
     xintsq = xint*xint
@@ -981,7 +981,7 @@ type_rz_depose)      !#do not wrap
     sx( 0+dix) = twothird-xintsq*(1.0_num-xint*0.5_num)
     sx( 1+dix) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
     sx( 2+dix) = onesixth*xintsq*xint
-    
+
     ozint = 1.0_num-zint
     zintsq = zint*zint
     ozintsq = ozint*ozint
@@ -989,49 +989,49 @@ type_rz_depose)      !#do not wrap
     sz( 0+diz) = twothird-zintsq*(1.0_num-zint*0.5_num)
     sz( 1+diz) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
     sz( 2+diz) = onesixth*zintsq*zint
-    
+
     ! --- computes coefficients difference
     dsx = sx - sx0
     dsz = sz - sz0
-    
+
     ! --- computes min/max positions of current contributions
     ixmin = min(0, dix)-1
     ixmax = max(0, dix)+2
     izmin = min(0, diz)-1
     izmax = max(0, diz)+2
-    
+
     ! --- add current contributions
     DO k=izmin, izmax
       DO i=ixmin, ixmax
         ic = iixp0+i
         kc = ikxp0+k
-        
+
         ! --- Jx
         IF(i<ixmax) THEN
           sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
           if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
           jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
         END IF
-        
+
         ! -- Jy (2D Esirkepov scheme)
         jy(ic, kc) = jy(ic, kc) + wq*vy*invvol* ( (sz0(k)+0.5*dsz(k))*sx0(i) +        &
-        (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) ) 
-        
+        (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) )
+
         ! --- Jz
         IF(k<izmax) THEN
           sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov
           if (k>izmin) sdz(i, k)=sdz(i, k)+sdz(i, k-1)! Integration of Wz along z
           jz(ic, kc) = jz(ic, kc) + sdz(i, k)! Deposition on the current
         END IF
-        
+
       END DO
     END DO
-    
+
   END DO
-  
-  
+
+
   DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
-  
+
 End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3
 
 
@@ -1068,8 +1068,8 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx, jy, jz, np, xp, zp, uxp, uyp,   &
-uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
-l_particles_weight, l4symtry, l_2drz, type_rz_depose)  
+  uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
+  l_particles_weight, l4symtry, l_2drz, type_rz_depose)
   USE constants
   implicit none
   ! __ Parameter declaration _______________________________________________
@@ -1098,7 +1098,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
   integer(isp)                          :: icell, ndtodx, ndtodz
   integer(isp), dimension(lvect)        :: ixmin, ixmax, izmin, izmax, iixp0, ikxp0
   integer(isp)                          :: xl, xu, zl, zu, n, nn
-  
+
   ! Parameter initialization
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -1113,10 +1113,10 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
   ALLOCATE(sz(-2:3), sz0(-2:3), dsz(-2:3))
   sx0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdz=0.0_num
-  
+
   ! Outer loop on particles with period LVEC
   DO ip=1, np, LVEC
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, zp:64, gaminv:64
@@ -1127,7 +1127,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
     !IBM* ALIGN(64, ICELL)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP SIMD
 #elif defined __IBMBGQ__
@@ -1135,37 +1135,37 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
 #elif defined __INTEL_COMPILER
     !$DIR SIMD
 #endif
-    
+
     ! Inner loop on particle
     DO n=1, MIN(LVECT, np-ip+1)
       nn=ip+n-1
-      
+
       ! --- computes current position in grid units
       x = (xp(nn)-xmin)*dxi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! --- computes velocity
       vx = uxp(nn)*gaminv(nn)
       vy = uyp(nn)*gaminv(nn)
       vz = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes old position in grid units
       xold=x-dtsdx0*vx
       zold=z-dtsdz0*vz
-      
+
       ! --- computes particles weights
       wq=q*w(nn)
       wqx = wq*invdtdx
       wqz = wq*invdtdz
-      
+
       ! --- finds node of cell containing particles for current positions
       iixp0(n)=floor(x)
       ikxp0(n)=floor(z)
-      
+
       ! --- computes distance between particle and node for current positions
       xint=x-iixp0(n)
       zint=z-ikxp0(n)
-      
+
       ! --- computes coefficients for node centered quantities
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -1174,7 +1174,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx0( 2) = onesixth*xintsq*xint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -1182,20 +1182,20 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz0( 2) = onesixth*zintsq*zint
-      
+
       ! --- finds node of cell containing particles for old positions
       iixp=floor(xold)
       ikxp=floor(zold)
-      
+
       ! --- computes distance between particle and node for old positions
       xint = xold-iixp
       zint = zold-ikxp
-      
+
       ! --- computes node separation between old and current positions
       dix = iixp-iixp0(n)
       diz = ikxp-ikxp0(n)
-      
-      ! --- zero out coefficients 
+
+      ! --- zero out coefficients
       ! --- (needed because of different dix and diz for each particle)
       sx(-2)=0.0_num
       sx(-1)=0.0_num
@@ -1209,7 +1209,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sz(1)=0.0_num
       sz(2)=0.0_num
       sz(3)=0.0_num
-      
+
       ! --- computes coefficients for quantities centered between nodes
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -1218,7 +1218,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sx( 0+dix) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx( 1+dix) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx( 2+dix) = onesixth*xintsq*xint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -1226,7 +1226,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sz( 0+diz) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1+diz) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2+diz) = onesixth*zintsq*zint
-      
+
       ! --- computes coefficients difference
       dsx(-2) = sx(-2) - sx0(-2)
       dsz(-2) = sz(-2) - sz0(-2)
@@ -1240,13 +1240,13 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       dsz(2) = sz(2) - sz0(2)
       dsx(3) = sx(3) - sx0(3)
       dsz(3) = sz(3) - sz0(3)
-      
+
       ! --- computes min/max positions of current contributions
       ixmin(n) = min(0, dix)-1
       ixmax(n) = max(0, dix)+2
       izmin(n) = min(0, diz)-1
       izmax(n) = max(0, diz)+2
-      
+
       sdx(n, -2, -2)  = wqx*dsx(-2)*( sz0(-2) + 0.5*dsz(-2) )
       sdx(n, -1, -2)  = wqx*dsx(-1)*( sz0(-2) + 0.5*dsz(-2) )
       sdx(n, -1, -2)=sdx(n, -1, -2)+sdx(n, -1-1, -2)
@@ -1301,80 +1301,80 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sdx(n, 1, 3)=sdx(n, 1, 3)+sdx(n, 1-1, 3)
       sdx(n, 2, 3)  = wqx*dsx(2)*( sz0(3) + 0.5*dsz(3) )
       sdx(n, 2, 3)=sdx(n, 2, 3)+sdx(n, 2-1, 3)
-      
+
       sdy(n, -2, -2) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(-2) +                &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-2) ) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-2) )
       sdy(n, -1, -2) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(-1) +                &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-1) ) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-1) )
       sdy(n, 0, -2) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(0) +                  &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(0) ) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(0) )
       sdy(n, 1, -2) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(1) +                  &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(1) ) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(1) )
       sdy(n, 2, -2) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(2) +                  &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(2) ) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(2) )
       sdy(n, 3, -2) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(3) +                  &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(3) ) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(3) )
       sdy(n, -2, -1) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(-2) +                &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-2) ) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-2) )
       sdy(n, -1, -1) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(-1) +                &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-1) ) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-1) )
       sdy(n, 0, -1) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(0) +                  &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(0) ) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(0) )
       sdy(n, 1, -1) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(1) +                  &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(1) ) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(1) )
       sdy(n, 2, -1) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(2) +                  &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(2) ) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(2) )
       sdy(n, 3, -1) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(3) +                  &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(3) ) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(3) )
       sdy(n, -2, 0) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(-2) +                   &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(-2) ) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(-2) )
       sdy(n, -1, 0) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(-1) +                   &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(-1) ) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(-1) )
       sdy(n, 0, 0) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(0) +                     &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(0) ) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(0) )
       sdy(n, 1, 0) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(1) +                     &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(1) ) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(1) )
       sdy(n, 2, 0) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(2) +                     &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(2) ) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(2) )
       sdy(n, 3, 0) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(3) +                     &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(3) ) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(3) )
       sdy(n, -2, 1) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(-2) +                   &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(-2) ) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(-2) )
       sdy(n, -1, 1) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(-1) +                   &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(-1) ) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(-1) )
       sdy(n, 0, 1) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(0) +                     &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(0) ) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(0) )
       sdy(n, 1, 1) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(1) +                     &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(1) ) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(1) )
       sdy(n, 2, 1) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(2) +                     &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(2) ) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(2) )
       sdy(n, 3, 1) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(3) +                     &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(3) ) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(3) )
       sdy(n, -2, 2) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(-2) +                   &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(-2) ) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(-2) )
       sdy(n, -1, 2) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(-1) +                   &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(-1) ) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(-1) )
       sdy(n, 0, 2) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(0) +                     &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(0) ) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(0) )
       sdy(n, 1, 2) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(1) +                     &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(1) ) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(1) )
       sdy(n, 2, 2) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(2) +                     &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(2) ) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(2) )
       sdy(n, 3, 2) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(3) +                     &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(3) ) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(3) )
       sdy(n, -2, 3) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(-2) +                   &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(-2) ) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(-2) )
       sdy(n, -1, 3) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(-1) +                   &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(-1) ) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(-1) )
       sdy(n, 0, 3) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(0) +                     &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(0) ) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(0) )
       sdy(n, 1, 3) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(1) +                     &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(1) ) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(1) )
       sdy(n, 2, 3) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(2) +                     &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(2) ) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(2) )
       sdy(n, 3, 3) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(3) +                     &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(3) ) 
-      
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(3) )
+
       sdz(n, -2, -2)=wqz*dsz(-2)*(sx0(-2)+0.5*dsx(-2))
       sdz(n, -1, -2)=wqz*dsz(-2)*(sx0(-1)+0.5*dsx(-1))
       sdz(n, 0, -2)=wqz*dsz(-2)*(sx0(0)+0.5*dsx(0))
@@ -1430,7 +1430,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)
       sdz(n, 3, 2)=wqz*dsz(2)*(sx0(3)+0.5*dsx(3))
       sdz(n, 3, 2)=sdz(n, 3, 2)+sdz(n, 3, 2-1)
     ENDDO
-    
+
     ! Inner loop on particle
     DO n=1, MIN(LVECT, np-ip+1)
       ! --- add current contributions
@@ -1483,8 +1483,8 @@ End subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3
 !> @param[in] type_rz_depose (useless here bur kept for common interface)
 ! ________________________________________________________________________________________
 subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx, jy, jz, np, xp, zp, uxp, uyp,  &
-uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
-l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
+  uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
+  l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
   USE constants
   implicit none
   ! __ Parameter declaration ____________________________________________________
@@ -1520,9 +1520,9 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
   INTEGER(isp), DIMENSION(LVEC, 3)       :: ICELL
   REAL(num), DIMENSION(:, :), ALLOCATABLE :: jxcells, jycells, jzcells
   REAL(num), DIMENSION(:, :), ALLOCATABLE :: sdx, sdy, sdz
-  
+
   ! __ Parameter initialization __________________________________________________
-  
+
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
   dtsdx0 = dt*dxi
@@ -1531,10 +1531,10 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
   invdtdx = 1.0_num/(dt*dz)
   invdtdz = 1.0_num/(dt*dx)
   dtsdz0 = dt*dzi
-  
+
   sx0(-2:3)=0._num
   sz0(-2:3)=0._num
-  
+
   ngridx=nx+1+2*nxguard
   ncx=nx+1+2*nxguard
   ncz=nz+1+2*nzguard
@@ -1542,23 +1542,23 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
   iixporig=-nxguard
   ikxporig=-nzguard
   ALLOCATE(jxcells(8, NCELLS), jycells(8, NCELLS), jzcells(8, NCELLS))
-  
-  
+
+
   jxcells = 0._num
   jycells = 0._num
   jzcells = 0._num
-  
+
   ALLOCATE(sdx(lvect, 48), sdy(lvect, 48), sdz(lvect, 48))
-  
+
   sdx = 0._num
   sdz = 0._num
-  
+
   nnx = ngridx
   orig=(nxguard+iixporig) + (nzguard+ikxporig)*nnx
-  
+
   ! Outer loop on particles with period LVEC
   DO ip=1, np, LVEC
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT
 #if defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED xp:64, zp:64, gaminv:64
@@ -1570,7 +1570,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
     !IBM* ALIGN(64, ICELL)
 #endif
 #endif
-    
+
 #if defined _OPENMP && _OPENMP>=201307
     !$OMP SIMD
 #elif defined __IBMBGQ__
@@ -1578,37 +1578,37 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
 #elif defined __INTEL_COMPILER
     !$DIR SIMD
 #endif
-    
+
     ! Inner loop on particle
     DO n=1, MIN(LVECT, np-ip+1)
       nn=ip+n-1
-      
+
       ! --- computes current position in grid units
       x = (xp(nn)-xmin)*dxi
       z = (zp(nn)-zmin)*dzi
-      
+
       ! --- computes velocity
       vx = uxp(nn)*gaminv(nn)
       vy = uyp(nn)*gaminv(nn)
       vz = uzp(nn)*gaminv(nn)
-      
+
       ! --- computes old position in grid units
       xold=x-dtsdx0*vx
       zold=z-dtsdz0*vz
-      
+
       ! --- computes particles weights
       wq=q*w(ip)
       wqx = wq*invdtdx
       wqz = wq*invdtdz
-      
+
       ! --- finds node of cell containing particles for current positions
       iixp0=floor(x)
       ikxp0=floor(z)
-      
+
       ! --- computes distance between particle and node for current positions
       xint=x-iixp0
       zint=z-ikxp0
-      
+
       ! --- computes coefficients for node centered quantities
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -1617,7 +1617,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       sx0( 0) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx0( 1) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx0( 2) = onesixth*xintsq*xint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -1625,20 +1625,20 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       sz0( 0) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz0( 1) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz0( 2) = onesixth*zintsq*zint
-      
+
       ! --- finds node of cell containing particles for old positions
       iixp=floor(xold)
       ikxp=floor(zold)
-      
+
       ! --- computes distance between particle and node for old positions
       xint = xold-iixp
       zint = zold-ikxp
-      
+
       ! --- computes node separation between old and current positions
       dix = iixp-iixp0
       diz = ikxp-ikxp0
-      
-      ! --- zero out coefficients (needed because of different dix and diz 
+
+      ! --- zero out coefficients (needed because of different dix and diz
       ! --- for each particle)
       sx(-2)=0.0_num
       sx(-1)=0.0_num
@@ -1652,7 +1652,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       sz(1)=0.0_num
       sz(2)=0.0_num
       sz(3)=0.0_num
-      
+
       ! --- computes coefficients for quantities centered between nodes
       oxint = 1.0_num-xint
       xintsq = xint*xint
@@ -1661,7 +1661,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       sx( 0+dix) = twothird-xintsq*(1.0_num-xint*0.5_num)
       sx( 1+dix) = twothird-oxintsq*(1.0_num-oxint*0.5_num)
       sx( 2+dix) = onesixth*xintsq*xint
-      
+
       ozint = 1.0_num-zint
       zintsq = zint*zint
       ozintsq = ozint*ozint
@@ -1669,7 +1669,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       sz( 0+diz) = twothird-zintsq*(1.0_num-zint*0.5_num)
       sz( 1+diz) = twothird-ozintsq*(1.0_num-ozint*0.5_num)
       sz( 2+diz) = onesixth*zintsq*zint
-      
+
       ! --- computes coefficients difference
       dsx(-2) = sx(-2) - sx0(-2)
       dsz(-2) = sz(-2) - sz0(-2)
@@ -1683,10 +1683,10 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       dsz(2) = sz(2) - sz0(2)
       dsx(3) = sx(3) - sx0(3)
       dsz(3) = sz(3) - sz0(3)
-      
+
       ! --- Position of the first cell (-2, -2, -2)
       icell(n, 1) = (iixp0-iixporig-1)+(ikxp0-ikxporig-2)*ncx
-      
+
       ! --- Weight
       sdx(n, 1)  = wqx*dsx(-2)*( sz0(-2) + 0.5*dsz(-2) )
       sdx(n, 2)  = wqx*dsx(-1)*( sz0(-2) + 0.5*dsz(-2) )
@@ -1742,80 +1742,80 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       sdx(n, 44) = sdx(n, 44)+sdx(n, 43)
       sdx(n, 45)  = wqx*dsx(2)*( sz0(3) + 0.5*dsz(3) )
       sdx(n, 45) = sdx(n, 45)+sdx(n, 44)
-      
+
       sdy(n, 1) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(-2) +                     &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-2)) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-2))
       sdy(n, 2) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(-1) +                     &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-1)) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(-1))
       sdy(n, 3) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(0) +                      &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(0)) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(0))
       sdy(n, 4) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(1) +                      &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(1)) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(1))
       sdy(n, 5) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(2) +                      &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(2)) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(2))
       sdy(n, 6) = wq*vy*invvol* ( (sz0(-2)+0.5*dsz(-2))*sx0(3) +                      &
-      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(3)) 
+      (0.5*sz0(-2)+onethird*dsz(-2))*dsx(3))
       sdy(n, 9) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(-2) +                     &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-2)) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-2))
       sdy(n, 10) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(-1) +                    &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-1)) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(-1))
       sdy(n, 11) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(0) +                     &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(0)) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(0))
       sdy(n, 12) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(1) +                     &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(1)) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(1))
       sdy(n, 13) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(2) +                     &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(2)) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(2))
       sdy(n, 14) = wq*vy*invvol* ( (sz0(-1)+0.5*dsz(-1))*sx0(3) +                     &
-      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(3)) 
+      (0.5*sz0(-1)+onethird*dsz(-1))*dsx(3))
       sdy(n, 17) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(-2) +                      &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(-2)) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(-2))
       sdy(n, 18) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(-1) +                      &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(-1)) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(-1))
       sdy(n, 19) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(0) +                       &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(0)) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(0))
       sdy(n, 20) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(1) +                       &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(1)) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(1))
       sdy(n, 21) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(2) +                       &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(2)) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(2))
       sdy(n, 22) = wq*vy*invvol* ( (sz0(0)+0.5*dsz(0))*sx0(3) +                       &
-      (0.5*sz0(0)+onethird*dsz(0))*dsx(3)) 
+      (0.5*sz0(0)+onethird*dsz(0))*dsx(3))
       sdy(n, 25) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(-2) +                      &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(-2)) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(-2))
       sdy(n, 26) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(-1) +                      &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(-1)) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(-1))
       sdy(n, 27) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(0) +                       &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(0)) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(0))
       sdy(n, 28) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(1) +                       &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(1)) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(1))
       sdy(n, 29) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(2) +                       &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(2)) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(2))
       sdy(n, 30) = wq*vy*invvol* ( (sz0(1)+0.5*dsz(1))*sx0(3) +                       &
-      (0.5*sz0(1)+onethird*dsz(1))*dsx(3)) 
+      (0.5*sz0(1)+onethird*dsz(1))*dsx(3))
       sdy(n, 33) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(-2) +                      &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(-2)) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(-2))
       sdy(n, 34) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(-1) +                      &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(-1)) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(-1))
       sdy(n, 35) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(0) +                       &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(0)) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(0))
       sdy(n, 36) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(1) +                       &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(1)) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(1))
       sdy(n, 37) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(2) +                       &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(2)) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(2))
       sdy(n, 38) = wq*vy*invvol* ( (sz0(2)+0.5*dsz(2))*sx0(3) +                       &
-      (0.5*sz0(2)+onethird*dsz(2))*dsx(3)) 
+      (0.5*sz0(2)+onethird*dsz(2))*dsx(3))
       sdy(n, 41) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(-2) +                      &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(-2)) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(-2))
       sdy(n, 42) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(-1) +                      &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(-1)) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(-1))
       sdy(n, 43) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(0) +                       &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(0)) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(0))
       sdy(n, 44) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(1) +                       &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(1)) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(1))
       sdy(n, 45) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(2) +                       &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(2)) 
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(2))
       sdy(n, 46) = wq*vy*invvol* ( (sz0(3)+0.5*dsz(3))*sx0(3) +                       &
-      (0.5*sz0(3)+onethird*dsz(3))*dsx(3)) 
-      
+      (0.5*sz0(3)+onethird*dsz(3))*dsx(3))
+
       sdz(n, 1)  = wqz*dsz(-2)*(sx0(-2)+0.5*dsx(-2))
       sdz(n, 2)  = wqz*dsz(-2)*(sx0(-1)+0.5*dsx(-1))
       sdz(n, 3)  = wqz*dsz(-2)*(sx0(0)+0.5*dsx(0))
@@ -1885,7 +1885,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       !IBM* ALIGN(64, jxcells, jycells, jzcells)
 #endif
 #endif
-      
+
 #if defined _OPENMP && _OPENMP>=201307
       !$OMP SIMD
 #elif defined __IBMBGQ__
@@ -1894,9 +1894,9 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
       !$DIR SIMD
 #endif
       DO nv=1, 8
-        
+
         !print*, nv, ICELL(n, 1)
-        
+
         jxcells(nv, ICELL(n, 1)) = jxcells(nv, ICELL(n, 1)) + sdx(n, nv)
         jxcells(nv, ICELL(n, 1)+ncx) = jxcells(nv, ICELL(n, 1)+ncx) + sdx(n, nv+8)
         jxcells(nv, ICELL(n, 1)+2*ncx) = jxcells(nv, ICELL(n, 1)+2*ncx) + sdx(n,      &
@@ -1907,7 +1907,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
         nv+32)
         jxcells(nv, ICELL(n, 1)+5*ncx) = jxcells(nv, ICELL(n, 1)+5*ncx) + sdx(n,      &
         nv+40)
-        
+
         jycells(nv, ICELL(n, 1)) = jycells(nv, ICELL(n, 1)) + sdy(n, nv)
         jycells(nv, ICELL(n, 1)+ncx) = jycells(nv, ICELL(n, 1)+ncx) + sdy(n, nv+8)
         jycells(nv, ICELL(n, 1)+2*ncx) = jycells(nv, ICELL(n, 1)+2*ncx) + sdy(n,      &
@@ -1918,7 +1918,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
         nv+32)
         jycells(nv, ICELL(n, 1)+5*ncx) = jycells(nv, ICELL(n, 1)+5*ncx) + sdy(n,      &
         nv+40)
-        
+
         jzcells(nv, ICELL(n, 1)) = jzcells(nv, ICELL(n, 1)) + sdz(n, nv)
         jzcells(nv, ICELL(n, 1)+ncx) = jzcells(nv, ICELL(n, 1)+ncx) + sdz(n, nv+8)
         jzcells(nv, ICELL(n, 1)+2*ncx) = jzcells(nv, ICELL(n, 1)+2*ncx) + sdz(n,      &
@@ -1978,7 +1978,7 @@ l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
     !$OMP END SIMD
 #endif
   ENDDO
-  
+
   DEALLOCATE(jxcells, jycells, jzcells)
   DEALLOCATE(sdx, sdy, sdz)
 

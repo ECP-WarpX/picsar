@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -49,7 +49,7 @@
 !
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
-m, dt)    
+  m, dt)
   USE constants
   IMPLICIT NONE
   ! Input/Output parameters
@@ -69,7 +69,7 @@ m, dt)
   ! Initialization
   const = q*dt*0.5_num/m
   clghtisq = 1.0_num/clight**2
-  
+
   ! Loop over the particles
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
@@ -96,11 +96,11 @@ m, dt)
     uxp(ip) = uxp(ip) + ex(ip)*const
     uyp(ip) = uyp(ip) + ey(ip)*const
     uzp(ip) = uzp(ip) + ez(ip)*const
-    
+
     ! Compute temporary Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminvtmp = 1.0_num/sqrt(1.0_num + usq)
-    
+
     ! Magnetic rotation
     tx = gaminvtmp*bx(ip)*const
     ty = gaminvtmp*by(ip)*const
@@ -115,31 +115,31 @@ m, dt)
     uxp(ip) = uxp(ip) + uyppr*sz - uzppr*sy
     uyp(ip) = uyp(ip) + uzppr*sx - uxppr*sz
     uzp(ip) = uzp(ip) + uxppr*sy - uyppr*sx
-    
+
     ! Push using the electric field
     uxp(ip) = uxp(ip) + ex(ip)*const
     uyp(ip) = uyp(ip) + ey(ip)*const
     uzp(ip) = uzp(ip) + ez(ip)*const
-    
+
     ! Compute final Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
-    
+
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD
 #endif
 #endif
-  
+
 END SUBROUTINE
 
 
 ! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the momentum to the next step using the Boris pusher.
-!> The particle loop is divided by block of particles for 
-!> cache-blocking purposes. 
+!> The particle loop is divided by block of particles for
+!> cache-blocking purposes.
 !
 !> @author
 !> Mathieu Lobet
@@ -157,8 +157,8 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,   &
-bz, q, m, dt, lvect)    
-  USE constants 
+  bz, q, m, dt, lvect)
+  USE constants
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
@@ -175,17 +175,17 @@ bz, q, m, dt, lvect)
   REAL(num)                :: sx, sy, sz
   REAL(num)                :: uxppr, uyppr, uzppr
   REAL(num)                :: gaminvtmp
-  
+
   ! Initialization
   const = q*dt*0.5_num/m
   clghtisq = 1.0_num/clight**2
-  
+
   ! Loop over the particles
   DO ip=1, np, lvect
-    
+
     ! Size of the block
     blocksize = MIN(lvect, np-ip+1)
-    
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
     !DIR$ ASSUME_ALIGNED gaminv:64
@@ -206,20 +206,20 @@ bz, q, m, dt, lvect)
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
 #endif
-    
+
     ! Loop on the particles of blocks
     DO n=1, blocksize
       nn=ip+n-1
-      
+
       ! Push using the electric field
       uxp(nn) = uxp(nn) + ex(nn)*const
       uyp(nn) = uyp(nn) + ey(nn)*const
       uzp(nn) = uzp(nn) + ez(nn)*const
-      
+
       ! Compute temporary Gamma
       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
       gaminvtmp = 1.0_num/sqrt(1.0_num + usq)
-      
+
       ! Magnetic rotation
       tx = gaminvtmp*bx(nn)*const
       ty = gaminvtmp*by(nn)*const
@@ -234,12 +234,12 @@ bz, q, m, dt, lvect)
       uxp(nn) = uxp(nn) + uyppr*sz - uzppr*sy
       uyp(nn) = uyp(nn) + uzppr*sx - uxppr*sz
       uzp(nn) = uzp(nn) + uxppr*sy - uyppr*sx
-      
+
       ! Push using the electric field
       uxp(nn) = uxp(nn) + ex(nn)*const
       uyp(nn) = uyp(nn) + ey(nn)*const
       uzp(nn) = uzp(nn) + ez(nn)*const
-      
+
       ! Compute final Gamma
       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
@@ -279,7 +279,7 @@ SUBROUTINE pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
   REAL(num), INTENT(IN)      :: dt
   ! Local parameters
   INTEGER(idp)               :: ip
-  
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
   !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
@@ -308,7 +308,7 @@ SUBROUTINE pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
   !$OMP END SIMD
 #endif
 #endif
-  
+
   RETURN
 END SUBROUTINE pxr_pushxyz
 
@@ -345,9 +345,9 @@ SUBROUTINE pxr_epush_v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
   ! Local parameters
   INTEGER(idp) :: ip
   REAL(num)    :: const
-  
+
   const = q*dt/m
-  
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
   !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
@@ -411,9 +411,9 @@ SUBROUTINE pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
   ! Local parameters
   INTEGER(idp)   :: ip
   REAL(num)      :: const, sx, sy, sz, tx, ty, tz, tsqi, uxppr, uyppr, uzppr
-  
+
   const = q*dt*0.5_num/m
-  
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
   !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
@@ -452,9 +452,9 @@ SUBROUTINE pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
   !$OMP END SIMD
 #endif
 #endif
-  
+
   RETURN
-  
+
 END SUBROUTINE pxr_bpush_v
 
 
@@ -480,18 +480,18 @@ END SUBROUTINE pxr_bpush_v
 SUBROUTINE pxr_set_gamma(np, uxp, uyp, uzp, gaminv)
   USE constants
   IMPLICIT NONE
-  
+
   ! Input/output parameters
   INTEGER(idp), INTENT(IN)   :: np
   REAL(num), INTENT(IN)      :: uxp(np), uyp(np), uzp(np)
   REAL(num), INTENT(INOUT)   :: gaminv(np)
-  
+
   ! Local parameters
   INTEGER(idp)   :: ip
   REAL(num)      :: clghtisq, usq
-  
+
   clghtisq = 1.0_num/clight**2
-  
+
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
   !DIR$ ASSUME_ALIGNED gaminv:64
@@ -508,12 +508,12 @@ SUBROUTINE pxr_set_gamma(np, uxp, uyp, uzp, gaminv)
 #elif defined __INTEL_COMPILER
   !DIR$ SIMD
 #endif
-  
+
   DO ip=1, np
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
   END DO
-  
+
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD

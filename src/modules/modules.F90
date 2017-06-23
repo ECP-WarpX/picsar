@@ -7,7 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, 
+! If you have questions about your rights to use or distribute this software,
 ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
@@ -118,9 +118,9 @@ MODULE fields
   LOGICAL(lp) :: l_lower_order_in_v
   !> Flag: use of nodal grids
   LOGICAL(lp) :: l_nodalgrid
-  !> Flag: use of PSAOTD spectral solver 
+  !> Flag: use of PSAOTD spectral solver
   LOGICAL(lp) :: l_spectral
-  !> Flag: use of staggered grid 
+  !> Flag: use of staggered grid
   LOGICAL(lp) :: l_staggered
   !> Flag: this flag needs a description, used in field gathering routines
   LOGICAL(lp) :: l4symtry
@@ -189,31 +189,31 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: jy_r
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:, :, :) :: jz_r
-  !> MPI-domain current grid in z - Fourier space 
+  !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho_r
-  !> MPI-domain current grid in z - Fourier space 
+  !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rhoold_r
-  !> MPI-domain electric field grid in x - Fourier space 
+  !> MPI-domain electric field grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
-  !> MPI-domain electric field grid in y - Fourier space 
+  !> MPI-domain electric field grid in y - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf
-  !> MPI-domain electric field grid in z - Fourier space 
+  !> MPI-domain electric field grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf
-  !> MPI-domain magnetic field grid in x - Fourier space 
+  !> MPI-domain magnetic field grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf
-  !> MPI-domain magnetic field grid in y - Fourier space 
+  !> MPI-domain magnetic field grid in y - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf
-  !> MPI-domain magnetic field grid in z - Fourier space 
+  !> MPI-domain magnetic field grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf
-  !> MPI-domain current grid in x - Fourier space 
+  !> MPI-domain current grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jxf
-  !> MPI-domain current grid in y - Fourier space 
+  !> MPI-domain current grid in y - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jyf
-  !> MPI-domain current grid in z - Fourier space 
+  !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jzf
-  !> MPI-domain current grid in z - Fourier space 
+  !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhof
-  !> MPI-domain current grid in z - Fourier space 
+  !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhooldf
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
@@ -221,7 +221,7 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:) :: ycoeffs
   !> Fonberg coefficients in z
   REAL(num), POINTER, DIMENSION(:) :: zcoeffs
-  
+
 END MODULE fields
 
 ! ________________________________________________________________________________________
@@ -252,7 +252,7 @@ MODULE grid_tilemodule!#do not parse
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jztile
     !> Tile Charge grid
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: rhotile
-    
+
     ! We declare arrays aligned for vectorization efficiency.
     ! These directives are only understood by the Intel compiler.
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -268,12 +268,12 @@ MODULE grid_tilemodule!#do not parse
     !dir$ attributes align:64 :: rhotile
 #endif
   END TYPE
-  
+
   !> This array contains a list of tile field grids.
   !> This array is local to each MPI domain.
   !> Tile grids are contained in the object grid_tile (see extile, eytile...).
   TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:, :, :) :: aofgrid_tiles
-  
+
 END MODULE grid_tilemodule
 
 ! ________________________________________________________________________________________
@@ -334,14 +334,14 @@ MODULE particle_tilemodule!#do not parse
     REAL(num) :: y_tile_max
     !> Maximal tile boundary in z
     REAL(num) :: z_tile_max
-    
+
     !> Minimal grid tile boundary in x
     REAL(num) :: x_grid_tile_min
     !> Minimal grid tile boundary in y
     REAL(num) :: y_grid_tile_min
     !> Minimal grid tile boundary in z
     REAL(num) :: z_grid_tile_min
-    
+
     !> Maximal grid tile boundary in x
     REAL(num) :: x_grid_tile_max
     !> Maximal grid tile boundary in y
@@ -399,9 +399,9 @@ MODULE particle_tilemodule!#do not parse
 END MODULE particle_tilemodule
 
 ! ________________________________________________________________________________________
-!> Module defining particle_antenna type 
+!> Module defining particle_antenna type
 ! ________________________________________________________________________________________
-MODULE antenna!#do not parse 
+MODULE antenna!#do not parse
   USE constants
   TYPE particle_antenna
     REAL(num)         ::  vector_x
@@ -414,7 +414,7 @@ MODULE antenna!#do not parse
     REAL(num)         ::  pvec_y
     REAL(num)         ::  pvec_z
     REAL(num), DIMENSION(3) ::  polvector1, polvector2, vector!source_v
-    REAL(num)         :: laser_a_1!laser particle max_v_1 at focus (in clight unit) 
+    REAL(num)         :: laser_a_1!laser particle max_v_1 at focus (in clight unit)
     REAL(num)         :: laser_a_2!laser particle max_v_2 at focus (in clight unit)
     REAL(num)         :: Emax_laser_1
     REAL(num)         :: Emax_laser_2
@@ -423,18 +423,18 @@ MODULE antenna!#do not parse
     REAL(num)         :: inv_w02! 1./w0**2
     COMPLEX(cpx)      :: q_z! complex curv on the plan
     COMPLEX(cpx)      :: q_0! complex_curv at focus
-    REAL(num)         :: laser_ctau! length of the pulse ---> 
+    REAL(num)         :: laser_ctau! length of the pulse --->
     ! ---> (length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
     REAL(num)         :: laser_tau! time duration of the pulse
     REAL(num)         :: t_peak
     REAL(num)         :: laser_z0! initial position with respect to (spot, vector)
-    LOGICAL(lp)       :: is_lens! if .TRUE. the is a this lens beteen plan and source 
-    REAL(num)         :: laser_zf! distance between lens and plan 
+    LOGICAL(lp)       :: is_lens! if .TRUE. the is a this lens beteen plan and source
+    REAL(num)         :: laser_zf! distance between lens and plan
     REAL(num)         :: laser_z! distance between focus and lens
     REAL(num)         :: focal_length! focal length of the lens
-    REAL(num)         :: zr! rayleigh length of the laser  
-    REAL(num)         :: inv_zr!1/zr  
-    REAL(num)         :: polangle! phase shift between laser along povector2 --> 
+    REAL(num)         :: zr! rayleigh length of the laser
+    REAL(num)         :: inv_zr!1/zr
+    REAL(num)         :: polangle! phase shift between laser along povector2 -->
     ! --> and polvector1
     REAL(num)         :: lambda_laser
     REAL(num)         :: k0_laser
@@ -454,7 +454,7 @@ MODULE particle_speciesmodule!#do not parse
   !> Fortran object representing a particle species
   TYPE particle_species
     ! Attributes of particle species object
-    !> Particle antenna flag (.FALSE. by default) 
+    !> Particle antenna flag (.FALSE. by default)
     LOGICAL(lp) :: is_antenna = .FALSE.
     !> Antenna params (init if is_antenna true)
     TYPE(particle_antenna) :: antenna_params
@@ -501,7 +501,7 @@ MODULE particle_speciesmodule!#do not parse
     !> Flag indicating of the array array_of_tile has been allocated
     LOGICAL(lp)   :: l_arrayoftiles_allocated =.FALSE.
     !> Flag indicating if this particle species deposit current/charge on
-    !> the grid (useful for test particles). Default is TRUE 
+    !> the grid (useful for test particles). Default is TRUE
     LOGICAL(lp)   :: ldodepos =.TRUE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
@@ -574,7 +574,7 @@ MODULE particle_properties
   LOGICAL(lp) :: l_species_allocated=.FALSE.
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
-  !> Flag for plasma init/push 
+  !> Flag for plasma init/push
   LOGICAL(lp) :: l_plasma = .TRUE.
 END MODULE particle_properties
 
@@ -588,10 +588,10 @@ MODULE particles!#do not parse
   USE particle_speciesmodule
   USE particle_properties
   USE grid_tilemodule
-  
+
   !> Array of particle species objects
   TYPE(particle_species), ALLOCATABLE, TARGET, DIMENSION(:) :: species_parray
-  
+
 END MODULE particles
 
 ! ________________________________________________________________________________________
@@ -663,7 +663,7 @@ MODULE params
   INTEGER(idp) :: lvec_fieldgathe = 16
   !> MPI buffer size
   INTEGER(idp) :: mpi_buf_size
-  
+
 END MODULE params
 
 ! ________________________________________________________________________________________
@@ -703,7 +703,7 @@ MODULE communications!#do not parse
   INTEGER(isp) :: reqperjzx(4)
   INTEGER(isp) :: reqperjzy(4)
   INTEGER(isp) :: reqperjzz(4)
-  
+
   !> Structure that contains buffer arrays for particle
   !> exchange between tiles.
   !> This structure is used by the subroutine
@@ -760,7 +760,7 @@ MODULE communications!#do not parse
     INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_npart
     INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: bin_pos
   END TYPE
-  
+
   !> Structure that contains buffer arrays for particle
   !> exchange between tiles and MPI domains.
   !> This structure is used by the subroutine
@@ -851,7 +851,7 @@ END MODULE
 ! ________________________________________________________________________________________
 MODULE output_data!#do not parse
   use constants
-  
+
   ! Simulation time statistics
   !> start time
   REAL(num) :: startsim =0.0_num
@@ -864,14 +864,14 @@ MODULE output_data!#do not parse
   REAL(num) :: timeit
   !> Time spent in the pusher
   REAL(num) :: pushtime
-  
+
   !> Output frequency of the field diagnostics
   INTEGER(idp) :: output_frequency = -1!(Default is no output)
   !> First step for the field diagnostics
   INTEGER(idp) :: output_step_min = 0
   !> Last step for the field diagnostics
   INTEGER(idp) :: output_step_max = 0
-  
+
   ! output quantity flag (Default=False)
   !> Activation of the Ex electric field output
   INTEGER(KIND=4) :: c_output_ex = 0
@@ -895,7 +895,7 @@ MODULE output_data!#do not parse
   INTEGER(KIND=4) :: c_output_rho = 0
   !> Activation of the electric field divergence output
   INTEGER(KIND=4) :: c_output_dive = 0
-  
+
   ! File names for output dumps
   !> File name for the Ex electric field output
   CHARACTER(LEN=string_length) :: fileex   ='ex'
@@ -919,7 +919,7 @@ MODULE output_data!#do not parse
   CHARACTER(LEN=string_length) :: filedive ='dive'
   !> File name for the density output
   CHARACTER(LEN=string_length) :: filerho  ='rho'
-  
+
   ! temporal diagnostics
   !> Array of activation flags
   INTEGER(isp), dimension(15) :: temdiag_act_list
@@ -929,7 +929,7 @@ MODULE output_data!#do not parse
   INTEGER(isp), dimension(15) :: temdiag_i_list
   !> Array containing the number of values in the big array
   INTEGER(isp), dimension(15) :: temdiag_nb_values
-  
+
   !> Number of temporal diags
   INTEGER(idp) :: temdiag_nb
   !> Number of particle temporal diagnostics
@@ -944,12 +944,12 @@ MODULE output_data!#do not parse
   INTEGER(idp) :: temdiag_format
   !> Big array containing all the temporal diag at a given iteration
   REAL(num), dimension(:), allocatable :: temdiag_array
-  
+
   ! Computation flags
   !> Flag true if the divergence of the electric field has been
   !> calculated for the current iteration.
   LOGICAL(lp)  :: divE_computed
-  
+
   ! Particle dump
   !> Flag true if the particle dumping is activated
   LOGICAL(lp) :: particle_dump_activated
@@ -986,7 +986,7 @@ MODULE output_data!#do not parse
     !> Maximal particle momentum in z for dumping
     REAL(num) :: dump_uz_max
   END TYPE particle_dump
-  
+
   !> Object for the particle dumping
   TYPE(particle_dump), ALLOCATABLE, TARGET, DIMENSION(:) :: particle_dumps
 END MODULE output_data
@@ -1001,7 +1001,7 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   ! MPI subdomain data
   !----------------------------------------------------------------------------
-  !> FFTW distributed 
+  !> FFTW distributed
   LOGICAL(idp) :: fftw_with_mpi, fftw_threads_ok
   !> Error code for MPI
   INTEGER(isp) :: errcode
@@ -1072,7 +1072,7 @@ MODULE shared_data
   !> This flag is true if the MPI rank is at the inferior z part boundary
   LOGICAL(lp)  :: z_min_boundary_part
   !> This flag is true if the MPI rank is at the superior z part boundary
-  LOGICAL(lp)  :: z_max_boundary_part  
+  LOGICAL(lp)  :: z_max_boundary_part
   !> Type of particle boundary condition at the inferior x boundary
   INTEGER(idp) :: pbound_x_min
   !> Type of boundary condition at the superior x boundary
@@ -1230,23 +1230,23 @@ MODULE shared_data
   !> global particle domain length in z: zmax_part - zmin_part
   REAL(num)                           :: length_z_part
   !> Offset between grid and particle limits (x min bound)
-  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
-  !> particle boundary conditions. Forced to 0 otherwise 
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting
+  !> particle boundary conditions. Forced to 0 otherwise
   REAL(num)                           :: offset_grid_part_x_min =0.0_num
-  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
-  !> particle boundary conditions. Forced to 0 otherwise 
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting
+  !> particle boundary conditions. Forced to 0 otherwise
   REAL(num)                           :: offset_grid_part_x_max =0.0_num
-  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
-  !> particle boundary conditions. Forced to 0 otherwise 
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting
+  !> particle boundary conditions. Forced to 0 otherwise
   REAL(num)                           :: offset_grid_part_y_min =0.0_num
-  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
-  !> particle boundary conditions. Forced to 0 otherwise 
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting
+  !> particle boundary conditions. Forced to 0 otherwise
   REAL(num)                           :: offset_grid_part_y_max =0.0_num
-  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
-  !> particle boundary conditions. Forced to 0 otherwise 
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting
+  !> particle boundary conditions. Forced to 0 otherwise
   REAL(num)                           :: offset_grid_part_z_min =0.0_num
-  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting 
-  !> particle boundary conditions. Forced to 0 otherwise 
+  !> Default is 0. NB:at present this can be used only for absorbing/reinjecting
+  !> particle boundary conditions. Forced to 0 otherwise
   REAL(num)                           :: offset_grid_part_z_max =0.0_num
   ! Sorting
   !> Activation of the sorting
@@ -1314,7 +1314,7 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho, rhoold
   !> Electric Field divergence
   REAL(num), POINTER, DIMENSION(:, :, :) :: dive
-  
+
   ! Values used for load balancing
   REAL(num) :: mpitime_per_it
   REAL(num) :: max_time_per_it
@@ -1330,14 +1330,14 @@ END MODULE shared_data
 #if defined(FFTW)
 MODULE fourier!#do not parse
   USE constants
-  ! Fourier k-vectors 
-  ! -- Along X 
+  ! Fourier k-vectors
+  ! -- Along X
   REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit, kxunit_mod
   ! -- Along Y
   REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit, kyunit_mod
-  ! -- Along Z 
+  ! -- Along Z
   REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit, kzunit_mod
-  ! - 3D k vectors 
+  ! - 3D k vectors
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kxn, kyn, kzn, k, kx, ky, kz, kmag
   REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod
   COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxmn, kxpn
@@ -1347,10 +1347,10 @@ MODULE fourier!#do not parse
   COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kym, kyp
   COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzm, kzp
   INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
-  
-  ! - PSATD Coefficients 
+
+  ! - PSATD Coefficients
   COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult,  &
-  ERhooldmult, BJmult, axm, axp, aym, ayp, azm, azp  
+  ERhooldmult, BJmult, axm, axp, aym, ayp, azm, azp
 END MODULE fourier
 #endif
 
