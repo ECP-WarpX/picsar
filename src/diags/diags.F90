@@ -601,6 +601,67 @@ MODULE diagnostics
 
   ! ______________________________________________________________________________________
   !> @brief
+  !> This subroutine returns a given field on the particle.
+  !> For ex, ey, ez, bx, by, bz, quantity must be egal respectively to 1, 2, 3, 4,
+  !> 5, 6.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE getquantity_field(ispecies, quantity, nptot, quantityarray)
+      USE particle_tilemodule
+      USE particle_speciesmodule
+      USE tile_params
+      USE particles
+      USE tiling
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: ispecies
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: quantityarray
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: quantity
+      INTEGER(idp) :: ix, iy, iz, np
+      INTEGER(idp) :: compt
+      TYPE(particle_tile), POINTER :: curr_tile
+      TYPE(particle_species), POINTER :: curr
+
+      curr=>species_parray(ispecies)
+      compt = 1
+
+      ! Loop over the tiles
+      DO iz=1, ntilez
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            np = curr_tile%np_tile(1)
+
+            SELECT CASE (quantity)
+              CASE (1)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ex(1:np)
+              CASE (2)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ey(1:np)
+              CASE (3)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ez(1:np)
+              CASE (4)
+                quantityarray(compt:compt+np-1) = curr_tile%part_bx(1:np)
+              CASE (5)
+                quantityarray(compt:compt+np-1) = curr_tile%part_by(1:np)
+              CASE (6)
+                quantityarray(compt:compt+np-1) = curr_tile%part_bz(1:np)
+            END SELECT
+
+            compt = compt + np
+          END DO
+        END DO
+      END DO
+
+  END SUBROUTINE getquantity_field
+  
+  ! ______________________________________________________________________________________
+  !> @brief
   !> Determine the local kinetic energy for the species ispecies.
   !
   !> @author
