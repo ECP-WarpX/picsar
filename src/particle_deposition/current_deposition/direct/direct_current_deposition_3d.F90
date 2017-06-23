@@ -456,9 +456,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 
   ! Reduction of jxcells in jx
   ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
-  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
-  DO iz = MAX(lorig, jx_nguard(3)+1), MIN(lorig+ncz-1, jx_nvalid(3)+jx_nguard(3)-1)
-    DO iy = MAX(korig, jx_nguard(2)+1), MIN(korig+ncy-1, jx_nvalid(2)+jx_nguard(2)-1)
+  ! even when taking into account the additional 0/1 offsets in mxoff, myoff, mzoff
+  DO iz = MAX(lorig, jx_nguard(3)), MIN(lorig+ncz-1, jx_nvalid(3)+jx_nguard(3)-1)
+    DO iy = MAX(korig, jx_nguard(2)), MIN(korig+ncy-1, jx_nvalid(2)+jx_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -468,7 +468,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix = MAX(jorig, jx_nguard(1)+1), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1)-1)
+      DO ix = MAX(jorig, jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1)-1)
         ! Compute linearized index
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         jx(ix+mxoff(1), iy+myoff(1), iz+mzoff(1)) = jx(ix+mxoff(1), iy+myoff(1),      &
@@ -497,10 +497,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   END DO
 
   ! Reduction of jycells in jy
-  ! Note: the bounds below make sure that we never go out-of-bound for jycells,
-  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
-  DO iz = MAX(lorig, jy_nguard(3)+1), MIN(lorig+ncz-1, jy_nvalid(3)+jy_nguard(3)-1)
-    DO iy = MAX(korig, jy_nguard(2)+1), MIN(korig+ncy-1, jy_nvalid(2)+jy_nguard(2)-1)
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional 0/1 offsets in mxoff, myoff, mzoff
+  DO iz = MAX(lorig, jy_nguard(3)), MIN(lorig+ncz-1, jy_nvalid(3)+jy_nguard(3)-1)
+    DO iy = MAX(korig, jy_nguard(2)), MIN(korig+ncy-1, jy_nvalid(2)+jy_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -510,7 +510,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix = MAX(jorig, jy_nguard(1)+1), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1)-1)
+      DO ix = MAX(jorig, jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1)-1)
         ! Compute linearized index
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         jy(ix+mxoff(1), iy+myoff(1), iz+mzoff(1)) = jy(ix+mxoff(1), iy+myoff(1),      &
@@ -539,10 +539,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   END DO
 
   ! Reduction of jzcells in jz
-  ! Note: the bounds below make sure that we never go out-of-bound for jzcells,
-  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
-  DO iz = MAX(lorig, jz_nguard(3)+1), MIN(lorig+ncz-1, jz_nvalid(3)+jz_nguard(3)-1)
-    DO iy = MAX(korig, jz_nguard(2)+1), MIN(korig+ncy-1, jz_nvalid(2)+jz_nguard(2)-1)
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional 0/1 offsets in mxoff, myoff, mzoff
+  DO iz = MAX(lorig, jz_nguard(3)), MIN(lorig+ncz-1, jz_nvalid(3)+jz_nguard(3)-1)
+    DO iy = MAX(korig, jz_nguard(2)), MIN(korig+ncy-1, jz_nvalid(2)+jz_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -552,7 +552,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix = MAX(jorig, jz_nguard(1)+1), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1)-1)
+      DO ix = MAX(jorig, jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1)-1)
         ! Compute linearized index
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         jz(ix+mxoff(1), iy+myoff(1), iz+mzoff(1)) = jz(ix+mxoff(1), iy+myoff(1),      &
