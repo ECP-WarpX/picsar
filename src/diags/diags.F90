@@ -533,17 +533,17 @@ MODULE diagnostics
 
             SELECT CASE (quantity)
               CASE (1)
-                quantityarray(compt:compt+np) = curr_tile%part_x(1:np)
+                quantityarray(compt:compt+np-1) = curr_tile%part_x(1:np)
               CASE (2)
-                quantityarray(compt:compt+np) = curr_tile%part_y(1:np)
+                quantityarray(compt:compt+np-1) = curr_tile%part_y(1:np)
               CASE (3)
-                quantityarray(compt:compt+np) = curr_tile%part_z(1:np)
+                quantityarray(compt:compt+np-1) = curr_tile%part_z(1:np)
               CASE (4)
-                quantityarray(compt:compt+np) = curr_tile%part_ux(1:np)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ux(1:np)
               CASE (5)
-                quantityarray(compt:compt+np) = curr_tile%part_uy(1:np)
+                quantityarray(compt:compt+np-1) = curr_tile%part_uy(1:np)
               CASE (6)
-                quantityarray(compt:compt+np) = curr_tile%part_uz(1:np)
+                quantityarray(compt:compt+np-1) = curr_tile%part_uz(1:np)
             END SELECT
 
             compt = compt + np
@@ -591,7 +591,7 @@ MODULE diagnostics
           DO ix=1, ntilex
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             np = curr_tile%np_tile(1)
-            quantityarray(compt:compt+np) = curr_tile%pid(1:np, quantitypid)
+            quantityarray(compt:compt+np-1) = curr_tile%pid(1:np, quantitypid)
             compt = compt + np
           END DO
         END DO
@@ -659,7 +659,7 @@ MODULE diagnostics
       END DO
 
   END SUBROUTINE getquantity_field
-  
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Determine the local kinetic energy for the species ispecies.
