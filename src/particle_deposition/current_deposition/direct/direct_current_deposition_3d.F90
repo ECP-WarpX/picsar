@@ -1120,23 +1120,17 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
 
+  ! Lower integer position where the particles can deposit
+  jorig=-2; korig=-2;lorig=-2
   ! Find the maximal number of cells in each direction, so as to
   ! allocate the linearized 1D arrays
-  ncx = MAX( jx_nvalid(1)+2*jx_nguard(1), &
-  jy_nvalid(1)+2*jy_nguard(1), &
-  jz_nvalid(1)+2*jz_nguard(1) )
-  ncy = MAX( jx_nvalid(2)+2*jx_nguard(2), &
-  jy_nvalid(2)+2*jy_nguard(2), &
-  jz_nvalid(2)+2*jz_nguard(2) )
-  ncz = MAX( jx_nvalid(3)+2*jx_nguard(3), &
-  jy_nvalid(3)+2*jy_nguard(3), &
-  jz_nvalid(3)+2*jz_nguard(3) )
+  ncx = MAX( jx_nvalid(1), jy_nvalid(1), jz_nvalid(1) ) + 4
+  ncy = MAX( jx_nvalid(2), jy_nvalid(2), jz_nvalid(2) ) + 4
+  ncz = MAX( jx_nvalid(3), jy_nvalid(3), jz_nvalid(3) ) + 4
   ncxy = ncx*ncy
   NCELLS = ncx*ncy*ncz
   ALLOCATE(jxcells(8, NCELLS), jycells(8, NCELLS), jzcells(8, NCELLS))
   jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num
-
-  jorig=-2; korig=-2;lorig=-2
 
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
@@ -1379,11 +1373,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   ! ---------------------------------------------------------------
 
   ! Reduction of jxcells in jx
-  ! Because of the +/- 1 offset in y and z for the 8 nodes (see myoff, mzoff),
-  ! the loops in iz and iy don't span the full extent of the grid,
-  ! but the loop in ix does.
-  DO iz=-jx_nguard(3)+1,jx_nvalid(3)+jx_nguard(3)-1
-    DO iy=-jx_nguard(2)+1,jx_nvalid(2)+jx_nguard(2)-1
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
+  DO iz = MAX(lorig, jx_nguard(3)+1), MIN(lorig+ncz-1, jx_nvalid(3)+jx_nguard(3)-1)
+    DO iy = MAX(korig, jx_nguard(2)+1), MIN(korig+ncy-1, jx_nvalid(2)+jx_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1393,7 +1386,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-jx_nguard(1),jx_nvalid(1)+jx_nguard(1)
+      DO ix = MAX(jorig, jx_nguard(1)+1), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1)-1)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jx(ix,iy+myoff(1),iz+mzoff(1))=jx(ix,iy+myoff(1),iz+mzoff(1))+jxcells(1, ic)
@@ -1414,11 +1407,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   END DO
 
   ! Reduction of jycells in jy
-  ! Because of the +/- 1 offset in y and z for the 8 nodes (see myoff, mzoff),
-  ! the loops in iz and iy don't span the full extent of the grid,
-  ! but the loop in ix does.
-  DO iz=-jy_nguard(3)+1,jy_nvalid(3)+jy_nguard(3)-1
-    DO iy=-jy_nguard(2)+1,jy_nvalid(2)+jy_nguard(2)-1
+  ! Note: the bounds below make sure that we never go out-of-bound for jycells,
+  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
+  DO iz = MAX(lorig, jy_nguard(3)+1), MIN(lorig+ncz-1, jy_nvalid(3)+jy_nguard(3)-1)
+    DO iy = MAX(korig, jy_nguard(2)+1), MIN(korig+ncy-1, jy_nvalid(2)+jy_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1428,7 +1420,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-jy_nguard(2),jy_nvalid(2)+jy_nguard(2)
+    DO ix = MAX(jorig, jy_nguard(1)+1), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1)-1)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jy(ix,iy+myoff(1),iz+mzoff(1))=jy(ix,iy+myoff(1),iz+mzoff(1))+jycells(1, ic)
@@ -1449,11 +1441,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   END DO
 
   ! Reduction of jzcells in jz
-  ! Because of the +/- 1 offset in y and z for the 8 nodes (see myoff, mzoff),
-  ! the loops in iz and iy don't span the full extent of the grid,
-  ! but the loop in ix does.
-  DO iz=-jz_nguard(3)+1,jz_nvalid(3)+jz_nguard(3)-1
-    DO iy=-jz_nguard(2)+1,jz_nvalid(2)+jz_nguard(2)-1
+  ! Note: the bounds below make sure that we never go out-of-bound for jzcells,
+  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
+  DO iz = MAX(lorig, jz_nguard(3)+1), MIN(lorig+ncz-1, jz_nvalid(3)+jz_nguard(3)-1)
+    DO iy = MAX(korig, jz_nguard(2)+1), MIN(korig+ncy-1, jz_nvalid(2)+jz_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1463,7 +1454,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-jz_nguard(2),jz_nvalid(2)+jz_nguard(2)
+    DO ix = MAX(jorig, jz_nguard(1)+1), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1)-1)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jz(ix,iy+myoff(1),iz+mzoff(1))=jz(ix,iy+myoff(1),iz+mzoff(1))+jzcells(1, ic)
