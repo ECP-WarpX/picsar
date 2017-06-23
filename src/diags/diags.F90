@@ -429,7 +429,7 @@ MODULE diagnostics
 
     INTEGER(idp), DIMENSION(1), INTENT(INOUT) :: nptot_loc
     INTEGER(idp), INTENT(IN) :: is
-    INTEGER(idp) :: ix,iy,iz,ip,n
+    INTEGER(idp) :: ix,iy,iz
     TYPE(particle_tile), POINTER :: curr_tile
     TYPE(particle_species), POINTER :: curr
 
@@ -439,7 +439,7 @@ MODULE diagnostics
     ! Loop over the tiles
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(curr, ntilex,ntiley,ntilez) &
-    !$OMP PRIVATE(ix,iy,iz,n,is,curr_tile,ip) &
+    !$OMP PRIVATE(ix,iy,iz,is,curr_tile) &
     !$OMP reduction(+:nptot_loc)
     DO iz=1, ntilez
       DO iy=1, ntiley
@@ -659,6 +659,172 @@ MODULE diagnostics
       END DO
 
   END SUBROUTINE getquantity_field
+
+
+    ! ______________________________________________________________________________________
+    !> @brief
+    !> Load particle quantity and select particles which cross a moving plane and return
+    !> their indexes and the number of True. Assume that the inital total number of particles
+    !> is known.
+    !
+    !> @author
+    !> Guillaume Blaclard
+    !
+    !> @creation
+    !> June 2017
+    ! ______________________________________________________________________________________
+    SUBROUTINE load_test_plane(nptot, plane_position, plane_position_old,               &
+    plane_normal_vector, particle_x, particle_y, particle_z, particle_x_old,            &
+    particle_y_old, particle_z_old, npnew, index_particle, particle_relative_position,  &
+    particle_relative_position_old)
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: nptot
+      REAL(num), DIMENSION(3), INTENT(IN) :: plane_position
+      REAL(num), DIMENSION(3), INTENT(IN) :: plane_position_old
+      REAL(num), DIMENSION(3), INTENT(IN) :: plane_normal_vector
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_x
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_y
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_z
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_x_old
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_y_old
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_z_old
+      INTEGER(idp), INTENT(OUT) :: npnew
+      INTEGER(idp), DIMENSION(nptot), INTENT(OUT) :: index_particle
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_relative_position
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_relative_position_old
+
+      INTEGER(idp) :: i
+      npnew = 0_idp
+      DO i=1, nptot
+        particle_relative_position_old(i) =                                             &
+        plane_normal_vector(1)*(particle_x_old(i) - plane_position_old(1))              &
+        + plane_normal_vector(2)*(particle_y_old(i) - plane_position_old(2))            &
+        + plane_normal_vector(3)*(particle_z_old(i) - plane_position_old(3))
+
+        particle_relative_position(i) =                                                 &
+        plane_normal_vector(1)*(particle_x(i) - plane_position(1))                      &
+        + plane_normal_vector(2)*(particle_y(i) - plane_position(2))                    &
+        + plane_normal_vector(3)*(particle_z(i) - plane_position(3))
+
+        IF ( particle_relative_position_old(i) <= 0 .AND.                               &
+        particle_relative_position(i) >0) THEN
+          index_particle(i) = 1
+          npnew = npnew +1
+
+        END IF
+      END DO
+
+    END SUBROUTINE load_test_plane
+
+    ! ______________________________________________________________________________________
+    !> @brief
+    !> Select a particle quantity thanks to the mask index_particle.
+    !
+    !> @author
+    !> Guillaume Blaclard
+    !
+    !> @creation
+    !> June 2017
+    ! ______________________________________________________________________________________
+    SUBROUTINE select_quantity(nptot, npnew, index_particle, quantity_array_tot,        &
+    quantity_array_new)
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: npnew
+      INTEGER(idp), DIMENSION(nptot), INTENT(IN) :: index_particle
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: quantity_array_tot
+      REAL(num), DIMENSION(npnew), INTENT(OUT) :: quantity_array_new
+      INTEGER(idp) :: compt
+      INTEGER(idp) :: i
+
+      compt = 1
+      DO i=1, nptot
+        IF ( index_particle(i) == 1 ) THEN
+          quantity_array_new(compt) = quantity_array_tot(i)
+          compt = compt + 1
+        END IF
+      END DO
+    END SUBROUTINE select_quantity
+
+    ! ______________________________________________________________________________________
+    !> @brief
+    !> Select a particle quantity thanks to the mask index_particle.
+    !
+    !> @author
+    !> Guillaume Blaclard
+    !
+    !> @creation
+    !> June 2017
+    ! ______________________________________________________________________________________
+    SUBROUTINE interpolate_quantity( index_particle, nptot, npnew, previous_quantity,   &
+    current_quantity, particle_relative_position, particle_relative_position_old,       &
+    captured_quantity)
+
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: npnew
+      INTEGER(idp), DIMENSION(nptot), INTENT(IN) :: index_particle
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: previous_quantity
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: current_quantity
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_relative_position
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_relative_position_old
+      REAL(num), DIMENSION(npnew), INTENT(OUT) :: captured_quantity
+      REAL(num), DIMENSION(:), ALLOCATABLE :: previous_quantity_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: current_quantity_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: particle_relative_position_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: particle_relative_position_old_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: norm_factor
+      REAL(num), DIMENSION(:), ALLOCATABLE :: interp_current
+      REAL(num), DIMENSION(:), ALLOCATABLE :: interp_previous
+      INTEGER(idp) :: i
+
+      IF (npnew > 0) THEN
+        ALLOCATE (particle_relative_position_sbs(npnew))
+        ALLOCATE (particle_relative_position_old_sbs(npnew))
+        ALLOCATE (previous_quantity_sbs(npnew))
+        ALLOCATE (current_quantity_sbs(npnew))
+        ALLOCATE (interp_current(npnew))
+        ALLOCATE (interp_previous(npnew))
+        ALLOCATE (norm_factor(npnew))
+
+        ! Take the index of particles where index_particle is true
+        CALL select_quantity(nptot, npnew, index_particle, previous_quantity,           &
+        previous_quantity_sbs)
+        CALL select_quantity(nptot, npnew, index_particle, current_quantity,            &
+        current_quantity_sbs)
+        CALL select_quantity(nptot, npnew, index_particle,                              &
+        particle_relative_position, particle_relative_position_sbs)
+        CALL select_quantity(nptot, npnew, index_particle,                              &
+        particle_relative_position_old, particle_relative_position_old_sbs)
+
+        ! Interpolate particle quantity to the time when they cross the plane
+        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i) SHARED(npnew, norm_factor,           &
+        !$OMP particle_relative_position_old_sbs, interp_current, interp_previous,      &
+        !$OMP particle_relative_position_sbs, previous_quantity_sbs,                    &
+        !$OMP current_quantity_sbs, captured_quantity)
+        DO i=1, npnew
+          norm_factor(i) = 1 / ( ABS(particle_relative_position_old_sbs(i))             &
+                      + particle_relative_position_sbs(i) )
+          interp_current(i) = ABS(particle_relative_position_old_sbs(i)) * norm_factor(i)
+          interp_previous(i) = particle_relative_position_sbs(i) * norm_factor(i)
+
+          captured_quantity(i) = interp_current(i) * current_quantity_sbs(i)            &
+                               + interp_previous(i) * previous_quantity_sbs(i)
+        END DO
+        !$OMP END PARALLEL DO
+        DEALLOCATE (particle_relative_position_sbs)
+        DEALLOCATE (particle_relative_position_old_sbs)
+        DEALLOCATE (previous_quantity_sbs)
+        DEALLOCATE (current_quantity_sbs)
+        DEALLOCATE (interp_current)
+        DEALLOCATE (interp_previous)
+        DEALLOCATE (norm_factor)
+      END IF
+    END SUBROUTINE interpolate_quantity
+
 
   ! ______________________________________________________________________________________
   !> @brief
