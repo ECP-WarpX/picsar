@@ -57,7 +57,7 @@ def correct_indentation(input_file,output_file,indent_block):
 	pattern_block_end="^\s*(END |ENDDO|ENDIF|END$|END\!)"
 	pattern_block_intermediate="^\s*(CASE|ELSE)"
 	pattern_no_trailing_spaces="^\s*(.*)(?<=\S)\s*$"
-	pattern_comp_directive="^#"
+	pattern_comp_directive="^\s*#"
 	# -- Sequentially go through input list of lines to identify blocks to indent 
 	# - Some init first 
 	curr_indent=0
