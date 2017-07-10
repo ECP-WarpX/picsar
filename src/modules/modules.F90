@@ -549,6 +549,12 @@ MODULE particle_properties
   INTEGER(idp) :: yoldpid
   !> Index in pid array corresponding to old x positions of particles
   INTEGER(idp) :: zoldpid
+  !> Index in pid array corresponding to old x momentum of particles
+  INTEGER(idp) :: uxoldpid
+  !> Index in pid array corresponding to old y momentum of particles
+  INTEGER(idp) :: uyoldpid
+  !> Index in pid array corresponding to old z momentum of particles
+  INTEGER(idp) :: uzoldpid
   !> This flag seems to be unused
   LOGICAL(lp) :: l_initongrid = .FALSE.
   !> Flag to activate the use of weight for the particles
@@ -1536,6 +1542,3 @@ MODULE python_pointers
 #endif
   !DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers
-
-
-
