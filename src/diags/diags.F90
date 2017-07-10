@@ -635,12 +635,12 @@ MODULE diagnostics
       REAL(num), DIMENSION(3), INTENT(IN) :: plane_position
       REAL(num), DIMENSION(3), INTENT(IN) :: plane_position_old
       REAL(num), DIMENSION(3), INTENT(IN) :: plane_normal_vector
-      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_x
-      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_y
-      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_z
-      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_x_old
-      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_y_old
-      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_z_old
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_x
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_y
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_z
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_x_old
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_y_old
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_z_old
       INTEGER(idp), INTENT(OUT) :: npnew
       INTEGER(idp), DIMENSION(nptot), INTENT(OUT) :: index_particle
       REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_relative_position
