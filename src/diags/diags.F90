@@ -482,6 +482,7 @@ MODULE diagnostics
     INTEGER(idp), INTENT(IN) :: is
     INTEGER(idp), DIMENSION(1) :: nptot_loc
 
+    nptot(1) = 0_idp
     nptot_loc(1) = 0_idp
     CALL get_local_number_of_particles_from_species(is, nptot_loc)
 
@@ -493,10 +494,11 @@ MODULE diagnostics
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine returns a given position or the momentum of particles in
+  !> This subroutine returns a given position, a momentum or a field of a particle in
   !> the domain from species of index ispecies.
-  !> For x, y, z, ux, uy, uz, quantity must be egal respectively to 1, 2, 3, 4,
-  !> 5, 6.
+  !> For x, y, z, ux, uy, uz, quantity must be egal respectively to 1, 2, 3, 4, 5, 6.
+  !> For ex, ey, ez, bx, by, bz, quantity must be egal respectively to 7, 8, 9, 10, 11
+  !> and 12.
   !
   !> @author
   !> Guillaume Blaclard
@@ -532,18 +534,30 @@ MODULE diagnostics
             np = curr_tile%np_tile(1)
 
             SELECT CASE (quantity)
-              CASE (1)
+              CASE  (1)
                 quantityarray(compt:compt+np-1) = curr_tile%part_x(1:np)
-              CASE (2)
+              CASE  (2)
                 quantityarray(compt:compt+np-1) = curr_tile%part_y(1:np)
-              CASE (3)
+              CASE  (3)
                 quantityarray(compt:compt+np-1) = curr_tile%part_z(1:np)
-              CASE (4)
+              CASE  (4)
                 quantityarray(compt:compt+np-1) = curr_tile%part_ux(1:np)
-              CASE (5)
+              CASE  (5)
                 quantityarray(compt:compt+np-1) = curr_tile%part_uy(1:np)
-              CASE (6)
+              CASE  (6)
                 quantityarray(compt:compt+np-1) = curr_tile%part_uz(1:np)
+              CASE  (7)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ex(1:np)
+              CASE  (8)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ey(1:np)
+              CASE  (9)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ez(1:np)
+              CASE (10)
+                quantityarray(compt:compt+np-1) = curr_tile%part_bx(1:np)
+              CASE (11)
+                quantityarray(compt:compt+np-1) = curr_tile%part_by(1:np)
+              CASE (12)
+                quantityarray(compt:compt+np-1) = curr_tile%part_bz(1:np)
             END SELECT
 
             compt = compt + np
@@ -601,9 +615,9 @@ MODULE diagnostics
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine returns a given field on the particle.
-  !> For ex, ey, ez, bx, by, bz, quantity must be egal respectively to 1, 2, 3, 4,
-  !> 5, 6.
+  !> Load particle quantity and select particles which cross a moving plane and return
+  !> their indexes and the number of True. Assume that the inital total number of particles
+  !> is known.
   !
   !> @author
   !> Guillaume Blaclard
@@ -611,84 +625,22 @@ MODULE diagnostics
   !> @creation
   !> June 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE getquantity_field(ispecies, quantity, nptot, quantityarray)
-      USE particle_tilemodule
-      USE particle_speciesmodule
-      USE tile_params
-      USE particles
-      USE tiling
-      IMPLICIT NONE
-
-      INTEGER(idp), INTENT(IN) :: ispecies
-      REAL(num), DIMENSION(nptot), INTENT(OUT) :: quantityarray
-      INTEGER(idp), INTENT(IN) :: nptot
-      INTEGER(idp), INTENT(IN) :: quantity
-      INTEGER(idp) :: ix, iy, iz, np
-      INTEGER(idp) :: compt
-      TYPE(particle_tile), POINTER :: curr_tile
-      TYPE(particle_species), POINTER :: curr
-
-      curr=>species_parray(ispecies)
-      compt = 1
-
-      ! Loop over the tiles
-      DO iz=1, ntilez
-        DO iy=1, ntiley
-          DO ix=1, ntilex
-            curr_tile=>curr%array_of_tiles(ix,iy,iz)
-            np = curr_tile%np_tile(1)
-
-            SELECT CASE (quantity)
-              CASE (1)
-                quantityarray(compt:compt+np-1) = curr_tile%part_ex(1:np)
-              CASE (2)
-                quantityarray(compt:compt+np-1) = curr_tile%part_ey(1:np)
-              CASE (3)
-                quantityarray(compt:compt+np-1) = curr_tile%part_ez(1:np)
-              CASE (4)
-                quantityarray(compt:compt+np-1) = curr_tile%part_bx(1:np)
-              CASE (5)
-                quantityarray(compt:compt+np-1) = curr_tile%part_by(1:np)
-              CASE (6)
-                quantityarray(compt:compt+np-1) = curr_tile%part_bz(1:np)
-            END SELECT
-
-            compt = compt + np
-          END DO
-        END DO
-      END DO
-
-  END SUBROUTINE getquantity_field
-
-
-    ! ______________________________________________________________________________________
-    !> @brief
-    !> Load particle quantity and select particles which cross a moving plane and return
-    !> their indexes and the number of True. Assume that the inital total number of particles
-    !> is known.
-    !
-    !> @author
-    !> Guillaume Blaclard
-    !
-    !> @creation
-    !> June 2017
-    ! ______________________________________________________________________________________
-    SUBROUTINE load_test_plane(nptot, plane_position, plane_position_old,               &
-    plane_normal_vector, particle_x, particle_y, particle_z, particle_x_old,            &
-    particle_y_old, particle_z_old, npnew, index_particle, particle_relative_position,  &
-    particle_relative_position_old)
+  SUBROUTINE load_test_plane(nptot, plane_position, plane_position_old,                 &
+  plane_normal_vector, particle_x, particle_y, particle_z, particle_x_old,              &
+  particle_y_old, particle_z_old, npnew, index_particle, particle_relative_position,    &
+  particle_relative_position_old)
       IMPLICIT NONE
 
       INTEGER(idp), INTENT(IN) :: nptot
       REAL(num), DIMENSION(3), INTENT(IN) :: plane_position
       REAL(num), DIMENSION(3), INTENT(IN) :: plane_position_old
       REAL(num), DIMENSION(3), INTENT(IN) :: plane_normal_vector
-      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_x
-      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_y
-      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_z
-      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_x_old
-      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_y_old
-      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_z_old
+      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_x
+      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_y
+      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_z
+      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_x_old
+      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_y_old
+      REAL(num), DIMENSION(nptot), INTENT((IN) :: particle_z_old
       INTEGER(idp), INTENT(OUT) :: npnew
       INTEGER(idp), DIMENSION(nptot), INTENT(OUT) :: index_particle
       REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_relative_position
@@ -715,20 +667,20 @@ MODULE diagnostics
         END IF
       END DO
 
-    END SUBROUTINE load_test_plane
+  END SUBROUTINE load_test_plane
 
-    ! ______________________________________________________________________________________
-    !> @brief
-    !> Select a particle quantity thanks to the mask index_particle.
-    !
-    !> @author
-    !> Guillaume Blaclard
-    !
-    !> @creation
-    !> June 2017
-    ! ______________________________________________________________________________________
-    SUBROUTINE select_quantity(nptot, npnew, index_particle, quantity_array_tot,        &
-    quantity_array_new)
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Select a particle quantity thanks to the mask index_particle.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE select_quantity(nptot, npnew, index_particle, quantity_array_tot,          &
+  quantity_array_new)
       IMPLICIT NONE
 
       INTEGER(idp), INTENT(IN) :: nptot
@@ -746,21 +698,22 @@ MODULE diagnostics
           compt = compt + 1
         END IF
       END DO
-    END SUBROUTINE select_quantity
+  END SUBROUTINE select_quantity
 
-    ! ______________________________________________________________________________________
-    !> @brief
-    !> Select a particle quantity thanks to the mask index_particle.
-    !
-    !> @author
-    !> Guillaume Blaclard
-    !
-    !> @creation
-    !> June 2017
-    ! ______________________________________________________________________________________
-    SUBROUTINE interpolate_quantity( index_particle, nptot, npnew, previous_quantity,   &
-    current_quantity, particle_relative_position, particle_relative_position_old,       &
-    captured_quantity)
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Return the value of captured_quantity, interpolated value between previous_quantity
+  !> and current_quantity on the plane.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE interpolate_quantity( index_particle, nptot, npnew, previous_quantity,     &
+  current_quantity, particle_relative_position, particle_relative_position_old,         &
+  captured_quantity)
 
       IMPLICIT NONE
 
@@ -823,7 +776,7 @@ MODULE diagnostics
         DEALLOCATE (interp_previous)
         DEALLOCATE (norm_factor)
       END IF
-    END SUBROUTINE interpolate_quantity
+  END SUBROUTINE interpolate_quantity
 
 
   ! ______________________________________________________________________________________
