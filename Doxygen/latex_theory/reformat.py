@@ -13,7 +13,10 @@ text = text.replace( r'\bm', r'\boldsymbol' )
 # Replace inline math by proper math for Doxygen
 text = text.replace( r'$$\begin{aligned}', r'\f{eqnarray*}{' )
 text = text.replace( r'\end{aligned}$$', r'\f}' )
-text = text.replace( '$', r'\f$' )
+text = re.sub( r'\$\$[\s$]*\n', r'\\f]\n', text )
+text = re.sub( r'(\$\s)*\$\$\s*(?P<first_letter>\S)', r'\\f[\g<first_letter>', text )
+text = text.replace( r'$', r'\f$' )
+
 
 # Add header and footer for Doxygen
 text = '/** @page "Theory"\n\n' + text + '\n*/\n'
