@@ -4,7 +4,9 @@ This directory contain the source files for the PICSAR documentation. The docume
 
 # Building the documentation
 
-In order to build the documentation, you need to first install. Doxygen can be installed under Linux Debian by using
+In order to build the documentation, you need to first install Doxygen and pandoc. 
+
+Doxygen can be installed under Linux Debian by using
 ```
 apt-get install doxygen
 ```
@@ -13,10 +15,16 @@ and under MacOSX by using MacPorts
 sudo port install doxygen
 ```
 
-The documentation can then be built by typing, from the current directory:
+Pandoc can be installed with anaconda
 ```
-doxygen Doxyfile
+conda install pandoc
 ```
+
+Then the documentation can be built by typing
+```
+make html
+```
+
 
 # Visualizing the documentation
 
