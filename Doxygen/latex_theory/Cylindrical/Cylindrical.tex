@@ -1,0 +1,201 @@
+\input{../newcommands}
+
+Although full PIC codes are powerful tools, which capture a wide range
+of physical phenomena, they also require large computational ressources.
+This is partly due to the use of a 3D Cartesian grid, which
+leads to a very large number of grid cells. (Typical 3D simulations of
+laser-wakefield acceleration require $\sim 10^6$--$ 10^8$ grid
+cells.) For this reason, these algorithms need to be highly parallelized, and
+high-resolution simulations can only be run on costly large-scale
+computer facilities. However, when the driver is
+cylindrically-symmetric, it is possible to take advantage of the
+symmetry of the problem to reduce the computational cost of the algorithm \cite{godfrey1985iprop,LifschitzJCP2009,DavidsonJCP2015,Lehe2016}.
+
+\subsection{Azimuthal decomposition}
+Let us consider the fields $\vec{E}$, $\vec{B}$, $\vec{J}$ and $\rho$
+ in cylindral coordinates $(r,\theta,z)$, expressed as a Fourier series in $\theta$:
+%
+\begin{equation}
+F(r,\theta,z) = \mathrm{Re}\left[ \sum_{\ell=0}^\infty
+  \tilde{F}_{\ell}(r,z) e^{-i\ell\theta} \right]
+\label{eq:chap2:azimuthal}
+\end{equation}
+%
+\begin{equation}
+\mathrm{with} \qquad \tilde{F}_{\ell} = C_\ell \int_0^{2\pi} d\theta
+\,F(r,\theta,z)e^{i\ell\theta} \qquad
+\label{eq:chap2:Fourier-coeffs}
+\end{equation}
+\begin{equation}
+\mathrm{and} \;
+\left \{ \begin{array}{l l}
+C_{0} = 1/2\pi &\\
+C_\ell = 1/\pi &\mathrm{for}\,\ell > 0
+\end{array} \right.
+\end{equation}
+%
+where $F$ represents any of the quantities $E_r$,
+$E_\theta$, $E_z$, $B_r$, $B_\theta$, $B_z$, $J_r$, $J_\theta$, $J_z$
+are $\rho$, and where the
+$\tilde{F}_\ell$ are the associated Fourier components ($\ell$ is the
+index of the corresponding azimuthal mode). In the general case, this
+azimuthal decomposition does not simplify the problem, since an
+infinity of modes have to be considered in (\ref{eq:chap2:azimuthal}). However, in the case of a
+cylindrically-symmetric laser pulse, only the very first modes have
+non-zero components. For instance, the wakefield is represented
+exclusively by the mode $\ell = 0$. (This is because the quantities $E_r$,
+$E_\theta$, $E_z$, $B_r$, $B_\theta$, $B_z$, $J_r$, $J_\theta$, $J_z$
+and $\rho$ associated with the
+wakefield are independent of $\theta$.) On the other hand, the field
+of the laser pulse \emph{does}
+depend on $\theta$, in cylindrical coordinates. For example, for a
+cylindrically-symmetric pulse propagating along $z$ and polarized along $\vec{e}_\alpha = \cos(\alpha)\vec{e}_x + \sin(\alpha)\vec{e}_y$:
+%
+\begin{align}
+\vec{E} &= E_0(r,z)\vec{e}_\alpha \\
+& = E_0(r,z) [\; \cos(\alpha)(\cos(\theta)\vec{e}_r - \sin(\theta)\vec{e}_\theta) \; \nonumber \\
+& + \; \sin(\alpha)(\sin(\theta)\vec{e}_r + \cos(\theta)\vec{e}_\theta) \; ]\\
+& = \mathrm{Re}[ \; E_0(r,z) e^{i\alpha} e^{-i\theta} \; ]\vec{e}_r \; \nonumber \\
+& + \; \mathrm{Re}[ \; -i E_0(r,z) e^{i\alpha} e^{-i\theta} \; ]\vec{e}_\theta.
+\end{align}
+%
+Here the amplitude $E_0$ does not depend on $\theta$ because the pulse was assumed
+to be cylindrically symmetric. In this case, the above relation shows
+that the fields $E_r$ and $E_\theta$ of the laser are represented
+exclusively by the mode $\ell = 1$. A similar calculation shows that
+the same holds for $B_r$ and $B_\theta$. On the whole, only the modes
+$\ell = 0$ and $\ell = 1$ are a priori necessary to model
+laser-wakefield acceleration.
+Under those conditions, the infinite sum in
+(\ref{eq:chap2:azimuthal}) is truncated at a chosen $\ell_{max}$. In
+principle, $\ell_{max} = 1$ is sufficient for laser-wakefield
+acceleration. However, $\ell_{max}$ is kept as a free parameter in the algorithm, in order to verify that
+higher modes are negligible, as well as to allow for less-symmetric configurations.
+Because codes based on this algorithm are able to take into account the modes with $\ell > 0$, they are said to be
+``quasi-cylindrical'' (or ``quasi-3D'' by some authors \cite{DavidsonJCP2015}), in contrast to cylindrical codes, which
+assume that all fields are independent of $\theta$, and thus only
+consider the mode $\ell = 0$.
+
+\subsection{Discretized Maxwell equations} When the Fourier expressions
+of the fields are injected into the Maxwell equations (written in
+cylindrical coordinates), the different azimuthal modes
+decouple. In this case, the Maxwell-Amp\`ere and Maxwell-Faraday equations
+-- which are needed to update the fields in the PIC cycle -- can be written separately
+for each azimuthal mode $\ell$:
+\begin{subequations}
+\begin{align}
+\frac{\partial \tilde{B}_{r,\ell} }{\partial t} &=
+\frac{i\ell}{r}\tilde{E}_{z,\ell} + \frac{\partial
+  \tilde{E}_{\theta,\ell}}{\partial z} \\[3mm]
+\frac{\partial \tilde{B}_{\theta,\ell} }{\partial t} &=
+ - \frac{\partial \tilde{E}_{r,\ell}}{\partial z} + \frac{\partial
+  \tilde{E}_{z,\ell}}{\partial r} \\[3mm]
+\frac{\partial \tilde{B}_{z,\ell} }{\partial t} &=
+- \frac{1}{r} \frac{\partial (r\tilde{E}_{\theta,\ell})}{\partial r} - \frac{i\ell}{r}\tilde{E}_{r,\ell} \\[3mm]
+\frac{1}{c^2} \frac{\partial \tilde{E}_{r,\ell} }{\partial t} &=
+-\frac{i\ell}{r}\tilde{B}_{z,\ell} - \frac{\partial
+  \tilde{B}_{\theta,\ell}}{\partial z} - \mu_0 \tilde{J}_{r,\ell} \\[3mm]
+\frac{1}{c^2}\frac{\partial \tilde{E}_{\theta,\ell} }{\partial t} &=
+ \frac{\partial \tilde{B}_{r,\ell}}{\partial z} - \frac{\partial
+  \tilde{B}_{z,\ell}}{\partial r} - \mu_0 \tilde{J}_{\theta,\ell} \\[3mm]
+\frac{1}{c^2}\frac{\partial \tilde{E}_{z,\ell} }{\partial t} &=
+ \frac{1}{r} \frac{\partial (r\tilde{B}_{\theta,\ell})}{\partial r} +
+ \frac{i\ell}{r}\tilde{B}_{r,\ell} - \mu_0 \tilde{J}_{z,\ell}
+\end{align}
+\end{subequations}
+%\begin{figure}
+%\input{./Chap2/Circ_lattice.tex}
+%\caption{Representation of the lattice in \CCirc. The
+%  table shows at which
+%  position each component of the fields is defined ($j$,$k$ and
+%  $n$ are integers ; $\Delta r$ and $\Delta z$ are the
+%  spatial steps of the grid). The above sketch represents one grid
+%  cell, and the positions of the fields within it.}
+%\label{fig:chap2:Circ_lattice}
+%\end{figure}
+In order to discretize these equations, each azimuthal mode is
+represented on a two-dimensional grid,
+%(The two dimensions correspond
+%to $r$ and $z$.) \Cref{fig:chap2:Circ_lattice} summarizes the
+%positions of the different fields within one grid cell, as well as the
+%corresponding notations for these fields. Using these notations,
+on which the discretized
+Maxwell-Amp\`ere and Maxwell-Faraday equations are given by
+%\begin{strip}
+%\begin{align*}
+%
+%\frac{ \tBr{n+\hf}{j,\ell,k+\hf}- \tBr{n-\hf}{j,\ell,k+\hf}
+%}{\Delta t} =& \frac{i\,\ell}{j\Delta r}\tEz{n}{j,\ell,k+\hf} + (D_z \tilde{E}_{\theta}^n)_{j,\ell,k+\hf} \\
+%
+%\frac{ \tBt{n+\hf}{j+\hf,\ell,k+\hf}- \tBt{n-\hf}{j+\hf,\ell,k+\hf} }{\Delta t} =& -(D_z \tilde{E}_r^n)_{j+\hf,\ell,k+\hf} + (D_r \tilde{E}_z^{n})_{j+\hf,\ell,k+\hf} \\
+%
+%\frac{ \tBz{n+\hf}{j+\hf,\ell,k}- \tBz{n-\hf}{j+\hf,\ell,k} }{\Delta t} =&
+% -\frac{(j+1)\tEt{n}{j+1,\ell,k} - j\tEt{n}{j,\ell,k}}{(j+\hf)\Delta r} -
+%\frac{i\,\ell}{(j+\hf) \Delta r}\tEr{n}{j+\hf,\ell,k} \\
+%
+%\frac{ \tEr{n+1}{j+\hf,\ell,k}- \tEr{n}{j+\hf,\ell,k}}{c^2 \Delta t}
+%=& -\frac{i\,\ell}{(j+\hf)\Delta r}\tBz{n+\hf}{j+\hf,\ell,k} - (D_z \tilde{B}_{\theta}^{n+\hf})_{j+\hf,\ell,k} - \mu_0\tJr{n+\hf}{j+\hf,\ell,k} \\
+%
+%\frac{ \tEt{n+1}{j,\ell,k}- \tEt{n}{j,\ell,k}}{c^2 \Delta t}
+%=& (D_z \tilde{B}_r^{n+\hf})_{j,\ell,k} - (D_r \tilde{B}_z^{n+\hf})_{j,\ell,k} - \mu_0\tJt{n+\hf}{j,\ell,k} \\
+%
+%\frac{ \tEz{n+1}{j,\ell,k+\hf}- \tEz{n}{j,\ell,k+\hf}}{c^2 \Delta t}
+%=&   \frac{\left(j+\hf\right)\tBt{n+\hf}{j+\hf,\ell,k+\hf}  - \left(j-\hf\right)\tBt{n+\hf}{j-\hf,\ell,k+\hf}}{j\Delta r} \\
+%& \qquad  \qquad + \frac{i\,\ell}{j\Delta r}\tBr{n+\hf}{j,\ell,k+\hf} - \mu_0\tJz{n+\hf}{j,\ell,k+\hf}
+%\end{align*}
+%\end{strip}
+
+\begin{subequations}
+\begin{align}
+%
+D_{t}\tilde{B}_r|_{j,\ell,k+\hf}^{n} \nonumber
+=& \frac{i\,\ell}{j\Delta r}\tEz{n}{j,\ell,k+\hf} \\
+& + D_z \tilde{E}_{\theta}|^n_{j,\ell,k+\hf} \\
+%
+D_{t}\tilde{B}_\theta|_{j+\hf,\ell,k+\hf}^{n} \nonumber
+=& -D_z \tilde{E}_r|^n_{j+\hf,\ell,k+\hf} \\
+& + D_r \tilde{E}_z|^{n}_{j+\hf,\ell,k+\hf} \\
+%
+D_{t}\tilde{B}_z|_{j+\hf,\ell,k}^{n} =& \nonumber
+ -\frac{(j+1)\tEt{n}{j+1,\ell,k} }{(j+\hf)\Delta r} \\ \nonumber
+ & +\frac{ j\tEt{n}{j,\ell,k}}{(j+\hf)\Delta r} \\
+ & - \frac{i\,\ell}{(j+\hf) \Delta r}\tEr{n}{j+\hf,\ell,k}
+\end{align}
+\end{subequations}
+for the magnetic field components, and
+\begin{subequations}
+\begin{align}
+%
+\frac{1}{c^2}D_{t}\tilde{E}_r|_{j+\hf,\ell,k}^{n+\hf} \nonumber
+=& -\frac{i\,\ell}{(j+\hf)\Delta r}\tBz{n+\hf}{j+\hf,\ell,k} \\
+& - D_z \tilde{B}_{\theta}|^{n+\hf}_{j+\hf,\ell,k} \nonumber\\
+& - \mu_0\tJr{n+\hf}{j+\hf,\ell,k} \\
+%
+\frac{1}{c^2}D_{t}\tilde{E}_\theta|_{j,\ell,k}^{n+\hf} \nonumber
+=& D_z \tilde{B}_r|^{n+\hf}_{j,\ell,k} - D_r \tilde{B}_z|^{n+\hf}_{j,\ell,k} \\
+& - \mu_0\tJt{n+\hf}{j,\ell,k} \\
+%
+\frac{1}{c^2}D_{t}\tilde{E}_z|_{j,\ell,k+\hf}^{n+\hf} \nonumber
+=&   \frac{\left(j+\hf\right)\tBt{n+\hf}{j+\hf,\ell,k+\hf} }{j\Delta r} \\
+=&   -\frac{\left(j-\hf\right)\tBt{n+\hf}{j-\hf,\ell,k+\hf}}{j\Delta r} \nonumber\\
+& + \frac{i\,\ell}{j\Delta r}\tBr{n+\hf}{j,\ell,k+\hf} \nonumber\\
+& - \mu_0\tJz{n+\hf}{j,\ell,k+\hf}
+\end{align}
+\end{subequations}
+for the electric field components.
+
+The numerical operator $D_r$ and $D_z$ are defined by
+\begin{align*}
+(D_r F)_{j',\ell,k'} = \frac{F_{j'+\hf,\ell,k'}-F_{j'-\hf,\ell,k'} }{\Delta r} \\
+(D_z F)_{j',\ell,k'} = \frac{F_{j',\ell,k'+\hf}-F_{j',\ell,k'-\hf} }{\Delta z} \\
+\end{align*}
+where $j'$ and $k'$ can be integers or half-integers. Notice
+that these discretized Maxwell equations are not valid on-axis (i.e. for $j=0$), due to
+singularities in some of the terms. Therefore, on the axis, these equations are replaced by specific boundary conditions, which are based on the symmetry properties of the fields (see \cite{LifschitzJCP2009} for details).
+
+Compared to a 3D Cartesian calculation with $n_x\times n_y \times n_z$
+grid cells, a quasi-cylindrical calculation with two modes ($l=0$ and $l=1$)
+will require only $3 \,n_r \times n_z$ grid cells. Assuming $n_x=n_y=n_r=100$
+as a typical transverse resolution, a quasi-cylindrical calculation is typically
+over an order of magnitude less computationally demanding than its 3D Cartesian
+equivalent.
