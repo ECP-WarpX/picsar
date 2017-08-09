@@ -10,9 +10,6 @@ with open('theory.md') as f:
 # Replace @ sign by \cite commands
 text = text.replace( '@', '\cite ' )
 
-# Replace symbol \bm which cannot be parsed by Doxygem
-text = text.replace( r'\bm', r'\boldsymbol' )
-
 # Replace inline math by proper math for Doxygen
 text = text.replace( r'$$\begin{aligned}', r'\f{eqnarray*}{' )
 text = text.replace( r'\end{aligned}$$', r'\f}' )
