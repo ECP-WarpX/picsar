@@ -14,7 +14,6 @@ text = text.replace( '@', '\cite ' )
 text = text.replace( r'$$\begin{aligned}', r'\f{eqnarray*}{' )
 text = text.replace( r'\end{aligned}$$', r'\f}' )
 text = re.sub( r'\$\$[\s$]*\n', r'\\f]\n', text )
-text = re.sub( r'(\$\s)*\$\$\s*(?P<first_letter>\S)', r'\\f[\g<first_letter>', text )
 text = text.replace( r'$', r'\f$' )
 
 # Replace figures commands by the proper Doxygen equivalent
