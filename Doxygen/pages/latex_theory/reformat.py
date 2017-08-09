@@ -4,7 +4,7 @@
 import re
 
 # Open existing file
-with open('theorycore.md') as f:
+with open('theory.md') as f:
     text = f.read()
 
 # Replace @ sign by \cite commands
@@ -20,6 +20,11 @@ text = re.sub( r'\$\$[\s$]*\n', r'\\f]\n', text )
 text = re.sub( r'(\$\s)*\$\$\s*(?P<first_letter>\S)', r'\\f[\g<first_letter>', text )
 text = text.replace( r'$', r'\f$' )
 
+# Replace figures commands by the proper Doxygen equivalent
+# The regex below detects the caption and filename and swap their order 
+# (Required by Doxygen)
+text = re.sub( r'\!\[\\\[fig:.+?\\\](?P<caption>.+?)\]\((?P<filename>.+?)\)',
+               r'\image html \g<filename> "\g<caption>"', text )
 
 # Add header and footer for Doxygen
 text = '/** @page "Theory"\n\n' + text + '\n*/\n'

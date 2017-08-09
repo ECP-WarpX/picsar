@@ -7,10 +7,10 @@ SRC_FILES = theory.tex \
 
 all: $(SRC_FILES) clean
 	cat *.bib > allbibs.bib
-	pandoc theory.tex --mathjax -S --wrap=preserve --bibliography allbibs.bib -o theorycore.md
+	pandoc theory.tex --mathjax -S --wrap=preserve --bibliography allbibs.bib -o theory.md
 	python reformat.py
 
 clean: 
 	rm -f allbibs.bib
-	rm -f theorycore.md
+	rm -f theory.md
 	rm -f theory.txt

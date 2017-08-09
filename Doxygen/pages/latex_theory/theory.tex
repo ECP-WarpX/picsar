@@ -50,8 +50,8 @@ The material that is presented is intended to serve as an introduction to the ba
 \begin{figure}
 %\begin{centering}
 %\includegraphics[trim={6cm 4cm 5cm 5cm},clip,scale=0.5]{Plasma_acceleration_sim.pdf}
-%\immediate\write18{curl http://hifweb.lbl.gov/public/WarpX/Figures/test.png > Plasma_acceleration_sim.png}
-\includegraphics[scale=0.5]{figures/Plasma_acceleration_sim.png}
+%\immediate\write18{curl http://hifweb.lbl.gov/public/WarpX/test.png > Plasma_acceleration_sim.png}
+\includegraphics[scale=0.5]{Plasma_acceleration_sim.png}
 
 %\par\end{centering}
 \caption{\label{fig:Plasma_acceleration_sim} Plasma laser-driven (top) and charged-particles-driven (bottom) acceleration (rendering from 3-D Particle-In-Cell simulations). A laser beam (red and blue disks in top picture) or a charged particle beam (red dots in bottom picture) propagating (from left to right) through an under-dense plasma (not represented) displaces electrons, creating a plasma wakefield that supports very high electric fields (pale blue and yellow). These electric fields, which can be orders of magnitude larger than with conventional techniques, can be used to accelerate a short charged particle beam (white) to high-energy over a very short distance.}
@@ -81,7 +81,7 @@ In Section 2 of this chapter, we review the standard methods employed in relativ
 
 \begin{figure}
 %\begin{centering}
-\includegraphics[scale=0.6]{figures/PIC.png}
+\includegraphics[scale=0.6]{PIC.png}
 %\par\end{centering}
 \caption{\label{fig:PIC} The Particle-In-Cell (PIC) method follows the evolution of a collection of charged macro-particles (positively charged in blue on the left plot, negatively charged in red) that evolve self-consistently with their electromagnetic (or electrostatic) fields. The core PIC algorithm involves four operations at each time step: 1) evolve the velocity and position of the particles using the Newton-Lorentz equations, 2) deposit the charge and/or current densities through interpolation from the particles distributions onto the grid, 3) evolve Maxwell's wave equations (for electromagnetic) or solve Poisson's equation (for electrostatic) on the grid, 4) interpolate the fields from the grid onto the particles for the next particle push. Additional ``add-ons'' operations are inserted between these core operations to account for additional physics (e.g. absorption/emission of particles, addition of external forces to account for accelerator focusing or accelerating component) or numerical effects (e.g. smoothing/filtering of the charge/current densities and/or fields on the grid).}
 \end{figure}
@@ -188,7 +188,7 @@ The simulations of plasma accelerators from first principles are extremely compu
 
 \begin{figure}
 %\begin{centering}
-\includegraphics[scale=0.6]{figures/Boosted_frame.png}
+\includegraphics[scale=0.6]{Boosted_frame.png}
 %\par\end{centering}
 \caption{\label{fig:PIC} A first principle simulation of a short driver beam (laser or charged particles) propagating through a plasma that is orders of magnitude longer necessitates a very large number of time steps. Recasting the simulation in a frame of reference that is moving close to the speed of light in the direction of the driver beam leads to simulating a driver beam that appears longer propagating through a plasma that appears shorter than in the laboratory. Thus, this relativistic transformation of space and time reduces the disparity of scales, and thereby the number of time steps to complete the simulation, by orders of magnitude.}
 \end{figure}
@@ -531,8 +531,8 @@ Simulations in a Lorentz boosted frame require additional considerations, as des
 \subsection{Inputs and outputs in a boosted frame simulation}
 \begin{figure}
 %   \centering
-   \includegraphics[width=120mm]{figures/Input.png}
-   \includegraphics[width=120mm]{figures/Output.png}
+   \includegraphics[width=120mm]{Input.png}
+   \includegraphics[width=120mm]{Output.png}
    \caption{(color online) (top) Snapshot of a particle beam showing ``frozen" (grey spheres) and ``active" (colored spheres) macroparticles traversing the injection plane (red rectangle). (bottom) Snapshot of the beam macroparticles (colored spheres) passing through the background of electrons (dark brown streamlines) and the diagnostic stations (red rectangles). The electrons, the injection plane and the diagnostic stations are fixed in the laboratory plane, and are thus counter-propagating to the beam in a boosted frame. }
    \label{Fig_inputoutput}
 \end{figure}
