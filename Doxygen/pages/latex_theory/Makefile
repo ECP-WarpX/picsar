@@ -5,8 +5,12 @@ SRC_FILES = theory.tex \
             Maxwell_solvers/Maxwell_NSFDTD_solver.tex \
             Maxwell_solvers/Maxwell_PSATD_solver.tex
 
-all: $(SRC_FILES)
-	rm -f allbibs.bib;cat *.bib > allbibs.bib
-	rm -f theory.md
+all: $(SRC_FILES) clean
+	cat *.bib > allbibs.bib
 	pandoc theory.tex --mathjax -S --wrap=preserve --bibliography allbibs.bib -o theorycore.md
 	python reformat.py
+
+clean: 
+	rm -f allbibs.bib
+	rm -f theorycore.md
+	rm -f theory.txt

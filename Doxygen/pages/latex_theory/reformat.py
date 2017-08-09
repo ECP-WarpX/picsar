@@ -25,5 +25,5 @@ text = text.replace( r'$', r'\f$' )
 text = '/** @page "Theory"\n\n' + text + '\n*/\n'
 
 # Write this to the page directory
-with open('../pages/theory.txt', 'w') as f:
+with open('./theory.txt', 'w') as f:
     f.write( text )
