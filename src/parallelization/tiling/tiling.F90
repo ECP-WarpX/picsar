@@ -1716,9 +1716,7 @@ MODULE tiling
     ! --- Get non-zero dimension
     IF(laser%vector(3) .NE. 0._num) THEN
       i1=1; i2=2; inonz=3;
-      !jmax = (x_max_local-x_min_local)/dx
       jmax = (xmax - xmin)/(nprocx*dx)
-      lmax = (y_max_local-y_min_local)/dy
       lmax = (xmax - xmin)/(nprocx*dx)
     ELSE IF (laser%vector(2) .NE. 0._num) THEN
       i1=1; i2=3; inonz=2;
@@ -1728,10 +1726,8 @@ MODULE tiling
       lmax = (zmax-zmin)/(nprocz*dz)
     ELSE IF (laser%vector(1) .NE. 0._num) THEN
       i1=2; i2=3; inonz=1;
-    !  jmax = (y_max_local-y_min_local)/dy
       jmax = (ymax - ymin)/(nprocy*dy)
       lmax = (zmax-zmin)/(nprocz*dz)
-   ! lmax = (z_max_local-z_min_local)/dz
     ENDIF
 
     ! --- init laser particle positions
