@@ -55,6 +55,7 @@ if host.startswith('edison') or host.startswith('cori'):
     parsed_mpi = True
 else:
     comp = 'mpif90'
+    fcomp = 'gfortran'
     # Parse the result of mpif90 -show
     parsed_mpi = True   # By default ; errors modify this flag
     try:
