@@ -20,8 +20,8 @@ except KeyError:
 print('')
 
 # Check if we are on Edison, on NERSC
-if host[:6] == 'edison':
-    print('Configuring PICSAR on Edison')
+if host.startswith('edison') or host.startswith('cori'):
+    print('Configuring PICSAR on Edison/Cori')
     comp = 'ftn'
     libdir_list = []
     libs = '-lgomp'
@@ -80,6 +80,6 @@ if parsed_mpi == False:
 else:
     print('\nConfigure succeeded.')
     print('To compile PICSAR in Python mode, type `make -f Makefile_Forthon`\n')
-    if host[:6] == 'edison':
+    if host.startswith('edison') or host.startswith('cori'):
         print('(First type `module swap PrgEnv-intel PrgEnv-gnu`)')
     sys.exit(0)
