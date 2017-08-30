@@ -19,12 +19,39 @@ except KeyError:
     host = ''
 print('')
 
+# Read compiler and architecture from optional command-line arguments
+fort_compiler = 'gnu'
+set_architecture = None
+if len(sys.argv) >= 2:
+    fort_compiler = sys.argv[1]
+    if fort_compiler not in ['gnu', 'intel']:
+        print(fort_compiler + ' compiler not implemented. Back to default: gnu.')
+        fort_compiler = 'gnu'
+if len(sys.argv) >= 3:
+    set_architecture = sys.argv[2]
+    if set_architecture not in ['knl']:
+        print(set_architecture + ' architecture not implemented. Back to default.')
+        set_architecture = None
+
 # Check if we are on Edison, on NERSC
 if host.startswith('edison') or host.startswith('cori'):
     print('Configuring PICSAR on Edison/Cori')
     comp = 'ftn'
     libdir_list = []
-    libs = '-lgomp'
+    if fort_compiler == 'gnu':
+        fcomp = 'gfortran'
+        libs = '-lgomp'
+        if set_architecture == 'knl':
+            fargs = '"-O3 -fopenmp -march=knl -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
+        else:
+            fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
+    elif fort_compiler == 'intel':
+        fcomp = 'intel'
+        libs = ''
+        if set_architecture == 'knl':
+            fargs = '"-O3 -qopenmp  -xMIC-AVX512"'
+        else:
+            fargs = '"-O3 -qopenmp -xCORE-AVX2 -align array64byte"'
     parsed_mpi = True
 else:
     comp = 'mpif90'
@@ -65,8 +92,11 @@ with open('Makefile_Forthon.in') as f:
 if libdir_list != []:
     makefile_text = makefile_text.replace(
     'LIBDIR=', 'LIBDIR=-L%s' %(' -L'.join(libdir_list) ) )
-makefile_text = makefile_text.replace( 'LIBS=', 'LIBS=%s' %libs )
-makefile_text = makefile_text.replace( 'COMPEXEC=', 'COMPEXEC=%s' %comp )
+
+makefile_text = re.sub('\nLIBS=.*', '\nLIBS=%s' %libs, makefile_text)
+makefile_text = re.sub('\nCOMPEXEC=.*', '\nCOMPEXEC=%s' %comp, makefile_text)
+makefile_text = re.sub('\nFCOMP=.*', '\nFCOMP=%s' %fcomp, makefile_text)
+makefile_text = re.sub('\nFARGS=.*', '\nFARGS=%s' %fargs, makefile_text)
 
 # Write the new file Makefile_Forthon
 with open('Makefile_Forthon', 'w') as f:
