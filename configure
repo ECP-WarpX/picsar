@@ -94,7 +94,7 @@ if libdir_list != []:
     'LIBDIR=', 'LIBDIR=-L%s' %(' -L'.join(libdir_list) ) )
 
 makefile_text = re.sub('\nLIBS=.*', '\nLIBS=%s' %libs, makefile_text)
-makefile_text = re.sub('\nCOMPEXEC=.*', '\nCOMPEXEC=%s' %comp, makefile_text)
+makefile_text = re.sub('\nFCOMPEXEC=.*', '\nFCOMPEXEC=%s' %comp, makefile_text)
 makefile_text = re.sub('\nFCOMP=.*', '\nFCOMP=%s' %fcomp, makefile_text)
 makefile_text = re.sub('\nFARGS=.*', '\nFARGS=%s' %fargs, makefile_text)
 
@@ -111,5 +111,5 @@ else:
     print('\nConfigure succeeded.')
     print('To compile PICSAR in Python mode, type `make -f Makefile_Forthon`\n')
     if host.startswith('edison') or host.startswith('cori'):
-        print('(First type `module swap PrgEnv-intel PrgEnv-gnu`)')
+        print('(Please make sure your PrgEnv- module is consistant with your ./configure options)')
     sys.exit(0)
