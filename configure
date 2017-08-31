@@ -9,8 +9,9 @@ set to the proper values for the current system.
 Usage
 -----
 In a terminal, type `./configure` and then `make -f Makefile_Forthon`
+In order to see the optional arguments of configure, type `./configure -h`
 """
-import os, subprocess, re, sys
+import os, subprocess, re, sys, argparse
 
 # Get the name of the host
 try:
@@ -20,39 +21,35 @@ except KeyError:
 print('')
 
 # Read compiler and architecture from optional command-line arguments
-fort_compiler = 'gnu'
-set_architecture = None
-if len(sys.argv) >= 2:
-    fort_compiler = sys.argv[1]
-    if fort_compiler not in ['gnu', 'intel']:
-        print(fort_compiler + ' compiler not implemented. Back to default: gnu.')
-        fort_compiler = 'gnu'
-if len(sys.argv) >= 3:
-    set_architecture = sys.argv[2]
-    if set_architecture not in ['knl']:
-        print(set_architecture + ' architecture not implemented. Back to default.')
-        set_architecture = None
+parser = argparse.ArgumentParser(
+    description='Automatically create a Makefile_Forthon with the right flags')
+parser.add_argument( '--compiler', choices=['gnu', 'intel'], default='gnu',
+    help='which compiler to use (only used when compiling on Edison/Cori)')
+parser.add_argument( '--architecture', choices=['cpu', 'knl'], default='cpu',
+        help='which architecture to cross-compile for (only used when compiling on Cori)')
+args = parser.parse_args()
 
-# Check if we are on Edison, on NERSC
+# Check if we are on Edison or Cori, at NERSC
 if host.startswith('edison') or host.startswith('cori'):
     print('Configuring PICSAR on Edison/Cori')
     comp = 'ftn'
     libdir_list = []
-    if fort_compiler == 'gnu':
+    if args.compiler == 'gnu':
         fcomp = 'gfortran'
         libs = '-lgomp'
-        if set_architecture == 'knl':
+        if args.architecture == 'knl':
             fargs = '"-O3 -fopenmp -march=knl -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
         else:
             fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
-    elif fort_compiler == 'intel':
+    elif args.compiler == 'intel':
         fcomp = 'intel'
         libs = ''
-        if set_architecture == 'knl':
+        if args.architecture == 'knl':
             fargs = '"-O3 -qopenmp  -xMIC-AVX512"'
         else:
             fargs = '"-O3 -qopenmp -xCORE-AVX2 -align array64byte"'
     parsed_mpi = True
+
 else:
     comp = 'mpif90'
     fcomp = 'gfortran'
