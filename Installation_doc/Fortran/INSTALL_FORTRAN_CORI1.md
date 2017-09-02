@@ -33,14 +33,14 @@ This is important for vectorization on Haswell.
 
 ### Other compilers
 
-In this case, you have to edit the file Makefile and indicate 
+In this case, you have to edit the file Makefile and indicate
 the following environment variables:
 
 * FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),
 
-* FARGS: your compiler arguments (optimization flags etc.). 
-To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). 
-NB: this version of PICSAR requires at least **OpenMP 4.0**. 
+* FARGS: your compiler arguments (optimization flags etc.).
+To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel).
+NB: this version of PICSAR requires at least **OpenMP 4.0**.
 
 For instance, to use the GNU compiler:
 ```
@@ -49,7 +49,7 @@ make CC=cc FC=ftn FARGS='-fPIC -O3 -ffast-math -funroll-loops'
 
 ## Testing the code
 
-To test the code on the cluster, we recommend to use an interactive session 
+To test the code on the cluster, we recommend to use an interactive session
 on a single Haswell node
 
 ```
@@ -98,7 +98,7 @@ srun -n 4 -c 32 ./picsar_cori
 
 ## Unit tests
 
-PICSAR also contains unit tests to run and validate specific algorithms 
+PICSAR also contains unit tests to run and validate specific algorithms
 and subroutines of the code.
 
 To compile the unit tests, first clean your installation by doing:
@@ -106,7 +106,7 @@ To compile the unit tests, first clean your installation by doing:
 make clean
 ```
 
-You can compile and run each unit test one by one but here we will show you 
+You can compile and run each unit test one by one but here we will show you
 how to compile and run all of them.
 
 Unit tests are located in the directory `Acceptance_testing/Gcov_tests`.
@@ -127,7 +127,7 @@ Use `srun` to run the test of your choice. For instance:
 srun -n 1 -c 1 ./tile_curr_depo_3d_test
 ```
 
-Some tests can be run with several OpenMP threads, others need just one MPI 
+Some tests can be run with several OpenMP threads, others need just one MPI
 rank and a single thread since it only tests vectorized subroutines:
 * current_deposition_3d_test: test 3D classical current deposition subroutines
 * esirkepov_2d_test: test 2D Esirkepov current deposition subroutines
@@ -142,4 +142,3 @@ rank and a single thread since it only tests vectorized subroutines:
 * tile_rho_depo_3d_test: test the 3D charge deposition with the tiling (you can use several OpenMP threads for this test)
 
 For each test, a message will tell you if you pass or fail.
-

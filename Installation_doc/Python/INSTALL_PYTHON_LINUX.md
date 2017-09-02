@@ -18,7 +18,7 @@ We recommend python from Anaconda (`http://docs.continuum.io/anaconda/install`)
 
 Then, install numpy
 
-``` 
+```
 pip install numpy
 ```
 
@@ -33,9 +33,9 @@ pip install mpi4py
 
 If you have already installed Warp, this step is already done.
 
-Before creating the python module picsarpy for picsar, 
-you must install the Forthon compiler. 
-To do so: 
+Before creating the python module picsarpy for picsar,
+you must install the Forthon compiler.
+To do so:
 
 * Copy the last stable version of Forthon by typing:
 ```
@@ -44,7 +44,7 @@ git clone https://github.com/dpgrote/Forthon.git
 
 * Then `cd` into the directory `Forthon` and run python `setup.py install --home=$PATH`
 
-Here, `PATH` is where you want the `bin` and `lib` folder to be created 
+Here, `PATH` is where you want the `bin` and `lib` folder to be created
 and the Forthon files to be located.
 
 NB: **On the cluster Edison at NERSC**:  
@@ -83,7 +83,7 @@ You will need to edit the file `Makefile_Forthon` and indicate the following env
 ## **5. Compiling and installing**
 
 
-To compile and test, invoke the rule "all": 
+To compile and test, invoke the rule "all":
 ```
 make -f Makefile_Forthon all
 ```
@@ -105,4 +105,3 @@ To test the compilation/execution, you can use the makefile (py.test is required
   For each test one by one
   - Propagating beams:       `make -f Makefile_Forthon test1`
   - Langmuir wave:           `make -f Makefile_Forthon test2`
-

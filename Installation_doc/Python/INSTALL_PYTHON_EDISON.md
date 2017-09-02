@@ -7,7 +7,7 @@ Download WARP from the [bitbucket repository](https://bitbucket.org/berkeleylab/
 Instructions are located in the sources in the folder `doc`.
 
 ## **2. Installing python and packages**
- 
+
 These packages are available via the modules.
 To do so, please enter the following lines in your `.bashrc.ext`.
 
@@ -43,9 +43,9 @@ environment for the next installation steps.
 
 If you have already installed Warp, this step is already done.
 
-Before creating the python module picsarpy for picsar, 
-you must install the Forthon compiler. 
-To do so: 
+Before creating the python module picsarpy for picsar,
+you must install the Forthon compiler.
+To do so:
 
 * Copy the last stable version of Forthon by typing:
 ```
@@ -54,7 +54,7 @@ git clone https://github.com/dpgrote/Forthon.git
 
 * Then `cd` into the directory `Forthon` and run python `setup.py install --home=$PATH`
 
-Here, `PATH` is where you want the `bin` and `lib` folder to be created 
+Here, `PATH` is where you want the `bin` and `lib` folder to be created
 and the Forthon files to be located.
 
 NB: **On the cluster Edison at NERSC**:  
@@ -62,9 +62,9 @@ Simply type `pip install Forthon --user`
 
 ## **4. Makefile_Forthon configuration**
 
-Clone `picsar` where you want to install it. 
-If you have already installed Warp, 
-we recommend to put it in the same installation directory: `$SCRATCH/warp_install`. 
+Clone `picsar` where you want to install it.
+If you have already installed Warp,
+we recommend to put it in the same installation directory: `$SCRATCH/warp_install`.
 
 Then modify the `Makefile_Forthon` to have the correct configuration.
 
@@ -104,7 +104,7 @@ TESTDIR=example_scripts_python
 
 ## **5. Compiling and installing**
 
-To compile and test, invoke the rule "all": 
+To compile and test, invoke the rule "all":
 ```
 make -f Makefile_Forthon all
 ```
@@ -112,4 +112,3 @@ Then make sure that the folders `python_libs` and `python_bin` are in
 your `$PYTHONPATH`.
 
 On Edison and Cori, this is ensured by the setup of your `~/.bashrc.ext`.
-

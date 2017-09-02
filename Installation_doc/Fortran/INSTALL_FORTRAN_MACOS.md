@@ -33,14 +33,14 @@ make COMP=intel MODE=debug
 
 ### Other compilers
 
-In this case, you have to edit the file Makefile and indicate 
+In this case, you have to edit the file Makefile and indicate
 the following environment variables:
 
 * FC: your MPI Fortran compiler wrapper (e.g mpif90, mpiifort, ftn etc.),
 
-* FARGS: your compiler arguments (optimization flags etc.). 
-To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel). 
-NB: this version of PICSAR requires at least **OpenMP 4.0**. 
+* FARGS: your compiler arguments (optimization flags etc.).
+To get OpenMP version of PICSAR use the flag -fopenmp (with gfortran) and -openmp (Cray, Intel).
+NB: this version of PICSAR requires at least **OpenMP 4.0**.
 
 ## Testing the code
 
@@ -64,22 +64,22 @@ To test the compilation/execution, you can run test python scripts manually:
   - test_plasma_drift
   - test_homogeneous_plasma
   - test_Langmuir_wave
-    
-* You can run scripts using py.test: 
+
+* You can run scripts using py.test:
   > py.test -s --trun=1 --ttest=1
-  
+
   --trun=0/1: this option enables/disables simulation run
   --ttest=0/1: this option enables/disables assert tests
-  
+
 * You can run scripts without py.test:
   > python <pyhthon_script> -r 1 -t 1
-  
+
   -r 0/1: this option enables/disables simulation run
   -t 0/1: this option enables/disables simulation assert tests
-  
+
 ## Unit tests
 
-PICSAR also contains unit tests to run and validate specific algorithms 
+PICSAR also contains unit tests to run and validate specific algorithms
 and subroutines of the code.
 
 To compile the unit tests, first clean your installation by doing:
@@ -87,7 +87,7 @@ To compile the unit tests, first clean your installation by doing:
 make clean
 ```
 
-You can compile and run each unit test one by one but here we will show you 
+You can compile and run each unit test one by one but here we will show you
 how to compile and run all of them.
 
 Unit tests are located in the directory `Acceptance_testing/Gcov_test`.
@@ -102,7 +102,7 @@ To run them, enter:
 make test_gcov
 ```
 
-Some tests can be run with several OpenMP threads, others need just one MPI 
+Some tests can be run with several OpenMP threads, others need just one MPI
 rank and a single thread since it only tests vectorized subroutines:
 * current_deposition_3d_test: test 3D classical current deposition subroutines
 * esirkepov_2d_test: test 2D Esirkepov current deposition subroutines
@@ -117,4 +117,3 @@ rank and a single thread since it only tests vectorized subroutines:
 * tile_rho_depo_3d_test: test the 3D charge deposition with the tiling (you can use several OpenMP threads for this test)
 
 For each test, a message will tell you if you pass or fail.
-
