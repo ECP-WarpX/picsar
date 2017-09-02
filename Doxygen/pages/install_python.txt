@@ -51,7 +51,7 @@ To compile and test, invoke the rule "all":
 
 Testing the code after compilation is highly recommended.
 
-To test the compilation/execution, you can use the makefile (py.test is required):
+To test the compilation/execution, you can use the makefile (needs the python package pytest):
 
   For all test:
   - Make -f Makefile_Forthon test

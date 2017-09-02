@@ -17,9 +17,9 @@ PICSAR includes:
 
 #### A.  Here are some of the specific algorithmic features of the PICSAR algorithms:  
 
-* The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered). 
+* The Maxwell solver uses arbitrary order finite-difference scheme (staggered/centered).
 * The particle pusher uses the Boris or Vay algorithm.
-* The field gathering routine is energy conserving. 
+* The field gathering routine is energy conserving.
 * The current deposition and field gathering routines include high order particle shape factors (up to 3rd order).
 
 #### B.  Here are some high performance features of the PICSAR code :
@@ -27,7 +27,7 @@ PICSAR includes:
 * Vectorization.
 * Particle tiling to help increase memory locality.
 * OpenMP parallelization for intranode parallelism.
-* MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI). 
+* MPI parallelization for internode parallelism (blocking, non-blocking and Remote memory access MPI).
 * MPI-IO for fast parallel outputs.
 
 #### C. Build Picsar as Library
@@ -35,9 +35,9 @@ PICSAR includes:
 To compile picsar as a library you need to swith $(MODE) variable in Makefile to "library", then run make with target lib:
 make lib both static and dynamic picsar lib are generated in lib/ file.
 
-#### D.  Python glue: 
+#### D.  Python glue:
 
-* We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`. 
+* We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`.
 * Forthon gives access to all the high performance routines of PICSAR from python.
 
 ## **2. Installation**
@@ -52,7 +52,7 @@ To generate the code html documentation:
 
   - Download and install [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html).
 
-  - In the `PICSAR/Doxygen` folder, type: 
+  - In the `PICSAR/Doxygen` folder, type:
 
 ```
 doxygen Doxyfile
@@ -72,19 +72,19 @@ PICSAR can be run in two modes:
 - In **pure-Fortran mode**: in this case, the code is run as a
   stand-alone application.
 
-- In **Python mode**: in this case, PICSAR is used as a Python module. It can be used with existing code (e.g. Warp) to  
-  **accelerates** simulations by rerouting the calls to the **low-level
-  kernels** (current deposition, field advance, particle pusher). More
-  precisely, in this case, instead of calling Warp's regular kernels, the
-  simulation will call PICSAR's highly-optimized kernels.
+- In **Python mode**: in this case, PICSAR is used as a Python module. It can be used
+ with existing code (e.g. Warp) to **accelerate** simulations by rerouting the calls
+ to the **low-level kernels** (current deposition, field advance, particle pusher).
+ More precisely, in this case, instead of calling Warp's regular kernels, the simulation
+ will call PICSAR's highly-optimized kernels.
 
 ![warp_and_pxr](Doxygen/images/warp_and_picsar.png)
 
 #### A.  Fortran mode
 
-PICSAR input parameters must be provided in an input file named `input_file.pxr` 
-in the folder where the code is ran. An example (`test.pxr`) of input file is 
-provided in `examples/example_decks_fortran/`. 
+PICSAR input parameters must be provided in an input file named `input_file.pxr`
+in the folder where the code is ran. An example (`test.pxr`) of input file is
+provided in `examples/example_decks_fortran/`.
 To run the executable on n MPI processes:
 ```
 mpirun -np n ./picsar
@@ -106,12 +106,12 @@ A page called input file configuration describes the sections and the keywords t
 
 #### B.  Python mode
 
-An example of python script `test.py` is provided in `examples/example_scripts_python`. 
+An example of python script `test.py` is provided in `examples/example_scripts_python`.
 To run this script in parallel, simply type :
 ```
-mpirun -np NMPI python test.py 
+mpirun -np NMPI python test.py
 ```
-with NMPI the number of MPI processes. 
+with NMPI the number of MPI processes.
 
 #### C.  OpenMP
 
@@ -122,7 +122,11 @@ If the code (Fortran or python version) was compiled with OpenMP, you can set "x
 
 #### A.  Field diagnostics
 
-For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`. In the Fortran version, the output frequency is controlled by setting the flag `output_frequency` in the output section of the `input_file.pixr`. Use `output_frequency=-1` to disable outputs. The code places output files in a `RESULTS` directory where the code is ran. This directory has to be created before running the code in your submission script. 
+For the moment, the code outputs binary matrix files with extensions ".pxr" that can be read using python scripts. Examples of such scripts are in the folder `postproc/`.
+(Note: In order for these scripts to work, you need to add the folder `postproc`
+to your `$PYTHONPATH`.)
+
+In the Fortran version, the output frequency is controlled by setting the flag `output_frequency` in the output section of the `input_file.pixr`. Use `output_frequency=-1` to disable outputs. The code places output files in a `RESULTS` directory where the code is ran. This directory has to be created before running the code in your submission script.
 
 #### B.  Temporal diagnostics
 

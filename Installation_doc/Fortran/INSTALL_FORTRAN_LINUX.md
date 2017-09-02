@@ -46,7 +46,7 @@ NB: this version of PICSAR requires at least **OpenMP 4.0**.
 
 You can test the code after compilation in different ways.
 
-To test the compilation/execution, you can use the makefile (py.test is required):
+To test the compilation/execution, you can use the makefile (needs the python package pytest):
 
   For all tests:
   > make -f Makefile test

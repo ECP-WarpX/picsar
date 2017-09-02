@@ -85,7 +85,7 @@ You can also run the python test scripts manually, for this aim:
 
 The tests for the Python code (WARP + PICSAR) will be run in `Acceptance_testing/Python_tests`.
 
-You can use the makefile (py.test is required) to launch the test scripts.
+You can use the makefile (needs the python package pytest) to launch the test scripts.
 
 For all test, just type:
 

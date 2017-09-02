@@ -97,7 +97,7 @@ On Edison and Cori, this is ensured by the setup of your `~/.bashrc.ext`.
 
 Testing the code after compilation is highly recommended.
 
-To test the compilation/execution, you can use the makefile (py.test is required):
+To test the compilation/execution, you can use the makefile (needs the python package pytest):
 
   For all test:
   - `make -f Makefile_Forthon test`

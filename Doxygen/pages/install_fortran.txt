@@ -26,7 +26,7 @@ To compile, invoke the rule "all":
 
 Testing the code after compilation is highly recommended.
 
-To test the compilation/execution, you can use the makefile (py.test is required):
+To test the compilation/execution, you can use the makefile (needs the python package pytest):
 
   For all tests:
   > make -f Makefile test
