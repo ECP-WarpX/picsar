@@ -26,6 +26,7 @@ MODULE gpstd_solver
     USE CONSTANTS
     USE mpi_fftw3
     USE omp_lib
+    USE fourier_psaotd , ONLY : FD_weights_hvincenti
     INTEGER(idp) , INTENT(IN)                     :: nx,ny,nz,porderx,pordery,porderz
     REAL(num)    , INTENT(IN)                     :: dx,dy,dz,dt
     LOGICAL(lp)                                   :: l_stg
@@ -58,68 +59,67 @@ MODULE gpstd_solver
     ALLOCATE(onesy(ny),onesyp(ny))
     ALLOCATE(onesz(nz),oneszp(nz))
     DO i=1_idp,nx/2+1
-            onesx(i)  = i-1_idp
-            onesxp(i) = i-1_idp
+      onesx(i)  = i-1_idp
+      onesxp(i) = i-1_idp
     ENDDO
     DO j=1_idp,ny
-            onesy(j)  = j-1_idp
-            onesyp(j) = j-1_idp
-            IF(j .GT. ny/2_idp +1) THEN
-              onesy(j) = - onesy(j)
-              onesyp(j) =  ny + onesyp(j)
-            ENDIF
+      onesy(j)  = j-1_idp
+      onesyp(j) = j-1_idp
+      IF(j .GT. ny/2_idp +1) THEN
+        onesy(j) = - onesy(j)
+        onesyp(j) =  ny + onesyp(j)
+      ENDIF
     ENDDO
     DO k=1_idp,nz
-            onesz(k)  = k-1_idp
-            oneszp(k) = k-1_idp
-            IF(k .GT. nz/2_idp +1) THEN 
-               onesz(k) = - onesz(k)
-               oneszp(k) = ny + oneszp(k)
-            ENDIF
+      onesz(k)  = k-1_idp
+      oneszp(k) = k-1_idp
+      IF(k .GT. nz/2_idp +1) THEN 
+        onesz(k) = - onesz(k)
+        oneszp(k) = ny + oneszp(k)
+      ENDIF
     ENDDO
     IF (porderx .ne. 0_idp ) THEN  ! if 0 then infinite order
       ALLOCATE(FD_x(porderx/2))
-      FD_x = FD_weight_hvincenti_gpstd(l_stg,porderx)
+      CALL FD_weights_hvincenti(porderx,FD_x,l_stg)
       ALLOCATE(kxf(nx/2+1),kxb(nx/2+1),kxc(nx/2+1))
       kxf=(0._num,0._num)*kxf
       kxb=(0._num,0._num)*kxb
       kxc=(0._num,0._num)*kxc
       DO i=1_idp,porderx/2
-            kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx/nx)
+        kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx*1.0_num/nx)
       ENDDO
     ELSE 
-       ALLOCATE(kxff(nx),kxbb(nx),kxcc(nx))
-       CALL fftfreq(nx/2+1,kxf,dx)
-       CALL fftfreq(nx/2+1,kxb,dx)
-       CALL fftfreq(nx/2+1,kxc,dx)
-       kxf=kxff(1:nx/2+1)
-       kxb=kxbb(1:nx/2+1) 
-       kxc=kxcc(1:nx/2+1)
-       DEALLOCATE(kxff,kxbb,kxcc)
+      ALLOCATE(kxff(nx),kxbb(nx),kxcc(nx))
+      CALL fftfreq(nx,kxff,dx)
+      CALL fftfreq(nx,kxbb,dx)
+      CALL fftfreq(nx,kxcc,dx)
+      kxf=kxff(1:nx/2+1)
+      kxb=kxbb(1:nx/2+1) 
+      kxc=kxcc(1:nx/2+1)
+      DEALLOCATE(kxff,kxbb,kxcc)
     ENDIF
-       kxf=kxc*EXP(-ii*PI*onesxp/nx)
-       kxb=kxc*EXP(ii*PI*onesxp/nx)
+      kxf=kxc*EXP(-ii*PI*onesxp/nx)
+      kxb=kxc*EXP(ii*PI*onesxp/nx)
     IF (pordery .ne. 0_idp) THEN 
       ALLOCATE(FD_y(pordery/2))
-      FD_y = FD_weight_hvincenti_gpstd(l_stg,pordery)
+      CALL FD_weights_hvincenti(pordery,FD_y,l_stg)
       ALLOCATE(kyf(ny),kyb(ny),kyc(ny))
       kyf=(0._num,0._num)*kyf
       kyb=(0._num,0._num)*kyb
       kyc=(0._num,0._num)*kyc
       DO i=1_idp,pordery/2
-            kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/ny)
+        kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/ny)
       ENDDO
     ELSE
-       CALL fftfreq(ny,kyf,dy)
-       CALL fftfreq(ny,kyb,dy)
-       CALL fftfreq(ny,kyc,dy)
+      CALL fftfreq(ny,kyf,dy)
+      CALL fftfreq(ny,kyb,dy)
+      CALL fftfreq(ny,kyc,dy)
     ENDIF
-       kyf=kyc*EXP(-ii*PI*onesyp/ny)
-       kyb=kyc*EXP(ii*PI*onesyp/ny)
-  
+      kyf=kyc*EXP(-ii*PI*onesyp/ny)
+      kyb=kyc*EXP(ii*PI*onesyp/ny)
     IF (porderz .ne. 0_idp) THEN
       ALLOCATE(FD_z(porderz/2))
-      FD_z = FD_weight_hvincenti_gpstd(l_stg,porderz)
+      CALL FD_weights_hvincenti(porderz,FD_z,l_stg)
       ALLOCATE(kzf(nz),kzb(nz),kzc(nz))
       kzf=(0._num,0._num)*kzf
       kzb=(0._num,0._num)*kzb
@@ -128,12 +128,12 @@ MODULE gpstd_solver
             kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nz)
       ENDDO 
     ELSE
-       CALL fftfreq(nz,kzf,dz)
-       CALL fftfreq(nz,kzb,dz)
-       CALL fftfreq(nz,kzc,dz)
+      CALL fftfreq(nz,kzf,dz)
+      CALL fftfreq(nz,kzb,dz)
+      CALL fftfreq(nz,kzc,dz)
     ENDIF
-       kzf=kzc*EXP(-ii*PI*oneszp/nz)
-       kzb=kzc*EXP(ii*PI*oneszp/nz)
+      kzf=kzc*EXP(-ii*PI*oneszp/nz)
+      kzb=kzc*EXP(ii*PI*oneszp/nz)
     DO i = 1,nx/2+1
       DO j = 1,ny
         DO k = 1,nz
@@ -181,69 +181,6 @@ MODULE gpstd_solver
     DEALLOCATE(kxf,kxb,kxc,kyf,kyb,kyc,kzf,kzb,kzc,temp,temp2,onesx,onesy,onesz) 
   END SUBROUTINE init_kspace
   
-  FUNCTION factorial(n)
-    USE picsar_precision 
-    IMPLICIT NONE
-    INTEGER(idp), INTENT(IN)      ::  n
-    REAL(num)                     ::  factorial
-    INTEGER(idp)                  ::  k
-    IF(n.eq.0) THEN
-      factorial = 1.
-    ELSE
-      factorial = n*1.
-      DO k=2,n-1
-         factorial=k*factorial
-      ENDDO
-    ENDIF
-    RETURN
-  END FUNCTION factorial
-  FUNCTION logfactorial(n) ! RETURNs log(n!)
-    USE picsar_precision        
-    INTEGER(idp), INTENT(IN)  :: n
-    REAL(num)                 :: logfactorial,x
-    INTEGER(idp)              :: k
-    IF(n.eq.0) THEN
-      logfactorial=0.
-    ELSE
-      x=log(1.*n)
-      logfactorial=x
-      DO k=2,n-1
-        x=log(1.*k)
-        logfactorial=logfactorial+x
-      ENDDO
-    ENDIF
-    RETURN
-  END FUNCTION logfactorial        
-      
-  FUNCTION FD_weight_hvincenti_gpstd(l_stagger,order)
-    USE picsar_precision
-    IMPLICIT NONE
-    LOGICAL(lp),      intent(IN)  :: l_stagger
-    INTEGER(idp) ::l
-    INTEGER(idp) ,INTENT(IN) ::order
-    REAL(num)     :: numi,denum
-    REAL(num), ALLOCATABLE, DIMENSION(:) :: FD_weight_hvincenti_gpstd
-    ALLOCATE(FD_weight_hvincenti_gpstd(order/2))
-    IF(l_stagger .eqv. .FALSE.) THEN
-      DO l  = 1,order/2
-        numi  = logfactorial(order/2)*2._num
-        denum = logfactorial(order/2_idp+l) + &
-                logfactorial(order/2_idp-l)+log(1._num*l)
-        FD_weight_hvincenti_gpstd(l)=(-1.)**(l+1)*exp(numi-denum)
-      ENDDO
-    ELSE
-      DO l  = 1,order/2
-        numi  = log(16._num)*(1.0_num-order/2.0_num) + &
-                2.0_num*logfactorial(order-1_idp)
-        denum = log(2.0_num*l-1.0_num)*2_idp+      &
-                logfactorial(order/2_idp-1_idp+l)+ &
-                logfactorial(order/2_idp-l)+2.0_num*logfactorial(order/2_idp-1_idp)
-        FD_weight_hvincenti_gpstd(l) = (-1.0_num)**(l+1_idp)*EXP(numi-denum)
-      ENDDO
-    ENDIF
-    RETURN
-  END FUNCTION FD_weight_hvincenti_gpstd
-  
   SUBROUTINE fftfreq(nxx,kxx, dxx)
   USE constants
     IMPLICIT NONE
@@ -258,9 +195,9 @@ MODULE gpstd_solver
     kxx(1)=(0.,0.)
     IF (MOD(n,2) .EQ. 0)THEN
     ! First part of k [0,...,n/2-1]
-                  DO i=1,n/2_idp-1_idp
-                          kxx(i+1)=kxx(i)+(1.,0.)
-                  END DO
+      DO i=1,n/2_idp-1_idp
+         kxx(i+1)=kxx(i)+(1.,0.)
+      END DO
     ! Second part of k [-n/2,-1]
       kxx(n/2_idp+1)=-n/2_idp
       DO i=n/2_idp+1,n-1
@@ -548,7 +485,7 @@ MODULE gpstd_solver
        *  cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc     
     ENDDO
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = (0.,0.)
-    CALL delete_arrays 
+    !CALL delete_arrays 
   END SUBROUTINE init_gpstd
 !> @brief
 !> This subroutine executes forward fftw on relevent fields
