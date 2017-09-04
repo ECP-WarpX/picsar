@@ -270,6 +270,8 @@ SUBROUTINE initall
   USE tiling
   USE time_stat
 #if defined(FFTW)
+  USE matrix_coefficients
+  USE fourier
   USE fourier_psaotd
   USE gpstd_solver
 #endif
@@ -281,7 +283,8 @@ SUBROUTINE initall
   REAL(num)                       :: tdeb
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER    :: dp
-
+  INTEGER(idp)                    :: nxx,nyy,nzz
+integer ::ix,iy,iz
   ! Time statistics
   init_localtimes(:) = 0
   localtimes(:)=0
@@ -305,7 +308,7 @@ SUBROUTINE initall
 
   !!! --- Set time step/ it
   IF (c_dim.eq.3) THEN
-    IF (l_spectral) THEN
+    IF (l_spectral .OR. g_spectral) THEN
       dt=MIN(dx, dy, dz)/clight
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
@@ -482,11 +485,25 @@ SUBROUTINE initall
 #if defined(FFTW)
   ! -Init Fourier
   IF (l_spectral .OR. g_spectral) THEN
+    nxx = 2*nxguards+nx
+    nyy = 2*nyguards+ny
+    nzz = 2*nzguards+nz
     IF(l_spectral) CALL init_fourier
-    IF(g_spectral)then
-       CALL init_gpstd(nx+2*nxguards,ny+2*nyguards,nz+2*nzguards,dx,dy,dz,dt,norderx,nordery,norderz) 
-       call init_plans_gpstd(nx+2*nxguards,ny+2*nyguards,nz+2*nzguards)
-     endif
+    IF(g_spectral) THEN
+       CALL init_gpstd(nxx,nyy,nzz,dx,dy,dz,dt,norderx,nordery,norderz) 
+       CALL init_plans_gpstd(nxx,nyy,nzz)
+     ENDIF
+        if(rank .eq. 0) then
+        do ix=1,nxx/2+1
+        do iy=1,nyy
+        do iz=1,nzz
+        print*,real(coswdt(ix,iy,iz)-cc_mat(1)%block_matrix2d(1,1)%block3dc(ix,iy,iz),num)
+        enddo
+        enddo
+        enddo
+        endif
+        call mpi_barrier(comm,errcode);stop
+
   ENDIF
 #endif
   ! - Estimate tile size

@@ -153,7 +153,7 @@ MODULE gpstd_solver
     
     ALLOCATE(temp(nx/2+1,ny,nz))
     ALLOCATE(temp2(nx/2+1,ny,nz))
-    temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc)
+    temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc,num)
     temp2=sinc_block(nx/2+1_idp,ny,nz,temp) 
     AT_OP(nmatrixes2)%block_vector(1)%block3dc = CMPLX(temp2,0._num)
     AT_OP(nmatrixes2)%block_vector(1)%block3dc = clight*dt*AT_OP(nmatrixes2)%block_vector(1)%block3dc
@@ -173,11 +173,11 @@ MODULE gpstd_solver
   
              !(1-C)/k^2
     temp=2._num*temp
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=(1.,0.)
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=(1.0_num,0.0_num)
     AT_OP(nmatrixes2)%block_vector(4)%block3dc = (AT_OP(nmatrixes2)%block_vector(1)%block3dc-clight*dt)&
     / Kspace(nmatrixes2)%block_vector(10)%block3dc/ Kspace(nmatrixes2)%block_vector(10)%block3dc
-    AT_OP(nmatrixes2)%block_vector(4)%block3dc(1,1,1)=CMPLX(-(clight*dt)**3/6.,0.)  
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=(0.,0.)
+    AT_OP(nmatrixes2)%block_vector(4)%block3dc(1,1,1)=CMPLX(-(clight*dt)**3/6.0_num,0.0_num)  
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=(0._num,0._num)
     DEALLOCATE(kxf,kxb,kxc,kyf,kyb,kyc,kzf,kzb,kzc,temp,temp2,onesx,onesy,onesz) 
   END SUBROUTINE init_kspace
   
@@ -427,7 +427,6 @@ MODULE gpstd_solver
         CALL is_calculation_needed(i,j,needed) 
         IF(.NOT. needed) CYCLE
         ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(nx/2+1,ny,nz))
-        !cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc = CMPLX(0.,0.)
         cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = nx/2+1
         cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = ny
         cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = nz
@@ -442,7 +441,6 @@ MODULE gpstd_solver
     ENDDO
     DO i=1_idp,6_idp
       ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nx/2+1,ny,nz))
-      !vnew(nmatrixes)%block_vector(i)%block3dc = CMPLX(0.,0.)
       vnew(nmatrixes)%block_vector(i)%nx = nx/2+1
       vnew(nmatrixes)%block_vector(i)%ny = ny
       vnew(nmatrixes)%block_vector(i)%nz = nz
@@ -515,7 +513,7 @@ MODULE gpstd_solver
      cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc = &
        -mu0*(-ii)*Kspace(nmatrixes2)%block_vector(2)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
     !contribution rho old ( vold(10))
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (1.,0.)
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (1.0_num,0.0_num)
     DO i = 1,3
       cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc =        &
         CMPLX(0.,1.)*(AT_OP(nmatrixes2)%block_vector(2)%block3dc   &
