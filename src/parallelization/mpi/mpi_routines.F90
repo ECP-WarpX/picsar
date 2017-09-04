@@ -920,27 +920,27 @@ IF (l_spectral) THEN
     CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
     ! - Allocate real arrays
-    CALL c_f_pointer(cin, ex_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, ey_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, ey_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, ez_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, ez_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, bx_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, bx_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, by_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, by_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, bz_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, bz_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, jx_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, jx_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, jy_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, jy_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, jz_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, jz_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, rho_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, rho_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, rhoold_r, [(nx_global)+2, nky, nkz])
+    CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
 
     ! allocate k-vectors
     ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
