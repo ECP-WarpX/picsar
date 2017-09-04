@@ -520,7 +520,7 @@ INTEGER(idp) :: ix,iy,iz
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,MIN(nzz,n3)
 	DO iy=1,MIN(nyy,n2)
-		DO ix=1,MIN(nyy,n1)
+		DO ix=1,MIN(nxx,n1)
 				ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
 		END DO
 	END DO
