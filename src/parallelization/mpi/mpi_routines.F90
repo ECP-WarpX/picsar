@@ -890,7 +890,7 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 -nzguards:nz+nzguards))
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
-IF (l_spectral) THEN
+IF (l_spectral .OR. g_spectral) THEN
   IF (fftw_with_mpi) THEN
     nkx=(nx_global)/2+1! Real To Complex Transform
     nky=ny_global
@@ -960,31 +960,33 @@ IF (l_spectral) THEN
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
-    ALLOCATE(exf(nkx, nky, nkz))
-    ALLOCATE(eyf(nkx, nky, nkz))
-    ALLOCATE(ezf(nkx, nky, nkz))
-    ALLOCATE(bxf(nkx, nky, nkz))
-    ALLOCATE(byf(nkx, nky, nkz))
-    ALLOCATE(bzf(nkx, nky, nkz))
-    ALLOCATE(jxf(nkx, nky, nkz))
-    ALLOCATE(jyf(nkx, nky, nkz))
-    ALLOCATE(jzf(nkx, nky, nkz))
-    ALLOCATE(rhof(nkx, nky, nkz))
-    ALLOCATE(rhooldf(nkx, nky, nkz))
-    ! allocate k-vectors
-    ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
-    ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
-    ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
-    ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
-    nkz))
-    ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
-    ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
-    ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
-    ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
-    ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
-    ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
-    ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
-    ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
+    IF (l_spectral) THEN
+      ALLOCATE(exf(nkx, nky, nkz))
+      ALLOCATE(eyf(nkx, nky, nkz))
+      ALLOCATE(ezf(nkx, nky, nkz))
+      ALLOCATE(bxf(nkx, nky, nkz))
+      ALLOCATE(byf(nkx, nky, nkz))
+      ALLOCATE(bzf(nkx, nky, nkz))
+      ALLOCATE(jxf(nkx, nky, nkz))
+      ALLOCATE(jyf(nkx, nky, nkz))
+      ALLOCATE(jzf(nkx, nky, nkz))
+      ALLOCATE(rhof(nkx, nky, nkz))
+      ALLOCATE(rhooldf(nkx, nky, nkz))
+      ! allocate k-vectors
+      ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
+      ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
+      ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
+      ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
+      nkz))
+      ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
+      ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
+      ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
+      ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
+      ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
+      ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
+      ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
+      ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
+    ENDIF
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1
     kmn=-nzguards;kmx=nz+nzguards-1

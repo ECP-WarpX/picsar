@@ -141,7 +141,11 @@ SUBROUTINE step(nst)
         CALL push_psatd_ebfield_3d
         CALL efield_bcs
         CALL bfield_bcs
-      ELSE
+      ELSE IF (g_spectral) THEN
+        CALL push_gpstd_ebfied_3d
+        CALL efield_bcs
+        CALL bfield_bcs
+      ELSE 
 #endif
         !IF (rank .EQ. 0) PRINT *, "#6"
         !!! --- Push B field half a time step
@@ -267,6 +271,7 @@ SUBROUTINE initall
   USE time_stat
 #if defined(FFTW)
   USE fourier_psaotd
+  USE gpstd_solver
 #endif
   USE precomputed
 
@@ -476,8 +481,12 @@ SUBROUTINE initall
 
 #if defined(FFTW)
   ! -Init Fourier
-  IF (l_spectral) THEN
-    CALL init_fourier
+  IF (l_spectral .OR. g_spectral) THEN
+    IF(l_spectral) CALL init_fourier
+    IF(g_spectral)then
+       CALL init_gpstd(nx+2*nxguards,ny+2*nyguards,nz+2*nzguards,dx,dy,dz,dt,norderx,nordery,norderz) 
+       call init_plans_gpstd(nx+2*nxguards,ny+2*nyguards,nz+2*nzguards)
+     endif
   ENDIF
 #endif
   ! - Estimate tile size

@@ -213,3 +213,33 @@ SUBROUTINE push_psatd_ebfield_3d
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
   ENDIF
 END SUBROUTINE
+
+SUBROUTINE push_gpstd_ebfied_3d
+  USE constants
+  USE time_stat
+  USE params
+  USE shared_data
+  USE gpstd_solver
+  USE matrix_coefficients
+  IMPLICIT NONE 
+  REAL(num)  :: tmptime
+integer :: i,j
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+#if defined(FFTW)  
+  CALL execute_fftw_gpstd_r2c
+  CALL multiply_mat_vector(1_idp)
+  CALL execute_fftw_gpstd_c2r
+#endif
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
+  ENDIF
+END SUBROUTINE
+
+
+
+    
+
+
+
