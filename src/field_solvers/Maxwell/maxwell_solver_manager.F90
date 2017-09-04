@@ -210,6 +210,6 @@ SUBROUTINE push_psatd_ebfield_3d
   ENDIF
 #endif
   IF (it.ge.timestat_itstart) THEN
-    localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+    localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
   ENDIF
 END SUBROUTINE

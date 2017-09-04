@@ -1052,30 +1052,30 @@ USE omp_lib
 #endif
 IMPLICIT NONE
 
-REAL(num), DIMENSION(20) :: percenttimes
+REAL(num), DIMENSION(24) :: percenttimes
 INTEGER(idp)             :: nthreads_tot
 
 ! Total times
-localtimes(20) = sum(localtimes(1:14))
+localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
 localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +  &
 localtimes(11) + localtimes(13)
-localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)
+localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) + localtimes(24)
 
 init_localtimes(5) = sum(init_localtimes(1:4))
 
 ! Reductions
 ! Maximun times
-CALL MPI_REDUCE(localtimes, maxtimes, 20_isp, mpidbl, MPI_MAX, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, maxtimes, 24_isp, mpidbl, MPI_MAX, 0_isp, comm,       &
 errcode)
 CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,    &
 comm, errcode)
 ! Minimum times
-CALL MPI_REDUCE(localtimes, mintimes, 20_isp, mpidbl, MPI_MIN, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, mintimes, 24_isp, mpidbl, MPI_MIN, 0_isp, comm,       &
 errcode)
 CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MIN, 0_isp,    &
 comm, errcode)
 ! Average
-CALL MPI_REDUCE(localtimes, avetimes, 20_isp, mpidbl, MPI_SUM, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, avetimes, 24_isp, mpidbl, MPI_SUM, 0_isp, comm,       &
 errcode)
 CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_SUM, 0_isp,    &
 comm, errcode)
@@ -1123,12 +1123,20 @@ IF (rank .EQ. 0) THEN
   avetimes(3), maxtimes(3), percenttimes(3), avetimes(3)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "Current bound. cond.:", mintimes(4),          &
   avetimes(4), maxtimes(4), percenttimes(4), avetimes(4)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield:", mintimes(5), avetimes(5),      &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield fdtd:", mintimes(5), avetimes(5),      &
   maxtimes(5), percenttimes(5), avetimes(5)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "B field bound. cond.:", mintimes(6),          &
   avetimes(6), maxtimes(6), percenttimes(6), avetimes(6)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield:", mintimes(7), avetimes(7),      &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield fdtd:", mintimes(7), avetimes(7),      &
   maxtimes(7), percenttimes(7), avetimes(7)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Get fields psatd:", mintimes(21),avetimes(21),      &    
+  maxtimes(21), percenttimes(21), avetimes(21)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Execute fftw:", mintimes(22),avetimes(22),      &
+  maxtimes(22), percenttimes(22), avetimes(22)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:", mintimes(23),avetimes(23), &
+  maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:", mintimes(24),avetimes(24),&
+  maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8),          &
   avetimes(8), maxtimes(8), percenttimes(8), avetimes(8)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),        &
@@ -1205,32 +1213,32 @@ USE omp_lib
 #endif
 IMPLICIT NONE
 
-REAL(num), DIMENSION(20) :: percenttimes
+REAL(num), DIMENSION(24) :: percenttimes
 
 ! Time stats per iteration activated
 IF (timestat_perit.gt.0) THEN
 
   ! Total times
-  localtimes(20) = sum(localtimes(1:14))
+  localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
   localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8)  &
   + localtimes(11) + localtimes(13)
-  localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8)
+  localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) + localtimes(24)
 
   init_localtimes(5) = sum(init_localtimes(1:4))
 
   ! Reductions
   ! Maximun times
-  CALL MPI_REDUCE(localtimes, maxtimes, 20_isp, mpidbl, MPI_MAX, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, maxtimes, 24_isp, mpidbl, MPI_MAX, 0_isp, comm,     &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
   comm, errcode)
   ! Minimum times
-  CALL MPI_REDUCE(localtimes, mintimes, 20_isp, mpidbl, MPI_MIN, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, mintimes, 24_isp, mpidbl, MPI_MIN, 0_isp, comm,     &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
   comm, errcode)
   ! Average
-  CALL MPI_REDUCE(localtimes, avetimes, 20_isp, mpidbl, MPI_SUM, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, avetimes, 24_isp, mpidbl, MPI_SUM, 0_isp, comm,     &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
   comm, errcode)
@@ -1265,12 +1273,20 @@ IF (timestat_perit.gt.0) THEN
     avetimes(3), maxtimes(3), percenttimes(3), avetimes(3)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "Current bound. cond.:", mintimes(4),        &
     avetimes(4), maxtimes(4), percenttimes(4), avetimes(4)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield:", mintimes(5), avetimes(5),    &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield fdtd:", mintimes(5), avetimes(5),    &
     maxtimes(5), percenttimes(5), avetimes(5)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "B field bound. cond.:", mintimes(6),        &
     avetimes(6), maxtimes(6), percenttimes(6), avetimes(6)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield:", mintimes(7), avetimes(7),    &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield fdtd:", mintimes(7), avetimes(7),    &
     maxtimes(7), percenttimes(7), avetimes(7)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Get fields psatd:",mintimes(21),avetimes(21),      &
+    maxtimes(21), percenttimes(21), avetimes(21)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Execute fftw:", mintimes(22),avetimes(22),&
+    maxtimes(22), percenttimes(22), avetimes(22)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:",mintimes(23),avetimes(23), &
+    maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:",mintimes(24),avetimes(24),&
+    maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8),        &
     avetimes(8), maxtimes(8), percenttimes(8), avetimes(8)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),      &
