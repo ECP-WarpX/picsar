@@ -1148,6 +1148,7 @@ MODULE control_file
     curr%sorting_period = 0
     curr%sorting_start = 0
     curr%species_npart=0
+    curr%ldodepos_charge=.FALSE.
     ! --- Init default value for antenna params
     curr%is_antenna=.TRUE.
     curr%antenna_params%is_lens=.FALSE.
