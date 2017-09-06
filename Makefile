@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod_spectral
+MODE=prod
 
 # System (SYS)
 # - cori2
@@ -55,9 +55,6 @@ FFTW3_LIB=/usr/lib/x86_64-linux-gnu
 FFTW3_INCLUDE=/usr/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
-FFTW3_LIB= $(FFTW_LIB_DIR)
-FFTW3_INCLUDE=$(FFTW_INC_DIR)
-VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
 
 # Source directory
@@ -328,7 +325,7 @@ endif
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
-	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
+	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 
 
