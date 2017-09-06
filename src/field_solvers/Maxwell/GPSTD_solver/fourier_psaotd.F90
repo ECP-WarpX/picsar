@@ -830,12 +830,13 @@ IF (it.ge.timestat_itstart) THEN
 ENDIF
 ALLOCATE(exold(nkx,nky,nkz),eyold(nkx,nky,nkz),ezold(nkx,nky,nkz))
 ALLOCATE(bxold(nkx,nky,nkz),byold(nkx,nky,nkz),bzold(nkx,nky,nkz))
-exold=exf
-eyold=eyf
-ezold=ezf
-bxold=bxf
-byold=byf
-bzold=bzf
+exold=1.0_num*exf
+eyold=1.0_num*eyf
+ezold=1.0_num*ezf
+bxold=1.0_num*bxf
+byold=1.0_num*byf
+bzold=1.0_num*bzf
+print*,nmatrixes,nkx,nky,nkz
 ! - Push B a full time step
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nkz
@@ -865,7 +866,7 @@ DO iz=1,nkz
 
                        ! Push E a full time step
                        ! - Ex
-                       exf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exold(ix,iy,iz) -   &
+                       exf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exold(ix,iy,iz) +   &
                        cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc(ix,iy,iz)*byold(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(1,6)%block3dc(ix,iy,iz)*bzold(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(1,7)%block3dc(ix,iy,iz)*jxf(ix,iy,iz)     +               &
@@ -873,7 +874,7 @@ DO iz=1,nkz
                        + cc_mat(nmatrixes)%block_matrix2d(1,10)%block3dc(ix,iy,iz)*rhooldf(ix,iy,iz)
 
                        ! - Ey
-                       eyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*eyold(ix,iy,iz) -   & 
+                       eyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*eyold(ix,iy,iz) +   & 
                        cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc(ix,iy,iz)*bxold(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(2,6)%block3dc(ix,iy,iz)*bzold(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(2,8)%block3dc(ix,iy,iz)*jyf(ix,iy,iz) +               &
@@ -882,7 +883,7 @@ DO iz=1,nkz
 
 
                        ! - Ez
-                       ezf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*ezold(ix,iy,iz) -   &
+                       ezf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*ezold(ix,iy,iz) +   &
                        cc_mat(nmatrixes)%block_matrix2d(3,4)%block3dc(ix,iy,iz)*bxold(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(3,5)%block3dc(ix,iy,iz)*byold(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(3,9)%block3dc(ix,iy,iz)*jzf(ix,iy,iz) +               &
@@ -925,7 +926,6 @@ ELSE
         nffty=ny+2*nyguards
         nfftz=nz+2*nzguards
 ENDIF
-
 CALL init_gpstd(nfftx,nffty,nfftz,dx,dy,dz,dt,norderx,nordery,norderz)
 IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
