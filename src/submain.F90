@@ -490,7 +490,7 @@ SUBROUTINE initall
     nzz = 2*nzguards+nz
   
     IF(g_spectral) THEN
-       CALL init_gpstd(nxx,nyy,nzz,dx,dy,dz,dt,norderx,nordery,norderz)
+       CALL init_gpstd(nxx,nyy,nzz)
        CALL init_plans_gpstd(nxx,nyy,nzz)
      ENDIF
 

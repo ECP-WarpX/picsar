@@ -23,14 +23,16 @@ MODULE gpstd_solver
 !> Creation 2017
 ! ________________________________________________________________________________________
 
-  SUBROUTINE init_kspace(nx,ny,nz,dx,dy,dz,dt,porderx,pordery,porderz)
+  SUBROUTINE init_kspace(nx,ny,nz)
     USE matrix_coefficients
     USE CONSTANTS
     USE mpi_fftw3
     USE omp_lib
+    USE shared_data , ONLY : dx,dy,dz
+    USE fields , ONLY : norderx,nordery,norderz
+    USE params , ONLY : dt
     !USE fourier_psaotd , ONLY : FD_weights_hvincenti
-    INTEGER(idp) , INTENT(IN)                     :: nx,ny,nz,porderx,pordery,porderz
-    REAL(num)    , INTENT(IN)                     :: dx,dy,dz,dt
+    INTEGER(idp) , INTENT(IN)                     :: nx,ny,nz
     LOGICAL(lp)                                   :: l_stg
     REAL(num)    , ALLOCATABLE , DIMENSION(:,:,:) :: temp,temp2
     INTEGER(idp)                                  :: i,j,k
@@ -54,7 +56,7 @@ MODULE gpstd_solver
     !construct kspace
     l_stg = .TRUE.
     ii=DCMPLX(0.0_num,1.0_num)
-    CALL compute_k_vec_nompi(nx,ny,nz,porderx,pordery,porderz,dx,dy,dz,l_stg)
+    CALL compute_k_vec_nompi(nx,ny,nz,l_stg)
     DO i = 1,nx/2+1
       DO j = 1,ny
         DO k = 1,nz
@@ -99,11 +101,13 @@ MODULE gpstd_solver
     DEALLOCATE(temp,temp2) 
   END SUBROUTINE init_kspace
 
-  SUBROUTINE compute_k_vec_nompi(nx,ny,nz,porderx,pordery,porderz,dx,dy,dz,l_stg)
+  SUBROUTINE compute_k_vec_nompi(nx,ny,nz,l_stg)
     USE constants
+    USE shared_data , ONLY : dx,dy,dz
+    USE fields , ONLY : norderx,nordery,norderz
+
     IMPLICIT NONE 
-    INTEGER(idp) , INTENT(IN)  :: nx,ny,nz,porderx,pordery,porderz
-    REAL(num)    , INTENT(IN)  :: dx,dy,dz
+    INTEGER(idp) , INTENT(IN)  :: nx,ny,nz
     LOGICAL(lp)  , INTENT(IN)  :: l_stg
     COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxff,kxbb,kxcc
     REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: FD_x,FD_y,FD_z
@@ -138,13 +142,13 @@ MODULE gpstd_solver
     ALLOCATE(kxf(nx/2+1),kxb(nx/2+1),kxc(nx/2+1))
     ALLOCATE(kyf(ny),kyb(ny),kyc(ny))
     ALLOCATE(kzf(nz),kzb(nz),kzc(nz))
-    IF (porderx .ne. 0_idp ) THEN  ! if 0 then infinite order
-      ALLOCATE(FD_x(porderx/2))
-      CALL FD_weights_hvincenti(porderx,FD_x,l_stg)
+    IF (norderx .ne. 0_idp ) THEN  ! if 0 then infinite order
+      ALLOCATE(FD_x(norderx/2))
+      CALL FD_weights_hvincenti(norderx,FD_x,l_stg)
       kxf=(0._num,0._num)*kxf
       kxb=(0._num,0._num)*kxb
       kxc=(0._num,0._num)*kxc
-      DO i=1_idp,porderx/2
+      DO i=1_idp,norderx/2
         kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx*1.0_num/nx)
       ENDDO
     ELSE
@@ -157,13 +161,13 @@ MODULE gpstd_solver
       kxc=kxcc(1:nx/2+1)
       DEALLOCATE(kxff,kxbb,kxcc)
     ENDIF
-    IF (pordery .ne. 0_idp) THEN
-      ALLOCATE(FD_y(pordery/2))
-      CALL FD_weights_hvincenti(pordery,FD_y,l_stg)
+    IF (nordery .ne. 0_idp) THEN
+      ALLOCATE(FD_y(nordery/2))
+      CALL FD_weights_hvincenti(nordery,FD_y,l_stg)
       kyf=(0._num,0._num)*kyf
       kyb=(0._num,0._num)*kyb
       kyc=(0._num,0._num)*kyc
-      DO i=1_idp,pordery/2
+      DO i=1_idp,nordery/2
         kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/ny)
       ENDDO
     ELSE
@@ -171,13 +175,13 @@ MODULE gpstd_solver
       CALL fftfreq(ny,kyb,dy)
       CALL fftfreq(ny,kyc,dy)
     ENDIF
-    IF (porderz .ne. 0_idp) THEN
-      ALLOCATE(FD_z(porderz/2))
-      CALL FD_weights_hvincenti(porderz,FD_z,l_stg)
+    IF (norderz .ne. 0_idp) THEN
+      ALLOCATE(FD_z(norderz/2))
+      CALL FD_weights_hvincenti(norderz,FD_z,l_stg)
       kzf=(0._num,0._num)*kzf
       kzb=(0._num,0._num)*kzb
       kzc=(0._num,0._num)*kzc
-      DO i=1_idp,porderz/2
+      DO i=1_idp,norderz/2
         kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nz)
       ENDDO
     ELSE
@@ -368,20 +372,23 @@ MODULE gpstd_solver
 ! ________________________________________________________________________________________
 
 
-  SUBROUTINE init_gpstd(nx,ny,nz,dx,dy,dz,dt,porderx,pordery,porderz)
+  SUBROUTINE init_gpstd(nx,ny,nz)
     USE matrix_coefficients
     USE PICSAR_PRECISION
     USE CONSTANTS
     USE mpi_fftw3
     USE omp_lib
-    INTEGER(idp),INTENT(IN):: nx,ny,nz,porderx,pordery,porderz
-    REAL(num),INTENT(IN)   :: dx,dy,dz,dt
+    USE shared_data , ONLY : dx,dy,dz
+    USE fields , ONLY : norderx,nordery,norderz
+    USE params , ONLY : dt
+
+    INTEGER(idp),INTENT(IN):: nx,ny,nz
     INTEGER(idp)           :: i,j,k,p
     COMPLEX(cpx)           :: ii
     LOGICAL(lp)            :: needed
     ii=(0.,1.)
     CALL allocate_new_matrix_vector(11_idp)
-    CALL init_kspace(nx,ny,nz,dx,dy,dz,dt,porderx,pordery,porderz)
+    CALL init_kspace(nx,ny,nz)
     DO i=1_idp,6_idp
       DO j=1_idp,11_idp
         CALL is_calculation_needed(i,j,needed) 
