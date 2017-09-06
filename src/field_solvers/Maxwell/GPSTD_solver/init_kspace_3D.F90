@@ -9,7 +9,9 @@
 ! ________________________________________________________________________________________
 
 MODULE gpstd_solver
+  USE PICSAR_PRECISION
   IMPLICIT NONE 
+  COMPLEX(cpx), DIMENSION(:)      , ALLOCATABLE :: kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf
   CONTAINS 
 !> @brief
 !> This subroutine calculates spectral space and other usefull blocks
@@ -30,10 +32,6 @@ MODULE gpstd_solver
     INTEGER(idp) , INTENT(IN)                     :: nx,ny,nz,porderx,pordery,porderz
     REAL(num)    , INTENT(IN)                     :: dx,dy,dz,dt
     LOGICAL(lp)                                   :: l_stg
-    REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: FD_x,FD_y,FD_z,onesx
-    COMPLEX(cpx)    , ALLOCATABLE , DIMENSION(:)     :: onesxp,onesyp,oneszp,onesy,onesz
-
-    COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxf,kyf,kzf,kxb,kyb,kzb,kxc,kyc,kzc,kxff,kxbb,kxcc
     REAL(num)    , ALLOCATABLE , DIMENSION(:,:,:) :: temp,temp2
     INTEGER(idp)                                  :: i,j,k
     COMPLEX(cpx)                                  :: ii
@@ -56,88 +54,7 @@ MODULE gpstd_solver
     !construct kspace
     l_stg = .TRUE.
     ii=DCMPLX(0.0_num,1.0_num)
-    ALLOCATE(onesx(nx/2+1),onesxp(nx/2+1))
-    ALLOCATE(onesy(ny),onesyp(ny))
-    ALLOCATE(onesz(nz),oneszp(nz))
-    DO i=1_idp,nx/2+1
-      onesx(i)  = DCMPLX(i-1.0_num,0.0_num)
-      onesxp(i) = DCMPLX(i-1.0_num,0.0_num)
-    ENDDO
-    DO j=1_idp,ny
-      onesy(j)  = DCMPLX(j-1.0_num,0.0_num)
-      onesyp(j) = DCMPLX(j-1.0_num,0.0_num)
-      IF(j .GT. ny/2_idp +1) THEN
-        onesy(j)  =DCMPLX(-onesy(j))
-        onesyp(j) =DCMPLX( ny + onesyp(j))
-      ENDIF
-    ENDDO
-    DO k=1_idp,nz
-      onesz(k)  = DCMPLX(k-1.0_num)
-      oneszp(k) = DCMPLX(k-1.0_num)
-      IF(k .GT. nz/2_idp +1) THEN 
-        onesz(k) = DCMPLX(- onesz(k))
-        oneszp(k) = DCMPLX(nz + oneszp(k))
-      ENDIF
-    ENDDO
-    IF (porderx .ne. 0_idp ) THEN  ! if 0 then infinite order
-      ALLOCATE(FD_x(porderx/2))
-      CALL FD_weights_hvincenti(porderx,FD_x,l_stg)
-      ALLOCATE(kxf(nx/2+1),kxb(nx/2+1),kxc(nx/2+1))
-      kxf=(0._num,0._num)*kxf
-      kxb=(0._num,0._num)*kxb
-      kxc=(0._num,0._num)*kxc
-      DO i=1_idp,porderx/2
-        kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx*1.0_num/nx)
-      ENDDO
-    ELSE 
-      ALLOCATE(kxff(nx),kxbb(nx),kxcc(nx))
-      ALLOCATE(kxf(nx/2+1),kxb(nx/2+1),kxc(nx/2+1))
-      CALL fftfreq(nx,kxff,dx)
-      CALL fftfreq(nx,kxbb,dx)
-      CALL fftfreq(nx,kxcc,dx)
-      kxf=kxff(1:nx/2+1)
-      kxb=kxbb(1:nx/2+1) 
-      kxc=kxcc(1:nx/2+1)
-      DEALLOCATE(kxff,kxbb,kxcc)
-    ENDIF
-      kxf=kxc*EXP(-ii*PI*onesxp/nx)
-      kxb=kxc*EXP(ii*PI*onesxp/nx)
-    IF (pordery .ne. 0_idp) THEN 
-      ALLOCATE(FD_y(pordery/2))
-      CALL FD_weights_hvincenti(pordery,FD_y,l_stg)
-      ALLOCATE(kyf(ny),kyb(ny),kyc(ny))
-      kyf=(0._num,0._num)*kyf
-      kyb=(0._num,0._num)*kyb
-      kyc=(0._num,0._num)*kyc
-      DO i=1_idp,pordery/2
-        kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/ny)
-      ENDDO
-    ELSE
-      ALLOCATE(kyf(ny),kyb(ny),kyc(ny))
-      CALL fftfreq(ny,kyf,dy)
-      CALL fftfreq(ny,kyb,dy)
-      CALL fftfreq(ny,kyc,dy)
-    ENDIF
-      kyf=kyc*EXP(-ii*PI*onesyp/ny)
-      kyb=kyc*EXP(ii*PI*onesyp/ny)
-    IF (porderz .ne. 0_idp) THEN
-      ALLOCATE(FD_z(porderz/2))
-      CALL FD_weights_hvincenti(porderz,FD_z,l_stg)
-      ALLOCATE(kzf(nz),kzb(nz),kzc(nz))
-      kzf=(0._num,0._num)*kzf
-      kzb=(0._num,0._num)*kzb
-      kzc=(0._num,0._num)*kzc
-      DO i=1_idp,porderz/2
-            kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nz)
-      ENDDO 
-    ELSE
-      ALLOCATE(kzf(nz),kzb(nz),kzc(nz))
-      CALL fftfreq(nz,kzf,dz)
-      CALL fftfreq(nz,kzb,dz)
-      CALL fftfreq(nz,kzc,dz)
-    ENDIF
-      kzf=kzc*EXP(-ii*PI*oneszp/nz)
-      kzb=kzc*EXP(ii*PI*oneszp/nz)
+    CALL compute_k_vec_nompi(nx,ny,nz,porderx,pordery,porderz,dx,dy,dz,l_stg)
     DO i = 1,nx/2+1
       DO j = 1,ny
         DO k = 1,nz
@@ -179,15 +96,120 @@ MODULE gpstd_solver
     / Kspace(nmatrixes2)%block_vector(10)%block3dc/ Kspace(nmatrixes2)%block_vector(10)%block3dc
     AT_OP(nmatrixes2)%block_vector(4)%block3dc(1,1,1)=DCMPLX(-(clight*dt)**3/6.0_num,0.0_num)  
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(0._num,0._num)
-    DEALLOCATE(kxf,kxb,kxc,kyf,kyb,kyc,kzf,kzb,kzc,temp,temp2,onesx,onesy,onesz,onesxp,onesyp,oneszp) 
+    DEALLOCATE(temp,temp2) 
   END SUBROUTINE init_kspace
-  
+
+  SUBROUTINE compute_k_vec_nompi(nx,ny,nz,porderx,pordery,porderz,dx,dy,dz,l_stg)
+    USE constants
+    IMPLICIT NONE 
+    INTEGER(idp) , INTENT(IN)  :: nx,ny,nz,porderx,pordery,porderz
+    REAL(num)    , INTENT(IN)  :: dx,dy,dz
+    LOGICAL(lp)  , INTENT(IN)  :: l_stg
+    COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxff,kxbb,kxcc
+    REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: FD_x,FD_y,FD_z
+    COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: onesxp,onesyp,oneszp,onesx,onesy,onesz
+    COMPLEX(cpx)                                  :: ii
+    INTEGER(idp)                                  :: i,j,k
+    
+    ii = DCMPLX(0.0_num,1.0_num)
+    ALLOCATE(onesx(nx/2+1),onesxp(nx/2+1))
+    ALLOCATE(onesy(ny),onesyp(ny))
+    ALLOCATE(onesz(nz),oneszp(nz))
+    DO i=1_idp,nx/2+1
+      onesx(i)  = DCMPLX(i-1.0_num,0.0_num)
+      onesxp(i) = DCMPLX(i-1.0_num,0.0_num)
+    ENDDO
+    DO j=1_idp,ny
+      onesy(j)  = DCMPLX(j-1.0_num,0.0_num)
+      onesyp(j) = DCMPLX(j-1.0_num,0.0_num)
+      IF(j .GT. ny/2_idp +1) THEN
+        onesy(j)  =DCMPLX(-onesy(j))
+        onesyp(j) =DCMPLX( ny + onesyp(j))
+      ENDIF
+    ENDDO
+    DO k=1_idp,nz
+      onesz(k)  = DCMPLX(k-1.0_num)
+      oneszp(k) = DCMPLX(k-1.0_num)
+      IF(k .GT. nz/2_idp +1) THEN
+        onesz(k) = DCMPLX(- onesz(k))
+        oneszp(k) = DCMPLX(nz + oneszp(k))
+      ENDIF
+    ENDDO
+    ALLOCATE(kxf(nx/2+1),kxb(nx/2+1),kxc(nx/2+1))
+    ALLOCATE(kyf(ny),kyb(ny),kyc(ny))
+    ALLOCATE(kzf(nz),kzb(nz),kzc(nz))
+    IF (porderx .ne. 0_idp ) THEN  ! if 0 then infinite order
+      ALLOCATE(FD_x(porderx/2))
+      CALL FD_weights_hvincenti(porderx,FD_x,l_stg)
+      kxf=(0._num,0._num)*kxf
+      kxb=(0._num,0._num)*kxb
+      kxc=(0._num,0._num)*kxc
+      DO i=1_idp,porderx/2
+        kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx*1.0_num/nx)
+      ENDDO
+    ELSE
+      ALLOCATE(kxff(nx),kxbb(nx),kxcc(nx))
+      CALL fftfreq(nx,kxff,dx)
+      CALL fftfreq(nx,kxbb,dx)
+      CALL fftfreq(nx,kxcc,dx)
+      kxf=kxff(1:nx/2+1)
+      kxb=kxbb(1:nx/2+1)
+      kxc=kxcc(1:nx/2+1)
+      DEALLOCATE(kxff,kxbb,kxcc)
+    ENDIF
+    IF (pordery .ne. 0_idp) THEN
+      ALLOCATE(FD_y(pordery/2))
+      CALL FD_weights_hvincenti(pordery,FD_y,l_stg)
+      kyf=(0._num,0._num)*kyf
+      kyb=(0._num,0._num)*kyb
+      kyc=(0._num,0._num)*kyc
+      DO i=1_idp,pordery/2
+        kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/ny)
+      ENDDO
+    ELSE
+      CALL fftfreq(ny,kyf,dy)
+      CALL fftfreq(ny,kyb,dy)
+      CALL fftfreq(ny,kyc,dy)
+    ENDIF
+    IF (porderz .ne. 0_idp) THEN
+      ALLOCATE(FD_z(porderz/2))
+      CALL FD_weights_hvincenti(porderz,FD_z,l_stg)
+      kzf=(0._num,0._num)*kzf
+      kzb=(0._num,0._num)*kzb
+      kzc=(0._num,0._num)*kzc
+      DO i=1_idp,porderz/2
+        kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nz)
+      ENDDO
+    ELSE
+      CALL fftfreq(nz,kzf,dz)
+      CALL fftfreq(nz,kzb,dz)
+      CALL fftfreq(nz,kzc,dz)
+    ENDIF
+    IF(l_stg) THEN
+    kxf=kxc*EXP(-ii*PI*onesxp/nx)
+    kxb=kxc*EXP(ii*PI*onesxp/nx)
+
+    kyf=kyc*EXP(-ii*PI*onesyp/ny)
+    kyb=kyc*EXP(ii*PI*onesyp/ny)
+
+    kzf=kzc*EXP(-ii*PI*oneszp/nz)
+    kzb=kzc*EXP(ii*PI*oneszp/nz)
+    ELSE
+      kxf=kxc
+      kxb=kxc
+      kyf=kyc
+      kyb=kyc
+      kzf=kzc
+      kzb=kzc
+    ENDIF
+    DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp,FD_x,FD_y,FD_z)
+  END SUBROUTINE
   SUBROUTINE fftfreq(nxx,kxx, dxx)
   USE constants
     IMPLICIT NONE
     INTEGER(idp)  , INTENT(IN)                    :: nxx
     REAL(num)     , INTENT(IN)                    :: dxx
-    COMPLEX(cpx)  , INTENT(OUT) , DIMENSION(nxx)  :: kxx
+    COMPLEX(cpx)  , INTENT(OUT) , DIMENSION(:)  :: kxx
     INTEGER(idp) :: i,n
     REAL(num) :: fe
   
