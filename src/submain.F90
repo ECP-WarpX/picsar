@@ -284,8 +284,6 @@ SUBROUTINE initall
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER    :: dp
   INTEGER(idp)                    :: nxx,nyy,nzz
-integer ::ix,iy,iz
-complex(cpx),dimension(:,:,:),allocatable ::af,ag
   ! Time statistics
   init_localtimes(:) = 0
   localtimes(:)=0
@@ -490,42 +488,44 @@ complex(cpx),dimension(:,:,:),allocatable ::af,ag
     nxx = 2*nxguards+nx
     nyy = 2*nyguards+ny
     nzz = 2*nzguards+nz
-        allocate(af(nxx/2+1,nyy,nzz),ag(nxx/2+1,nyy,nzz))
-    IF(l_spectral) CALL init_fourier
+  
     IF(g_spectral) THEN
-       CALL init_gpstd(nxx,nyy,nzz,dx,dy,dz,dt,norderx,nordery,norderz) 
+       CALL init_gpstd(nxx,nyy,nzz,dx,dy,dz,dt,norderx,nordery,norderz)
        CALL init_plans_gpstd(nxx,nyy,nzz)
      ENDIF
-        if(l_spectral .and. g_spectral) then
-        ix=1;iy=1;iz=1
-        ag=cc_mat(1)%block_matrix2d(1,1)%block3dc
-        ag=Kspace(nmatrixes2)%block_vector(6)%block3dc
-        af=kyn*k
-        af(1,1,1)=0.
-      !  ag = AT_OP(nmatrixes2)%block_vector(1)%block3dc
-      !  af= (1.0_num/clight)**2*(AT_OP(nmatrixes2)%block_vector(1)%block3dc*clight**2)
-        if(rank .eq. 0) then
-        !do iz=1,nzz
-        do iy=1,nyy
-       ! do ix=1,nxx/2+1
-        !print*,abs(af(ix,iy,iz)-ag(ix,iy,iz))
-        print*,int(iy,isp),cmplx(af(ix,iy,iz)),cmplx(ag(ix,iy,iz))
-        !if(abs(ag(ix,iy,iz)-af(ix,iy,iz)) .gt.1 ) then
-        !print*,ix,iy,iz,"**************" 
-        !print*,ag(ix,iy,iz),af(ix,iy,iz),size(af(1,:,1))
-        !stop
-        !endif
-       ! enddo
-       ! enddo
-        enddo
-        endif
-        call mpi_barrier(comm,errcode)
-        print*,int(rank,isp),(sum(abs(af-ag))),maxval(abs(af-ag))!,af(1,1,1),ag(1,1,1)
-        print*,"siz",size(azp(:,1,1)),size(azp(1,:,1)),size(azp(1,1,:))
-      !  print*,sizeof(azp)/16,sizeof(sqrt(ag(1,1,1))),sizeof(cc_mat(1)%block_matrix2d(4,2)%block3dc)/16
-        call mpi_barrier(comm,errcode);stop
-        endif
+
+    IF(l_spectral) CALL init_plans_blocks
   ENDIF
+!        if(l_spectral .and. g_spectral) then
+!        ix=1;iy=1;iz=1
+!        ag=cc_mat(1)%block_matrix2d(6,8)%block3dc
+!!        ag=dcmplx(0,1)*Kspace(nmatrixes2)%block_vector(4)%block3dc/Kspace(nmatrixes2)%block_vector(10)%block3dc &
+!!*clight*sin(Kspace(nmatrixes2)%block_vector(10)%block3dc*clight*dt)
+!!        ag(1,1,1)=0
+!!       ! af=clight*aym
+!!        ag=Kspace(nmatrixes2)%block_vector(4)%block3dc/Kspace(nmatrixes2)%block_vector(10)%block3dc
+!!        ag(1,1,1)=0
+!!        af=kymn 
+!!       ag=ag* clight*sin(Kspace(nmatrixes2)%block_vector(10)%block3dc*clight*dt)
+!        af=kxpn!*bjmult
+!        !if(rank .eq. 0) then
+!        !do iz=1,nzz
+!        !do iy=1,nyy
+!        !do ix=1,nxx/2+1
+!        !print*,abs(af(ix,iy,iz)-ag(ix,iy,iz))
+!        !if(abs(ag(ix,iy,iz)-af(ix,iy,iz)) .gt.0.000000001 ) then
+!        !print*,ix,iy,iz,"**************" 
+!        !print*,ag(ix,iy,iz),af(ix,iy,iz)!,size(af(1,:,1))
+!        !stop
+!        !endif
+!        !enddo
+!        !enddo
+!        !enddo
+!        !endif
+!        call mpi_barrier(comm,errcode)
+!        print*,minval(abs(af)),int(rank,isp),(sum(abs(af-ag))),maxval(abs(af-ag))!,af(1,1,1),ag(1,1,1)
+!        call mpi_barrier(comm,errcode);stop
+!        endif
 #endif
   ! - Estimate tile size
   CALL estimate_memory_consumption

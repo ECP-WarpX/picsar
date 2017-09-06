@@ -42,264 +42,292 @@
 ! ---
 
 MODULE fourier_psaotd
+USE gpstd_solver !,only: init_kspace,init_gpstd
+USE matrix_coefficients
+
 IMPLICIT NONE
 CONTAINS
 
-SUBROUTINE rfftfreq(nxx,kxx,dxx)
-USE constants
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx
-REAL(num), INTENT(IN) :: dxx
-REAL(num), DIMENSION(nxx/2+1), INTENT(OUT) :: kxx
-INTEGER(idp) :: i, l,m,n
-REAL(num) :: df
-
-! Even case
-IF (MOD(nxx,2) .EQ. 0) THEN
-	n=nxx/2
-! Odd case
-ELSE
-	n=(nxx-1)/2
-ENDIF
-
-kxx(1)=0
-DO i=1,n
-	kxx(i+1)=kxx(i)+1
-END DO
-
-df=1_num/(dxx*nxx)
-
-kxx=kxx*df
-
-END SUBROUTINE rfftfreq
-
-
-! ---  fftfreq as in numpy
-SUBROUTINE fftfreq(nxx,kxx, dxx)
-USE constants
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx
-REAL(num), INTENT(IN) :: dxx
-REAL(num), DIMENSION(nxx), INTENT(OUT) :: kxx
-INTEGER(idp) :: i,n
-REAL(num) :: df
-
-n=nxx
-
-kxx(1)=0
-IF (MOD(n,2) .EQ. 0)THEN
-  ! First part of k [0,...,n/2-1]
-	DO i=1,n/2_idp-1_idp
-		kxx(i+1)=kxx(i)+1_idp
-	END DO
-  ! Second part of k [-n/2,-1]
-	kxx(n/2_idp+1)=-n/2_idp
-	DO i=n/2_idp+1,n-1
-		kxx(i+1)=kxx(i)+1_idp
-	END DO
-ELSE
-  ! First part of k [0,...,(n-1)/2]
-	DO i=1,(n-1_idp)/2_idp
-		kxx(i+1)=kxx(i)+1_idp
-	END DO
-  ! Second part of k [-(n-1)/2,-1]
-	kxx((n-1_idp)/2_idp+2_idp)=-(n-1_idp)/2_idp
-	DO i=(n-1_idp)/2_idp+2_idp,n-1
-		kxx(i+1)=kxx(i)+1_idp
-	END DO
-ENDIF
-
-df=1_num/(dxx*nxx)
-
-kxx=kxx*df
-END SUBROUTINE fftfreq
-
-SUBROUTINE init_fourier
-USE shared_data
-USE fastfft
-Use fourier
-USE fftw3_fortran
-USE fields
-USE omp_lib
-IMPLICIT NONE
-REAL(num) :: xi
-INTEGER(idp) :: i, nopenmp, l, m, n
-REAL(num), DIMENSION(:), ALLOCATABLE :: wx,wy,wz
-REAL(num), DIMENSION(:), POINTER :: temp
-REAL(num), DIMENSION(:), ALLOCATABLE :: xcoefs,ycoefs,zcoefs
-COMPLEX(cpx) :: ii
-INTEGER(idp) :: nfftx,nffty,nfftz, imn,imx,jmn,jmx,kmn,kmx
-ALLOCATE(xcoefs(nkx),ycoefs(nky),zcoefs(nkz))
-
-IF (fftw_with_mpi) THEN
-	nfftx=nx_global
-	nffty=ny_global
-	nfftz=nz_global
-ELSE
-	nfftx=nx+2*nxguards
-	nffty=ny+2*nyguards
-	nfftz=nz+2*nzguards
-ENDIF
-
-! Init k-vectors
-IF (fftw_with_mpi) THEN
-	CALL initkvectors_mpi(nfftx,nffty,nfftz)
-ELSE
-	CALL initkvectors(nfftx,nffty,nfftz)
-ENDIF
-
+!SUBROUTINE rfftfreq(nxx,kxx,dxx)
+!USE constants
+!IMPLICIT NONE
+!INTEGER(idp), INTENT(IN) :: nxx
+!REAL(num), INTENT(IN) :: dxx
+!REAL(num), DIMENSION(nxx/2+1), INTENT(OUT) :: kxx
+!INTEGER(idp) :: i, l,m,n
+!REAL(num) :: df
 !
-IF (l_staggered) THEN
-	xi = 2.0_num
-ELSE
-	xi = 1.0_num
-ENDIF
-ALLOCATE(wx(norderx/2),wy(nordery/2),wz(norderz/2))
-CALL FD_weights_hvincenti(norderx,wx,l_staggered)
-CALL FD_weights_hvincenti(nordery,wy,l_staggered)
-CALL FD_weights_hvincenti(norderz,wz,l_staggered)
+!! Even case
+!IF (MOD(nxx,2) .EQ. 0) THEN
+!	n=nxx/2
+!! Odd case
+!ELSE
+!	n=(nxx-1)/2
+!ENDIF
+!
+!kxx(1)=0
+!DO i=1,n
+!	kxx(i+1)=kxx(i)+1
+!END DO
+!
+!df=1_num/(dxx*nxx)
+!
+!kxx=kxx*df
+!
+!END SUBROUTINE rfftfreq
+!
+!
+!! ---  fftfreq as in numpy
+!SUBROUTINE fftfreq(nxx,kxx, dxx)
+!USE constants
+!IMPLICIT NONE
+!INTEGER(idp), INTENT(IN) :: nxx
+!REAL(num), INTENT(IN) :: dxx
+!REAL(num), DIMENSION(nxx), INTENT(OUT) :: kxx
+!INTEGER(idp) :: i,n
+!REAL(num) :: df
+!
+!n=nxx
+!
+!kxx(1)=0
+!IF (MOD(n,2) .EQ. 0)THEN
+!  ! First part of k [0,...,n/2-1]
+!	DO i=1,n/2_idp-1_idp
+!		kxx(i+1)=kxx(i)+1_idp
+!	END DO
+!  ! Second part of k [-n/2,-1]
+!	kxx(n/2_idp+1)=-n/2_idp
+!	DO i=n/2_idp+1,n-1
+!		kxx(i+1)=kxx(i)+1_idp
+!	END DO
+!ELSE
+!  ! First part of k [0,...,(n-1)/2]
+!	DO i=1,(n-1_idp)/2_idp
+!		kxx(i+1)=kxx(i)+1_idp
+!	END DO
+!  ! Second part of k [-(n-1)/2,-1]
+!	kxx((n-1_idp)/2_idp+2_idp)=-(n-1_idp)/2_idp
+!	DO i=(n-1_idp)/2_idp+2_idp,n-1
+!		kxx(i+1)=kxx(i)+1_idp
+!	END DO
+!ENDIF
+!
+!df=1_num/(dxx*nxx)
+!
+!kxx=kxx*df
+!END SUBROUTINE fftfreq
+!
+!SUBROUTINE init_fourier
+!USE shared_data
+!USE fastfft
+!Use fourier
+!USE fftw3_fortran
+!USE fields
+!USE omp_lib
+!
+!USE params
+!
+!IMPLICIT NONE
+!REAL(num) :: xi
+!INTEGER(idp) :: i, nopenmp, l, m, n
+!REAL(num), DIMENSION(:), ALLOCATABLE :: wx,wy,wz
+!REAL(num), DIMENSION(:), POINTER :: temp
+!REAL(num), DIMENSION(:), ALLOCATABLE :: xcoefs,ycoefs,zcoefs
+!COMPLEX(cpx) :: ii
+!INTEGER(idp) :: nfftx,nffty,nfftz, imn,imx,jmn,jmx,kmn,kmx
+!ALLOCATE(xcoefs(nkx),ycoefs(nky),zcoefs(nkz))
+!
+!IF (fftw_with_mpi) THEN
+!	nfftx=nx_global
+!	nffty=ny_global
+!	nfftz=nz_global
+!ELSE
+!	nfftx=nx+2*nxguards
+!	nffty=ny+2*nyguards
+!	nfftz=nz+2*nzguards
+!ENDIF
+!
+!! Init k-vectors
+!IF (fftw_with_mpi) THEN
+!	CALL initkvectors_mpi(nfftx,nffty,nfftz)
+!ELSE
+!	CALL initkvectors(nfftx,nffty,nfftz)
+!ENDIF
+!
+!!
+!IF (l_staggered) THEN
+!	xi = 2.0_num
+!ELSE
+!	xi = 1.0_num
+!ENDIF
+!ALLOCATE(wx(norderx/2),wy(nordery/2),wz(norderz/2))
+!CALL FD_weights_hvincenti(norderx,wx,l_staggered)
+!CALL FD_weights_hvincenti(nordery,wy,l_staggered)
+!CALL FD_weights_hvincenti(norderz,wz,l_staggered)
+!
+!! - Init xcoefs
+!xcoefs=0._num
+!DO i=1, norderx/2
+!	xcoefs=xcoefs+wx(i)*2.0_num*SIN(kxunit*dx*((i-1)+1_idp/xi))
+!ENDDO
+!! - Init ycoefs
+!ycoefs=0._num
+!DO i=1, nordery/2
+!	ycoefs=ycoefs+wy(i)*2.0_num*SIN(kyunit*dy*((i-1)+1_idp/xi))
+!ENDDO
+!! - Init zcoefs
+!zcoefs=0._num
+!DO i=1, norderz/2
+!	zcoefs=zcoefs+wz(i)*2.0_num*SIN(kzunit*dz*((i-1)+1_idp/xi))
+!ENDDO
+!
+!! Init kxunit_mod
+!kxunit_mod=xcoefs/dx
+!! Init kyunit_mod
+!kyunit_mod=ycoefs/dy
+!! Init kzunit_mod
+!kzunit_mod=zcoefs/dz
+!
+!! Init kxn, kx_unmod
+!DO n=1,nkz
+!	DO m=1,nky
+!		kxn(:,m,n) = kxunit_mod
+!		kx_unmod(:,m,n) = kxunit
+!	END DO
+!END DO
+!! Init kyn, ky_unmod
+!DO n=1,nkz
+!	DO l=1,nkx
+!        kyn(l,:,n) = kyunit_mod
+!        ky_unmod(l,:,n) = kyunit
+!	END DO
+!END DO
+!! Init kzn, kz_unmod
+!DO m=1,nky
+!	DO l=1,nkx
+!        kzn(l,m,:) = kzunit_mod
+!        kz_unmod(l,m,:) = kzunit
+!	END DO
+!END DO
+!! - Init kx, ky, kz, k , kmag
+!call init_gpstd(nfftx,nffty,nfftz,dx,dy,dz,dt,norderx,nordery,norderz)
+!kx=Kspace(1)%block_vector(3)%block3dc
+!ky=Kspace(1)%block_vector(6)%block3dc
+!kz=Kspace(1)%block_vector(9)%block3dc
+!kxm=Kspace(1)%block_vector(1)%block3dc
+!kym=Kspace(1)%block_vector(4)%block3dc
+!kzm=Kspace(1)%block_vector(7)%block3dc
+!kxp=Kspace(1)%block_vector(2)%block3dc
+!kyp=Kspace(1)%block_vector(5)%block3dc
+!kzp=Kspace(1)%block_vector(8)%block3dc
+!k =SQRT(kx**2+ky**2+kz**2)
+!kmag = k
+!WHERE(kmag==0.) kmag=1._num
+!!kmag(1,1,1)=1._num ! Remove k=0
+!
+!kxn = kx/kmag
+!kyn = ky/kmag
+!kzn = kz/kmag
+!IF(l_staggered) THEN
+!  kxmn = kxm/kmag
+!  kymn = kym/kmag
+!  kzmn = kzm/kmag
+!  kxpn = kxp/kmag
+!  kypn = kyp/kmag
+!  kzpn = kzp/kmag
+!ELSE
+!  kxmn = kxn
+!  kymn = kyn
+!  kzmn = kzn
+!  kxpn = kxn
+!  kypn = kyn
+!  kzpn = kzn
+!ENDIF
+!!setting initial values to 1: 
+!!kxn(1,1,1)=dcmplx(1.0_num,0.0_num)
+!!kyn(1,1,1)=dcmplx(1.0_num,0.0_num)
+!!kzn(1,1,1)=dcmplx(1.0_num,0.0_num)
+!!ii=dcmplx(0,1.)
+!!IF (l_staggered) THEN
+!!	kxmn = kxn*EXP(-ii*kx_unmod*dx/2.0_num)
+!!	kxpn = kxn*EXP( ii*kx_unmod*dx/2.0_num)
+!!	kymn = kyn*EXP(-ii*ky_unmod*dy/2.0_num)
+!!	kypn = kyn*EXP( ii*ky_unmod*dy/2.0_num)
+!!	kzmn = kzn*EXP(-ii*kz_unmod*dz/2.0_num)
+!!	kzpn = kzn*EXP( ii*kz_unmod*dz/2.0_num)
+!!	kxm = kx*EXP(-ii*kx_unmod*dx/2.0_num)
+!!	kxp = kx*EXP( ii*kx_unmod*dx/2.0_num)
+!!	kym = ky*EXP(-ii*ky_unmod*dy/2.0_num)
+!!	kyp = ky*EXP( ii*ky_unmod*dy/2.0_num)
+!!	kzm = kz*EXP(-ii*kz_unmod*dz/2.0_num)
+!!	kzp = kz*EXP( ii*kz_unmod*dz/2.0_num)
+!!ELSE
+!!	kxmn = kxn
+!!	kxpn = kxn
+!!	kymn = kyn
+!!	kypn = kyn
+!!	kzmn = kzn
+!!	kzpn = kzn
+!!	kxm = kx
+!!	kxp = kx
+!!	kym = ky
+!!	kyp = ky
+!!	kzm = kz
+!!	kzp = kz
+!!END IF
+!
+!
+!#ifdef _OPENMP
+!      nopenmp=OMP_GET_MAX_THREADS()
+!#else
+!      nopenmp=1
+!#endif
+!
+!! - Init PSAOTD coefficients
+!CALL init_psaotd()
+!! Compute plans for forward and backward
+!! Plan is computed once with one field component and reused with other
+!! components
+!IF (fftw_with_mpi) THEN
+!	CALL init_plans_fourier_mpi(nopenmp)
+!ELSE
+!	CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,nfftx,nffty,nfftz,ex_r, &
+!		exf,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
+!	CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,nfftx,nffty,nfftz,exf, &
+!		ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
+!ENDIF
+!
+!END SUBROUTINE init_fourier
 
-! - Init xcoefs
-xcoefs=0._num
-DO i=1, norderx/2
-	xcoefs=xcoefs+wx(i)*2.0_num*SIN(kxunit*dx*((i-1)+1_idp/xi))
-ENDDO
-! - Init ycoefs
-ycoefs=0._num
-DO i=1, nordery/2
-	ycoefs=ycoefs+wy(i)*2.0_num*SIN(kyunit*dy*((i-1)+1_idp/xi))
-ENDDO
-! - Init zcoefs
-zcoefs=0._num
-DO i=1, norderz/2
-	zcoefs=zcoefs+wz(i)*2.0_num*SIN(kzunit*dz*((i-1)+1_idp/xi))
-ENDDO
-
-! Init kxunit_mod
-kxunit_mod=xcoefs/dx
-! Init kyunit_mod
-kyunit_mod=ycoefs/dy
-! Init kzunit_mod
-kzunit_mod=zcoefs/dz
-
-! Init kxn, kx_unmod
-DO n=1,nkz
-	DO m=1,nky
-		kxn(:,m,n) = kxunit_mod
-		kx_unmod(:,m,n) = kxunit
-	END DO
-END DO
-! Init kyn, ky_unmod
-DO n=1,nkz
-	DO l=1,nkx
-        kyn(l,:,n) = kyunit_mod
-        ky_unmod(l,:,n) = kyunit
-	END DO
-END DO
-! Init kzn, kz_unmod
-DO m=1,nky
-	DO l=1,nkx
-        kzn(l,m,:) = kzunit_mod
-        kz_unmod(l,m,:) = kzunit
-	END DO
-END DO
-! - Init kx, ky, kz, k , kmag
-kx=kxn
-ky=kyn
-kz=kzn
-k =SQRT(kxn**2+kyn**2+kzn**2)
-kmag = k
-WHERE(kmag==0.) kmag=1._num
-!kmag(1,1,1)=1._num ! Remove k=0
-
-kxn = kxn/kmag
-kyn = kyn/kmag
-kzn = kzn/kmag
-!setting initial valuies to 1: 
-kxn(1,1,1)=dcmplx(1.0_num,0.0_num)
-kyn(1,1,1)=dcmplx(1.0_num,0.0_num)
-kyn(1,1,1)=dcmplx(1.0_num,0.0_num)
-ii=dcmplx(0,1.)
-IF (l_staggered) THEN
-	kxmn = kxn*EXP(-ii*kx_unmod*dx/2.0_num)
-	kxpn = kxn*EXP( ii*kx_unmod*dx/2.0_num)
-	kymn = kyn*EXP(-ii*ky_unmod*dy/2.0_num)
-	kypn = kyn*EXP( ii*ky_unmod*dy/2.0_num)
-	kzmn = kzn*EXP(-ii*kz_unmod*dz/2.0_num)
-	kzpn = kzn*EXP( ii*kz_unmod*dz/2.0_num)
-	kxm = kx*EXP(-ii*kx_unmod*dx/2.0_num)
-	kxp = kx*EXP( ii*kx_unmod*dx/2.0_num)
-	kym = ky*EXP(-ii*ky_unmod*dy/2.0_num)
-	kyp = ky*EXP( ii*ky_unmod*dy/2.0_num)
-	kzm = kz*EXP(-ii*kz_unmod*dz/2.0_num)
-	kzp = kz*EXP( ii*kz_unmod*dz/2.0_num)
-ELSE
-	kxmn = kxn
-	kxpn = kxn
-	kymn = kyn
-	kypn = kyn
-	kzmn = kzn
-	kzpn = kzn
-	kxm = kx
-	kxp = kx
-	kym = ky
-	kyp = ky
-	kzm = kz
-	kzp = kz
-END IF
-
-
-#ifdef _OPENMP
-      nopenmp=OMP_GET_MAX_THREADS()
-#else
-      nopenmp=1
-#endif
-
-! - Init PSAOTD coefficients
-CALL init_psaotd()
-! Compute plans for forward and backward
-! Plan is computed once with one field component and reused with other
-! components
-IF (fftw_with_mpi) THEN
-	CALL init_plans_fourier_mpi(nopenmp)
-ELSE
-	CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,nfftx,nffty,nfftz,ex_r, &
-		exf,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
-	CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,nfftx,nffty,nfftz,exf, &
-		ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
-ENDIF
-
-END SUBROUTINE init_fourier
-
-SUBROUTINE initkvectors_mpi(nfftx,nffty,nfftz)
-USE mpi_fftw3
-USE PICSAR_precision
-USE fourier
-USE shared_data
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nfftx, nffty, nfftz
-REAL(num), DIMENSION(:), ALLOCATABLE :: kxtemp, kytemp, kztemp, kzfftfreq_temp
-
-CALL rfftfreq(nfftx,kxunit,dx/(2_num*pi))
-CALL fftfreq(nffty,kyunit, dy/(2_num*pi))
-ALLOCATE(kzfftfreq_temp(nz_global+1))
-CALL fftfreq(nfftz,kzfftfreq_temp, dz/(2_num*pi))
-kzunit(1:nkz)=kzfftfreq_temp(local_z0+1:local_z0+1+local_nz-1)
-DEALLOCATE(kzfftfreq_temp)
-
-END SUBROUTINE initkvectors_mpi
-
-
-SUBROUTINE initkvectors(nfftx, nffty, nfftz)
-USE PICSAR_precision
-USE fourier
-USE shared_data
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nfftx, nffty, nfftz
-CALL rfftfreq(nfftx,kxunit,dx/(2_num*pi))
-CALL fftfreq(nffty,kyunit,dy/(2_num*pi))
-CALL fftfreq(nfftz,kzunit,dz/(2_num*pi))
-END SUBROUTINE initkvectors
+!SUBROUTINE initkvectors_mpi(nfftx,nffty,nfftz)
+!USE mpi_fftw3
+!USE PICSAR_precision
+!USE fourier
+!USE shared_data
+!IMPLICIT NONE
+!INTEGER(idp), INTENT(IN) :: nfftx, nffty, nfftz
+!REAL(num), DIMENSION(:), ALLOCATABLE :: kxtemp, kytemp, kztemp, kzfftfreq_temp
+!
+!CALL rfftfreq(nfftx,kxunit,dx/(2_num*pi))
+!CALL fftfreq(nffty,kyunit, dy/(2_num*pi))
+!ALLOCATE(kzfftfreq_temp(nz_global+1))
+!CALL fftfreq(nfftz,kzfftfreq_temp, dz/(2_num*pi))
+!kzunit(1:nkz)=kzfftfreq_temp(local_z0+1:local_z0+1+local_nz-1)
+!DEALLOCATE(kzfftfreq_temp)
+!
+!END SUBROUTINE initkvectors_mpi
+!
+!
+!SUBROUTINE initkvectors(nfftx, nffty, nfftz)
+!USE PICSAR_precision
+!USE fourier
+!USE shared_data
+!IMPLICIT NONE
+!INTEGER(idp), INTENT(IN) :: nfftx, nffty, nfftz
+!CALL rfftfreq(nfftx,kxunit,dx/(2_num*pi))
+!CALL fftfreq(nffty,kyunit,dy/(2_num*pi))
+!CALL fftfreq(nfftz,kzunit,dz/(2_num*pi))
+!END SUBROUTINE initkvectors
 
 SUBROUTINE init_plans_fourier_mpi(nopenmp)
 USE PICSAR_precision
@@ -328,62 +356,62 @@ END SUBROUTINE init_plans_fourier_mpi
 
 
 ! - Computes Fourier domain coefficients for an order-p stencil
-SUBROUTINE FD_weights_hvincenti(p,w, is_staggered)
-USE picsar_PRECISION
-IMPLICIT NONE
-LOGICAL(idp), INTENT(IN) :: is_staggered
-INTEGER(idp), INTENT(IN) :: p
-REAL(num), DIMENSION(p/2), INTENT(OUT) :: w
-INTEGER(idp) :: i, l
-REAL(num) :: lognumer, logdenom
-
-DO i=1,p/2
-	l=i
-	IF (is_staggered) THEN
-		lognumer = LOG(16.0_num)*(1.0_num-p/2.0_num)+logfactorial(p-1_idp)*2.0_num
-		logdenom = LOG(2.0_num*l-1.0_num)*2.0_num+ &
-		logfactorial(p/2_idp+l-1_idp)+logfactorial(p/2_idp-l)+ &
-		2.0_num*logfactorial(p/2_idp-1_idp)
-	ELSE
-		lognumer = logfactorial(p/2_idp)*2.0_num
-		logdenom = logfactorial(p/2_idp+l)+ &
-		logfactorial(p/2_idp-l)+LOG(1.0_num*l)
-	ENDIF
-	w(i) = (-1.0_num)**(l+1)*EXP(lognumer-logdenom)
-END DO
-END SUBROUTINE FD_weights_hvincenti
-
-! - Computes factorial of n
-FUNCTION factorial(n)
-USE constants
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: n
-INTEGER(idp) :: factorial
-INTEGER(idp) :: i, Ans
-Ans = 1
-DO i = 1, n
-	Ans = Ans * i
-END DO
-factorial = Ans
-END FUNCTION factorial
-
-FUNCTION logfactorial(n) ! returns log(n!)
-use PICSAR_PRECISION
-INTEGER(idp), INTENT(IN)  :: n
-REAL(num)                 :: logfactorial,x
-INTEGER(idp)              :: k
-IF(n.eq.0) THEN
-    logfactorial=0.
-ELSE
-     x=log(1.*n)
-     logfactorial=x
-      DO k=2,n-1
-          x=log(1.*k)
-          logfactorial=logfactorial+x
-      ENDDO
-ENDIF
-RETURN
-END FUNCTION logfactorial
+!SUBROUTINE FD_weights_hvincenti(p,w, is_staggered)
+!USE picsar_PRECISION
+!IMPLICIT NONE
+!LOGICAL(idp), INTENT(IN) :: is_staggered
+!INTEGER(idp), INTENT(IN) :: p
+!REAL(num), DIMENSION(p/2), INTENT(OUT) :: w
+!INTEGER(idp) :: i, l
+!REAL(num) :: lognumer, logdenom
+!
+!DO i=1,p/2
+!	l=i
+!	IF (is_staggered) THEN
+!		lognumer = LOG(16.0_num)*(1.0_num-p/2.0_num)+logfactorial(p-1_idp)*2.0_num
+!		logdenom = LOG(2.0_num*l-1.0_num)*2.0_num+ &
+!		logfactorial(p/2_idp+l-1_idp)+logfactorial(p/2_idp-l)+ &
+!		2.0_num*logfactorial(p/2_idp-1_idp)
+!	ELSE
+!		lognumer = logfactorial(p/2_idp)*2.0_num
+!		logdenom = logfactorial(p/2_idp+l)+ &
+!		logfactorial(p/2_idp-l)+LOG(1.0_num*l)
+!	ENDIF
+!	w(i) = (-1.0_num)**(l+1)*EXP(lognumer-logdenom)
+!END DO
+!END SUBROUTINE FD_weights_hvincenti
+!
+!! - Computes factorial of n
+!FUNCTION factorial(n)
+!USE constants
+!IMPLICIT NONE
+!INTEGER(idp), INTENT(IN) :: n
+!INTEGER(idp) :: factorial
+!INTEGER(idp) :: i, Ans
+!Ans = 1
+!DO i = 1, n
+!	Ans = Ans * i
+!END DO
+!factorial = Ans
+!END FUNCTION factorial
+!
+!FUNCTION logfactorial(n) ! returns log(n!)
+!use PICSAR_PRECISION
+!INTEGER(idp), INTENT(IN)  :: n
+!REAL(num)                 :: logfactorial,x
+!INTEGER(idp)              :: k
+!IF(n.eq.0) THEN
+!    logfactorial=0.
+!ELSE
+!     x=log(1.*n)
+!     logfactorial=x
+!      DO k=2,n-1
+!          x=log(1.*k)
+!          logfactorial=logfactorial+x
+!      ENDDO
+!ENDIF
+!RETURN
+!END FUNCTION logfactorial
 
 SUBROUTINE get_Ffields
 USE shared_data
@@ -538,6 +566,7 @@ IF (it.ge.timestat_itstart) THEN
 ENDIF
 
 coeff_norm= 1._num/SIZE(ex_r)
+coeff_norm=1.0_num/(nfftx*nffty*nfftz)
 nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
 
 IF (it.ge.timestat_itstart) THEN
@@ -561,25 +590,25 @@ ENDIF
 
 END SUBROUTINE get_fields
 
-SUBROUTINE normalize_Fourier(ex_out,n1,n2,n3,ex_in,nxx,nyy,nzz,coeff_norm)
-USE PICSAR_precision
-IMPLICIT NONE
-INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz,n1,n2,n3
-REAL(num), INTENT(IN) :: coeff_norm
-REAL(num), DIMENSION(nxx,nyy,nzz), INTENT(IN OUT) :: ex_in
-REAL(num), DIMENSION(n1,n2,n3), INTENT(IN OUT) :: ex_out
-INTEGER(idp) :: ix,iy,iz
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
-DO iz=1,MIN(nzz,n3)
-	DO iy=1,MIN(nyy,n2)
-		DO ix=1,MIN(nxx,n1)
-				ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
-		END DO
-	END DO
-END DO
-!$OMP END PARALLEL DO
-!ex=0.
-END SUBROUTINE normalize_Fourier
+!SUBROUTINE normalize_Fourier(ex_out,n1,n2,n3,ex_in,nxx,nyy,nzz,coeff_norm)
+!USE PICSAR_precision
+!IMPLICIT NONE
+!INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz,n1,n2,n3
+!REAL(num), INTENT(IN) :: coeff_norm
+!REAL(num), DIMENSION(nxx,nyy,nzz), INTENT(IN OUT) :: ex_in
+!REAL(num), DIMENSION(n1,n2,n3), INTENT(IN OUT) :: ex_out
+!INTEGER(idp) :: ix,iy,iz
+!!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+!DO iz=1,MIN(nzz,n3)
+!	DO iy=1,MIN(nyy,n2)
+!		DO ix=1,MIN(nxx,n1)
+!				ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
+!		END DO
+!	END DO
+!END DO
+!!$OMP END PARALLEL DO
+!!ex=0.
+!END SUBROUTINE normalize_Fourier
 
 SUBROUTINE get_fields_mpi
 USE shared_data
@@ -642,52 +671,148 @@ ENDIF
 END SUBROUTINE get_fields_mpi
 
 
-SUBROUTINE init_psaotd
-USE shared_data
-USE fourier
-USE params
-IMPLICIT NONE
-COMPLEX(cpx) :: jj
-REAL(num) ::  cdt
-COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: temp
+!SUBROUTINE init_psaotd
+!USE shared_data
+!USE fourier
+!USE params
+!IMPLICIT NONE
+!COMPLEX(cpx) :: jj
+!REAL(num) ::  cdt
+!COMPLEX(cpx), DIMENSION(:,:,:), ALLOCATABLE :: temp
+!
+!ALLOCATE(temp(nkx,nky,nkz))
+!ALLOCATE(EJmult(nkx,nky,nkz))
+!ALLOCATE(BJmult(nkx,nky,nkz))
+!ALLOCATE(ERhomult(nkx,nky,nkz))
+!ALLOCATE(ERhooldmult(nkx,nky,nkz))
+!ALLOCATE(coswdt(nkx,nky,nkz))
+!ALLOCATE(sinwdt(nkx,nky,nkz))
+!ALLOCATE(axm(nkx,nky,nkz),axp(nkx,nky,nkz))
+!ALLOCATE(aym(nkx,nky,nkz),ayp(nkx,nky,nkz))
+!ALLOCATE(azm(nkx,nky,nkz),azp(nkx,nky,nkz))
+!
+!
+!jj=DCMPLX(0.,1.)
+!cdt=clight*dt
+!temp= k*cdt
+!coswdt=COS((temp))
+!sinwdt=SIN((temp))
+!
+!EJmult=-sinwdt/(kmag*clight*eps0)
+!EJmult(1,1,1)=-dt/eps0
+!ERhomult=jj*(-EJmult/dt-1.0_num/eps0)/kmag
+!ERhomult(1,1,1) = -1.0_num/eps0/6.0_num*(0.0_num,1.0_num)*(clight*dt)**2
+!ERhooldmult = jj*(coswdt/eps0+EJmult/dt)/kmag
+!ERhooldmult(1,1,1) = 1.0_num/eps0*(-1.0_num/3.0_num*(0.0_num,1.0_num)*(clight*dt)**2)
+!temp=1.0_num/(kmag*clight*eps0) ! Jmult
+!BJmult=jj*(coswdt-1.0_num)*temp/clight
+!
+!!axm = jj*sinwdt*kxmn
+!!axp = jj*sinwdt*kxpn
+!!aym = jj*sinwdt*kymn
+!!ayp = jj*sinwdt*kypn
+!!azm = jj*sinwdt*kzmn
+!!azp = jj*sinwdt*kzpn
+!
+!!axm = jj*AT_OP(nmatrixes2)%block_vector(1)%block3dc*Kspace(nmatrixes2)%block_vector(1)%block3dc
+!!axp = jj*AT_OP(nmatrixes2)%block_vector(1)%block3dc*Kspace(nmatrixes2)%block_vector(2)%block3dc
+!!aym = jj*AT_OP(nmatrixes2)%block_vector(1)%block3dc*Kspace(nmatrixes2)%block_vector(4)%block3dc
+!!ayp = jj*AT_OP(nmatrixes2)%block_vector(1)%block3dc*Kspace(nmatrixes2)%block_vector(5)%block3dc
+!!
+!!azm = jj*AT_OP(nmatrixes2)%block_vector(1)%block3dc*Kspace(nmatrixes2)%block_vector(7)%block3dc
+!!azp = jj*AT_OP(nmatrixes2)%block_vector(1)%block3dc*Kspace(nmatrixes2)%block_vector(8)%block3dc
+!
+!EJmult = cc_mat(nmatrixes)%block_matrix2d(1,7)%block3dc
+!BJmult = -cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc/kxpn
+!ERhooldmult = cc_mat(nmatrixes)%block_matrix2d(1,10)%block3dc/kxpn
+!ERhomult = cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc/kxpn
+!
+!
+!axm = cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc/clight
+!axp = -cc_mat(nmatrixes)%block_matrix2d(4,2)%block3dc*clight
+!
+!aym = cc_mat(nmatrixes)%block_matrix2d(1,6)%block3dc/clight
+!ayp = -cc_mat(nmatrixes)%block_matrix2d(6,1)%block3dc*clight
+!
+!azm = -cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc/clight
+!azp = cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc*clight
+!
+!END SUBROUTINE init_psaotd
 
-ALLOCATE(temp(nkx,nky,nkz))
-ALLOCATE(EJmult(nkx,nky,nkz))
-ALLOCATE(BJmult(nkx,nky,nkz))
-ALLOCATE(ERhomult(nkx,nky,nkz))
-ALLOCATE(ERhooldmult(nkx,nky,nkz))
-ALLOCATE(coswdt(nkx,nky,nkz))
-ALLOCATE(sinwdt(nkx,nky,nkz))
-ALLOCATE(axm(nkx,nky,nkz),axp(nkx,nky,nkz))
-ALLOCATE(aym(nkx,nky,nkz),ayp(nkx,nky,nkz))
-ALLOCATE(azm(nkx,nky,nkz),azp(nkx,nky,nkz))
 
-
-jj=(0.,1.)
-cdt=clight*dt
-temp= k*cdt
-coswdt=COS(ABS(temp))
-sinwdt=SIN(ABS(temp))
-
-EJmult=-sinwdt/(kmag*clight*eps0)
-EJmult(1,1,1)=-dt/eps0
-ERhomult=jj*(-EJmult/dt-1.0_num/eps0)/kmag
-ERhomult(1,1,1) = -1.0_num/eps0/6.0_num*(0.0_num,1.0_num)*(clight*dt)**2
-ERhooldmult = jj*(coswdt/eps0+EJmult/dt)/kmag
-ERhooldmult(1,1,1) = 1.0_num/eps0*(-1.0_num/3.0_num*(0.0_num,1.0_num)*(clight*dt)**2)
-temp=1.0_num/(kmag*clight*eps0) ! Jmult
-BJmult=jj*(coswdt-1.0_num)*temp/clight
-
-axm = jj*sinwdt*kxmn
-axp = jj*sinwdt*kxpn
-aym = jj*sinwdt*kymn
-ayp = jj*sinwdt*kypn
-azm = jj*sinwdt*kzmn
-azp = jj*sinwdt*kzpn
-
-END SUBROUTINE init_psaotd
-
-
+!SUBROUTINE push_psaotd_ebfielfs
+!USE shared_data
+!USE fields
+!USE fourier
+!USE time_stat
+!USE params
+!IMPLICIT NONE
+!INTEGER(idp) ::  ix, iy, iz
+!REAL(num) :: invc,tmptime
+!invc=1.0_num/clight
+!IF (it.ge.timestat_itstart) THEN
+!  tmptime = MPI_WTIME()
+!ENDIF
+!
+!! - Push B a full time step
+!!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+!DO iz=1,nkz
+!	DO iy=1,nky
+!		DO ix=1,nkx
+!			! - Bx
+!			bxf(ix,iy,iz) = coswdt(ix,iy,iz)*bxf(ix,iy,iz) + &
+!			invc*azp(ix,iy,iz)*eyf(ix,iy,iz) -             &
+!			invc*ayp(ix,iy,iz)*ezf(ix,iy,iz) +             &
+!		  kzpn(ix,iy,iz)*BJmult(ix,iy,iz)*jyf(ix,iy,iz) -  &
+!			kypn(ix,iy,iz)*BJmult(ix,iy,iz)*jzf(ix,iy,iz)
+!
+!			! - By
+!			byf(ix,iy,iz) = coswdt(ix,iy,iz)*byf(ix,iy,iz) - &
+!			invc*azp(ix,iy,iz)*exf(ix,iy,iz) 			         + &
+!			invc*axp(ix,iy,iz)*ezf(ix,iy,iz) 			         - &
+!			kzpn(ix,iy,iz)*BJmult(ix,iy,iz)*jxf(ix,iy,iz)  +  &
+!			kxpn(ix,iy,iz)*BJmult(ix,iy,iz)*jzf(ix,iy,iz)
+!
+!			! - Bz
+!			bzf(ix,iy,iz) = coswdt(ix,iy,iz)*bzf(ix,iy,iz) + &
+!			invc*ayp(ix,iy,iz)*exf(ix,iy,iz)   -             &
+!			invc*axp(ix,iy,iz)*eyf(ix,iy,iz)   +             &
+!			kypn(ix,iy,iz)*BJmult(ix,iy,iz)*jxf(ix,iy,iz) -  &
+!			kxpn(ix,iy,iz)*BJmult(ix,iy,iz)*jyf(ix,iy,iz)
+!
+!			! Push E a full time step
+!			! - Ex
+!			exf(ix,iy,iz) = coswdt(ix,iy,iz)*exf(ix,iy,iz) -   &
+!			azm(ix,iy,iz)*clight*byf(ix,iy,iz) +               &
+!		  aym(ix,iy,iz)*clight*bzf(ix,iy,iz) + 			         &
+!		  EJmult(ix,iy,iz)*jxf(ix,iy,iz)     +               &
+!		  kxpn(ix,iy,iz)*ERhomult(ix,iy,iz)*rhof(ix,iy,iz)   &
+!			+ kxpn(ix,iy,iz)*ERhooldmult(ix,iy,iz)*rhooldf(ix,iy,iz)
+!
+!			! - Ey
+!			eyf(ix,iy,iz) = coswdt(ix,iy,iz)*eyf(ix,iy,iz) +    &
+!			azm(ix,iy,iz)*clight*bxf(ix,iy,iz) -                &
+!			axm(ix,iy,iz)*clight*bzf(ix,iy,iz) +                &
+!			EJmult(ix,iy,iz)*jyf(ix,iy,iz) +                    &
+!			kypn(ix,iy,iz)*ERhomult(ix,iy,iz)*rhof(ix,iy,iz)    &
+!			+ kypn(ix,iy,iz)*ERhooldmult(ix,iy,iz)*rhooldf(ix,iy,iz)
+!
+!			! - Ez
+!			ezf(ix,iy,iz) = coswdt(ix,iy,iz)*ezf(ix,iy,iz) -     &
+!			aym(ix,iy,iz)*clight*bxf(ix,iy,iz) +				 &
+!		  axm(ix,iy,iz)*clight*byf(ix,iy,iz) +                 &
+!			EJmult(ix,iy,iz)*jzf(ix,iy,iz) +                     &
+!		  kzpn(ix,iy,iz)*ERhomult(ix,iy,iz)*rhof(ix,iy,iz) + &
+!			kzpn(ix,iy,iz)*ERhooldmult(ix,iy,iz)*rhooldf(ix,iy,iz)
+!		END DO
+!	END DO
+!END DO
+!!$OMP END PARALLEL DO
+!IF (it.ge.timestat_itstart) THEN
+!  localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
+!ENDIF
+!
+!END SUBROUTINE push_psaotd_ebfielfs
 SUBROUTINE push_psaotd_ebfielfs
 USE shared_data
 USE fields
@@ -697,69 +822,121 @@ USE params
 IMPLICIT NONE
 INTEGER(idp) ::  ix, iy, iz
 REAL(num) :: invc,tmptime
+COMPLEX(cpx)  ,DIMENSION(:,:,:), ALLOCATABLE :: exold,eyold,ezold,bxold,byold,bzold
 invc=1.0_num/clight
+
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-
+ALLOCATE(exold(nkx,nky,nkz),eyold(nkx,nky,nkz),ezold(nkx,nky,nkz))
+ALLOCATE(bxold(nkx,nky,nkz),byold(nkx,nky,nkz),bzold(nkx,nky,nkz))
+exold=exf
+eyold=eyf
+ezold=ezf
+bxold=bxf
+byold=byf
+bzold=bzf
 ! - Push B a full time step
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nkz
-	DO iy=1,nky
-		DO ix=1,nkx
-			! - Bx
-			bxf(ix,iy,iz) = coswdt(ix,iy,iz)*bxf(ix,iy,iz) + &
-			invc*azp(ix,iy,iz)*eyf(ix,iy,iz) -             &
-			invc*ayp(ix,iy,iz)*ezf(ix,iy,iz) +             &
-		  kzpn(ix,iy,iz)*BJmult(ix,iy,iz)*jyf(ix,iy,iz) -  &
-			kypn(ix,iy,iz)*BJmult(ix,iy,iz)*jzf(ix,iy,iz)
+       DO iy=1,nky
+               DO ix=1,nkx
+                       ! - Bx
+                       bxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*bxold(ix,iy,iz) + &
+                       cc_mat(nmatrixes)%block_matrix2d(4,2)%block3dc(ix,iy,iz)*eyold(ix,iy,iz) +             &
+                       cc_mat(nmatrixes)%block_matrix2d(4,3)%block3dc(ix,iy,iz)*ezold(ix,iy,iz) +             &
+                       cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*jyf(ix,iy,iz) +  &
+                       cc_mat(nmatrixes)%block_matrix2d(4,9)%block3dc(ix,iy,iz)*jzf(ix,iy,iz)
 
-			! - By
-			byf(ix,iy,iz) = coswdt(ix,iy,iz)*byf(ix,iy,iz) - &
-			invc*azp(ix,iy,iz)*exf(ix,iy,iz) 			         + &
-			invc*axp(ix,iy,iz)*ezf(ix,iy,iz) 			         - &
-			kzpn(ix,iy,iz)*BJmult(ix,iy,iz)*jxf(ix,iy,iz)  +  &
-			kxpn(ix,iy,iz)*BJmult(ix,iy,iz)*jzf(ix,iy,iz)
+                       ! - By
+                       byf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*byold(ix,iy,iz) + &
+                       cc_mat(nmatrixes)%block_matrix2d(5,1)%block3dc(ix,iy,iz)*exold(ix,iy,iz) +             &
+                       cc_mat(nmatrixes)%block_matrix2d(5,3)%block3dc(ix,iy,iz)*ezold(ix,iy,iz) +             &
+                       cc_mat(nmatrixes)%block_matrix2d(5,7)%block3dc(ix,iy,iz)*jxf(ix,iy,iz) +  &
+                       cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*jzf(ix,iy,iz)
 
-			! - Bz
-			bzf(ix,iy,iz) = coswdt(ix,iy,iz)*bzf(ix,iy,iz) + &
-			invc*ayp(ix,iy,iz)*exf(ix,iy,iz)   -             &
-			invc*axp(ix,iy,iz)*eyf(ix,iy,iz)   +             &
-			kypn(ix,iy,iz)*BJmult(ix,iy,iz)*jxf(ix,iy,iz) -  &
-			kxpn(ix,iy,iz)*BJmult(ix,iy,iz)*jyf(ix,iy,iz)
 
-			! Push E a full time step
-			! - Ex
-			exf(ix,iy,iz) = coswdt(ix,iy,iz)*exf(ix,iy,iz) -   &
-			azm(ix,iy,iz)*clight*byf(ix,iy,iz) +               &
-		  aym(ix,iy,iz)*clight*bzf(ix,iy,iz) + 			         &
-		  EJmult(ix,iy,iz)*jxf(ix,iy,iz)     +               &
-		  kxpn(ix,iy,iz)*ERhomult(ix,iy,iz)*rhof(ix,iy,iz)   &
-			+ kxpn(ix,iy,iz)*ERhooldmult(ix,iy,iz)*rhooldf(ix,iy,iz)
+                       ! - Bz
+                       bzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*bzold(ix,iy,iz) + &
+                       cc_mat(nmatrixes)%block_matrix2d(6,1)%block3dc(ix,iy,iz)*exold(ix,iy,iz)+             &
+                       cc_mat(nmatrixes)%block_matrix2d(6,2)%block3dc(ix,iy,iz)*eyold(ix,iy,iz)+             &
+                       cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc(ix,iy,iz)*jxf(ix,iy,iz)+  &
+                       cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc(ix,iy,iz)*jyf(ix,iy,iz)
 
-			! - Ey
-			eyf(ix,iy,iz) = coswdt(ix,iy,iz)*eyf(ix,iy,iz) +    &
-			azm(ix,iy,iz)*clight*bxf(ix,iy,iz) -                &
-			axm(ix,iy,iz)*clight*bzf(ix,iy,iz) +                &
-			EJmult(ix,iy,iz)*jyf(ix,iy,iz) +                    &
-			kypn(ix,iy,iz)*ERhomult(ix,iy,iz)*rhof(ix,iy,iz)    &
-			+ kypn(ix,iy,iz)*ERhooldmult(ix,iy,iz)*rhooldf(ix,iy,iz)
+                       ! Push E a full time step
+                       ! - Ex
+                       exf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exold(ix,iy,iz) -   &
+                       cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc(ix,iy,iz)*byold(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(1,6)%block3dc(ix,iy,iz)*bzold(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(1,7)%block3dc(ix,iy,iz)*jxf(ix,iy,iz)     +               &
+                       cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc(ix,iy,iz)*rhof(ix,iy,iz)   &
+                       + cc_mat(nmatrixes)%block_matrix2d(1,10)%block3dc(ix,iy,iz)*rhooldf(ix,iy,iz)
 
-			! - Ez
-			ezf(ix,iy,iz) = coswdt(ix,iy,iz)*ezf(ix,iy,iz) -     &
-			aym(ix,iy,iz)*clight*bxf(ix,iy,iz) +				 &
-		  axm(ix,iy,iz)*clight*byf(ix,iy,iz) +                 &
-			EJmult(ix,iy,iz)*jzf(ix,iy,iz) +                     &
-		  kzpn(ix,iy,iz)*ERhomult(ix,iy,iz)*rhof(ix,iy,iz) + &
-			kzpn(ix,iy,iz)*ERhooldmult(ix,iy,iz)*rhooldf(ix,iy,iz)
-		END DO
-	END DO
+                       ! - Ey
+                       eyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*eyold(ix,iy,iz) -   & 
+                       cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc(ix,iy,iz)*bxold(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(2,6)%block3dc(ix,iy,iz)*bzold(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(2,8)%block3dc(ix,iy,iz)*jyf(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(2,11)%block3dc(ix,iy,iz)*rhof(ix,iy,iz) &
+                       + cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*rhooldf(ix,iy,iz)
+
+
+                       ! - Ez
+                       ezf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*ezold(ix,iy,iz) -   &
+                       cc_mat(nmatrixes)%block_matrix2d(3,4)%block3dc(ix,iy,iz)*bxold(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(3,5)%block3dc(ix,iy,iz)*byold(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(3,9)%block3dc(ix,iy,iz)*jzf(ix,iy,iz) +               &
+                       cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*rhof(ix,iy,iz) &
+                       + cc_mat(nmatrixes)%block_matrix2d(3,10)%block3dc(ix,iy,iz)*rhooldf(ix,iy,iz)
+
+
+               END DO
+       END DO
 END DO
 !$OMP END PARALLEL DO
 IF (it.ge.timestat_itstart) THEN
   localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
 ENDIF
-
+DEALLOCATE(exold,eyold,ezold,bxold,byold,bzold)
 END SUBROUTINE push_psaotd_ebfielfs
+
+SUBROUTINE init_plans_blocks
+USE shared_data
+USE fastfft
+Use fourier
+USE fftw3_fortran
+USE fields
+USE omp_lib
+USE params
+
+INTEGER(idp) :: nfftx,nffty,nfftz,nopenmp
+#ifdef _OPENMP
+      nopenmp=OMP_GET_MAX_THREADS()
+#else
+      nopenmp=1
+#endif
+
+IF (fftw_with_mpi) THEN
+        nfftx=nx_global
+        nffty=ny_global
+        nfftz=nz_global
+ELSE
+        nfftx=nx+2*nxguards
+        nffty=ny+2*nyguards
+        nfftz=nz+2*nzguards
+ENDIF
+
+CALL init_gpstd(nfftx,nffty,nfftz,dx,dy,dz,dt,norderx,nordery,norderz)
+IF (fftw_with_mpi) THEN
+        CALL init_plans_fourier_mpi(nopenmp)
+ELSE
+        CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,nfftx,nffty,nfftz,ex_r, &
+                exf,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
+        CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,nfftx,nffty,nfftz,exf, &
+                ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
+ENDIF
+
+END SUBROUTINE
+
 
 END MODULE fourier_psaotd

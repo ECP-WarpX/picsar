@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod
+MODE=prod_spectral
 
 # System (SYS)
 # - cori2
@@ -54,6 +54,11 @@ FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
 FFTW3_INCLUDE=/usr/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
+
+FFTW3_LIB= $(FFTW_LIB_DIR)
+FFTW3_INCLUDE=$(FFTW_INC_DIR)
+VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
+
 
 # Source directory
 SRCDIR=src
@@ -323,7 +328,7 @@ endif
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
-	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3 -lfftw3_omp
+	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 
 
@@ -472,6 +477,8 @@ build:$(SRCDIR)/modules/modules.o \
 else ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 build:$(SRCDIR)/modules/modules.o \
     	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
     	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \

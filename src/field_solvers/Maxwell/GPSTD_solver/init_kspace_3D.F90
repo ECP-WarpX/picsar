@@ -26,7 +26,7 @@ MODULE gpstd_solver
     USE CONSTANTS
     USE mpi_fftw3
     USE omp_lib
-    USE fourier_psaotd , ONLY : FD_weights_hvincenti
+    !USE fourier_psaotd , ONLY : FD_weights_hvincenti
     INTEGER(idp) , INTENT(IN)                     :: nx,ny,nz,porderx,pordery,porderz
     REAL(num)    , INTENT(IN)                     :: dx,dy,dz,dt
     LOGICAL(lp)                                   :: l_stg
@@ -486,7 +486,7 @@ MODULE gpstd_solver
        *  cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc     
     ENDDO
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = (0.,0.)
-    !CALL delete_arrays 
+    CALL delete_arrays 
   END SUBROUTINE init_gpstd
 !> @brief
 !> This subroutine executes forward fftw on relevent fields
@@ -506,7 +506,7 @@ MODULE gpstd_solver
     USE shared_data
     USE time_stat
     USE params      
-    USE fourier_psaotd
+  !  USE fourier_psaotd
     USE fourier
     USE fastfft  
     INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
@@ -569,7 +569,7 @@ MODULE gpstd_solver
     USE shared_data
     USE time_stat
     USE params
-    USE fourier_psaotd
+  !  USE fourier_psaotd
     Use fourier
     USE fastfft
     INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
@@ -605,9 +605,87 @@ MODULE gpstd_solver
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
- 
-  
   END SUBROUTINE 
+
+
+
+SUBROUTINE FD_weights_hvincenti(p,w, is_staggered)
+USE picsar_PRECISION
+IMPLICIT NONE
+LOGICAL(idp), INTENT(IN) :: is_staggered
+INTEGER(idp), INTENT(IN) :: p
+REAL(num), DIMENSION(p/2), INTENT(OUT) :: w
+INTEGER(idp) :: i, l
+REAL(num) :: lognumer, logdenom
+
+DO i=1,p/2
+        l=i
+        IF (is_staggered) THEN
+                lognumer =LOG(16.0_num)*(1.0_num-p/2.0_num)+logfactorial(p-1_idp)*2.0_num
+                logdenom = LOG(2.0_num*l-1.0_num)*2.0_num+ &
+                logfactorial(p/2_idp+l-1_idp)+logfactorial(p/2_idp-l)+ &
+                2.0_num*logfactorial(p/2_idp-1_idp)
+        ELSE
+                lognumer = logfactorial(p/2_idp)*2.0_num
+                logdenom = logfactorial(p/2_idp+l)+ &
+                logfactorial(p/2_idp-l)+LOG(1.0_num*l)
+        ENDIF
+        w(i) = (-1.0_num)**(l+1)*EXP(lognumer-logdenom)
+END DO
+END SUBROUTINE FD_weights_hvincenti
+
+! - Computes factorial of n
+FUNCTION factorial(n)
+USE constants
+IMPLICIT NONE
+INTEGER(idp), INTENT(IN) :: n
+INTEGER(idp) :: factorial
+INTEGER(idp) :: i, Ans
+Ans = 1
+DO i = 1, n
+        Ans = Ans * i
+END DO
+factorial = Ans
+END FUNCTION factorial
+
+FUNCTION logfactorial(n) ! returns log(n!)
+use PICSAR_PRECISION
+INTEGER(idp), INTENT(IN)  :: n
+REAL(num)                 :: logfactorial,x
+INTEGER(idp)              :: k
+IF(n.eq.0) THEN
+    logfactorial=0.
+ELSE
+     x=log(1.*n)
+     logfactorial=x
+      DO k=2,n-1
+          x=log(1.*k)
+          logfactorial=logfactorial+x
+      ENDDO
+ENDIF
+RETURN
+END FUNCTION logfactorial
+
+SUBROUTINE normalize_Fourier(ex_out,n1,n2,n3,ex_in,nxx,nyy,nzz,coeff_norm)
+USE PICSAR_precision
+USE omp_lib
+IMPLICIT NONE
+INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz,n1,n2,n3
+REAL(num), INTENT(IN) :: coeff_norm
+REAL(num), DIMENSION(nxx,nyy,nzz), INTENT(IN OUT) :: ex_in
+REAL(num), DIMENSION(n1,n2,n3), INTENT(IN OUT) :: ex_out
+INTEGER(idp) :: ix,iy,iz
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+DO iz=1,MIN(nzz,n3)
+        DO iy=1,MIN(nyy,n2)
+                DO ix=1,MIN(nxx,n1)
+                                ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
+                END DO
+        END DO
+END DO
+!$OMP END PARALLEL DO
+END SUBROUTINE normalize_Fourier
+
 END MODULE
 
 
