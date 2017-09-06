@@ -377,7 +377,7 @@ SUBROUTINE multiply_mat_vector(matrix_index)
   END DO
   !$OMP END PARALLEL DO
   IF (it.ge.timestat_itstart) THEN
-    localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+    localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
   ENDIF
 
 END SUBROUTINE

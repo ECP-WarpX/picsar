@@ -30,8 +30,9 @@ MODULE gpstd_solver
     INTEGER(idp) , INTENT(IN)                     :: nx,ny,nz,porderx,pordery,porderz
     REAL(num)    , INTENT(IN)                     :: dx,dy,dz,dt
     LOGICAL(lp)                                   :: l_stg
-    REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: FD_x,FD_y,FD_z,onesx,onesy,onesz
-    REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: onesxp,onesyp,oneszp
+    REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: FD_x,FD_y,FD_z,onesx
+    COMPLEX(cpx)    , ALLOCATABLE , DIMENSION(:)     :: onesxp,onesyp,oneszp,onesy,onesz
+
     COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxf,kyf,kzf,kxb,kyb,kzb,kxc,kyc,kzc,kxff,kxbb,kxcc
     REAL(num)    , ALLOCATABLE , DIMENSION(:,:,:) :: temp,temp2
     INTEGER(idp)                                  :: i,j,k
@@ -59,23 +60,23 @@ MODULE gpstd_solver
     ALLOCATE(onesy(ny),onesyp(ny))
     ALLOCATE(onesz(nz),oneszp(nz))
     DO i=1_idp,nx/2+1
-      onesx(i)  = i-1_idp
-      onesxp(i) = i-1_idp
+      onesx(i)  = DCMPLX(i-1.0_num,0.0_num)
+      onesxp(i) = DCMPLX(i-1.0_num,0.0_num)
     ENDDO
     DO j=1_idp,ny
-      onesy(j)  = j-1_idp
-      onesyp(j) = j-1_idp
+      onesy(j)  = DCMPLX(j-1.0_num,0.0_num)
+      onesyp(j) = DCMPLX(j-1.0_num,0.0_num)
       IF(j .GT. ny/2_idp +1) THEN
-        onesy(j) = - onesy(j)
-        onesyp(j) =  ny + onesyp(j)
+        onesy(j)  =DCMPLX(-onesy(j))
+        onesyp(j) =DCMPLX( ny + onesyp(j))
       ENDIF
     ENDDO
     DO k=1_idp,nz
-      onesz(k)  = k-1_idp
-      oneszp(k) = k-1_idp
+      onesz(k)  = DCMPLX(k-1.0_num)
+      oneszp(k) = DCMPLX(k-1.0_num)
       IF(k .GT. nz/2_idp +1) THEN 
-        onesz(k) = - onesz(k)
-        oneszp(k) = nz + oneszp(k)
+        onesz(k) = DCMPLX(- onesz(k))
+        oneszp(k) = DCMPLX(nz + oneszp(k))
       ENDIF
     ENDDO
     IF (porderx .ne. 0_idp ) THEN  ! if 0 then infinite order
@@ -90,6 +91,7 @@ MODULE gpstd_solver
       ENDDO
     ELSE 
       ALLOCATE(kxff(nx),kxbb(nx),kxcc(nx))
+      ALLOCATE(kxf(nx/2+1),kxb(nx/2+1),kxc(nx/2+1))
       CALL fftfreq(nx,kxff,dx)
       CALL fftfreq(nx,kxbb,dx)
       CALL fftfreq(nx,kxcc,dx)
@@ -111,6 +113,7 @@ MODULE gpstd_solver
         kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/ny)
       ENDDO
     ELSE
+      ALLOCATE(kyf(ny),kyb(ny),kyc(ny))
       CALL fftfreq(ny,kyf,dy)
       CALL fftfreq(ny,kyb,dy)
       CALL fftfreq(ny,kyc,dy)
@@ -128,6 +131,7 @@ MODULE gpstd_solver
             kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nz)
       ENDDO 
     ELSE
+      ALLOCATE(kzf(nz),kzb(nz),kzc(nz))
       CALL fftfreq(nz,kzf,dz)
       CALL fftfreq(nz,kzb,dz)
       CALL fftfreq(nz,kzc,dz)

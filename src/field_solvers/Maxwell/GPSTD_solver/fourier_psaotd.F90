@@ -211,11 +211,15 @@ k =SQRT(kxn**2+kyn**2+kzn**2)
 kmag = k
 WHERE(kmag==0.) kmag=1._num
 !kmag(1,1,1)=1._num ! Remove k=0
+
 kxn = kxn/kmag
 kyn = kyn/kmag
 kzn = kzn/kmag
-
-ii=(0,1.)
+!setting initial valuies to 1: 
+kxn(1,1,1)=dcmplx(1.0_num,0.0_num)
+kyn(1,1,1)=dcmplx(1.0_num,0.0_num)
+kyn(1,1,1)=dcmplx(1.0_num,0.0_num)
+ii=dcmplx(0,1.)
 IF (l_staggered) THEN
 	kxmn = kxn*EXP(-ii*kx_unmod*dx/2.0_num)
 	kxpn = kxn*EXP( ii*kx_unmod*dx/2.0_num)
@@ -668,7 +672,9 @@ sinwdt=SIN(ABS(temp))
 EJmult=-sinwdt/(kmag*clight*eps0)
 EJmult(1,1,1)=-dt/eps0
 ERhomult=jj*(-EJmult/dt-1.0_num/eps0)/kmag
+ERhomult(1,1,1) = -1.0_num/eps0/6.0_num*(0.0_num,1.0_num)*(clight*dt)**2
 ERhooldmult = jj*(coswdt/eps0+EJmult/dt)/kmag
+ERhooldmult(1,1,1) = 1.0_num/eps0*(-1.0_num/3.0_num*(0.0_num,1.0_num)*(clight*dt)**2)
 temp=1.0_num/(kmag*clight*eps0) ! Jmult
 BJmult=jj*(coswdt-1.0_num)*temp/clight
 
