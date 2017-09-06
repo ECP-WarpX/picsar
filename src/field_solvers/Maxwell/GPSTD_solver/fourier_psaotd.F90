@@ -836,7 +836,6 @@ ezold=1.0_num*ezf
 bxold=1.0_num*bxf
 byold=1.0_num*byf
 bzold=1.0_num*bzf
-print*,nmatrixes,nkx,nky,nkz
 ! - Push B a full time step
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nkz
