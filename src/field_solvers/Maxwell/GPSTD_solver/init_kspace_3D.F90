@@ -23,43 +23,56 @@ MODULE gpstd_solver
 !> Creation 2017
 ! ________________________________________________________________________________________
 
-  SUBROUTINE init_kspace(nx,ny,nz)
+  SUBROUTINE init_kspace
     USE matrix_coefficients
     USE CONSTANTS
     USE mpi_fftw3
     USE omp_lib
-    USE shared_data , ONLY : dx,dy,dz
+    USE shared_data !:, ONLY : dx,dy,dz,nx,ny,nz
+    USE fields      , ONLY : nxguards,nyguards,nzguards
     USE fields , ONLY : norderx,nordery,norderz
     USE params , ONLY : dt
-    !USE fourier_psaotd , ONLY : FD_weights_hvincenti
-    INTEGER(idp) , INTENT(IN)                     :: nx,ny,nz
+    USE mpi_fftw3
     LOGICAL(lp)                                   :: l_stg
     REAL(num)    , ALLOCATABLE , DIMENSION(:,:,:) :: temp,temp2
     INTEGER(idp)                                  :: i,j,k
     COMPLEX(cpx)                                  :: ii
-   
+    INTEGER(idp)                                  :: nfftx,nffty,nfftz
     IF(.NOT. ASSOCIATED(Kspace)) THEN
       ALLOCATE(KSPACE(ns_max))
     ENDIF
-    nmatrixes2=nmatrixes2+1
+    IF(.NOT. ASSOCIATED(AT_OP)) THEN
+      ALLOCATE(AT_OP(ns_max))
+    ENDIF
+    nmatrixes2=1
     ALLOCATE(Kspace(nmatrixes2)%block_vector(10_idp))   ! 3 forward 3 backward
     IF(.NOT. ASSOCIATED(AT_OP)) THEN
       ALLOCATE(AT_OP(ns_max))
     ENDIF
     ALLOCATE(AT_OP(nmatrixes2)%block_vector(4_idp))  !S/k,C,(1-C)/k^2
+    IF( fftw_with_mpi) THEN
+      nfftx=nx+2*nxguards
+      nffty=ny+2*nyguards
+      nfftz=local_nz
+    ENDIF
+    IF(.NOT. fftw_with_mpi) THEN
+      nfftx = nx+2*nxguards
+      nffty = ny+2*nyguards
+      nfftz = nz+2*nzguards
+    ENDIF
     DO i = 1_idp , 10_idp
-      ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nx/2+1,ny,nz))
+      ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
     ENDDO
     DO i = 1_idp , 4_idp
-      ALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc(nx/2+1,ny,nz))
+      ALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
     ENDDO
     !construct kspace
     l_stg = .TRUE.
     ii=DCMPLX(0.0_num,1.0_num)
-    CALL compute_k_vec_nompi(nx,ny,nz,l_stg)
-    DO i = 1,nx/2+1
-      DO j = 1,ny
-        DO k = 1,nz
+    CALL compute_k_vec_nompi(l_stg)
+    DO i = 1,nfftx/2+1
+      DO j = 1,nffty
+        DO k = 1,nfftz
           Kspace(nmatrixes2)%block_vector(1)%block3dc(i,j,k) = kxf(i)
           Kspace(nmatrixes2)%block_vector(2)%block3dc(i,j,k) = kxb(i)
           Kspace(nmatrixes2)%block_vector(3)%block3dc(i,j,k) = kxc(i)
@@ -73,24 +86,21 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
-    
-    ALLOCATE(temp(nx/2+1,ny,nz))
-    ALLOCATE(temp2(nx/2+1,ny,nz))
+    ALLOCATE(temp(nfftx/2+1,nffty,nfftz))
+    ALLOCATE(temp2(nfftx/2+1,nffty,nfftz))
     temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc,num)
-    temp2=sinc_block(nx/2+1_idp,ny,nz,temp) 
+    temp2=sinc_block(nfftx/2+1_idp,nffty,nfftz,temp) 
     AT_OP(nmatrixes2)%block_vector(1)%block3dc = DCMPLX(temp2,0._num)
     AT_OP(nmatrixes2)%block_vector(1)%block3dc = clight*dt*AT_OP(nmatrixes2)%block_vector(1)%block3dc
     temp2=COS(temp)
     AT_OP(nmatrixes2)%block_vector(2)%block3dc = DCMPLX(temp2,0._num)
     temp=0.5_num*temp
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2&
-    *sinc_block(nx/2+1,ny,nz,temp)*sinc_block(nx/2+1,ny,nz,temp)
-   
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(1.0_num,0.0_num)
-  
-    AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num,0.0_num) -  AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
+    *sinc_block(nfftx/2+1,nffty,nfftz,temp)*sinc_block(nfftx/2+1,nffty,nfftz,temp)
+    Kspace(nmatrixes2)%block_vector(10)%block3dc= DCMPLX(1.0_num,0.0_num)
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc = ((1.0_num,0.0_num) -  AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
     /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
-    AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = (clight*dt)**2/2.0_num 
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = DCMPLX((clight*dt)**2/2.0_num,0.0)
              !(1-C)/k^2
     temp=2._num*temp
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(1.0_num,0.0_num)
@@ -101,47 +111,57 @@ MODULE gpstd_solver
     DEALLOCATE(temp,temp2) 
   END SUBROUTINE init_kspace
 
-  SUBROUTINE compute_k_vec_nompi(nx,ny,nz,l_stg)
+  SUBROUTINE compute_k_vec_nompi(l_stg)
     USE constants
-    USE shared_data , ONLY : dx,dy,dz
+    USE shared_data !, ONLY : dx,dy,dz,nx,ny,nz
+    USE fields , ONLY : nxguards,nyguards,nzguards
     USE fields , ONLY : norderx,nordery,norderz
-
+    USE mpi_fftw3
     IMPLICIT NONE 
-    INTEGER(idp) , INTENT(IN)  :: nx,ny,nz
     LOGICAL(lp)  , INTENT(IN)  :: l_stg
-    COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxff,kxbb,kxcc
+    COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxff,kxbb,kxcc,kz_temp
     REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: FD_x,FD_y,FD_z
     COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: onesxp,onesyp,oneszp,onesx,onesy,onesz
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: i,j,k
-    
+    INTEGER(idp)                                  :: nfftx,nffty,nfftz
     ii = DCMPLX(0.0_num,1.0_num)
-    ALLOCATE(onesx(nx/2+1),onesxp(nx/2+1))
-    ALLOCATE(onesy(ny),onesyp(ny))
-    ALLOCATE(onesz(nz),oneszp(nz))
-    DO i=1_idp,nx/2+1
+    IF(.NOT. fftw_with_mpi) THEN
+      nfftx=nx+2*nxguards
+      nffty=ny+2*nyguards
+      nfftz=nz+2*nzguards
+    ENDIF
+    IF(fftw_with_mpi) THEN
+      nfftx = nx+2*nxguards
+      nffty = ny+2*nyguards
+      nfftz = nz_global + 2*nzguards
+    ENDIF
+    ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
+    ALLOCATE(onesy(nffty),onesyp(nffty))
+    ALLOCATE(onesz(nfftz),oneszp(nfftz))
+    DO i=1_idp,nfftx/2+1
       onesx(i)  = DCMPLX(i-1.0_num,0.0_num)
       onesxp(i) = DCMPLX(i-1.0_num,0.0_num)
     ENDDO
-    DO j=1_idp,ny
+    DO j=1_idp,nffty
       onesy(j)  = DCMPLX(j-1.0_num,0.0_num)
       onesyp(j) = DCMPLX(j-1.0_num,0.0_num)
-      IF(j .GT. ny/2_idp +1) THEN
+      IF(j .GT. nffty/2_idp +1) THEN
         onesy(j)  =DCMPLX(-onesy(j))
-        onesyp(j) =DCMPLX( ny + onesyp(j))
+        onesyp(j) =DCMPLX( nffty + onesyp(j))
       ENDIF
     ENDDO
-    DO k=1_idp,nz
+    DO k=1_idp,nfftz
       onesz(k)  = DCMPLX(k-1.0_num)
       oneszp(k) = DCMPLX(k-1.0_num)
-      IF(k .GT. nz/2_idp +1) THEN
+      IF(k .GT. nfftz/2_idp +1) THEN
         onesz(k) = DCMPLX(- onesz(k))
-        oneszp(k) = DCMPLX(nz + oneszp(k))
+        oneszp(k) = DCMPLX(nfftz + oneszp(k))
       ENDIF
     ENDDO
-    ALLOCATE(kxf(nx/2+1),kxb(nx/2+1),kxc(nx/2+1))
-    ALLOCATE(kyf(ny),kyb(ny),kyc(ny))
-    ALLOCATE(kzf(nz),kzb(nz),kzc(nz))
+    ALLOCATE(kxf(nfftx/2+1),kxb(nfftx/2+1),kxc(nfftx/2+1))
+    ALLOCATE(kyf(nffty),kyb(nffty),kyc(nffty))
+    ALLOCATE(kzf(nfftz),kzb(nfftz),kzc(nfftz))
     IF (norderx .ne. 0_idp ) THEN  ! if 0 then infinite order
       ALLOCATE(FD_x(norderx/2))
       CALL FD_weights_hvincenti(norderx,FD_x,l_stg)
@@ -149,16 +169,16 @@ MODULE gpstd_solver
       kxb=(0._num,0._num)*kxb
       kxc=(0._num,0._num)*kxc
       DO i=1_idp,norderx/2
-        kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx*1.0_num/nx)
+        kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx/nfftx)
       ENDDO
     ELSE
-      ALLOCATE(kxff(nx),kxbb(nx),kxcc(nx))
-      CALL fftfreq(nx,kxff,dx)
-      CALL fftfreq(nx,kxbb,dx)
-      CALL fftfreq(nx,kxcc,dx)
-      kxf=kxff(1:nx/2+1)
-      kxb=kxbb(1:nx/2+1)
-      kxc=kxcc(1:nx/2+1)
+      ALLOCATE(kxff(nfftx),kxbb(nfftx),kxcc(nfftx))
+      CALL fftfreq(nfftx,kxff,dx)
+      CALL fftfreq(nfftx,kxbb,dx)
+      CALL fftfreq(nfftx,kxcc,dx)
+      kxf=kxff(1:nfftx/2+1)
+      kxb=kxbb(1:nfftx/2+1)
+      kxc=kxcc(1:nfftx/2+1)
       DEALLOCATE(kxff,kxbb,kxcc)
     ENDIF
     IF (nordery .ne. 0_idp) THEN
@@ -168,12 +188,12 @@ MODULE gpstd_solver
       kyb=(0._num,0._num)*kyb
       kyc=(0._num,0._num)*kyc
       DO i=1_idp,nordery/2
-        kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/ny)
+        kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/nffty)
       ENDDO
     ELSE
-      CALL fftfreq(ny,kyf,dy)
-      CALL fftfreq(ny,kyb,dy)
-      CALL fftfreq(ny,kyc,dy)
+      CALL fftfreq(nffty,kyf,dy)
+      CALL fftfreq(nffty,kyb,dy)
+      CALL fftfreq(nffty,kyc,dy)
     ENDIF
     IF (norderz .ne. 0_idp) THEN
       ALLOCATE(FD_z(norderz/2))
@@ -182,22 +202,22 @@ MODULE gpstd_solver
       kzb=(0._num,0._num)*kzb
       kzc=(0._num,0._num)*kzc
       DO i=1_idp,norderz/2
-        kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nz)
+        kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nfftz)
       ENDDO
     ELSE
-      CALL fftfreq(nz,kzf,dz)
-      CALL fftfreq(nz,kzb,dz)
-      CALL fftfreq(nz,kzc,dz)
+      CALL fftfreq(nfftz,kzf,dz)
+      CALL fftfreq(nfftz,kzb,dz)
+      CALL fftfreq(nfftz,kzc,dz)
     ENDIF
     IF(l_stg) THEN
-    kxf=kxc*EXP(-ii*PI*onesxp/nx)
-    kxb=kxc*EXP(ii*PI*onesxp/nx)
+    kxf=kxc*EXP(-ii*PI*onesxp/nfftx)
+    kxb=kxc*EXP(ii*PI*onesxp/nfftx)
 
-    kyf=kyc*EXP(-ii*PI*onesyp/ny)
-    kyb=kyc*EXP(ii*PI*onesyp/ny)
+    kyf=kyc*EXP(-ii*PI*onesyp/nffty)
+    kyb=kyc*EXP(ii*PI*onesyp/nffty)
 
-    kzf=kzc*EXP(-ii*PI*oneszp/nz)
-    kzb=kzc*EXP(ii*PI*oneszp/nz)
+    kzf=kzc*EXP(-ii*PI*oneszp/nfftz)
+    kzb=kzc*EXP(ii*PI*oneszp/nfftz)
     ELSE
       kxf=kxc
       kxb=kxc
@@ -205,6 +225,19 @@ MODULE gpstd_solver
       kyb=kyc
       kzf=kzc
       kzb=kzc
+    ENDIF
+    IF(fftw_with_mpi) THEN
+      ALLOCATE(kz_temp(nfftz)) 
+      kz_temp = kzc
+      DEALLOCATE(kzc);ALLOCATE(kzc(local_nz))
+      kzc = kz_temp(local_z0+1:local_z0+local_nz)
+      kz_temp = kzf
+      DEALLOCATE(kzf);ALLOCATE(kzf(local_nz))
+      kzf = kz_temp(local_z0+1:local_z0+local_nz)
+      kz_temp = kzb
+      DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
+      kzb = kz_temp(local_z0+1:local_z0+local_nz)
+      DEALLOCATE(kz_temp)
     ENDIF
     DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp,FD_x,FD_y,FD_z)
   END SUBROUTINE
@@ -283,7 +316,7 @@ MODULE gpstd_solver
 ! ________________________________________________________________________________________
 
  
-  SUBROUTINE init_plans_gpstd(n1,n2,n3)
+  SUBROUTINE init_plans_gpstd
   USE fields
   USE matrix_coefficients
   USE shared_data
@@ -294,7 +327,7 @@ MODULE gpstd_solver
 #ifdef _OPENMP
    USE omp_lib
 #endif
-  INTEGER(idp), INTENT(in):: n1,n2,n3
+  INTEGER(idp)           :: n1,n2,n3
   INTEGER(idp)           ::  nopenmp
 #ifdef _OPENMP
     nopenmp=OMP_GET_MAX_THREADS()
@@ -302,10 +335,19 @@ MODULE gpstd_solver
 #else
     nopenmp=1_idp
 #endif
-  CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,n1,n2,n3,ex_r,vold(1)%block_vector(1)%block3dc &
+  IF(fftw_threads_ok) THEN
+    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp)
+  ENDIF
+  IF(.NOT. fftw_with_mpi) THEN 
+    n1=nx+2*nxguards
+    n2=ny+2*nyguards
+    n3=nz+2*nzguards
+    CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,n1,n2,n3,ex_r,vold(1)%block_vector(1)%block3dc &
        ,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
-  CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,n1,n2,n3,vold(1)%block_vector(1)%block3dc,&
+    CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,n1,n2,n3,vold(1)%block_vector(1)%block3dc,&
       ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
+  ENDIF
+   
   END SUBROUTINE
 
 !> @brief
@@ -372,151 +414,158 @@ MODULE gpstd_solver
 ! ________________________________________________________________________________________
 
 
-  SUBROUTINE init_gpstd(nx,ny,nz)
-    USE matrix_coefficients
-    USE PICSAR_PRECISION
-    USE CONSTANTS
-    USE mpi_fftw3
-    USE omp_lib
-    USE shared_data , ONLY : dx,dy,dz
-    USE fields , ONLY : norderx,nordery,norderz
-    USE params , ONLY : dt
+SUBROUTINE init_gpstd()
+  USE matrix_coefficients
+  USE PICSAR_PRECISION
+  USE CONSTANTS
+  USE mpi_fftw3
+  USE omp_lib
+  USE shared_data !, ONLY : dx,dy,dz,nx,ny,nz
+  USE fields , ONLY : norderx,nordery,norderz,nxguards,nyguards,nzguards
+  USE params , ONLY : dt
 
-    INTEGER(idp),INTENT(IN):: nx,ny,nz
-    INTEGER(idp)           :: i,j,k,p
-    COMPLEX(cpx)           :: ii
-    LOGICAL(lp)            :: needed
-    ii=(0.,1.)
-    CALL allocate_new_matrix_vector(11_idp)
-    CALL init_kspace(nx,ny,nz)
-    DO i=1_idp,6_idp
-      DO j=1_idp,11_idp
-        CALL is_calculation_needed(i,j,needed) 
-        IF(.NOT. needed) CYCLE
-        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(nx/2+1,ny,nz))
-        cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = nx/2+1
-        cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = ny
-        cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = nz
-      ENDDO
+  INTEGER(idp)           :: i,j,k,p
+  COMPLEX(cpx)           :: ii
+  LOGICAL(lp)            :: needed
+  INTEGER(idp)           :: nfftx,nffty,nfftz
+
+  IF(.NOT. fftw_with_mpi) THEN
+    nfftx=nx+2*nxguards
+    nffty=ny+2*nyguards
+    nfftz=nz+2*nzguards
+  ENDIF
+
+  ii=DCMPLX(0.,1.)
+  CALL allocate_new_matrix_vector(11_idp)
+  CALL init_kspace
+  DO i=1_idp,6_idp
+    DO j=1_idp,11_idp
+      CALL is_calculation_needed(i,j,needed) 
+      IF(.NOT. needed) CYCLE
+      ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(nfftx/2+1,nffty,nfftz))
+      cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = nfftx/2+1
+      cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = nffty
+      cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = nfftz
     ENDDO
-    DO i=1_idp,11_idp
-      ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nx/2+1,ny,nz))
-      !vold(nmatrixes)%block_vector(i)%block3dc = DCMPLX(0.,0.)
-      vold(nmatrixes)%block_vector(i)%nx = nx/2+1
-      vold(nmatrixes)%block_vector(i)%ny = ny 
-      vold(nmatrixes)%block_vector(i)%nz = nz
-    ENDDO
-    DO i=1_idp,6_idp
-      ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nx/2+1,ny,nz))
-      vnew(nmatrixes)%block_vector(i)%nx = nx/2+1
-      vnew(nmatrixes)%block_vector(i)%ny = ny
-      vnew(nmatrixes)%block_vector(i)%nz = nz
-    ENDDO
-    cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc =         &
-    - ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight  &
-      *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  ENDDO
+  DO i=1_idp,11_idp
+    ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
+    !vold(nmatrixes)%block_vector(i)%block3dc = DCMPLX(0.,0.)
+    vold(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+    vold(nmatrixes)%block_vector(i)%ny = nffty 
+    vold(nmatrixes)%block_vector(i)%nz = nfftz
+  ENDDO
+  DO i=1_idp,6_idp
+    ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
+    vnew(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+    vnew(nmatrixes)%block_vector(i)%ny = nffty
+    vnew(nmatrixes)%block_vector(i)%nz = nfftz
+  ENDDO
+  cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc =         &
+  - ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight  &
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(1,6)%block3dc =         &
-      ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight  &
-      *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-    cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc =         &
-      ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight  &
-      *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(1,6)%block3dc =         &
+    ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight  &
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc =         &
+    ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight  &
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(2,6)%block3dc =         &
-     -ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight  &
-      *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(2,6)%block3dc =         &
+   -ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight  &
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(3,4)%block3dc =         &
-    - ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight  &
-      *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(3,4)%block3dc =         &
+  - ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight  &
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(3,5)%block3dc =         &
-      ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight  &
-      *AT_OP(nmatrixes2)%block_vector(1)%block3dc
- 
-    cc_mat(nmatrixes)%block_matrix2d(4,2)%block3dc =         &
-      ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight &
-       *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(3,5)%block3dc =         &
+    ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight  &
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(4,3)%block3dc =         &
-      -ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight &
-       *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(4,2)%block3dc =         &
+    ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight &
+     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(5,1)%block3dc =         &      
-      -ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight &
-       *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(4,3)%block3dc =         &
+    -ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight &
+     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(5,3)%block3dc =         &
-      ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight &
-       *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(5,1)%block3dc =         &      
+    -ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight &
+     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(6,1)%block3dc =         & 
-      ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight &
-       *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(5,3)%block3dc =         &
+    ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight &
+     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    cc_mat(nmatrixes)%block_matrix2d(6,2)%block3dc =         &
-      -ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight &
-       *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(6,1)%block3dc =         & 
+    ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight &
+     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-    DO i=1,6
-       cc_mat(nmatrixes)%block_matrix2d(i,i)%block3dc =        &
-          AT_OP(nmatrixes2)%block_vector(2)%block3dc
-    ENDDO
-    DO i = 1 , 3 
-       cc_mat(nmatrixes)%block_matrix2d(i,i+6)%block3dc =       &
-         (-1._num)*clight*mu0*AT_OP(nmatrixes2)%block_vector(1)%block3dc
-    ENDDO
-    cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc = &
-    - mu0* ii*Kspace(nmatrixes2)%block_vector(8)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
-    cc_mat(nmatrixes)%block_matrix2d(4,9)%block3dc = &
-    - mu0*(-ii)*Kspace(nmatrixes2)%block_vector(5)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
-    cc_mat(nmatrixes)%block_matrix2d(5,7)%block3dc = &
-    - mu0*(-ii)*Kspace(nmatrixes2)%block_vector(8)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
-    cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc = &
-    - mu0* ii*Kspace(nmatrixes2)%block_vector(2)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
-     cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc = &
-        - mu0* ii*Kspace(nmatrixes2)%block_vector(5)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
-     cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc = &
-       -mu0*(-ii)*Kspace(nmatrixes2)%block_vector(2)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
-    !contribution rho old ( vold(10))
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (1.0_num,0.0_num)
-    DO i = 1,3
-      cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc =        &
-        DCMPLX(0.,1.)*(AT_OP(nmatrixes2)%block_vector(2)%block3dc   &
-        -1./(clight*dt)*AT_OP(nmatrixes2)%block_vector(1)%block3dc)&
-        /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
-  
-      cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc =        &
-         cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc &
-         *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
-  
-      cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc(1,1,1) = &
-         -1.0_num/3.0_num*(0.0_num,1.0_num)*(clight*dt)**2
+  cc_mat(nmatrixes)%block_matrix2d(6,2)%block3dc =         &
+    -ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight &
+     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
-      cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc = 1./eps0 &
-        *cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc
-    ENDDO
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (0.,0.)
-    !contribution rho new (vold(11)) 
-    DO i = 1 , 3
-      cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc =  &
-      DCMPLX(0.,1.)*(1./(clight*dt)*                          &
-      AT_OP(nmatrixes2)%block_vector(1)%block3dc             &
-      -DCMPLX(1.,0.))/Kspace(nmatrixes2)%block_vector(10)%block3dc**2
-  
-      cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc = &
-         cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc &
-         *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
-      cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc(1,1,1) = &
-       -1.0_num/6.0_num*(0.0_num,1.0_num)*(clight*dt)**2  
+  DO i=1,6
+     cc_mat(nmatrixes)%block_matrix2d(i,i)%block3dc =        &
+        AT_OP(nmatrixes2)%block_vector(2)%block3dc
+  ENDDO
+  DO i = 1 , 3 
+     cc_mat(nmatrixes)%block_matrix2d(i,i+6)%block3dc =       &
+       (-1._num)*clight*mu0*AT_OP(nmatrixes2)%block_vector(1)%block3dc
+  ENDDO
+  cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc = &
+  - mu0* ii*Kspace(nmatrixes2)%block_vector(8)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(4,9)%block3dc = &
+  - mu0*(-ii)*Kspace(nmatrixes2)%block_vector(5)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(5,7)%block3dc = &
+  - mu0*(-ii)*Kspace(nmatrixes2)%block_vector(8)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
+  cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc = &
+  - mu0* ii*Kspace(nmatrixes2)%block_vector(2)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
+   cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc = &
+      - mu0* ii*Kspace(nmatrixes2)%block_vector(5)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
+   cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc = &
+     -mu0*(-ii)*Kspace(nmatrixes2)%block_vector(2)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
+  !contribution rho old ( vold(10))
+  Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (1.0_num,0.0_num)
+  DO i = 1,3
+    cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc =        &
+      DCMPLX(0.,1.)*(AT_OP(nmatrixes2)%block_vector(2)%block3dc   &
+      -1./(clight*dt)*AT_OP(nmatrixes2)%block_vector(1)%block3dc)&
+      /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
 
-       cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc = 1./eps0 &
-       *  cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc     
-    ENDDO
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = (0.,0.)
-    CALL delete_arrays 
-  END SUBROUTINE init_gpstd
+    cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc =        &
+       cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc &
+       *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc(1,1,1) = &
+       -1.0_num/3.0_num*(0.0_num,1.0_num)*(clight*dt)**2
+
+    cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc = 1.0_num/eps0 &
+      *cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc
+  ENDDO
+  Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (0.,0.)
+  !contribution rho new (vold(11)) 
+  DO i = 1 , 3
+    cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc =  &
+    DCMPLX(0.,1.)*(1./(clight*dt)*                          &
+    AT_OP(nmatrixes2)%block_vector(1)%block3dc             &
+    -DCMPLX(1.,0.))/Kspace(nmatrixes2)%block_vector(10)%block3dc**2
+
+    cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc = &
+       cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc &
+       *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+    cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc(1,1,1) = &
+     -1.0_num/6.0_num*(0.0_num,1.0_num)*(clight*dt)**2  
+
+     cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc = 1.0_num/eps0 &
+     *  cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc     
+  ENDDO
+  Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = DCMPLX(0.,0.)
+  CALL delete_arrays 
+END SUBROUTINE init_gpstd
 !> @brief
 !> This subroutine executes forward fftw on relevent fields
 !

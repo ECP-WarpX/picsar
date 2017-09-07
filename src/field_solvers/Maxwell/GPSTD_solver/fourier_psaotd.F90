@@ -925,7 +925,7 @@ ELSE
         nffty=ny+2*nyguards
         nfftz=nz+2*nzguards
 ENDIF
-CALL init_gpstd(nfftx,nffty,nfftz)
+CALL init_gpstd()
 IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
 ELSE
