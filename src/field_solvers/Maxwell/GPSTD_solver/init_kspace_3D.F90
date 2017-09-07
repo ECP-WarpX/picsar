@@ -92,7 +92,7 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
-
+print*,"kiki",size(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,:))
 
     ALLOCATE(temp(nfftx/2+1,nffty,nfftz))
     ALLOCATE(temp2(nfftx/2+1,nffty,nfftz))
@@ -105,28 +105,33 @@ MODULE gpstd_solver
     temp=0.5_num*temp
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2&
     *sinc_block(nfftx/2+1,nffty,nfftz,temp)*sinc_block(nfftx/2+1,nffty,nfftz,temp)
-   
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(1.0_num,0.0_num)
-  
-    AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num,0.0_num) -  AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
-    /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
-    AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = (clight*dt)**2/2.0_num 
-             !(1-C)/k^2
-    temp=2._num*temp
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(1.0_num,0.0_num)
-    AT_OP(nmatrixes2)%block_vector(4)%block3dc = (AT_OP(nmatrixes2)%block_vector(1)%block3dc-clight*dt)&
-    / Kspace(nmatrixes2)%block_vector(10)%block3dc/ Kspace(nmatrixes2)%block_vector(10)%block3dc
-    AT_OP(nmatrixes2)%block_vector(4)%block3dc(1,1,1)=DCMPLX(-(clight*dt)**3/6.0_num,0.0_num)  
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(0._num,0._num)
-
+    IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) .EQ. 0.0_num)) THEN 
+      Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(1.0_num,0.0_num)
+      AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num,0.0_num) -  AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
+      /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
+      AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = (clight*dt)**2/2.0_num 
+               !(1-C)/k^2
+      temp=2._num*temp
+      Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(1.0_num,0.0_num)
+      AT_OP(nmatrixes2)%block_vector(4)%block3dc = (AT_OP(nmatrixes2)%block_vector(1)%block3dc-clight*dt)&
+      / Kspace(nmatrixes2)%block_vector(10)%block3dc/ Kspace(nmatrixes2)%block_vector(10)%block3dc
+      AT_OP(nmatrixes2)%block_vector(4)%block3dc(1,1,1)=DCMPLX(-(clight*dt)**3/6.0_num,0.0_num)  
+      Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(0._num,0._num)
+    ELSE 
+      AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num,0.0_num) -AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
+      /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
+               !(1-C)/k^2
+      temp=2._num*temp
+      AT_OP(nmatrixes2)%block_vector(4)%block3dc = (AT_OP(nmatrixes2)%block_vector(1)%block3dc-clight*dt)&
+      / Kspace(nmatrixes2)%block_vector(10)%block3dc/Kspace(nmatrixes2)%block_vector(10)%block3dc
+    ENDIF
     DEALLOCATE(temp,temp2) 
   END SUBROUTINE init_kspace
 
   SUBROUTINE compute_k_vec_nompi(l_stg)
     USE constants
     USE shared_data !, ONLY : dx,dy,dz,nx,ny,nz
-    USE fields , ONLY : nxguards,nyguards,nzguards
-    USE fields , ONLY : norderx,nordery,norderz
+    USE fields 
     USE mpi_fftw3
     IMPLICIT NONE 
     LOGICAL(lp)  , INTENT(IN)  :: l_stg
@@ -261,6 +266,11 @@ MODULE gpstd_solver
         DEALLOCATE(k_temp)
     ENDIF
     ENDIF
+if (rank .EQ. 1) print*,kzc,int(rank,isp)
+call mpi_barrier(comm,errcode)
+if(rank .eq. 0) print*,kzc,int(rank,isp)
+call mpi_barrier(comm,errcode)
+!stop
     DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp,FD_x,FD_y,FD_z)
   END SUBROUTINE
   SUBROUTINE fftfreq(nxx,kxx, dxx)
@@ -343,7 +353,7 @@ MODULE gpstd_solver
   USE matrix_coefficients
   USE shared_data
   USE fastfft
-  Use fourier
+  Use fourier, ONLY: plan_r2c,plan_c2r
 !  USE fftw3_fortran
   USE mpi_fftw3 
 #ifdef _OPENMP
@@ -356,7 +366,6 @@ MODULE gpstd_solver
 
 #ifdef _OPENMP
     nopenmp=OMP_GET_MAX_THREADS()
-    CALL OMP_SET_NESTED(.TRUE.)
 #else
     nopenmp=1_idp
 #endif
@@ -379,14 +388,14 @@ MODULE gpstd_solver
      nz_cint = nz_global 
      IF(.NOT. fftw_mpi_transpose) THEN
        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
-                      ex_r, vold(1)%block_vector(1)%block3dc, comm, FFTW_MEASURE);
+                      ex_r, vold(1)%block_vector(1)%block3dc, comm, FFTW_MEASURE)
        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint,ny_cint,nx_cint, &
-                      vnew(1)%block_vector(1)%block3dc , ex_r, comm, FFTW_MEASURE);
+                      vnew(1)%block_vector(1)%block3dc , ex_r, comm, FFTW_MEASURE)
      ELSE
        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
-                      ex_r, vold(1)%block_vector(1)%block3dc,comm,FFTW_MPI_TRANSPOSED_OUT);
+                      ex_r, vold(1)%block_vector(1)%block3dc,comm,FFTW_MPI_TRANSPOSED_OUT)
        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint,ny_cint,nx_cint, &
-                      vnew(1)%block_vector(1)%block3dc , ex_r,comm,FFTW_MPI_TRANSPOSED_IN);
+                      vnew(1)%block_vector(1)%block3dc , ex_r,comm,FFTW_MPI_TRANSPOSED_IN)
      ENDIF
   ENDIF
   END SUBROUTINE
@@ -630,57 +639,175 @@ END SUBROUTINE init_gpstd
 
 
 
-  SUBROUTINE execute_fftw_gpstd_r2c
-    USE fields
-    USE matrix_coefficients
-    USE shared_data
-    USE time_stat
-    USE params      
-  !  USE fourier_psaotd
-    USE fourier
-    USE fastfft  
-    INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
-    REAL(num)    :: tmptime
-    nfftx=nx+2*nxguards
-    nffty=ny+2*nyguards
-    nfftz=nz+2*nzguards
-    nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
-    
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
-    call normalize_Fourier(ex_r,nfftx,nffty,nfftz,ex,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(ey_r,nfftx,nffty,nfftz,ey,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(ez_r,nfftx,nffty,nfftz,ez,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(bx_r,nfftx,nffty,nfftz,bx,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(by_r,nfftx,nffty,nfftz,by,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(bz_r,nfftx,nffty,nfftz,bz,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(jx_r,nfftx,nffty,nfftz,jx,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(jy_r,nfftx,nffty,nfftz,jy,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(jz_r,nfftx,nffty,nfftz,jz,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
-    call normalize_Fourier(rhoold_r,nfftx,nffty,nfftz,rhoold,nxx,nyy,nzz,1.0_num)
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
-    ENDIF
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ex_r,vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ey_r,vold(nmatrixes)%block_vector(2)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ez_r,vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bx_r,vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,by_r,vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bz_r,vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jx_r,vold(nmatrixes)%block_vector(7)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jy_r,vold(nmatrixes)%block_vector(8)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jz_r,vold(nmatrixes)%block_vector(9)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r,vold(nmatrixes)%block_vector(11)%block3dc , plan_r2c)
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
-    ENDIF
-  END SUBROUTINE
+SUBROUTINE execute_fftw_gpstd_r2c
+  USE fields
+  USE matrix_coefficients
+  USE shared_data
+  USE time_stat
+  USE params      
+!  USE fourier_psaotd
+  USE fourier
+  USE fastfft  
+  INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
+  REAL(num)    :: tmptime
+  nfftx=nx+2*nxguards
+  nffty=ny+2*nyguards
+  nfftz=nz+2*nzguards
+  nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+  
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+  call normalize_Fourier(ex_r,nfftx,nffty,nfftz,ex,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(ey_r,nfftx,nffty,nfftz,ey,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(ez_r,nfftx,nffty,nfftz,ez,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(bx_r,nfftx,nffty,nfftz,bx,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(by_r,nfftx,nffty,nfftz,by,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(bz_r,nfftx,nffty,nfftz,bz,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(jx_r,nfftx,nffty,nfftz,jx,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(jy_r,nfftx,nffty,nfftz,jy,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(jz_r,nfftx,nffty,nfftz,jz,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
+  call normalize_Fourier(rhoold_r,nfftx,nffty,nfftz,rhoold,nxx,nyy,nzz,1.0_num)
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+  ENDIF
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ex_r,vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ey_r,vold(nmatrixes)%block_vector(2)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ez_r,vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bx_r,vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,by_r,vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,bz_r,vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jx_r,vold(nmatrixes)%block_vector(7)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jy_r,vold(nmatrixes)%block_vector(8)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jz_r,vold(nmatrixes)%block_vector(9)%block3dc , plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc, plan_r2c)
+  CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r,vold(nmatrixes)%block_vector(11)%block3dc , plan_r2c)
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+  ENDIF
+END SUBROUTINE
+
+SUBROUTINE execute_fftw_r2c_mpi
+USE shared_data
+USE fields
+USE mpi_fftw3
+USE time_stat
+USE params
+USE matrix_coefficients
+USE fourier
+USE fastfft
+
+INTEGER(idp)  :: nfftx,nffty,nfftz
+REAL(num)     :: tmptime
+INTEGER(idp)  :: ix,iy,iz
+nfftx = nx_global
+nffty = ny_global
+nfftz = local_nz
+
+
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
+! Copy array values before FFT
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+DO iz=1,local_nz
+  DO iy=1,ny_global
+    DO ix=1,nx_global
+      ex_r(ix,iy,iz)=ex(ix-1,iy-1,iz-1)
+      ey_r(ix,iy,iz)=ey(ix-1,iy-1,iz-1)
+      ez_r(ix,iy,iz)=ez(ix-1,iy-1,iz-1)
+      bx_r(ix,iy,iz)=bx(ix-1,iy-1,iz-1)
+      by_r(ix,iy,iz)=by(ix-1,iy-1,iz-1)
+      bz_r(ix,iy,iz)=bz(ix-1,iy-1,iz-1)
+      jx_r(ix,iy,iz)=jx(ix-1,iy-1,iz-1)
+      jy_r(ix,iy,iz)=jy(ix-1,iy-1,iz-1)
+      jz_r(ix,iy,iz)=jz(ix-1,iy-1,iz-1)
+      rho_r(ix,iy,iz)=rho(ix-1,iy-1,iz-1)
+      rhoold_r(ix,iy,iz)=rhoold(ix-1,iy-1,iz-1)
+    END DO
+  END DO
+END DO
+!$OMP END PARALLEL DO
+IF (it.ge.timestat_itstart) THEN
+  localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+ENDIF
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ex_r,vold(1)%block_vector(1)%block3dc)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ey_r,vold(1)%block_vector(2)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ez_r,vold(1)%block_vector(3)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,bx_r,vold(1)%block_vector(4)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,by_r,vold(1)%block_vector(5)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,bz_r,vold(1)%block_vector(6)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jx_r,vold(1)%block_vector(7)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jy_r,vold(1)%block_vector(8)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jz_r,vold(1)%block_vector(9)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rhoold_r,vold(1)%block_vector(10)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rho_r,vold(1)%block_vector(11)%block3dc )
+IF (it.ge.timestat_itstart) THEN
+  localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+ENDIF
+
+END SUBROUTINE
+
+
+SUBROUTINE execute_fftw_mpi_c2r
+USE params
+USE shared_data
+USE fields
+USE fourier
+USE fastfft
+USE time_stat
+USE mpi_fftw3
+USE matrix_coefficients
+IMPLICIT NONE
+REAL(num) :: coeff_norm,tmptime
+INTEGER(idp) :: ix,iy,iz,nfftx,nffty,nfftz
+nfftx=nx+2*nxguards
+nffty=ny+2*nyguards
+nfftz=nz+2*nzguards
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
+
+! Get Inverse Fourier transform of all fields components and currents
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(1)%block3dc,ex_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(2)%block3dc,ey_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(3)%block3dc,ez_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(4)%block3dc,ex_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(5)%block3dc,ey_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(6)%block3dc,ez_r)
+IF (it.ge.timestat_itstart) THEN
+  localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+ENDIF
+call fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ey_r,eyf)
+call fftw_mpi_execute_dft_c2r(plan_c2r_mpi,eyf,ey_r)
+coeff_norm=1.0_num/((nx_global)*(ny_global)*(nz_global))
+!coeff_norm=1.
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+DO iz=1,nz
+  DO iy=1,ny_global
+    DO ix=1,nx_global
+      ex(ix-1,iy-1,iz-1)=ex_r(ix,iy,iz)*coeff_norm
+      ey(ix-1,iy-1,iz-1)=ey_r(ix,iy,iz)*coeff_norm
+      ez(ix-1,iy-1,iz-1)=ez_r(ix,iy,iz)*coeff_norm
+      bx(ix-1,iy-1,iz-1)=bx_r(ix,iy,iz)*coeff_norm
+      by(ix-1,iy-1,iz-1)=by_r(ix,iy,iz)*coeff_norm
+      bz(ix-1,iy-1,iz-1)=bz_r(ix,iy,iz)*coeff_norm
+    END DO
+  END DO
+END DO
+!$OMP END PARALLEL DO
+IF (it.ge.timestat_itstart) THEN
+  localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+ENDIF
+END SUBROUTINE
+
 
 
 !> @brief

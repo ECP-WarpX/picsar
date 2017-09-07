@@ -485,7 +485,9 @@ SUBROUTINE initall
   IF (l_spectral .OR. g_spectral) THEN
     IF(g_spectral) THEN
        CALL init_gpstd()
+       IF (rank .EQ. 0) write(0, *) "INIT GPSTD BLOCKS  DONE"
        CALL init_plans_gpstd()
+       IF (rank .EQ. 0) write(0, *) "INIT GPSTD  PLANS DONE"
      ENDIF
 
     IF(l_spectral) CALL init_plans_blocks

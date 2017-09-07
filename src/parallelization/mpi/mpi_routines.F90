@@ -905,7 +905,7 @@ IF (l_spectral .OR. g_spectral) THEN
       nky = nz_global
       nkz = local_ny 
     ENDIF
-    IF(l_spectral) THEN
+    IF(l_spectral .OR. g_spectral) THEN
     ! - Allocate complex arrays
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])

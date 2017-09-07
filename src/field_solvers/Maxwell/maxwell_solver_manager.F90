@@ -228,9 +228,17 @@ integer :: i,j
     tmptime = MPI_WTIME()
   ENDIF
 #if defined(FFTW)  
-  CALL execute_fftw_gpstd_r2c
+  IF(fftw_with_mpi) THEN
+    CALL execute_fftw_r2c_mpi
+  ELSE
+    CALL execute_fftw_gpstd_r2c
+  ENDIF
   CALL multiply_mat_vector(1_idp)
-  CALL execute_fftw_gpstd_c2r
+  IF(fftw_with_mpi) THEN
+    CALL execute_fftw_mpi_c2r
+  ELSE
+    CALL execute_fftw_gpstd_c2r
+  ENDIF
 #endif
   IF (it.ge.timestat_itstart) THEN
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
