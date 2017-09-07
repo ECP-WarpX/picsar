@@ -44,16 +44,22 @@ MODULE gpstd_solver
     IF(.NOT. ASSOCIATED(AT_OP)) THEN
       ALLOCATE(AT_OP(ns_max))
     ENDIF
-    nmatrixes2=1
+    nmatrixes2=nmatrixes2+1
     ALLOCATE(Kspace(nmatrixes2)%block_vector(10_idp))   ! 3 forward 3 backward
     IF(.NOT. ASSOCIATED(AT_OP)) THEN
       ALLOCATE(AT_OP(ns_max))
     ENDIF
     ALLOCATE(AT_OP(nmatrixes2)%block_vector(4_idp))  !S/k,C,(1-C)/k^2
     IF( fftw_with_mpi) THEN
-      nfftx=nx+2*nxguards
-      nffty=ny+2*nyguards
-      nfftz=local_nz
+      IF(.NOT. fftw_mpi_transpose) THEN
+        nfftx=nx_global
+        nffty=ny_global
+        nfftz=local_nz
+      ELSE
+        nfftx = nx_global
+        nffty = local_nz
+        nfftz = nz_global
+      ENDIF
     ENDIF
     IF(.NOT. fftw_with_mpi) THEN
       nfftx = nx+2*nxguards
@@ -86,6 +92,8 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
+
+
     ALLOCATE(temp(nfftx/2+1,nffty,nfftz))
     ALLOCATE(temp2(nfftx/2+1,nffty,nfftz))
     temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc,num)
@@ -97,10 +105,12 @@ MODULE gpstd_solver
     temp=0.5_num*temp
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2&
     *sinc_block(nfftx/2+1,nffty,nfftz,temp)*sinc_block(nfftx/2+1,nffty,nfftz,temp)
-    Kspace(nmatrixes2)%block_vector(10)%block3dc= DCMPLX(1.0_num,0.0_num)
-    AT_OP(nmatrixes2)%block_vector(3)%block3dc = ((1.0_num,0.0_num) -  AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
+   
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(1.0_num,0.0_num)
+  
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num,0.0_num) -  AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
     /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
-    AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = DCMPLX((clight*dt)**2/2.0_num,0.0)
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = (clight*dt)**2/2.0_num 
              !(1-C)/k^2
     temp=2._num*temp
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(1.0_num,0.0_num)
@@ -108,6 +118,7 @@ MODULE gpstd_solver
     / Kspace(nmatrixes2)%block_vector(10)%block3dc/ Kspace(nmatrixes2)%block_vector(10)%block3dc
     AT_OP(nmatrixes2)%block_vector(4)%block3dc(1,1,1)=DCMPLX(-(clight*dt)**3/6.0_num,0.0_num)  
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(0._num,0._num)
+
     DEALLOCATE(temp,temp2) 
   END SUBROUTINE init_kspace
 
@@ -119,7 +130,7 @@ MODULE gpstd_solver
     USE mpi_fftw3
     IMPLICIT NONE 
     LOGICAL(lp)  , INTENT(IN)  :: l_stg
-    COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxff,kxbb,kxcc,kz_temp
+    COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: kxff,kxbb,kxcc,k_temp
     REAL(num)    , ALLOCATABLE , DIMENSION(:)     :: FD_x,FD_y,FD_z
     COMPLEX(cpx) , ALLOCATABLE , DIMENSION(:)     :: onesxp,onesyp,oneszp,onesx,onesy,onesz
     COMPLEX(cpx)                                  :: ii
@@ -132,9 +143,9 @@ MODULE gpstd_solver
       nfftz=nz+2*nzguards
     ENDIF
     IF(fftw_with_mpi) THEN
-      nfftx = nx+2*nxguards
-      nffty = ny+2*nyguards
-      nfftz = nz_global + 2*nzguards
+      nfftx = nx_global 
+      nffty = ny_global
+      nfftz = nz_global 
     ENDIF
     ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
     ALLOCATE(onesy(nffty),onesyp(nffty))
@@ -222,22 +233,33 @@ MODULE gpstd_solver
       kxf=kxc
       kxb=kxc
       kyf=kyc
-      kyb=kyc
-      kzf=kzc
       kzb=kzc
     ENDIF
     IF(fftw_with_mpi) THEN
-      ALLOCATE(kz_temp(nfftz)) 
-      kz_temp = kzc
-      DEALLOCATE(kzc);ALLOCATE(kzc(local_nz))
-      kzc = kz_temp(local_z0+1:local_z0+local_nz)
-      kz_temp = kzf
-      DEALLOCATE(kzf);ALLOCATE(kzf(local_nz))
-      kzf = kz_temp(local_z0+1:local_z0+local_nz)
-      kz_temp = kzb
-      DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
-      kzb = kz_temp(local_z0+1:local_z0+local_nz)
-      DEALLOCATE(kz_temp)
+      IF(.NOT. fftw_mpi_transpose) THEN
+      ALLOCATE(k_temp(nfftz)) 
+        k_temp = kzc
+        DEALLOCATE(kzc);ALLOCATE(kzc(local_nz))
+        kzc = k_temp(local_z0+1:local_z0+local_nz)
+        k_temp = kzf
+        DEALLOCATE(kzf);ALLOCATE(kzf(local_nz))
+        kzf = k_temp(local_z0+1:local_z0+local_nz)
+        k_temp = kzb
+        DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
+        kzb = k_temp(local_z0+1:local_z0+local_nz)
+        DEALLOCATE(k_temp)
+      ELSE 
+        k_temp = kyc
+        DEALLOCATE(kyc);ALLOCATE(kyc(local_ny))
+        kyc = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kyf
+        DEALLOCATE(kyf);ALLOCATE(kyf(local_ny))
+        kyf = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kyb
+        DEALLOCATE(kyb);ALLOCATE(kyb(local_ny))
+        kyb = k_temp(local_y0+1:local_y0+local_ny)
+        DEALLOCATE(k_temp)
+    ENDIF
     ENDIF
     DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp,FD_x,FD_y,FD_z)
   END SUBROUTINE
@@ -252,7 +274,7 @@ MODULE gpstd_solver
   
     fe=1_num/dxx
     n=nxx
-    kxx(1)=(0.,0.)
+    kxx(1)=dcmplx(0.,0.)
     IF (MOD(n,2) .EQ. 0)THEN
     ! First part of k [0,...,n/2-1]
       DO i=1,n/2_idp-1_idp
@@ -261,7 +283,7 @@ MODULE gpstd_solver
     ! Second part of k [-n/2,-1]
       kxx(n/2_idp+1)=-n/2_idp
       DO i=n/2_idp+1,n-1
-        kxx(i+1)=kxx(i)+(1.,0.)
+        kxx(i+1)=kxx(i)+dcmplx(1.,0.)
       END DO
     ELSE
     ! First part of k [0,...,(n-1)/2]
@@ -269,7 +291,7 @@ MODULE gpstd_solver
         kxx(i+1)=kxx(i)+(1.,0.)
       END DO
     ! Second part of k [-(n-1)/2,-1]
-      kxx((n-1_idp)/2_idp+2_idp)=-cmplx((n-1_idp)/2_idp,0.)
+      kxx((n-1_idp)/2_idp+2_idp)=-dcmplx((n-1_idp)/2_idp,0.)
       DO i=(n-1_idp)/2_idp+2_idp,n-1
         kxx(i+1)=kxx(i)+(1.0_num,0.0_num)
       END DO
@@ -322,21 +344,25 @@ MODULE gpstd_solver
   USE shared_data
   USE fastfft
   Use fourier
-  USE fftw3_fortran
-  
+!  USE fftw3_fortran
+  USE mpi_fftw3 
 #ifdef _OPENMP
    USE omp_lib
 #endif
   INTEGER(idp)           :: n1,n2,n3
   INTEGER(idp)           ::  nopenmp
+  INTEGER(C_INT) :: nopenmp_cint
+  INTEGER(C_INTPTR_T) :: nx_cint, ny_cint, nz_cint
+
 #ifdef _OPENMP
     nopenmp=OMP_GET_MAX_THREADS()
     CALL OMP_SET_NESTED(.TRUE.)
 #else
     nopenmp=1_idp
 #endif
+  nopenmp_cint=nopenmp
   IF(fftw_threads_ok) THEN
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp)
+    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
   ENDIF
   IF(.NOT. fftw_with_mpi) THEN 
     n1=nx+2*nxguards
@@ -344,10 +370,25 @@ MODULE gpstd_solver
     n3=nz+2*nzguards
     CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,n1,n2,n3,ex_r,vold(1)%block_vector(1)%block3dc &
        ,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
-    CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,n1,n2,n3,vold(1)%block_vector(1)%block3dc,&
+    CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,n1,n2,n3,vnew(1)%block_vector(1)%block3dc,&
       ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
   ENDIF
-   
+  IF(fftw_with_mpi) THEN
+     nx_cint = nx_global
+     ny_cint = ny_global
+     nz_cint = nz_global 
+     IF(.NOT. fftw_mpi_transpose) THEN
+       plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
+                      ex_r, vold(1)%block_vector(1)%block3dc, comm, FFTW_MEASURE);
+       plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint,ny_cint,nx_cint, &
+                      vnew(1)%block_vector(1)%block3dc , ex_r, comm, FFTW_MEASURE);
+     ELSE
+       plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
+                      ex_r, vold(1)%block_vector(1)%block3dc,comm,FFTW_MPI_TRANSPOSED_OUT);
+       plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint,ny_cint,nx_cint, &
+                      vnew(1)%block_vector(1)%block3dc , ex_r,comm,FFTW_MPI_TRANSPOSED_IN);
+     ENDIF
+  ENDIF
   END SUBROUTINE
 
 !> @brief
@@ -429,10 +470,21 @@ SUBROUTINE init_gpstd()
   LOGICAL(lp)            :: needed
   INTEGER(idp)           :: nfftx,nffty,nfftz
 
+  IF( fftw_with_mpi) THEN
+    IF(.NOT. fftw_mpi_transpose) THEN
+      nfftx=nx_global
+      nffty=ny_global
+      nfftz=local_nz
+    ELSE
+      nfftx = nx_global
+      nffty = local_nz
+      nfftz = nz_global
+    ENDIF
+  ENDIF
   IF(.NOT. fftw_with_mpi) THEN
-    nfftx=nx+2*nxguards
-    nffty=ny+2*nyguards
-    nfftz=nz+2*nzguards
+    nfftx = nx+2*nxguards
+    nffty = ny+2*nyguards
+    nfftz = nz+2*nzguards
   ENDIF
 
   ii=DCMPLX(0.,1.)
