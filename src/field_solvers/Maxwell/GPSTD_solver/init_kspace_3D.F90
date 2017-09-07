@@ -57,7 +57,7 @@ MODULE gpstd_solver
         nfftz=local_nz
       ELSE
         nfftx = nx_global
-        nffty = local_nz
+        nffty = local_ny
         nfftz = nz_global
       ENDIF
     ENDIF
@@ -480,7 +480,7 @@ SUBROUTINE init_gpstd()
       nfftz=local_nz
     ELSE
       nfftx = nx_global
-      nffty = local_nz
+      nffty = local_ny
       nfftz = nz_global
     ENDIF
   ENDIF

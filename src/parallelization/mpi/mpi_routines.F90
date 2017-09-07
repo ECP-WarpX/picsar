@@ -902,8 +902,8 @@ IF (l_spectral .OR. g_spectral) THEN
       nkz=local_nz
     ELSE 
       nkx = (nx_global)/2+1
-      nky = nz_global
-      nkz = local_ny 
+      nky = local_ny
+      nkz = nz_global 
     ENDIF
     IF(l_spectral .OR. g_spectral) THEN
     ! - Allocate complex arrays
