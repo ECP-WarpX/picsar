@@ -92,7 +92,6 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
-print*,"kiki",size(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,:))
 
     ALLOCATE(temp(nfftx/2+1,nffty,nfftz))
     ALLOCATE(temp2(nfftx/2+1,nffty,nfftz))
@@ -266,11 +265,6 @@ print*,"kiki",size(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,:))
         DEALLOCATE(k_temp)
     ENDIF
     ENDIF
-if (rank .EQ. 1) print*,kzc,int(rank,isp)
-call mpi_barrier(comm,errcode)
-if(rank .eq. 0) print*,kzc,int(rank,isp)
-call mpi_barrier(comm,errcode)
-!stop
     DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp,FD_x,FD_y,FD_z)
   END SUBROUTINE
   SUBROUTINE fftfreq(nxx,kxx, dxx)
@@ -478,7 +472,7 @@ SUBROUTINE init_gpstd()
   COMPLEX(cpx)           :: ii
   LOGICAL(lp)            :: needed
   INTEGER(idp)           :: nfftx,nffty,nfftz
-
+  LOGICAL(lp)            :: switch
   IF( fftw_with_mpi) THEN
     IF(.NOT. fftw_mpi_transpose) THEN
       nfftx=nx_global
@@ -590,7 +584,11 @@ SUBROUTINE init_gpstd()
    cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc = &
      -mu0*(-ii)*Kspace(nmatrixes2)%block_vector(2)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
   !contribution rho old ( vold(10))
-  Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (1.0_num,0.0_num)
+  switch = .FALSE.
+  IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)) .EQ. 0.0) THEN
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (1.0_num,0.0_num)
+    switch = .TRUE.
+  ENDIF
   DO i = 1,3
     cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc =        &
       DCMPLX(0.,1.)*(AT_OP(nmatrixes2)%block_vector(2)%block3dc   &
@@ -600,14 +598,16 @@ SUBROUTINE init_gpstd()
     cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc =        &
        cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc &
        *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
-
-    cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc(1,1,1) = &
+    IF(switch) THEN
+      cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc(1,1,1) = &
        -1.0_num/3.0_num*(0.0_num,1.0_num)*(clight*dt)**2
-
+    ENDIF
     cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc = 1.0_num/eps0 &
       *cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc
   ENDDO
-  Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (0.,0.)
+  IF(switch) THEN
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(0.,0.)
+  ENDIF
   !contribution rho new (vold(11)) 
   DO i = 1 , 3
     cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc =  &
@@ -618,13 +618,16 @@ SUBROUTINE init_gpstd()
     cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc = &
        cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc &
        *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
-    cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc(1,1,1) = &
+    IF(switch) THEN
+      cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc(1,1,1) = &
      -1.0_num/6.0_num*(0.0_num,1.0_num)*(clight*dt)**2  
-
-     cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc = 1.0_num/eps0 &
+    ENDIF
+    cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc = 1.0_num/eps0 &
      *  cc_mat(nmatrixes)%block_matrix2d(i,11_idp)%block3dc     
   ENDDO
-  Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = DCMPLX(0.,0.)
+  IF(switch) THEN
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = DCMPLX(0.,0.)
+  ENDIF
   CALL delete_arrays 
 END SUBROUTINE init_gpstd
 !> @brief
@@ -735,17 +738,17 @@ END DO
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ex_r,vold(1)%block_vector(1)%block3dc)
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ey_r,vold(1)%block_vector(2)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ez_r,vold(1)%block_vector(3)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,bx_r,vold(1)%block_vector(4)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,by_r,vold(1)%block_vector(5)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,bz_r,vold(1)%block_vector(6)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jx_r,vold(1)%block_vector(7)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jy_r,vold(1)%block_vector(8)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jz_r,vold(1)%block_vector(9)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rhoold_r,vold(1)%block_vector(10)%block3dc )
-CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rho_r,vold(1)%block_vector(11)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ex_r,vold(nmatrixes)%block_vector(1)%block3dc)
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ey_r,vold(nmatrixes)%block_vector(2)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ez_r,vold(nmatrixes)%block_vector(3)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,bx_r,vold(nmatrixes)%block_vector(4)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,by_r,vold(nmatrixes)%block_vector(5)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,bz_r,vold(nmatrixes)%block_vector(6)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jx_r,vold(nmatrixes)%block_vector(7)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jy_r,vold(nmatrixes)%block_vector(8)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jz_r,vold(nmatrixes)%block_vector(9)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc )
+CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rho_r,vold(nmatrixes)%block_vector(11)%block3dc )
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
@@ -773,12 +776,12 @@ IF (it.ge.timestat_itstart) THEN
 ENDIF
 
 ! Get Inverse Fourier transform of all fields components and currents
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(1)%block3dc,ex_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(2)%block3dc,ey_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(3)%block3dc,ez_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(4)%block3dc,ex_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(5)%block3dc,ey_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(1)%block_vector(6)%block3dc,ez_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,ex_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,ey_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,ez_r)
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
