@@ -253,6 +253,7 @@ MODULE gpstd_solver
         kzb = k_temp(local_z0+1:local_z0+local_nz)
         DEALLOCATE(k_temp)
       ELSE 
+      ALLOCATE(k_temp(nffty))
         k_temp = kyc
         DEALLOCATE(kyc);ALLOCATE(kyc(local_ny))
         kyc = k_temp(local_y0+1:local_y0+local_ny)
@@ -489,7 +490,6 @@ SUBROUTINE init_gpstd()
     nffty = ny+2*nyguards
     nfftz = nz+2*nzguards
   ENDIF
-
   ii=DCMPLX(0.,1.)
   CALL allocate_new_matrix_vector(11_idp)
   CALL init_kspace
