@@ -896,16 +896,16 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral .OR. g_spectral) THEN
   IF (fftw_with_mpi) THEN
-    IF(.NOT. fftw_mpi_transpose) THEN
-      nkx=(nx_global)/2+1! Real To Complex Transform
-      nky=ny_global
-      nkz=local_nz
-    ELSE 
-      nkx = (nx_global)/2+1
-      nky = nz_global!local_ny
-      nkz = local_ny!nz_global 
-    ENDIF
-    IF(l_spectral .OR. g_spectral) THEN
+   ! IF(.NOT. fftw_mpi_transpose) THEN
+     nkx=(nx_global)/2+1! Real To Complex Transform
+     nky=ny_global
+     nkz=local_nz
+   ! ELSE 
+   !   nkx = (nx_global)/2+1
+   !   nky = nz_global!local_ny
+   !   nkz = local_ny!nz_global 
+   ! ENDIF
+    IF(l_spectral  ) THEN
     ! - Allocate complex arrays
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
@@ -932,6 +932,7 @@ IF (l_spectral .OR. g_spectral) THEN
       cin = fftw_alloc_real(2 * alloc_local);
     ENDIF
     ! - Allocate real arrays
+    cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, ey_r, [2*nkx, nky, nkz])

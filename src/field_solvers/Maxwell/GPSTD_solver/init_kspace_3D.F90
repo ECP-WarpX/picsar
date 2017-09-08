@@ -139,6 +139,7 @@ MODULE gpstd_solver
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: i,j,k
     INTEGER(idp)                                  :: nfftx,nffty,nfftz
+    REAL(num)                                     :: dtemp
     ii = DCMPLX(0.0_num,1.0_num)
     IF(.NOT. fftw_with_mpi) THEN
       nfftx=nx+2*nxguards
@@ -146,9 +147,16 @@ MODULE gpstd_solver
       nfftz=nz+2*nzguards
     ENDIF
     IF(fftw_with_mpi) THEN
-      nfftx = nx_global 
-      nffty = ny_global
-      nfftz = nz_global 
+      IF(.NOT. fftw_mpi_transpose) THEN
+        nfftx = nx_global 
+        nffty = ny_global
+        nfftz = nz_global 
+      ELSE
+        nfftx = nx_global
+        nffty = nz_global
+        nfftz = ny_global
+        dtemp=dy;dy=dz;dz=dtemp
+      ENDIF
     ENDIF
     ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
     ALLOCATE(onesy(nffty),onesyp(nffty))
@@ -247,7 +255,7 @@ MODULE gpstd_solver
     ENDIF
     IF(fftw_with_mpi) THEN
       IF(.NOT. fftw_mpi_transpose) THEN
-      ALLOCATE(k_temp(nfftz)) 
+        ALLOCATE(k_temp(nfftz)) 
         k_temp = kzc
         DEALLOCATE(kzc);ALLOCATE(kzc(local_nz))
         kzc = k_temp(local_z0+1:local_z0+local_nz)
@@ -258,27 +266,17 @@ MODULE gpstd_solver
         DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
         kzb = k_temp(local_z0+1:local_z0+local_nz)
       ELSE 
-      ALLOCATE(k_temp(nffty))
-        k_temp = kyc
-        DEALLOCATE(kyc);ALLOCATE(kyc(local_ny))
-        kyc = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kyf
-        DEALLOCATE(kyf);ALLOCATE(kyf(local_ny))
-        kyf = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kyb
-        DEALLOCATE(kyb);ALLOCATE(kyb(local_ny))
-        kyb = k_temp(local_y0+1:local_y0+local_ny)
-
-        DEALLOCATE(k_temp);ALLOCATE(k_temp(local_ny))
-
-        k_temp=kyc;DEALLOCATE(kyc);ALLOCATE(kyc(nfftz));kyc=kzc;
-        DEALLOCATE(kzc);ALLOCATE(kzc(local_ny));kzc=k_temp
-
-        k_temp=kyb;DEALLOCATE(kyb);ALLOCATE(kyb(nfftz));kyb=kzb;
-        DEALLOCATE(kzb);ALLOCATE(kzb(local_ny));kzb=k_temp
-
-        k_temp=kyf;DEALLOCATE(kyf);ALLOCATE(kyf(nfftz));kyf=kzf;
-        DEALLOCATE(kzf);ALLOCATE(kzf(local_ny));kzf=k_temp
+        ALLOCATE(k_temp(nfftz))
+        k_temp = kzc
+        DEALLOCATE(kzc);ALLOCATE(kzc(local_ny))
+        kzc = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kzf
+        DEALLOCATE(kzf);ALLOCATE(kzf(local_ny))
+        kzf = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kzb
+        DEALLOCATE(kzb);ALLOCATE(kzb(local_ny))
+        kzb = k_temp(local_y0+1:local_y0+local_ny)
+        dtemp=dy;dy=dz;dz=dtemp
       ENDIF
       DEALLOCATE(k_temp)
     ENDIF
@@ -708,7 +706,6 @@ SUBROUTINE execute_fftw_gpstd_r2c
   IF (it.ge.timestat_itstart) THEN
     localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
   ENDIF
-print*,'sise',size(vold(nmatrixes)%block_vector(4)%block3dc(1,:,1))
 END SUBROUTINE
 
 SUBROUTINE execute_fftw_r2c_mpi
@@ -807,7 +804,7 @@ IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
-DO iz=1,nz
+DO iz=1,local_nz
   DO iy=1,ny_global
     DO ix=1,nx_global
       ex(ix-1,iy-1,iz-1)=ex_r(ix,iy,iz)*coeff_norm
