@@ -699,6 +699,7 @@ SUBROUTINE execute_fftw_gpstd_r2c
   IF (it.ge.timestat_itstart) THEN
     localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
   ENDIF
+print*,'sise',size(vold(nmatrixes)%block_vector(4)%block3dc(1,:,1))
 END SUBROUTINE
 
 SUBROUTINE execute_fftw_r2c_mpi
