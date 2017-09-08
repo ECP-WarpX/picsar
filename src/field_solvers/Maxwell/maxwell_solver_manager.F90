@@ -221,6 +221,7 @@ SUBROUTINE push_gpstd_ebfied_3d
   USE shared_data
   USE gpstd_solver
   USE matrix_coefficients
+  USE fourier_psaotd
   IMPLICIT NONE 
   REAL(num)  :: tmptime
 integer :: i,j
@@ -233,7 +234,7 @@ integer :: i,j
   ELSE
     CALL execute_fftw_gpstd_r2c
   ENDIF
-  CALL multiply_mat_vector(1_idp)
+    CALL multiply_mat_vector(1_idp)
   IF(fftw_with_mpi) THEN
     CALL execute_fftw_mpi_c2r
   ELSE

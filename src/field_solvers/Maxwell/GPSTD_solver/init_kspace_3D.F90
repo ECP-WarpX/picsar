@@ -174,9 +174,16 @@ MODULE gpstd_solver
         oneszp(k) = DCMPLX(nfftz + oneszp(k))
       ENDIF
     ENDDO
-    ALLOCATE(kxf(nfftx/2+1),kxb(nfftx/2+1),kxc(nfftx/2+1))
-    ALLOCATE(kyf(nffty),kyb(nffty),kyc(nffty))
-    ALLOCATE(kzf(nfftz),kzb(nfftz),kzc(nfftz))
+    IF(.NOT. ALLOCATED(kxf)) THEN
+      ALLOCATE(kxf(nfftx/2+1),kxb(nfftx/2+1),kxc(nfftx/2+1))
+      ALLOCATE(kyf(nffty),kyb(nffty),kyc(nffty))
+      ALLOCATE(kzf(nfftz),kzb(nfftz),kzc(nfftz))
+    ELSE
+      DEALLOCATE(kxf,kyf,kzf,kxb,kyb,kzb,kxc,kyc,kzc)
+      ALLOCATE(kxf(nfftx/2+1),kxb(nfftx/2+1),kxc(nfftx/2+1))
+      ALLOCATE(kyf(nffty),kyb(nffty),kyc(nffty))
+      ALLOCATE(kzf(nfftz),kzb(nfftz),kzc(nfftz))
+    ENDIF
     IF (norderx .ne. 0_idp ) THEN  ! if 0 then infinite order
       ALLOCATE(FD_x(norderx/2))
       CALL FD_weights_hvincenti(norderx,FD_x,l_stg)
@@ -749,6 +756,7 @@ CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jy_r,vold(nmatrixes)%block_vector(8)%
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jz_r,vold(nmatrixes)%block_vector(9)%block3dc )
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc )
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rho_r,vold(nmatrixes)%block_vector(11)%block3dc )
+
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
@@ -768,26 +776,22 @@ USE matrix_coefficients
 IMPLICIT NONE
 REAL(num) :: coeff_norm,tmptime
 INTEGER(idp) :: ix,iy,iz,nfftx,nffty,nfftz
-nfftx=nx+2*nxguards
-nffty=ny+2*nyguards
-nfftz=nz+2*nzguards
+
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-
 ! Get Inverse Fourier transform of all fields components and currents
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,ex_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,ey_r)
-CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,ez_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
+CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
-call fftw_mpi_execute_dft_r2c(plan_r2c_mpi,ey_r,eyf)
-call fftw_mpi_execute_dft_c2r(plan_c2r_mpi,eyf,ey_r)
 coeff_norm=1.0_num/((nx_global)*(ny_global)*(nz_global))
+
 !coeff_norm=1.
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
@@ -842,12 +846,14 @@ END SUBROUTINE
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+
     CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,plan_c2r)
     CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r,plan_c2r)
     CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r,plan_c2r)
     CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r,plan_c2r)
     CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,vnew(nmatrixes)%block_vector(5)%block3dc,by_r,plan_c2r)
     CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r,plan_c2r)
+
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF

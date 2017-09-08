@@ -270,6 +270,7 @@ SUBROUTINE initall
   USE tiling
   USE time_stat
 #if defined(FFTW)
+ USE matrix_coefficients
   USE fourier
   USE fourier_psaotd
   USE gpstd_solver
@@ -278,7 +279,7 @@ SUBROUTINE initall
 
   !use IFPORT ! uncomment if using the intel compiler (for rand)
   IMPLICIT NONE
-  INTEGER(idp)                    :: ispecies, i
+  INTEGER(idp)                    :: ispecies, i,ix,iy
   REAL(num)                       :: tdeb
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER    :: dp
