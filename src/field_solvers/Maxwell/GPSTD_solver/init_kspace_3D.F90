@@ -57,8 +57,8 @@ MODULE gpstd_solver
         nfftz=local_nz
       ELSE
         nfftx = nx_global
-        nffty = local_ny
-        nfftz = nz_global
+        nffty = nz_global
+        nfftz = local_ny
       ENDIF
     ENDIF
     IF(.NOT. fftw_with_mpi) THEN
@@ -92,7 +92,6 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
-
     ALLOCATE(temp(nfftx/2+1,nffty,nfftz))
     ALLOCATE(temp2(nfftx/2+1,nffty,nfftz))
     temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc,num)
@@ -258,7 +257,6 @@ MODULE gpstd_solver
         k_temp = kzb
         DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
         kzb = k_temp(local_z0+1:local_z0+local_nz)
-        DEALLOCATE(k_temp)
       ELSE 
       ALLOCATE(k_temp(nffty))
         k_temp = kyc
@@ -270,8 +268,19 @@ MODULE gpstd_solver
         k_temp = kyb
         DEALLOCATE(kyb);ALLOCATE(kyb(local_ny))
         kyb = k_temp(local_y0+1:local_y0+local_ny)
-        DEALLOCATE(k_temp)
-    ENDIF
+
+        DEALLOCATE(k_temp);ALLOCATE(k_temp(local_ny))
+
+        k_temp=kyc;DEALLOCATE(kyc);ALLOCATE(kyc(nfftz));kyc=kzc;
+        DEALLOCATE(kzc);ALLOCATE(kzc(local_ny));kzc=k_temp
+
+        k_temp=kyb;DEALLOCATE(kyb);ALLOCATE(kyb(nfftz));kyb=kzb;
+        DEALLOCATE(kzb);ALLOCATE(kzb(local_ny));kzb=k_temp
+
+        k_temp=kyf;DEALLOCATE(kyf);ALLOCATE(kyf(nfftz));kyf=kzf;
+        DEALLOCATE(kzf);ALLOCATE(kzf(local_ny));kzf=k_temp
+      ENDIF
+      DEALLOCATE(k_temp)
     ENDIF
     DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp,FD_x,FD_y,FD_z)
   END SUBROUTINE
@@ -488,8 +497,8 @@ SUBROUTINE init_gpstd()
       nfftz=local_nz
     ELSE
       nfftx = nx_global
-      nffty = local_ny
-      nfftz = nz_global
+      nffty = nz_global 
+      nfftz = local_ny
     ENDIF
   ENDIF
   IF(.NOT. fftw_with_mpi) THEN
