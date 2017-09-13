@@ -890,12 +890,12 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 -nzguards:nz+nzguards))
 
 ! --- Initialize auxiliary field arrays for gather to particles
-exp => ex
-eyp => ey
-ezp => ez
-bxp => bx
-byp => by
-bzp => bz
+ex_p => ex
+ey_p => ey
+ez_p => ez
+bx_p => bx
+by_p => by
+bz_p => bz
 
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
