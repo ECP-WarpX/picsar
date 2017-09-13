@@ -63,6 +63,7 @@ SUBROUTINE step(nst)
   USE mpi_routines
 #if defined(FFTW)
   USE fourier_psaotd
+  USE mpi_fftw3
 #endif
 #if (defined(VTUNE) && VTUNE>0)
   USE ITT_FORTRAN
@@ -279,7 +280,7 @@ SUBROUTINE initall
 
   !use IFPORT ! uncomment if using the intel compiler (for rand)
   IMPLICIT NONE
-  INTEGER(idp)                    :: ispecies, i,ix,iy
+  INTEGER(idp)                    :: ispecies, i
   REAL(num)                       :: tdeb
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER    :: dp
@@ -308,7 +309,7 @@ SUBROUTINE initall
   IF (c_dim.eq.3) THEN
     IF (l_spectral .OR. g_spectral) THEN
       dt=MIN(dx, dy, dz)/clight
-    !  dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
+      !dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
@@ -668,5 +669,40 @@ SUBROUTINE current_debug
   !jz(nx, ny, nz) = 0.5
   !!! --- End debug
 END SUBROUTINE
+!SUBROUTINE set_pulse(n1,n2,n3,nt)
+!use fields
+!use shared_data
+!use params
+!use constants
+!
+!integer(idp) ,intent(in):: n1,n2,n3,nt
+!real(num) ::sx,sy,sz,st,ct,xx,yy,zz,ww
+!integer(idp)  :: ix,iy,iz
+!sx=n1*dx
+!sy=n2*dy
+!sz=n3*dz
+!st=nt*dt
+!ct=2*nt*dt
+!ww=5*pi/ct
+!sy=1000000000000000.
+!sx=1000000000000000.
+!do ix=-nxguards,nx+nxguards
+!do iy=-nyguards,ny+nyguards
+!do iz=-nzguards,nz+nzguards
+!xx=(ix-nx/2)*dx
+!yy = (iy-ny/2)*dy
+!zz=(iz-nz/2)*dz
+!ey(ix,iy,iz)=10000000.
+!ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((it*dt-ct)/st)**2)*cos(ww*it*dt)
+!ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((xx/sx)**2+(yy/sy)**2+(zz/sz)**2))
+!enddo
+!enddo
+!enddo
+!
+!
+!
+!end subroutine
+
+
 
 ! ______________________________________

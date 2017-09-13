@@ -210,6 +210,7 @@ MODULE control_file
 
     ! SET FFTW WITH MPI FLAG
     fftw_with_mpi = .FALSE.
+    fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
   END SUBROUTINE default_init
 
@@ -551,6 +552,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_mpi_transpose
+      ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) fftw_hybrid
       ELSE IF (INDEX(buffer, 'fg_p_pp_separated') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated

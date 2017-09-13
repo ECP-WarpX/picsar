@@ -38,6 +38,7 @@ MODULE gpstd_solver
     INTEGER(idp)                                  :: i,j,k
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: nfftx,nffty,nfftz
+    LOGICAL(lp)                                   :: switch
     IF(.NOT. ASSOCIATED(Kspace)) THEN
       ALLOCATE(KSPACE(ns_max))
     ENDIF
@@ -57,8 +58,8 @@ MODULE gpstd_solver
         nfftz=local_nz
       ELSE
         nfftx = nx_global
-        nffty = nz_global
-        nfftz = local_ny
+        nffty = local_ny
+        nfftz = nz_global
       ENDIF
     ENDIF
     IF(.NOT. fftw_with_mpi) THEN
@@ -92,6 +93,7 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
+    switch = .FALSE.
     ALLOCATE(temp(nfftx/2+1,nffty,nfftz))
     ALLOCATE(temp2(nfftx/2+1,nffty,nfftz))
     temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc,num)
@@ -103,25 +105,20 @@ MODULE gpstd_solver
     temp=0.5_num*temp
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2&
     *sinc_block(nfftx/2+1,nffty,nfftz,temp)*sinc_block(nfftx/2+1,nffty,nfftz,temp)
-    IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) .EQ. 0.0_num)) THEN 
+
+    IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)) .EQ. 0.0_num) THEN 
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(1.0_num,0.0_num)
+      switch = .TRUE.
+    ENDIF
       AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num,0.0_num) -  AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
       /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
-      AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = (clight*dt)**2/2.0_num 
                !(1-C)/k^2
-      temp=2._num*temp
-      Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(1.0_num,0.0_num)
       AT_OP(nmatrixes2)%block_vector(4)%block3dc = (AT_OP(nmatrixes2)%block_vector(1)%block3dc-clight*dt)&
       / Kspace(nmatrixes2)%block_vector(10)%block3dc/ Kspace(nmatrixes2)%block_vector(10)%block3dc
+    IF(switch) THEN
+      AT_OP(nmatrixes2)%block_vector(3)%block3dc(1,1,1) = (clight*dt)**2/2.0_num
       AT_OP(nmatrixes2)%block_vector(4)%block3dc(1,1,1)=DCMPLX(-(clight*dt)**3/6.0_num,0.0_num)  
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(0._num,0._num)
-    ELSE 
-      AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num,0.0_num) -AT_OP(nmatrixes2)%block_vector(2)%block3dc) &
-      /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
-               !(1-C)/k^2
-      temp=2._num*temp
-      AT_OP(nmatrixes2)%block_vector(4)%block3dc = (AT_OP(nmatrixes2)%block_vector(1)%block3dc-clight*dt)&
-      / Kspace(nmatrixes2)%block_vector(10)%block3dc/Kspace(nmatrixes2)%block_vector(10)%block3dc
     ENDIF
     DEALLOCATE(temp,temp2) 
   END SUBROUTINE init_kspace
@@ -153,9 +150,9 @@ MODULE gpstd_solver
         nfftz = nz_global 
       ELSE
         nfftx = nx_global
-        nffty = nz_global
-        nfftz = ny_global
-        dtemp=dy;dy=dz;dz=dtemp
+        nffty = ny_global
+        nfftz = nz_global
+   !     dtemp=dy;dy=dz;dz=dtemp
       ENDIF
     ENDIF
     ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
@@ -266,17 +263,16 @@ MODULE gpstd_solver
         DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
         kzb = k_temp(local_z0+1:local_z0+local_nz)
       ELSE 
-        ALLOCATE(k_temp(nfftz))
-        k_temp = kzc
-        DEALLOCATE(kzc);ALLOCATE(kzc(local_ny))
-        kzc = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kzf
-        DEALLOCATE(kzf);ALLOCATE(kzf(local_ny))
-        kzf = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kzb
-        DEALLOCATE(kzb);ALLOCATE(kzb(local_ny))
-        kzb = k_temp(local_y0+1:local_y0+local_ny)
-        dtemp=dy;dy=dz;dz=dtemp
+        ALLOCATE(k_temp(nffty))
+        k_temp = kyc
+        DEALLOCATE(kyc);ALLOCATE(kyc(local_ny))
+        kyc = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kyf
+        DEALLOCATE(kyf);ALLOCATE(kyf(local_ny))
+        kyf = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kyb
+        DEALLOCATE(kyb);ALLOCATE(kyb(local_ny))
+        kyb = k_temp(local_y0+1:local_y0+local_ny)
       ENDIF
       DEALLOCATE(k_temp)
     ENDIF
@@ -397,14 +393,14 @@ MODULE gpstd_solver
      nz_cint = nz_global 
      IF(.NOT. fftw_mpi_transpose) THEN
        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
-                      ex_r, vold(1)%block_vector(1)%block3dc, comm, FFTW_MEASURE)
+                      ex_r, vold(nmatrixes)%block_vector(1)%block3dc, comm, FFTW_MEASURE)
        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint,ny_cint,nx_cint, &
-                      vnew(1)%block_vector(1)%block3dc , ex_r, comm, FFTW_MEASURE)
+                      vnew(nmatrixes)%block_vector(1)%block3dc , ex_r, comm, FFTW_MEASURE)
      ELSE
        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
-                      ex_r, vold(1)%block_vector(1)%block3dc,comm,FFTW_MPI_TRANSPOSED_OUT)
-       plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint,ny_cint,nx_cint, &
-                      vnew(1)%block_vector(1)%block3dc , ex_r,comm,FFTW_MPI_TRANSPOSED_IN)
+                      ex_r, vold(nmatrixes)%block_vector(1)%block3dc,comm,FFTW_MPI_TRANSPOSED_OUT)
+       plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(ny_cint,nz_cint,nx_cint, &
+                      vnew(nmatrixes)%block_vector(1)%block3dc , ex_r,comm,FFTW_MPI_TRANSPOSED_IN)
      ENDIF
   ENDIF
   END SUBROUTINE
@@ -439,6 +435,8 @@ MODULE gpstd_solver
 
   SUBROUTINE delete_arrays
     USE matrix_coefficients
+    USE shared_data
+    USE fields , ONLY : l_spectral
     IMPLICIT NONE
     INTEGER(idp)     ::  i,j
     LOGICAL(lp)      :: needed
@@ -450,17 +448,22 @@ MODULE gpstd_solver
     ENDDO
     DEALLOCATE(Kspace(nmatrixes2)%block_vector)
     DEALLOCATE(AT_OP(nmatrixes2)%block_vector)
-    DO i = 1,11
+    DO i = 1,6
       DO j=1,11
         CALL is_calculation_needed(i,j,needed)
         IF(needed .EQV. .FALSE.) THEN 
-          IF(associated(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)) THEN
+          IF(ASSOCIATED(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)) THEN
             DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)
           ENDIF
         ENDIF
       ENDDO
     ENDDO
-
+    IF(l_spectral) THEN
+      DO i=1,11
+         DEALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc)
+         IF(i .LE.  6) DEALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc)
+      ENDDO
+    ENDIF
   END SUBROUTINE
 !> @brief
 !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
@@ -495,8 +498,8 @@ SUBROUTINE init_gpstd()
       nfftz=local_nz
     ELSE
       nfftx = nx_global
-      nffty = nz_global 
-      nfftz = local_ny
+      nffty = local_ny 
+      nfftz = nz_global
     ENDIF
   ENDIF
   IF(.NOT. fftw_with_mpi) THEN
@@ -763,11 +766,9 @@ CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jy_r,vold(nmatrixes)%block_vector(8)%
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,jz_r,vold(nmatrixes)%block_vector(9)%block3dc )
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc )
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi,rho_r,vold(nmatrixes)%block_vector(11)%block3dc )
-
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
-
 END SUBROUTINE
 
 
@@ -787,7 +788,6 @@ INTEGER(idp) :: ix,iy,iz,nfftx,nffty,nfftz
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-! Get Inverse Fourier transform of all fields components and currents
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
@@ -798,8 +798,6 @@ IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
 coeff_norm=1.0_num/((nx_global)*(ny_global)*(nz_global))
-
-!coeff_norm=1.
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF

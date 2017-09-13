@@ -196,17 +196,17 @@ MODULE fields
   !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf ,  exfold
   !> MPI-domain electric field grid in y - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf , eyfold
   !> MPI-domain electric field grid in z - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf , ezfold
   !> MPI-domain magnetic field grid in x - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf , bxfold
   !> MPI-domain magnetic field grid in y - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf , byfold
   !> MPI-domain magnetic field grid in z - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf , bzfold
   !> MPI-domain current grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jxf
   !> MPI-domain current grid in y - Fourier space
@@ -995,6 +995,48 @@ MODULE output_data!#do not parse
   TYPE(particle_dump), ALLOCATABLE, TARGET, DIMENSION(:) :: particle_dumps
 END MODULE output_data
 
+!MODULE FOR GROUP params
+MODULE group_parameters
+  USE mpi_type_constants
+  USE picsar_precision
+  !> number of groups (this is a parameter in the input file 
+  INTEGER(idp)    ::  nb_group
+  !> size of group
+  INTEGER(idp)    ::  size_group
+  !> To which group this mpi task belongs
+  INTEGER(idp)    ::  which_group
+  !> local_size and local rank
+  INTEGER(isp)    :: local_size, local_rank
+  !> MPI_GROUP associated to mpi_comm_world 
+  INTEGER(isp)    :: mpi_world_group
+  !> ARRAY of  MPI_GROUP associated to each mpi task (!= mpi_group_null or
+  !mpi_comm_null if and  only if i == which group + 1 
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: mpi_group_id, mpi_comm_group_id
+  !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
+  !ranks in the mpi_root_comm 
+  INTEGER(isp)  :: mpi_root_comm , mpi_root_group , root_rank , root_size
+  !> Field cell  sizes in groups :
+  INTEGER(idp)  :: nx_group_global,ny_group_global,nz_group_global
+  !> Field grid sizes in groups: 
+  INTEGER(idp)  :: nx_group_global_grid,ny_group_global_grid,nz_group_global_grid
+  !> Group guard cells in : (only nzg_group is relevant for now)
+  INTEGER(idp)  :: nzg_group , nyg_group , nxg_group
+  !> Nz grid min max group index 
+  INTEGER(idp)  ::   nz_grid_min_grp, nz_grid_max_grp, nz_grid_grp
+  !> This flag is true if MPI task is on the edge of its group (so need
+  !additional comm
+  LOGICAL(lp)  ::  is_on_boarder = .FALSE.
+  !> This flag is true if the MPI rank is at the inferior z group boundary
+  LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
+  !> This flag is true if the MPI rank is at the superior z group boundary
+  LOGICAL(lp)  :: group_z_max_boundary = .FALSE.
+  !> First and last indexes of real data in group (only z is relevant for now)
+  INTEGER(idp)  ::   iz_min_r , iz_max_r , iy_min_r , iy_max_r , ix_min_r , ix_max_r
+  !> minimum and maximum cell numbers in each group :
+  INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: cell_z_min_grp, cell_z_max_grp
+END MODULE
+
+
 
 ! ________________________________________________________________________________________
 !> Module for the data shared with Python.
@@ -1006,7 +1048,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi,fftw_mpi_transpose, fftw_threads_ok
+  LOGICAL(idp) :: fftw_with_mpi,fftw_mpi_transpose, fftw_threads_ok,fftw_hybrid
   !> Error code for MPI
   INTEGER(isp) :: errcode
   !> Variable used by MPI

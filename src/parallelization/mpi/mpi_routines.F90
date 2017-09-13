@@ -166,7 +166,7 @@ MODULE mpi_routines
     nx_global=nx_global_grid-1
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
-
+   
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)
@@ -538,7 +538,7 @@ INTEGER(isp) :: ny0, nyp
 INTEGER(isp) :: nz0, nzp
 #if defined(FFTW)
 INTEGER(C_INTPTR_T) :: kx, ly, mz
-INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs
+INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs, all_nz
 #endif
 ! Init number of guard cells of subdomains in each dimension
 IF (l_smooth_compensate) THEN
@@ -659,6 +659,29 @@ nx=nx_grid-1
 ny=ny_grid-1
 nz=nz_grid-1
 
+!!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
+!two are computed differently 
+#if defined(FFTW) 
+IF(fftw_with_mpi) THEN
+  nz = local_nz
+  nz_grid = nz + 1
+  ALLOCATE(all_nz(1:nprocz))
+  CALL MPI_ALLGATHER(nz,1_isp,MPI_LONG_LONG_INT,all_nz,1_isp,MPI_LONG_LONG_INT,comm,errcode)
+  cell_z_min(1) = 0
+  cell_z_max(1) = all_nz(1)-1
+  DO idim=2,nprocz
+     cell_z_min(idim) = cell_z_max(idim-1)+1
+     cell_z_max(idim) = cell_z_min(idim) + all_nz(idim)-1
+  ENDDO
+  IF(nz .NE. cell_z_max(rank+1) - cell_z_min(rank+1)+1) THEN
+     WRITE(*,*),'ERROR IN AJUSTING THE GRID'
+     STOP
+  ENDIF
+  nz_global_grid_min = cell_z_min(z_coords+1)
+  nz_global_grid_max = cell_z_max(z_coords+1)+1
+  DEALLOCATE(all_nz)
+ENDIF
+#endif
 !!! --- Set up global grid limits
 length_x = xmax - xmin
 dx = length_x / REAL(nx_global, num)
@@ -896,16 +919,15 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral .OR. g_spectral) THEN
   IF (fftw_with_mpi) THEN
-   ! IF(.NOT. fftw_mpi_transpose) THEN
      nkx=(nx_global)/2+1! Real To Complex Transform
      nky=ny_global
      nkz=local_nz
-   ! ELSE 
-   !   nkx = (nx_global)/2+1
-   !   nky = nz_global!local_ny
-   !   nkz = local_ny!nz_global 
-   ! ENDIF
-    IF(l_spectral  ) THEN
+    IF(l_spectral) THEN
+      IF(fftw_mpi_transpose) THEN
+        nkx = (nx_global)/2+1
+        nky = local_ny
+        nkz = nz_global 
+      ENDIF
     ! - Allocate complex arrays
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
@@ -929,7 +951,25 @@ IF (l_spectral .OR. g_spectral) THEN
       CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, exfold, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, eyfold, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, ezfold, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, bxfold, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, byfold, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, bzfold, [nkx, nky, nkz])
+
+
       cin = fftw_alloc_real(2 * alloc_local);
+      nkx=(nx_global)/2+1! Real To Complex Transform
+      nky=ny_global
+      nkz=local_nz
     ENDIF
     ! - Allocate real arrays
     cin = fftw_alloc_real(2 * alloc_local);
@@ -956,21 +996,21 @@ IF (l_spectral .OR. g_spectral) THEN
     CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
 
     ! allocate k-vectors
-    IF(l_spectral) THEN
-      ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
-      ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
-      ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
-      ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
-      nkz))
-      ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
-      ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
-      ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
-      ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
-      ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
-      ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
-      ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
-      ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
-    ENDIF
+  !  IF(l_spectral) THEN
+  !    ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
+  !    ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
+  !    ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
+  !    ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
+  !    nkz))
+  !    ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
+  !    ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
+  !    ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
+  !    ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
+  !    ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
+  !    ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
+  !    ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
+  !    ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
+  !  ENDIF
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
@@ -988,19 +1028,19 @@ IF (l_spectral .OR. g_spectral) THEN
       ALLOCATE(rhof(nkx, nky, nkz))
       ALLOCATE(rhooldf(nkx, nky, nkz))
       ! allocate k-vectors
-      ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
-      ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
-      ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
-      ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
-      nkz))
-      ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
-      ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
-      ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
-      ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
-      ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
-      ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
-      ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
-      ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
+  !    ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
+  !    ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
+  !    ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
+  !    ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
+  !    nkz))
+  !    ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
+  !    ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
+  !    ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
+  !    ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
+  !    ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
+  !    ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
+  !    ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
+  !    ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
     ENDIF
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1
