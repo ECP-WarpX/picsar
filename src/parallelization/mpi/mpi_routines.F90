@@ -888,6 +888,15 @@ ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,               
 -nzjguards:nz+nzjguards))
 ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
 -nzguards:nz+nzguards))
+
+! --- Initialize auxiliary field arrays for gather to particles
+exp => ex
+eyp => ey
+ezp => ez
+bxp => bx
+byp => by
+bzp => bz
+
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN

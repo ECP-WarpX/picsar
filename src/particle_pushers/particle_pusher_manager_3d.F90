@@ -66,9 +66,9 @@ SUBROUTINE field_gathering_plus_particle_pusher
   CASE (2)
 
     ! Particle advance (one time step)
-    CALL field_gathering_plus_particle_pusher_sub_2d(ex, ey, ez, bx, by, bz, nx, ny,  &
-    nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, &
-    dx, dy, dz, dt)
+    CALL field_gathering_plus_particle_pusher_sub_2d(exp, eyp, ezp, bxp, byp, bzp, &
+    nx, ny, nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards,     &
+    nox, noy, noz, dx, dy, dz, dt)
 
     ! ___________________________________________________________
     ! 3D CASE
@@ -77,24 +77,25 @@ SUBROUTINE field_gathering_plus_particle_pusher
     ! The field gathering and the particle pusher are performed together
     IF (fg_p_pp_separated.eq.0) THEN
 
-      CALL field_gathering_plus_particle_pusher_cacheblock_sub(ex, ey, ez, bx, by,    &
-      bz, nx, ny, nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards,  &
-      nox, noy, noz, dx, dy, dz, dt, l_lower_order_in_v)
+      CALL field_gathering_plus_particle_pusher_cacheblock_sub(exp, eyp, ezp, &
+      bxp, byp, bzp, nx, ny, nz, nxguards, nyguards, nzguards,                &
+      nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt,         &
+      l_lower_order_in_v)
 
     ELSE IF (fg_p_pp_separated.eq.1) THEN
 
-      CALL field_gathering_plus_particle_pusher_sub(ex, ey, ez, bx, by, bz, nx, ny,   &
-      nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy,    &
-      noz, dx, dy, dz, dt, l_lower_order_in_v)
+      CALL field_gathering_plus_particle_pusher_sub(exp, eyp, ezp, bxp, byp, bzp,  &
+      nx, ny,   nz, nxguards, nyguards, nzguards, nxjguards, nyjguards, nzjguards, &
+      nox, noy,    noz, dx, dy, dz, dt, l_lower_order_in_v)
 
       ! The field gathering and the particle pusher are performed separately
     ELSE
 
-      CALL field_gathering_sub(ex, ey, ez, bx, by, bz, nx, ny, nz, nxguards,          &
+      CALL field_gathering_sub(exp, eyp, ezp, bxp, byp, bzp, nx, ny, nz, nxguards,    &
       nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
       dt, l_lower_order_in_v)
 
-      CALL particle_pusher_sub(ex, ey, ez, bx, by, bz, nx, ny, nz, nxguards,          &
+      CALL particle_pusher_sub(exp, eyp, ezp, bxp, byp, bzp, nx, ny, nz, nxguards,    &
       nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, &
       dt, l_lower_order_in_v)
 
@@ -705,7 +706,7 @@ SUBROUTINE pxrpush_particles_part1
   WRITE(0, *) "pxrpush_particles_part1: start"
 #endif
 
-  CALL pxrpush_particles_part1_sub(ex, ey, ez, bx, by, bz, nx, ny, nz, nxguards,      &
+  CALL pxrpush_particles_part1_sub(exp, eyp, ezp, bxp, byp, bzp, nx, ny, nz, nxguards,      &
   nyguards, nzguards, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt, &
   l4symtry, l_lower_order_in_v, LVEC_fieldgathe, fieldgathe)
 
