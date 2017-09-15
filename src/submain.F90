@@ -175,6 +175,7 @@ SUBROUTINE step(nst)
       CALL calc_diags
       !IF (rank .EQ. 0) PRINT *, "#13"
       !!! --- Output simulation results
+        print*,sum(abs(ey)),"here bef out"
       CALL output_routines
       !IF (rank .EQ. 0) PRINT *, "#14"
 
@@ -491,7 +492,6 @@ SUBROUTINE initall
        CALL init_plans_gpstd()
        IF (rank .EQ. 0) write(0, *) "INIT GPSTD  PLANS DONE"
      ENDIF
-
     IF(l_spectral) CALL init_plans_blocks
   ENDIF
 #endif
@@ -669,39 +669,39 @@ SUBROUTINE current_debug
   !jz(nx, ny, nz) = 0.5
   !!! --- End debug
 END SUBROUTINE
-!SUBROUTINE set_pulse(n1,n2,n3,nt)
-!use fields
-!use shared_data
-!use params
-!use constants
-!
-!integer(idp) ,intent(in):: n1,n2,n3,nt
-!real(num) ::sx,sy,sz,st,ct,xx,yy,zz,ww
-!integer(idp)  :: ix,iy,iz
-!sx=n1*dx
-!sy=n2*dy
-!sz=n3*dz
-!st=nt*dt
-!ct=2*nt*dt
-!ww=5*pi/ct
-!sy=1000000000000000.
-!sx=1000000000000000.
-!do ix=-nxguards,nx+nxguards
-!do iy=-nyguards,ny+nyguards
-!do iz=-nzguards,nz+nzguards
-!xx=(ix-nx/2)*dx
-!yy = (iy-ny/2)*dy
-!zz=(iz-nz/2)*dz
-!ey(ix,iy,iz)=10000000.
-!ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((it*dt-ct)/st)**2)*cos(ww*it*dt)
-!ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((xx/sx)**2+(yy/sy)**2+(zz/sz)**2))
-!enddo
-!enddo
-!enddo
-!
-!
-!
-!end subroutine
+SUBROUTINE set_pulse(n1,n2,n3,nt)
+use fields
+use shared_data
+use params
+use constants
+
+integer(idp) ,intent(in):: n1,n2,n3,nt
+real(num) ::sx,sy,sz,st,ct,xx,yy,zz,ww
+integer(idp)  :: ix,iy,iz
+sx=n1*dx
+sy=n2*dy
+sz=n3*dz
+st=nt*dt
+ct=2*nt*dt
+ww=5*pi/ct
+sy=1000000000000000.
+sx=1000000000000000.
+do ix=-nxguards,nx+nxguards
+do iy=-nyguards,ny+nyguards
+do iz=-nzguards,nz+nzguards
+xx=(ix-nx/2)*dx
+yy = (iy-ny/2)*dy
+zz=(iz-nz/2)*dz
+ey(ix,iy,iz)=10000000.
+ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((it*dt-ct)/st)**2)*cos(ww*it*dt)
+ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((xx/sx)**2+(yy/sy)**2+(zz/sz)**2))
+enddo
+enddo
+enddo
+
+
+
+end subroutine
 
 
 

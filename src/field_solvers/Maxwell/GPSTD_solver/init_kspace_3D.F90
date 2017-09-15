@@ -22,6 +22,56 @@ MODULE gpstd_solver
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+  SUBROUTINE select_case_dims_local(nfftx,nffty,nfftz)
+    USE shared_data
+    USE mpi_fftw3
+    USE group_parameters
+    USE params
+    USE fields      , ONLY : nxguards,nyguards,nzguards
+
+    INTEGER(idp)  , INTENT(INOUT) :: nfftx,nffty,nfftz
+    IF( fftw_with_mpi) THEN
+      IF(.NOT. fftw_hybrid) THEN
+        nfftx=nx_global
+        nffty=ny_global
+        nfftz=local_nz
+      ELSE
+        nfftx = nx_group
+        nffty = ny_group
+        nfftz = local_nz
+      ENDIF
+    ELSE
+      nfftx = nx+2*nxguards
+      nffty = ny+2*nyguards
+      nfftz = nz+2*nzguards
+    ENDIF
+  END SUBROUTINE
+  SUBROUTINE select_case_dims_global(nfftx,nffty,nfftz)
+    USE shared_data
+    USE mpi_fftw3
+    USE group_parameters
+    USE params
+    USE fields      , ONLY : nxguards,nyguards,nzguards
+
+    INTEGER(idp)  , INTENT(INOUT) :: nfftx,nffty,nfftz
+    IF( fftw_with_mpi) THEN
+      IF(.NOT. fftw_hybrid) THEN
+        nfftx=nx_global
+        nffty=ny_global
+        nfftz=nz_global
+      ELSE
+        nfftx = nx_group
+        nffty = ny_group
+        nfftz = nz_group
+      ENDIF
+    ELSE
+      nfftx = nx+2*nxguards
+      nffty = ny+2*nyguards
+      nfftz = nz+2*nzguards
+    ENDIF
+  END SUBROUTINE
+
+
 
   SUBROUTINE init_kspace
     USE matrix_coefficients
@@ -51,22 +101,29 @@ MODULE gpstd_solver
       ALLOCATE(AT_OP(ns_max))
     ENDIF
     ALLOCATE(AT_OP(nmatrixes2)%block_vector(4_idp))  !S/k,C,(1-C)/k^2
-    IF( fftw_with_mpi) THEN
-      IF(.NOT. fftw_mpi_transpose) THEN
-        nfftx=nx_global
-        nffty=ny_global
-        nfftz=local_nz
-      ELSE
-        nfftx = nx_global
-        nffty = local_ny
-        nfftz = nz_global
-      ENDIF
-    ENDIF
-    IF(.NOT. fftw_with_mpi) THEN
-      nfftx = nx+2*nxguards
-      nffty = ny+2*nyguards
-      nfftz = nz+2*nzguards
-    ENDIF
+  !  IF( fftw_with_mpi) THEN
+  !    IF(.NOT. fftw_mpi_transpose) THEN
+  !      nfftx=nx_global
+  !      nffty=ny_global
+  !      nfftz=local_nz
+  !    ELSE
+  !      nfftx = nx_global
+  !      nffty = local_ny
+  !      nfftz = nz_global
+  !    ENDIF
+  !  ENDIF
+  !  IF(.NOT. fftw_with_mpi) THEN
+  !    nfftx = nx+2*nxguards
+  !    nffty = ny+2*nyguards
+  !    nfftz = nz+2*nzguards
+  !  ENDIF
+  !  IF(fftw_hybrid) THEN 
+  !     nfftx = nx_group_grid
+  !     nffty = ny_group_grid 
+  !     nfftz = local_nz
+  !  ENDIF
+    CALL select_case_dims_local(nfftx,nffty,nfftz)
+        !print*,int(nfftx,isp),int(nffty,isp),int(nfftz,isp),"nfft"
     DO i = 1_idp , 10_idp
       ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
     ENDDO
@@ -121,6 +178,7 @@ MODULE gpstd_solver
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(0._num,0._num)
     ENDIF
     DEALLOCATE(temp,temp2) 
+!print*,switch,rank,"oooo"
   END SUBROUTINE init_kspace
 
   SUBROUTINE compute_k_vec_nompi(l_stg)
@@ -136,25 +194,26 @@ MODULE gpstd_solver
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: i,j,k
     INTEGER(idp)                                  :: nfftx,nffty,nfftz
-    REAL(num)                                     :: dtemp
     ii = DCMPLX(0.0_num,1.0_num)
-    IF(.NOT. fftw_with_mpi) THEN
-      nfftx=nx+2*nxguards
-      nffty=ny+2*nyguards
-      nfftz=nz+2*nzguards
-    ENDIF
-    IF(fftw_with_mpi) THEN
-      IF(.NOT. fftw_mpi_transpose) THEN
-        nfftx = nx_global 
-        nffty = ny_global
-        nfftz = nz_global 
-      ELSE
-        nfftx = nx_global
-        nffty = ny_global
-        nfftz = nz_global
-   !     dtemp=dy;dy=dz;dz=dtemp
-      ENDIF
-    ENDIF
+    !IF(.NOT. fftw_with_mpi) THEN
+    !  nfftx=nx+2*nxguards
+    !  nffty=ny+2*nyguards
+    !  nfftz=nz+2*nzguards
+    !ENDIF
+    !IF(fftw_with_mpi) THEN
+    !  IF(.NOT. fftw_mpi_transpose) THEN
+    !    nfftx = nx_global 
+    !    nffty = ny_global
+    !    nfftz = nz_global 
+    !  ELSE
+    !    nfftx = nx_global
+    !    nffty = ny_global
+    !    nfftz = nz_global
+    !  ENDIF
+    !ENDIF
+    CALL select_case_dims_global(nfftx,nffty,nfftz)
+        !print*,int(nfftx,isp),int(nffty,isp),int(nfftz,isp),"nfftg"
+        !print*,int(rank,isp),local_nz
     ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
     ALLOCATE(onesy(nffty),onesyp(nffty))
     ALLOCATE(onesz(nfftz),oneszp(nfftz))
@@ -491,22 +550,24 @@ SUBROUTINE init_gpstd()
   LOGICAL(lp)            :: needed
   INTEGER(idp)           :: nfftx,nffty,nfftz
   LOGICAL(lp)            :: switch
-  IF( fftw_with_mpi) THEN
-    IF(.NOT. fftw_mpi_transpose) THEN
-      nfftx=nx_global
-      nffty=ny_global
-      nfftz=local_nz
-    ELSE
-      nfftx = nx_global
-      nffty = local_ny 
-      nfftz = nz_global
-    ENDIF
-  ENDIF
-  IF(.NOT. fftw_with_mpi) THEN
-    nfftx = nx+2*nxguards
-    nffty = ny+2*nyguards
-    nfftz = nz+2*nzguards
-  ENDIF
+!  IF( fftw_with_mpi) THEN
+!    IF(.NOT. fftw_mpi_transpose) THEN
+!      nfftx=nx_global
+!      nffty=ny_global
+!      nfftz=local_nz
+!    ELSE
+!      nfftx = nx_global
+!      nffty = local_ny 
+!      nfftz = nz_global
+!    ENDIF
+!  ENDIF
+!  IF(.NOT. fftw_with_mpi) THEN
+!    nfftx = nx+2*nxguards
+!    nffty = ny+2*nyguards
+!    nfftz = nz+2*nzguards
+!  ENDIF
+  CALL select_case_dims_local(nfftx,nffty,nfftz)
+        !print*,int(nfftx,isp),int(nffty,isp),int(nfftz,isp),"nfft"
   ii=DCMPLX(0.,1.)
   CALL allocate_new_matrix_vector(11_idp)
   CALL init_kspace
@@ -645,6 +706,19 @@ SUBROUTINE init_gpstd()
   IF(switch) THEN
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = DCMPLX(0.,0.)
   ENDIF
+!if(rank .EQ. 0) THEN
+!do i=1,local_nz
+!print*,kzc(i),rank,int(local_nz,isp)
+!enddo
+!ENDIF
+!call mpi_barrier(comm,errcode)
+!if(rank .EQ. 1) THEN
+!do i=1,local_nz
+!print*,kzc(i),rank,int(local_nz,isp)
+!enddo
+!ENDIF
+
+
   CALL delete_arrays 
 END SUBROUTINE init_gpstd
 !> @brief

@@ -52,6 +52,7 @@ MODULE control_file
   USE params
   USE output_data
   USE time_stat
+  USE group_parameters
   IMPLICIT NONE
   INTEGER(idp) :: ios=0
   INTEGER(idp), PARAMETER :: fh_input = 15
@@ -100,6 +101,10 @@ MODULE control_file
     nyjguards=MAX(noy, 2_idp)
     nzjguards=MAX(noz, 2_idp)
 
+
+    nxg_group=max(nox,2_idp)
+    nyg_group=max(noy,2_idp)
+    nzg_group=max(noz,2_idp)
     ! Topology
     topology = 0
 
@@ -555,6 +560,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_hybrid
+      ELSE IF (INDEX(buffer, 'nb_group') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nb_group
       ELSE IF (INDEX(buffer, 'fg_p_pp_separated') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated
@@ -742,12 +750,15 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nguardsx') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nxguards
+        nxg_group=nxguards
       ELSE IF (INDEX(buffer, 'nguardsy') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nyguards
+        nyg_group=nyguards
       ELSE IF (INDEX(buffer, 'nguardsz') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzguards
+        nzg_group=nzguards
       ELSE IF (INDEX(buffer, 'njguardsx') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nxjguards
@@ -757,6 +768,10 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'njguardsz') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzjguards
+      ELSE IF (INDEX(buffer, 'gzgrp') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nzg_group
+
       ELSE IF (INDEX(buffer, 'l_plasma') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_plasma

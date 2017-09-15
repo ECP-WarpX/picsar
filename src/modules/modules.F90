@@ -1001,24 +1001,31 @@ MODULE group_parameters
   USE picsar_precision
   !> number of groups (this is a parameter in the input file 
   INTEGER(idp)    ::  nb_group
-  !> size of group
-  INTEGER(idp)    ::  size_group
   !> To which group this mpi task belongs
   INTEGER(idp)    ::  which_group
+  !> x y z coordinats of the group
+  INTEGER(idp)    :: x_group_coords, y_group_coords, z_group_coords
+  !> coordinates of each proc in its group
+  INTEGER(isp)  ::  group_coordinates(3)
   !> local_size and local rank
   INTEGER(isp)    :: local_size, local_rank
   !> MPI_GROUP associated to mpi_comm_world 
-  INTEGER(isp)    :: mpi_world_group
+  INTEGER(isp)    :: MPI_WORLD_GROUP 
   !> ARRAY of  MPI_GROUP associated to each mpi task (!= mpi_group_null or
   !mpi_comm_null if and  only if i == which group + 1 
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: mpi_group_id, mpi_comm_group_id
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: MPI_GROUP_ID , MPI_COMM_GROUP_ID
   !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
   !ranks in the mpi_root_comm 
-  INTEGER(isp)  :: mpi_root_comm , mpi_root_group , root_rank , root_size
-  !> Field cell  sizes in groups :
-  INTEGER(idp)  :: nx_group_global,ny_group_global,nz_group_global
-  !> Field grid sizes in groups: 
-  INTEGER(idp)  :: nx_group_global_grid,ny_group_global_grid,nz_group_global_grid
+  INTEGER(isp)  :: MPI_ROOT_COMM , MPI_ROOT_GROUP , root_rank , root_size
+  !> Field cell  sizes in groups without guardcells
+  INTEGER(idp)  :: nx_group_global , ny_group_global , nz_group_global
+  !> Field grid sizes in groups whithout guardcells
+  INTEGER(idp)  :: nx_group_global_grid , ny_group_global_grid , nz_group_global_grid
+  !> Field cell  sizes in groups with guardcells
+  INTEGER(idp)  :: nx_group , ny_group , nz_group
+  !> Field grid sizes in groups with guardcells
+  INTEGER(idp)  :: nx_group_grid , ny_group_grid , nz_group_grid
+
   !> Group guard cells in : (only nzg_group is relevant for now)
   INTEGER(idp)  :: nzg_group , nyg_group , nxg_group
   !> Nz grid min max group index 
@@ -1030,10 +1037,12 @@ MODULE group_parameters
   LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the superior z group boundary
   LOGICAL(lp)  :: group_z_max_boundary = .FALSE.
-  !> First and last indexes of real data in group (only z is relevant for now)
-  INTEGER(idp)  ::   iz_min_r , iz_max_r , iy_min_r , iy_max_r , ix_min_r , ix_max_r
   !> minimum and maximum cell numbers in each group :
-  INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: cell_z_min_grp, cell_z_max_grp
+  INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: cell_z_min_group, cell_z_max_group
+  !> physical limits of group domains
+  REAL(num)                                 :: z_min_group , z_max_group
+  REAL(num)                                 :: y_min_group , y_max_group
+  REAL(num)                                 :: x_min_group , x_max_group 
 END MODULE
 
 
@@ -1049,6 +1058,9 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   !> FFTW distributed
   LOGICAL(idp) :: fftw_with_mpi,fftw_mpi_transpose, fftw_threads_ok,fftw_hybrid
+  !> First and last indexes of real data in group (only z is relevant for now)
+  INTEGER(idp)  ::   iz_min_r , iz_max_r , iy_min_r , iy_max_r , ix_min_r , ix_max_r
+
   !> Error code for MPI
   INTEGER(isp) :: errcode
   !> Variable used by MPI

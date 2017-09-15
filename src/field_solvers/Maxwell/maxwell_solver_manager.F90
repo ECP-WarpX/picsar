@@ -183,6 +183,7 @@ SUBROUTINE push_psatd_ebfield_3d
   USE time_stat
   USE params
   USE shared_data
+  USE fields
 #if defined(FFTW)
   USE fourier_psaotd
 #endif
@@ -195,16 +196,20 @@ SUBROUTINE push_psatd_ebfield_3d
 #if defined(FFTW)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
+print*,"before fft fw",sum(abs(ey))
     CALL get_Ffields_mpi! - global FFT
+   print*,"sum ss ",sum(abs(eyf)) 
   ELSE
     CALL get_Ffields! - local FFT
   ENDIF
 
   CALL push_psaotd_ebfielfs! - PUSH PSATD
-
+print*,"af mult sum ss",sum(abs(eyf))
+print*,"after multupilcation",sum(abs(ey))
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN
     CALL get_fields_mpi! global IFFT
+        print*,"after fftbc",sum(abs(ey)),sum(abs(ey_r))/(nz_global*nx_global*ny_global)
   ELSE
     CALL get_fields! local IFFT
   ENDIF
@@ -222,6 +227,7 @@ SUBROUTINE push_gpstd_ebfied_3d
   USE gpstd_solver
   USE matrix_coefficients
   USE fourier_psaotd
+  USE fields
   IMPLICIT NONE 
   REAL(num)  :: tmptime
 integer :: i,j
