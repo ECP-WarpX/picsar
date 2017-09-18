@@ -80,9 +80,9 @@ ELSE
   DO i=1,nb_group
     IF(MPI_COMM_GROUP_ID(i) .NE. MPI_COMM_NULL) THEN
   plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint,ny_cint,nx_cint, &
-                      ex_r,exf,comm,FFTW_MEASURE)
+                      ex_r,exf,MPI_COMM_GROUP_ID(i),FFTW_MEASURE)
   plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint,ny_cint,nx_cint, &
-                      exf ,ex_r,comm,FFTW_MEASURE)
+                      exf ,ex_r,MPI_COMM_GROUP_ID(i),FFTW_MEASURE)
 
     ENDIF
   ENDDO
@@ -160,9 +160,18 @@ REAL(num)    :: tmptime
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-print*,iz_min_r,iz_max_r,nz
-print*,iy_min_r,iy_max_r,ny_global
-print*,ix_min_r,ix_max_r,nx_global
+ey_r=0.0_num*ey_r
+ex_r=0.0_num*ey_r
+ez_r=0.0_num*ey_r
+bx_r=0.0_num*ey_r
+by_r=0.0_num*ey_r
+bz_r=0.0_num*ey_r
+jx_r=0.0_num*ey_r
+jy_r=0.0_num*ey_r
+jz_r=0.0_num*ey_r
+rho_r=0.0_num*ey_r
+rhoold_r=0.0_num*ey_r
+
 ! Copy array values before FFT
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=iz_min_r,iz_max_r
