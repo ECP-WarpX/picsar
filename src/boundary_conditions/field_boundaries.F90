@@ -498,9 +498,94 @@ MODULE field_boundary
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
   END SUBROUTINE summation_bcs
+  !> <@brief
+  !> Boundary condition routine for E and B between mpi_groups
+  !
+  !> @author
+  !> Haithem Kallala
+  !>date 
+  !> Creation 2017
+  !
+  !
+  ! ______________________________________________________________________________________
+#if defined(FFTW)
+  SUBROUTINE ebj_field_bcs_groups(is_source)
+    USE group_parameters
+    USE mpi_fftw3
+    USE shared_data
+    LOGICAL(lp)  , INTENT(IN)  :: is_source
+    REAL(num) :: tmptime
+#if defined(DEBUG)
+    WRITE(0, *) "efield_bcs_group: start"
+#endif
+    IF(mpicom_curr .EQ. 0) THEN
+      IF (it.ge.timestat_itstart) THEN
+          tmptime = MPI_WTIME()
+      ENDIF
+      CALL field_bc_group_non_blocking(ex_r,nx_group,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(ey_r,nx_group,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(ez_r,nx_group,ny_group,local_nz,nzg_group)
+      IF (it.ge.timestat_itstart) THEN
+        localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
+        tmptime = MPI_WTIME()
+      ENDIF
+      CALL field_bc_group_non_blocking(bx_r,nx_group,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(by_r,nx_group,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(bz_r,nx_group,ny_group,local_nz,nzg_group)
+      IF (it.ge.timestat_itstart) THEN
+        localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
+        tmptime = MPI_WTIME()
+      ENDIF
+      IF(is_source) THEN
+        CALL field_bc_group_non_blocking(jx_r,nx_group,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(jy_r,nx_group,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(jz_r,nx_group,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(rho_r,nx_group,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(rhoold_r,nx_group,ny_group,local_nz,nzg_group)
+      ENDIF
+      IF (it.ge.timestat_itstart) THEN
+        localtimes(4) = localtimes(4) + (MPI_WTIME() - tmptime)
+      ENDIF
+    ENDIF
+   END SUBROUTINE
+    
+   SUBROUTINE field_bc_group_non_blocking(field,nxx,nyy,nzz,ngroupz) 
+     USE group_parameters
+     USE shared_data
+     INTEGER(idp)  :: nxx,nyy,nzz,ngroupz
+     REAL(num)  , INTENT(INOUT), DIMENSION(1:nxx,1:nyy,1:nzz)  :: field
+     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+     INTEGER(isp) :: basetype
+     INTEGER(isp):: requests_1(2),requests_2(2)
 
+     basetype = mpidbl
+     sizes(1) = nxx
+     sizes(2) = nyy
+     sizes(3) = nzz 
+print*,nxx,nyy,nzz
+     starts=1 
+     subsizes(1) = sizes(1) 
+     subsizes(2) = sizes(2)
+     subsizes(3) = ngroupz
+     IF (is_dtype_init(20)) THEN
+       mpi_dtypes(20) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
+       is_dtype_init(20) = .FALSE.
+     ENDIF
+     IF(group_z_min_boundary) THEN
+       CALL MPI_ISEND(field(1,1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp),tag, comm, requests_1(1), errcode)
+       CALL MPI_IRECV(field(1,1,1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp), tag,comm, requests_1(2), errcode)
+       CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+     ENDIF 
+     IF(group_z_max_boundary) THEN
+print*,"izmax",iz_max_r+1,nzz
+       CALL MPI_IRECV(field(1,1,iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
+       CALL MPI_ISEND(field(1,1, iz_max_r-ngroupz+1),1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(2), errcode)
 
-
+       CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
+     ENDIF
+   END SUBROUTINE
+#endif
+  
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains
   ! nonblocking version

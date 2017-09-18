@@ -154,9 +154,11 @@ USE fields
 USE mpi_fftw3
 USE time_stat
 USE params
+USE field_boundary
 IMPLICIT NONE
 INTEGER(idp) :: ix,iy,iz
 REAL(num)    :: tmptime
+LOGICAL(lp)  :: is_source
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
@@ -171,32 +173,53 @@ jy_r=0.0_num*ey_r
 jz_r=0.0_num*ey_r
 rho_r=0.0_num*ey_r
 rhoold_r=0.0_num*ey_r
-
 ! Copy array values before FFT
+IF(.NOT. fftw_hybrid) THEN
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
-DO iz=iz_min_r,iz_max_r
-	DO iy=iy_min_r,iy_max_r
-		DO ix=ix_min_r,ix_max_r
-			ex_r(ix,iy,iz)=ex(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			ey_r(ix,iy,iz)=ey(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			ez_r(ix,iy,iz)=ez(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			bx_r(ix,iy,iz)=bx(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			by_r(ix,iy,iz)=by(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			bz_r(ix,iy,iz)=bz(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			jx_r(ix,iy,iz)=jx(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			jy_r(ix,iy,iz)=jy(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			jz_r(ix,iy,iz)=jz(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			rho_r(ix,iy,iz)=rho(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-			rhoold_r(ix,iy,iz)=rhoold(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
-		END DO
-	END DO
-END DO
+  DO iz=iz_min_r,iz_max_r
+    DO iy=iy_min_r,iy_max_r
+      DO ix=ix_min_r,ix_max_r
+        ex_r(ix,iy,iz)=ex(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        ey_r(ix,iy,iz)=ey(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        ez_r(ix,iy,iz)=ez(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        bx_r(ix,iy,iz)=bx(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        by_r(ix,iy,iz)=by(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        bz_r(ix,iy,iz)=bz(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        jx_r(ix,iy,iz)=jx(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        jy_r(ix,iy,iz)=jy(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        jz_r(ix,iy,iz)=jz(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        rho_r(ix,iy,iz)=rho(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+        rhoold_r(ix,iy,iz)=rhoold(ix-ix_min_r,iy-iy_min_r,iz-iz_min_r)
+      END DO
+    END DO
+  END DO
 !$OMP END PARALLEL DO
+ELSE
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+ DO iz=iz_min_r,iz_max_r
+   DO iy=iy_min_r,iy_max_r
+     DO ix=ix_min_r,ix_max_r
+       ex_r(ix,iy,iz)=ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       ey_r(ix,iy,iz)=ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       ez_r(ix,iy,iz)=ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       bx_r(ix,iy,iz)=bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       by_r(ix,iy,iz)=by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       bz_r(ix,iy,iz)=bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       jx_r(ix,iy,iz)=jx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       jy_r(ix,iy,iz)=jy(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       jz_r(ix,iy,iz)=jz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       rho_r(ix,iy,iz)=rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+       rhoold_r(ix,iy,iz)=rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+     END DO
+   END DO
+ END DO
+!$OMP END PARALLEL DO
+ENDIF
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
-
-
+is_source = .TRUE.
+CALL ebj_field_bcs_groups(is_source)
 ! Get global Fourier transform of all fields components and currents
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
@@ -312,6 +335,7 @@ coeff_norm=1.0_num/coeff_norm
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
+IF(.NOT. fftw_hybrid) THEN
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=iz_min_r,iz_max_r
   DO iy=iy_min_r,iy_max_r
@@ -326,6 +350,23 @@ DO iz=iz_min_r,iz_max_r
   END DO
 END DO
 !$OMP END PARALLEL DO
+ELSE
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+  DO iz=iz_min_r,iz_max_r
+    DO iy=iy_min_r,iy_max_r
+      DO ix=ix_min_r,ix_max_r
+        ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=ex_r(ix,iy,iz)*coeff_norm
+        ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=ey_r(ix,iy,iz)*coeff_norm
+        ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=ez_r(ix,iy,iz)*coeff_norm
+        bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=bx_r(ix,iy,iz)*coeff_norm
+        by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=by_r(ix,iy,iz)*coeff_norm
+        bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=bz_r(ix,iy,iz)*coeff_norm
+      END DO
+    END DO
+  END DO
+!$OMP END PARALLEL DO
+ENDIF
+
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF

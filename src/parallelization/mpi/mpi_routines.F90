@@ -683,11 +683,11 @@ SUBROUTINE setup_groups
     cell_z_min(i) = SUM(all_nz(1:i-1))
     cell_z_max(i) = cell_z_min(i) + all_nz(i)-1
   ENDDO
-  ix_min_r = nxg_group+1
-  ix_max_r = nx_group -nxg_group
+  ix_min_r = 1 
+  ix_max_r = nx + 2*nxguards
 
-  iy_min_r = nyg_group+1
-  iy_max_r = ny_group-nyg_group
+  iy_min_r = 1
+  iy_max_r = ny + 2*nyguards
 
   nz_global_grid_min = cell_z_min(z_coords+1)
   nz_global_grid_max = cell_z_max(z_coords+1)+1

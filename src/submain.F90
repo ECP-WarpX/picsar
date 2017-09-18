@@ -138,9 +138,9 @@ SUBROUTINE step(nst)
         CALL current_bcs
       ENDIF
 #if defined(FFTW)
-if(i == 2) then
-if (rank == 0) call set_pulse(2_idp,2_idp,4_idp,10_idp)
-endif
+!if(i == 2) then
+!if (rank == 0) call set_pulse(2_idp,2_idp,4_idp,10_idp)
+!endif
 
       IF (l_spectral) THEN
         CALL push_psatd_ebfield_3d
@@ -179,7 +179,6 @@ endif
       CALL calc_diags
       !IF (rank .EQ. 0) PRINT *, "#13"
       !!! --- Output simulation results
-        print*,sum(abs(ey)),"here bef out"
       CALL output_routines
       !IF (rank .EQ. 0) PRINT *, "#14"
 

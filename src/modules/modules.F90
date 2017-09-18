@@ -1001,6 +1001,8 @@ MODULE group_parameters
   USE picsar_precision
   !> number of groups (this is a parameter in the input file 
   INTEGER(idp)    ::  nb_group
+  !> group sizes of of all groups
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: group_sizes
   !> To which group this mpi task belongs
   INTEGER(idp)    ::  which_group
   !> x y z coordinats of the group
