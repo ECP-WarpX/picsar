@@ -562,7 +562,6 @@ MODULE field_boundary
      sizes(1) = nxx
      sizes(2) = nyy
      sizes(3) = nzz 
-print*,nxx,nyy,nzz
      starts=1 
      subsizes(1) = sizes(1) 
      subsizes(2) = sizes(2)
@@ -577,7 +576,6 @@ print*,nxx,nyy,nzz
        CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
      ENDIF 
      IF(group_z_max_boundary) THEN
-print*,"izmax",iz_max_r+1,nzz
        CALL MPI_IRECV(field(1,1,iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
        CALL MPI_ISEND(field(1,1, iz_max_r-ngroupz+1),1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(2), errcode)
 

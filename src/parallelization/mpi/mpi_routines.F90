@@ -688,7 +688,6 @@ SUBROUTINE setup_groups
 
   iy_min_r = 1
   iy_max_r = ny + 2*nyguards
-
   nz_global_grid_min = cell_z_min(z_coords+1)
   nz_global_grid_max = cell_z_max(z_coords+1)+1
   DEALLOCAte(all_nz)
@@ -1193,22 +1192,6 @@ IF (l_spectral .OR. g_spectral) THEN
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
 
-    ! allocate k-vectors
-  !  IF(l_spectral) THEN
-  !    ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
-  !    ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
-  !    ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
-  !    ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
-  !    nkz))
-  !    ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
-  !    ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
-  !    ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
-  !    ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
-  !    ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
-  !    ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
-  !    ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
-  !    ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
-  !  ENDIF
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
@@ -1232,20 +1215,6 @@ IF (l_spectral .OR. g_spectral) THEN
       ALLOCATE(byfold(nkx, nky, nkz))
       ALLOCATE(bzfold(nkx, nky, nkz))
 
-      ! allocate k-vectors
-  !    ALLOCATE(kxunit(nkx), kyunit(nky), kzunit(nkz))
-  !    ALLOCATE(kxunit_mod(nkx), kyunit_mod(nky), kzunit_mod(nkz))
-  !    ALLOCATE(kxn(nkx, nky, nkz), kyn(nkx, nky, nkz), kzn(nkx, nky, nkz))
-  !    ALLOCATE(kx_unmod(nkx, nky, nkz), ky_unmod(nkx, nky, nkz), kz_unmod(nkx, nky, &
-  !    nkz))
-  !    ALLOCATE(kx(nkx, nky, nkz), ky(nkx, nky, nkz), kz(nkx, nky, nkz))
-  !    ALLOCATE(k(nkx, nky, nkz), kmag(nkx, nky, nkz))
-  !    ALLOCATE(kxmn(nkx, nky, nkz), kxpn(nkx, nky, nkz))
-  !    ALLOCATE(kymn(nkx, nky, nkz), kypn(nkx, nky, nkz))
-  !    ALLOCATE(kzmn(nkx, nky, nkz), kzpn(nkx, nky, nkz))
-  !    ALLOCATE(kxm(nkx, nky, nkz), kxp(nkx, nky, nkz))
-  !    ALLOCATE(kym(nkx, nky, nkz), kyp(nkx, nky, nkz))
-  !    ALLOCATE(kzm(nkx, nky, nkz), kzp(nkx, nky, nkz))
     ENDIF
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1
