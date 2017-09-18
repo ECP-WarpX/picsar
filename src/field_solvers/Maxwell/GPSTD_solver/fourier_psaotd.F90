@@ -155,6 +155,7 @@ USE mpi_fftw3
 USE time_stat
 USE params
 USE field_boundary
+USE group_parameters
 IMPLICIT NONE
 INTEGER(idp) :: ix,iy,iz
 REAL(num)    :: tmptime
@@ -162,17 +163,12 @@ LOGICAL(lp)  :: is_source
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-ey_r=0.0_num*ey_r
-ex_r=0.0_num*ey_r
-ez_r=0.0_num*ey_r
-bx_r=0.0_num*ey_r
-by_r=0.0_num*ey_r
-bz_r=0.0_num*ey_r
-jx_r=0.0_num*ey_r
-jy_r=0.0_num*ey_r
-jz_r=0.0_num*ey_r
-rho_r=0.0_num*ey_r
-rhoold_r=0.0_num*ey_r
+ey_r=1.0_num/(nx_group*ny_group*nz_group)*ex_r
+ex_r=1.0_num/(nx_group*ny_group*nz_group)*ey_r
+ez_r=1.0_num/(nx_group*ny_group*nz_group)*ez_r
+bx_r=1.0_num/(nx_group*ny_group*nz_group)*bx_r
+by_r=1.0_num/(nx_group*ny_group*nz_group)*by_r
+bz_r=1.0_num/(nx_group*ny_group*nz_group)*bz_r
 ! Copy array values before FFT
 IF(.NOT. fftw_hybrid) THEN
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)

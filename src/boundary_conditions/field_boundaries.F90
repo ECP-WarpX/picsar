@@ -522,26 +522,26 @@ MODULE field_boundary
       IF (it.ge.timestat_itstart) THEN
           tmptime = MPI_WTIME()
       ENDIF
-      CALL field_bc_group_non_blocking(ex_r,nx_group,ny_group,local_nz,nzg_group)
-      CALL field_bc_group_non_blocking(ey_r,nx_group,ny_group,local_nz,nzg_group)
-      CALL field_bc_group_non_blocking(ez_r,nx_group,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(ex_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_non_blocking(ey_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_non_blocking(ez_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
       IF (it.ge.timestat_itstart) THEN
         localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
-      CALL field_bc_group_non_blocking(bx_r,nx_group,ny_group,local_nz,nzg_group)
-      CALL field_bc_group_non_blocking(by_r,nx_group,ny_group,local_nz,nzg_group)
-      CALL field_bc_group_non_blocking(bz_r,nx_group,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(bx_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_non_blocking(by_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_non_blocking(bz_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
       IF (it.ge.timestat_itstart) THEN
         localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
       IF(is_source) THEN
-        CALL field_bc_group_non_blocking(jx_r,nx_group,ny_group,local_nz,nzg_group)
-        CALL field_bc_group_non_blocking(jy_r,nx_group,ny_group,local_nz,nzg_group)
-        CALL field_bc_group_non_blocking(jz_r,nx_group,ny_group,local_nz,nzg_group)
-        CALL field_bc_group_non_blocking(rho_r,nx_group,ny_group,local_nz,nzg_group)
-        CALL field_bc_group_non_blocking(rhoold_r,nx_group,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(jx_r,nx_group,ny_group,local_nz,nzg_group,1_idp)
+        CALL field_bc_group_non_blocking(jy_r,nx_group,ny_group,local_nz,nzg_group,1_idp)
+        CALL field_bc_group_non_blocking(jz_r,nx_group,ny_group,local_nz,nzg_group,1_idp)
+        CALL field_bc_group_non_blocking(rho_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
+        CALL field_bc_group_non_blocking(rhoold_r,nx_group,ny_group,local_nz,nzg_group,0_idp)
       ENDIF
       IF (it.ge.timestat_itstart) THEN
         localtimes(4) = localtimes(4) + (MPI_WTIME() - tmptime)
@@ -549,10 +549,10 @@ MODULE field_boundary
     ENDIF
    END SUBROUTINE
     
-   SUBROUTINE field_bc_group_non_blocking(field,nxx,nyy,nzz,ngroupz) 
+   SUBROUTINE field_bc_group_non_blocking(field,nxx,nyy,nzz,ngroupz,id) 
      USE group_parameters
      USE shared_data
-     INTEGER(idp)  :: nxx,nyy,nzz,ngroupz
+     INTEGER(idp)  :: nxx,nyy,nzz,ngroupz,id
      REAL(num)  , INTENT(INOUT), DIMENSION(1:nxx,1:nyy,1:nzz)  :: field
      INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
      INTEGER(isp) :: basetype
@@ -572,15 +572,28 @@ MODULE field_boundary
      ENDIF
      IF(group_z_min_boundary) THEN
        CALL MPI_ISEND(field(1,1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp),tag, comm, requests_1(1), errcode)
-       CALL MPI_IRECV(field(1,1,1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp), tag,comm, requests_1(2), errcode)
-       CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
      ENDIF 
      IF(group_z_max_boundary) THEN
-       CALL MPI_IRECV(field(1,1,iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
-       CALL MPI_ISEND(field(1,1, iz_max_r-ngroupz+1),1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(2), errcode)
-
-       CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
+        CALL MPI_IRECV(field(1,1,iz_max_r+1), 1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
+       CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
      ENDIF
+!call mpi_barrier(comm,errcode)
+!if(rank ==7)print *,' data to rcv',int(rank,isp),sum(abs(field(:,:,iz_max_r+1:nzz)))
+!if(rank ==0) print*,'data to send',int(rank,isp),sum(abs(field(:,:,iz_min_r:iz_min_r+ngroupz-1)))
+     IF(group_z_max_boundary) THEN
+       CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_1(1), errcode)
+       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+
+     ENDIF
+     IF(group_z_min_boundary) THEN
+        CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(20),INT(proc_z_min,isp),tag, comm, requests_2(1), errcode)
+       CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
+     ENDIF
+if(id==1_idp) THEN
+if(rank ==4)print *,'* data torcv',int(rank,isp),sum(abs(field(:,:,1:ngroupz)))
+if(rank==3) print*,'*data tosend',int(rank,isp),sum(abs(field(:,:,iz_max_r-ngroupz+1:iz_max_r)))
+ENDIF
    END SUBROUTINE
 #endif
   
