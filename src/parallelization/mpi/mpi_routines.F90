@@ -688,6 +688,10 @@ SUBROUTINE setup_groups
 
   iy_min_r = 1
   iy_max_r = ny + 2*nyguards
+
+!  iz_min_r = 1  
+!  iz_max_r = local_nz
+
   nz_global_grid_min = cell_z_min(z_coords+1)
   nz_global_grid_max = cell_z_max(z_coords+1)+1
   DEALLOCAte(all_nz)
