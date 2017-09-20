@@ -348,7 +348,7 @@ MODULE gpstd_solver
   
     fe=1_num/dxx
     n=nxx
-    kxx(1)=dcmplx(0.,0.)
+    kxx(1)=DCMPLX(0.0_num,0.0_num)
     IF (MOD(n,2) .EQ. 0)THEN
     ! First part of k [0,...,n/2-1]
       DO i=1,n/2_idp-1_idp
@@ -357,7 +357,7 @@ MODULE gpstd_solver
     ! Second part of k [-n/2,-1]
       kxx(n/2_idp+1)=-n/2_idp
       DO i=n/2_idp+1,n-1
-        kxx(i+1)=kxx(i)+dcmplx(1.,0.)
+        kxx(i+1)=kxx(i)+DCMPLX(1.0_num,0.0_num)
       END DO
     ELSE
     ! First part of k [0,...,(n-1)/2]
@@ -365,7 +365,7 @@ MODULE gpstd_solver
         kxx(i+1)=kxx(i)+(1.,0.)
       END DO
     ! Second part of k [-(n-1)/2,-1]
-      kxx((n-1_idp)/2_idp+2_idp)=-dcmplx((n-1_idp)/2_idp,0.)
+      kxx((n-1_idp)/2_idp+2_idp)=-DCMPLX((n-1_idp)/2_idp,0.0_num)
       DO i=(n-1_idp)/2_idp+2_idp,n-1
         kxx(i+1)=kxx(i)+(1.0_num,0.0_num)
       END DO
@@ -663,7 +663,7 @@ SUBROUTINE init_gpstd()
      -mu0*(-ii)*Kspace(nmatrixes2)%block_vector(2)%block3dc*AT_OP(nmatrixes2)%block_vector(3)%block3dc
   !contribution rho old ( vold(10))
   switch = .FALSE.
-  IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)) .EQ. 0.0) THEN
+  IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)) .EQ. 0.0_num) THEN
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = (1.0_num,0.0_num)
     switch = .TRUE.
   ENDIF
@@ -684,7 +684,7 @@ SUBROUTINE init_gpstd()
       *cc_mat(nmatrixes)%block_matrix2d(i,10_idp)%block3dc
   ENDDO
   IF(switch) THEN
-    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(0.,0.)
+    Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1) = DCMPLX(0.0_num,0.0_num)
   ENDIF
   !contribution rho new (vold(11)) 
   DO i = 1 , 3
