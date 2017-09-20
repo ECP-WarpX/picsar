@@ -219,9 +219,10 @@ SUBROUTINE push_gpstd_ebfied_3d
   USE time_stat
   USE params
   USE shared_data
+#if defined(FFTW)
   USE gpstd_solver
-  USE matrix_coefficients
   USE fourier_psaotd
+#endif
   USE fields
   IMPLICIT NONE 
   REAL(num)  :: tmptime

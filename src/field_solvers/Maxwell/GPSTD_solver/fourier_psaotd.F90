@@ -392,12 +392,12 @@ nxx=size(exf(:,1,1))
 nyy=size(exf(1,:,1))
 nzz=size(exf(1,1,:))
 
-exfold=1.0_num*exf
-eyfold=1.0_num*eyf
-ezfold=1.0_num*ezf
-bxfold=1.0_num*bxf
-byfold=1.0_num*byf
-bzfold=1.0_num*bzf
+exfold=exf
+eyfold=eyf
+ezfold=ezf
+bxfold=bxf
+byfold=byf
+bzfold=bzf
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nzz
        DO iy=1,nyy
