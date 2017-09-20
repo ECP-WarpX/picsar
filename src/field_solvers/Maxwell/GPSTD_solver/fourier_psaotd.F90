@@ -215,9 +215,7 @@ IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
 is_source = .TRUE.
-!if(rank == 3 ) print*,"check guardz ez_r",sum(abs(ey_r(:,:,iz_max_r+1:local_nz)))
 CALL ebj_field_bcs_groups(is_source)
-!if(rank == 3 ) print*,"check guardz ez_r",sum(abs(ey_r(:,:,iz_max_r+1:local_nz)))
 
 ! Get global Fourier transform of all fields components and currents
 IF (it.ge.timestat_itstart) THEN
@@ -337,7 +335,7 @@ IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
 is_source = .FALSE.
-CALL ebj_field_bcs_groups(is_source)
+!CALL ebj_field_bcs_groups(is_source)
 
 IF(.NOT. fftw_hybrid) THEN
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
@@ -370,7 +368,8 @@ ELSE
   END DO
 !$OMP END PARALLEL DO
 ENDIF
-
+print*,'sum ey sur -g',sum(abs(ey(0:nx,0:ny,-3:-1))),rank
+print*,'sum ey sur +g',sum(abs(ey(0:nx,0:ny,nz+1:nz+3))),rank
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
