@@ -146,9 +146,6 @@ SUBROUTINE step(nst)
         CALL push_psatd_ebfield_3d
         CALL efield_bcs
         CALL bfield_bcs
-print*,'ey sur -g',sum(abs(ey(0:nx,0:ny,-3:-1))),rank
-print*,'ey sur +g',sum(abs(ey(0:nx,0:ny,nz+1:nz+3))),rank
-
       ELSE IF (g_spectral) THEN
         CALL push_gpstd_ebfied_3d
         CALL efield_bcs

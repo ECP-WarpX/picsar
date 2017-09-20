@@ -368,8 +368,6 @@ ELSE
   END DO
 !$OMP END PARALLEL DO
 ENDIF
-print*,'sum ey sur -g',sum(abs(ey(0:nx,0:ny,-3:-1))),rank
-print*,'sum ey sur +g',sum(abs(ey(0:nx,0:ny,nz+1:nz+3))),rank
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF

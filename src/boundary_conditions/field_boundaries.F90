@@ -588,7 +588,7 @@ MODULE field_boundary
        CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
      ENDIF
 
-
+        ! case if an group is only composed by 1 mpi
 
      IF(group_z_min_boundary .AND.  group_z_max_boundary) THEN
        CALL MPI_ISEND(field(1,1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,isp),tag, comm, requests_1(1), errcode)
