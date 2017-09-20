@@ -525,8 +525,9 @@ END SUBROUTINE setup_communicator
 SUBROUTINE setup_groups
 #if defined(FFTW)
   USE  group_parameters
-  USE picsar_precision
   USE mpi_fftw3
+#endif
+  USE picsar_precision
   USE shared_data
   USE mpi
   INTEGER(isp)  ,  PARAMETER :: ndims = 3
@@ -538,7 +539,7 @@ SUBROUTINE setup_groups
   INTEGER(isp) , ALLOCATABLE , DIMENSION(:,:) :: grp_ranks
   INTEGER(idp)  :: i,j,temp
   INTEGER(idp) , DIMENSIOn(:), ALLOCATABLE :: all_nz_group , all_iz_max_r,all_iz_min_r,all_cells,all_nz
-
+#if defined(FFTW)
   CALL MPI_COMM_GROUP(comm,MPI_WORLD_GROUP,errcode)
   group_size = nprocz/nb_group
   IF(group_size*nb_group .NE. nprocz) THEN
@@ -571,13 +572,14 @@ SUBROUTINE setup_groups
     MPI_ROOT_GROUP = roots_grp
   ENDIF
 
-  ALLOCATE(MPI_GROUP_ID(nb_group),MPI_COMM_GROUP_ID(nb_group))
+!  ALLOCATE(MPI_GROUP_ID(INT(nb_group,isp)),MPI_COMM_GROUP_ID(INT(nb_group,isp)))
   periods = (/.FALSE.,.FALSE.,.FALSE./)
   dims = (/INT(group_size,isp),1_isp,1_isp/)
   reorder = .TRUE.
-
-  MPI_COMM_GROUP_ID = MPI_COMM_NULL
-  MPI_GROUP_ID = MPI_GROUP_NULL
+  DO i=1,nb_max_groups
+    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
+    MPI_GROUP_ID(i) = MPI_GROUP_NULL
+  ENDDO
   DO i = 1, nb_group
     IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
       CALL MPI_CART_CREATE(grp_comm(i) , ndims, dims, periods, reorder,MPI_COMM_GROUP_ID(i),errcode)
@@ -695,6 +697,7 @@ SUBROUTINE setup_groups
   nz_global_grid_min = cell_z_min(z_coords+1)
   nz_global_grid_max = cell_z_max(z_coords+1)+1
   DEALLOCAte(all_nz)
+  DEALLOCATE(grp_id,grp_comm,local_roots_rank,grp_ranks)
 #endif
 END SUBROUTINE
 

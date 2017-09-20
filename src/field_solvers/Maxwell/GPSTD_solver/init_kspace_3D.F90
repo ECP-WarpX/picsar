@@ -22,6 +22,7 @@ MODULE gpstd_solver
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+#if defined(FFTW)
   SUBROUTINE select_case_dims_local(nfftx,nffty,nfftz)
     USE shared_data
     USE mpi_fftw3
@@ -1030,7 +1031,7 @@ DO iz=1,MIN(nzz,n3)
 END DO
 !$OMP END PARALLEL DO
 END SUBROUTINE normalize_Fourier
-
+#endif
 END MODULE
 
 

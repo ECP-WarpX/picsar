@@ -508,16 +508,18 @@ MODULE field_boundary
   !
   !
   ! ______________________________________________________________________________________
-#if defined(FFTW)
   SUBROUTINE ebj_field_bcs_groups(is_source)
+#if defined(FFTW)
     USE group_parameters
     USE mpi_fftw3
+#endif
     USE shared_data
     LOGICAL(lp)  , INTENT(IN)  :: is_source
     REAL(num) :: tmptime
 #if defined(DEBUG)
     WRITE(0, *) "efield_bcs_group: start"
 #endif
+#if defined(FFTW)
     IF(mpicom_curr .EQ. 0) THEN
       IF (it.ge.timestat_itstart) THEN
           tmptime = MPI_WTIME()
@@ -547,10 +549,13 @@ MODULE field_boundary
         localtimes(4) = localtimes(4) + (MPI_WTIME() - tmptime)
       ENDIF
     ENDIF
+#endif
    END SUBROUTINE
     
    SUBROUTINE field_bc_group_non_blocking(field,nxx,nyy,nzz,ngroupz,id) 
+#if defined(FFTW)
      USE group_parameters
+#endif
      USE shared_data
      INTEGER(idp)  :: nxx,nyy,nzz,ngroupz,id
      REAL(num)  , INTENT(INOUT), DIMENSION(1:nxx,1:nyy,1:nzz)  :: field
@@ -570,6 +575,7 @@ MODULE field_boundary
        mpi_dtypes(20) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
        is_dtype_init(20) = .FALSE.
      ENDIF
+#if defined(FFTW)
      IF(group_z_min_boundary .AND. .NOT. group_z_max_boundary) THEN
        CALL MPI_ISEND(field(1,1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp),tag, comm, requests_1(1), errcode)
        CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
@@ -581,7 +587,6 @@ MODULE field_boundary
      IF(group_z_max_boundary .AND. .NOT. group_z_min_boundary) THEN
        CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_1(1), errcode)
        CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-
      ENDIF
      IF(group_z_min_boundary .AND. .NOT. group_z_max_boundary) THEN
         CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(20),INT(proc_z_min,isp),tag, comm, requests_2(1), errcode)
@@ -598,10 +603,8 @@ MODULE field_boundary
        CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(20),INT(proc_z_min,isp),tag, comm,requests_2(2), errcode)
        CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
      ENDIF
-
-
-   END SUBROUTINE
 #endif
+   END SUBROUTINE
   
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains
