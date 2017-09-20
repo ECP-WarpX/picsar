@@ -257,6 +257,7 @@ MODULE gpstd_solver
       DO i=1_idp,norderx/2
         kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx/nfftx)
       ENDDO
+      DEALLOCATE(FD_x)
     ELSE
       ALLOCATE(kxff(nfftx),kxbb(nfftx),kxcc(nfftx))
       CALL fftfreq(nfftx,kxff,dx)
@@ -276,6 +277,7 @@ MODULE gpstd_solver
       DO i=1_idp,nordery/2
         kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/nffty)
       ENDDO
+      DEALLOCATE(FD_y)
     ELSE
       CALL fftfreq(nffty,kyf,dy)
       CALL fftfreq(nffty,kyb,dy)
@@ -290,6 +292,7 @@ MODULE gpstd_solver
       DO i=1_idp,norderz/2
         kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nfftz)
       ENDDO
+      DEALLOCATE(FD_z)
     ELSE
       CALL fftfreq(nfftz,kzf,dz)
       CALL fftfreq(nfftz,kzb,dz)
@@ -336,7 +339,7 @@ MODULE gpstd_solver
       ENDIF
       DEALLOCATE(k_temp)
     ENDIF
-    DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp,FD_x,FD_y,FD_z)
+    DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp)
   END SUBROUTINE
   SUBROUTINE fftfreq(nxx,kxx, dxx)
   USE constants
