@@ -124,7 +124,6 @@ MODULE gpstd_solver
   !     nfftz = local_nz
   !  ENDIF
     CALL select_case_dims_local(nfftx,nffty,nfftz)
-        !print*,int(nfftx,isp),int(nffty,isp),int(nfftz,isp),"nfft"
     DO i = 1_idp , 10_idp
       ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
     ENDDO
@@ -179,7 +178,6 @@ MODULE gpstd_solver
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)=DCMPLX(0._num,0._num)
     ENDIF
     DEALLOCATE(temp,temp2) 
-!print*,switch,rank,"oooo"
   END SUBROUTINE init_kspace
 
   SUBROUTINE compute_k_vec_nompi(l_stg)
@@ -213,8 +211,6 @@ MODULE gpstd_solver
     !  ENDIF
     !ENDIF
     CALL select_case_dims_global(nfftx,nffty,nfftz)
-        !print*,int(nfftx,isp),int(nffty,isp),int(nfftz,isp),"nfftg"
-        !print*,int(rank,isp),local_nz
     ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
     ALLOCATE(onesy(nffty),onesyp(nffty))
     ALLOCATE(onesz(nfftz),oneszp(nfftz))
@@ -1002,13 +998,13 @@ use PICSAR_PRECISION
 INTEGER(idp), INTENT(IN)  :: n
 REAL(num)                 :: logfactorial,x
 INTEGER(idp)              :: k
-IF(n.eq.0) THEN
+IF(n.EQ.0_idp) THEN
     logfactorial=0.
 ELSE
-     x=log(1.*n)
+     x=log(1.0_num*n)
      logfactorial=x
       DO k=2,n-1
-          x=log(1.*k)
+          x=log(1.0_num*k)
           logfactorial=logfactorial+x
       ENDDO
 ENDIF
