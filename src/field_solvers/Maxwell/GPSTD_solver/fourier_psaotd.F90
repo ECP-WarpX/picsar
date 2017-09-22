@@ -163,12 +163,12 @@ LOGICAL(lp)  :: is_source
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-ey_r=0.0_num/(nx_group*ny_group*nz_group)*ex_r
-ex_r=0.0_num/(nx_group*ny_group*nz_group)*ey_r
-ez_r=0.0_num/(nx_group*ny_group*nz_group)*ez_r
-bx_r=0.0_num/(nx_group*ny_group*nz_group)*bx_r
-by_r=0.0_num/(nx_group*ny_group*nz_group)*by_r
-bz_r=0.0_num/(nx_group*ny_group*nz_group)*bz_r
+!ey_r=0.0_num/(nx_group*ny_group*nz_group)*ex_r
+!ex_r=0.0_num/(nx_group*ny_group*nz_group)*ey_r
+!ez_r=0.0_num/(nx_group*ny_group*nz_group)*ez_r
+!bx_r=0.0_num/(nx_group*ny_group*nz_group)*bx_r
+!by_r=0.0_num/(nx_group*ny_group*nz_group)*by_r
+!bz_r=0.0_num/(nx_group*ny_group*nz_group)*bz_r
 ! Copy array values before FFT
 IF(.NOT. fftw_hybrid) THEN
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
