@@ -567,7 +567,6 @@ SUBROUTINE init_gpstd()
 !    nfftz = nz+2*nzguards
 !  ENDIF
   CALL select_case_dims_local(nfftx,nffty,nfftz)
-        !print*,int(nfftx,isp),int(nffty,isp),int(nfftz,isp),"nfft"
   ii=DCMPLX(0.,1.)
   CALL allocate_new_matrix_vector(11_idp)
   CALL init_kspace

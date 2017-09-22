@@ -391,7 +391,6 @@ ENDIF
 nxx=size(exf(:,1,1))
 nyy=size(exf(1,:,1))
 nzz=size(exf(1,1,:))
-
 exfold=exf
 eyfold=eyf
 ezfold=ezf

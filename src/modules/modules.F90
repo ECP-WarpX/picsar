@@ -1062,7 +1062,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi,fftw_mpi_transpose, fftw_threads_ok,fftw_hybrid
+  LOGICAL(idp) :: fftw_with_mpi,fftw_mpi_transpose,fftw_threads_ok,fftw_hybrid,hybrid_2
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r , iz_max_r , iy_min_r , iy_max_r , ix_min_r , ix_max_r
 

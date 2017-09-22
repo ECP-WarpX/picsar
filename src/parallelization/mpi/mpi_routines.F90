@@ -173,7 +173,7 @@ MODULE mpi_routines
     nproc=INT(nproc_comm, idp)
 
     ! With fftw can only do CPU split with respect to Z direction (X in C-order)
-    IF (fftw_with_mpi) THEN
+    IF (fftw_with_mpi .AND. .NOT. hybrid_2) THEN
       nprocx=1
       nprocy=1
       nprocz=nproc
@@ -520,8 +520,6 @@ END SUBROUTINE setup_communicator
 !fftw_hybrid=.TRUE.
 !> Author : Haithem Kallala
 !> 2017
-
-
 SUBROUTINE setup_groups
 #if defined(FFTW)
   USE  group_parameters
@@ -538,23 +536,45 @@ SUBROUTINE setup_groups
   INTEGER(isp)                                :: roots_grp, roots_comm
   INTEGER(isp) , ALLOCATABLE , DIMENSION(:,:) :: grp_ranks
   INTEGER(idp)  :: i,j,temp
-  INTEGER(idp) , DIMENSIOn(:), ALLOCATABLE :: all_nz_group , all_iz_max_r,all_iz_min_r,all_cells,all_nz
+  INTEGER(idp) , DIMENSIOn(:), ALLOCATABLE :: all_nz_group , all_iz_max_r,all_iz_min_r,all_cells,all_nz,all_nzp
 #if defined(FFTW)
+  DO i=1,nb_max_groups
+    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
+    MPI_GROUP_ID(i) = MPI_GROUP_NULL
+  ENDDO
   CALL MPI_COMM_GROUP(comm,MPI_WORLD_GROUP,errcode)
-  group_size = nprocz/nb_group
-  IF(group_size*nb_group .NE. nprocz) THEN
-    temp = INT(nb_group*group_size,idp)
-    IF(rank .LT. temp)  group_size = group_size+1
+  IF(hybrid_2) THEN
+    nb_group = nprocx*nprocy*nb_group
   ENDIF
+  group_size = nproc/nb_group
+!  IF(group_size*nb_group .NE. nproc) THEN
+!    temp = INT(nb_group*group_size,idp)
+!    IF(rank .LT. temp)  group_size = group_size+1
+!  ENDIF
   ALLOCATE(grp_id(nb_group),grp_comm(nb_group),local_roots_rank(nb_group))
   ALLOCATE(grp_ranks(group_size,nb_group))
   
   DO j=1,nb_group
-    local_roots_rank(j) = INT((j-1)*group_size,isp) 
+    local_roots_rank(j) = (j-1)*group_size 
     DO i=1,group_size
       grp_ranks(i,j) = INT(i-1+(j-1)*group_size,isp)
     ENDDO
   ENDDO
+  IF(hybrid_2) THEN
+  DO j=1,nprocx*nprocy
+     local_roots_rank(j) = INT(j-1,isp)
+  ENDDO
+  DO j=nprocx*nprocy+1,nb_group
+     i = j-nprocx*nprocy
+     local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy
+  ENDDO
+  DO j = 1,nb_group
+    grp_ranks(1,j) = local_roots_rank(j)
+    DO i = 2,group_size
+     grp_ranks(i,j) = grp_ranks(i-1,j) + nprocx*nprocy 
+    ENDDO
+  ENDDO
+  ENDIF
   DO i= 1 ,nb_group 
     CALL MPI_GROUP_INCL(MPI_WORLD_GROUP,INT(group_size,isp),grp_ranks(:,i),grp_id(i),errcode)
     CALL MPI_COMM_CREATE_GROUP(comm,grp_id(i),0,grp_comm(i),errcode)
@@ -565,6 +585,7 @@ SUBROUTINE setup_groups
   CALL MPI_COMM_CREATE_GROUP(comm,roots_grp,0,roots_comm,errcode)
   MPI_ROOT_GROUP = MPI_GROUP_NULL 
   MPI_ROOT_COMM  = MPI_COMM_NULL
+  root_rank = MPI_PROC_NULL
   IF( roots_comm .NE. MPI_COMM_NULL) THEN
     CALL MPI_COMM_RANK(roots_comm,root_rank,errcode)
     CALL MPI_COMM_SIZE(roots_comm,root_size,errcode)
@@ -576,10 +597,6 @@ SUBROUTINE setup_groups
   periods = (/.FALSE.,.FALSE.,.FALSE./)
   dims = (/INT(group_size,isp),1_isp,1_isp/)
   reorder = .TRUE.
-  DO i=1,nb_max_groups
-    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
-    MPI_GROUP_ID(i) = MPI_GROUP_NULL
-  ENDDO
   DO i = 1, nb_group
     IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
       CALL MPI_CART_CREATE(grp_comm(i) , ndims, dims, periods, reorder,MPI_COMM_GROUP_ID(i),errcode)
@@ -589,6 +606,13 @@ SUBROUTINE setup_groups
       CALL MPI_CART_COORDS(MPI_COMM_GROUP_ID(i),local_rank, ndims,group_coordinates, errcode)
       which_group = i-1
       z_group_coords = which_group
+      x_group_coords = 0_idp
+      y_group_coords = 0_idp
+      IF(hybrid_2) THEN
+        z_group_coords = which_group/nprocx/nprocy
+        y_group_coords = (which_group-z_group_coords*nprocx*nprocy)/nprocx
+        x_group_coords = (which_group-z_group_coords*nprocx*nprocy) - nprocx*y_group_coords      
+      ENDIF
     ENDIF
   ENDDO
   DO i = 1,nb_group
@@ -597,11 +621,11 @@ SUBROUTINE setup_groups
       CALL MPI_GROUP_FREE(grp_id(i),errcode)
     ENDIF
   ENDDO
-  IF(INT(rank,isp) .NE. which_group*local_size+local_rank) THEN
-    WRITE(0, *) '*** ERROR ***'
-    WRITE(0, *) 'Global ranks and local ranks dont match'
-    CALL MPI_ABORT(comm, errcode, ierr)
-  ENDIF
+!  IF(INT(rank,isp) .NE. which_group*group_size+local_rank*nprocx*nprocy) THEN
+!    WRITE(0, *) '*** ERROR ***'
+!    WRITE(0, *) 'Global ranks and local ranks dont match'
+!    CALL MPI_ABORT(comm, errcode, ierr)
+!  ENDIF
   is_on_boarder = .FALSE.
   group_z_min_boundary = .FALSE.
   group_z_max_boundary = .FALSE.
@@ -616,9 +640,14 @@ SUBROUTINE setup_groups
   nx_group_global = nx_global
   ny_group_global = ny_global
   nz_group_global = nz_global/nb_group
-  IF(nz_global .NE. nb_group*nz_group_global) THEN 
-    temp = INT(nz_global - nb_group*nz_group_global,idp)
-    IF(INT(nb_group-z_group_coords,idp) .LT. temp) THEN
+  IF(hybrid_2) THEN
+    nx_group_global = nx
+    ny_group_global = ny
+    nz_group_global = nz_global/nb_group*nprocx*nprocy
+  ENDIF
+  IF(nz_global .NE. nb_group*nz_group_global/nprocx/nprocy) THEN 
+    temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy,idp)
+    IF(INT(nb_group/nprocx/nprocy-z_group_coords,idp) .LT. temp) THEN
       nz_group_global=nz_group_global+1
     ENDIF
   ENDIF
@@ -630,10 +659,10 @@ SUBROUTINE setup_groups
   z_max_group=zmax
   IF(MPI_ROOT_COMM .NE. MPI_COMM_NULL) THEN
     ALLOCATE(all_nz_group(nb_group))
-    CALL MPI_ALLGATHER(nz_group_global,1_isp,MPI_LONG_LONG_INT,all_nz_group,INT(1,isp),MPI_LONG_LONG_INT,MPI_ROOT_COMM,errcode)
+    CALL MPI_ALLGATHER(nz_group_global,1_isp,MPI_LONG_LONG_INT,all_nz_group,1_isp,MPI_LONG_LONG_INT,MPI_ROOT_COMM,errcode)
     CALL MPI_BARRIER(MPI_ROOT_COMM,errcode)
     IF(root_rank .NE. 0_isp) THEN
-      DO i=1,root_rank
+      DO i=1,z_group_coords
          z_min_group = z_min_group + all_nz_group(i)*dz
       ENDDO
     ENDIF
@@ -673,17 +702,20 @@ SUBROUTINE setup_groups
   ENDIF
   nz = iz_max_r - iz_min_r +1
   nz_grid = nz+1
-  ALLOCATE(all_nz(nprocz))
+  ALLOCATE(all_nz(nproc),all_nzp(nprocz))
   CALL MPI_ALLGATHER(nz,1_isp,MPI_LONG_LONG_INT,all_nz,INT(1,isp),MPI_LONG_LONG_INT,comm,errcode)
+  DO i=1,nprocz
+     all_nzp(i) = all_nz((i-1)*nprocx*nprocy+1)
+  ENDDO
   z_min_local = zmin 
   z_max_local = zmax
-  z_min_local = z_min_local + dz*sum(all_nz(1:rank))
-  z_max_local = z_min_local +all_nz(rank+1)
-    cell_z_min(1) = 0
-    cell_z_max(1) = nz - 1 
+  z_min_local = z_min_local + dz*sum(all_nzp(1:z_coords))
+  z_max_local = z_min_local +nz*dz
+  cell_z_min(1) = 0
+  cell_z_max(1) = nz - 1 
   DO i =2,nprocz
-    cell_z_min(i) = SUM(all_nz(1:i-1))
-    cell_z_max(i) = cell_z_min(i) + all_nz(i)-1
+    cell_z_min(i) = SUM(all_nzp(1:i-1))
+    cell_z_max(i) = cell_z_min(i)-1 + nz 
   ENDDO
   ix_min_r = 1 
   ix_max_r = nx + 2*nxguards
@@ -700,6 +732,7 @@ SUBROUTINE setup_groups
   DEALLOCATE(grp_id,grp_comm,local_roots_rank,grp_ranks)
 #endif
 END SUBROUTINE
+
 
 SUBROUTINE adjust_grid_mpi_global
 #if defined(FFTW)
@@ -900,7 +933,7 @@ IF(fftw_with_mpi ) THEN
   ELSE
     CALL setup_groups
   ENDIF
-  IF(nz .NE. cell_z_max(rank+1) - cell_z_min(rank+1)+1) THEN
+  IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
      WRITE(*,*),'ERROR IN AJUSTING THE GRID'
      STOP
   ENDIF
