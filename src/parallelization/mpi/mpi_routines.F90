@@ -712,25 +712,22 @@ SUBROUTINE setup_groups
   z_min_local = z_min_local + dz*sum(all_nzp(1:z_coords))
   z_max_local = z_min_local +nz*dz
   cell_z_min(1) = 0
-  cell_z_max(1) = nz - 1 
+  cell_z_max(1) = all_nzp(1) - 1 
   DO i =2,nprocz
-    cell_z_min(i) = SUM(all_nzp(1:i-1))
-    cell_z_max(i) = cell_z_min(i)-1 + nz 
+    cell_z_min(i) = cell_z_max(i-1) + 1  
+    cell_z_max(i) = cell_z_min(i)-1 + all_nzp(i) 
   ENDDO
   ix_min_r = 1 
   ix_max_r = nx + 2*nxguards
 
   iy_min_r = 1
   iy_max_r = ny + 2*nyguards
-
-!  iz_min_r = 1  
-!  iz_max_r = local_nz
-
   nz_global_grid_min = cell_z_min(z_coords+1)
   nz_global_grid_max = cell_z_max(z_coords+1)+1
-  DEALLOCAte(all_nz)
+  DEALLOCAte(all_nz,all_nzp)
   DEALLOCATE(grp_id,grp_comm,local_roots_rank,grp_ranks)
 #endif
+
 END SUBROUTINE
 
 
@@ -891,13 +888,11 @@ ENDDO
 nx_global_grid_min = cell_x_min(x_coords+1)
 nx_global_grid_max = cell_x_max(x_coords+1)+1
 
-
 ny_global_grid_min = cell_y_min(y_coords+1)
 ny_global_grid_max = cell_y_max(y_coords+1)+1
 
 nz_global_grid_min = cell_z_min(z_coords+1)
 nz_global_grid_max = cell_z_max(z_coords+1)+1
-
 
 !!! --- number of gridpoints of each subdomain
 nx_grid = nx_global_grid_max - nx_global_grid_min + 1
@@ -923,7 +918,6 @@ length_z = zmax - zmin
 dz = length_z / REAL(nz_global, num)
 z_grid_min = zmin
 z_grid_max = zmax
-
 !!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
 !two are computed differently 
 #if defined(FFTW) 
@@ -1171,6 +1165,8 @@ IF (l_spectral .OR. g_spectral) THEN
         nky = ny_group
         nkz = local_nz
       ENDIF
+
+
     ! - Allocate complex arrays
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
@@ -1273,6 +1269,13 @@ IF (l_spectral .OR. g_spectral) THEN
   ENDIF
 ENDIF
 #endif
+ex_p => ex
+ey_p => ey
+ez_p => ez
+bx_p => bx
+by_p => by
+bz_p => bz
+
 ! --- Quantities used by the dynamic load balancer
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
 ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))

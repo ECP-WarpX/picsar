@@ -253,15 +253,21 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 !> @param[in] dx mesh size along x (scalar)
 !> @param[in] dy mesh size along y (scalar)
 !> @param[in] dz mesh size along z (scalar)
-!> @param[in] nx number of cells along x (scalar)
-!> @param[in] ny number of cells along y (scalar)
-!> @param[in] nz number of cells along z (scalar)
-!> @param[in] nxguard number of guard cells along x (scalar)
-!> @param[in] nyguard number of guard cells along y (scalar)
-!> @param[in] nzguard number of guard cells along z (scalar)
 !> @param[inout] jx x-current component (3D array)
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction
+!> (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jx array (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
+!>  (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jy array (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
+!> (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jz array (1d array containing 3 integers)
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
@@ -325,18 +331,14 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
   ! Find the maximal number of cells in each direction, so as to
   ! allocate the linearized 1D arrays
-  ncx = MAX( jx_nvalid(1)+2*jx_nguard(1), jy_nvalid(1)+2*jy_nguard(1),                &
-  jz_nvalid(1)+2*jz_nguard(1) )
-  ncy = MAX( jx_nvalid(2)+2*jx_nguard(2), jy_nvalid(2)+2*jy_nguard(2),                &
-  jz_nvalid(2)+2*jz_nguard(2) )
-  ncz = MAX( jx_nvalid(3)+2*jx_nguard(3), jy_nvalid(3)+2*jy_nguard(3),                &
-  jz_nvalid(3)+2*jz_nguard(3) )
+  jorig=-2; korig=-2;lorig=-2
+  ncx = MAX( jx_nvalid(1), jy_nvalid(1), jz_nvalid(1) ) + 3
+  ncy = MAX( jx_nvalid(2), jy_nvalid(2), jz_nvalid(2) ) + 3
+  ncz = MAX( jx_nvalid(3), jy_nvalid(3), jz_nvalid(3) ) + 3
   ncxy = ncx*ncy
   NCELLS = ncx*ncy*ncz
   ALLOCATE(jxcells(8, NCELLS), jycells(8, NCELLS), jzcells(8, NCELLS))
   jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
-
-  jorig=-2; korig=-2;lorig=-2
 
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
@@ -459,8 +461,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   ! ----------------------------------------------------
 
   ! Reduction of jxcells in jx
-  DO iz=-1, jx_nvalid(3)-1
-    DO iy=-1, jx_nvalid(2)-1
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional 0/1 offsets in mxoff, myoff, mzoff
+  DO iz = MAX(lorig, jx_nguard(3)), MIN(lorig+ncz-1, jx_nvalid(3)+jx_nguard(3)-1)
+    DO iy = MAX(korig, jx_nguard(2)), MIN(korig+ncy-1, jx_nvalid(2)+jx_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -470,7 +474,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-1, jx_nvalid(1)-1
+      DO ix = MAX(jorig, jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1)-1)
         ! Compute linearized index
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         jx(ix+mxoff(1), iy+myoff(1), iz+mzoff(1)) = jx(ix+mxoff(1), iy+myoff(1),      &
@@ -499,8 +503,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   END DO
 
   ! Reduction of jycells in jy
-  DO iz=-1, jy_nvalid(3)-1
-    DO iy=-1, jy_nvalid(2)-1
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional 0/1 offsets in mxoff, myoff, mzoff
+  DO iz = MAX(lorig, jy_nguard(3)), MIN(lorig+ncz-1, jy_nvalid(3)+jy_nguard(3)-1)
+    DO iy = MAX(korig, jy_nguard(2)), MIN(korig+ncy-1, jy_nvalid(2)+jy_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -510,7 +516,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-1, jy_nvalid(1)-1
+      DO ix = MAX(jorig, jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1)-1)
         ! Compute linearized index
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         jy(ix+mxoff(1), iy+myoff(1), iz+mzoff(1)) = jy(ix+mxoff(1), iy+myoff(1),      &
@@ -539,8 +545,10 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   END DO
 
   ! Reduction of jzcells in jz
-  DO iz=-1, jz_nvalid(3)-1
-    DO iy=-1, jz_nvalid(2)-1
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional 0/1 offsets in mxoff, myoff, mzoff
+  DO iz = MAX(lorig, jz_nguard(3)), MIN(lorig+ncz-1, jz_nvalid(3)+jz_nguard(3)-1)
+    DO iy = MAX(korig, jz_nguard(2)), MIN(korig+ncy-1, jz_nvalid(2)+jz_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -550,7 +558,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=-1, jz_nvalid(1)-1
+      DO ix = MAX(jorig, jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1)-1)
         ! Compute linearized index
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         jz(ix+mxoff(1), iy+myoff(1), iz+mzoff(1)) = jz(ix+mxoff(1), iy+myoff(1),      &
@@ -839,6 +847,7 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   sz0(-1:1)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, j0, k0, l0, ip
+
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
@@ -1038,30 +1047,38 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 !> @param[in] dx mesh size along x (scalar)
 !> @param[in] dy mesh size along y (scalar)
 !> @param[in] dz mesh size along z (scalar)
-!> @param[in] nx number of cells along x (scalar)
-!> @param[in] ny number of cells along y (scalar)
-!> @param[in] nz number of cells along z (scalar)
-!> @param[in] nxguard number of guard cells along x (scalar)
-!> @param[in] nyguard number of guard cells along y (scalar)
-!> @param[in] nzguard number of guard cells along z (scalar)
-!> @param[inout] jx x-current component (3D array)
+!> jx array (1d array containing 3 integers)
 !> @param[inout] jy y-current component (3D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
+!>  (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jy array (1d array containing 3 integers)
 !> @param[inout] jz z-current component (3D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
+!> (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jz array (1d array containing 3 integers)
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
 ! ________________________________________________________________________________________
-SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
-  gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
-  nzguard)
+SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
+  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   USE constants
   IMPLICIT NONE
 
-  INTEGER(idp)             :: np, nx, ny, nz, nxguard, nyguard, nzguard
-  REAL(num), INTENT(IN OUT) ::                                                        &
-  jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-  REAL(num), INTENT(IN OUT) ::                                                        &
-  jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-  REAL(num), INTENT(IN OUT) ::                                                        &
-  jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+  INTEGER(idp)             :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+  jy_nguard(3), jy_nvalid(3), &
+  jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(:, :), ALLOCATABLE :: jxcells, jycells, jzcells
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num)                :: q, dt, dx, dy, dz, xmin, ymin, zmin
@@ -1073,9 +1090,8 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
   REAL(num)                :: dts2dx, dts2dy, dts2dz
   REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp)             :: j, k, l, j0, k0, l0, ip, NCELLS, ic
-  INTEGER(idp)             :: nnx, nnxy, n, nn, nv
-  INTEGER(idp)             :: moff(1:8)
-  INTEGER(idp), DIMENSION(LVEC, 3) :: ICELL, IG
+  INTEGER(idp)             :: n, nn, nv
+  INTEGER(idp), DIMENSION(LVEC, 3) :: ICELL, pos_jx, pos_jy, pos_jz
   REAL(num)                :: vx, vy, vz
   REAL(num)                :: ww0x(LVEC, 4), ww0y(LVEC, 4), ww0z(LVEC, 4), wwwx(LVEC, &
   8), wwwy(LVEC, 8), wwwz(LVEC, 8), wq
@@ -1083,9 +1099,16 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
   REAL(num)                :: sx00(LVEC), sx01(LVEC), sx02(LVEC)
   REAL(num)                :: sy0, sy1, sy2, sy00, sy01, sy02
   REAL(num)                :: sz0, sz1, sz2, sz00, sz01, sz02, syz
-  INTEGER(idp)             :: igrid, orig, jorig, korig, lorig
-  INTEGER(idp)             :: ncx, ncy, ncxy, ncz, ix, iy, iz, ngridx, ngridy, ngx,   &
-  ngxy
+  INTEGER(idp)             :: jorig, korig, lorig
+  INTEGER(idp)             :: ncx, ncy, ncxy, ncz, ix, iy, iz
+
+  ! Relative position of the 8 nodes (over which the algorithm vectorizes)
+  ! in respect to the particle computed node (the nodes are only shifted in
+  ! y and z, not in x ; see arXiv:1601.02056, Fig. 3, for order 2)
+  INTEGER(idp), DIMENSION(8), PARAMETER  :: myoff=(/-1_idp, 0_idp, 1_idp, &
+  -1_idp, 1_idp, -1_idp, 0_idp, 1_idp/)
+  INTEGER(idp), DIMENSION(8), PARAMETER  :: mzoff=(/-1_idp, -1_idp, -1_idp, &
+  0_idp, 0_idp, 1_idp, 1_idp, 1_idp/)
 
   ! ___ Parameter initialization _________________
 
@@ -1099,19 +1122,17 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
 
-  ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
-  ncx=nx+4;ncy=ny+4;ncz=nz+4
-  NCELLS=ncx*ncy*ncz
+  ! Lower integer position where the particles can deposit
+  jorig=-2; korig=-2;lorig=-2
+  ! Find the maximal number of cells in each direction, so as to
+  ! allocate the linearized 1D arrays
+  ncx = MAX( jx_nvalid(1), jy_nvalid(1), jz_nvalid(1) ) + 4
+  ncy = MAX( jx_nvalid(2), jy_nvalid(2), jz_nvalid(2) ) + 4
+  ncz = MAX( jx_nvalid(3), jy_nvalid(3), jz_nvalid(3) ) + 4
+  ncxy = ncx*ncy
+  NCELLS = ncx*ncy*ncz
   ALLOCATE(jxcells(8, NCELLS), jycells(8, NCELLS), jzcells(8, NCELLS))
   jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num
-  nnx = nx + 1 + 2*nxguard
-  nnxy = nnx*(ny+1+2*nyguard)
-  moff = (/-nnx-nnxy, -nnxy, nnx-nnxy, -nnx, nnx, -nnx+nnxy, nnxy, nnx+nnxy/)
-  jorig=-2; korig=-2;lorig=-2
-  orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-  ngx=(ngridx-ncx)
-  ngxy=(ngridx*ngridy-ncx*ncy)
-  ncxy=ncx*ncy
 
   ! LOOP ON PARTICLES
   DO ip=1, np, LVEC
@@ -1172,15 +1193,11 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
 
-      ! Other method
-      !IG(n, 1) = ICELL(n, 1) + ncx + ncxy
-      !IG(n, 2) = ICELL(n, 2) + ncx + ncxy
-      !IG(n, 3) = ICELL(n, 3) + ncx + ncxy
-
-      ! Old IG when centered nodes are directly put in jx, jy, jz
-      IG(n, 1)=ICELL(n, 1)+(k-korig)*ngx+(l-lorig)*ngxy
-      IG(n, 2)=ICELL(n, 2)+(k0-korig)*ngx+(l-lorig)*ngxy
-      IG(n, 3)=ICELL(n, 3)+(k-korig)*ngx+(l0-lorig)*ngxy
+      ! Store integer positions of the LVEC particles with respect to
+      ! the staggered grids of jx, jy and jz
+      pos_jx(n,:) = (/ j0, k, l /)
+      pos_jy(n,:) = (/ j, k0, l /)
+      pos_jz(n,:) = (/ j, k, l0 /)
 
       ! --- computes set of coefficients for node centered quantities
       xint = xmid-j
@@ -1261,13 +1278,13 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
       ww0z(n, 2)=syz*sx1(n)
       ww0z(n, 3)=syz*sx2(n)
 
-
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
 #endif
 #endif
+    ! LOOP OVER LVEC CONSECUTIVE PARTICLES
     DO n=1, MIN(LVEC, np-ip+1)
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
       !DIR$ ASSUME_ALIGNED jxcells:64, jycells:64, jzcells:64
@@ -1310,7 +1327,6 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
         !Loop on (i=1, j, k)
         jzcells(nv, ICELL(n, 3)+1) = jzcells(nv, ICELL(n, 3)+1) +wwz*sx2(n)
 
-
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1334,10 +1350,17 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
+      ! For each of the LVEC particles, add the contribution for the 3
+      ! central points which are not vectorized (see arXiv:1601.02056,
+      ! Fig. 3, for order 2). These 3 points are 3 consecutive gridpoints in x
+      ! (and correspond to the same position in y and z)
       DO nv=1, 4
-        jx(orig+IG(n, 1)+nv-2)=jx(orig+IG(n, 1)+nv-2)+ww0x(n, nv)
-        jy(orig+IG(n, 2)+nv-2)=jy(orig+IG(n, 2)+nv-2)+ww0y(n, nv)
-        jz(orig+IG(n, 3)+nv-2)=jz(orig+IG(n, 3)+nv-2)+ww0z(n, nv)
+        jx( pos_jx(n,1)+nv-2, pos_jx(n,2), pos_jx(n,3) ) = &
+        jx( pos_jx(n,1)+nv-2, pos_jx(n,2), pos_jx(n,3) ) + ww0x(n, nv)
+        jy( pos_jy(n,1)+nv-2, pos_jy(n,2), pos_jy(n,3) ) = &
+        jy( pos_jy(n,1)+nv-2, pos_jy(n,2), pos_jy(n,3) ) + ww0y(n, nv)
+        jz( pos_jz(n,1)+nv-2, pos_jz(n,2), pos_jz(n,3) ) = &
+        jz( pos_jz(n,1)+nv-2, pos_jz(n,2), pos_jz(n,3) ) + ww0z(n, nv)
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1346,9 +1369,16 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
 #endif
     END DO
   END DO
-  ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
-  DO iz=1, ncz
-    DO iy=1, ncy
+
+  ! ---------------------------------------------------------------
+  ! Vectorized reduction of jxcells, jycells, jzcells in jx, jy, jz
+  ! ---------------------------------------------------------------
+
+  ! Reduction of jxcells in jx
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
+  DO iz = MAX(lorig, jx_nguard(3)+1), MIN(lorig+ncz-1, jx_nvalid(3)+jx_nguard(3)-1)
+    DO iy = MAX(korig, jx_nguard(2)+1), MIN(korig+ncy-1, jx_nvalid(2)+jx_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -1358,40 +1388,17 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=1, ncx!! VECTOR (take ncx multiple of vector length)
-        ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-        igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
-        ! jx
-        jx(orig+igrid+moff(1))=jx(orig+igrid+moff(1))+jxcells(1, ic)
-        jx(orig+igrid+moff(2))=jx(orig+igrid+moff(2))+jxcells(2, ic)
-        jx(orig+igrid+moff(3))=jx(orig+igrid+moff(3))+jxcells(3, ic)
-        jx(orig+igrid+moff(4))=jx(orig+igrid+moff(4))+jxcells(4, ic)
-        jx(orig+igrid+moff(5))=jx(orig+igrid+moff(5))+jxcells(5, ic)
-        jx(orig+igrid+moff(6))=jx(orig+igrid+moff(6))+jxcells(6, ic)
-        jx(orig+igrid+moff(7))=jx(orig+igrid+moff(7))+jxcells(7, ic)
-        jx(orig+igrid+moff(8))=jx(orig+igrid+moff(8))+jxcells(8, ic)
-        ! jy
-        jy(orig+igrid+moff(1))=jy(orig+igrid+moff(1))+jycells(1, ic)
-        jy(orig+igrid+moff(2))=jy(orig+igrid+moff(2))+jycells(2, ic)
-        jy(orig+igrid+moff(3))=jy(orig+igrid+moff(3))+jycells(3, ic)
-        jy(orig+igrid+moff(4))=jy(orig+igrid+moff(4))+jycells(4, ic)
-        jy(orig+igrid+moff(5))=jy(orig+igrid+moff(5))+jycells(5, ic)
-        jy(orig+igrid+moff(6))=jy(orig+igrid+moff(6))+jycells(6, ic)
-        jy(orig+igrid+moff(7))=jy(orig+igrid+moff(7))+jycells(7, ic)
-        jy(orig+igrid+moff(8))=jy(orig+igrid+moff(8))+jycells(8, ic)
-        ! jz
-        jz(orig+igrid+moff(1))=jz(orig+igrid+moff(1))+jzcells(1, ic)
-        jz(orig+igrid+moff(2))=jz(orig+igrid+moff(2))+jzcells(2, ic)
-        jz(orig+igrid+moff(3))=jz(orig+igrid+moff(3))+jzcells(3, ic)
-        jz(orig+igrid+moff(4))=jz(orig+igrid+moff(4))+jzcells(4, ic)
-        jz(orig+igrid+moff(5))=jz(orig+igrid+moff(5))+jzcells(5, ic)
-        jz(orig+igrid+moff(6))=jz(orig+igrid+moff(6))+jzcells(6, ic)
-        jz(orig+igrid+moff(7))=jz(orig+igrid+moff(7))+jzcells(7, ic)
-        jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8, ic)
-
-        !print*, sum(jx), sum(jy)
-        !read*
-
+      DO ix = MAX(jorig, jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1))
+        ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
+        ! Compute linearized index
+        jx(ix,iy+myoff(1),iz+mzoff(1))=jx(ix,iy+myoff(1),iz+mzoff(1))+jxcells(1, ic)
+        jx(ix,iy+myoff(2),iz+mzoff(2))=jx(ix,iy+myoff(2),iz+mzoff(2))+jxcells(2, ic)
+        jx(ix,iy+myoff(3),iz+mzoff(3))=jx(ix,iy+myoff(3),iz+mzoff(3))+jxcells(3, ic)
+        jx(ix,iy+myoff(4),iz+mzoff(4))=jx(ix,iy+myoff(4),iz+mzoff(4))+jxcells(4, ic)
+        jx(ix,iy+myoff(5),iz+mzoff(5))=jx(ix,iy+myoff(5),iz+mzoff(5))+jxcells(5, ic)
+        jx(ix,iy+myoff(6),iz+mzoff(6))=jx(ix,iy+myoff(6),iz+mzoff(6))+jxcells(6, ic)
+        jx(ix,iy+myoff(7),iz+mzoff(7))=jx(ix,iy+myoff(7),iz+mzoff(7))+jxcells(7, ic)
+        jx(ix,iy+myoff(8),iz+mzoff(8))=jx(ix,iy+myoff(8),iz+mzoff(8))+jxcells(8, ic)
       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -1401,16 +1408,73 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
     END DO
   END DO
 
-  ! ___ Debugging ___________________
-  !     print*
-  !     print*, 'q:', q
-  !     print*, 'sum w', sum(w)
-  !     print*, 'min x', minval(xp), minval(yp), minval(zp)
-  !     print*, 'max x', maxval(xp), maxval(yp), maxval(zp)
-  !     print*, 'max ux', maxval(uxp), maxval(uyp), maxval(uzp)
-  !     print*, 'max gamma', minval(1/gaminv), maxval(1/gaminv)
-  !     print*, 'sum jx', sum(jx), sum(jy), sum(jz)
-  !     print*, 'sum jxcells', sum(jxcells), sum(jycells), sum(jzcells)
+  ! Reduction of jycells in jy
+  ! Note: the bounds below make sure that we never go out-of-bound for jycells,
+  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
+  DO iz = MAX(lorig, jy_nguard(3)+1), MIN(lorig+ncz-1, jy_nvalid(3)+jy_nguard(3)-1)
+    DO iy = MAX(korig, jy_nguard(2)+1), MIN(korig+ncy-1, jy_nvalid(2)+jy_nguard(2)-1)
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP SIMD
+#endif
+#elif defined __IBMBGQ__
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER
+      !$DIR SIMD
+#endif
+    DO ix = MAX(jorig, jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1))
+        ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
+        ! Compute linearized index
+        jy(ix,iy+myoff(1),iz+mzoff(1))=jy(ix,iy+myoff(1),iz+mzoff(1))+jycells(1, ic)
+        jy(ix,iy+myoff(2),iz+mzoff(2))=jy(ix,iy+myoff(2),iz+mzoff(2))+jycells(2, ic)
+        jy(ix,iy+myoff(3),iz+mzoff(3))=jy(ix,iy+myoff(3),iz+mzoff(3))+jycells(3, ic)
+        jy(ix,iy+myoff(4),iz+mzoff(4))=jy(ix,iy+myoff(4),iz+mzoff(4))+jycells(4, ic)
+        jy(ix,iy+myoff(5),iz+mzoff(5))=jy(ix,iy+myoff(5),iz+mzoff(5))+jycells(5, ic)
+        jy(ix,iy+myoff(6),iz+mzoff(6))=jy(ix,iy+myoff(6),iz+mzoff(6))+jycells(6, ic)
+        jy(ix,iy+myoff(7),iz+mzoff(7))=jy(ix,iy+myoff(7),iz+mzoff(7))+jycells(7, ic)
+        jy(ix,iy+myoff(8),iz+mzoff(8))=jy(ix,iy+myoff(8),iz+mzoff(8))+jycells(8, ic)
+      END DO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP END SIMD
+#endif
+#endif
+    END DO
+  END DO
+
+  ! Reduction of jzcells in jz
+  ! Note: the bounds below make sure that we never go out-of-bound for jzcells,
+  ! even when taking into account the additional +/- 1 offsets in myoff and mzoff
+  DO iz = MAX(lorig, jz_nguard(3)+1), MIN(lorig+ncz-1, jz_nvalid(3)+jz_nguard(3)-1)
+    DO iy = MAX(korig, jz_nguard(2)+1), MIN(korig+ncy-1, jz_nvalid(2)+jz_nguard(2)-1)
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP SIMD
+#endif
+#elif defined __IBMBGQ__
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER
+      !$DIR SIMD
+#endif
+    DO ix = MAX(jorig, jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1))
+        ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
+        ! Compute linearized index
+        jz(ix,iy+myoff(1),iz+mzoff(1))=jz(ix,iy+myoff(1),iz+mzoff(1))+jzcells(1, ic)
+        jz(ix,iy+myoff(2),iz+mzoff(2))=jz(ix,iy+myoff(2),iz+mzoff(2))+jzcells(2, ic)
+        jz(ix,iy+myoff(3),iz+mzoff(3))=jz(ix,iy+myoff(3),iz+mzoff(3))+jzcells(3, ic)
+        jz(ix,iy+myoff(4),iz+mzoff(4))=jz(ix,iy+myoff(4),iz+mzoff(4))+jzcells(4, ic)
+        jz(ix,iy+myoff(5),iz+mzoff(5))=jz(ix,iy+myoff(5),iz+mzoff(5))+jzcells(5, ic)
+        jz(ix,iy+myoff(6),iz+mzoff(6))=jz(ix,iy+myoff(6),iz+mzoff(6))+jzcells(6, ic)
+        jz(ix,iy+myoff(7),iz+mzoff(7))=jz(ix,iy+myoff(7),iz+mzoff(7))+jzcells(7, ic)
+        jz(ix,iy+myoff(8),iz+mzoff(8))=jz(ix,iy+myoff(8),iz+mzoff(8))+jzcells(8, ic)
+      END DO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP END SIMD
+#endif
+#endif
+    END DO
+  END DO
 
   DEALLOCATE(jxcells, jycells, jzcells)
 
@@ -2490,23 +2554,39 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
 !> @param[in] q particle species charge
 !> @param[in] xmin, ymin, zmin tile grid minimum position
 !> @param[in] dx, dy, dz space discretization steps
-!> @param[in] nx, ny, nz number of cells
-!> @param[in] nxguard, nyguard, nzguard number of guard cells
-!>
+!> @param[in] jx_nguard number of guard cells of the jx array in each direction
+!> (1d array containing 3 integers)
+!> @param[in] jx_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jx array (1d array containing 3 integers)
+!> @param[inout] jy y-current component (3D array)
+!> @param[in] jy_nguard number of guard cells of the jy array in each direction
+!>  (1d array containing 3 integers)
+!> @param[in] jy_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jy array (1d array containing 3 integers)
+!> @param[inout] jz z-current component (3D array)
+!> @param[in] jz_nguard number of guard cells of the jz array in each direction
+!> (1d array containing 3 integers)
+!> @param[in] jz_nvalid number of valid gridpoints (i.e. not guard cells) of the
+!> jz array (1d array containing 3 integers)
 ! ________________________________________________________________________________________
-SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
-  gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
-  nzguard)
+SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _______________________________________
-  INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
-  REAL(num), INTENT(IN OUT) ::                                                        &
-  jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-  REAL(num), INTENT(IN OUT) ::                                                        &
-  jy(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
-  REAL(num), INTENT(IN OUT) ::                                                        &
-  jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
+  INTEGER(idp)             :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
+  jy_nguard(3), jy_nvalid(3), jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1, &
+  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1, &
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1, &
+  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1, &
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1, &
+  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
   REAL(num), DIMENSION(:, :), ALLOCATABLE:: jxcells, jycells, jzcells
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
@@ -2515,9 +2595,8 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
   REAL(num) :: x, y, z, xmid, ymid, zmid, invvol, dts2dx, dts2dy, dts2dz
   REAL(num) ::   clightsq
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
-  INTEGER(idp) :: j, k, l, j0, k0, l0, ip, NCELLS, ic, ix, iy, iz
-  INTEGER(idp) :: nnx, nnxy, ngridx, ngridy, n, nn, nv
-  INTEGER(idp) :: moff(1:8)
+  INTEGER(idp) :: j, k, l, j0, k0, l0, ip, NCELLS, ic
+  INTEGER(idp) :: n, nn, nv
   INTEGER(idp), DIMENSION(LVEC, 3) :: ICELL
   REAL(num), DIMENSION(LVEC) :: vx, vy, vz
   REAL(num) :: wq
@@ -2526,10 +2605,18 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
   REAL(num) :: sy1, sy2, sy3, sy4, sz1, sz2, sz3, sz4
   REAL(num) :: sy01, sy02, sy03, sy04, sz01, sz02, sz03, sz04
   REAL(num), DIMENSION(4) :: h1, h11, h12, sgn
-  REAL(num):: wwwx1(LVEC, 8), wwwx2(LVEC, 8), wwwy1(LVEC, 8), wwwy2(LVEC, 8),         &
+  REAL(num) :: wwwx1(LVEC, 8), wwwx2(LVEC, 8), wwwy1(LVEC, 8), wwwy2(LVEC, 8),         &
   wwwz1(LVEC, 8), wwwz2(LVEC, 8)
-  REAL(num):: wx1, wx2, wy1, wy2, wz1, wz2
-  INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
+  REAL(num) :: wx1, wx2, wy1, wy2, wz1, wz2
+  INTEGER(idp) :: jorig, korig, lorig
+  INTEGER(idp) :: ncx, ncy, ncxy, ncz, ix, iy, iz
+  ! Relative position of the 8 nodes (over which the algorithm vectorizes)
+  ! in respect to the particle computed node (the nodes are only shifted in
+  ! y and z, not in x ; see arXiv:1601.02056, Fig. 3, for order 3)
+  INTEGER(idp), DIMENSION(8), PARAMETER  :: mzoff = &
+  (/ -1_idp, 0_idp, 1_idp, 2_idp, -1_idp, 0_idp, 1_idp, 2_idp /)
+  INTEGER(idp), DIMENSION(8), PARAMETER  :: myoff = &
+  (/  0_idp, 0_idp, 0_idp, 0_idp,  1_idp, 1_idp, 1_idp, 1_idp /)
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -2539,19 +2626,17 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
   clightsq = 1.0_num/clight**2
-  ngridx=nx+1+2*nxguard;ngridy=ny+1+2*nyguard
-  ncx=nx+5; ncy=ny+4; ncz=nz+3
-  NCELLS=ncx*ncy*ncz
+  ! Lower integer position where the particles can deposit
+  jorig=-2_idp; korig=-2_idp; lorig=-2_idp
+  ! Find the maximal number of cells in each direction, so as to
+  ! allocate the linearized 1D arrays
+  ncx = MAX( jx_nvalid(1), jy_nvalid(1), jz_nvalid(1) ) + 5
+  ncy = MAX( jx_nvalid(2), jy_nvalid(2), jz_nvalid(2) ) + 4
+  ncz = MAX( jx_nvalid(3), jy_nvalid(3), jz_nvalid(3) ) + 3
+  ncxy = ncx*ncy
+  NCELLS = ncx*ncy*ncz
   ALLOCATE(jxcells(8, NCELLS), jycells(8, NCELLS), jzcells(8, NCELLS))
   jxcells=0.0_num; jycells=0.0_num; jzcells=0.0_num;
-  nnx = ngridx
-  nnxy = ngridx*ngridy
-  moff = (/-nnxy, 0_idp, nnxy, 2_idp*nnxy, nnx-nnxy, nnx, nnx+nnxy, nnx+2_idp*nnxy/)
-  jorig=-2_idp; korig=-2_idp;lorig=-2_idp
-  orig=jorig+nxguard+nnx*(korig+nyguard)+(lorig+nzguard)*nnxy
-  ngx=(ngridx-ncx)
-  ngxy=(ngridx*ngridy-ncx*ncy)
-  ncxy=ncx*ncy
 
   h1=(/1_num, 0_num, 1_num, 0_num/); sgn=(/1_num, -1_num, 1_num, -1_num/)
   h11=(/0_num, 1_num, 1_num, 0_num/); h12=(/1_num, 0_num, 0_num, 1_num/)
@@ -2826,9 +2911,15 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
 #endif
     END DO
   END DO
-  ! Reduction of jxcells, jycells, jzcells in jx, jy, jz
-  DO iz=1, ncz
-    DO iy=1, ncy
+  ! ---------------------------------------------------------------
+  ! Vectorized reduction of jxcells, jycells, jzcells in jx, jy, jz
+  ! ---------------------------------------------------------------
+
+  ! Reduction of jxcells in jx
+  ! Note: the bounds below make sure that we never go out-of-bound for jxcells,
+  ! even when taking into account the additional offsets in myoff and mzoff
+  DO iz = MAX(lorig, jx_nguard(3)+1), MIN(lorig+ncz-1, jx_nvalid(3)+jx_nguard(3)-2)
+    DO iy = MAX(korig, jx_nguard(2)), MIN(korig+ncy-1, jx_nvalid(2)+jx_nguard(2)-1)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP SIMD
@@ -2838,37 +2929,18 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix=1, ncx!! VECTOR (take ncx multiple of vector length)
-        ic=ix+(iy-1)*ncx+(iz-1)*ncxy
-        igrid=ic+(iy-1)*ngx+(iz-1)*ngxy
-        ! jx
-        jx(orig+igrid+moff(1))=jx(orig+igrid+moff(1))+jxcells(1, ic)
-        jx(orig+igrid+moff(2))=jx(orig+igrid+moff(2))+jxcells(2, ic)
-        jx(orig+igrid+moff(3))=jx(orig+igrid+moff(3))+jxcells(3, ic)
-        jx(orig+igrid+moff(4))=jx(orig+igrid+moff(4))+jxcells(4, ic)
-        jx(orig+igrid+moff(5))=jx(orig+igrid+moff(5))+jxcells(5, ic)
-        jx(orig+igrid+moff(6))=jx(orig+igrid+moff(6))+jxcells(6, ic)
-        jx(orig+igrid+moff(7))=jx(orig+igrid+moff(7))+jxcells(7, ic)
-        jx(orig+igrid+moff(8))=jx(orig+igrid+moff(8))+jxcells(8, ic)
-        ! jy
-        jy(orig+igrid+moff(1))=jy(orig+igrid+moff(1))+jycells(1, ic)
-        jy(orig+igrid+moff(2))=jy(orig+igrid+moff(2))+jycells(2, ic)
-        jy(orig+igrid+moff(3))=jy(orig+igrid+moff(3))+jycells(3, ic)
-        jy(orig+igrid+moff(4))=jy(orig+igrid+moff(4))+jycells(4, ic)
-        jy(orig+igrid+moff(5))=jy(orig+igrid+moff(5))+jycells(5, ic)
-        jy(orig+igrid+moff(6))=jy(orig+igrid+moff(6))+jycells(6, ic)
-        jy(orig+igrid+moff(7))=jy(orig+igrid+moff(7))+jycells(7, ic)
-        jy(orig+igrid+moff(8))=jy(orig+igrid+moff(8))+jycells(8, ic)
-        ! jz
-        jz(orig+igrid+moff(1))=jz(orig+igrid+moff(1))+jzcells(1, ic)
-        jz(orig+igrid+moff(2))=jz(orig+igrid+moff(2))+jzcells(2, ic)
-        jz(orig+igrid+moff(3))=jz(orig+igrid+moff(3))+jzcells(3, ic)
-        jz(orig+igrid+moff(4))=jz(orig+igrid+moff(4))+jzcells(4, ic)
-        jz(orig+igrid+moff(5))=jz(orig+igrid+moff(5))+jzcells(5, ic)
-        jz(orig+igrid+moff(6))=jz(orig+igrid+moff(6))+jzcells(6, ic)
-        jz(orig+igrid+moff(7))=jz(orig+igrid+moff(7))+jzcells(7, ic)
-        jz(orig+igrid+moff(8))=jz(orig+igrid+moff(8))+jzcells(8, ic)
-      END DO
+       DO ix = MAX(jorig, jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1))
+           ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
+           ! Compute linearized index
+           jx(ix,iy+myoff(1),iz+mzoff(1))=jx(ix,iy+myoff(1),iz+mzoff(1))+jxcells(1, ic)
+           jx(ix,iy+myoff(2),iz+mzoff(2))=jx(ix,iy+myoff(2),iz+mzoff(2))+jxcells(2, ic)
+           jx(ix,iy+myoff(3),iz+mzoff(3))=jx(ix,iy+myoff(3),iz+mzoff(3))+jxcells(3, ic)
+           jx(ix,iy+myoff(4),iz+mzoff(4))=jx(ix,iy+myoff(4),iz+mzoff(4))+jxcells(4, ic)
+           jx(ix,iy+myoff(5),iz+mzoff(5))=jx(ix,iy+myoff(5),iz+mzoff(5))+jxcells(5, ic)
+           jx(ix,iy+myoff(6),iz+mzoff(6))=jx(ix,iy+myoff(6),iz+mzoff(6))+jxcells(6, ic)
+           jx(ix,iy+myoff(7),iz+mzoff(7))=jx(ix,iy+myoff(7),iz+mzoff(7))+jxcells(7, ic)
+           jx(ix,iy+myoff(8),iz+mzoff(8))=jx(ix,iy+myoff(8),iz+mzoff(8))+jxcells(8, ic)
+       END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
       !$OMP END SIMD
@@ -2876,6 +2948,75 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
 #endif
     END DO
   END DO
+
+  ! Reduction of jycells in jy
+  ! Note: the bounds below make sure that we never go out-of-bound for jycells,
+  ! even when taking into account the additional offsets in myoff and mzoff
+  DO iz = MAX(lorig, jy_nguard(3)+1), MIN(lorig+ncz-1, jy_nvalid(3)+jy_nguard(3)-2)
+    DO iy = MAX(korig, jy_nguard(2)), MIN(korig+ncy-1, jy_nvalid(2)+jy_nguard(2)-1)
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP SIMD
+#endif
+#elif defined __IBMBGQ__
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER
+      !$DIR SIMD
+#endif
+       DO ix = MAX(jorig, jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1))
+           ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
+           ! Compute linearized index
+           jy(ix,iy+myoff(1),iz+mzoff(1))=jy(ix,iy+myoff(1),iz+mzoff(1))+jycells(1, ic)
+           jy(ix,iy+myoff(2),iz+mzoff(2))=jy(ix,iy+myoff(2),iz+mzoff(2))+jycells(2, ic)
+           jy(ix,iy+myoff(3),iz+mzoff(3))=jy(ix,iy+myoff(3),iz+mzoff(3))+jycells(3, ic)
+           jy(ix,iy+myoff(4),iz+mzoff(4))=jy(ix,iy+myoff(4),iz+mzoff(4))+jycells(4, ic)
+           jy(ix,iy+myoff(5),iz+mzoff(5))=jy(ix,iy+myoff(5),iz+mzoff(5))+jycells(5, ic)
+           jy(ix,iy+myoff(6),iz+mzoff(6))=jy(ix,iy+myoff(6),iz+mzoff(6))+jycells(6, ic)
+           jy(ix,iy+myoff(7),iz+mzoff(7))=jy(ix,iy+myoff(7),iz+mzoff(7))+jycells(7, ic)
+           jy(ix,iy+myoff(8),iz+mzoff(8))=jy(ix,iy+myoff(8),iz+mzoff(8))+jycells(8, ic)
+       END DO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP END SIMD
+#endif
+#endif
+    END DO
+  END DO
+
+  ! Reduction of jzcells in jz
+  ! Note: the bounds below make sure that we never go out-of-bound for jzcells,
+  ! even when taking into account the additional offsets in myoff and mzoff
+  DO iz = MAX(lorig, jz_nguard(3)+1), MIN(lorig+ncz-1, jz_nvalid(3)+jz_nguard(3)-2)
+    DO iy = MAX(korig, jz_nguard(2)), MIN(korig+ncy-1, jz_nvalid(2)+jz_nguard(2)-1)
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP SIMD
+#endif
+#elif defined __IBMBGQ__
+      !IBM* SIMD_LEVEL
+#elif defined __INTEL_COMPILER
+      !$DIR SIMD
+#endif
+       DO ix = MAX(jorig, jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1))
+           ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
+           ! Compute linearized index
+           jz(ix,iy+myoff(1),iz+mzoff(1))=jz(ix,iy+myoff(1),iz+mzoff(1))+jzcells(1, ic)
+           jz(ix,iy+myoff(2),iz+mzoff(2))=jz(ix,iy+myoff(2),iz+mzoff(2))+jzcells(2, ic)
+           jz(ix,iy+myoff(3),iz+mzoff(3))=jz(ix,iy+myoff(3),iz+mzoff(3))+jzcells(3, ic)
+           jz(ix,iy+myoff(4),iz+mzoff(4))=jz(ix,iy+myoff(4),iz+mzoff(4))+jzcells(4, ic)
+           jz(ix,iy+myoff(5),iz+mzoff(5))=jz(ix,iy+myoff(5),iz+mzoff(5))+jzcells(5, ic)
+           jz(ix,iy+myoff(6),iz+mzoff(6))=jz(ix,iy+myoff(6),iz+mzoff(6))+jzcells(6, ic)
+           jz(ix,iy+myoff(7),iz+mzoff(7))=jz(ix,iy+myoff(7),iz+mzoff(7))+jzcells(7, ic)
+           jz(ix,iy+myoff(8),iz+mzoff(8))=jz(ix,iy+myoff(8),iz+mzoff(8))+jzcells(8, ic)
+       END DO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+      !$OMP END SIMD
+#endif
+#endif
+    END DO
+  END DO
+
   DEALLOCATE(jxcells, jycells, jzcells)
   RETURN
 END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3

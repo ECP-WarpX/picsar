@@ -705,17 +705,6 @@ SUBROUTINE init_gpstd()
   IF(switch) THEN
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = DCMPLX(0.,0.)
   ENDIF
-!if(rank .EQ. 0) THEN
-!do i=1,local_nz
-!print*,kzc(i),rank,int(local_nz,isp)
-!enddo
-!ENDIF
-!call mpi_barrier(comm,errcode)
-!if(rank .EQ. 1) THEN
-!do i=1,local_nz
-!print*,kzc(i),rank,int(local_nz,isp)
-!enddo
-!ENDIF
 
 
   CALL delete_arrays 
