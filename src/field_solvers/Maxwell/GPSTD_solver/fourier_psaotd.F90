@@ -311,7 +311,6 @@ USE field_boundary
 IMPLICIT NONE
 REAL(num) :: coeff_norm,tmptime
 INTEGER(idp) :: ix,iy,iz
-LOGICAL(lp)  :: is_source
 
 ! Get global Fourier transform of all fields components and currents
 IF (it.ge.timestat_itstart) THEN
@@ -334,8 +333,6 @@ coeff_norm=1.0_num/coeff_norm
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-is_source = .FALSE.
-!CALL ebj_field_bcs_groups(is_source)
 
 IF(.NOT. fftw_hybrid) THEN
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
