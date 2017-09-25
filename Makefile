@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod
+MODE=prod_spectral
 
 # System (SYS)
 # - cori2
@@ -49,11 +49,13 @@ FC=mpif90
 CC=mpicc
 # Fortran compiler arguments
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
+ 
 
 # External libs 
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
 FFTW3_INCLUDE=/usr/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
+
 
 
 # Source directory
@@ -252,6 +254,12 @@ ifeq ($(COMP),gnu)
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
+	else ifeq($(MODE),prod_spectral)
+	  FC=mpif90
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
+	else ifeq($(MODE),debug_spectral)
+	  FC=mpif90
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
 	else ifeq ($(MODE),dev)
 	  FC=mpif90
 	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize
