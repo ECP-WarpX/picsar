@@ -546,7 +546,7 @@ MODULE field_boundary
         CALL field_bc_group_non_blocking(rhoold_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,2_idp)
       ENDIF
       IF (it.ge.timestat_itstart) THEN
-        localtimes(4) = localtimes(4) + (MPI_WTIME() - tmptime)
+        localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
       ENDIF
     ENDIF
 #endif

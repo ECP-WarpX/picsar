@@ -1326,7 +1326,7 @@ USE omp_lib
 #endif
 IMPLICIT NONE
 
-REAL(num), DIMENSION(24) :: percenttimes
+REAL(num), DIMENSION(25) :: percenttimes
 INTEGER(idp)             :: nthreads_tot
 
 ! Total times
@@ -1339,17 +1339,17 @@ init_localtimes(5) = sum(init_localtimes(1:4))
 
 ! Reductions
 ! Maximun times
-CALL MPI_REDUCE(localtimes, maxtimes, 24_isp, mpidbl, MPI_MAX, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm,       &
 errcode)
 CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,    &
 comm, errcode)
 ! Minimum times
-CALL MPI_REDUCE(localtimes, mintimes, 24_isp, mpidbl, MPI_MIN, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm,       &
 errcode)
 CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MIN, 0_isp,    &
 comm, errcode)
 ! Average
-CALL MPI_REDUCE(localtimes, avetimes, 24_isp, mpidbl, MPI_SUM, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm,       &
 errcode)
 CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_SUM, 0_isp,    &
 comm, errcode)
@@ -1411,6 +1411,9 @@ IF (rank .EQ. 0) THEN
   maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:", mintimes(24),avetimes(24),&
   maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:",mintimes(25),avetimes(25),&
+  maxtimes(25), percenttimes(25), avetimes(25)/nsteps*1e3
+
   WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8),          &
   avetimes(8), maxtimes(8), percenttimes(8), avetimes(8)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),        &
@@ -1487,7 +1490,7 @@ USE omp_lib
 #endif
 IMPLICIT NONE
 
-REAL(num), DIMENSION(24) :: percenttimes
+REAL(num), DIMENSION(25) :: percenttimes
 
 ! Time stats per iteration activated
 IF (timestat_perit.gt.0) THEN
@@ -1502,17 +1505,17 @@ IF (timestat_perit.gt.0) THEN
 
   ! Reductions
   ! Maximun times
-  CALL MPI_REDUCE(localtimes, maxtimes, 24_isp, mpidbl, MPI_MAX, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm,     &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
   comm, errcode)
   ! Minimum times
-  CALL MPI_REDUCE(localtimes, mintimes, 24_isp, mpidbl, MPI_MIN, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm,     &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
   comm, errcode)
   ! Average
-  CALL MPI_REDUCE(localtimes, avetimes, 24_isp, mpidbl, MPI_SUM, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm,     &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
   comm, errcode)
@@ -1561,6 +1564,9 @@ IF (timestat_perit.gt.0) THEN
     maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:",mintimes(24),avetimes(24),&
     maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:",mintimes(25),avetimes(25),&
+    maxtimes(25), percenttimes(25), avetimes(25)/nsteps*1e3
+
     WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8),        &
     avetimes(8), maxtimes(8), percenttimes(8), avetimes(8)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),      &
