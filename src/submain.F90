@@ -61,6 +61,7 @@ SUBROUTINE step(nst)
   USE simple_io
   USE sorting
   USE mpi_routines
+  USE particle_speciesmodule
 #if defined(FFTW)
   USE fourier_psaotd
   USE mpi_fftw3
@@ -74,7 +75,10 @@ SUBROUTINE step(nst)
 
   IMPLICIT NONE
   INTEGER(idp) :: nst, i
-
+  integer, parameter :: out_unit1=20
+  integer, parameter :: out_unit2=21
+  integer, parameter :: out_unit3=22
+  integer, parameter :: out_unit4=23
   !!! --- This is the main PIC LOOP
   IF (rank .EQ. 0) THEN
     WRITE (0, *) "nsteps = ", nst
@@ -103,17 +107,21 @@ SUBROUTINE step(nst)
   ! ___________________________________________
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
-
+if(rank==0) then
+open (unit=out_unit3,file="em.txt",STATUS="REPLACE",action="write")
+open(unit=out_unit4,file="kin_e.txt",STATUS="REPLACE",action="write")
+endif
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
 
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
-
       IF (l_plasma) THEN
+        CALL compute_kin_energy
+        CALL compute_em_energy
         !!! --- Field gather & particle push
-        !IF (rank .EQ. 0) PRINT *, "#1"
+       ! IF (rank .EQ. 0) PRINT *, "#1"
         CALL field_gathering_plus_particle_pusher
         !IF (rank .EQ. 0) PRINT *, "#2"
         !!! --- Push virtual laser particles
@@ -126,7 +134,7 @@ SUBROUTINE step(nst)
           CALL pxrdepose_rho_on_grid
         ENDIF
         !!! --- Particle Sorting
-        !write(0, *), 'Sorting'
+       ! write(0, *), 'Sorting'
         CALL pxr_particle_sorting
         !IF (rank .EQ. 0) PRINT *, "#4"
         !!! --- Deposit current of particle species on the grid
@@ -138,10 +146,6 @@ SUBROUTINE step(nst)
         CALL current_bcs
       ENDIF
 #if defined(FFTW)
-!if(i == 2) then
-!if (rank == 0) call set_pulse(2_idp,2_idp,4_idp,10_idp)
-!endif
-
       IF (l_spectral) THEN
         CALL push_psatd_ebfield_3d
         CALL efield_bcs
@@ -174,10 +178,23 @@ SUBROUTINE step(nst)
 #if defined(FFTW)
       ENDIF
 #endif
-      !IF (rank .EQ. 0) PRINT *, "#12"
+    !    em = sum(abs(ex(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+    !    em = em +  sum(abs(ey(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+    !    em = em +  sum(abs(ez(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+    !    em = em*0.5_num*eps0
+    !    em = em + sum(abs(bx(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz*0.5_num/mu0
+    !    em = em + sum(abs(by(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz*0.5_num/mu0
+    !    em = em + sum(abs(bz(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz*0.5_num/mu0
+    !    sum_em=0._num
+    !    call mpi_reduce(em,sum_em,1_isp,mpi_double,MPI_SUM,5_isp,comm,errcode)
+        if(rank==0) then
+          write (out_unit3,*),electromagn_energy_total
+          write (out_unit4,*),kin_energy_total
+        endif
+
+     ! IF (rank .EQ. 0) PRINT *, "#12"
       !!! --- Computes derived quantities
       CALL calc_diags
-      !IF (rank .EQ. 0) PRINT *, "#13"
       !!! --- Output simulation results
       CALL output_routines
       !IF (rank .EQ. 0) PRINT *, "#14"
@@ -229,7 +246,10 @@ SUBROUTINE step(nst)
     END DO
 
   ENDIF
-
+  IF(rank==0) then
+    close(out_unit3)
+    close(out_unit4)
+  endif
   !!! --- Stop Vtune analysis
 #if VTUNE==1
   CALL stop_vtune_collection()
