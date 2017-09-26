@@ -241,7 +241,12 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:) :: ycoeffs
   !> Fonberg coefficients in z
   REAL(num), POINTER, DIMENSION(:) :: zcoeffs
-
+  REAL(num)                        :: electro_energy_mpi
+  REAL(num)                        :: magnetic_energy_mpi
+  REAL(num)                        :: electromagn_energy_mpi
+  REAL(num)                        :: electro_energy_total
+  REAL(num)                        :: magneto_energy_total
+  REAL(num)                        :: electromagn_energy_total 
 END MODULE fields
 
 ! ________________________________________________________________________________________
@@ -305,6 +310,8 @@ MODULE particle_tilemodule!#do not parse
   USE constants
   !> Object that contains tile particle arrays and particle tile properties.
   TYPE particle_tile
+    !> Flag:  current tile kin energy
+    REAL(num)   :: kin_energy_tile
     !> Flag: tile arrays are allocated
     LOGICAL(lp) :: l_arrays_allocated= .FALSE.
     !> Current number of particles in tile
@@ -471,8 +478,13 @@ MODULE particle_speciesmodule!#do not parse
   USE particle_tilemodule
   USE constants
   USE antenna
+    REAL(num)   :: kin_energy_mpi
+    REAL(num)   :: kin_energy_total
+    
   !> Fortran object representing a particle species
   TYPE particle_species
+    ! Species kinetic energy 
+    REAL(num)   :: kin_energy_sp
     ! Attributes of particle species object
     !> Particle antenna flag (.FALSE. by default)
     LOGICAL(lp) :: is_antenna = .FALSE.

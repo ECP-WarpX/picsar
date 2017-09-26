@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod_spectral
+MODE=prod
 
 # System (SYS)
 # - cori2
@@ -48,8 +48,7 @@ FC=mpif90
 # C compiler
 CC=mpicc
 # Fortran compiler arguments
-FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
- 
+FARGS= -g  -O3 -fopenmp -JModules 
 
 # External libs 
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
@@ -489,6 +488,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
 	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
@@ -534,6 +534,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
 	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \

@@ -72,7 +72,47 @@ SUBROUTINE push_bfield
   ENDIF
 
 END SUBROUTINE push_bfield
+! ________________________________________________________________________________________
+!> @brief
+!> Computes EM energy
+!
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2017
+! ________________________________________________________________________________________
+SUBROUTINE compute_em_energy
+USE shared_data
+USE constants
+USE fields
+USE params
+USE mpi
+IMPLICIT NONE
+electro_energy_mpi = 0.0_num
+magnetic_energy_mpi = 0.0_num
+electromagn_energy_mpi = 0.0_num
 
+electro_energy_mpi = SUM(ABS(ex(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+electro_energy_mpi = electro_energy_mpi + SUM(ABS(ey(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+electro_energy_mpi = electro_energy_mpi + SUM(ABS(ez(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+electro_energy_mpi = electro_energy_mpi*0.5_num*eps0
+
+magnetic_energy_mpi = SUM(ABS(bx(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+magnetic_energy_mpi = magnetic_energy_mpi+ SUM(ABS(by(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+magnetic_energy_mpi = magnetic_energy_mpi+ SUM(ABS(bz(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
+magnetic_energy_mpi = magnetic_energy_mpi*0.5_num/mu0
+
+electromagn_energy_mpi =  magnetic_energy_mpi + electro_energy_mpi 
+
+electro_energy_total = 0.0_num
+magneto_energy_total = 0.0_num
+electromagn_energy_total = 0.0_num
+
+CALL MPI_ALLREDUCE(electro_energy_mpi,electro_energy_total,1_isp,MPI_DOUBLE,MPI_SUM,comm,errcode)
+CALL MPI_ALLREDUCE(magnetic_energy_mpi,magneto_energy_total,1_isp,MPI_DOUBLE,MPI_SUM,comm,errcode)
+electromagn_energy_total= electro_energy_total+magneto_energy_total
+END SUBROUTINE
 
 ! ________________________________________________________________________________________
 !> @brief
