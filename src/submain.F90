@@ -130,8 +130,9 @@ endif
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
         IF (l_spectral) THEN
-          rhoold=rho
+          rhoold = rho
           CALL pxrdepose_rho_on_grid
+          CALL charge_bcs
         ENDIF
         !!! --- Particle Sorting
        ! write(0, *), 'Sorting'
