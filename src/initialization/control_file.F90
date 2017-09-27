@@ -1085,6 +1085,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'divj') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') c_output_divj
+      ELSE IF (INDEX(buffer, 'divb') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_divb
       ELSE IF (INDEX(buffer, 'end::output') .GT. 0) THEN
         end_section =.TRUE.
       END IF

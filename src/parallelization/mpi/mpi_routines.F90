@@ -1154,6 +1154,9 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 -nzguards:nz+nzguards))
 ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
 -nzguards:nz+nzguards))
+ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
+
 
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space

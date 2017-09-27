@@ -113,7 +113,6 @@ open(unit=out_unit4,file="kin_e.txt",STATUS="REPLACE",action="write")
 endif
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
-
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
@@ -129,11 +128,11 @@ endif
         !!! --- Apply BC on particles
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
-        IF (l_spectral) THEN
+    !    IF (l_spectral) THEN
           rhoold = rho
           CALL pxrdepose_rho_on_grid
           CALL charge_bcs
-        ENDIF
+    !    ENDIF
         !!! --- Particle Sorting
        ! write(0, *), 'Sorting'
         CALL pxr_particle_sorting

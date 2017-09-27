@@ -158,6 +158,15 @@ MODULE simple_io
         TRIM(ADJUSTL(strtemp))//'.pxr', divj, xmin, xmax, ymin, ymax, zmin,zmax,     &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global,nz_global)
       ENDIF
+      IF (c_output_divb .EQ. 1) THEN
+        CALL calc_field_div(divb, bx, by, bz, nx, ny, nz, nxguards, nyguards,&
+          nzguards, dx, dy, dz)
+        IF (rank.eq.0) WRITE(0, *) "Write electric field divergence div B"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filedivb))//     &
+        TRIM(ADJUSTL(strtemp))//'.pxr', divb, xmin, xmax, ymin, ymax, zmin,zmax,&
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global,ny_global,nz_global)
+      ENDIF
+
       IF (c_output_dive .EQ. 1) THEN
         ! Computation if not already done
         IF (.not.(divE_computed))  then

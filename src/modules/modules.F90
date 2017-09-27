@@ -931,6 +931,9 @@ MODULE output_data!#do not parse
   INTEGER(KIND=4) :: c_output_dive = 0
   !> Activation of div J field divergence output
   INTEGER(KIND=4) :: c_output_divj = 0
+  !> Activation of div B field divergence output
+  INTEGER(KIND=4) :: c_output_divb = 0
+
   ! File names for output dumps
   !> File name for the Ex electric field output
   CHARACTER(LEN=string_length) :: fileex   ='ex'
@@ -956,6 +959,9 @@ MODULE output_data!#do not parse
   CHARACTER(LEN=string_length) :: filerho  ='rho'
   !> File name for the current field divergence output
   CHARACTER(LEN=string_length) :: filedivj ='divj'   
+  !> File name for the magnetic field divergence output
+  CHARACTER(LEN=string_length) :: filedivb ='divb'
+
 
   ! temporal diagnostics
   !> Array of activation flags
@@ -1412,6 +1418,8 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:, :, :) :: dive
   !> Current divergence 
   REAL(num), POINTER, DIMENSION(:, :, :) :: divj
+  !> Magnetic Field divergence
+  REAL(num), POINTER, DIMENSIOn(:, :, :) :: divb
   ! Values used for load balancing
   REAL(num) :: mpitime_per_it
   REAL(num) :: max_time_per_it
