@@ -179,9 +179,9 @@ MODULE diagnostics
     invdz=1.0_num/dz
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, j, k)
     !$OMP DO COLLAPSE(3)
-    DO l = 0, nz
-      DO k = 0, ny
-        DO j = 0, nx
+    DO l = 1, nz
+      DO k = 1, ny
+        DO j = 1, nx
           divbb(j, k, l) = invdx*(bbx(j+1, k, l)-bbx(j, k, l))+ invdy*(bby(j, k+1,& 
           l)-bby(j, k, l))+invdz*(bbz(j, k, l+1)-bbz(j, k, l))
         END DO
