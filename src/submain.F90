@@ -107,47 +107,39 @@ SUBROUTINE step(nst)
   ! ___________________________________________
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
-if(rank==0) then
-open (unit=out_unit3,file="em.txt",STATUS="REPLACE",action="write")
-open(unit=out_unit4,file="kin_e.txt",STATUS="REPLACE",action="write")
-endif
+    if(rank==0) then
+      open (unit=out_unit3,file="em.txt",STATUS="REPLACE",action="write")
+      open(unit=out_unit4,file="kin_e.txt",STATUS="REPLACE",action="write")
+    endif
+    CALL pxrdepose_rho_on_grid
+    CALL charge_bcs
+    rhoold=rho
+    IF(l_spectral .AND. .NOT. fftw_with_mpi) THEN 
+      CALL solve_poisson
+    ENDIF
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
+
       IF (l_plasma) THEN
-        CALL compute_kin_energy
-        CALL compute_em_energy
-        !!! --- Field gather & particle push
-       ! IF (rank .EQ. 0) PRINT *, "#1"
+
         CALL field_gathering_plus_particle_pusher
-        !IF (rank .EQ. 0) PRINT *, "#2"
-        !!! --- Push virtual laser particles
         CALL push_laser_particles
-        !!! --- Apply BC on particles
         CALL particle_bcs
-        !IF (rank .EQ. 0) PRINT *, "#3"
-    !    IF (l_spectral) THEN
-          rhoold = rho
-          CALL pxrdepose_rho_on_grid
-          CALL charge_bcs
-    !    ENDIF
-        !!! --- Particle Sorting
-       ! write(0, *), 'Sorting'
+        rhoold = rho
+        CALL pxrdepose_rho_on_grid
+        CALL charge_bcs
         CALL pxr_particle_sorting
-        !IF (rank .EQ. 0) PRINT *, "#4"
-        !!! --- Deposit current of particle species on the grid
-        !write(0, *), 'Depose currents'
         CALL pxrdepose_currents_on_grid_jxjyjz
-        !IF (rank .EQ. 0) PRINT *, "#5"
-        !!! --- Boundary conditions for currents
-        !write(0, *), 'Current_bcs'
         CALL current_bcs
       ENDIF
+        CALL compute_em_energy
+
 #if defined(FFTW)
       IF (l_spectral) THEN
-        CALL push_psatd_ebfield_3d
+        CALL push_gpstd_ebfied_3d
         CALL efield_bcs
         CALL bfield_bcs
       ELSE IF (g_spectral) THEN
@@ -178,15 +170,7 @@ endif
 #if defined(FFTW)
       ENDIF
 #endif
-    !    em = sum(abs(ex(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
-    !    em = em +  sum(abs(ey(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
-    !    em = em +  sum(abs(ez(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz
-    !    em = em*0.5_num*eps0
-    !    em = em + sum(abs(bx(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz*0.5_num/mu0
-    !    em = em + sum(abs(by(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz*0.5_num/mu0
-    !    em = em + sum(abs(bz(0:nx-1,0:ny-1,0:nz-1)**2))*dx*dy*dz*0.5_num/mu0
-    !    sum_em=0._num
-    !    call mpi_reduce(em,sum_em,1_isp,mpi_double,MPI_SUM,5_isp,comm,errcode)
+        CALL compute_kin_energy
         if(rank==0) then
           write (out_unit3,*),electromagn_energy_total
           write (out_unit4,*),kin_energy_total

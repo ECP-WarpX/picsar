@@ -1158,6 +1158,7 @@ ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
 -nzguards:nz+nzguards))
 
 
+
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral .OR. g_spectral) THEN
@@ -1209,6 +1210,8 @@ IF (l_spectral .OR. g_spectral) THEN
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, bzfold, [nkx, nky, nkz])
       cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cdata, Vphif, [nkx,nky,nkz])
+      cin = fftw_alloc_real(2 * alloc_local)
     ENDIF
     ! - Allocate real arrays
     cin = fftw_alloc_real(2 * alloc_local);
@@ -1233,6 +1236,8 @@ IF (l_spectral .OR. g_spectral) THEN
     CALL c_f_pointer(cin, rho_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
+    cin = fftw_alloc_real(2 * alloc_local);
+    CALL c_f_pointer(cin,Vphi_r, [2*nkx,nky,nkz])
 
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
@@ -1256,6 +1261,7 @@ IF (l_spectral .OR. g_spectral) THEN
       ALLOCATE(bxfold(nkx, nky, nkz))
       ALLOCATE(byfold(nkx, nky, nkz))
       ALLOCATE(bzfold(nkx, nky, nkz))
+      ALLOCATE(Vphif(nkx,nky,nkz))
 
     ENDIF
     imn=-nxguards; imx=nx+nxguards-1
@@ -1272,6 +1278,7 @@ IF (l_spectral .OR. g_spectral) THEN
     ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
     ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
     ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+    ALLOCATE(Vphi_r(imn:imx, jmn:jmx, kmn:kmx))
   ENDIF
 ENDIF
 #endif

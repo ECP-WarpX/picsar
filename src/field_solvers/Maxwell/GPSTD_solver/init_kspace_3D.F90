@@ -655,7 +655,7 @@ SUBROUTINE init_gpstd()
   ENDIF
 
 
-  CALL delete_arrays 
+!  CALL delete_arrays 
 END SUBROUTINE init_gpstd
 !> @brief
 !> This subroutine executes forward fftw on relevent fields

@@ -493,5 +493,42 @@ ENDIF
 
 END SUBROUTINE
 
+SUBROUTINE solve_poisson
+USE shared_data
+USE fastfft
+Use fourier
+USE fftw3_fortran
+USE fields
+USE omp_lib
+USE params
+IMPLICIT NONE
+INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
+COMPLEX(cpx) :: ii
+REAL(num)    :: coeff_norm 
+nfftx=nx+2*nxguards
+nffty=ny+2*nyguards
+nfftz=nz+2*nzguards
+nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+
+ii=DCMPLX(0.0_num,1.0_num)
+CALL normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
+CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r, rhof, plan_r2c)
+Vphif = -1.0_num/eps0/Kspace(nmatrixes2)%block_vector(10)%block3dc**2*rhof
+Vphif(1,1,1)=(0.0_num,0.0_num)
+
+exf = Kspace(nmatrixes2)%block_vector(2)%block3dc*(-ii)*Vphif
+eyf = Kspace(nmatrixes2)%block_vector(5)%block3dc*(-ii)*Vphif
+ezf = Kspace(nmatrixes2)%block_vector(8)%block3dc*(-ii)*Vphif
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,exf, ex_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,eyf, ey_r, plan_c2r)
+CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,ezf, ez_r, plan_c2r)
+
+coeff_norm=1.0_num/(nfftx*nffty*nfftz)
+CALL normalize_Fourier(ex,nxx,nyy,nzz,ex_r,nfftx,nffty,nfftz,coeff_norm)
+CALL normalize_Fourier(ey,nxx,nyy,nzz,ey_r,nfftx,nffty,nfftz,coeff_norm)
+CALL normalize_Fourier(ez,nxx,nyy,nzz,ez_r,nfftx,nffty,nfftz,coeff_norm)
+DEALLOCATE(Vphif,Vphi_r)
+
+ENDSUBROUTINE
 
 END MODULE fourier_psaotd
