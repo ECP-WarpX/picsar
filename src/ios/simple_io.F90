@@ -149,17 +149,25 @@ MODULE simple_io
         TRIM(ADJUSTL(strtemp))//'.pxr', jz, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
       ENDIF
+      IF (c_output_divj .EQ. 1) THEN 
+        CALL calc_field_div(divj, jx, jy, jz, nx, ny, nz, nxguards, nyguards,&
+          nzguards, dx, dy, dz)
+        divj=(rho-rhoold)+dt*divj
+        IF (rank.eq.0) WRITE(0, *) "Write electric field divergence div J"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filedivj))//     &
+        TRIM(ADJUSTL(strtemp))//'.pxr', divj, xmin, xmax, ymin, ymax, zmin,zmax,     &
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global,nz_global)
+      ENDIF
       IF (c_output_dive .EQ. 1) THEN
-
         ! Computation if not already done
         IF (.not.(divE_computed))  then
           CALL calc_field_div(dive, ex, ey, ez, nx, ny, nz, nxguards, nyguards,       &
           nzguards, dx, dy, dz)
           divE_computed = .true.
         ENDIF
-
         ! - Write electric field divergence div E
         IF (rank.eq.0) WRITE(0, *) "Write electric field divergence div E"
+        dive=dive*eps0-rho
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filedive))//     &
         TRIM(ADJUSTL(strtemp))//'.pxr', dive, xmin, xmax, ymin, ymax, zmin, zmax,     &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)

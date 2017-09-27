@@ -1152,6 +1152,9 @@ ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,               
 -nzjguards:nz+nzjguards))
 ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
 -nzguards:nz+nzguards))
+ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
+
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral .OR. g_spectral) THEN

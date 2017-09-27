@@ -929,7 +929,8 @@ MODULE output_data!#do not parse
   INTEGER(KIND=4) :: c_output_rho = 0
   !> Activation of the electric field divergence output
   INTEGER(KIND=4) :: c_output_dive = 0
-
+  !> Activation of div J field divergence output
+  INTEGER(KIND=4) :: c_output_divj = 0
   ! File names for output dumps
   !> File name for the Ex electric field output
   CHARACTER(LEN=string_length) :: fileex   ='ex'
@@ -953,6 +954,8 @@ MODULE output_data!#do not parse
   CHARACTER(LEN=string_length) :: filedive ='dive'
   !> File name for the density output
   CHARACTER(LEN=string_length) :: filerho  ='rho'
+  !> File name for the current field divergence output
+  CHARACTER(LEN=string_length) :: filedivj ='divj'   
 
   ! temporal diagnostics
   !> Array of activation flags
@@ -1407,7 +1410,8 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho, rhoold
   !> Electric Field divergence
   REAL(num), POINTER, DIMENSION(:, :, :) :: dive
-
+  !> Current divergence 
+  REAL(num), POINTER, DIMENSION(:, :, :) :: divj
   ! Values used for load balancing
   REAL(num) :: mpitime_per_it
   REAL(num) :: max_time_per_it
