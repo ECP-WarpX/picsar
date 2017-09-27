@@ -1772,7 +1772,10 @@ MODULE tiling
       WRITE(0,*) 'Laser temporal waist',laser%laser_tau/dt,'dt'
       WRITE(0,*) 'Laser peak ',laser%t_peak/dt,"dt"
       WRITE(0,*) 'Laser longitudinal length',laser%laser_ctau,'m'
-      WRITE(0,*) 'Laser temporal frequency',laser%k0_laser*clight,'s^-1'
+      WRITE(0,*) 'Laser temporal frequency w_laser',laser%k0_laser*clight,'s^-1'
+      WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight),'s'
+      WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
+      WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
       WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
    ENDIF
   END SUBROUTINE load_laser_species
