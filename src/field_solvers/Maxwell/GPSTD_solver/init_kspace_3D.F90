@@ -102,27 +102,6 @@ MODULE gpstd_solver
       ALLOCATE(AT_OP(ns_max))
     ENDIF
     ALLOCATE(AT_OP(nmatrixes2)%block_vector(4_idp))  !S/k,C,(1-C)/k^2
-  !  IF( fftw_with_mpi) THEN
-  !    IF(.NOT. fftw_mpi_transpose) THEN
-  !      nfftx=nx_global
-  !      nffty=ny_global
-  !      nfftz=local_nz
-  !    ELSE
-  !      nfftx = nx_global
-  !      nffty = local_ny
-  !      nfftz = nz_global
-  !    ENDIF
-  !  ENDIF
-  !  IF(.NOT. fftw_with_mpi) THEN
-  !    nfftx = nx+2*nxguards
-  !    nffty = ny+2*nyguards
-  !    nfftz = nz+2*nzguards
-  !  ENDIF
-  !  IF(fftw_hybrid) THEN 
-  !     nfftx = nx_group_grid
-  !     nffty = ny_group_grid 
-  !     nfftz = local_nz
-  !  ENDIF
     CALL select_case_dims_local(nfftx,nffty,nfftz)
     DO i = 1_idp , 10_idp
       ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
@@ -182,7 +161,7 @@ MODULE gpstd_solver
 
   SUBROUTINE compute_k_vec_nompi(l_stg)
     USE constants
-    USE shared_data !, ONLY : dx,dy,dz,nx,ny,nz
+    USE shared_data 
     USE fields 
     USE mpi_fftw3
     IMPLICIT NONE 
@@ -194,22 +173,7 @@ MODULE gpstd_solver
     INTEGER(idp)                                  :: i,j,k
     INTEGER(idp)                                  :: nfftx,nffty,nfftz
     ii = DCMPLX(0.0_num,1.0_num)
-    !IF(.NOT. fftw_with_mpi) THEN
-    !  nfftx=nx+2*nxguards
-    !  nffty=ny+2*nyguards
-    !  nfftz=nz+2*nzguards
-    !ENDIF
-    !IF(fftw_with_mpi) THEN
-    !  IF(.NOT. fftw_mpi_transpose) THEN
-    !    nfftx = nx_global 
-    !    nffty = ny_global
-    !    nfftz = nz_global 
-    !  ELSE
-    !    nfftx = nx_global
-    !    nffty = ny_global
-    !    nfftz = nz_global
-    !  ENDIF
-    !ENDIF
+
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
     ALLOCATE(onesy(nffty),onesyp(nffty))
@@ -550,22 +514,7 @@ SUBROUTINE init_gpstd()
   LOGICAL(lp)            :: needed
   INTEGER(idp)           :: nfftx,nffty,nfftz
   LOGICAL(lp)            :: switch
-!  IF( fftw_with_mpi) THEN
-!    IF(.NOT. fftw_mpi_transpose) THEN
-!      nfftx=nx_global
-!      nffty=ny_global
-!      nfftz=local_nz
-!    ELSE
-!      nfftx = nx_global
-!      nffty = local_ny 
-!      nfftz = nz_global
-!    ENDIF
-!  ENDIF
-!  IF(.NOT. fftw_with_mpi) THEN
-!    nfftx = nx+2*nxguards
-!    nffty = ny+2*nyguards
-!    nfftz = nz+2*nzguards
-!  ENDIF
+
   CALL select_case_dims_local(nfftx,nffty,nfftz)
   ii=DCMPLX(0.,1.)
   CALL allocate_new_matrix_vector(11_idp)
@@ -582,7 +531,6 @@ SUBROUTINE init_gpstd()
   ENDDO
   DO i=1_idp,11_idp
     ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1,nffty,nfftz))
-    !vold(nmatrixes)%block_vector(i)%block3dc = DCMPLX(0.,0.)
     vold(nmatrixes)%block_vector(i)%nx = nfftx/2+1
     vold(nmatrixes)%block_vector(i)%ny = nffty 
     vold(nmatrixes)%block_vector(i)%nz = nfftz
@@ -1010,11 +958,11 @@ REAL(num), DIMENSION(n1,n2,n3), INTENT(IN OUT) :: ex_out
 INTEGER(idp) :: ix,iy,iz
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,MIN(nzz,n3)
-        DO iy=1,MIN(nyy,n2)
-                DO ix=1,MIN(nxx,n1)
-                                ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
-                END DO
-        END DO
+  DO iy=1,MIN(nyy,n2)
+    DO ix=1,MIN(nxx,n1)
+      ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
+    END DO
+  END DO
 END DO
 !$OMP END PARALLEL DO
 END SUBROUTINE normalize_Fourier
