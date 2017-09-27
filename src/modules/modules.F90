@@ -236,7 +236,7 @@ MODULE fields
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhooldf
   !> Electric potential to solve Poisson 
-  REAL(num), POINTER, DIMENSION(:, :, :) :: Vphi,Vphi_r,Vphif
+  REAL(num), POINTER, DIMENSION(:, :, :) :: Vphi_r,Vphif
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y

@@ -116,6 +116,7 @@ SUBROUTINE step(nst)
     rhoold=rho
     IF(l_spectral .AND. .NOT. fftw_with_mpi) THEN 
       CALL solve_poisson
+      call efield_bcs
     ENDIF
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
@@ -124,7 +125,6 @@ SUBROUTINE step(nst)
       divE_computed = .False.
 
       IF (l_plasma) THEN
-
         CALL field_gathering_plus_particle_pusher
         CALL push_laser_particles
         CALL particle_bcs

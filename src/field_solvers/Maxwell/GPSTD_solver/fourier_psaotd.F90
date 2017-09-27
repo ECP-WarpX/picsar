@@ -154,8 +154,8 @@ USE fields
 USE mpi_fftw3
 USE time_stat
 USE params
-USE field_boundary
 USE group_parameters
+USE field_boundary
 IMPLICIT NONE
 INTEGER(idp) :: ix,iy,iz
 REAL(num)    :: tmptime
@@ -307,7 +307,6 @@ USE mpi_fftw3
 USE time_stat
 USE params
 USE group_parameters
-USE field_boundary 
 IMPLICIT NONE
 REAL(num) :: coeff_norm,tmptime
 INTEGER(idp) :: ix,iy,iz
@@ -501,6 +500,7 @@ USE fftw3_fortran
 USE fields
 USE omp_lib
 USE params
+USE field_boundary
 IMPLICIT NONE
 INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
 COMPLEX(cpx) :: ii
@@ -513,7 +513,7 @@ nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
 ii=DCMPLX(0.0_num,1.0_num)
 CALL normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
 CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r, rhof, plan_r2c)
-Vphif = -1.0_num/eps0/Kspace(nmatrixes2)%block_vector(10)%block3dc**2*rhof
+Vphif = 1.0_num/eps0/Kspace(nmatrixes2)%block_vector(10)%block3dc**2*rhof
 Vphif(1,1,1)=(0.0_num,0.0_num)
 
 exf = Kspace(nmatrixes2)%block_vector(2)%block3dc*(-ii)*Vphif
