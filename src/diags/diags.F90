@@ -361,27 +361,27 @@ MODULE diagnostics
       end if
 
       ! Each mpi task will write in a given file according to their rank
-      IF (nproc.ge.temdiag_nb) then
-        IF ((rank.ge.0).and.(rank.le.temdiag_nb)) then
-          if (temdiag_act_list(rank+1).gt.0) then
-            write(0, '(" Rank ", I3, ", creation of the file ", A30)') rank,          &
-            "./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1)))
-            if (temdiag_format.eq.1) then
-              open(unit=42,                                                           &
-              file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),            &
-              ACTION='write', STATUS='new')
-              write(42, *) temdiag_nb_values(rank+1), temdiag_frequency*dt
-            else
-              open(unit=42,                                                           &
-              file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),            &
-              FORM="unformatted", ACCESS='stream', STATUS='new')
-              write(42) temdiag_nb_values(rank+1), temdiag_frequency*dt
-            end if
+     ! IF (nproc.ge.temdiag_nb) then
+     !   IF ((rank.ge.0).and.(rank.le.temdiag_nb)) then
+     !     if (temdiag_act_list(rank+1).gt.0) then
+     !       write(0, '(" Rank ", I3, ", creation of the file ", A30)') rank,          &
+     !       "./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1)))
+     !       if (temdiag_format.eq.1) then
+     !         open(unit=42,                                                           &
+     !         file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),            &
+     !         ACTION='write', STATUS='new')
+     !         write(42, *) temdiag_nb_values(rank+1), temdiag_frequency*dt
+     !       else
+     !         open(unit=42,                                                           &
+     !         file="./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1))),            &
+     !         FORM="unformatted", ACCESS='stream', STATUS='new')
+     !         write(42) temdiag_nb_values(rank+1), temdiag_frequency*dt
+     !       end if
 
-          end if
-        ENDIF
-        ! If there is not enough proc, only the first one deals with it
-      else
+     !     end if
+     !   ENDIF
+     !   ! If there is not enough proc, only the first one deals with it
+     ! else
         IF (rank.eq.0) then
           do i= 1, temdiag_nb
             if (temdiag_act_list(i) .gt.0) then
@@ -405,7 +405,7 @@ MODULE diagnostics
 
       CALL MPI_BARRIER(comm, errcode)
 
-    ENDIF
+   ! ENDIF
   END SUBROUTINE
 
   ! ______________________________________________________________________________________

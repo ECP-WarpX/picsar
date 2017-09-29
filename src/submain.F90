@@ -114,10 +114,6 @@ SUBROUTINE step(nst)
     CALL pxrdepose_rho_on_grid
     CALL charge_bcs
     rhoold=rho
-    IF(l_spectral .AND. .NOT. fftw_with_mpi) THEN 
-      CALL solve_poisson
-      call efield_bcs
-    ENDIF
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
       !!! --- Init iteration variables
