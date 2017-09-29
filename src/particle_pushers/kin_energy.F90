@@ -127,6 +127,13 @@ mclightsq=mass*clight**2*ppid
   DO ip=1, np
    kin_e = kin_e + (1.0_num/gaminv(ip)-1.0_num)*mclightsq
   ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+    !$OMP END SIMD
+#endif
+#endif
+
+
 END SUBROUTINE     
 
 

@@ -151,6 +151,11 @@ SUBROUTINE laserp_pusher(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,
       yp(nn)  = yp(nn) + dt*uyp(nn)! + dt*source_v(2)
       zp(nn)  = zp(nn) + dt*uzp(nn)! + dt*source_v(3)
     ENDDO
+#if defined _OPENMP && _OPENMP>=201307
+#ifndef NOVEC
+  !$OMP END SIMD
+#endif
+#endif
   ENDDO
 END SUBROUTINE laserp_pusher
 
