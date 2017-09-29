@@ -116,22 +116,25 @@ SUBROUTINE laserp_pusher(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,
   ! Loop on block of particles of size lvect
   DO ip=1, np, lvect
     blocksize = MIN(lvect, np-ip+1)
-
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !DIR$ ASSUME_ALIGNED xp:64, yp:64, zp:64
+    !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
+    !DIR$ ASSUME_ALIGNED gaminv:64
+    !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
+    !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
+#elif defined __IBMBGQ__
+    !IBM* ALIGN(64, uxp, uyp, uzp)
+    !IBM* ALIGN(64, gaminv)
+    !IBM* ALIGN(64, ex, ey, ez)
+    !IBM* ALIGN(64, bx, by, bz)
 #endif
-
 #if defined _OPENMP && _OPENMP>=201307
-#ifndef defined __IBMBGQ__
-    !IBM* ALIGN(64, xp, yp, zp)
+#ifndef NOVEC
+    !$OMP SIMD
+#endif
+#elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
 #elif defined __INTEL_COMPILER
     !DIR$ SIMD
-#endif
-#endif
-#if defined __INTEL_COMPILER
-    !DIR$ IVDEP
-    !!DIR DISTRIBUTE POINT
 #endif
     DO n=1, blocksize
 
