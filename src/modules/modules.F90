@@ -214,17 +214,17 @@ MODULE fields
   !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf ,  exfold
-  !> MPI-domain electric field grid in y - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf , eyfold
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf 
+  !> MPI-domain electric field grid in y - Fourier space 
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf 
   !> MPI-domain electric field grid in z - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf , ezfold
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf 
   !> MPI-domain magnetic field grid in x - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf , bxfold
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf 
   !> MPI-domain magnetic field grid in y - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf , byfold
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf 
   !> MPI-domain magnetic field grid in z - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf , bzfold
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf 
   !> MPI-domain current grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jxf
   !> MPI-domain current grid in y - Fourier space
@@ -236,7 +236,7 @@ MODULE fields
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhooldf
   !> Electric potential to solve Poisson 
-  REAL(num), POINTER, DIMENSION(:, :, :) :: Vphi_r,Vphif
+!  REAL(num), POINTER, DIMENSION(:, :, :) :: Vphi_r,Vphif
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y

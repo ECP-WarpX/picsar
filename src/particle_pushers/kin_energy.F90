@@ -42,7 +42,7 @@ SUBROUTINE compute_kin_energy
   USE ITT_SDE_FORTRAN
 #endif
   IMPLICIT NONE
-  INTEGER(idp)             :: ispecies, ix, iy, iz, count,t_part,t_allpart
+  INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
   TYPE(grid_tile), POINTER        :: currg
@@ -78,8 +78,6 @@ DO iz=1, ntilez
   ENDDO
 ENDDO
 !$OMP END PARALLEL DO
-t_part=0_idp
-t_allpart=0_idp
 DO iz=1, ntilez
   DO iy=1, ntiley
     DO ix=1, ntilex
@@ -87,7 +85,6 @@ DO iz=1, ntilez
         curr=>species_parray(ispecies)
         curr_tile=>curr%array_of_tiles(ix, iy, iz)
         count=curr_tile%np_tile(1)
-        t_part=t_part+count
         IF (count .EQ. 0) CYCLE
         curr%kin_energy_sp = curr%kin_energy_sp + curr_tile%kin_energy_tile
       ENDDO
@@ -98,11 +95,10 @@ kin_energy_mpi = 0.0_num
 DO ispecies=1, nspecies! LOOP ON SPECIES
   curr=>species_parray(ispecies)
   kin_energy_mpi=kin_energy_mpi+curr%kin_energy_sp
+  curr%kin_energy_sp = 0.0_num
 ENDDO
 kin_energy_total = 0.0_num
 CALL MPI_ALLREDUCE(kin_energy_mpi,kin_energy_total,1_isp,MPI_DOUBLE,MPI_SUM,comm,errcode)
-call mpi_allreduce(t_part,t_allpart,1_isp,MPI_LONG_LONG_INT,MPI_SUM,comm,errcode)
-print*,"nbpart elec + prot",t_part
 END SUBROUTINE compute_kin_energy
 
 SUBROUTINE compute_kin_energy_vector(np,gaminv,mass,kin_e,ppid)
@@ -137,7 +133,6 @@ mclightsq=mass*clight**2*ppid
     !$OMP END SIMD
 #endif
 #endif
-print*,np,"energy of one particule",(1.0_num/gaminv(1)-1.0_num)*mclightsq,"mass",mass
 
 END SUBROUTINE     
 

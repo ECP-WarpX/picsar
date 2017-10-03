@@ -1198,20 +1198,6 @@ IF (l_spectral .OR. g_spectral) THEN
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
       cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, exfold, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, eyfold, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, ezfold, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, bxfold, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, byfold, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, bzfold, [nkx, nky, nkz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cdata, Vphif, [nkx,nky,nkz])
-      cin = fftw_alloc_real(2 * alloc_local)
     ENDIF
     ! - Allocate real arrays
     cin = fftw_alloc_real(2 * alloc_local);
@@ -1237,7 +1223,7 @@ IF (l_spectral .OR. g_spectral) THEN
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin,Vphi_r, [2*nkx,nky,nkz])
+!    CALL c_f_pointer(cin,Vphi_r, [2*nkx,nky,nkz])
 
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
@@ -1255,13 +1241,6 @@ IF (l_spectral .OR. g_spectral) THEN
       ALLOCATE(jzf(nkx, nky, nkz))
       ALLOCATE(rhof(nkx, nky, nkz))
       ALLOCATE(rhooldf(nkx, nky, nkz))
-      ALLOCATE(exfold(nkx, nky, nkz))
-      ALLOCATE(eyfold(nkx, nky, nkz))
-      ALLOCATE(ezfold(nkx, nky, nkz))
-      ALLOCATE(bxfold(nkx, nky, nkz))
-      ALLOCATE(byfold(nkx, nky, nkz))
-      ALLOCATE(bzfold(nkx, nky, nkz))
-      ALLOCATE(Vphif(nkx,nky,nkz))
 
     ENDIF
     imn=-nxguards; imx=nx+nxguards-1
@@ -1278,7 +1257,7 @@ IF (l_spectral .OR. g_spectral) THEN
     ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
     ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
     ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(Vphi_r(imn:imx, jmn:jmx, kmn:kmx))
+!    ALLOCATE(Vphi_r(imn:imx, jmn:jmx, kmn:kmx))
   ENDIF
 ENDIF
 #endif

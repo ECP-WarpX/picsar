@@ -63,6 +63,7 @@ SUBROUTINE step(nst)
   USE mpi_routines
   USE particle_speciesmodule
 #if defined(FFTW)
+  use matrix_coefficients
   USE fourier_psaotd
   USE mpi_fftw3
 #endif
@@ -98,7 +99,6 @@ SUBROUTINE step(nst)
 #if defined(DFP)
   CALL DFP_MAIN_START()
 #endif
-
   ! ______________________________________________________________________________________
   !
   ! Main loop
@@ -108,8 +108,8 @@ SUBROUTINE step(nst)
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
     if(rank==0) then
-      open (unit=out_unit3,file="em.txt",STATUS="REPLACE",action="write")
-      open(unit=out_unit4,file="kin_e.txt",STATUS="REPLACE",action="write")
+      open (unit=out_unit3,file="RESULTS/em.txt",STATUS="REPLACE",action="write")
+      open(unit=out_unit4,file="RESULTS/kin_e.txt",STATUS="REPLACE",action="write")
     endif
     CALL pxrdepose_rho_on_grid
     CALL charge_bcs
@@ -119,7 +119,6 @@ SUBROUTINE step(nst)
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
-
       IF (l_plasma) THEN
         CALL field_gathering_plus_particle_pusher
         CALL push_laser_particles
@@ -132,10 +131,9 @@ SUBROUTINE step(nst)
         CALL current_bcs
       ENDIF
         CALL compute_em_energy
-
 #if defined(FFTW)
       IF (l_spectral) THEN
-        CALL push_gpstd_ebfied_3d
+        CALL push_psatd_ebfield_3d
         CALL efield_bcs
         CALL bfield_bcs
       ELSE IF (g_spectral) THEN
@@ -185,6 +183,7 @@ SUBROUTINE step(nst)
       CALL time_statistics_per_iteration
 
       IF (rank .EQ. 0)  THEN
+	WRITE(0,*) 'nppid',nc*dx*dy*dz/(6)
         WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
         pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
       END IF

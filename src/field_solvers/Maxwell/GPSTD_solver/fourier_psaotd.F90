@@ -379,7 +379,7 @@ USE params
 IMPLICIT NONE
 INTEGER(idp) ::  ix, iy, iz,nxx,nyy,nzz
 REAL(num) :: tmptime
-
+COMPLEX(cpx) :: bxfold,byfold,bzfold,exfold,eyfold,ezfold
 
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
@@ -387,60 +387,76 @@ ENDIF
 nxx=size(exf(:,1,1))
 nyy=size(exf(1,:,1))
 nzz=size(exf(1,1,:))
-exfold=exf
-eyfold=eyf
-ezfold=ezf
-bxfold=bxf
-byfold=byf
-bzfold=bzf
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+!!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
+!DO iz=1,nzz
+!  DO iy=1,nyy
+!    DO ix=1,nxx
+!      exfold(ix,iy,iz)=exf(ix,iy,iz)
+!      eyfold(ix,iy,iz)=eyf(ix,iy,iz)
+!      ezfold(ix,iy,iz)=ezf(ix,iy,iz)
+!      bxfold(ix,iy,iz)=bxf(ix,iy,iz)
+!      byfold(ix,iy,iz)=byf(ix,iy,iz)
+!      bzfold(ix,iy,iz)=bzf(ix,iy,iz)
+!    END DO
+!  END DO
+!END DO
+!!$OMP END PARALLEL DO
+
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz,exfold,eyfold,ezfold,bxfold,byfold,bzfold) COLLAPSE(3)
 DO iz=1,nzz
        DO iy=1,nyy
                DO ix=1,nxx
                       ! - Bx
-                       bxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*bxfold(ix,iy,iz) + &
-                       cc_mat(nmatrixes)%block_matrix2d(4,2)%block3dc(ix,iy,iz)*eyfold(ix,iy,iz) +             &
-                       cc_mat(nmatrixes)%block_matrix2d(4,3)%block3dc(ix,iy,iz)*ezfold(ix,iy,iz) +             &
+                       exfold=exf(ix,iy,iz)
+                       eyfold=eyf(ix,iy,iz)
+                       ezfold=ezf(ix,iy,iz)
+                       bxfold=bxf(ix,iy,iz)
+                       byfold=byf(ix,iy,iz)
+                       bzfold=bzf(ix,iy,iz)
+           
+                       bxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*bxfold + &
+                       cc_mat(nmatrixes)%block_matrix2d(4,2)%block3dc(ix,iy,iz)*eyfold +             &
+                       cc_mat(nmatrixes)%block_matrix2d(4,3)%block3dc(ix,iy,iz)*ezfold +             &
                        cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*jyf(ix,iy,iz) +  &
                        cc_mat(nmatrixes)%block_matrix2d(4,9)%block3dc(ix,iy,iz)*jzf(ix,iy,iz)
 
                        ! - By
-                       byf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*byfold(ix,iy,iz) + &
-                       cc_mat(nmatrixes)%block_matrix2d(5,1)%block3dc(ix,iy,iz)*exfold(ix,iy,iz) +             &
-                       cc_mat(nmatrixes)%block_matrix2d(5,3)%block3dc(ix,iy,iz)*ezfold(ix,iy,iz) +             &
+                       byf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*byfold + &
+                       cc_mat(nmatrixes)%block_matrix2d(5,1)%block3dc(ix,iy,iz)*exfold +             &
+                       cc_mat(nmatrixes)%block_matrix2d(5,3)%block3dc(ix,iy,iz)*ezfold +             &
                        cc_mat(nmatrixes)%block_matrix2d(5,7)%block3dc(ix,iy,iz)*jxf(ix,iy,iz) +  &
                        cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*jzf(ix,iy,iz)
 
 
                        ! - Bz
-                       bzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*bzfold(ix,iy,iz) + &
-                       cc_mat(nmatrixes)%block_matrix2d(6,1)%block3dc(ix,iy,iz)*exfold(ix,iy,iz)+             &
-                       cc_mat(nmatrixes)%block_matrix2d(6,2)%block3dc(ix,iy,iz)*eyfold(ix,iy,iz)+             &
+                       bzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*bzfold + &
+                       cc_mat(nmatrixes)%block_matrix2d(6,1)%block3dc(ix,iy,iz)*exfold+             &
+                       cc_mat(nmatrixes)%block_matrix2d(6,2)%block3dc(ix,iy,iz)*eyfold+             &
                        cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc(ix,iy,iz)*jxf(ix,iy,iz)+  &
                        cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc(ix,iy,iz)*jyf(ix,iy,iz)
 
                        ! Push E a full time step
                        ! - Ex
-                       exf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exfold(ix,iy,iz) +   &
-                       cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc(ix,iy,iz)*byfold(ix,iy,iz) +               &
-                       cc_mat(nmatrixes)%block_matrix2d(1,6)%block3dc(ix,iy,iz)*bzfold(ix,iy,iz) +               &
+                       exf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exfold +   &
+                       cc_mat(nmatrixes)%block_matrix2d(1,5)%block3dc(ix,iy,iz)*byfold +               &
+                       cc_mat(nmatrixes)%block_matrix2d(1,6)%block3dc(ix,iy,iz)*bzfold +               &
                        cc_mat(nmatrixes)%block_matrix2d(1,7)%block3dc(ix,iy,iz)*jxf(ix,iy,iz)     +               &
                        cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc(ix,iy,iz)*rhof(ix,iy,iz)   &
                        + cc_mat(nmatrixes)%block_matrix2d(1,10)%block3dc(ix,iy,iz)*rhooldf(ix,iy,iz)
 
                        ! - Ey
-                       eyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*eyfold(ix,iy,iz) +   & 
-                       cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc(ix,iy,iz)*bxfold(ix,iy,iz) +               &
-                       cc_mat(nmatrixes)%block_matrix2d(2,6)%block3dc(ix,iy,iz)*bzfold(ix,iy,iz) +               &
+                       eyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*eyfold +   & 
+                       cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc(ix,iy,iz)*bxfold  +               &
+                       cc_mat(nmatrixes)%block_matrix2d(2,6)%block3dc(ix,iy,iz)*bzfold  +               &
                        cc_mat(nmatrixes)%block_matrix2d(2,8)%block3dc(ix,iy,iz)*jyf(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(2,11)%block3dc(ix,iy,iz)*rhof(ix,iy,iz) &
                        + cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*rhooldf(ix,iy,iz)
 
 
                        ! - Ez
-                       ezf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*ezfold(ix,iy,iz) +   &
-                       cc_mat(nmatrixes)%block_matrix2d(3,4)%block3dc(ix,iy,iz)*bxfold(ix,iy,iz) +               &
-                       cc_mat(nmatrixes)%block_matrix2d(3,5)%block3dc(ix,iy,iz)*byfold(ix,iy,iz) +               &
+                       ezf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*ezfold +   &
+                       cc_mat(nmatrixes)%block_matrix2d(3,4)%block3dc(ix,iy,iz)*bxfold +               &
+                       cc_mat(nmatrixes)%block_matrix2d(3,5)%block3dc(ix,iy,iz)*byfold +               &
                        cc_mat(nmatrixes)%block_matrix2d(3,9)%block3dc(ix,iy,iz)*jzf(ix,iy,iz) +               &
                        cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*rhof(ix,iy,iz) &
                        + cc_mat(nmatrixes)%block_matrix2d(3,10)%block3dc(ix,iy,iz)*rhooldf(ix,iy,iz)
@@ -484,6 +500,7 @@ CALL init_gpstd()
 IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
 ELSE
+	write(0,*)"nthreads in fftw",nopenmp
         CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,nfftx,nffty,nfftz,ex_r, &
                 exf,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
         CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,nfftx,nffty,nfftz,exf, &
@@ -492,43 +509,43 @@ ENDIF
 
 END SUBROUTINE
 
-SUBROUTINE solve_poisson
-USE shared_data
-USE fastfft
-Use fourier
-USE fftw3_fortran
-USE fields
-USE omp_lib
-USE params
-USE field_boundary
-IMPLICIT NONE
-INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
-COMPLEX(cpx) :: ii
-REAL(num)    :: coeff_norm 
-nfftx=nx+2*nxguards
-nffty=ny+2*nyguards
-nfftz=nz+2*nzguards
-nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
-
-ii=DCMPLX(0.0_num,1.0_num)
-CALL normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
-CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r, rhof, plan_r2c)
-Vphif = 1.0_num/eps0/Kspace(nmatrixes2)%block_vector(10)%block3dc**2*rhof
-Vphif(1,1,1)=(0.0_num,0.0_num)
-
-exf = Kspace(nmatrixes2)%block_vector(2)%block3dc*(-ii)*Vphif
-eyf = Kspace(nmatrixes2)%block_vector(5)%block3dc*(-ii)*Vphif
-ezf = Kspace(nmatrixes2)%block_vector(8)%block3dc*(-ii)*Vphif
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,exf, ex_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,eyf, ey_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,ezf, ez_r, plan_c2r)
-
-coeff_norm=1.0_num/(nfftx*nffty*nfftz)
-CALL normalize_Fourier(ex,nxx,nyy,nzz,ex_r,nfftx,nffty,nfftz,coeff_norm)
-CALL normalize_Fourier(ey,nxx,nyy,nzz,ey_r,nfftx,nffty,nfftz,coeff_norm)
-CALL normalize_Fourier(ez,nxx,nyy,nzz,ez_r,nfftx,nffty,nfftz,coeff_norm)
-DEALLOCATE(Vphif,Vphi_r)
-
-ENDSUBROUTINE
+!SUBROUTINE solve_poisson
+!USE shared_data
+!USE fastfft
+!Use fourier
+!USE fftw3_fortran
+!USE fields
+!USE omp_lib
+!USE params
+!USE field_boundary
+!IMPLICIT NONE
+!INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
+!COMPLEX(cpx) :: ii
+!REAL(num)    :: coeff_norm 
+!nfftx=nx+2*nxguards
+!nffty=ny+2*nyguards
+!nfftz=nz+2*nzguards
+!nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+!
+!ii=DCMPLX(0.0_num,1.0_num)
+!CALL normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
+!CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r, rhof, plan_r2c)
+!Vphif = 1.0_num/eps0/Kspace(nmatrixes2)%block_vector(10)%block3dc**2*rhof
+!Vphif(1,1,1)=(0.0_num,0.0_num)
+!
+!exf = Kspace(nmatrixes2)%block_vector(2)%block3dc*(-ii)*Vphif
+!eyf = Kspace(nmatrixes2)%block_vector(5)%block3dc*(-ii)*Vphif
+!ezf = Kspace(nmatrixes2)%block_vector(8)%block3dc*(-ii)*Vphif
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,exf, ex_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,eyf, ey_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,ezf, ez_r, plan_c2r)
+!
+!coeff_norm=1.0_num/(nfftx*nffty*nfftz)
+!CALL normalize_Fourier(ex,nxx,nyy,nzz,ex_r,nfftx,nffty,nfftz,coeff_norm)
+!CALL normalize_Fourier(ey,nxx,nyy,nzz,ey_r,nfftx,nffty,nfftz,coeff_norm)
+!CALL normalize_Fourier(ez,nxx,nyy,nzz,ez_r,nfftx,nffty,nfftz,coeff_norm)
+!DEALLOCATE(Vphif,Vphi_r)
+!
+!ENDSUBROUTINE
 
 END MODULE fourier_psaotd
