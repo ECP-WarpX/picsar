@@ -1497,8 +1497,8 @@ MODULE tiling
               nyg=curr_tile%nyg_tile
               nzg=curr_tile%nzg_tile
 
-              mpipartsize = mpipartsize + nbp*8*14! 8 for double, 14 for x, y, z, px, py,
-              !pz, gam, pid, ex, ey, ez, bx, by, bz
+              mpipartsize = mpipartsize + nbp*8*16! 8 for double, 16 for x, y, z, px, py,
+              !pz, gam, 3 pid, ex, ey, ez, bx, by, bz
               ncloc = ncloc + (nxc + 2*nxg + 1)*(nyc + 2*nyg + 1)*(nzc + 2*nzg + 1)
 
               tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nyc + 2*nyg +        &
@@ -1530,8 +1530,8 @@ MODULE tiling
             nxg=curr_tile%nxg_tile
             nzg=curr_tile%nzg_tile
 
-            mpipartsize = mpipartsize + nbp*8*13! 8 for double, 13 for x, z, px, py, pz,
-            ! gam, pid, ex, ey, ez, bx, by, bz
+            mpipartsize = mpipartsize + nbp*8*15! 8 for double, 13 for x, z, px, py, pz,
+            ! gam, 3 pids, ex, ey, ez, bx, by, bz
             ncloc = ncloc + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)
 
             tilefieldsize = tilefieldsize + (nxc + 2*nxg + 1)*(nzc + 2*nzg + 1)*8.

@@ -57,14 +57,16 @@ USE mpi_fftw3
 USE group_parameters
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: nopenmp
-INTEGER(C_INT) :: nopenmp_cint
+INTEGER(C_INT) :: nopenmp_cint,iret
 INTEGER(C_INTPTR_T) :: nx_cint, ny_cint, nz_cint
 INTEGER(idp)        :: i
 nopenmp_cint=nopenmp
 
 IF  (fftw_threads_ok) THEN
+	CALL  DFFTW_INIT_THREADS(iret)
 	CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
 ENDIF
+
 IF(.NOT. fftw_hybrid) THEN
   nz_cint=nz_global
   ny_cint=ny_global
@@ -214,9 +216,10 @@ ENDIF
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
+IF(fftw_hybrid) THEN
 is_source = .TRUE.
 CALL ebj_field_bcs_groups(is_source)
-
+ENDIF
 ! Get global Fourier transform of all fields components and currents
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
@@ -497,15 +500,18 @@ ELSE
         nfftz=nz+2*nzguards
 ENDIF
 CALL init_gpstd()
+CALL MPI_BARRIER(comm,errcode)
+IF(rank==0) WRITE(0,*) 'INIT GPSTD MATRIX DONE'
 IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
 ELSE
-	write(0,*)"nthreads in fftw",nopenmp
         CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp,nfftx,nffty,nfftz,ex_r, &
                 exf,plan_r2c,INT(FFTW_MEASURE,idp),INT(FFTW_FORWARD,idp))
         CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,nfftx,nffty,nfftz,exf, &
                 ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
 ENDIF
+CALL MPI_BARRIER(comm,errcode)
+IF(rank==0) WRITE(0,*) 'INIT GPSTD PLANS DONE'
 
 END SUBROUTINE
 
