@@ -63,7 +63,6 @@ INTEGER(idp)        :: i
 nopenmp_cint=nopenmp
 
 IF  (fftw_threads_ok) THEN
-	CALL  DFFTW_INIT_THREADS(iret)
 	CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
 ENDIF
 
@@ -510,7 +509,6 @@ ELSE
         CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp,nfftx,nffty,nfftz,exf, &
                 ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
 ENDIF
-CALL MPI_BARRIER(comm,errcode)
 IF(rank==0) WRITE(0,*) 'INIT GPSTD PLANS DONE'
 
 END SUBROUTINE

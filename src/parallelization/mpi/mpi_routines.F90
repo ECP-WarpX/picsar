@@ -647,7 +647,7 @@ SUBROUTINE setup_groups
   ENDIF
   IF(nz_global .NE. nz_group_global*(nb_group/(nprocx*nprocy))) THEN 
     temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy,idp)
-    IF(INT(nb_group/nprocx/nprocy-z_group_coords,idp) .LT. temp) THEN
+    IF(INT(nb_group/nprocx/nprocy-1-z_group_coords,idp) .LT. temp) THEN
       nz_group_global=nz_group_global+1
     ENDIF
   ENDIF
