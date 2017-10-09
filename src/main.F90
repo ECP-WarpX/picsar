@@ -124,7 +124,7 @@ PROGRAM main
   CALL step(nsteps)
 
   IF (rank .EQ. 0) endsim=MPI_WTIME()
-  IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim
+  IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim,"CPU AVERG TIME PER IT",(endsim-startsim)/nsteps
 
 
   ! Time statistics for the different processes of the PIC step
