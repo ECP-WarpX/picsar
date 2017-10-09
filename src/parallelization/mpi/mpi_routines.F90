@@ -688,7 +688,12 @@ SUBROUTINE setup_groups
   nz_group_grid = nz_group_global_grid + 2*nzg_group
   DO i=1,nb_group
   IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
+        IF(fftw_mpi_transpose) THEN
+        alloc_local = fftw_mpi_local_size_3d_transposed(nz_group,ny_group,nx_group,MPI_COMM_GROUP_ID(i),local_nz,&
+          local_z0,local_ny,local_y0)
+        ELSE
         alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group,ny_group,nx_group,MPI_COMM_GROUP_ID(i),local_nz, local_z0)
+        ENDIF
       !  WRITE(0,*) 'nzgroup,nygroup,nxgroup in group',i,nz_group,ny_group,nx_group
     ENDIF
   ENDDO 
@@ -1168,13 +1173,22 @@ IF (l_spectral .OR. g_spectral) THEN
      nkx=(nx_global)/2+1! Real To Complex Transform
      nky=ny_global
      nkz=local_nz
+     IF(fftw_mpi_transpose) THEN
+       nkx=(nx_global)/2+1! Real To Complex Transform
+       nky=nz_global
+       nkz=local_ny
+     ENDIF
     IF(l_spectral) THEN
       IF(fftw_hybrid)  THEN
         nkx = nx_group/2+1 
         nky = ny_group
         nkz = local_nz
+        IF(fftw_mpi_transpose) THEN
+          nkx = nx_group/2+1
+          nky = nz_group
+          nkz = local_ny 
+        ENDIF
       ENDIF
-
 
     ! - Allocate complex arrays
       cdata = fftw_alloc_complex(alloc_local)
@@ -1202,6 +1216,16 @@ IF (l_spectral .OR. g_spectral) THEN
       cdata = fftw_alloc_complex(alloc_local)
     ENDIF
     ! - Allocate real arrays
+    IF(fftw_mpi_transpose .AND. fftw_hybrid) THEN
+       nkx = nx_group/2+1
+       nky = ny_group
+       nkz = local_nz
+    ENDIF
+    IF(fftw_mpi_transpose .AND. .NOT. fftw_hybrid) THEN
+       nkx = nx_global/2+1
+       nky = ny_global
+       nkz = local_nz
+    ENDIF
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
@@ -1225,6 +1249,7 @@ IF (l_spectral .OR. g_spectral) THEN
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
+
 !    CALL c_f_pointer(cin,Vphi_r, [2*nkx,nky,nkz])
 
   ELSE

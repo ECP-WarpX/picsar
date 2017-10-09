@@ -181,7 +181,6 @@ SUBROUTINE step(nst)
       CALL time_statistics_per_iteration
 
       IF (rank .EQ. 0)  THEN
-	WRITE(0,*) 'nppid',nc*dx*dy*dz/(6)
         WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
         pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
       END IF

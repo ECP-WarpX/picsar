@@ -33,13 +33,25 @@ MODULE gpstd_solver
     INTEGER(idp)  , INTENT(INOUT) :: nfftx,nffty,nfftz
     IF( fftw_with_mpi) THEN
       IF(.NOT. fftw_hybrid) THEN
-        nfftx=nx_global
-        nffty=ny_global
-        nfftz=local_nz
+        IF(.NOT. fftw_mpi_transpose) THEN
+          nfftx=nx_global
+          nffty=ny_global
+          nfftz=local_nz
+        ELSE
+          nfftx=nx_global
+          nffty=nz_global
+          nfftz=local_ny
+        ENDIF
       ELSE
-        nfftx = nx_group
-        nffty = ny_group
-        nfftz = local_nz
+        IF(.NOT. fftw_mpi_transpose) THEN
+          nfftx = nx_group
+          nffty = ny_group
+          nfftz = local_nz
+        ELSE
+          nfftx = nx_group
+          nffty = nz_group
+          nfftz = local_ny
+        ENDIF
       ENDIF
     ELSE
       nfftx = nx+2*nxguards
@@ -57,13 +69,25 @@ MODULE gpstd_solver
     INTEGER(idp)  , INTENT(INOUT) :: nfftx,nffty,nfftz
     IF( fftw_with_mpi) THEN
       IF(.NOT. fftw_hybrid) THEN
+        IF(.NOT. fftw_mpi_transpose) THEN
         nfftx=nx_global
         nffty=ny_global
         nfftz=nz_global
+        ELSE
+          nfftx=nx_global
+          nffty=nz_global
+          nfftz=ny_global
+        ENDIF
       ELSE
-        nfftx = nx_group
-        nffty = ny_group
-        nfftz = nz_group
+        IF(.NOT. fftw_mpi_transpose) THEN
+          nfftx = nx_group
+          nffty = ny_group
+          nfftz = nz_group
+        ELSE
+          nfftx = nx_group
+          nffty = nz_group
+          nfftz = ny_group
+        ENDIF
       ENDIF
     ELSE
       nfftx = nx+2*nxguards
@@ -71,7 +95,6 @@ MODULE gpstd_solver
       nfftz = nz+2*nzguards
     ENDIF
   END SUBROUTINE
-
 
 
   SUBROUTINE init_kspace
@@ -116,6 +139,7 @@ MODULE gpstd_solver
     DO i = 1,nfftx/2+1
       DO j = 1,nffty
         DO k = 1,nfftz
+          IF(.NOT. fftw_mpi_transpose) THEN
           Kspace(nmatrixes2)%block_vector(1)%block3dc(i,j,k) = kxf(i)
           Kspace(nmatrixes2)%block_vector(2)%block3dc(i,j,k) = kxb(i)
           Kspace(nmatrixes2)%block_vector(3)%block3dc(i,j,k) = kxc(i)
@@ -126,6 +150,18 @@ MODULE gpstd_solver
           Kspace(nmatrixes2)%block_vector(8)%block3dc(i,j,k) = kzb(k)
           Kspace(nmatrixes2)%block_vector(9)%block3dc(i,j,k) = kzc(k)
           Kspace(nmatrixes2)%block_vector(10)%block3dc(i,j,k) = SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
+          ELSE
+          Kspace(nmatrixes2)%block_vector(1)%block3dc(i,j,k) = kxf(i)
+          Kspace(nmatrixes2)%block_vector(2)%block3dc(i,j,k) = kxb(i)
+          Kspace(nmatrixes2)%block_vector(3)%block3dc(i,j,k) = kxc(i)
+          Kspace(nmatrixes2)%block_vector(4)%block3dc(i,j,k) = kzf(k)
+          Kspace(nmatrixes2)%block_vector(5)%block3dc(i,j,k) = kzb(k)
+          Kspace(nmatrixes2)%block_vector(6)%block3dc(i,j,k) = kzc(k)
+          Kspace(nmatrixes2)%block_vector(7)%block3dc(i,j,k) = kyf(j)
+          Kspace(nmatrixes2)%block_vector(8)%block3dc(i,j,k) = kyb(j)
+          Kspace(nmatrixes2)%block_vector(9)%block3dc(i,j,k) = kyc(j)
+          Kspace(nmatrixes2)%block_vector(10)%block3dc(i,j,k) = SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
+          ENDIF
         ENDDO
       ENDDO
     ENDDO
@@ -172,8 +208,17 @@ MODULE gpstd_solver
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: i,j,k
     INTEGER(idp)                                  :: nfftx,nffty,nfftz
+    REAL(num)                                     :: sd
+    INTEGER(idp)                                  :: temp_order
     ii = DCMPLX(0.0_num,1.0_num)
-
+    IF(fftw_mpi_transpose) THEN
+        sd=dz
+        dz=dy
+        dy=sd
+        temp_order = norderz
+        norderz=nordery
+        nordery=temp_order
+    ENDIF
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     ALLOCATE(onesx(nfftx/2+1),onesxp(nfftx/2+1))
     ALLOCATE(onesy(nffty),onesyp(nffty))
@@ -286,21 +331,30 @@ MODULE gpstd_solver
         DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
         kzb = k_temp(local_z0+1:local_z0+local_nz)
       ELSE 
-        ALLOCATE(k_temp(nffty))
-        k_temp = kyc
-        DEALLOCATE(kyc);ALLOCATE(kyc(local_ny))
-        kyc = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kyf
-        DEALLOCATE(kyf);ALLOCATE(kyf(local_ny))
-        kyf = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kyb
-        DEALLOCATE(kyb);ALLOCATE(kyb(local_ny))
-        kyb = k_temp(local_y0+1:local_y0+local_ny)
+        ALLOCATE(k_temp(nfftz))
+        k_temp = kzc
+        DEALLOCATE(kzc);ALLOCATE(kzc(local_ny))
+        kzc = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kzf
+        DEALLOCATE(kzf);ALLOCATE(kzf(local_ny))
+        kzf = k_temp(local_y0+1:local_y0+local_ny)
+        k_temp = kzb
+        DEALLOCATE(kzb);ALLOCATE(kzb(local_ny))
+        kzb = k_temp(local_y0+1:local_y0+local_ny)
       ENDIF
       DEALLOCATE(k_temp)
     ENDIF
     DEALLOCATE(onesx,onesy,onesz,onesxp,onesyp,oneszp)
+    IF(fftw_mpi_transpose) THEN
+        sd=dz
+        dz=dy
+        dy=sd
+        temp_order = norderz
+        norderz=nordery
+        nordery=temp_order
+    ENDIF
   END SUBROUTINE
+
   SUBROUTINE fftfreq(nxx,kxx, dxx)
   USE constants
     IMPLICIT NONE
@@ -653,7 +707,7 @@ SUBROUTINE init_gpstd()
   IF(switch) THEN
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = DCMPLX(0.,0.)
   ENDIF
-  CALL delete_arrays 
+!  CALL delete_arrays 
 END SUBROUTINE init_gpstd
 !> @brief
 !> This subroutine executes forward fftw on relevent fields
