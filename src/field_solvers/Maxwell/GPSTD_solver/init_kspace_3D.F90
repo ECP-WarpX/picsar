@@ -719,7 +719,7 @@ SUBROUTINE init_gpstd()
   IF(switch) THEN
     Kspace(nmatrixes2)%block_vector(10)%block3dc(1,1,1)   = DCMPLX(0.,0.)
   ENDIF
-!  CALL delete_arrays 
+  CALL delete_arrays 
 END SUBROUTINE init_gpstd
 !> @brief
 !> This subroutine executes forward fftw on relevent fields

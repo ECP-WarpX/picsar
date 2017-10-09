@@ -119,8 +119,6 @@ SUBROUTINE laserp_pusher(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
     !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
     !DIR$ ASSUME_ALIGNED gaminv:64
-    !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
-    !DIR$ ASSUME_ALIGNED bx:64, by:64, bz:64
 #elif defined __IBMBGQ__
     !IBM* ALIGN(64, uxp, uyp, uzp)
     !IBM* ALIGN(64, gaminv)
