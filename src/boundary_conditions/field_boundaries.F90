@@ -520,7 +520,7 @@ MODULE field_boundary
     WRITE(0, *) "efield_bcs_group: start"
 #endif
 #if defined(FFTW)
-    IF(mpicom_curr .EQ. 0) THEN
+    IF(mpicom_curr .EQ. 1) THEN
       IF (it.ge.timestat_itstart) THEN
           tmptime = MPI_WTIME()
       ENDIF

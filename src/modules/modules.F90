@@ -1439,25 +1439,25 @@ MODULE fourier!#do not parse
   USE constants
   ! Fourier k-vectors
   ! -- Along X
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit, kxunit_mod
-  ! -- Along Y
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit, kyunit_mod
-  ! -- Along Z
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit, kzunit_mod
-  ! - 3D k vectors
-  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kxn, kyn, kzn, k, kx, ky, kz, kmag
-  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxmn, kxpn
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kymn, kypn
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzmn, kzpn
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxm, kxp
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kym, kyp
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzm, kzp
+!  REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit, kxunit_mod
+!  ! -- Along Y
+!  REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit, kyunit_mod
+!  ! -- Along Z
+!  REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit, kzunit_mod
+!  ! - 3D k vectors
+!  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kxn, kyn, kzn, k, kx, ky, kz, kmag
+!  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod
+!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxmn, kxpn
+!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kymn, kypn
+!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzmn, kzpn
+!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxm, kxp
+!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kym, kyp
+!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzm, kzp
   INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
 
   ! - PSATD Coefficients
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult,  &
-  ERhooldmult, BJmult, axm, axp, aym, ayp, azm, azp
+!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult,  &
+!  ERhooldmult, BJmult, axm, axp, aym, ayp, azm, azp
 END MODULE fourier
 #endif
 

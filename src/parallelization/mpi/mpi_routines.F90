@@ -689,6 +689,7 @@ SUBROUTINE setup_groups
   DO i=1,nb_group
   IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
         alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group,ny_group,nx_group,MPI_COMM_GROUP_ID(i),local_nz, local_z0)
+      !  WRITE(0,*) 'nzgroup,nygroup,nxgroup in group',i,nz_group,ny_group,nx_group
     ENDIF
   ENDDO 
   iz_min_r = 1
@@ -726,6 +727,7 @@ SUBROUTINE setup_groups
   nz_global_grid_max = cell_z_max(z_coords+1)+1
   DEALLOCAte(all_nz,all_nzp)
   DEALLOCATE(grp_id,grp_comm,local_roots_rank,grp_ranks)
+!  IF(root_rank .NE. MPI_PROC_NULL)  WRITE(0,*) 'nzgroup,nygroup,nxgroup in group',root_rank,nz_group,ny_group,nx_group
 #endif
 
 END SUBROUTINE

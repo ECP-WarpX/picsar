@@ -63,8 +63,6 @@ SUBROUTINE step(nst)
   USE mpi_routines
   USE particle_speciesmodule
 #if defined(FFTW)
-  use matrix_coefficients
-  USE fourier_psaotd
   USE mpi_fftw3
 #endif
 #if (defined(VTUNE) && VTUNE>0)
@@ -274,8 +272,6 @@ SUBROUTINE initall
   USE tiling
   USE time_stat
 #if defined(FFTW)
- USE matrix_coefficients
-  USE fourier
   USE fourier_psaotd
   USE gpstd_solver
 #endif
@@ -406,7 +402,10 @@ SUBROUTINE initall
     write(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
     write(0, *) ''
     write(0, '(" FFTW - parameters ")')
+    IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
     IF (fftw_with_mpi) write(0, '(" FFTW distributed version - MPI ")')
+    IF (fftw_hybrid)   write(0, '(" FFTW distributed version , - MPI GROUPS")')
+    IF (hybrid_2)   write(0, '(" FFTW distributed version , - MPI GROUPS ALOG 3 AXIS")')
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     ! Sorting
     IF (sorting_activated.gt.0) THEN
