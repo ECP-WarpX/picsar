@@ -1221,6 +1221,7 @@ MODULE control_file
     curr%antenna_params%is_lens = .FALSE.
     curr%antenna_params%laser_zf = 0._num
     curr%antenna_params%focal_length = 0._num
+    curr%antenna_params%time_window = 0_idp
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer, '#') .GT. 0) THEN
@@ -1274,6 +1275,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'temporal_order') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') curr%antenna_params%temporal_order
+      ELSE IF (INDEX(buffer, 'window') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)')curr%antenna_params%time_window
       ELSE IF (INDEX(buffer, 'is_lens') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) curr%antenna_params%is_lens
