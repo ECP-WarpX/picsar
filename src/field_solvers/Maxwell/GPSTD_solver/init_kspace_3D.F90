@@ -136,12 +136,21 @@ MODULE gpstd_solver
     l_stg = .TRUE.
     ii=DCMPLX(0.0_num,1.0_num)
     CALL compute_k_vec_nompi(l_stg)
-IF(.NOT. fftw_mpi_transpose) THEN
-!$OMP PARALLEL DO DEFAULT(SHARED)
-!PRIVATE(i,j,k) COLLAPSE(3)
     DO i = 1,nfftx/2+1
       DO j = 1,nffty
         DO k = 1,nfftz
+          IF(.NOT. fftw_mpi_transpose) THEN
+          Kspace(nmatrixes2)%block_vector(1)%block3dc(i,j,k) = kxf(i)
+          Kspace(nmatrixes2)%block_vector(2)%block3dc(i,j,k) = kxb(i)
+          Kspace(nmatrixes2)%block_vector(3)%block3dc(i,j,k) = kxc(i)
+          Kspace(nmatrixes2)%block_vector(4)%block3dc(i,j,k) = kyf(j)
+          Kspace(nmatrixes2)%block_vector(5)%block3dc(i,j,k) = kyb(j)
+          Kspace(nmatrixes2)%block_vector(6)%block3dc(i,j,k) = kyc(j)
+          Kspace(nmatrixes2)%block_vector(7)%block3dc(i,j,k) = kzf(k)
+          Kspace(nmatrixes2)%block_vector(8)%block3dc(i,j,k) = kzb(k)
+          Kspace(nmatrixes2)%block_vector(9)%block3dc(i,j,k) = kzc(k)
+          Kspace(nmatrixes2)%block_vector(10)%block3dc(i,j,k) = SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
+          ELSE
           Kspace(nmatrixes2)%block_vector(1)%block3dc(i,j,k) = kxf(i)
           Kspace(nmatrixes2)%block_vector(2)%block3dc(i,j,k) = kxb(i)
           Kspace(nmatrixes2)%block_vector(3)%block3dc(i,j,k) = kxc(i)
@@ -152,31 +161,10 @@ IF(.NOT. fftw_mpi_transpose) THEN
           Kspace(nmatrixes2)%block_vector(8)%block3dc(i,j,k) = kyb(j)
           Kspace(nmatrixes2)%block_vector(9)%block3dc(i,j,k) = kyc(j)
           Kspace(nmatrixes2)%block_vector(10)%block3dc(i,j,k) = SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
+          ENDIF
         ENDDO
       ENDDO
     ENDDO
-!$OMP END PARALLEL DO
-ELSE
-!$OMP PARALLEL DO DEFAULT(SHARED)
-!PRIVATE(i,j,k) COLLAPSE(3)
-    DO i = 1,nfftx/2+1
-      DO j = 1,nffty
-        DO k = 1,nfftz
-          Kspace(nmatrixes2)%block_vector(1)%block3dc(i,j,k) = kxf(i)
-          Kspace(nmatrixes2)%block_vector(2)%block3dc(i,j,k) = kxb(i)
-          Kspace(nmatrixes2)%block_vector(3)%block3dc(i,j,k) = kxc(i)
-          Kspace(nmatrixes2)%block_vector(4)%block3dc(i,j,k) = kzf(k)
-          Kspace(nmatrixes2)%block_vector(5)%block3dc(i,j,k) = kzb(k)
-          Kspace(nmatrixes2)%block_vector(6)%block3dc(i,j,k) = kzc(k)
-          Kspace(nmatrixes2)%block_vector(7)%block3dc(i,j,k) = kyf(j)
-          Kspace(nmatrixes2)%block_vector(8)%block3dc(i,j,k) = kyb(j)
-          Kspace(nmatrixes2)%block_vector(9)%block3dc(i,j,k) = kyc(j)
-          Kspace(nmatrixes2)%block_vector(10)%block3dc(i,j,k) = SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
-        ENDDO
-      ENDDO
-    ENDDO
-!$OMP END PARALLEL DO
-ENDIF
     switch = .FALSE.
     ALLOCATE(temp(nfftx/2+1,nffty,nfftz))
     ALLOCATE(temp2(nfftx/2+1,nffty,nfftz))
