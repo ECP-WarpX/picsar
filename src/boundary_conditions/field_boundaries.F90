@@ -516,6 +516,7 @@ MODULE field_boundary
     USE shared_data
     LOGICAL(lp)  , INTENT(IN)  :: is_source
     REAL(num) :: tmptime
+    INTEGER(idp)     ::  size_nx
 #if defined(DEBUG)
     WRITE(0, *) "efield_bcs_group: start"
 #endif
@@ -523,49 +524,50 @@ MODULE field_boundary
     IF (it.ge.timestat_itstart) THEN
         tmptime = MPI_WTIME()
     ENDIF
+    size_nx = 2*(nx_group/2+1)
     IF(mpicom_curr .EQ. 0) THEN
-      CALL field_bc_group_non_blocking(ex_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
-      CALL field_bc_group_non_blocking(ey_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,4_idp)
-      CALL field_bc_group_non_blocking(ez_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_non_blocking(ex_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(ey_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(ez_r,size_nx,ny_group,local_nz,nzg_group)
       IF (it.ge.timestat_itstart) THEN
         localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
-      CALL field_bc_group_non_blocking(bx_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
-      CALL field_bc_group_non_blocking(by_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
-      CALL field_bc_group_non_blocking(bz_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_non_blocking(bx_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(by_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_non_blocking(bz_r,size_nx,ny_group,local_nz,nzg_group)
       IF (it.ge.timestat_itstart) THEN
         localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
       IF(is_source) THEN
-        CALL field_bc_group_non_blocking(jx_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,1_idp)
-        CALL field_bc_group_non_blocking(jy_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,1_idp)
-        CALL field_bc_group_non_blocking(jz_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,1_idp)
-        CALL field_bc_group_non_blocking(rho_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,2_idp)
-        CALL field_bc_group_non_blocking(rhoold_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,2_idp)
+        CALL field_bc_group_non_blocking(jx_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(jy_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(jz_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(rho_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_non_blocking(rhoold_r,size_nx,ny_group,local_nz,nzg_group)
       ENDIF
     ELSE
-      CALL field_bc_group_blocking(ex_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
-      CALL field_bc_group_blocking(ey_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,4_idp)
-      CALL field_bc_group_blocking(ez_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_blocking(ex_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_blocking(ey_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_blocking(ez_r,size_nx,ny_group,local_nz,nzg_group)
       IF (it.ge.timestat_itstart) THEN
         localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
-      CALL field_bc_group_blocking(bx_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
-      CALL field_bc_group_blocking(by_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
-      CALL field_bc_group_blocking(bz_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,0_idp)
+      CALL field_bc_group_blocking(bx_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_blocking(by_r,size_nx,ny_group,local_nz,nzg_group)
+      CALL field_bc_group_blocking(bz_r,size_nx,ny_group,local_nz,nzg_group)
       IF (it.ge.timestat_itstart) THEN
         localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
         tmptime = MPI_WTIME()
       ENDIF
       IF(is_source) THEN
-        CALL field_bc_group_blocking(jx_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,1_idp)
-        CALL field_bc_group_blocking(jy_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,1_idp)
-        CALL field_bc_group_blocking(jz_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,1_idp)
-        CALL field_bc_group_blocking(rho_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,2_idp)
-        CALL field_bc_group_blocking(rhoold_r,2*(nx_group/2+1),ny_group,local_nz,nzg_group,2_idp)
+        CALL field_bc_group_blocking(jx_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_blocking(jy_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_blocking(jz_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_blocking(rho_r,size_nx,ny_group,local_nz,nzg_group)
+        CALL field_bc_group_blocking(rhoold_r,size_nx,ny_group,local_nz,nzg_group)
       ENDIF
 
     ENDIF
@@ -575,12 +577,12 @@ MODULE field_boundary
 #endif
    END SUBROUTINE
 
-   SUBROUTINE field_bc_group_blocking(field,nxx,nyy,nzz,ngroupz,id)
+   SUBROUTINE field_bc_group_blocking(field,nxx,nyy,nzz,ngroupz)
 #if defined(FFTW)
      USE group_parameters
 #endif
      USE shared_data
-     INTEGER(idp)  :: nxx,nyy,nzz,ngroupz,id
+     INTEGER(idp) ,INTENT(IN)  :: nxx,nyy,nzz,ngroupz
      REAL(num)  , INTENT(INOUT), DIMENSION(1:nxx,1:nyy,1:nzz)  :: field
      INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
      INTEGER(isp) :: basetype
@@ -624,17 +626,16 @@ MODULE field_boundary
 
 
 
-   SUBROUTINE field_bc_group_non_blocking(field,nxx,nyy,nzz,ngroupz,id) 
+   SUBROUTINE field_bc_group_non_blocking(field,nxx,nyy,nzz,ngroupz) 
 #if defined(FFTW)
      USE group_parameters
 #endif
      USE shared_data
-     INTEGER(idp)  :: nxx,nyy,nzz,ngroupz,id
+     INTEGER(idp) ,INTENT(IN)  :: nxx,nyy,nzz,ngroupz
      REAL(num)  , INTENT(INOUT), DIMENSION(1:nxx,1:nyy,1:nzz)  :: field
      INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
      INTEGER(isp) :: basetype
      INTEGER(isp):: requests_1(2),requests_2(2)
-
      basetype = mpidbl
      sizes(1) = nxx
      sizes(2) = nyy
@@ -671,7 +672,8 @@ MODULE field_boundary
        CALL MPI_ISEND(field(1,1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,isp),tag, comm, requests_1(1), errcode)
        CALL MPI_IRECV(field(1,1,iz_max_r+1),1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_1(2), errcode)
        CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-       CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz +1), 1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
+       CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz+1), 1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
+
        CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(20),INT(proc_z_min,isp),tag, comm,requests_2(2), errcode)
        CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
      ENDIF
