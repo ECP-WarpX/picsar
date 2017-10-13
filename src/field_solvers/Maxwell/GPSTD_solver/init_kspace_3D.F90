@@ -106,7 +106,6 @@ MODULE gpstd_solver
     USE fields      , ONLY : nxguards,nyguards,nzguards
     USE fields , ONLY : norderx,nordery,norderz
     USE params , ONLY : dt
-    USE mpi_fftw3
     LOGICAL(lp)                                   :: l_stg
     REAL(num)    , ALLOCATABLE , DIMENSION(:,:,:) :: temp,temp2
     INTEGER(idp)                                  :: i,j,k

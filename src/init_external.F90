@@ -16,20 +16,22 @@
 ! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
 ! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
-!
-SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
-        field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
-        bind(C,name='init_params_picsar') 
-    USE iso_c_binding 
-    USE params
-    USE shared_data
-    USE constants
-    USE picsar_precision
-    USE fields 
+MODULE link_external_tools
+  USE iso_c_binding
+  USE params
+  USE shared_data
+  USE constants
+  USE picsar_precision
+  USE fields
+  USE fastfft
 #if defined(FFTW)
-    USE fourier_psaotd
-    USE fourier
+  USE fourier_psaotd
+  USE fourier
 #endif 
+  CONTAINS 
+  SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
+      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
+      BIND(C,name='init_params_picsar') 
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3
     REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(1:2*ng3+n3+1,1:2*ng2+n2,1:2*ng1+n1) :: &
@@ -101,4 +103,8 @@ SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3
       IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
       IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
     ENDIF
-END SUBROUTINE
+  END SUBROUTINE
+
+
+
+END MODULE
