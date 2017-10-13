@@ -17,7 +17,7 @@
 ! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
-SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,&
+SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
         field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
         bind(C,name='init_params_picsar') 
     USE iso_c_binding 
@@ -36,8 +36,9 @@ SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3
         field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
     REAL(C_DOUBLE) , INTENT(IN) ::d1,d2,d3,dtt
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
+    LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
 
-    l_spectral  = .TRUE. 
+    l_spectral  = LOGICAL(is_spec,lp) 
     g_spectral  = .FALSE.
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
@@ -85,19 +86,19 @@ SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3
       IF(.NOT. ASSOCIATED(jzf)) ALLOCATE(jzf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhof)) ALLOCATE(rhof(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhooldf)) ALLOCATE(rhooldf(nkx, nky, nkz))
+      imn=-nxguards;imx=nx+nxguards-1
+      jmn=-nyguards;jmx=ny+nyguards-1
+      kmn=-nzguards;kmx=nz+nzguards-1
+      IF(.NOT. ASSOCIATED(ex_r)) ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(ey_r)) ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(ez_r)) ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(bx_r)) ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(by_r)) ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(bz_r)) ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(jx_r)) ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(jy_r)) ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(jz_r)) ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
+      IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
     ENDIF
-    imn=-nxguards; imx=nx+nxguards-1
-    jmn=-nyguards;jmx=ny+nyguards-1
-    kmn=-nzguards;kmx=nz+nzguards-1
-    IF(.NOT. ASSOCIATED(ex_r)) ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(ey_r)) ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(ez_r)) ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(bx_r)) ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(by_r)) ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(bz_r)) ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(jx_r)) ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(jy_r)) ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(jz_r)) ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-    IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
 END SUBROUTINE

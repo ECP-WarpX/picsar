@@ -59,6 +59,16 @@ MODULE constants
   REAL(num), PARAMETER :: pmass   = 1.6726231000000001e-27_num
   !> Electron charge
   REAL(num), PARAMETER :: echarge = 1.6021764620000001e-19_num
+#if defined(LIBRARY)
+  !> Speed of light in vacuum
+  REAL(num), PARAMETER :: clight  = 1.0_num 
+  !> Magnetic constant
+  REAL(num), PARAMETER :: mu0     = 1.0_num
+  !> Vacuum permeability
+  REAL(num), PARAMETER :: eps0    = 1.0_num 
+  REAL(num), PARAMETER :: imu0    = 1.0_num 
+  !> The famous pi value
+#else
   !> Speed of light in vacuum
   REAL(num), PARAMETER :: clight  = 2.99792458e8_num
   !> Magnetic constant
@@ -66,6 +76,7 @@ MODULE constants
   !> Vacuum permeability
   REAL(num), PARAMETER :: eps0    = 8.854187817620389e-12_num
   REAL(num), PARAMETER :: imu0    = 795774.715459_num
+#endif
   !> The famous pi value
   REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
   !> Dimension of the cartesian topology
