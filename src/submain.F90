@@ -109,9 +109,8 @@ SUBROUTINE step(nst)
       open (unit=out_unit3,file="RESULTS/em.txt",STATUS="REPLACE",action="write")
       open(unit=out_unit4,file="RESULTS/kin_e.txt",STATUS="REPLACE",action="write")
     endif
-    CALL pxrdepose_rho_on_grid
-    CALL charge_bcs
-    rhoold=rho
+    rhoold=0.0_num
+    rho = 0.0_num
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
       !!! --- Init iteration variables

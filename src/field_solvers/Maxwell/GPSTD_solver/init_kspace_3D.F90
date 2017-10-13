@@ -430,7 +430,7 @@ MODULE gpstd_solver
 ! ________________________________________________________________________________________
 
  
-  SUBROUTINE init_plans_gpstd
+  SUBROUTINE init_plans_gpstd() bind(C,name='init_plans_gpstd_pxr')
   USE fields
   USE matrix_coefficients
   USE shared_data
@@ -553,7 +553,7 @@ MODULE gpstd_solver
 ! ________________________________________________________________________________________
 
 
-SUBROUTINE init_gpstd()
+SUBROUTINE init_gpstd() bind(C,name='init_gpstd_pxr')
   USE matrix_coefficients
   USE PICSAR_PRECISION
   USE CONSTANTS

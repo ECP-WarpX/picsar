@@ -464,7 +464,7 @@ IF (it.ge.timestat_itstart) THEN
 ENDIF
 END SUBROUTINE push_psaotd_ebfielfs
 
-SUBROUTINE init_plans_blocks
+SUBROUTINE init_plans_blocks() bind(C,name='init_plans_blocks_pxr')
 USE shared_data
 USE fastfft
 Use fourier
