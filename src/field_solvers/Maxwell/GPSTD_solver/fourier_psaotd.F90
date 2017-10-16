@@ -97,7 +97,7 @@ ENDIF
 END SUBROUTINE init_plans_fourier_mpi
 
 
-SUBROUTINE get_Ffields
+SUBROUTINE get_Ffields() bind(C,name='get_Ffields')
 USE shared_data
 USE fields
 USE fourier
@@ -116,7 +116,6 @@ nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-
 ! Init fourier fields fields
 call normalize_Fourier(ex_r,nfftx,nffty,nfftz,ex,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(ey_r,nfftx,nffty,nfftz,ey,nxx,nyy,nzz,1.0_num)
@@ -132,7 +131,6 @@ call normalize_Fourier(rhoold_r,nfftx,nffty,nfftz,rhoold,nxx,nyy,nzz,1.0_num)
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
-
 ! Do Fourier Transform
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
@@ -151,7 +149,6 @@ CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r, rhof, plan_r2c)
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
-
 END SUBROUTINE get_Ffields
 
 
@@ -247,7 +244,7 @@ ENDIF
 END SUBROUTINE get_Ffields_mpi
 
 
-SUBROUTINE get_fields
+SUBROUTINE get_fields() bind(C,name='get_fields')
 USE params
 USE shared_data
 USE fields
@@ -303,7 +300,6 @@ call normalize_Fourier(rhoold,nxx,nyy,nzz,rhoold_r,nfftx,nffty,nfftz,coeff_norm)
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
-
 END SUBROUTINE get_fields
 
 
@@ -377,7 +373,7 @@ ENDIF
 
 END SUBROUTINE get_fields_mpi
 
-SUBROUTINE push_psaotd_ebfielfs
+SUBROUTINE push_psaotd_ebfielfs() bind(C,name='push_psaotd_ebfields')
 USE shared_data
 USE fields
 USE fourier
@@ -500,7 +496,6 @@ ELSE
                 ex_r,plan_c2r,INT(FFTW_MEASURE,idp),INT(FFTW_BACKWARD,idp))
 ENDIF
 IF(rank==0) WRITE(0,*) 'INIT GPSTD PLANS DONE'
-
 END SUBROUTINE
 
 !SUBROUTINE solve_poisson

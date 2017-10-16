@@ -34,7 +34,7 @@ MODULE link_external_tools
       BIND(C,name='init_params_picsar') 
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3
-    REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(1:2*ng3+n3+1,1:2*ng2+n2,1:2*ng1+n1) :: &
+    REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(1:2*ng3+n3+1,1:2*ng2+n2+1,1:2*ng1+n1+1) :: &
         field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
     REAL(C_DOUBLE) , INTENT(IN) ::d1,d2,d3,dtt
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
@@ -46,7 +46,6 @@ MODULE link_external_tools
     fftw_hybrid = .FALSE.
     hybrid_2 = .FALSE.
     fftw_mpi_transpose = .FALSE.
-
     nx = INT(n3,idp)
     ny = INT(n2,idp)
     nz = INT(n1,idp)
@@ -60,7 +59,6 @@ MODULE link_external_tools
     norderx = REAL(nor3,idp)
     nordery = REAL(nor2,idp)
     norderz = REAL(nor1,idp) 
-
     ex => field1
     ey => field2
     ez => field3
@@ -72,7 +70,6 @@ MODULE link_external_tools
     jz => field9
     rho => field10
     rhoold =>field11
-    
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
@@ -103,6 +100,7 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
       IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
     ENDIF
+    CALL init_plans_blocks
   END SUBROUTINE
 
 
