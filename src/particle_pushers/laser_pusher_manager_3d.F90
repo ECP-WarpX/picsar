@@ -65,7 +65,7 @@ SUBROUTINE push_laser_particles
               curr%antenna_params%Emax, curr%antenna_params%Emax_laser_1,&
               curr%antenna_params%Emax_laser_2, curr%antenna_params%polvector1,&
               curr%antenna_params%polvector2, curr%antenna_params%k0_laser,&
-              curr%antenna_params%q_z, curr%antenna_params%laser_tau, real_time,&
+              curr%antenna_params%q_z,  real_time,&
               curr%antenna_params%t_peak, curr%antenna_params%temporal_order,&
               curr%antenna_params%polangle)
             ENDIF
@@ -185,7 +185,7 @@ END SUBROUTINE laserp_pusher_gaussian
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE laserp_pusher_hamming(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,      &
-  lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, laser_tau,          &
+  lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z,           &
   real_time, t_peak, temporal_order, polangle)
   USE shared_data
   USE omp_lib
@@ -205,7 +205,7 @@ SUBROUTINE laserp_pusher_hamming(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
   REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp, uyp, uzp, gaminv
   REAL(num), INTENT(IN)                   :: dtt
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
-  REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, laser_tau,  &
+  REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser,   &
   real_time, t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order
@@ -244,7 +244,7 @@ SUBROUTINE laserp_pusher_hamming(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
       xx = pid(nn, 2)
       yy = pid(nn, 3)
       CALL hamming_profile(xx, yy, amp1,amp2,amp3, emax, emax1, emax2, polvector1, polvector2,  &
-      k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
+      k0_laser, q_z,  real_time, t_peak, temporal_order, polangle)
       ! --- Update particle momenta based on laser electric field
       uxp(nn) = amp1*coeff_ampli
       uyp(nn) = amp2*coeff_ampli
@@ -325,15 +325,15 @@ END SUBROUTINE
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE hamming_profile(xx, yy, amp1,amp2,amp3, emax, emax1, emax2, polvector1,polvector2,  &
-  k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
+  k0_laser, q_z,  real_time, t_peak, temporal_order, polangle)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP DECLARE SIMD(hamming_profile)
-  !UNIFORM(emax,emax1,emax2,polvector1,polvector2,k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
+  !UNIFORM(emax,emax1,emax2,polvector1,polvector2,k0_laser,q_z,real_time,t_peak,temporal_order,polangle)
 #endif
 #elif defined __INTEL_COMPILER
   !DIR$ ATTRIBUTES VECTOR :
-  !UNIFORM(emax,emax1,emax2,emax,polvector1,polvector2,k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
+  !UNIFORM(emax,emax1,emax2,emax,polvector1,polvector2,k0_laser,q_z,real_time,t_peak,temporal_order,polangle)
   !:: hamming_profile
 #endif
 
@@ -342,25 +342,24 @@ SUBROUTINE hamming_profile(xx, yy, amp1,amp2,amp3, emax, emax1, emax2, polvector
   USE params
   REAL(num),               INTENT(INOUT) :: amp1,amp2,amp3
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
-  REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser,laser_tau,  &
+  REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser,  &
   real_time, t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
   REAL(num), INTENT(IN)                   :: xx, yy
   INTEGER(idp), INTENT(IN)                :: temporal_order
   COMPLEX(cpx), DIMENSION(3)             :: arg
   COMPLEX(cpx)                            :: j, u1, u2
-  INTEGER(idp)                            :: i
   REAL(num)                               :: Idd
   j=(0.0_num, 1.0_num)
-  IF(real_time .LE. laser_tau) THEN
+  IF(real_time .LE. 2.0_num*t_peak) THEN
     Idd=1.0_num
   ELSE  
     Idd=0.0_num
   ENDIF
   u1 = -j*k0_laser*((xx**2+yy**2)/(2*q_z) - clight*(real_time-t_peak))
   u2 = -j*k0_laser*((xx**2+yy**2)/(2*q_z) - clight*(real_time-t_peak))+j*polangle*2.0_num*pi
-  u1=Idd*EXP(u1)*emax1*(0.5_num - 0.5_num*COS(real_time*2.0_num*pi/laser_tau))
-  u2=Idd*EXP(u2)*emax2*(0.5_num - 0.5_num*COS(real_time*2.0_num*pi/laser_tau))
+  u1=Idd*EXP(u1)*emax1*(0.5_num - 0.5_num*COS(real_time*2.0_num*pi/(2.0_num*t_peak)))
+  u2=Idd*EXP(u2)*emax2*(0.5_num - 0.5_num*COS(real_time*2.0_num*pi/(2.0_num*t_peak)))
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
   arg(2) = (u1*polvector1(2) + u2*polvector2(2))
   arg(3) = (u1*polvector1(3) + u2*polvector2(3))
