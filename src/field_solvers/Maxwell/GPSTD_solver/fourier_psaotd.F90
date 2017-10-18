@@ -167,12 +167,6 @@ LOGICAL(lp)  :: is_source
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
-!ey_r=0.0_num*ex_r
-!ex_r=0.0_num*ey_r
-!ez_r=0.0_num*ez_r
-!bx_r=0.0_num*bx_r
-!by_r=0.0_num*by_r
-!bz_r=0.0_num*bz_r
 ! Copy array values before FFT
 IF(.NOT. fftw_hybrid) THEN
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
@@ -199,17 +193,17 @@ ELSE
  DO iz=iz_min_r,iz_max_r
    DO iy=iy_min_r,iy_max_r
      DO ix=ix_min_r,ix_max_r
-       ex_r(ix,iy,iz)=ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       ey_r(ix,iy,iz)=ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       ez_r(ix,iy,iz)=ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       bx_r(ix,iy,iz)=bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       by_r(ix,iy,iz)=by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       bz_r(ix,iy,iz)=bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       jx_r(ix,iy,iz)=jx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       jy_r(ix,iy,iz)=jy(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       jz_r(ix,iy,iz)=jz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       rho_r(ix,iy,iz)=rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
-       rhoold_r(ix,iy,iz)=rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        ex_r(ix,iy,iz)=ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        ey_r(ix,iy,iz)=ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        ez_r(ix,iy,iz)=ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        bx_r(ix,iy,iz)=bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        by_r(ix,iy,iz)=by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        bz_r(ix,iy,iz)=bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        jx_r(ix,iy,iz)=jx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        jy_r(ix,iy,iz)=jy(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+        jz_r(ix,iy,iz)=jz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+      rho_r(ix,iy,iz)=rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
+rhoold_r(ix,iy,iz)=rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)
      END DO
    END DO
  END DO
@@ -356,12 +350,12 @@ ELSE
   DO iz=iz_min_r,iz_max_r
     DO iy=iy_min_r,iy_max_r
       DO ix=ix_min_r,ix_max_r
-        ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=ex_r(ix,iy,iz)*coeff_norm
-        ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=ey_r(ix,iy,iz)*coeff_norm
-        ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=ez_r(ix,iy,iz)*coeff_norm
-        bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=bx_r(ix,iy,iz)*coeff_norm
-        by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=by_r(ix,iy,iz)*coeff_norm
-        bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r)=bz_r(ix,iy,iz)*coeff_norm
+        ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r) = ex_r(ix,iy,iz)*coeff_norm
+        ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r) = ey_r(ix,iy,iz)*coeff_norm
+        ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r) = ez_r(ix,iy,iz)*coeff_norm
+        bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r) = bx_r(ix,iy,iz)*coeff_norm
+        by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r) = by_r(ix,iy,iz)*coeff_norm
+        bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-iz_min_r) = bz_r(ix,iy,iz)*coeff_norm
       END DO
     END DO
   END DO

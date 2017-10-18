@@ -633,7 +633,7 @@ MODULE field_boundary
      USE shared_data
      INTEGER(idp) ,INTENT(IN)  :: nxx,nyy,nzz,ngroupz
      REAL(num)  , INTENT(INOUT), DIMENSION(1:nxx,1:nyy,1:nzz)  :: field
-     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes,subsizes2, starts
      INTEGER(isp) :: basetype
      INTEGER(isp):: requests_1(2),requests_2(2)
      basetype = mpidbl
@@ -644,9 +644,15 @@ MODULE field_boundary
      subsizes(1) = sizes(1) 
      subsizes(2) = sizes(2)
      subsizes(3) = ngroupz
+     subsizes2 = subsizes
+     subsizes2(3) = ngroupz+1
      IF (is_dtype_init(20)) THEN
        mpi_dtypes(20) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
        is_dtype_init(20) = .FALSE.
+     ENDIF
+     IF (is_dtype_init(21)) THEN
+       mpi_dtypes(21) = create_3d_array_derived_type(basetype, subsizes2,sizes,starts)
+       is_dtype_init(21) = .FALSE.
      ENDIF
 #if defined(FFTW)
      IF(group_z_min_boundary .AND. .NOT. group_z_max_boundary) THEN
@@ -658,11 +664,11 @@ MODULE field_boundary
        CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
      ENDIF
      IF(group_z_max_boundary .AND. .NOT. group_z_min_boundary) THEN
-       CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_1(1), errcode)
+       CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(21),INT(proc_z_max,isp),tag, comm, requests_1(1), errcode)
        CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
      ENDIF
      IF(group_z_min_boundary .AND. .NOT. group_z_max_boundary) THEN
-        CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(20),INT(proc_z_min,isp),tag, comm, requests_2(1), errcode)
+        CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(21),INT(proc_z_min,isp),tag, comm, requests_2(1), errcode)
        CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
      ENDIF
 
@@ -672,9 +678,9 @@ MODULE field_boundary
        CALL MPI_ISEND(field(1,1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,isp),tag, comm, requests_1(1), errcode)
        CALL MPI_IRECV(field(1,1,iz_max_r+1),1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_1(2), errcode)
        CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-       CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz+1), 1_isp,mpi_dtypes(20),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
+       CALL MPI_ISEND(field(1,1,iz_max_r-ngroupz+1), 1_isp,mpi_dtypes(21),INT(proc_z_max,isp),tag, comm, requests_2(1), errcode)
 
-       CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(20),INT(proc_z_min,isp),tag, comm,requests_2(2), errcode)
+       CALL MPI_IRECV(field(1,1,1),1_isp,mpi_dtypes(21),INT(proc_z_min,isp),tag, comm,requests_2(2), errcode)
        CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
      ENDIF
 #endif
