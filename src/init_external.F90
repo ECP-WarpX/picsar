@@ -56,9 +56,9 @@ MODULE link_external_tools
     dy = d2
     dz = d1
     dt = dtt
-    norderx = REAL(nor3,idp)
-    nordery = REAL(nor2,idp)
-    norderz = REAL(nor1,idp) 
+    norderx = INT(nor3,idp)
+    nordery = INT(nor2,idp)
+    norderz = INT(nor1,idp) 
     IF(.NOT. l_spectral) THEN
       ex => field3
       ey => field2
