@@ -54,9 +54,15 @@ MODULE gpstd_solver
         ENDIF
       ENDIF
     ELSE
+#if defined(LIBRARY)
+      nfftx = nx+2*nxguards+1
+      nffty = ny+2*nyguards+1
+      nfftz = nz+2*nzguards+1
+#else
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
+#endif
     ENDIF
   END SUBROUTINE
   SUBROUTINE select_case_dims_global(nfftx,nffty,nfftz)
@@ -90,9 +96,15 @@ MODULE gpstd_solver
         ENDIF
       ENDIF
     ELSE
+#if defined(LIBRARY)
+      nfftx = nx+2*nxguards+1
+      nffty = ny+2*nyguards+1
+      nfftz = nz+2*nzguards+1
+#else
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
+#endif
     ENDIF
   END SUBROUTINE
 
@@ -211,7 +223,7 @@ MODULE gpstd_solver
     INTEGER(idp)                                  :: temp_order
     ii = DCMPLX(0.0_num,1.0_num)
 #if defined(LIBRARY)
-    ii = DCMPLX(0.0_num,-1.0_num)
+    ii = DCMPLX(0.0_num,1.0_num)
 #endif
     IF(fftw_mpi_transpose) THEN
         sd=dz

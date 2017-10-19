@@ -74,9 +74,9 @@ MODULE link_external_tools
       rho => field10
       rhoold =>field11
     ENDIF
-    nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
-    nky=(2*nyguards+ny)
-    nkz=(2*nzguards+nz)
+    nkx=(2*nxguards+nx+1)/2+1! Real To Complex Transform
+    nky=(2*nyguards+ny+1)
+    nkz=(2*nzguards+nz+1)
     IF (l_spectral) THEN
       IF(.NOT. ASSOCIATED(exf)) ALLOCATE(exf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(eyf)) ALLOCATE(eyf(nkx, nky, nkz))
@@ -89,9 +89,9 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(jzf)) ALLOCATE(jzf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhof)) ALLOCATE(rhof(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhooldf)) ALLOCATE(rhooldf(nkx, nky, nkz))
-      imn=-nxguards;imx=nx+nxguards-1
-      jmn=-nyguards;jmx=ny+nyguards-1
-      kmn=-nzguards;kmx=nz+nzguards-1
+      imn=-nxguards;imx=nx+nxguards
+      jmn=-nyguards;jmx=ny+nyguards
+      kmn=-nzguards;kmx=nz+nzguards
       IF(.NOT. ASSOCIATED(ex_r)) ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
       IF(.NOT. ASSOCIATED(ey_r)) ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
       IF(.NOT. ASSOCIATED(ez_r)) ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))

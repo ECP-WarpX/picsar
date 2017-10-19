@@ -240,7 +240,6 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C,name='push_psatd_ebfield_3d')
   ELSE
     CALL get_Ffields! - local FFT
   ENDIF
-
   CALL push_psaotd_ebfielfs! - PUSH PSATD
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN

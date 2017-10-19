@@ -108,13 +108,16 @@ USE params
 IMPLICIT NONE
 INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
 REAL(num)    :: tmptime
+nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+#if defined(LIBRARY)
+nfftx=nx+2*nxguards+1
+nffty=ny+2*nyguards+1
+nfftz=nz+2*nzguards+1
+#else
 nfftx=nx+2*nxguards
 nffty=ny+2*nyguards
 nfftz=nz+2*nzguards
-nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
-!#if defined(LIBRARY)
-!nxx=nx+2*nxguards; nyy=ny+2*nyguards; nzz=nz+2*nzguards;
-!#endif
+#endif
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
@@ -250,12 +253,20 @@ USE time_stat
 IMPLICIT NONE
 REAL(num) :: coeff_norm,tmptime
 INTEGER(idp) :: ix,iy,iz,nxx,nyy,nzz,nfftx,nffty,nfftz
-nfftx=nx+2*nxguards
-nffty=ny+2*nyguards
-nfftz=nz+2*nzguards
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
+nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+#if defined(LIBRARY)
+nfftx=nx+2*nxguards+1
+nffty=ny+2*nyguards+1
+nfftz=nz+2*nzguards+1
+#else
+nfftx=nx+2*nxguards
+nffty=ny+2*nyguards
+nfftz=nz+2*nzguards
+#endif
+coeff_norm=1.0_num/(nfftx*nffty*nfftz)
 
 ! Get Inverse Fourier transform of all fields components and currents
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,exf, ex_r, plan_c2r)
@@ -273,14 +284,6 @@ CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhooldf, rhoold_r, plan_c2r)
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
 ENDIF
-
-coeff_norm= 1._num/SIZE(ex_r)
-coeff_norm=1.0_num/(nfftx*nffty*nfftz)
-nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
-!#if defined(LIBRARY)
-!nxx=nx+2*nxguards; nyy=ny+2*nyguards; nzz=nz+2*nzguards;
-!#endif
-
 
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
@@ -481,9 +484,15 @@ IF (fftw_with_mpi) THEN
         nffty=ny_global
         nfftz=nz_global
 ELSE
+#if defined(LIBRARY) 
+        nfftx=nx+2*nxguards+1
+        nffty=ny+2*nyguards+1
+        nfftz=nz+2*nzguards+1
+#else
         nfftx=nx+2*nxguards
         nffty=ny+2*nyguards
         nfftz=nz+2*nzguards
+#endif
 ENDIF
 CALL init_gpstd()
 IF(rank==0) WRITE(0,*) 'INIT GPSTD MATRIX DONE'
