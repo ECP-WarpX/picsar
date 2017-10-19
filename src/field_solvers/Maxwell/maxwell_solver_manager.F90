@@ -218,7 +218,7 @@ END SUBROUTINE push_bfield_2d
 !> @date
 !> Creation March 29 2017
 ! ________________________________________________________________________________________
-SUBROUTINE push_psatd_ebfield_3d() 
+SUBROUTINE push_psatd_ebfield_3d() bind(C,name='push_psatd_ebfield_3d') 
   USE constants
   USE time_stat
   USE params

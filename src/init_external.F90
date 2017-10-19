@@ -18,28 +18,28 @@
 ! perform publicly and display publicly, and to permit other to do so.
 MODULE link_external_tools
   USE iso_c_binding
-  USE params
-  USE shared_data
-  USE constants
-  USE picsar_precision
-  USE fields
-  USE fastfft
-#if defined(FFTW)
-  USE fourier_psaotd
-  USE fourier
-#endif 
   CONTAINS 
   SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
       field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
       BIND(C,name='init_params_picsar') 
+    USE params
+    USE shared_data
+    USE constants
+    USE picsar_precision
+    USE fields
+    USE fastfft
+#if defined(FFTW)
+    USE fourier_psaotd
+    USE fourier
+#endif 
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3
-    REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(1:2*ng3+n3+1,1:2*ng2+n2+1,1:2*ng1+n1+1) :: &
+    REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,-ng1:n1+ng1) :: &
         field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
     REAL(C_DOUBLE) , INTENT(IN) ::d1,d2,d3,dtt
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
     LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
-
+    LOGICAL(lp)                      :: l_stg
     l_spectral  = LOGICAL(is_spec,lp) 
     g_spectral  = .FALSE.
     fftw_with_mpi = .FALSE. 
@@ -59,17 +59,21 @@ MODULE link_external_tools
     norderx = REAL(nor3,idp)
     nordery = REAL(nor2,idp)
     norderz = REAL(nor1,idp) 
-    ex => field1
+    ex => field3
     ey => field2
-    ez => field3
-    bx => field4
+    ez => field1
+
+    bx => field6
     by => field5
-    bz => field6
-    jx => field7 
+    bz => field4
+
+    jx => field9 
     jy => field8
-    jz => field9
-    rho => field10
-    rhoold =>field11
+    jz => field7
+    IF(l_spectral) THEN
+      rho => field10
+      rhoold =>field11
+    ENDIF
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
@@ -100,9 +104,189 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
       IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
     ENDIF
-    CALL init_plans_blocks
+    IF(l_spectral) CALL init_plans_blocks
+    IF(.NOT. l_spectral) THEN 
+      ALLOCATE(xcoeffs(norderx/2))
+      ALLOCATE(ycoeffs(nordery/2))
+      ALLOCATE(zcoeffs(norderz/2))
+      l_stg = .TRUE.
+      CALL FD_weights_hvincenti(norderx,xcoeffs,l_stg)
+      CALL FD_weights_hvincenti(nordery,ycoeffs,l_stg)
+      CALL FD_weights_hvincenti(norderz,zcoeffs,l_stg)
+      xcoeffs = dt/dx*xcoeffs
+      ycoeffs = dt/dy*ycoeffs
+      zcoeffs = dt/dz*zcoeffs
+    ENDIF 
   END SUBROUTINE
 
+  SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
+  dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
+  USE constants
+  USE omp_lib
+  INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard
+  INTEGER(idp), INTENT(IN) :: norderx, nordery, norderz
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
+  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+  -nzguard:nz+nzguard) :: Jx, Jy, Jz
+  REAL(num), INTENT(IN) :: dt, dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
+  INTEGER(idp) :: i, j, k, l, ist,nxs,nys,nzs
 
+  ist = 1
+  nxs =nxguard
+  nys =nyguard
+  nzs =nzguard
 
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
+  !$OMP DO COLLAPSE(3)
+  ! advance Ex
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        Ex(j, k, l) = Ex(j, k, l) - dt  * Jx(j, k, l)
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+          IF((k+i .GT. ny+nyguard) .OR.(k-i+ist .LT. -nyguard)) CYCLE
+          Ex(j, k, l) = Ex(j, k, l) + dtsdy(i) * (Bz(j, k+i, l)   - Bz(j, k-i+ist, l  &
+          ))
+        ENDDO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+          IF((l+i .GT. nz+nzguard) .OR.(l-i+ist .LT. -nzguard)) CYCLE
+          Ex(j, k, l) = Ex(j, k, l) - dtsdz(i) * (By(j, k, l+i)   - By(j, k,      &
+          l-i+ist))
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END DO
+
+  !$OMP DO COLLAPSE(3)
+  ! advance Ey
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        Ey(j, k, l) = Ey(j, k, l) - dt  * Jy(j, k, l)
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+          IF((j+i .GT. nx+nxguard) .OR.(j-i+ist .LT. -nxguard)) CYCLE
+          Ey(j, k, l) = Ey(j, k, l) - dtsdx(i) * (Bz(j+i, k, l)   - Bz(j-i+ist, k,    &
+          l))
+        ENDDO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+          IF((l+i .GT. nz+nzguard) .OR.(l-i+ist .LT. -nzguard)) CYCLE
+          Ey(j, k, l) = Ey(j, k, l) + dtsdz(i) * (Bx(j, k, l+i)   - Bx(j, k,      &
+          l-i+ist))
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END DO
+  !$OMP DO COLLAPSE(3)
+  ! advance Ez
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        Ez(j, k, l) = Ez(j, k, l) - dt  * Jz(j, k, l)
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+          IF((j+i .GT. nx+nxguard) .OR.(j-i+ist .LT. -nxguard)) CYCLE
+          Ez(j, k, l) = Ez(j, k, l) + dtsdx(i) * (By(j+i, k, l) - By(j-i+ist, k, l))
+        ENDDO
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+          IF((k+i .GT. ny+nyguard) .OR.(k-i+ist .LT. -nyguard)) CYCLE
+          Ez(j, k, l) = Ez(j, k, l) - dtsdy(i) * (Bx(j, k+i, l) - Bx(j, k-i+ist, l))
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END DO
+  !$OMP END PARALLEL
+
+  RETURN
+END SUBROUTINE
+
+SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
+  ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard)
+  USE constants
+  INTEGER(idp)          :: nx, ny, nz, nxguard, nyguard, nzguard,           &
+  norderx, nordery, norderz
+  REAL(num), INTENT(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
+  REAL(num), INTENT(IN) :: dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
+  INTEGER(idp)          :: i, j, k, l,nxs,nys,nzs, ist
+
+  ist = 1
+  nxs =nxguard
+  nys =nyguard
+  nzs =nzguard
+  ! advance Bx
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
+  !$OMP DO COLLAPSE(3)
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+          IF((k+i-ist .GT. ny+nyguard) .OR.(k-i .LT. -nyguard)) CYCLE
+          Bx(j, k, l) = Bx(j, k, l) - dtsdy(i) * (Ez(j, k+i-ist, l  ) - Ez(j, k-i,    &
+          l))
+        ENDDO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+          IF((l+i-ist .GT. nz+nzguard) .OR.(l-i .LT. -nzguard)) CYCLE
+          Bx(j, k, l) = Bx(j, k, l) + dtsdz(i) * (Ey(j, k, l+i-ist) - Ey(j, k, l-i))
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END DO
+
+  ! advance By
+  !$OMP DO COLLAPSE(3)
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+          IF((j+i-ist .GT. nx+nxguard) .OR.(j-i .LT. -nxguard)) CYCLE
+          By(j, k, l) = By(j, k, l) + dtsdx(i) * (Ez(j+i-ist, k, l  ) - Ez(j-i, k,    &
+          l))
+        ENDDO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+          IF((l+i-ist .GT. nz+nzguard) .OR.(l-i .LT. -nzguard)) CYCLE
+          By(j, k, l) = By(j, k, l) - dtsdz(i) * (Ex(j, k, l+i-ist) - Ex(j, k, l-i))
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END DO
+
+  ! advance Bz
+  !$OMP DO COLLAPSE(3)
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+          IF((j+i-ist .GT. nx+nxguard) .OR.(j-i .LT. -nxguard)) CYCLE
+          Bz(j, k, l) = Bz(j, k, l) - dtsdx(i) * (Ey(j+i-ist, k, l) - Ey(j-i, k, l))
+        ENDDO
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+          IF((k+i-ist .GT. ny+nyguard) .OR.(k-i .LT. -nyguard)) CYCLE
+          Bz(j, k, l) = Bz(j, k, l) + dtsdy(i) * (Ex(j, k+i-ist, l) - Ex(j, k-i, l))
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END DO
+  !$OMP END PARALLEL
+  RETURN
+
+END SUBROUTINE
+
+SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
+  USE params
+  USE shared_data
+  USE constants
+  USE picsar_precision
+  USE fields
+
+  CALL evec3d_push_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,dt,xcoeffs,ycoeffs,zcoeffs,&
+        nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)
+  CALL bvec3d_push_norder(ex,ey,ez,bx,by,bz,xcoeffs,ycoeffs,zcoeffs,&
+        nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)
+END SUBROUTINE
 END MODULE

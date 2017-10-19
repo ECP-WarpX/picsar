@@ -112,7 +112,9 @@ nfftx=nx+2*nxguards
 nffty=ny+2*nyguards
 nfftz=nz+2*nzguards
 nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
-
+!#if defined(LIBRARY)
+!nxx=nx+2*nxguards; nyy=ny+2*nyguards; nzz=nz+2*nzguards;
+!#endif
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
@@ -275,6 +277,10 @@ ENDIF
 coeff_norm= 1._num/SIZE(ex_r)
 coeff_norm=1.0_num/(nfftx*nffty*nfftz)
 nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+!#if defined(LIBRARY)
+!nxx=nx+2*nxguards; nyy=ny+2*nyguards; nzz=nz+2*nzguards;
+!#endif
+
 
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()

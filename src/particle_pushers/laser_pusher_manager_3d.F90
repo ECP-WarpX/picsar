@@ -355,6 +355,10 @@ SUBROUTINE hamming_profile(xx, yy, amp1,amp2,amp3, emax, emax1, emax2, polvector
     Idd=1.0_num
   ELSE  
     Idd=0.0_num
+    amp1 = 0.0_num
+    amp2 = 0.0_num
+    amp3 = 0.0_num
+    RETURN
   ENDIF
   u1 = -j*k0_laser*((xx**2+yy**2)/(2*q_z) - clight*(real_time-t_peak))
   u2 = -j*k0_laser*((xx**2+yy**2)/(2*q_z) - clight*(real_time-t_peak))+j*polangle*2.0_num*pi
