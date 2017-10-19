@@ -59,25 +59,35 @@ MODULE link_external_tools
     norderx = REAL(nor3,idp)
     nordery = REAL(nor2,idp)
     norderz = REAL(nor1,idp) 
-    ex => field3
-    ey => field2
-    ez => field1
+    IF(.NOT. l_spectral) THEN
+      ex => field3
+      ey => field2
+      ez => field1
 
-    bx => field6
-    by => field5
-    bz => field4
+      bx => field6
+      by => field5
+      bz => field4
 
-    jx => field9 
-    jy => field8
-    jz => field7
-    IF(l_spectral) THEN
-      rho => field10
-      rhoold =>field11
-    ENDIF
-    nkx=(2*nxguards+nx+1)/2+1! Real To Complex Transform
-    nky=(2*nyguards+ny+1)
-    nkz=(2*nzguards+nz+1)
-    IF (l_spectral) THEN
+      jx => field9 
+      jy => field8
+      jz => field7
+    ELSE
+      ex_r => field3
+      ey_r => field2
+      ez_r => field1
+
+      bx_r => field6
+      by_r => field5
+      bz_r => field4
+
+      jx_r => field9
+      jy_r => field8
+      jz_r => field7
+      rho_r =>field10
+      rhoold_r =>field11
+      nkx=(2*nxguards+nx+1)/2+1! Real To Complex Transform
+      nky=(2*nyguards+ny+1)
+      nkz=(2*nzguards+nz+1)
       IF(.NOT. ASSOCIATED(exf)) ALLOCATE(exf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(eyf)) ALLOCATE(eyf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(ezf)) ALLOCATE(ezf(nkx, nky, nkz))
@@ -89,20 +99,20 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(jzf)) ALLOCATE(jzf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhof)) ALLOCATE(rhof(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhooldf)) ALLOCATE(rhooldf(nkx, nky, nkz))
-      imn=-nxguards;imx=nx+nxguards
-      jmn=-nyguards;jmx=ny+nyguards
-      kmn=-nzguards;kmx=nz+nzguards
-      IF(.NOT. ASSOCIATED(ex_r)) ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(ey_r)) ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(ez_r)) ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(bx_r)) ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(by_r)) ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(bz_r)) ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(jx_r)) ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(jy_r)) ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(jz_r)) ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-      IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  imn=-nxguards;imx=nx+nxguards
+    !  jmn=-nyguards;jmx=ny+nyguards
+    !  kmn=-nzguards;kmx=nz+nzguards
+    !  IF(.NOT. ASSOCIATED(ex_r)) ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(ey_r)) ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(ez_r)) ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(bx_r)) ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(by_r)) ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(bz_r)) ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(jx_r)) ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(jy_r)) ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(jz_r)) ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
+    !  IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
     ENDIF
     IF(l_spectral) CALL init_plans_blocks
     IF(.NOT. l_spectral) THEN 

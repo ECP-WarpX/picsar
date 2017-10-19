@@ -122,6 +122,7 @@ IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
 ! Init fourier fields fields
+#if !defined(LIBRARY)
 call normalize_Fourier(ex_r,nfftx,nffty,nfftz,ex,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(ey_r,nfftx,nffty,nfftz,ey,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(ez_r,nfftx,nffty,nfftz,ez,nxx,nyy,nzz,1.0_num)
@@ -133,6 +134,7 @@ call normalize_Fourier(jy_r,nfftx,nffty,nfftz,jy,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(jz_r,nfftx,nffty,nfftz,jz,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(rhoold_r,nfftx,nffty,nfftz,rhoold,nxx,nyy,nzz,1.0_num)
+#endif
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
@@ -274,12 +276,12 @@ CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,eyf, ey_r, plan_c2r)
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,ezf, ez_r, plan_c2r)
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,bxf, bx_r, plan_c2r)
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,byf, by_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,bzf, bz_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jxf, jx_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jyf, jy_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jzf, jz_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhof, rho_r, plan_c2r)
-CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhooldf, rhoold_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,bzf, bz_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jxf, jx_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jyf, jy_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jzf, jz_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhof, rho_r, plan_c2r)
+!CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhooldf, rhoold_r, plan_c2r)
 
 IF (it.ge.timestat_itstart) THEN
   localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -288,18 +290,27 @@ ENDIF
 IF (it.ge.timestat_itstart) THEN
   tmptime = MPI_WTIME()
 ENDIF
+#if defined (LIBRARY) 
+
+call normalize_Fourier(ex_r,nfftx,nffty,nfftz,ex_r,nfftx,nffty,nfftz,coeff_norm)
+call normalize_Fourier(ey_r,nfftx,nffty,nfftz,ey_r,nfftx,nffty,nfftz,coeff_norm)
+call normalize_Fourier(ez_r,nfftx,nffty,nfftz,ez_r,nfftx,nffty,nfftz,coeff_norm)
+call normalize_Fourier(bx_r,nfftx,nffty,nfftz,bx_r,nfftx,nffty,nfftz,coeff_norm)
+call normalize_Fourier(by_r,nfftx,nffty,nfftz,by_r,nfftx,nffty,nfftz,coeff_norm)
+call normalize_Fourier(bz_r,nfftx,nffty,nfftz,bz_r,nfftx,nffty,nfftz,coeff_norm)
+#else
 call normalize_Fourier(ex,nxx,nyy,nzz,ex_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(ey,nxx,nyy,nzz,ey_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(ez,nxx,nyy,nzz,ez_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(bx,nxx,nyy,nzz,bx_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(by,nxx,nyy,nzz,by_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(bz,nxx,nyy,nzz,bz_r,nfftx,nffty,nfftz,coeff_norm)
-call normalize_Fourier(jx,nxx,nyy,nzz,jx_r,nfftx,nffty,nfftz,coeff_norm)
-call normalize_Fourier(jy,nxx,nyy,nzz,jy_r,nfftx,nffty,nfftz,coeff_norm)
-call normalize_Fourier(jz,nxx,nyy,nzz,jz_r,nfftx,nffty,nfftz,coeff_norm)
-call normalize_Fourier(rho,nxx,nyy,nzz,rho_r,nfftx,nffty,nfftz,coeff_norm)
-call normalize_Fourier(rhoold,nxx,nyy,nzz,rhoold_r,nfftx,nffty,nfftz,coeff_norm)
-
+!call normalize_Fourier(jx,nxx,nyy,nzz,jx_r,nfftx,nffty,nfftz,coeff_norm)
+!call normalize_Fourier(jy,nxx,nyy,nzz,jy_r,nfftx,nffty,nfftz,coeff_norm)
+!call normalize_Fourier(jz,nxx,nyy,nzz,jz_r,nfftx,nffty,nfftz,coeff_norm)
+!call normalize_Fourier(rho,nxx,nyy,nzz,rho_r,nfftx,nffty,nfftz,coeff_norm)
+!call normalize_Fourier(rhoold,nxx,nyy,nzz,rhoold_r,nfftx,nffty,nfftz,coeff_norm)
+#endif
 IF (it.ge.timestat_itstart) THEN
   localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
 ENDIF
