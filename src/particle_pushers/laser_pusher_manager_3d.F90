@@ -177,6 +177,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp, emax, emax1, emax2, polvector1, polvect
   USE constants
   USE params
   USE shared_data
+  USE omp_lib
   REAL(num), DIMENSION(3) ,  INTENT(INOUT)   :: amp
   REAL(num), DIMENSION(3) , INTENT(IN)       :: polvector1, polvector2
   REAL(num), INTENT(IN)                      :: emax, emax1, emax2, k0_laser,laser_tau,  &
@@ -194,10 +195,8 @@ SUBROUTINE gaussian_profile(xx, yy, amp, emax, emax1, emax2, polvector1, polvect
   ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
-  arg(1) = (u1*polvector1(1) + u2*polvector2(1))
-  arg(2) = (u1*polvector1(2) + u2*polvector2(2))
-  arg(3) = (u1*polvector1(3) + u2*polvector2(3))
-  DO i=1,3
-  amp(i) = REAL(arg(i),num)
+  DO i=1,3 
+    arg(i) = (u1*polvector1(i) + u2*polvector2(i))
+    amp(i) = REAL(arg(i),num)
   ENDDO
 END SUBROUTINE
