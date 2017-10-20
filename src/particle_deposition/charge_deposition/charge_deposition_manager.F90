@@ -321,7 +321,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -353,7 +353,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -396,7 +396,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -437,7 +437,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -572,7 +572,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -604,7 +604,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -647,7 +647,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -688,7 +688,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -798,7 +798,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -839,7 +839,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -882,7 +882,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -923,7 +923,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -1035,7 +1035,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -1088,7 +1088,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -1131,7 +1131,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -1172,7 +1172,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -1285,7 +1285,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -1338,7 +1338,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -1381,7 +1381,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
@@ -1422,7 +1422,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_charge) CYCLE
+          IF (.NOT. curr%ldodepos .OR. curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE._lp
