@@ -1727,7 +1727,6 @@ MODULE tiling
       jmax = NINT((y_max_local - y_min_local)/dy)
       lmax = NINT((z_max_local - z_min_local)/dz)
     ENDIF
-
     ! --- init laser particle positions
     mins = (/x_min_local, y_min_local, z_min_local/)
     maxs = (/x_max_local, y_max_local, z_max_local/)
