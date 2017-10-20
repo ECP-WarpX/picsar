@@ -603,7 +603,7 @@ coswdt=COS(ABS(temp))
 sinwdt=SIN(ABS(temp))
 
 EJmult=-sinwdt/(kmag*clight*eps0)
-EJmult(1,1,1)=dt/eps0
+EJmult(1,1,1)=-dt/eps0
 ERhomult=jj*(-EJmult/dt-1.0_num/eps0)/kmag
 ERhooldmult = jj*(coswdt/eps0+EJmult/dt)/kmag
 temp=1.0_num/(kmag*clight*eps0) ! Jmult
