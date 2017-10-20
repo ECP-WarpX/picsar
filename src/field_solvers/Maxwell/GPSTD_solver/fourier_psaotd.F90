@@ -97,7 +97,7 @@ ENDIF
 END SUBROUTINE init_plans_fourier_mpi
 
 
-SUBROUTINE get_Ffields() bind(C,name='get_Ffields')
+SUBROUTINE get_Ffields() 
 USE shared_data
 USE fields
 USE fourier
@@ -245,7 +245,7 @@ ENDIF
 END SUBROUTINE get_Ffields_mpi
 
 
-SUBROUTINE get_fields() bind(C,name='get_fields')
+SUBROUTINE get_fields() 
 USE params
 USE shared_data
 USE fields
