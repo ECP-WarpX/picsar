@@ -26,5 +26,5 @@ SUBROUTINE/END SUBROUTINE, FUNCTION/END FUNCTION etc.)
   at column 86 when continuing a line. The parser in `utils/fortran_parsers/justify_file.py` 
   can be used to automatically fixed this. 
 
-- 
+- Keep a blank line between declaration blocks and code blocks for clarity 
 
