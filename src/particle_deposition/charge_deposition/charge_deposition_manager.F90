@@ -1005,6 +1005,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
   TYPE(grid_tile), POINTER        :: currg
   INTEGER(idp)                    :: nxc, nyc, nzc, nxjg, nyjg, nzjg
   LOGICAL(lp)                     :: isdeposited=.FALSE._lp
+  
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, rhog, noxx, &
