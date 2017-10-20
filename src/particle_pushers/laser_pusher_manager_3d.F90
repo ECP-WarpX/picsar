@@ -98,14 +98,14 @@ SUBROUTINE laserp_pusher(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,
   REAL(num), DIMENSION(np), INTENT(INOUT) :: xp, yp, zp
   REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp, uyp, uzp, gaminv
   REAL(num), INTENT(IN)                   :: dtt
-  REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
-  REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, laser_tau,  &
+  REAL(num), DIMENSION(3), INTENT(IN)     :: polvector1, polvector2
+  REAL(num), INTENT(IN)                   :: emax, emax1, emax2, k0_laser, laser_tau,  &
   real_time, t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order
   INTEGER(idp)                            :: n, nn, ip, i, j, k, blocksize
-  REAL(num)                               :: amp1,amp2,amp3
-  REAL(num)                               :: xx, yy, clightsq, usq, coeff_ampli,      &
+  REAL(num) , DIMENSION(3)                :: amp
+  REAL(num)                               :: xx, yy, clightsq, usq, coeff_ampli,       &
   disp_max
   disp_max   = 0.01_num*clight
   coeff_ampli = disp_max / emax
@@ -135,12 +135,12 @@ SUBROUTINE laserp_pusher(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv, dtt,
       nn=ip+n-1
       xx = pid(nn, 2)
       yy = pid(nn, 3)
-      CALL gaussian_profile(xx, yy, amp1,amp2,amp3, emax, emax1, emax2,polvector1, polvector2,  &
+      CALL gaussian_profile(xx, yy, amp, emax, emax1, emax2,polvector1, polvector2,  &
       k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
       ! --- Update particle momenta based on laser electric field
-      uxp(nn) = amp1*coeff_ampli
-      uyp(nn) = amp2*coeff_ampli
-      uzp(nn) = amp3*coeff_ampli
+      uxp(nn) = amp(1)*coeff_ampli
+      uyp(nn) = amp(2)*coeff_ampli
+      uzp(nn) = amp(3)*coeff_ampli
       ! --- Update gaminv
       gaminv(nn) = 1.0_num
       ! --- Push x, y, z
@@ -160,31 +160,33 @@ END SUBROUTINE laserp_pusher
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
-SUBROUTINE gaussian_profile(xx, yy, amp1,amp2,amp3, emax, emax1, emax2, polvector1, polvector2,  &
+SUBROUTINE gaussian_profile(xx, yy, amp, emax, emax1, emax2, polvector1, polvector2,  &
   k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP DECLARE SIMD(gaussian_profile)
-  !UNIFORM(emax,emax1,emax2,polvector1,polvector2,k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
+  !$OMP DECLARE SIMD(gaussian_profile)                       &
+  !$OMP UNIFORM(emax,emax1,emax2,polvector1,polvector2,      &
+  !$OMP k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
 #endif
 #elif defined __INTEL_COMPILER
-  !DIR$ ATTRIBUTES VECTOR :
-  !UNIFORM(emax,emax1,emax2,emax,polvector1,polvector2,k0_laser,q_z,laser_tau,real_time,t_peak,temporal_order,polangle)
-  !:: gaussian_profile
+  !DIR$ ATTRIBUTES VECTOR :                                  & 
+  !DIR$ UNIFORM(emax,emax1,emax2,emax,polvector1,polvector2, &
+  !DIR$ k0_laser,q_z,laser_tau,real_time,t_peak,             &
+  !DIR$ temporal_order,polangle)  :: gaussian_profile
 #endif
   USE constants
   USE params
   USE shared_data
-  REAL(num),            INTENT(INOUT)    :: amp1,amp2,amp3
-  REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
-  REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser,laser_tau,  &
+  REAL(num), DIMENSION(3) ,  INTENT(INOUT)   :: amp
+  REAL(num), DIMENSION(3) , INTENT(IN)       :: polvector1, polvector2
+  REAL(num), INTENT(IN)                      :: emax, emax1, emax2, k0_laser,laser_tau,  &
   real_time, t_peak, polangle
-  COMPLEX(cpx), INTENT(IN)                :: q_z
-  REAL(num), INTENT(IN)                   :: xx, yy
-  INTEGER(idp), INTENT(IN)                :: temporal_order
-  COMPLEX(cpx), DIMENSION(3)              :: arg
-  COMPLEX(cpx)                            :: j, u1, u2
-
+  COMPLEX(cpx) , INTENT(IN)                  :: q_z
+  REAL(num) , INTENT(IN)                     :: xx, yy
+  INTEGER(idp) , INTENT(IN)                  :: temporal_order
+  COMPLEX(cpx) , DIMENSION(3)                :: arg
+  COMPLEX(cpx)                               :: j, u1, u2
+  INTEGER(idp)                               :: i 
   j=(0.0_num, 1.0_num)
   u1 = j*k0_laser*clight*(real_time-t_peak)- j*k0_laser*(xx**2+yy**2)/(2*q_z) -&
   ((real_time - t_peak )/laser_tau)**temporal_order
@@ -195,8 +197,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp1,amp2,amp3, emax, emax1, emax2, polvecto
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
   arg(2) = (u1*polvector1(2) + u2*polvector2(2))
   arg(3) = (u1*polvector1(3) + u2*polvector2(3))
-  amp1 = REAL(arg(1),num)
-  amp2 = REAL(arg(2),num)
-  amp3 = REAL(arg(3),num)
-
+  DO i=1,3
+  amp(i) = REAL(arg(i),num)
+  ENDDO
 END SUBROUTINE
