@@ -306,7 +306,6 @@ SUBROUTINE initall
   IF (c_dim.eq.3) THEN
     IF (l_spectral .OR. g_spectral) THEN
       dt=MIN(dx, dy, dz)/clight
-      !dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
