@@ -41,7 +41,6 @@ MODULE link_external_tools
     LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
     LOGICAL(lp)                      :: l_stg
     l_spectral  = LOGICAL(is_spec,lp) 
-    g_spectral  = .FALSE.
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
     hybrid_2 = .FALSE.
@@ -99,20 +98,6 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(jzf)) ALLOCATE(jzf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhof)) ALLOCATE(rhof(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhooldf)) ALLOCATE(rhooldf(nkx, nky, nkz))
-    !  imn=-nxguards;imx=nx+nxguards
-    !  jmn=-nyguards;jmx=ny+nyguards
-    !  kmn=-nzguards;kmx=nz+nzguards
-    !  IF(.NOT. ASSOCIATED(ex_r)) ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(ey_r)) ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(ez_r)) ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(bx_r)) ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(by_r)) ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(bz_r)) ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(jx_r)) ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(jy_r)) ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(jz_r)) ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(rho_r)) ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-    !  IF(.NOT. ASSOCIATED(rhoold_r)) ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
     ENDIF
     IF(l_spectral) CALL init_plans_blocks
     IF(.NOT. l_spectral) THEN 
@@ -141,7 +126,6 @@ MODULE link_external_tools
   -nzguard:nz+nzguard) :: Jx, Jy, Jz
   REAL(num), INTENT(IN) :: dt, dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
   INTEGER(idp) :: i, j, k, l, ist,nxs,nys,nzs
-
   ist = 1
   nxs =nxguard
   nys =nyguard
@@ -150,16 +134,16 @@ MODULE link_external_tools
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
   !$OMP DO COLLAPSE(3)
   ! advance Ex
-  DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
+  DO l = -nzs, nz+nzs-1
+    DO k = -nys, ny+nys-1
       DO j = -nxs, nx+nxs
         Ex(j, k, l) = Ex(j, k, l) - dt  * Jx(j, k, l)
-        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+        DO i = 1,nordery/2 ! MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           IF((k+i .GT. ny+nyguard) .OR.(k-i+ist .LT. -nyguard)) CYCLE
           Ex(j, k, l) = Ex(j, k, l) + dtsdy(i) * (Bz(j, k+i, l)   - Bz(j, k-i+ist, l  &
           ))
         ENDDO
-        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        DO i = 1,norderz/2 ! MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           IF((l+i .GT. nz+nzguard) .OR.(l-i+ist .LT. -nzguard)) CYCLE
           Ex(j, k, l) = Ex(j, k, l) - dtsdz(i) * (By(j, k, l+i)   - By(j, k,      &
           l-i+ist))
@@ -171,16 +155,16 @@ MODULE link_external_tools
 
   !$OMP DO COLLAPSE(3)
   ! advance Ey
-  DO l = -nzs, nz+nzs
+  DO l = -nzs, nz+nzs-1
     DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
+      DO j = -nxs, nx+nxs-1
         Ey(j, k, l) = Ey(j, k, l) - dt  * Jy(j, k, l)
-        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+        DO i = 1,MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           IF((j+i .GT. nx+nxguard) .OR.(j-i+ist .LT. -nxguard)) CYCLE
           Ey(j, k, l) = Ey(j, k, l) - dtsdx(i) * (Bz(j+i, k, l)   - Bz(j-i+ist, k,    &
           l))
         ENDDO
-        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        DO i = 1,MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           IF((l+i .GT. nz+nzguard) .OR.(l-i+ist .LT. -nzguard)) CYCLE
           Ey(j, k, l) = Ey(j, k, l) + dtsdz(i) * (Bx(j, k, l+i)   - Bx(j, k,      &
           l-i+ist))
@@ -192,14 +176,14 @@ MODULE link_external_tools
   !$OMP DO COLLAPSE(3)
   ! advance Ez
   DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
+    DO k = -nys, ny+nys-1
+      DO j = -nxs, nx+nxs-1
         Ez(j, k, l) = Ez(j, k, l) - dt  * Jz(j, k, l)
-        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+        DO i = 1,MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           IF((j+i .GT. nx+nxguard) .OR.(j-i+ist .LT. -nxguard)) CYCLE
           Ez(j, k, l) = Ez(j, k, l) + dtsdx(i) * (By(j+i, k, l) - By(j-i+ist, k, l))
         ENDDO
-        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+        DO i = 1,MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           IF((k+i .GT. ny+nyguard) .OR.(k-i+ist .LT. -nyguard)) CYCLE
           Ez(j, k, l) = Ez(j, k, l) - dtsdy(i) * (Bx(j, k+i, l) - Bx(j, k-i+ist, l))
         ENDDO
@@ -208,7 +192,6 @@ MODULE link_external_tools
   ENDDO
   !$OMP END DO
   !$OMP END PARALLEL
-
   RETURN
 END SUBROUTINE
 
@@ -229,15 +212,15 @@ SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  
   ! advance Bx
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
   !$OMP DO COLLAPSE(3)
-  DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
-        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+  DO l = -nzs+1, nz+nzs-1
+    DO k = -nys+1, ny+nys-1
+      DO j = -nxs, nx+nxs-1
+        DO i = 1,MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           IF((k+i-ist .GT. ny+nyguard) .OR.(k-i .LT. -nyguard)) CYCLE
           Bx(j, k, l) = Bx(j, k, l) - dtsdy(i) * (Ez(j, k+i-ist, l  ) - Ez(j, k-i,    &
           l))
         ENDDO
-        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        DO i = 1,MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           IF((l+i-ist .GT. nz+nzguard) .OR.(l-i .LT. -nzguard)) CYCLE
           Bx(j, k, l) = Bx(j, k, l) + dtsdz(i) * (Ey(j, k, l+i-ist) - Ey(j, k, l-i))
         ENDDO
@@ -248,15 +231,15 @@ SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  
 
   ! advance By
   !$OMP DO COLLAPSE(3)
-  DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
-        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+  DO l = -nzs+1, nz+nzs-1
+    DO k = -nys, ny+nys-1
+      DO j = -nxs+1, nx+nxs-1
+        DO i = 1,MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           IF((j+i-ist .GT. nx+nxguard) .OR.(j-i .LT. -nxguard)) CYCLE
           By(j, k, l) = By(j, k, l) + dtsdx(i) * (Ez(j+i-ist, k, l  ) - Ez(j-i, k,    &
           l))
         ENDDO
-        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        DO i = 1,MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           IF((l+i-ist .GT. nz+nzguard) .OR.(l-i .LT. -nzguard)) CYCLE
           By(j, k, l) = By(j, k, l) - dtsdz(i) * (Ex(j, k, l+i-ist) - Ex(j, k, l-i))
         ENDDO
@@ -267,14 +250,14 @@ SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  
 
   ! advance Bz
   !$OMP DO COLLAPSE(3)
-  DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
-        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+  DO l = -nzs, nz+nzs-1
+    DO k = -nys+1, ny+nys-1
+      DO j = -nxs+1, nx+nxs-1
+        DO i = 1,MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           IF((j+i-ist .GT. nx+nxguard) .OR.(j-i .LT. -nxguard)) CYCLE
           Bz(j, k, l) = Bz(j, k, l) - dtsdx(i) * (Ey(j+i-ist, k, l) - Ey(j-i, k, l))
         ENDDO
-        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+        DO i = 1,MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           IF((k+i-ist .GT. ny+nyguard) .OR.(k-i .LT. -nyguard)) CYCLE
           Bz(j, k, l) = Bz(j, k, l) + dtsdy(i) * (Ex(j, k+i-ist, l) - Ex(j, k-i, l))
         ENDDO
@@ -298,5 +281,6 @@ SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
         nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)
   CALL bvec3d_push_norder(ex,ey,ez,bx,by,bz,xcoeffs,ycoeffs,zcoeffs,&
         nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)
+
 END SUBROUTINE
 END MODULE

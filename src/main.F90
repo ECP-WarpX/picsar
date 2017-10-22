@@ -52,7 +52,12 @@ PROGRAM main
   USE control_file
   USE time_stat
   USE diagnostics
-
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE fourier
+  USE fastfft
+  USE fftw3_fortran
+#endif
 
 ! Vtune profiling
 #if (defined(VTUNE) && VTUNE>0)
@@ -156,7 +161,17 @@ PROGRAM main
   				  trim(adjustl(str5))//" "//trim(adjustl(str6))
   	CLOSE(12)
   ENDIF 
-
+#if defined(FFTW)
+  IF(l_spectral) THEN
+    IF(fftw_with_mpi) THEN
+      CALL DFFTW_DESTROY_PLAN(plan_r2c_mpi)
+      CALL DFFTW_DESTROY_PLAN(plan_c2r_mpi)
+    ELSE
+      CALL fast_fftw_destroy_plan_dft(plan_r2c)
+      CALL fast_fftw_destroy_plan_dft(plan_c2r)
+    ENDIF
+  ENDIF
+#endif
   CALL mpi_close
 
 ! Intel Design Forward project

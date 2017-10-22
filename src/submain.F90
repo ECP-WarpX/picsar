@@ -106,8 +106,9 @@ SUBROUTINE step(nst)
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
     if(rank==0) then
-      open (unit=out_unit3,file="RESULTS/em.txt",STATUS="REPLACE",action="write")
-      open(unit=out_unit4,file="RESULTS/kin_e.txt",STATUS="REPLACE",action="write")
+      open (unit=out_unit3, file="RESULTS/em.txt", STATUS="REPLACE", action="write")
+      open(unit=out_unit4, file="RESULTS/kin_e.txt", STATUS="REPLACE",                &
+      action="write")
     endif
     rhoold=0.0_num
     rho = 0.0_num
@@ -127,17 +128,13 @@ SUBROUTINE step(nst)
         CALL pxrdepose_currents_on_grid_jxjyjz
         CALL current_bcs
       ENDIF
-        CALL compute_em_energy
+      CALL compute_em_energy
 #if defined(FFTW)
       IF (l_spectral) THEN
         CALL push_psatd_ebfield_3d
         CALL efield_bcs
         CALL bfield_bcs
-      ELSE IF (g_spectral) THEN
-        CALL push_gpstd_ebfied_3d
-        CALL efield_bcs
-        CALL bfield_bcs
-      ELSE 
+      ELSE
 #endif
         !IF (rank .EQ. 0) PRINT *, "#6"
         !!! --- Push B field half a time step
@@ -161,13 +158,13 @@ SUBROUTINE step(nst)
 #if defined(FFTW)
       ENDIF
 #endif
-        CALL compute_kin_energy
-        if(rank==0) then
-          write (out_unit3,*),electromagn_energy_total
-          write (out_unit4,*),kin_energy_total
-        endif
+      CALL compute_kin_energy
+      if(rank==0) then
+        write (out_unit3, *), electromagn_energy_total
+        write (out_unit4, *), kin_energy_total
+      endif
 
-     ! IF (rank .EQ. 0) PRINT *, "#12"
+      ! IF (rank .EQ. 0) PRINT *, "#12"
       !!! --- Computes derived quantities
       CALL calc_diags
       !!! --- Output simulation results
@@ -304,7 +301,7 @@ SUBROUTINE initall
 
   !!! --- Set time step/ it
   IF (c_dim.eq.3) THEN
-    IF (l_spectral .OR. g_spectral) THEN
+    IF (l_spectral) THEN
       dt=MIN(dx, dy, dz)/clight
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
@@ -401,8 +398,9 @@ SUBROUTINE initall
     write(0, '(" FFTW - parameters ")')
     IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
     IF (fftw_with_mpi) write(0, '(" FFTW distributed version - MPI ")')
-    IF (fftw_hybrid)   write(0, '(" FFTW distributed version , - MPI GROUPS")')
-    IF (hybrid_2)   write(0, '(" FFTW distributed version , - MPI GROUPS ALOG 3 AXIS")')
+    IF (fftw_hybrid)   write(0, '(" FFTW distributed version, - MPI GROUPS")')
+    IF (hybrid_2)   write(0, '(" FFTW distributed version, - MPI GROUPS ALOG 3        &
+    AXIS")')
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     ! Sorting
     IF (sorting_activated.gt.0) THEN
@@ -483,14 +481,8 @@ SUBROUTINE initall
 
 #if defined(FFTW)
   ! -Init Fourier
-  IF (l_spectral .OR. g_spectral) THEN
-    IF(g_spectral) THEN
-       CALL init_gpstd()
-       IF (rank .EQ. 0) write(0, *) "INIT GPSTD BLOCKS  DONE"
-       CALL init_plans_gpstd()
-       IF (rank .EQ. 0) write(0, *) "INIT GPSTD  PLANS DONE"
-     ENDIF
-    IF(l_spectral) CALL init_plans_blocks
+  IF (l_spectral) THEN
+    CALL init_plans_blocks
   ENDIF
 #endif
   ! - Estimate tile size
@@ -666,41 +658,6 @@ SUBROUTINE current_debug
   !jz(1, 1, 1) = 0.5
   !jz(nx, ny, nz) = 0.5
   !!! --- End debug
-END SUBROUTINE
-SUBROUTINE set_pulse(n1,n2,n3,nt)
-use fields
-use shared_data
-use params
-use constants
-
-integer(idp) ,intent(in):: n1,n2,n3,nt
-real(num) ::sx,sy,sz,st,ct,xx,yy,zz,ww
-integer(idp)  :: ix,iy,iz
-sx=n1*dx
-sy=n2*dy
-sz=n3*dz
-st=nt*dt
-ct=2*nt*dt
-ww=5*pi/ct
-sy=1000000000000000.
-sx=1000000000000000.
-do ix=-nxguards,nx+nxguards
-do iy=-nyguards,ny+nyguards
-do iz=-nzguards,nz+nzguards
-xx=(ix-nx/2)*dx
-yy = (iy-ny/2)*dy
-zz=(iz-nz/2)*dz
-ey(ix,iy,iz)=10000000.
-ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((it*dt-ct)/st)**2)*cos(ww*it*dt)
-ey(ix,iy,iz)=ey(ix,iy,iz)*exp(-((xx/sx)**2+(yy/sy)**2+(zz/sz)**2))
-enddo
-enddo
-enddo
-
-
-
-end subroutine
-
-
+END SUBROUTINE current_debug
 
 ! ______________________________________

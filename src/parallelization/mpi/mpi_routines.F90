@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -166,7 +165,7 @@ MODULE mpi_routines
     nx_global=nx_global_grid-1
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
-   
+
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)
@@ -217,8 +216,8 @@ MODULE mpi_routines
     nxsplit = nx_global_grid / nprocx
     nysplit = ny_global_grid / nprocy
     nzsplit = nz_global_grid / nprocz
-    IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT.          &
-    nzguards) THEN
+    IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. nzguards)  &
+    THEN
     IF (rank .EQ. 0) THEN
       WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards'
       WRITE(0, *) nxsplit, nysplit, nzsplit
@@ -246,8 +245,7 @@ IF (topology == 2) THEN
     DO iz=0, nprocz-1
       DO iy=0, nprocy-1
         DO ix=0, nprocx-1
-          topo_array(ix, iy, iz) = INT(ix + (iy)*nprocx + (iz)*nprocy*nprocx,     &
-          idp)
+          topo_array(ix, iy, iz) = INT(ix + (iy)*nprocx + (iz)*nprocy*nprocx, idp)
           !print*, ix + (iy)*nprocx + (iz)*nprocy*nprocx
         ENDDO
       ENDDO
@@ -271,7 +269,7 @@ IF (topology == 2) THEN
   ENDIF
 
   ! Sharing of the topology
-  CALL MPI_BCAST(topo_array, INT(nprocx*nprocy*nprocz, isp), MPI_INTEGER8, 0_isp, &
+  CALL MPI_BCAST(topo_array, INT(nprocx*nprocy*nprocz, isp), MPI_INTEGER8, 0_isp,     &
   comm, errcode)
 
   !IF (rank==3) print*, 'rank', rank, 'topo_array', topo_array
@@ -337,7 +335,7 @@ IF (topology == 2) THEN
           z_coords_neight = z_coords + iz
         END IF
 
-        neighbour(ix, iy, iz) = topo_array(x_coords_neight, y_coords_neight,      &
+        neighbour(ix, iy, iz) = topo_array(x_coords_neight, y_coords_neight,          &
         z_coords_neight)
       ENDDO
     ENDDO
@@ -406,7 +404,7 @@ ELSE IF (topology == 1) THEN
           z_coords_neight = z_coords + iz
         END IF
 
-        neighbour(ix, iy, iz) = x_coords_neight + (nprocx)*(y_coords_neight) +    &
+        neighbour(ix, iy, iz) = x_coords_neight + (nprocx)*(y_coords_neight) +        &
         (nprocx*nprocy)*(z_coords_neight)
 
         print*, 'rank', rank, ix, iy, iz, neighbour(ix, iy, iz)
@@ -498,8 +496,8 @@ ELSE
         test_coords(3) = test_coords(3)+ix
         op = .TRUE.
         DO idim = 1, ndims
-          IF ((test_coords(idim) .LT. 0 .OR. test_coords(idim) .GE. dims(idim))   &
-          .AND. .NOT. periods(idim)) op = .FALSE.
+          IF ((test_coords(idim) .LT. 0 .OR. test_coords(idim) .GE. dims(idim)) .AND. &
+          .NOT. periods(idim)) op = .FALSE.
         ENDDO
         IF (op) THEN
           ! Then determine the rank of the neighbor processor
@@ -511,10 +509,8 @@ ELSE
   ENDDO
 
 ENDIF
-
-
-
 END SUBROUTINE setup_communicator
+
 !> @brief
 !> This routine creates mpi groups and communicators while using
 !fftw_hybrid=.TRUE.
@@ -522,253 +518,265 @@ END SUBROUTINE setup_communicator
 !> 2017
 SUBROUTINE setup_groups
 #if defined(FFTW)
-  USE  group_parameters
-  USE mpi_fftw3
+USE  group_parameters
+USE mpi_fftw3
 #endif
-  USE picsar_precision
-  USE shared_data
-  USE mpi
-  INTEGER(isp)  ,  PARAMETER :: ndims = 3
-  LOGICAL(isp) :: periods(ndims),reorder
-  INTEGER(isp) :: dims(ndims) , ierr
-  INTEGER(idp) :: group_size
-  INTEGER(isp) , ALLOCATABLE , DIMENSION(:)   :: grp_id, grp_comm, local_roots_rank
-  INTEGER(isp)                                :: roots_grp, roots_comm
-  INTEGER(isp) , ALLOCATABLE , DIMENSION(:,:) :: grp_ranks
-  INTEGER(idp)  :: i,j,temp
-  INTEGER(idp) , DIMENSIOn(:), ALLOCATABLE :: all_nz_group , all_iz_max_r,all_iz_min_r,all_cells,all_nz,all_nzp
+USE picsar_precision
+USE shared_data
+USE mpi
+INTEGER(isp), PARAMETER :: ndims = 3
+LOGICAL(isp) :: periods(ndims), reorder
+INTEGER(isp) :: dims(ndims), ierr
+INTEGER(idp) :: group_size
+INTEGER(isp), ALLOCATABLE, DIMENSION(:)   :: grp_id, grp_comm, local_roots_rank
+INTEGER(isp)                                :: roots_grp, roots_comm
+INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
+INTEGER(idp)  :: i, j, temp
+INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
+all_cells, all_nz, all_nzp
+
 #if defined(FFTW)
-  DO i=1,nb_max_groups
-    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
-    MPI_GROUP_ID(i) = MPI_GROUP_NULL
-  ENDDO
-  CALL MPI_COMM_GROUP(comm,MPI_WORLD_GROUP,errcode)
-  IF(hybrid_2) THEN
-    nb_group = nprocx*nprocy*nb_group
-  ENDIF
-  group_size = nproc/nb_group
+DO i=1, nb_max_groups
+  MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
+  MPI_GROUP_ID(i) = MPI_GROUP_NULL
+ENDDO
+CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
+IF(hybrid_2) THEN
+  nb_group = nprocx*nprocy*nb_group
+ENDIF
+group_size = nproc/nb_group
 !  IF(group_size*nb_group .NE. nproc) THEN
-!    temp = INT(nb_group*group_size,idp)
+!    temp = INT(nb_group*group_size, idp)
 !    IF(rank .LT. temp)  group_size = group_size+1
 !  ENDIF
-  ALLOCATE(grp_id(nb_group),grp_comm(nb_group),local_roots_rank(nb_group))
-  ALLOCATE(grp_ranks(group_size,nb_group))
-  
-  DO j=1,nb_group
-    local_roots_rank(j) = (j-1)*group_size 
-    DO i=1,group_size
-      grp_ranks(i,j) = INT(i-1+(j-1)*group_size,isp)
-    ENDDO
-  ENDDO
-  IF(hybrid_2) THEN
-  DO j=1,nprocx*nprocy
-     local_roots_rank(j) = INT(j-1,isp)
-  ENDDO
-  DO j=nprocx*nprocy+1,nb_group
-     i = j-nprocx*nprocy
-     local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy
-  ENDDO
-  DO j = 1,nb_group
-    grp_ranks(1,j) = local_roots_rank(j)
-    DO i = 2,group_size
-     grp_ranks(i,j) = grp_ranks(i-1,j) + nprocx*nprocy 
-    ENDDO
-  ENDDO
-  ENDIF
-  DO i= 1 ,nb_group 
-    CALL MPI_GROUP_INCL(MPI_WORLD_GROUP,INT(group_size,isp),grp_ranks(:,i),grp_id(i),errcode)
-    CALL MPI_COMM_CREATE_GROUP(comm,grp_id(i),0,grp_comm(i),errcode)
-  ENDDO
-  roots_grp = MPI_GROUP_NULL
-  roots_comm = MPI_COMM_NULL
-  CALL MPI_GROUP_INCL(MPI_WORLD_GROUP,INT(nb_group,isp),local_roots_rank,roots_grp,errcode)
-  CALL MPI_COMM_CREATE_GROUP(comm,roots_grp,0,roots_comm,errcode)
-  MPI_ROOT_GROUP = MPI_GROUP_NULL 
-  MPI_ROOT_COMM  = MPI_COMM_NULL
-  root_rank = MPI_PROC_NULL
-  IF( roots_comm .NE. MPI_COMM_NULL) THEN
-    CALL MPI_COMM_RANK(roots_comm,root_rank,errcode)
-    CALL MPI_COMM_SIZE(roots_comm,root_size,errcode)
-    MPI_ROOT_COMM = roots_comm
-    MPI_ROOT_GROUP = roots_grp
-  ENDIF
+ALLOCATE(grp_id(nb_group), grp_comm(nb_group), local_roots_rank(nb_group))
+ALLOCATE(grp_ranks(group_size, nb_group))
 
-!  ALLOCATE(MPI_GROUP_ID(INT(nb_group,isp)),MPI_COMM_GROUP_ID(INT(nb_group,isp)))
-  periods = (/.FALSE.,.FALSE.,.FALSE./)
-  dims = (/INT(group_size,isp),1_isp,1_isp/)
-  reorder = .TRUE.
-  DO i = 1, nb_group
-    IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
-      CALL MPI_CART_CREATE(grp_comm(i) , ndims, dims, periods, reorder,MPI_COMM_GROUP_ID(i),errcode)
-      CALL MPI_COMM_GROUP(MPI_COMM_GROUP_ID(i),MPI_GROUP_ID(i),errcode)
-      CALL MPI_COMM_SIZE(MPI_COMM_GROUP_ID(i),local_size,errcode)
-      CALL MPI_COMM_RANK(MPI_COMM_GROUP_ID(i),local_rank,errcode)
-      CALL MPI_CART_COORDS(MPI_COMM_GROUP_ID(i),local_rank, ndims,group_coordinates, errcode)
-      which_group = i-1
-      z_group_coords = which_group
-      x_group_coords = 0_idp
-      y_group_coords = 0_idp
-      IF(hybrid_2) THEN
-        z_group_coords = which_group/nprocx/nprocy
-        y_group_coords = (which_group-z_group_coords*nprocx*nprocy)/nprocx
-        x_group_coords = (which_group-z_group_coords*nprocx*nprocy) - nprocx*y_group_coords      
-      ENDIF
-    ENDIF
+DO j=1, nb_group
+  local_roots_rank(j) = (j-1)*group_size
+  DO i=1, group_size
+    grp_ranks(i, j) = INT(i-1+(j-1)*group_size, isp)
   ENDDO
-  DO i = 1,nb_group
-    IF(grp_comm(i) .NE. MPI_COMM_NULL) THEN
-      CALL MPI_COMM_FREE(grp_comm(i), errcode)
-      CALL MPI_GROUP_FREE(grp_id(i),errcode)
-    ENDIF
+ENDDO
+IF(hybrid_2) THEN
+  DO j=1, nprocx*nprocy
+    local_roots_rank(j) = INT(j-1, isp)
   ENDDO
-!  IF(INT(rank,isp) .NE. which_group*group_size+local_rank*nprocx*nprocy) THEN
+  DO j=nprocx*nprocy+1, nb_group
+    i = j-nprocx*nprocy
+    local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy
+  ENDDO
+  DO j = 1, nb_group
+    grp_ranks(1, j) = local_roots_rank(j)
+    DO i = 2, group_size
+      grp_ranks(i, j) = grp_ranks(i-1, j) + nprocx*nprocy
+    ENDDO
+  ENDDO
+ENDIF
+DO i= 1, nb_group
+  CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),         &
+  grp_id(i), errcode)
+  CALL MPI_COMM_CREATE_GROUP(comm, grp_id(i), 0, grp_comm(i), errcode)
+ENDDO
+roots_grp = MPI_GROUP_NULL
+roots_comm = MPI_COMM_NULL
+CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(nb_group, isp), local_roots_rank, roots_grp, &
+errcode)
+CALL MPI_COMM_CREATE_GROUP(comm, roots_grp, 0, roots_comm, errcode)
+MPI_ROOT_GROUP = MPI_GROUP_NULL
+MPI_ROOT_COMM  = MPI_COMM_NULL
+root_rank = MPI_PROC_NULL
+IF( roots_comm .NE. MPI_COMM_NULL) THEN
+  CALL MPI_COMM_RANK(roots_comm, root_rank, errcode)
+  CALL MPI_COMM_SIZE(roots_comm, root_size, errcode)
+  MPI_ROOT_COMM = roots_comm
+  MPI_ROOT_GROUP = roots_grp
+ENDIF
+
+!  ALLOCATE(MPI_GROUP_ID(INT(nb_group, isp)), MPI_COMM_GROUP_ID(INT(nb_group, isp)))
+periods = (/.FALSE., .FALSE., .FALSE./)
+dims = (/INT(group_size, isp), 1_isp, 1_isp/)
+reorder = .TRUE.
+DO i = 1, nb_group
+  IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
+    CALL MPI_CART_CREATE(grp_comm(i), ndims, dims, periods, reorder,                  &
+    MPI_COMM_GROUP_ID(i), errcode)
+    CALL MPI_COMM_GROUP(MPI_COMM_GROUP_ID(i), MPI_GROUP_ID(i), errcode)
+    CALL MPI_COMM_SIZE(MPI_COMM_GROUP_ID(i), local_size, errcode)
+    CALL MPI_COMM_RANK(MPI_COMM_GROUP_ID(i), local_rank, errcode)
+    CALL MPI_CART_COORDS(MPI_COMM_GROUP_ID(i), local_rank, ndims, group_coordinates,  &
+    errcode)
+    which_group = i-1
+    z_group_coords = which_group
+    x_group_coords = 0_idp
+    y_group_coords = 0_idp
+    IF(hybrid_2) THEN
+      z_group_coords = which_group/nprocx/nprocy
+      y_group_coords = (which_group-z_group_coords*nprocx*nprocy)/nprocx
+      x_group_coords = (which_group-z_group_coords*nprocx*nprocy) -                   &
+      nprocx*y_group_coords
+    ENDIF
+  ENDIF
+ENDDO
+DO i = 1, nb_group
+  IF(grp_comm(i) .NE. MPI_COMM_NULL) THEN
+    CALL MPI_COMM_FREE(grp_comm(i), errcode)
+    CALL MPI_GROUP_FREE(grp_id(i), errcode)
+  ENDIF
+ENDDO
+!  IF(INT(rank, isp) .NE. which_group*group_size+local_rank*nprocx*nprocy) THEN
 !    WRITE(0, *) '*** ERROR ***'
 !    WRITE(0, *) 'Global ranks and local ranks dont match'
 !    CALL MPI_ABORT(comm, errcode, ierr)
 !  ENDIF
-  is_on_boarder = .FALSE.
-  group_z_min_boundary = .FALSE.
-  group_z_max_boundary = .FALSE.
-  IF(local_rank  .EQ. 0_idp) THEN
-    is_on_boarder = .TRUE.
-    group_z_min_boundary = .TRUE.
+is_on_boarder = .FALSE.
+group_z_min_boundary = .FALSE.
+group_z_max_boundary = .FALSE.
+IF(local_rank  .EQ. 0_idp) THEN
+  is_on_boarder = .TRUE.
+  group_z_min_boundary = .TRUE.
+ENDIF
+IF(local_rank .EQ. local_size-1) THEN
+  is_on_boarder = .TRUE.
+  group_z_max_boundary = .TRUE.
+ENDIF
+nx_group_global = nx_global
+ny_group_global = ny_global
+nz_group_global = nz_global/nb_group
+IF(hybrid_2) THEN
+  nx_group_global = nx
+  ny_group_global = ny
+  nz_group_global = nz_global/(nb_group/(nprocx*nprocy))
+ENDIF
+IF(nz_global .NE. nz_group_global*(nb_group/(nprocx*nprocy))) THEN
+  temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy, idp)
+  IF(INT(nb_group/nprocx/nprocy-1-z_group_coords, idp) .LT. temp) THEN
+    nz_group_global=nz_group_global+1
   ENDIF
-  IF(local_rank .EQ. local_size-1) THEN
-    is_on_boarder = .TRUE.
-    group_z_max_boundary = .TRUE.
+ENDIF
+y_min_group=ymin
+y_max_group=ymax
+x_min_group=xmin
+x_max_group=xmax
+z_min_group=zmin
+z_max_group=zmax
+IF(MPI_ROOT_COMM .NE. MPI_COMM_NULL) THEN
+  ALLOCATE(all_nz_group(nb_group))
+  CALL MPI_ALLGATHER(nz_group_global, 1_isp, MPI_LONG_LONG_INT, all_nz_group, 1_isp,  &
+  MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
+  CALL MPI_BARRIER(MPI_ROOT_COMM, errcode)
+  IF(root_rank .NE. 0_isp) THEN
+    DO i=1, z_group_coords
+      z_min_group = z_min_group + all_nz_group(i)*dz
+    ENDDO
   ENDIF
-  nx_group_global = nx_global
-  ny_group_global = ny_global
-  nz_group_global = nz_global/nb_group
-  IF(hybrid_2) THEN
-    nx_group_global = nx
-    ny_group_global = ny
-    nz_group_global = nz_global/(nb_group/(nprocx*nprocy))
-  ENDIF
-  IF(nz_global .NE. nz_group_global*(nb_group/(nprocx*nprocy))) THEN 
-    temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy,idp)
-    IF(INT(nb_group/nprocx/nprocy-1-z_group_coords,idp) .LT. temp) THEN
-      nz_group_global=nz_group_global+1
-    ENDIF
-  ENDIF
-  y_min_group=ymin
-  y_max_group=ymax
-  x_min_group=xmin
-  x_max_group=xmax
-  z_min_group=zmin
-  z_max_group=zmax
-  IF(MPI_ROOT_COMM .NE. MPI_COMM_NULL) THEN
-    ALLOCATE(all_nz_group(nb_group))
-    CALL MPI_ALLGATHER(nz_group_global,1_isp,MPI_LONG_LONG_INT,all_nz_group,1_isp,MPI_LONG_LONG_INT,MPI_ROOT_COMM,errcode)
-    CALL MPI_BARRIER(MPI_ROOT_COMM,errcode)
-    IF(root_rank .NE. 0_isp) THEN
-      DO i=1,z_group_coords
-         z_min_group = z_min_group + all_nz_group(i)*dz
-      ENDDO
-    ENDIF
-    z_max_group = z_min_group + nz_group_global*dz
-    DEALLOCATE(all_nz_group)
-  ENDIF
-  DO i=1,nb_group
-    IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
-      CALL MPI_BCAST(z_min_group,1_isp,MPI_DOUBLE,0_isp,MPI_COMM_GROUP_ID(i),errcode)
-      CALL MPI_BCAST(z_max_group,1_isp,MPI_DOUBLE,0_isp,MPI_COMM_GROUP_ID(i),errcode)
-    ENDIF
-  ENDDO
-  nx_group_global_grid = nx_group_global+1 
-  ny_group_global_grid = ny_group_global+1
-  nz_group_global_grid = nz_group_global+1
-    
-  nx_group = nx_group_global + 2*nxg_group
-  ny_group = ny_group_global + 2*nyg_group
-  nz_group = nz_group_global + 2*nzg_group
-  
-  nx_group_grid = nx_group_global_grid + 2*nxg_group
-  ny_group_grid = ny_group_global_grid + 2*nyg_group
-  nz_group_grid = nz_group_global_grid + 2*nzg_group
-  DO i=1,nb_group
+  z_max_group = z_min_group + nz_group_global*dz
+  DEALLOCATE(all_nz_group)
+ENDIF
+DO i=1, nb_group
   IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
-        IF(fftw_mpi_transpose) THEN
-        alloc_local = fftw_mpi_local_size_3d_transposed(nz_group,ny_group,nx_group,MPI_COMM_GROUP_ID(i),local_nz,&
-          local_z0,local_ny,local_y0)
-        ELSE
-        alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group,ny_group,nx_group,MPI_COMM_GROUP_ID(i),local_nz, local_z0)
-        ENDIF
-      !  WRITE(0,*) 'nzgroup,nygroup,nxgroup in group',i,nz_group,ny_group,nx_group
-    ENDIF
-  ENDDO 
-  iz_min_r = 1
-  iz_max_r = local_nz
-  IF(group_z_min_boundary) iz_min_r = nzg_group+1
-  IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
-  IF(iz_min_r .GE. iz_max_r) THEN
-     WRITE(0, *) '*** ERROR ***'
-     WRITE(0, *) '*** iz_max_r < iz_min_r ***'
-     STOP
+    CALL MPI_BCAST(z_min_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),       &
+    errcode)
+    CALL MPI_BCAST(z_max_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),       &
+    errcode)
   ENDIF
-  nz = iz_max_r - iz_min_r +1
-  nz_grid = nz+1
-  ALLOCATE(all_nz(nproc),all_nzp(nprocz))
-  CALL MPI_ALLGATHER(nz,1_isp,MPI_LONG_LONG_INT,all_nz,INT(1,isp),MPI_LONG_LONG_INT,comm,errcode)
-  DO i=1,nprocz
-     all_nzp(i) = all_nz((i-1)*nprocx*nprocy+1)
-  ENDDO
-  z_min_local = zmin 
-  z_max_local = zmax
-  z_min_local = z_min_local + dz*sum(all_nzp(1:z_coords))
-  z_max_local = z_min_local +nz*dz
-  cell_z_min(1) = 0
-  cell_z_max(1) = all_nzp(1) - 1 
-  DO i =2,nprocz
-    cell_z_min(i) = cell_z_max(i-1) + 1  
-    cell_z_max(i) = cell_z_min(i)-1 + all_nzp(i) 
-  ENDDO
-  ix_min_r = 1 
-  ix_max_r = nx + 2*nxguards
+ENDDO
+nx_group_global_grid = nx_group_global+1
+ny_group_global_grid = ny_group_global+1
+nz_group_global_grid = nz_group_global+1
 
-  iy_min_r = 1
-  iy_max_r = ny + 2*nyguards
-  nz_global_grid_min = cell_z_min(z_coords+1)
-  nz_global_grid_max = cell_z_max(z_coords+1)+1
-  DEALLOCAte(all_nz,all_nzp)
-  DEALLOCATE(grp_id,grp_comm,local_roots_rank,grp_ranks)
-!  IF(root_rank .NE. MPI_PROC_NULL)  WRITE(0,*) 'nzgroup,nygroup,nxgroup in group',root_rank,nz_group,ny_group,nx_group
+nx_group = nx_group_global + 2*nxg_group
+ny_group = ny_group_global + 2*nyg_group
+nz_group = nz_group_global + 2*nzg_group
+
+nx_group_grid = nx_group_global_grid + 2*nxg_group
+ny_group_grid = ny_group_global_grid + 2*nyg_group
+nz_group_grid = nz_group_global_grid + 2*nzg_group
+DO i=1, nb_group
+  IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
+    IF(fftw_mpi_transpose) THEN
+      alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group, nx_group,   &
+      MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
+    ELSE
+      alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group,              &
+      MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+    ENDIF
+    !  WRITE(0, *) 'nzgroup, nygroup, nxgroup in group', i, nz_group, ny_group, nx_group
+  ENDIF
+ENDDO
+iz_min_r = 1
+iz_max_r = local_nz
+IF(group_z_min_boundary) iz_min_r = nzg_group+1
+IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
+IF(iz_min_r .GE. iz_max_r) THEN
+  WRITE(0, *) '*** ERROR ***'
+  WRITE(0, *) '*** iz_max_r < iz_min_r ***'
+  STOP
+ENDIF
+nz = iz_max_r - iz_min_r +1
+nz_grid = nz+1
+ALLOCATE(all_nz(nproc), all_nzp(nprocz))
+CALL MPI_ALLGATHER(nz, 1_isp, MPI_LONG_LONG_INT, all_nz, INT(1, isp),                 &
+MPI_LONG_LONG_INT, comm, errcode)
+DO i=1, nprocz
+  all_nzp(i) = all_nz((i-1)*nprocx*nprocy+1)
+ENDDO
+z_min_local = zmin
+z_max_local = zmax
+z_min_local = z_min_local + dz*sum(all_nzp(1:z_coords))
+z_max_local = z_min_local +nz*dz
+cell_z_min(1) = 0
+cell_z_max(1) = all_nzp(1) - 1
+DO i =2, nprocz
+  cell_z_min(i) = cell_z_max(i-1) + 1
+  cell_z_max(i) = cell_z_min(i)-1 + all_nzp(i)
+ENDDO
+ix_min_r = 1
+ix_max_r = nx + 2*nxguards
+
+iy_min_r = 1
+iy_max_r = ny + 2*nyguards
+nz_global_grid_min = cell_z_min(z_coords+1)
+nz_global_grid_max = cell_z_max(z_coords+1)+1
+DEALLOCAte(all_nz, all_nzp)
+DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
 #endif
 
-END SUBROUTINE
+END SUBROUTINE setup_groups
 
 
 SUBROUTINE adjust_grid_mpi_global
 #if defined(FFTW)
-  USE mpi_fftw3
-  USE shared_data
-  USE mpi
-  USE picsar_precision
-  INTEGER(idp) , ALLOCATABLE , DIMENSION(:) :: all_nz
-  INTEGER(idp)  :: idim
-  nz = local_nz
-  nz_grid = nz + 1
-  ALLOCATE(all_nz(1:nprocz))
-  CALL MPI_ALLGATHER(nz,1_isp,MPI_LONG_LONG_INT,all_nz,1_isp,MPI_LONG_LONG_INT,comm,errcode)
-  cell_z_min(1) = 0
-  cell_z_max(1) = all_nz(1)-1
-  DO idim=2,nprocz
-     cell_z_min(idim) = cell_z_max(idim-1)+1
-     cell_z_max(idim) = cell_z_min(idim) + all_nz(idim)-1
-  ENDDO
-  nz_global_grid_min = cell_z_min(z_coords+1)
-  nz_global_grid_max = cell_z_max(z_coords+1)+1
-  DEALLOCATE(all_nz)
-  ix_min_r = 1
-  ix_max_r = nx_global 
+USE mpi_fftw3
+USE shared_data
+USE mpi
+USE picsar_precision
+INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: all_nz
+INTEGER(idp)  :: idim
+nz = local_nz
+nz_grid = nz + 1
+ALLOCATE(all_nz(1:nprocz))
+CALL MPI_ALLGATHER(nz, 1_isp, MPI_LONG_LONG_INT, all_nz, 1_isp, MPI_LONG_LONG_INT,    &
+comm, errcode)
+cell_z_min(1) = 0
+cell_z_max(1) = all_nz(1)-1
+DO idim=2, nprocz
+  cell_z_min(idim) = cell_z_max(idim-1)+1
+  cell_z_max(idim) = cell_z_min(idim) + all_nz(idim)-1
+ENDDO
+nz_global_grid_min = cell_z_min(z_coords+1)
+nz_global_grid_max = cell_z_max(z_coords+1)+1
+DEALLOCATE(all_nz)
+ix_min_r = 1
+ix_max_r = nx_global
 
-  iy_min_r = 1
-  iy_max_r = ny_global 
- 
-  iz_min_r = 1
-  iz_max_r = local_nz
+iy_min_r = 1
+iy_max_r = ny_global
+
+iz_min_r = 1
+iz_max_r = local_nz
 #endif
-END SUBROUTINE
+END SUBROUTINE adjust_grid_mpi_global
 ! ______________________________________________________________________________________
 !> @brief
 !> This subroutine computes the space domain decomposition and
@@ -818,11 +826,12 @@ IF (fftw_with_mpi) THEN
   IF(.NOT. fftw_mpi_transpose) THEN
     alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
   ELSE
-    alloc_local = fftw_mpi_local_size_3d_transposed(mz,ly,kx/2+1,comm,local_nz,local_z0,local_ny,local_y0)
+    alloc_local = fftw_mpi_local_size_3d_transposed(mz, ly, kx/2+1, comm, local_nz,   &
+    local_z0, local_ny, local_y0)
   ENDIF
   ALLOCATE(nz_procs(nproc))
-  CALL MPI_ALLGATHER(INT(local_nz, idp), 1_isp, MPI_INTEGER8, nz_procs, INT(1,    &
-  isp), MPI_INTEGER8, comm, errcode)
+  CALL MPI_ALLGATHER(INT(local_nz, idp), 1_isp, MPI_INTEGER8, nz_procs, INT(1, isp),  &
+  MPI_INTEGER8, comm, errcode)
   ! Regular CPU split
   ! If the total number of gridpoints cannot be exactly subdivided then fix
   ! The first nxp processors have nx0 cells
@@ -926,8 +935,8 @@ dz = length_z / REAL(nz_global, num)
 z_grid_min = zmin
 z_grid_max = zmax
 !!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
-!two are computed differently 
-#if defined(FFTW) 
+!two are computed differently
+#if defined(FFTW)
 IF(fftw_with_mpi ) THEN
   IF(.NOT. fftw_hybrid) THEN
     CALL adjust_grid_mpi_global
@@ -935,8 +944,8 @@ IF(fftw_with_mpi ) THEN
     CALL setup_groups
   ENDIF
   IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
-     WRITE(*,*),'ERROR IN AJUSTING THE GRID'
-     STOP
+    WRITE(*, *), 'ERROR IN AJUSTING THE GRID'
+    STOP
   ENDIF
 ENDIF
 #endif
@@ -1114,7 +1123,7 @@ DO iproc = 1, nprocz
   z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
 ENDDO
 
-END SUBROUTINE
+END SUBROUTINE compute_simulation_axis
 
 ! ______________________________________________________________________________________
 !> @brief
@@ -1147,84 +1156,78 @@ ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                         &
 -nzjguards:nz+nzjguards))
-ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                         &
 -nzjguards:nz+nzjguards))
-ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                         &
 -nzjguards:nz+nzjguards))
-ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                    &
+ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                        &
 -nzjguards:nz+nzjguards))
-ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                 &
+ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
-ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
--nzguards:nz+nzguards))
-ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
--nzguards:nz+nzguards))
-ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
--nzguards:nz+nzguards))
+ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
 
 
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
-IF (l_spectral .OR. g_spectral) THEN
+IF (l_spectral) THEN
   IF (fftw_with_mpi) THEN
-     nkx=(nx_global)/2+1! Real To Complex Transform
-     nky=ny_global
-     nkz=local_nz
-     IF(fftw_mpi_transpose) THEN
-       nkx=(nx_global)/2+1! Real To Complex Transform
-       nky=nz_global
-       nkz=local_ny
-     ENDIF
-    IF(l_spectral) THEN
-      IF(fftw_hybrid)  THEN
-        nkx = nx_group/2+1 
-        nky = ny_group
-        nkz = local_nz
-        IF(fftw_mpi_transpose) THEN
-          nkx = nx_group/2+1
-          nky = nz_group
-          nkz = local_ny 
-        ENDIF
-      ENDIF
-
-    ! - Allocate complex arrays
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
+    nkx=(nx_global)/2+1! Real To Complex Transform
+    nky=ny_global
+    nkz=local_nz
+    IF(fftw_mpi_transpose) THEN
+      nkx=(nx_global)/2+1! Real To Complex Transform
+      nky=nz_global
+      nkz=local_ny
     ENDIF
+    IF(fftw_hybrid)  THEN
+      nkx = nx_group/2+1
+      nky = ny_group
+      nkz = local_nz
+      IF(fftw_mpi_transpose) THEN
+        nkx = nx_group/2+1
+        nky = nz_group
+        nkz = local_ny
+      ENDIF
+    ENDIF
+    ! - Allocate complex arrays
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
+    CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+    cdata = fftw_alloc_complex(alloc_local)
     ! - Allocate real arrays
     IF(fftw_mpi_transpose .AND. fftw_hybrid) THEN
-       nkx = nx_group/2+1
-       nky = ny_group
-       nkz = local_nz
+      nkx = nx_group/2+1
+      nky = ny_group
+      nkz = local_nz
     ENDIF
     IF(fftw_mpi_transpose .AND. .NOT. fftw_hybrid) THEN
-       nkx = nx_global/2+1
-       nky = ny_global
-       nkz = local_nz
+      nkx = nx_global/2+1
+      nky = ny_global
+      nkz = local_nz
     ENDIF
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
@@ -1249,27 +1252,21 @@ IF (l_spectral .OR. g_spectral) THEN
     cin = fftw_alloc_real(2 * alloc_local);
     CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
     cin = fftw_alloc_real(2 * alloc_local);
-
-!    CALL c_f_pointer(cin,Vphi_r, [2*nkx,nky,nkz])
-
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
-    IF (l_spectral) THEN
-      ALLOCATE(exf(nkx, nky, nkz))
-      ALLOCATE(eyf(nkx, nky, nkz))
-      ALLOCATE(ezf(nkx, nky, nkz))
-      ALLOCATE(bxf(nkx, nky, nkz))
-      ALLOCATE(byf(nkx, nky, nkz))
-      ALLOCATE(bzf(nkx, nky, nkz))
-      ALLOCATE(jxf(nkx, nky, nkz))
-      ALLOCATE(jyf(nkx, nky, nkz))
-      ALLOCATE(jzf(nkx, nky, nkz))
-      ALLOCATE(rhof(nkx, nky, nkz))
-      ALLOCATE(rhooldf(nkx, nky, nkz))
-
-    ENDIF
+    ALLOCATE(exf(nkx, nky, nkz))
+    ALLOCATE(eyf(nkx, nky, nkz))
+    ALLOCATE(ezf(nkx, nky, nkz))
+    ALLOCATE(bxf(nkx, nky, nkz))
+    ALLOCATE(byf(nkx, nky, nkz))
+    ALLOCATE(bzf(nkx, nky, nkz))
+    ALLOCATE(jxf(nkx, nky, nkz))
+    ALLOCATE(jyf(nkx, nky, nkz))
+    ALLOCATE(jzf(nkx, nky, nkz))
+    ALLOCATE(rhof(nkx, nky, nkz))
+    ALLOCATE(rhooldf(nkx, nky, nkz))
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1
     kmn=-nzguards;kmx=nz+nzguards-1
@@ -1284,7 +1281,6 @@ IF (l_spectral .OR. g_spectral) THEN
     ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
     ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
     ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
-!    ALLOCATE(Vphi_r(imn:imx, jmn:jmx, kmn:kmx))
   ENDIF
 ENDIF
 #endif
@@ -1299,7 +1295,7 @@ bz_p => bz
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
 ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
 ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
-END SUBROUTINE
+END SUBROUTINE allocate_grid_quantities
 
 ! ______________________________________________________________________________________
 !> This subroutine finalizes MPI with some time information.
@@ -1350,28 +1346,26 @@ INTEGER(idp)             :: nthreads_tot
 
 ! Total times
 localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
-localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +  &
+localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +      &
 localtimes(11) + localtimes(13)
-localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) + localtimes(24)
+localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) +      &
+localtimes(24)
 
 init_localtimes(5) = sum(init_localtimes(1:4))
 
 ! Reductions
 ! Maximun times
-CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm, errcode)
+CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp, comm,  &
 errcode)
-CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,    &
-comm, errcode)
 ! Minimum times
-CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm, errcode)
+CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MIN, 0_isp, comm,  &
 errcode)
-CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MIN, 0_isp,    &
-comm, errcode)
 ! Average
-CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm,       &
+CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm, errcode)
+CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_SUM, 0_isp, comm,  &
 errcode)
-CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_SUM, 0_isp,    &
-comm, errcode)
 avetimes = avetimes / nproc
 init_avetimes = init_avetimes / nproc
 
@@ -1379,77 +1373,76 @@ init_avetimes = init_avetimes / nproc
 percenttimes = avetimes / avetimes(20) * 100
 
 IF (rank .EQ. 0) THEN
-  WRITE(0, *)                                                                     &
+  WRITE(0, *)                                                                         &
   '___________________________________________________________________________'
   WRITE(0, '(X, A40, X)') "Time statistics Initialization:"
   WRITE(0, *) ""
-  WRITE(0, '(X, A25, X, A8, X, A8, X, A8, X, A8, X, A8)') "Step part", "min (s)", &
+  WRITE(0, '(X, A25, X, A8, X, A8, X, A8, X, A8, X, A8)') "Step part", "min (s)",     &
   "ave (s)", "max (s)"
-  WRITE(0, *)                                                                     &
+  WRITE(0, *)                                                                         &
   "---------------------------------------------------------------------------"
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Tiling and part. load:", init_mintimes(1),    &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Tiling and part. load:", init_mintimes(1),        &
   init_avetimes(1), init_maxtimes(1)
   WRITE(0, *) ""
-  WRITE(0, *)                                                                     &
+  WRITE(0, *)                                                                         &
   '___________________________________________________________________________'
   WRITE(0, '(X, A40, X)') "Time statistics main loop:"
   WRITE(0, *) ""
-  WRITE(0, '(X, A25, X, A8, X, A8, X, A8, X, A8, X, A8)') "Step part", "min (s)", &
+  WRITE(0, '(X, A25, X, A8, X, A8, X, A8, X, A8, X, A8)') "Step part", "min (s)",     &
   "ave (s)", "max (s)", "per (%)", "/it (ms)"
-  WRITE(0, *)                                                                     &
+  WRITE(0, *)                                                                         &
   "---------------------------------------------------------------------------"
   IF (fg_p_pp_separated.le.1) THEN
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher + field gathering:",        &
-    mintimes(1), avetimes(1), maxtimes(1), percenttimes(1),                       &
-    avetimes(1)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher + field gathering:",            &
+    mintimes(1), avetimes(1), maxtimes(1), percenttimes(1), avetimes(1)/nsteps*1e3
   ELSE
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Field gathering:", mintimes(14),            &
-    avetimes(14), maxtimes(14), percenttimes(14), avetimes(14)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher:", mintimes(1),             &
-    avetimes(1), maxtimes(1), percenttimes(1), avetimes(1)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Field gathering:", mintimes(14), avetimes(14),  &
+    maxtimes(14), percenttimes(14), avetimes(14)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher:", mintimes(1), avetimes(1),    &
+    maxtimes(1), percenttimes(1), avetimes(1)/nsteps*1e3
   ENDIF
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Particle MPI bound. cond.:", mintimes(2),     &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Particle MPI bound. cond.:", mintimes(2),         &
   avetimes(2), maxtimes(2), percenttimes(2), avetimes(2)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Particle OpenMP bound. cond.:", mintimes(11), &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Particle OpenMP bound. cond.:", mintimes(11),     &
   avetimes(11), maxtimes(11), percenttimes(11), avetimes(11)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Current deposition:", mintimes(3),            &
-  avetimes(3), maxtimes(3), percenttimes(3), avetimes(3)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Current bound. cond.:", mintimes(4),          &
-  avetimes(4), maxtimes(4), percenttimes(4), avetimes(4)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield fdtd:", mintimes(5), avetimes(5),      &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Current deposition:", mintimes(3), avetimes(3),   &
+  maxtimes(3), percenttimes(3), avetimes(3)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Current bound. cond.:", mintimes(4), avetimes(4), &
+  maxtimes(4), percenttimes(4), avetimes(4)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield fdtd:", mintimes(5), avetimes(5),     &
   maxtimes(5), percenttimes(5), avetimes(5)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "B field bound. cond.:", mintimes(6),          &
-  avetimes(6), maxtimes(6), percenttimes(6), avetimes(6)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield fdtd:", mintimes(7), avetimes(7),      &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "B field bound. cond.:", mintimes(6), avetimes(6), &
+  maxtimes(6), percenttimes(6), avetimes(6)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield fdtd:", mintimes(7), avetimes(7),     &
   maxtimes(7), percenttimes(7), avetimes(7)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Get fields psatd:", mintimes(21),avetimes(21),      &    
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Get fields psatd:", mintimes(21), avetimes(21),   &
   maxtimes(21), percenttimes(21), avetimes(21)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Execute fftw:", mintimes(22),avetimes(22),      &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Execute fftw:", mintimes(22), avetimes(22),       &
   maxtimes(22), percenttimes(22), avetimes(22)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:", mintimes(23),avetimes(23), &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:", mintimes(23), avetimes(23),  &
   maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:", mintimes(24),avetimes(24),&
-  maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:",mintimes(25),avetimes(25),&
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:", mintimes(24),            &
+  avetimes(24), maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:", mintimes(25), avetimes(25),     &
   maxtimes(25), percenttimes(25), avetimes(25)/nsteps*1e3
 
-  WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8),          &
-  avetimes(8), maxtimes(8), percenttimes(8), avetimes(8)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),        &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8), avetimes(8), &
+  maxtimes(8), percenttimes(8), avetimes(8)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),            &
   maxtimes(10), percenttimes(10), avetimes(10)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Charge deposition:", mintimes(12),            &
-  avetimes(12), maxtimes(12), percenttimes(12), avetimes(12)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Charge bound. cond.:", mintimes(13),          &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Charge deposition:", mintimes(12), avetimes(12),  &
+  maxtimes(12), percenttimes(12), avetimes(12)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Charge bound. cond.:", mintimes(13),              &
   avetimes(13), maxtimes(13), percenttimes(13), avetimes(13)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Diags:", mintimes(9), avetimes(9),            &
-  maxtimes(9), percenttimes(9), avetimes(9)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Diags:", mintimes(9), avetimes(9), maxtimes(9),   &
+  percenttimes(9), avetimes(9)/nsteps*1e3
 
   WRITE(0, *) ""
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Total time Maxwell solver:", mintimes(18),    &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Total time Maxwell solver:", mintimes(18),        &
   avetimes(18), maxtimes(18), percenttimes(18), avetimes(18)/nsteps*1e3
-  WRITE(0, '(X, A25, 5(X, F8.2))') "Total time bound. cond.:", mintimes(19),      &
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Total time bound. cond.:", mintimes(19),          &
   avetimes(19), maxtimes(19), percenttimes(19), avetimes(19)/nsteps*1e3
-  WRITE(0, '(X, A25, X, F8.2, X, F8.2, X, F8.2)') "Total time:", mintimes(20),    &
+  WRITE(0, '(X, A25, X, F8.2, X, F8.2, X, F8.2)') "Total time:", mintimes(20),        &
   avetimes(20), maxtimes(20)
 
 
@@ -1463,29 +1456,28 @@ IF (rank .EQ. 0) THEN
   WRITE(0, *) ''
   IF (fg_p_pp_separated.le.1) THEN
     WRITE(0, *) 'For lib_performance python class:'
-    WRITE(0, '("(nmpi=", I5, ", nomp=", I5, ", name='''', kernel=", F6.2, ",      &
-    fieldgathe=", F6.2, ", part_mpi_com=", F6.2, ", part_omp_com=", F6.2, ",      &
-    currdepo=", F6.2, ", currcom=", F6.2, ", maxwell=", F6.2, ", maxwellcom=",    &
-    F6.2, ", sorting=", F6.2, ", rhodepo=", F6.2, ", rhocom=", F6.2, ", diags=",  &
-    F6.2, ")")') nproc, nthreads_tot, avetimes(20), avetimes(1), avetimes(2),     &
-    avetimes(11), avetimes(3), avetimes(4), avetimes(5)+avetimes(7),              &
-    avetimes(6)+avetimes(8), avetimes(10), avetimes(12), avetimes(13),            &
-    avetimes(9)
+    WRITE(0, '("(nmpi=", I5, ", nomp=", I5, ", name='''', kernel=", F6.2, ",          &
+    fieldgathe=", F6.2, ", part_mpi_com=", F6.2, ", part_omp_com=", F6.2, ",          &
+    currdepo=", F6.2, ", currcom=", F6.2, ", maxwell=", F6.2, ", maxwellcom=", F6.2,  &
+    ", sorting=", F6.2, ", rhodepo=", F6.2, ", rhocom=", F6.2, ", diags=", F6.2,      &
+    ")")') nproc, nthreads_tot, avetimes(20), avetimes(1), avetimes(2), avetimes(11), &
+    avetimes(3), avetimes(4), avetimes(5)+avetimes(7), avetimes(6)+avetimes(8),       &
+    avetimes(10), avetimes(12), avetimes(13), avetimes(9)
   ELSE
     WRITE(0, *) 'For lib_performance python class:'
-    WRITE(0, '("(nmpi=", I5, ", nomp=", I5, ", name='''', kernel=", F6.2, ",      &
-    fieldgathe=", F6.2, ", partpusher=", F6.2, ", part_mpi_com=", F6.2, ",        &
-    part_omp_com=", F6.2, ", currdepo=", F6.2, ", currcom=", F6.2, ", maxwell=",  &
-    F6.2, ", maxwellcom=", F6.2, ", sorting=", F6.2, ", rhodepo=", F6.2, ",       &
-    rhocom=", F6.2, ", diags=", F6.2, ")")') nproc, nthreads_tot, avetimes(20),   &
-    avetimes(14), avetimes(1), avetimes(2), avetimes(11), avetimes(3),            &
-    avetimes(4), avetimes(5)+avetimes(7), avetimes(6)+avetimes(8), avetimes(10),  &
-    avetimes(12), avetimes(13), avetimes(9)
+    WRITE(0, '("(nmpi=", I5, ", nomp=", I5, ", name='''', kernel=", F6.2, ",          &
+    fieldgathe=", F6.2, ", partpusher=", F6.2, ", part_mpi_com=", F6.2, ",            &
+    part_omp_com=", F6.2, ", currdepo=", F6.2, ", currcom=", F6.2, ", maxwell=",      &
+    F6.2, ", maxwellcom=", F6.2, ", sorting=", F6.2, ", rhodepo=", F6.2, ", rhocom=", &
+    F6.2, ", diags=", F6.2, ")")') nproc, nthreads_tot, avetimes(20), avetimes(14),   &
+    avetimes(1), avetimes(2), avetimes(11), avetimes(3), avetimes(4),                 &
+    avetimes(5)+avetimes(7), avetimes(6)+avetimes(8), avetimes(10), avetimes(12),     &
+    avetimes(13), avetimes(9)
   ENDIF
 
 ENDIF
 
-END SUBROUTINE
+END SUBROUTINE time_statistics
 
 ! ____________________________________________________________________________
 !> @brief
@@ -1516,27 +1508,28 @@ IF (timestat_perit.gt.0) THEN
 
   ! Total times
   localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
-  localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8)  &
-  + localtimes(11) + localtimes(13)
-  localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) + localtimes(24)
+  localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +    &
+  localtimes(11) + localtimes(13)
+  localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) +    &
+  localtimes(24)
 
   init_localtimes(5) = sum(init_localtimes(1:4))
 
   ! Reductions
   ! Maximun times
-  CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm,         &
   errcode)
-  CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
+  CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,      &
   comm, errcode)
   ! Minimum times
-  CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm,         &
   errcode)
-  CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
+  CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MAX, 0_isp,      &
   comm, errcode)
   ! Average
-  CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm,     &
+  CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm,         &
   errcode)
-  CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_MAX, 0_isp,  &
+  CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_MAX, 0_isp,      &
   comm, errcode)
   avetimes = avetimes / nproc
 
@@ -1544,67 +1537,65 @@ IF (timestat_perit.gt.0) THEN
   percenttimes = avetimes / avetimes(20) * 100
 
   IF (rank .EQ. 0) THEN
-    WRITE(0, *)                                                                   &
+    WRITE(0, *)                                                                       &
     '___________________________________________________________________________'
-    WRITE(0, '(X, A25, X, A8, X, A8, X, A8, X, A8, X, A8)') "Step part", "min     &
-    (s)", "ave (s)", "max (s)", "per (%)", "/it (ms)"
-    WRITE(0, *)                                                                   &
+    WRITE(0, '(X, A25, X, A8, X, A8, X, A8, X, A8, X, A8)') "Step part", "min (s)",   &
+    "ave (s)", "max (s)", "per (%)", "/it (ms)"
+    WRITE(0, *)                                                                       &
     "---------------------------------------------------------------------------"
     IF (fg_p_pp_separated.le.1) THEN
-      WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher + field gathering:",      &
-      mintimes(1), avetimes(1), maxtimes(1), percenttimes(1),                     &
-      avetimes(1)/nsteps*1e3
+      WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher + field gathering:",          &
+      mintimes(1), avetimes(1), maxtimes(1), percenttimes(1), avetimes(1)/nsteps*1e3
     ELSE
-      WRITE(0, '(X, A25, 5(X, F8.2))') "Field gathering:", mintimes(14),          &
+      WRITE(0, '(X, A25, 5(X, F8.2))') "Field gathering:", mintimes(14),              &
       avetimes(14), maxtimes(14), percenttimes(14), avetimes(14)/nsteps*1e3
-      WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher:", mintimes(1),           &
-      avetimes(1), maxtimes(1), percenttimes(1), avetimes(1)/nsteps*1e3
+      WRITE(0, '(X, A25, 5(X, F8.2))') "Particle pusher:", mintimes(1), avetimes(1),  &
+      maxtimes(1), percenttimes(1), avetimes(1)/nsteps*1e3
     ENDIF
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle MPI bound. cond.:", mintimes(2),   &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle MPI bound. cond.:", mintimes(2),       &
     avetimes(2), maxtimes(2), percenttimes(2), avetimes(2)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle OpenMP bound. cond.:",             &
-    mintimes(11), avetimes(11), maxtimes(11), percenttimes(11),                   &
-    avetimes(11)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Current deposition:", mintimes(3),          &
-    avetimes(3), maxtimes(3), percenttimes(3), avetimes(3)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Current bound. cond.:", mintimes(4),        &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Particle OpenMP bound. cond.:", mintimes(11),   &
+    avetimes(11), maxtimes(11), percenttimes(11), avetimes(11)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Current deposition:", mintimes(3), avetimes(3), &
+    maxtimes(3), percenttimes(3), avetimes(3)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Current bound. cond.:", mintimes(4),            &
     avetimes(4), maxtimes(4), percenttimes(4), avetimes(4)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield fdtd:", mintimes(5), avetimes(5),    &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Push bfield fdtd:", mintimes(5), avetimes(5),   &
     maxtimes(5), percenttimes(5), avetimes(5)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "B field bound. cond.:", mintimes(6),        &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "B field bound. cond.:", mintimes(6),            &
     avetimes(6), maxtimes(6), percenttimes(6), avetimes(6)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield fdtd:", mintimes(7), avetimes(7),    &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Push efield fdtd:", mintimes(7), avetimes(7),   &
     maxtimes(7), percenttimes(7), avetimes(7)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Get fields psatd:",mintimes(21),avetimes(21),      &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Get fields psatd:", mintimes(21), avetimes(21), &
     maxtimes(21), percenttimes(21), avetimes(21)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Execute fftw:", mintimes(22),avetimes(22),&
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Execute fftw:", mintimes(22), avetimes(22),     &
     maxtimes(22), percenttimes(22), avetimes(22)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:",mintimes(23),avetimes(23), &
-    maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:",mintimes(24),avetimes(24),&
-    maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:",mintimes(25),avetimes(25),&
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:", mintimes(23),              &
+    avetimes(23), maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:", mintimes(24),          &
+    avetimes(24), maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:", mintimes(25), avetimes(25),   &
     maxtimes(25), percenttimes(25), avetimes(25)/nsteps*1e3
 
-    WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8),        &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "E field bound. cond.:", mintimes(8),            &
     avetimes(8), maxtimes(8), percenttimes(8), avetimes(8)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),      &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Sorting:", mintimes(10), avetimes(10),          &
     maxtimes(10), percenttimes(10), avetimes(10)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Charge deposition:", mintimes(12),          &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Charge deposition:", mintimes(12),              &
     avetimes(12), maxtimes(12), percenttimes(12), avetimes(12)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Charge bound. cond.:", mintimes(13),        &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Charge bound. cond.:", mintimes(13),            &
     avetimes(13), maxtimes(13), percenttimes(13), avetimes(13)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Diags:", mintimes(9), avetimes(9),          &
-    maxtimes(9), percenttimes(9), avetimes(9)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Diags:", mintimes(9), avetimes(9), maxtimes(9), &
+    percenttimes(9), avetimes(9)/nsteps*1e3
 
     WRITE(0, *) ""
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Total time Maxwell solver:", mintimes(18),  &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Total time Maxwell solver:", mintimes(18),      &
     avetimes(18), maxtimes(18), percenttimes(18), avetimes(18)/nsteps*1e3
-    WRITE(0, '(X, A25, 5(X, F8.2))') "Total time bound. cond.:", mintimes(19),    &
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Total time bound. cond.:", mintimes(19),        &
     avetimes(19), maxtimes(19), percenttimes(19), avetimes(19)/nsteps*1e3
-    WRITE(0, '(X, A25, X, F8.2, X, F8.2, X, F8.2)') "Total time:", mintimes(20),  &
+    WRITE(0, '(X, A25, X, F8.2, X, F8.2, X, F8.2)') "Total time:", mintimes(20),      &
     avetimes(20), maxtimes(20)
   ENDIF
 ENDIF
-END SUBROUTINE
+END SUBROUTINE time_statistics_per_iteration
 END MODULE mpi_routines

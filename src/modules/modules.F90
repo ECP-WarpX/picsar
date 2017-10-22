@@ -7,8 +7,7 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -61,12 +60,12 @@ MODULE constants
   REAL(num), PARAMETER :: echarge = 1.6021764620000001e-19_num
 #if defined(LIBRARY)
   !> Speed of light in vacuum
-  REAL(num), PARAMETER :: clight  = 1.0_num 
+  REAL(num), PARAMETER :: clight  = 1.0_num
   !> Magnetic constant
   REAL(num), PARAMETER :: mu0     = 1.0_num
   !> Vacuum permeability
-  REAL(num), PARAMETER :: eps0    = 1.0_num 
-  REAL(num), PARAMETER :: imu0    = 1.0_num 
+  REAL(num), PARAMETER :: eps0    = 1.0_num
+  REAL(num), PARAMETER :: imu0    = 1.0_num
   !> The famous pi value
 #else
   !> Speed of light in vacuum
@@ -132,7 +131,7 @@ MODULE fields
   !> Flag: use of PSAOTD spectral solver
   LOGICAL(lp) :: l_spectral
   !> Flag: use for gpstd spectral solver version
-  LOGICAL(lp) :: g_spectral
+  !  LOGICAL(lp) :: g_spectral
   !> Flag: use of staggered grid
   LOGICAL(lp) :: l_staggered
   !> Flag: this flag needs a description, used in field gathering routines
@@ -225,17 +224,17 @@ MODULE fields
   !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rhoold_r
   !> MPI-domain electric field grid in x - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf 
-  !> MPI-domain electric field grid in y - Fourier space 
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf 
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
+  !> MPI-domain electric field grid in y - Fourier space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyf
   !> MPI-domain electric field grid in z - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf 
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezf
   !> MPI-domain magnetic field grid in x - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf 
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxf
   !> MPI-domain magnetic field grid in y - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf 
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf
   !> MPI-domain magnetic field grid in z - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf 
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf
   !> MPI-domain current grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jxf
   !> MPI-domain current grid in y - Fourier space
@@ -246,8 +245,8 @@ MODULE fields
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhof
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhooldf
-  !> Electric potential to solve Poisson 
-!  REAL(num), POINTER, DIMENSION(:, :, :) :: Vphi_r,Vphif
+  !> Electric potential to solve Poisson
+  !  REAL(num), POINTER, DIMENSION(:, :, :) :: Vphi_r, Vphif
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y
@@ -259,7 +258,7 @@ MODULE fields
   REAL(num)                        :: electromagn_energy_mpi
   REAL(num)                        :: electro_energy_total
   REAL(num)                        :: magneto_energy_total
-  REAL(num)                        :: electromagn_energy_total 
+  REAL(num)                        :: electromagn_energy_total
 END MODULE fields
 
 ! ________________________________________________________________________________________
@@ -480,7 +479,7 @@ MODULE antenna!#do not parse
     REAL(num)         :: k0_laser
     COMPLEX(cpx)      :: diffract_factor
     INTEGER(idp)      :: temporal_order
-    INTEGER(idp)      :: time_window ! 0 for Gaussian Hamming Window
+    INTEGER(idp)      :: time_window! 0 for Gaussian Hamming Window
   END TYPE particle_antenna
 END MODULE antenna
 
@@ -492,12 +491,12 @@ MODULE particle_speciesmodule!#do not parse
   USE particle_tilemodule
   USE constants
   USE antenna
-    REAL(num)   :: kin_energy_mpi
-    REAL(num)   :: kin_energy_total
-    
+  REAL(num)   :: kin_energy_mpi
+  REAL(num)   :: kin_energy_total
+
   !> Fortran object representing a particle species
   TYPE particle_species
-    ! Species kinetic energy 
+    ! Species kinetic energy
     REAL(num)   :: kin_energy_sp
     ! Attributes of particle species object
     !> Particle antenna flag (.FALSE. by default)
@@ -972,7 +971,7 @@ MODULE output_data!#do not parse
   !> File name for the density output
   CHARACTER(LEN=string_length) :: filerho  ='rho'
   !> File name for the current field divergence output
-  CHARACTER(LEN=string_length) :: filedivj ='divj'   
+  CHARACTER(LEN=string_length) :: filedivj ='divj'
   !> File name for the magnetic field divergence output
   CHARACTER(LEN=string_length) :: filedivb ='divb'
 
@@ -1053,12 +1052,12 @@ END MODULE output_data
 MODULE group_parameters
   USE mpi_type_constants
   USE picsar_precision
-  !> number of groups (this is a parameter in the input file 
+  !> number of groups (this is a parameter in the input file
   INTEGER(idp)    ::  nb_group
   ! MAX NUMBER OF GROUPS
-  INTEGER(idp) , PARAMETER :: nb_max_groups = 100
+  INTEGER(idp), PARAMETER :: nb_max_groups = 100
   !> group sizes of of all groups
-  INTEGER(idp)  , DIMENSION(:) , POINTER :: group_sizes
+  INTEGER(idp), DIMENSION(:), POINTER :: group_sizes
   !> To which group this mpi task belongs
   INTEGER(idp)    ::  which_group
   !> x y z coordinats of the group
@@ -1067,26 +1066,26 @@ MODULE group_parameters
   INTEGER(isp)  ::  group_coordinates(3)
   !> local_size and local rank
   INTEGER(isp)    :: local_size, local_rank
-  !> MPI_GROUP associated to mpi_comm_world 
-  INTEGER(isp)    :: MPI_WORLD_GROUP 
+  !> MPI_GROUP associated to mpi_comm_world
+  INTEGER(isp)    :: MPI_WORLD_GROUP
   !> ARRAY of  MPI_GROUP associated to each mpi task (!= mpi_group_null or
-  !mpi_comm_null if and  only if i == which group + 1 
-  INTEGER(isp)  , DIMENSION(100) :: MPI_GROUP_ID , MPI_COMM_GROUP_ID
+  !mpi_comm_null if and  only if i == which group + 1
+  INTEGER(isp), DIMENSION(100) :: MPI_GROUP_ID, MPI_COMM_GROUP_ID
   !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
-  !ranks in the mpi_root_comm 
-  INTEGER(isp)  :: MPI_ROOT_COMM , MPI_ROOT_GROUP , root_rank , root_size
+  !ranks in the mpi_root_comm
+  INTEGER(isp)  :: MPI_ROOT_COMM, MPI_ROOT_GROUP, root_rank, root_size
   !> Field cell  sizes in groups without guardcells
-  INTEGER(idp)  :: nx_group_global , ny_group_global , nz_group_global
+  INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
   !> Field grid sizes in groups whithout guardcells
-  INTEGER(idp)  :: nx_group_global_grid , ny_group_global_grid , nz_group_global_grid
+  INTEGER(idp)  :: nx_group_global_grid, ny_group_global_grid, nz_group_global_grid
   !> Field cell  sizes in groups with guardcells
-  INTEGER(idp)  :: nx_group , ny_group , nz_group
+  INTEGER(idp)  :: nx_group, ny_group, nz_group
   !> Field grid sizes in groups with guardcells
-  INTEGER(idp)  :: nx_group_grid , ny_group_grid , nz_group_grid
+  INTEGER(idp)  :: nx_group_grid, ny_group_grid, nz_group_grid
 
   !> Group guard cells in : (only nzg_group is relevant for now)
-  INTEGER(idp)  :: nzg_group , nyg_group , nxg_group
-  !> Nz grid min max group index 
+  INTEGER(idp)  :: nzg_group, nyg_group, nxg_group
+  !> Nz grid min max group index
   INTEGER(idp)  ::   nz_grid_min_grp, nz_grid_max_grp, nz_grid_grp
   !> This flag is true if MPI task is on the edge of its group (so need
   !additional comm
@@ -1096,11 +1095,11 @@ MODULE group_parameters
   !> This flag is true if the MPI rank is at the superior z group boundary
   LOGICAL(lp)  :: group_z_max_boundary = .FALSE.
   !> minimum and maximum cell numbers in each group :
-  INTEGER(idp) , DIMENSION(:), POINTER  :: cell_z_min_group, cell_z_max_group
+  INTEGER(idp), DIMENSION(:), POINTER  :: cell_z_min_group, cell_z_max_group
   !> physical limits of group domains
-  REAL(num)                                 :: z_min_group , z_max_group
-  REAL(num)                                 :: y_min_group , y_max_group
-  REAL(num)                                 :: x_min_group , x_max_group 
+  REAL(num)                                 :: z_min_group, z_max_group
+  REAL(num)                                 :: y_min_group, y_max_group
+  REAL(num)                                 :: x_min_group, x_max_group
 END MODULE
 #endif
 
@@ -1115,9 +1114,10 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi,fftw_mpi_transpose,fftw_threads_ok,fftw_hybrid,hybrid_2
+  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid,    &
+  hybrid_2
   !> First and last indexes of real data in group (only z is relevant for now)
-  INTEGER(idp)  ::   iz_min_r , iz_max_r , iy_min_r , iy_max_r , ix_min_r , ix_max_r
+  INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 
   !> Error code for MPI
   INTEGER(isp) :: errcode
@@ -1430,7 +1430,7 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho, rhoold
   !> Electric Field divergence
   REAL(num), POINTER, DIMENSION(:, :, :) :: dive
-  !> Current divergence 
+  !> Current divergence
   REAL(num), POINTER, DIMENSION(:, :, :) :: divj
   !> Magnetic Field divergence
   REAL(num), POINTER, DIMENSIOn(:, :, :) :: divb
@@ -1449,27 +1449,7 @@ END MODULE shared_data
 #if defined(FFTW)
 MODULE fourier!#do not parse
   USE constants
-  ! Fourier k-vectors
-  ! -- Along X
-!  REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit, kxunit_mod
-!  ! -- Along Y
-!  REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit, kyunit_mod
-!  ! -- Along Z
-!  REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit, kzunit_mod
-!  ! - 3D k vectors
-!  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kxn, kyn, kzn, k, kx, ky, kz, kmag
-!  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod
-!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxmn, kxpn
-!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kymn, kypn
-!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzmn, kzpn
-!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxm, kxp
-!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kym, kyp
-!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzm, kzp
   INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
-
-  ! - PSATD Coefficients
-!  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult,  &
-!  ERhooldmult, BJmult, axm, axp, aym, ayp, azm, azp
 END MODULE fourier
 #endif
 

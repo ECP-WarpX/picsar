@@ -2,19 +2,16 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
-! The Regents of the University of California, through Lawrence Berkeley National
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, ! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
 ! and the U.S. Government consequently retains certain rights. As such, the U.S.
-! Government has been granted for itself and others acting on its behalf a paid-up,
-! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! Government has been granted for itself and others acting on its behalf a paid-up, ! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
 ! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
@@ -89,7 +86,6 @@ MODULE control_file
     norderz = 2
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
-    g_spectral = .FALSE.! (np spectral solver by default)
     l_staggered = .TRUE.! (staggered scheme by default - for spectral )
     ! --- Order of current deposition/ field gathering
     ! (default is 1 in x, y, z)
@@ -104,9 +100,9 @@ MODULE control_file
     nzjguards=MAX(noz, 2_idp)
 
 #if defined(FFTW)
-    nxg_group=max(nox,2_idp)
-    nyg_group=max(noy,2_idp)
-    nzg_group=max(noz,2_idp)
+    nxg_group=max(nox, 2_idp)
+    nyg_group=max(noy, 2_idp)
+    nzg_group=max(noz, 2_idp)
 #endif
     ! Topology
     topology = 0
@@ -549,9 +545,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_spectral
-      ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) g_spectral
       ELSE IF (INDEX(buffer, 'l_staggered') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_staggered

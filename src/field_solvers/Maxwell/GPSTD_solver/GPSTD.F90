@@ -2,19 +2,16 @@
 !
 ! *** Copyright Notice ***
 !
-! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
-! The Regents of the University of California, through Lawrence Berkeley National
+! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016, ! The Regents of the University of California, through Lawrence Berkeley National
 ! Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).
 ! All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software,
-! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
 ! and the U.S. Government consequently retains certain rights. As such, the U.S.
-! Government has been granted for itself and others acting on its behalf a paid-up,
-! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
+! Government has been granted for itself and others acting on its behalf a paid-up, ! nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute
 ! copies to the public, prepare derivative works, and perform publicly and display
 ! publicly, and to permit other to do so.
 !
@@ -88,7 +85,7 @@ MODULE matrix_coefficients!#do not parse
   ! (contaning 3d blocks coefficients for GPSTD_Maxwell, GPSTD_Maxwell_PML etc.)
   TYPE(matrix_blocks), POINTER, DIMENSION(:) :: cc_mat
   ! Arrays of 1D block vectors  (containing 3d blocks Ex, Ey, Ez etc.)
-  TYPE(vector_blocks), POINTER, DIMENSION(:) :: vnew, vold, KSPACE,AT_OP
+  TYPE(vector_blocks), POINTER, DIMENSION(:) :: vnew, vold, KSPACE, AT_OP
 END MODULE matrix_coefficients
 
 
@@ -311,9 +308,6 @@ END SUBROUTINE allocate_new_matrix_vector
 ! ________________________________________________________________________________________
 SUBROUTINE multiply_mat_vector(matrix_index)
   USE matrix_coefficients
-  USE shared_data
-  USE time_stat
-  USE params
 #ifdef _OPENMP
   USE omp_lib
 #endif
@@ -323,12 +317,9 @@ SUBROUTINE multiply_mat_vector(matrix_index)
   nthreads_loop2
   INTEGER(idp) :: n1vec, n2vec, n3vec, n1mat, n2mat, n3mat
   TYPE(block3d), POINTER :: pvec_new, pvec_old, p_mat
-  LOGICAL(lp)            :: needed
-  REAL(num)              :: tmptime
-  !nrow=cc_mat(matrix_index)%nblocks
-  !ncol=nrow
-  nrow = 6_idp
-  ncol = 11_idp
+  nrow=cc_mat(matrix_index)%nblocks
+  ncol=nrow
+
 #ifdef _OPENMP
   nthreads_tot=OMP_GET_MAX_THREADS()
   CALL OMP_SET_NESTED(.TRUE.)
@@ -347,12 +338,10 @@ SUBROUTINE multiply_mat_vector(matrix_index)
     nthreads_loop1=1
     nthreads_loop2=1
   ENDIF
-  IF (it.GE.timestat_itstart) THEN
-    tmptime = MPI_WTIME()
-  ENDIF
+
   !$OMP PARALLEL DO SCHEDULE(runtime) DEFAULT(NONE) SHARED(nrow, ncol,                &
   !$OMP nthreads_loop2, vnew, vold, cc_mat, matrix_index) PRIVATE(irow, icol,         &
-  !$OMP pvec_new, pvec_old, p_mat, n1vec, n2vec, n3vec, n1mat, n2mat, n3mat,needed)   &
+  !$OMP pvec_new, pvec_old, p_mat, n1vec, n2vec, n3vec, n1mat, n2mat, n3mat)          &
   !$OMP NUM_THREADS(nthreads_loop1)
   DO irow=1, nrow
     pvec_new=>vnew(matrix_index)%block_vector(irow)
@@ -361,8 +350,6 @@ SUBROUTINE multiply_mat_vector(matrix_index)
     ENDIF
     pvec_new%block3dc=0.
     DO icol=1, ncol
-      CALL is_calculation_needed(irow,icol,needed)
-      IF (needed .EQV. .FALSE.) CYCLE
       pvec_old=>vold(matrix_index)%block_vector(icol)
       p_mat=>cc_mat(matrix_index)%block_matrix2d(irow, icol)
       n1vec=pvec_old%nx
@@ -376,71 +363,8 @@ SUBROUTINE multiply_mat_vector(matrix_index)
     END DO
   END DO
   !$OMP END PARALLEL DO
-  IF (it.ge.timestat_itstart) THEN
-    localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
-  ENDIF
 
 END SUBROUTINE
-
-! ________________________________________________________________________________________
-!> @brief
-!> This subroutine establishes weather mult is needd 
-!
-!> @warning
-!> Need for more information about the purpose of this function and
-!> about input/output arguments
-!
-!> @author
-!> Haithem Kallala
-!
-
-SUBROUTINE is_calculation_needed(irow,icol,needed)
-  USE picsar_precision
-
-  INTEGER(idp) , INTENT(IN)    :: irow,icol
-  LOGICAL(lp)  , INTENT(INOUT) :: needed
-
-  needed = .TRUE.
-  IF(irow .LE. 3_idp) THEN
-    IF((icol .LE. 3_idp) .AND. (icol .NE. irow)) THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-    IF(icol  .EQ. irow+3_idp) THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-    IF((icol .GE. 7_idp) .AND. (icol .LE. 9_idp) .AND. (icol .NE. irow + 6_idp)) THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-  ENDIF
-  IF ((irow .LE. 6_idp) .AND. (irow .GE. 4_idp)) THEN
-    IF ((icol .LE. 3_idp) .AND. icol .EQ. irow - 3_idp) THEN
-       needed = .FALSE.
-       RETURN
-    ENDIF
-    IF((icol .LE. 6_idp) .AND. (icol .GE. 4_idp) .AND. icol .NE. irow) THEN
-       needed = .FALSE.
-       RETURN
-    ENDIF
-    IF((icol .GE. 7_idp) .AND. (icol .EQ. irow + 3_idp)) THEN
-       needed = .FALSE.
-       RETURN
-    ENDIF
-    IF((icol .EQ. 10_idp) .OR. (icol .EQ. 11_idp)) THEN
-       needed = .FALSE.
-       RETURN
-    ENDIF
-  ENDIF
-  IF (irow .GE. 7_idp) THEN
-    needed = .FALSE.
-    RETURN
-  ENDIF
-
-END SUBROUTINE
-
-
 
 ! ________________________________________________________________________________________
 !> @brief
