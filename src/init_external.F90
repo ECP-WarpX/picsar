@@ -112,7 +112,7 @@ MODULE link_external_tools
       ycoeffs = dt/dy*ycoeffs
       zcoeffs = dt/dz*zcoeffs
     ENDIF 
-  END SUBROUTINE
+  END SUBROUTINE init_params_external
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
@@ -193,7 +193,7 @@ MODULE link_external_tools
   !$OMP END DO
   !$OMP END PARALLEL
   RETURN
-END SUBROUTINE
+END SUBROUTINE evec3d_push_norder
 
 SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard)
@@ -268,7 +268,7 @@ SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  
   !$OMP END PARALLEL
   RETURN
 
-END SUBROUTINE
+END SUBROUTINE bvec3d_push_norder
 
 SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
   USE params
@@ -282,5 +282,5 @@ SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
   CALL bvec3d_push_norder(ex,ey,ez,bx,by,bz,xcoeffs,ycoeffs,zcoeffs,&
         nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)
 
-END SUBROUTINE
+END SUBROUTINE solve_maxwell_fdtd_pxr
 END MODULE

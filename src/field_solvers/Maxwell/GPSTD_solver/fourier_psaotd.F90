@@ -114,17 +114,17 @@ MODULE fourier_psaotd
     ENDIF
     ! Init fourier fields fields
 #if !defined(LIBRARY)
-    call normalize_Fourier(ex_r, nfftx, nffty, nfftz, ex, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(ey_r, nfftx, nffty, nfftz, ey, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(ez_r, nfftx, nffty, nfftz, ez, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(bx_r, nfftx, nffty, nfftz, bx, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(by_r, nfftx, nffty, nfftz, by, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(bz_r, nfftx, nffty, nfftz, bz, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(jx_r, nfftx, nffty, nfftz, jx, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(jy_r, nfftx, nffty, nfftz, jy, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(jz_r, nfftx, nffty, nfftz, jz, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(rho_r, nfftx, nffty, nfftz, rho, nxx, nyy, nzz, 1.0_num)
-    call normalize_Fourier(rhoold_r, nfftx, nffty, nfftz, rhoold, nxx, nyy, nzz,      &
+    CALL normalize_Fourier(ex_r, nfftx, nffty, nfftz, ex, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(ey_r, nfftx, nffty, nfftz, ey, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(ez_r, nfftx, nffty, nfftz, ez, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(bx_r, nfftx, nffty, nfftz, bx, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(by_r, nfftx, nffty, nfftz, by, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(bz_r, nfftx, nffty, nfftz, bz, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(jx_r, nfftx, nffty, nfftz, jx, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(jy_r, nfftx, nffty, nfftz, jy, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(jz_r, nfftx, nffty, nfftz, jz, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(rho_r, nfftx, nffty, nfftz, rho, nxx, nyy, nzz, 1.0_num)
+    CALL normalize_Fourier(rhoold_r, nfftx, nffty, nfftz, rhoold, nxx, nyy, nzz,      &
     1.0_num)
 #endif
     IF (it.ge.timestat_itstart) THEN
@@ -289,25 +289,25 @@ MODULE fourier_psaotd
     ENDIF
 #if defined (LIBRARY)
 
-    call normalize_Fourier(ex_r, nfftx, nffty, nfftz, ex_r, nfftx, nffty, nfftz,      &
+    CALL normalize_Fourier(ex_r, nfftx, nffty, nfftz, ex_r, nfftx, nffty, nfftz,      &
     coeff_norm)
-    call normalize_Fourier(ey_r, nfftx, nffty, nfftz, ey_r, nfftx, nffty, nfftz,      &
+    CALL normalize_Fourier(ey_r, nfftx, nffty, nfftz, ey_r, nfftx, nffty, nfftz,      &
     coeff_norm)
-    call normalize_Fourier(ez_r, nfftx, nffty, nfftz, ez_r, nfftx, nffty, nfftz,      &
+    CALL normalize_Fourier(ez_r, nfftx, nffty, nfftz, ez_r, nfftx, nffty, nfftz,      &
     coeff_norm)
-    call normalize_Fourier(bx_r, nfftx, nffty, nfftz, bx_r, nfftx, nffty, nfftz,      &
+    CALL normalize_Fourier(bx_r, nfftx, nffty, nfftz, bx_r, nfftx, nffty, nfftz,      &
     coeff_norm)
-    call normalize_Fourier(by_r, nfftx, nffty, nfftz, by_r, nfftx, nffty, nfftz,      &
+    CALL normalize_Fourier(by_r, nfftx, nffty, nfftz, by_r, nfftx, nffty, nfftz,      &
     coeff_norm)
-    call normalize_Fourier(bz_r, nfftx, nffty, nfftz, bz_r, nfftx, nffty, nfftz,      &
+    CALL normalize_Fourier(bz_r, nfftx, nffty, nfftz, bz_r, nfftx, nffty, nfftz,      &
     coeff_norm)
 #else
-    call normalize_Fourier(ex, nxx, nyy, nzz, ex_r, nfftx, nffty, nfftz, coeff_norm)
-    call normalize_Fourier(ey, nxx, nyy, nzz, ey_r, nfftx, nffty, nfftz, coeff_norm)
-    call normalize_Fourier(ez, nxx, nyy, nzz, ez_r, nfftx, nffty, nfftz, coeff_norm)
-    call normalize_Fourier(bx, nxx, nyy, nzz, bx_r, nfftx, nffty, nfftz, coeff_norm)
-    call normalize_Fourier(by, nxx, nyy, nzz, by_r, nfftx, nffty, nfftz, coeff_norm)
-    call normalize_Fourier(bz, nxx, nyy, nzz, bz_r, nfftx, nffty, nfftz, coeff_norm)
+    CALL normalize_Fourier(ex, nxx, nyy, nzz, ex_r, nfftx, nffty, nfftz, coeff_norm)
+    CALL normalize_Fourier(ey, nxx, nyy, nzz, ey_r, nfftx, nffty, nfftz, coeff_norm)
+    CALL normalize_Fourier(ez, nxx, nyy, nzz, ez_r, nfftx, nffty, nfftz, coeff_norm)
+    CALL normalize_Fourier(bx, nxx, nyy, nzz, bx_r, nfftx, nffty, nfftz, coeff_norm)
+    CALL normalize_Fourier(by, nxx, nyy, nzz, by_r, nfftx, nffty, nfftz, coeff_norm)
+    CALL normalize_Fourier(bz, nxx, nyy, nzz, bz_r, nfftx, nffty, nfftz, coeff_norm)
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -528,6 +528,6 @@ MODULE fourier_psaotd
       plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
     ENDIF
     IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
-  END SUBROUTINE
+  END SUBROUTINE init_plans_blocks
 
 END MODULE fourier_psaotd

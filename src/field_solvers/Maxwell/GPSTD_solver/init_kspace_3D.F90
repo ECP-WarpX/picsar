@@ -65,7 +65,7 @@ MODULE gpstd_solver
       nfftz = nz+2*nzguards
 #endif
     ENDIF
-  END SUBROUTINE
+  END SUBROUTINE select_case_dims_local
   SUBROUTINE select_case_dims_global(nfftx, nffty, nfftz)
     USE shared_data
     USE mpi_fftw3
@@ -107,7 +107,7 @@ MODULE gpstd_solver
       nfftz = nz+2*nzguards
 #endif
     ENDIF
-  END SUBROUTINE
+  END SUBROUTINE select_case_dims_global
 
 
   SUBROUTINE init_kspace
@@ -120,7 +120,7 @@ MODULE gpstd_solver
     USE fields, ONLY : norderx, nordery, norderz
     USE params, ONLY : dt
     LOGICAL(lp)                                   :: l_stg
-    REAL(num), ALLOCATABLE, DIMENSION(:, :, :) :: temp, temp2
+    REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: nfftx, nffty, nfftz
@@ -148,7 +148,7 @@ MODULE gpstd_solver
     !construct kspace
     l_stg = .TRUE.
     ii=DCMPLX(0.0_num, 1.0_num)
-    CALL compute_k_vec_nompi(l_stg)
+    CALL compute_k_vec(l_stg)
     DO i = 1, nfftx/2+1
       DO j = 1, nffty
         DO k = 1, nfftz
@@ -217,15 +217,15 @@ MODULE gpstd_solver
     DEALLOCATE(temp, temp2)
   END SUBROUTINE init_kspace
 
-  SUBROUTINE compute_k_vec_nompi(l_stg)
+  SUBROUTINE compute_k_vec(l_stg)
     USE constants
     USE shared_data
     USE fields
     USE mpi_fftw3
     IMPLICIT NONE
-    LOGICAL(lp), INTENT(IN)  :: l_stg
+    LOGICAL(lp), INTENT(IN)                     :: l_stg
     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     :: kxff, kxbb, kxcc, k_temp
-    REAL(num), ALLOCATABLE, DIMENSION(:)     :: FD_x, FD_y, FD_z
+    REAL(num), ALLOCATABLE, DIMENSION(:)        :: FD_x, FD_y, FD_z
     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     :: onesxp, onesyp, oneszp, onesx,     &
     onesy, onesz
     COMPLEX(cpx)                                  :: ii
@@ -379,7 +379,7 @@ MODULE gpstd_solver
       norderz=nordery
       nordery=temp_order
     ENDIF
-  END SUBROUTINE
+  END SUBROUTINE compute_k_vec
 
   SUBROUTINE fftfreq(nxx, kxx, dxx)
     USE constants
@@ -433,6 +433,7 @@ MODULE gpstd_solver
     ENDDO
     RETURN
   END FUNCTION sinc_block
+
   FUNCTION sinc (x)
     USE picsar_precision
     IMPLICIT NONE
@@ -488,7 +489,7 @@ MODULE gpstd_solver
         IF(i .LE.  6) DEALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc)
       ENDDO
     ENDIF
-  END SUBROUTINE
+  END SUBROUTINE delete_arrays
   !> @brief
   !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
   !

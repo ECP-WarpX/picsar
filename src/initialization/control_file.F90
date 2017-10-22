@@ -1149,7 +1149,7 @@ MODULE control_file
       ENDIF
     ENDDO
     RETURN
-  END SUBROUTINE
+  END SUBROUTINE read_temporal_output_section
 
   ! ______________________________________________________________________________________
   !> @brief

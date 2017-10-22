@@ -528,10 +528,10 @@ INTEGER(isp), PARAMETER :: ndims = 3
 LOGICAL(isp) :: periods(ndims), reorder
 INTEGER(isp) :: dims(ndims), ierr
 INTEGER(idp) :: group_size
-INTEGER(isp), ALLOCATABLE, DIMENSION(:)   :: grp_id, grp_comm, local_roots_rank
-INTEGER(isp)                                :: roots_grp, roots_comm
+INTEGER(isp), ALLOCATABLE, DIMENSION(:)    :: grp_id, grp_comm, local_roots_rank
 INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
-INTEGER(idp)  :: i, j, temp
+INTEGER(isp)                                :: roots_grp, roots_comm
+INTEGER(idp)  :: i,j,temp
 INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
 all_cells, all_nz, all_nzp
 

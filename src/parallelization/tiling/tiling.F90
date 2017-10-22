@@ -1631,9 +1631,8 @@ MODULE tiling
   SUBROUTINE load_laser_species(curr)
     USE antenna
     TYPE(particle_species), POINTER, INTENT(INOUT) :: curr
-    INTEGER(idp)       ::  lmax, jmax, kmax, j, l, k, ipart
-    REAL(num), DIMENSION(2) :: rng
-    REAL(num) :: partx, party, partz, partux, partuy, partuz, gaminv
+    INTEGER(idp)       ::  lmax, jmax, j, l, ipart
+    REAL(num) ::   partux, partuy, partuz, gaminv
     REAL(num) ::   partvx, partvy, partvz, intercept, weight_laser
     REAL(num), DIMENSION(:), ALLOCATABLE :: partpid
     REAL(num), DIMENSION(3)      :: mins, maxs, pos, spot, dst

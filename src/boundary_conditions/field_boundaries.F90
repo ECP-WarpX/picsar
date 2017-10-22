@@ -580,7 +580,7 @@ MODULE field_boundary
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
 #endif
-  END SUBROUTINE
+  END SUBROUTINE ebj_field_bcs_groups
 
   SUBROUTINE field_bc_group_blocking(field, nxx, nyy, nzz, ngroupz)
 #if defined(FFTW)
@@ -622,15 +622,6 @@ MODULE field_boundary
       CALL MPI_RECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min, isp), tag, &
       comm, errcode)
     ENDIF
-
-    !        ! case if an group is only composed by 1 mpi
-    !
-    !     IF(group_z_min_boundary .AND.  group_z_max_boundary) THEN
-    !       CALL MPI_SENDRECV(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min, isp), tag, &
-    !            field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max, isp), tag, comm, errcode)
-    !       CALL MPI_SENDRECV(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20), INT(proc_z_max, isp), tag, &
-    !           field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min, isp), tag, comm, errcode)
-    !     ENDIF
 #endif
   END SUBROUTINE field_bc_group_blocking
 
@@ -704,7 +695,7 @@ MODULE field_boundary
       CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
     ENDIF
 #endif
-  END SUBROUTINE
+  END SUBROUTINE field_bc_group_non_blocking
 
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains

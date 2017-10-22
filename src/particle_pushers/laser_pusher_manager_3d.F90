@@ -21,11 +21,9 @@ SUBROUTINE push_laser_particles
   USE time_stat
   IMPLICIT NONE
   INTEGER(idp) :: ispecies, ix, iy, iz, count
-  INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                       :: tdeb, tend, real_time
-  INTEGER(idp)                    :: nxc, nyc, nzc
 
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles: start"
@@ -120,9 +118,9 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
   real_time, t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order
-  INTEGER(idp)                            :: n, nn, ip, i, j, k, blocksize
+  INTEGER(idp)                            :: n, nn, ip, blocksize
   REAL(num)                               :: amp1, amp2, amp3
-  REAL(num)                               :: xx, yy, clightsq, usq, coeff_ampli,      &
+  REAL(num)                               :: xx, yy, clightsq, coeff_ampli,      &
   disp_max
 
   disp_max   = 0.01_num*clight
@@ -209,8 +207,8 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
   t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order
-  INTEGER(idp)                            :: n, nn, ip, i, j, k, blocksize
-  REAL(num), DIMENSION(3)              :: amp
+  INTEGER(idp)                            :: n, nn, ip, blocksize
+  REAL(num)                               :: amp1, amp2, amp3
   REAL(num)                               :: xx, yy, clightsq, usq, coeff_ampli,      &
   disp_max
 
@@ -315,7 +313,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   arg(3) = (u1*polvector1(3) + u2*polvector2(3))
   amp3 = REAL(arg(3), num)
 
-END SUBROUTINE
+END SUBROUTINE gaussian_profile
 ! ________________________________________________________________________________________
 !> @brief
 !> Subroutine for computing Hamming laser profile in time and space
@@ -377,6 +375,6 @@ SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvect
   arg(3) = (u1*polvector1(3) + u2*polvector2(3))
   amp3 = REAL(arg(3), num)
 
-END SUBROUTINE
+END SUBROUTINE hanning_profile
 
 
