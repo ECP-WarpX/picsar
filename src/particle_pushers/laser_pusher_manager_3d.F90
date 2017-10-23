@@ -11,6 +11,7 @@
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+
 SUBROUTINE push_laser_particles
   USE particles
   USE constants
@@ -93,6 +94,7 @@ END SUBROUTINE push_laser_particles
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+
 SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv,  &
   dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, laser_tau,     &
   real_time, t_peak, temporal_order, polangle)
@@ -182,6 +184,7 @@ END SUBROUTINE laserp_pusher_gaussian
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+
 SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv,   &
   dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, real_time,     &
   t_peak, temporal_order, polangle)
@@ -209,7 +212,7 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
   INTEGER(idp), INTENT(IN)                :: temporal_order
   INTEGER(idp)                            :: n, nn, ip, blocksize
   REAL(num)                               :: amp1, amp2, amp3
-  REAL(num)                               :: xx, yy, clightsq, usq, coeff_ampli,      &
+  REAL(num)                               :: xx, yy, clightsq, coeff_ampli,      &
   disp_max
 
   disp_max   = 0.01_num*clight
@@ -271,6 +274,7 @@ END SUBROUTINE laserp_pusher_hanning
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+
 SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1, &
   polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
 #if defined _OPENMP && _OPENMP>=201307
@@ -323,6 +327,7 @@ END SUBROUTINE gaussian_profile
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+
 SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1,  &
   polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
 #if defined _OPENMP && _OPENMP>=201307

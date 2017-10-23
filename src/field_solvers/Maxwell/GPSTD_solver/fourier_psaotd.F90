@@ -59,26 +59,26 @@ MODULE fourier_psaotd
     INTEGER(C_INT) :: nopenmp_cint, iret
     INTEGER(C_INTPTR_T) :: nx_cint, ny_cint, nz_cint
     INTEGER(idp)        :: i
-    INTEGER(isp)        :: flag1, flag2
+    INTEGER(isp)        :: planner_flag_1, planner_flag_2
     nopenmp_cint=nopenmp
 
     IF  (fftw_threads_ok) THEN
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
-    flag1 = FFTW_MEASURE
-    flag2 = FFTW_MEASURE
+    planner_flag_1 = FFTW_MEASURE
+    planner_flag_2 = FFTW_MEASURE
     IF(fftw_mpi_transpose) THEN
-      flag1 = FFTW_MPI_TRANSPOSED_OUT
-      flag2 = FFTW_MPI_TRANSPOSED_IN
+      planner_flag_1 = FFTW_MPI_TRANSPOSED_OUT
+      planner_flag_2 = FFTW_MPI_TRANSPOSED_IN
     ENDIF
     IF(.NOT. fftw_hybrid) THEN
       nz_cint=nz_global
       ny_cint=ny_global
       nx_cint=nx_global
       plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r, exf,   &
-      comm, flag1)
+      comm, planner_flag_1)
       plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf, ex_r,   &
-      comm, flag2)
+      comm, planner_flag_2)
     ELSE
       nz_cint = nz_group
       ny_cint = ny_group
@@ -86,9 +86,9 @@ MODULE fourier_psaotd
       DO i=1, nb_group
         IF(MPI_COMM_GROUP_ID(i) .NE. MPI_COMM_NULL) THEN
           plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r,    &
-          exf, MPI_COMM_GROUP_ID(i), flag1)
+          exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
           plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf,     &
-          ex_r, MPI_COMM_GROUP_ID(i), flag2)
+          ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
 
         ENDIF
       ENDDO
