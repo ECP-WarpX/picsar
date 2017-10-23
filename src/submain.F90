@@ -116,10 +116,10 @@ SUBROUTINE step(nst)
         !IF (rank .EQ. 0) PRINT *, "#2"
         !!! --- Push virtual laser particles
         CALL push_laser_particles
-         !!! --- Apply BC on particles
+        !!! --- Apply BC on particles
         CALL particle_bcs
-        IF(l_spectral) THEN
-          rhoold = rho
+        IF (l_spectral) THEN
+          rhoold=rho
           CALL pxrdepose_rho_on_grid
           CALL charge_bcs
         ENDIF
