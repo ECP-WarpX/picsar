@@ -110,19 +110,37 @@ SUBROUTINE step(nst)
       pushtime=0._num
       divE_computed = .False.
       IF (l_plasma) THEN
+        !!! --- Field gather & particle push
+        !IF (rank .EQ. 0) PRINT *, "#1"
         CALL field_gathering_plus_particle_pusher
+        !IF (rank .EQ. 0) PRINT *, "#2"
+        !!! --- Push virtual laser particles
         CALL push_laser_particles
+         !!! --- Apply BC on particles
         CALL particle_bcs
-        rhoold = rho
-        CALL pxrdepose_rho_on_grid
-        CALL charge_bcs
+        IF(l_spectral) THEN
+          rhoold = rho
+          CALL pxrdepose_rho_on_grid
+          CALL charge_bcs
+        ENDIF
+        !!! --- Particle Sorting
+        !write(0, *), 'Sorting'
         CALL pxr_particle_sorting
+        !IF (rank .EQ. 0) PRINT *, "#4"
+        !!! --- Deposit current of particle species on the grid
+        !write(0, *), 'Depose currents'
         CALL pxrdepose_currents_on_grid_jxjyjz
+        !IF (rank .EQ. 0) PRINT *, "#5"
+        !!! --- Boundary conditions for currents
+        !write(0, *), 'Current_bcs'
         CALL current_bcs
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
+        !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_3d
+        !IF (rank .EQ. 0) PRINT *, "#0"
+        !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
       ELSE
