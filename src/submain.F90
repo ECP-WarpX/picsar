@@ -61,7 +61,6 @@ SUBROUTINE step(nst)
   USE simple_io
   USE sorting
   USE mpi_routines
-  USE particle_speciesmodule
 #if defined(FFTW)
   USE mpi_fftw3
 #endif
