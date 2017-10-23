@@ -539,10 +539,10 @@ all_cells, all_nz, all_nzp
 
 #if defined(FFTW)
 
-  DO i=1, nb_max_groups
-    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
-    MPI_GROUP_ID(i) = MPI_GROUP_NULL
-  ENDDO
+!  DO i=1, nb_max_groups
+!    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
+!    MPI_GROUP_ID(i) = MPI_GROUP_NULL
+!  ENDDO
   
   CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
   
@@ -554,7 +554,16 @@ all_cells, all_nz, all_nzp
   
   ALLOCATE(grp_id(nb_group), grp_comm(nb_group), local_roots_rank(nb_group))
   ALLOCATE(grp_ranks(group_size, nb_group))
-  
+
+  ALLOCATE(MPI_GROUP_ID(nb_group),MPI_COMM_GROUP_ID(nb_group))
+
+  DO i=1, nb_group
+    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
+    MPI_GROUP_ID(i) = MPI_GROUP_NULL
+    grp_comm(i)  = MPI_COMM_NULL
+    grp_id(i) = MPI_GROUP_NULL
+  ENDDO
+
   DO j=1, nb_group
     local_roots_rank(j) = (j-1)*group_size
     DO i=1, group_size
@@ -577,7 +586,7 @@ all_cells, all_nz, all_nzp
       ENDDO
     ENDDO
   ENDIF
-  
+ 
   DO i= 1, nb_group
     CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),         &
     grp_id(i), errcode)

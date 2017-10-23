@@ -1049,10 +1049,9 @@ END MODULE output_data
 MODULE group_parameters
   USE mpi_type_constants
   USE picsar_precision
+
   !> number of groups (this is a parameter in the input file
   INTEGER(idp)    ::  nb_group
-  ! MAX NUMBER OF GROUPS
-  INTEGER(idp), PARAMETER :: nb_max_groups = 100
   !> group sizes of of all groups
   INTEGER(idp), DIMENSION(:), POINTER :: group_sizes
   !> To which group this mpi task belongs
@@ -1067,7 +1066,7 @@ MODULE group_parameters
   INTEGER(isp)    :: MPI_WORLD_GROUP
   !> ARRAY of  MPI_GROUP associated to each mpi task (!= mpi_group_null or
   !mpi_comm_null if and  only if i == which group + 1
-  INTEGER(isp), DIMENSION(100) :: MPI_GROUP_ID, MPI_COMM_GROUP_ID
+  INTEGER(isp), DIMENSION(:), ALLOCATABLE :: MPI_GROUP_ID, MPI_COMM_GROUP_ID
   !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
   !ranks in the mpi_root_comm
   INTEGER(isp)  :: MPI_ROOT_COMM, MPI_ROOT_GROUP, root_rank, root_size
@@ -1097,7 +1096,9 @@ MODULE group_parameters
   REAL(num)                                 :: z_min_group, z_max_group
   REAL(num)                                 :: y_min_group, y_max_group
   REAL(num)                                 :: x_min_group, x_max_group
+
 END MODULE
+
 #endif
 
 
