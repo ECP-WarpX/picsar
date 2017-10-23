@@ -363,7 +363,7 @@ MODULE diagnostics
       ! Each mpi task will write in a given file according to their rank
       IF (nproc.ge.temdiag_nb) then
         IF ((rank.ge.0).and.(rank.lt.temdiag_nb)) then
-          if (temdiag_act_list(rank+1).ge.0) then
+          if (temdiag_act_list(rank+1).gt.0) then
             write(0, '(" Rank ", I3, ", creation of the file ", A30)') rank,          &
             "./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1)))
             if (temdiag_format.eq.1) then
