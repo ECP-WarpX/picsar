@@ -162,13 +162,13 @@ SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nv
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
       q, xmin, ymin, zmin, dt, dx, dy, dz)
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
-      CALL depose_jxjyjz_vecHVv2_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
-      gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,   &
-      nzguard)
+      CALL depose_jxjyjz_vecHVv2_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
+      jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
+      q, xmin, ymin, zmin, dt, dx, dy, dz)
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
-      CALL depose_jxjyjz_vecHVv3_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
-      gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,   &
-      nzguard)
+      CALL depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
+      jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
+      q, xmin, ymin, zmin, dt, dx, dy, dz)
     ELSE
       CALL pxr_depose_jxjyjz_esirkepov_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
@@ -579,7 +579,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -616,7 +616,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -675,7 +675,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -728,7 +728,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -924,7 +924,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
 
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           IF (np .EQ. 0) THEN
@@ -971,7 +971,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           IF (np .GT. 0) isdeposited=.TRUE.
@@ -1030,7 +1030,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           IF (np .GT. 0) isdeposited=.TRUE.
@@ -1083,7 +1083,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           IF (np .GT. 0) isdeposited=.TRUE.
@@ -1246,7 +1246,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
       DO iy=1, ntiley
         DO ix=1, ntilex
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           nxjg=curr_tile%nxg_tile
@@ -1329,7 +1329,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           IF (np .GT. 0) isdeposited=.TRUE.
@@ -1388,7 +1388,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           IF (np .GT. 0) isdeposited=.TRUE.
@@ -1441,7 +1441,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           np=curr_tile%np_tile(1)
           IF (np .GT. 0) isdeposited=.TRUE.
@@ -1581,7 +1581,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -1620,7 +1620,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -1679,7 +1679,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -1732,7 +1732,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -1858,7 +1858,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -1906,7 +1906,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -1965,7 +1965,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -2018,7 +2018,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isdeposited=.TRUE.
@@ -2144,7 +2144,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, 
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
@@ -2238,7 +2238,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nx
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
-          IF (.NOT. curr%ldodepos_current) CYCLE
+          IF (.NOT. curr%ldodepos) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) THEN
