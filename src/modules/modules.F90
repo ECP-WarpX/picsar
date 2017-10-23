@@ -1431,6 +1431,7 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:, :, :) :: divj
   !> Magnetic Field divergence
   REAL(num), POINTER, DIMENSIOn(:, :, :) :: divb
+
   ! Values used for load balancing
   REAL(num) :: mpitime_per_it
   REAL(num) :: max_time_per_it

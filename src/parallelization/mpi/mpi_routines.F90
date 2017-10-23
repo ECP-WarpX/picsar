@@ -901,6 +901,7 @@ DO idim = nzp+1, nprocz
   cell_z_max(idim) = cell_z_min(idim)+nz0
 ENDDO
 
+
 nx_global_grid_min = cell_x_min(x_coords+1)
 nx_global_grid_max = cell_x_max(x_coords+1)+1
 
@@ -909,6 +910,7 @@ ny_global_grid_max = cell_y_max(y_coords+1)+1
 
 nz_global_grid_min = cell_z_min(z_coords+1)
 nz_global_grid_max = cell_z_max(z_coords+1)+1
+
 
 !!! --- number of gridpoints of each subdomain
 nx_grid = nx_global_grid_max - nx_global_grid_min + 1
@@ -920,6 +922,7 @@ nx=nx_grid-1
 ny=ny_grid-1
 nz=nz_grid-1
 
+!!! --- Set up global grid limits
 length_x = xmax - xmin
 dx = length_x / REAL(nx_global, num)
 x_grid_min = xmin
@@ -934,6 +937,7 @@ length_z = zmax - zmin
 dz = length_z / REAL(nz_global, num)
 z_grid_min = zmin
 z_grid_max = zmax
+
 !!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
 !two are computed differently
 #if defined(FFTW)
