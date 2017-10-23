@@ -1156,16 +1156,27 @@ ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                         &
+ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
-ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                         &
+ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
-ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                         &
+ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
-ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                        &
+ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                    &
 -nzjguards:nz+nzjguards))
-ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                 &
 -nzjguards:nz+nzjguards))
+ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
+-nzguards:nz+nzguards))
+
+! --- Initialize auxiliary field arrays for gather to particles
+ex_p => ex
+ey_p => ey
+ez_p => ez
+bx_p => bx
+by_p => by
+bz_p => bz
+
 ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -1284,13 +1295,6 @@ IF (l_spectral) THEN
   ENDIF
 ENDIF
 #endif
-ex_p => ex
-ey_p => ey
-ez_p => ez
-bx_p => bx
-by_p => by
-bz_p => bz
-
 ! --- Quantities used by the dynamic load balancer
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
 ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
