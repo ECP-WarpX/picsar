@@ -402,9 +402,9 @@ MODULE diagnostics
         end if
       end if
 
-      endif
       CALL MPI_BARRIER(comm, errcode)
-
+      
+      ENDIF
   END SUBROUTINE
 
   ! ______________________________________________________________________________________
