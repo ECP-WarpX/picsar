@@ -48,7 +48,7 @@ FC=mpif90
 # C compiler
 CC=mpicc
 # Fortran compiler arguments
-FARGS= -g  -O3 -fopenmp -JModules 
+FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
 
 # External libs 
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
@@ -258,7 +258,7 @@ ifeq ($(COMP),gnu)
 	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
 	else ifeq($(MODE),debug_spectral)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
+	  FARGS= -O3 -fopenmp -JModules -Wunused-variable -ftree-vectorize
 	else ifeq ($(MODE),dev)
 	  FC=mpif90
 	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize
