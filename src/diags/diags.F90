@@ -361,6 +361,7 @@ MODULE diagnostics
       end if
 
       ! Each mpi task will write in a given file according to their rank
+      CALL MPI_BARRIER(comm,errcode)
       IF (nproc.ge.temdiag_nb) then
         IF ((rank.ge.0).and.(rank.lt.temdiag_nb)) then
           if (temdiag_act_list(rank+1).gt.0) then
