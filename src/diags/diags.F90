@@ -403,8 +403,8 @@ MODULE diagnostics
       end if
 
       CALL MPI_BARRIER(comm, errcode)
-      
-      ENDIF
+
+    ENDIF
   END SUBROUTINE
 
   ! ______________________________________________________________________________________
