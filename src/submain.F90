@@ -223,6 +223,7 @@ SUBROUTINE step(nst)
     END DO
 
   ENDIF
+
   !!! --- Stop Vtune analysis
 #if VTUNE==1
   CALL stop_vtune_collection()
