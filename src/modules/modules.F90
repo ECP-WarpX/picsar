@@ -130,8 +130,6 @@ MODULE fields
   LOGICAL(lp) :: l_nodalgrid
   !> Flag: use of PSAOTD spectral solver
   LOGICAL(lp) :: l_spectral
-  !> Flag: use for gpstd spectral solver version
-  !  LOGICAL(lp) :: g_spectral
   !> Flag: use of staggered grid
   LOGICAL(lp) :: l_staggered
   !> Flag: this flag needs a description, used in field gathering routines
