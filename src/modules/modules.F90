@@ -245,11 +245,18 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:) :: ycoeffs
   !> Fonberg coefficients in z
   REAL(num), POINTER, DIMENSION(:) :: zcoeffs
+
+  !> Electric energy withi mpi domain
   REAL(num)                        :: electro_energy_mpi
+  !> Magnetic energy withi mpi domain
   REAL(num)                        :: magnetic_energy_mpi
+  !> ElectroMagnetic energy withi mpi domain
   REAL(num)                        :: electromagn_energy_mpi
+  !> Total Electric energy 
   REAL(num)                        :: electro_energy_total
+  !> Total Magnetic energy 
   REAL(num)                        :: magneto_energy_total
+  !> Total ElectroMagnetic energy
   REAL(num)                        :: electromagn_energy_total
 END MODULE fields
 
