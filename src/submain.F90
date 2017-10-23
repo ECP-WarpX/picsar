@@ -94,6 +94,7 @@ SUBROUTINE step(nst)
 #if defined(DFP)
   CALL DFP_MAIN_START()
 #endif
+
   ! ______________________________________________________________________________________
   !
   ! Main loop
@@ -107,6 +108,7 @@ SUBROUTINE step(nst)
     rho = 0.0_num
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
+
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
