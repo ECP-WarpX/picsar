@@ -167,9 +167,10 @@ SUBROUTINE step(nst)
 #if defined(FFTW)
       ENDIF
 #endif
-      ! IF (rank .EQ. 0) PRINT *, "#12"
+      !IF (rank .EQ. 0) PRINT *, "#12"
       !!! --- Computes derived quantities
       CALL calc_diags
+      !IF (rank .EQ. 0) PRINT *, "#13"
       !!! --- Output simulation results
       CALL output_routines
       !IF (rank .EQ. 0) PRINT *, "#14"
