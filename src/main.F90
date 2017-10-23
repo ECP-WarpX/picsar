@@ -161,6 +161,7 @@ PROGRAM main
   				  trim(adjustl(str5))//" "//trim(adjustl(str6))
   	CLOSE(12)
   ENDIF 
+
 #if defined(FFTW)
   IF(l_spectral) THEN
     IF(fftw_with_mpi) THEN
