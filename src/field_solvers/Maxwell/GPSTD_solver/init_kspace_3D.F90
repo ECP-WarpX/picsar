@@ -483,12 +483,7 @@ MODULE gpstd_solver
         ENDIF
       ENDDO
     ENDDO
-    IF(l_spectral) THEN
-      DO i=1, 11
-        DEALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc)
-        IF(i .LE.  6) DEALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc)
-      ENDDO
-    ENDIF
+
   END SUBROUTINE delete_arrays
   !> @brief
   !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
@@ -532,18 +527,7 @@ MODULE gpstd_solver
         cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
       ENDDO
     ENDDO
-    DO i=1_idp, 11_idp
-      ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1, nffty, nfftz))
-      vold(nmatrixes)%block_vector(i)%nx = nfftx/2+1
-      vold(nmatrixes)%block_vector(i)%ny = nffty
-      vold(nmatrixes)%block_vector(i)%nz = nfftz
-    ENDDO
-    DO i=1_idp, 6_idp
-      ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1, nffty, nfftz))
-      vnew(nmatrixes)%block_vector(i)%nx = nfftx/2+1
-      vnew(nmatrixes)%block_vector(i)%ny = nffty
-      vnew(nmatrixes)%block_vector(i)%nz = nfftz
-    ENDDO
+
     cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc = -                               &
     ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
@@ -630,7 +614,7 @@ MODULE gpstd_solver
     AT_OP(nmatrixes2)%block_vector(3)%block3dc
 
 
-    !contribution rho old ( vold(10))
+    !contribution rho old
     switch = .FALSE.
     IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
@@ -656,7 +640,7 @@ MODULE gpstd_solver
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(0.0_num,         &
       0.0_num)
     ENDIF
-    !contribution rho new (vold(11))
+    !contribution rho new 
     DO i = 1, 3
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = DCMPLX(0.,               &
       1.)*(1./(clight*dt)* AT_OP(nmatrixes2)%block_vector(1)%block3dc -DCMPLX(1.,     &
@@ -722,7 +706,7 @@ MODULE gpstd_solver
     REAL(num)                 :: logfactorial, x
     INTEGER(idp)              :: k
     IF(n.EQ.0_idp) THEN
-      logfactorial=0.
+      logfactorial=0.0_num
     ELSE
       x=log(1.0_num*n)
       logfactorial=x
