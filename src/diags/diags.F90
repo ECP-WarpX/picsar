@@ -359,6 +359,7 @@ MODULE diagnostics
           write(0, '(" Initialization of the temporal diagnostics")')
         end if
       end if
+
       ! Each mpi task will write in a given file according to their rank
       IF (nproc.ge.temdiag_nb) then
         IF ((rank.ge.0).and.(rank.lt.temdiag_nb)) then
