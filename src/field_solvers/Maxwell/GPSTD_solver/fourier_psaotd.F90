@@ -42,7 +42,7 @@
 ! ---
 
 MODULE fourier_psaotd
-  USE gpstd_solver!, only: init_kspace, init_gpstd
+  USE gpstd_solver
   USE matrix_coefficients
 
   IMPLICIT NONE
