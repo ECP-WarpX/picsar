@@ -514,6 +514,7 @@ END SUBROUTINE setup_communicator
 !> @brief
 !> This routine creates mpi groups and communicators while using
 !fftw_hybrid=.TRUE.
+!or hybrid=.TRUE.
 !> Author : Haithem Kallala
 !> 2017
 SUBROUTINE setup_groups
@@ -993,7 +994,9 @@ z_grid_max = zmax
 
 !!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
 !two are computed differently
+
 #if defined(FFTW)
+
 IF(fftw_with_mpi ) THEN
   IF(.NOT. fftw_hybrid) THEN
     CALL adjust_grid_mpi_global
@@ -1005,6 +1008,7 @@ IF(fftw_with_mpi ) THEN
     STOP
   ENDIF
 ENDIF
+
 #endif
 !!! --- Set up global grid limits
 
