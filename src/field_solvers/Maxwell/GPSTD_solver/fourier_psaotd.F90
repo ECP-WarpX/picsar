@@ -121,18 +121,17 @@ MODULE fourier_psaotd
     ENDIF
     ! Init fourier fields fields
 #if !defined(LIBRARY)
-    CALL normalize_Fourier(ex_r, nfftx, nffty, nfftz, ex, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(ey_r, nfftx, nffty, nfftz, ey, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(ez_r, nfftx, nffty, nfftz, ez, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(bx_r, nfftx, nffty, nfftz, bx, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(by_r, nfftx, nffty, nfftz, by, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(bz_r, nfftx, nffty, nfftz, bz, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(jx_r, nfftx, nffty, nfftz, jx, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(jy_r, nfftx, nffty, nfftz, jy, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(jz_r, nfftx, nffty, nfftz, jz, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(rho_r, nfftx, nffty, nfftz, rho, nxx, nyy, nzz, 1.0_num)
-    CALL normalize_Fourier(rhoold_r, nfftx, nffty, nfftz, rhoold, nxx, nyy, nzz,      &
-    1.0_num)
+    CALL copy_field(ex_r, nfftx, nffty, nfftz, ex, nxx, nyy, nzz)
+    CALL copy_field(ey_r, nfftx, nffty, nfftz, ey, nxx, nyy, nzz)
+    CALL copy_field(ez_r, nfftx, nffty, nfftz, ez, nxx, nyy, nzz)
+    CALL copy_field(bx_r, nfftx, nffty, nfftz, bx, nxx, nyy, nzz)
+    CALL copy_field(by_r, nfftx, nffty, nfftz, by, nxx, nyy, nzz)
+    CALL copy_field(bz_r, nfftx, nffty, nfftz, bz, nxx, nyy, nzz)
+    CALL copy_field(jx_r, nfftx, nffty, nfftz, jx, nxx, nyy, nzz)
+    CALL copy_field(jy_r, nfftx, nffty, nfftz, jy, nxx, nyy, nzz)
+    CALL copy_field(jz_r, nfftx, nffty, nfftz, jz, nxx, nyy, nzz)
+    CALL copy_field(rho_r, nfftx, nffty, nfftz, rho, nxx, nyy, nzz)
+    CALL copy_field(rhoold_r, nfftx, nffty, nfftz, rhoold, nxx, nyy, nzz)
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)

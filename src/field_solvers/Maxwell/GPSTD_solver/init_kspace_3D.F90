@@ -754,6 +754,26 @@ MODULE gpstd_solver
     !$OMP END PARALLEL DO
   END SUBROUTINE normalize_Fourier
 
+  SUBROUTINE copy_field(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz)
+    USE PICSAR_precision
+    USE omp_lib
+    IMPLICIT NONE
+    INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, n1, n2, n3
+    REAL(num), DIMENSION(nxx, nyy, nzz), INTENT(IN OUT) :: ex_in
+    REAL(num), DIMENSION(n1, n2, n3), INTENT(IN OUT) :: ex_out
+    INTEGER(idp) :: ix, iy, iz
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=1, MIN(nzz, n3)
+      DO iy=1, MIN(nyy, n2)
+        DO ix=1, MIN(nxx, n1)
+          ex_out(ix, iy, iz)=ex_in(ix, iy, iz)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE copy_field
+
+
   SUBROUTINE is_calculation_needed(irow, icol, needed)
     USE picsar_precision
     INTEGER(idp), INTENT(IN)    :: irow, icol
