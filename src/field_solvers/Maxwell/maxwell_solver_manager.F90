@@ -260,37 +260,3 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   ENDIF
 END SUBROUTINE
 
-!SUBROUTINE push_gpstd_ebfied_3d()
-!  USE constants
-!  USE time_stat
-!  USE params
-!  USE shared_data
-!#if defined(FFTW)
-!  USE gpstd_solver
-!  USE fourier_psaotd
-!#endif
-!  USE fields
-!  IMPLICIT NONE
-!  REAL(num)  :: tmptime
-!integer :: i, j
-!  IF (it.ge.timestat_itstart) THEN
-!    tmptime = MPI_WTIME()
-!  ENDIF
-!#if defined(FFTW)
-!  IF(fftw_with_mpi) THEN
-!    CALL execute_fftw_r2c_mpi
-!  ELSE
-!    CALL execute_fftw_gpstd_r2c
-!  ENDIF
-!    CALL multiply_mat_vector(1_idp)
-!  IF(fftw_with_mpi) THEN
-!    CALL execute_fftw_mpi_c2r
-!  ELSE
-!    CALL execute_fftw_gpstd_c2r
-!  ENDIF
-!#endif
-!  IF (it.ge.timestat_itstart) THEN
-!    localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
-!  ENDIF
-!END SUBROUTINE
-
