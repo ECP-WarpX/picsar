@@ -118,6 +118,7 @@ SUBROUTINE step(nst)
         CALL push_laser_particles
         !!! --- Apply BC on particles
         CALL particle_bcs
+        !IF (rank .EQ. 0) PRINT *, "#3"
         IF (l_spectral) THEN
           rhoold=rho
           CALL pxrdepose_rho_on_grid
