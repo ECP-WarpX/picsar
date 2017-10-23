@@ -74,10 +74,7 @@ SUBROUTINE step(nst)
 
   IMPLICIT NONE
   INTEGER(idp) :: nst, i
-  integer, parameter :: out_unit1=20
-  integer, parameter :: out_unit2=21
-  integer, parameter :: out_unit3=22
-  integer, parameter :: out_unit4=23
+
   !!! --- This is the main PIC LOOP
   IF (rank .EQ. 0) THEN
     WRITE (0, *) "nsteps = ", nst
@@ -105,11 +102,6 @@ SUBROUTINE step(nst)
   ! ___________________________________________
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
-    if(rank==0) then
-      open (unit=out_unit3, file="RESULTS/em.txt", STATUS="REPLACE", action="write")
-      open(unit=out_unit4, file="RESULTS/kin_e.txt", STATUS="REPLACE",                &
-      action="write")
-    endif
     rhoold=0.0_num
     rho = 0.0_num
     DO i=1, nst
@@ -128,7 +120,6 @@ SUBROUTINE step(nst)
         CALL pxrdepose_currents_on_grid_jxjyjz
         CALL current_bcs
       ENDIF
-      CALL compute_em_energy
 #if defined(FFTW)
       IF (l_spectral) THEN
         CALL push_psatd_ebfield_3d
@@ -158,12 +149,6 @@ SUBROUTINE step(nst)
 #if defined(FFTW)
       ENDIF
 #endif
-      CALL compute_kin_energy
-      if(rank==0) then
-        write (out_unit3, *), electromagn_energy_total
-        write (out_unit4, *), kin_energy_total
-      endif
-
       ! IF (rank .EQ. 0) PRINT *, "#12"
       !!! --- Computes derived quantities
       CALL calc_diags
@@ -218,10 +203,6 @@ SUBROUTINE step(nst)
     END DO
 
   ENDIF
-  IF(rank==0) then
-    close(out_unit3)
-    close(out_unit4)
-  endif
   !!! --- Stop Vtune analysis
 #if VTUNE==1
   CALL stop_vtune_collection()
@@ -278,6 +259,7 @@ SUBROUTINE initall
   REAL(num)                       :: tdeb
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_dump), POINTER    :: dp
+
   ! Time statistics
   init_localtimes(:) = 0
   localtimes(:)=0
