@@ -538,12 +538,10 @@ INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_mi
 all_cells, all_nz, all_nzp
 
 #if defined(FFTW)
+#if defined(DEBUG)
+  WRITE(0, *) "setup_groups : start"
+#endif
 
-!  DO i=1, nb_max_groups
-!    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
-!    MPI_GROUP_ID(i) = MPI_GROUP_NULL
-!  ENDDO
-  
   CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
   
   IF(hybrid_2) THEN
@@ -790,6 +788,10 @@ all_cells, all_nz, all_nzp
   
   DEALLOCATE(all_nz, all_nzp)
   DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
+
+#if defined(DEBUG)
+  WRITE(0, *) "setup_groups : end"
+#endif
 
 #endif
 
