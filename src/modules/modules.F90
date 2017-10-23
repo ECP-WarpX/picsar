@@ -475,7 +475,7 @@ MODULE antenna!#do not parse
     REAL(num)         :: k0_laser
     COMPLEX(cpx)      :: diffract_factor
     INTEGER(idp)      :: temporal_order
-    INTEGER(idp)      :: time_window! 0 for Gaussian Hamming Window
+    INTEGER(idp)      :: time_window! 0 for Gaussian 1 Hanning Window
   END TYPE particle_antenna
 END MODULE antenna
 
