@@ -102,6 +102,7 @@ SUBROUTINE step(nst)
   ! ___________________________________________
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
+
     rhoold=0.0_num
     rho = 0.0_num
     DO i=1, nst
@@ -109,6 +110,7 @@ SUBROUTINE step(nst)
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
+
       IF (l_plasma) THEN
         !!! --- Field gather & particle push
         !IF (rank .EQ. 0) PRINT *, "#1"
