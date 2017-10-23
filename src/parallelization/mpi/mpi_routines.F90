@@ -1177,16 +1177,6 @@ bx_p => bx
 by_p => by
 bz_p => bz
 
-
-
-
-
-ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-
-
-
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN
@@ -1303,6 +1293,11 @@ ENDIF
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
 ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
 ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
+
+ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+
 END SUBROUTINE allocate_grid_quantities
 
 ! ______________________________________________________________________________________
