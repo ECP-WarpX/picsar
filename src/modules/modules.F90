@@ -193,6 +193,7 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: by_p
   !> MPI-domain magnetic field grid in z (auxiliary array for gather to particles)
   REAL(num), POINTER, DIMENSION(:, :, :) :: bz_p
+  !> MPI-domain current grid in x
   !> MPI-domain electric field grid in x
   REAL(num), POINTER, DIMENSION(:, :, :) :: ex_r
   !> MPI-domain electric field grid in y
