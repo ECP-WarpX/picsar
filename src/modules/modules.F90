@@ -1046,7 +1046,7 @@ END MODULE output_data
 
 !MODULE FOR GROUP params
 #if defined(FFTW)
-MODULE group_parameters
+MODULE group_parameters!#do not parse
   USE mpi_type_constants
   USE picsar_precision
 

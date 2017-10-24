@@ -123,7 +123,6 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
   INTEGER(idp)                            :: n, nn, ip, blocksize
   REAL(num)                               :: amp1, amp2, amp3
   REAL(num)                               :: xx, yy, clightsq, coeff_ampli,      &
-
   disp_max
   disp_max   = 0.01_num*clight
   coeff_ampli = disp_max / emax
@@ -212,7 +211,6 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
   REAL(num)                               :: amp1, amp2, amp3
   REAL(num)                               :: xx, yy, clightsq, coeff_ampli,      &
   disp_max
-
   disp_max   = 0.01_num*clight
   coeff_ampli = disp_max / emax
   clightsq = 1._num/clight**2
@@ -238,7 +236,6 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
     !DIR$ SIMD
 #endif
     DO n=1, blocksize
-
       nn=ip+n-1
       xx = pid(nn, 2)
       yy = pid(nn, 3)
