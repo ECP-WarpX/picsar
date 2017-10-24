@@ -55,6 +55,8 @@ FFTW3_LIB=/usr/lib/x86_64-linux-gnu
 FFTW3_INCLUDE=/usr/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
+
+
 # Source directory
 SRCDIR=src
 # Binary directory
@@ -251,6 +253,12 @@ ifeq ($(COMP),gnu)
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
+	else ifeq($(MODE),prod_spectral)
+	  FC=mpif90
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
+	else ifeq($(MODE),debug_spectral)
+	  FC=mpif90
+	  FARGS= -O3 -fopenmp -JModules -Wunused-variable -ftree-vectorize
 	else ifeq ($(MODE),dev)
 	  FC=mpif90
 	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize
@@ -310,9 +318,6 @@ endif
 
 FARGS+= $(LARCH)
 
-ifeq ($(MODE),library)
-	FARGS += -fPIC
-endif
 # ________________________________________________________
 # Not used for the moment
 #FSOURCE= $(wildcard $(SRCDIR)/*.F90)
@@ -322,8 +327,13 @@ endif
 # ________________________________________________________
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
-	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
-	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3 -lfftw3_omp
+	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
+	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
+endif
+
+ifeq ($(MODE),library)
+        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1  
+        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 
 
@@ -336,45 +346,20 @@ all: echo createdir build
 test: test1 test2 test3
 lib: echo createdir build_lib
 build_lib:$(SRCDIR)/modules/modules.o \
-        $(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-        $(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
-        $(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
-        $(SRCDIR)/parallelization/tiling/tiling.o \
-        $(SRCDIR)/housekeeping/sorting.o \
-        $(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
-        $(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
-        $(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
-	    $(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
-        $(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
-        $(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
-        $(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
-        $(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
-        $(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
-        $(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
-        $(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
-        $(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
-        $(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
-        $(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
-        $(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
-        $(SRCDIR)/boundary_conditions/field_boundaries.o \
-        $(SRCDIR)/boundary_conditions/particle_boundaries.o \
-        $(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
-        $(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
-        $(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
-        $(SRCDIR)/diags/diags.o \
-        $(SRCDIR)/ios/simple_io.o \
-        $(SRCDIR)/parallelization/mpi/mpi_routines.o \
-        $(SRCDIR)/submain.o \
-        $(SRCDIR)/initialization/control_file.o
-	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
-	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+	$(SRCDIR)/init_external.o 
+	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o  $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
+	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
 	mv libpxr.so $(LIBDIR)
 
@@ -471,16 +456,16 @@ build:$(SRCDIR)/modules/modules.o \
 	mv $(APPNAME) $(BINDIR)
 else ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 build:$(SRCDIR)/modules/modules.o \
-    	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
-    	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
-	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
 	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
@@ -502,6 +487,9 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
@@ -523,6 +511,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
 	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \

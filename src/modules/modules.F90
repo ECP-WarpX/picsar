@@ -59,6 +59,16 @@ MODULE constants
   REAL(num), PARAMETER :: pmass   = 1.6726231000000001e-27_num
   !> Electron charge
   REAL(num), PARAMETER :: echarge = 1.6021764620000001e-19_num
+#if defined(LIBRARY)
+  !> Speed of light in vacuum
+  REAL(num), PARAMETER :: clight  = 1.0_num
+  !> Magnetic constant
+  REAL(num), PARAMETER :: mu0     = 1.0_num
+  !> Vacuum permeability
+  REAL(num), PARAMETER :: eps0    = 1.0_num
+  REAL(num), PARAMETER :: imu0    = 1.0_num
+  !> The famous pi value
+#else
   !> Speed of light in vacuum
   REAL(num), PARAMETER :: clight  = 2.99792458e8_num
   !> Magnetic constant
@@ -66,6 +76,7 @@ MODULE constants
   !> Vacuum permeability
   REAL(num), PARAMETER :: eps0    = 8.854187817620389e-12_num
   REAL(num), PARAMETER :: imu0    = 795774.715459_num
+#endif
   !> The famous pi value
   REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
   !> Dimension of the cartesian topology
@@ -235,6 +246,18 @@ MODULE fields
   !> Fonberg coefficients in z
   REAL(num), POINTER, DIMENSION(:) :: zcoeffs
 
+  !> Electric energy withi mpi domain
+  REAL(num)                        :: electro_energy_mpi
+  !> Magnetic energy withi mpi domain
+  REAL(num)                        :: magnetic_energy_mpi
+  !> ElectroMagnetic energy withi mpi domain
+  REAL(num)                        :: electromagn_energy_mpi
+  !> Total Electric energy 
+  REAL(num)                        :: electro_energy_total
+  !> Total Magnetic energy 
+  REAL(num)                        :: magneto_energy_total
+  !> Total ElectroMagnetic energy
+  REAL(num)                        :: electromagn_energy_total
 END MODULE fields
 
 ! ________________________________________________________________________________________
@@ -298,6 +321,8 @@ MODULE particle_tilemodule!#do not parse
   USE constants
   !> Object that contains tile particle arrays and particle tile properties.
   TYPE particle_tile
+    !> Flag:  current tile kin energy
+    REAL(num)   :: kin_energy_tile
     !> Flag: tile arrays are allocated
     LOGICAL(lp) :: l_arrays_allocated= .FALSE.
     !> Current number of particles in tile
@@ -453,6 +478,7 @@ MODULE antenna!#do not parse
     REAL(num)         :: k0_laser
     COMPLEX(cpx)      :: diffract_factor
     INTEGER(idp)      :: temporal_order
+    INTEGER(idp)      :: time_window! 0 for Gaussian 1 Hanning Window
   END TYPE particle_antenna
 END MODULE antenna
 
@@ -464,8 +490,13 @@ MODULE particle_speciesmodule!#do not parse
   USE particle_tilemodule
   USE constants
   USE antenna
+  REAL(num)   :: kin_energy_mpi
+  REAL(num)   :: kin_energy_total
+
   !> Fortran object representing a particle species
   TYPE particle_species
+    ! Species kinetic energy
+    REAL(num)   :: kin_energy_sp
     ! Attributes of particle species object
     !> Particle antenna flag (.FALSE. by default)
     LOGICAL(lp) :: is_antenna = .FALSE.
@@ -848,10 +879,10 @@ MODULE time_stat!#do not parse
   !> MPI local times for the initialization
   REAL(num), dimension(5)                :: init_localtimes
   !> MPI local times for the main loop
-  REAL(num), dimension(24)               :: localtimes
-  REAL(num), DIMENSION(24)               :: mintimes, init_mintimes
-  REAL(num), DIMENSION(24)               :: maxtimes, init_maxtimes
-  REAL(num), DIMENSION(24)               :: avetimes, init_avetimes
+  REAL(num), dimension(25)               :: localtimes
+  REAL(num), DIMENSION(25)               :: mintimes, init_mintimes
+  REAL(num), DIMENSION(25)               :: maxtimes, init_maxtimes
+  REAL(num), DIMENSION(25)               :: avetimes, init_avetimes
   !> Buffer for the output
   REAL(num), DIMENSION(:, :), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat
@@ -908,6 +939,10 @@ MODULE output_data!#do not parse
   INTEGER(KIND=4) :: c_output_rho = 0
   !> Activation of the electric field divergence output
   INTEGER(KIND=4) :: c_output_dive = 0
+  !> Activation of div J field divergence output
+  INTEGER(KIND=4) :: c_output_divj = 0
+  !> Activation of div B field divergence output
+  INTEGER(KIND=4) :: c_output_divb = 0
 
   ! File names for output dumps
   !> File name for the Ex electric field output
@@ -932,6 +967,11 @@ MODULE output_data!#do not parse
   CHARACTER(LEN=string_length) :: filedive ='dive'
   !> File name for the density output
   CHARACTER(LEN=string_length) :: filerho  ='rho'
+  !> File name for the current field divergence output
+  CHARACTER(LEN=string_length) :: filedivj ='divj'
+  !> File name for the magnetic field divergence output
+  CHARACTER(LEN=string_length) :: filedivb ='divb'
+
 
   ! temporal diagnostics
   !> Array of activation flags
@@ -1004,6 +1044,63 @@ MODULE output_data!#do not parse
   TYPE(particle_dump), ALLOCATABLE, TARGET, DIMENSION(:) :: particle_dumps
 END MODULE output_data
 
+!MODULE FOR GROUP params
+#if defined(FFTW)
+MODULE group_parameters
+  USE mpi_type_constants
+  USE picsar_precision
+
+  !> number of groups (this is a parameter in the input file
+  INTEGER(idp)    ::  nb_group
+  !> group sizes of of all groups
+  INTEGER(idp), DIMENSION(:), POINTER :: group_sizes
+  !> To which group this mpi task belongs
+  INTEGER(idp)    ::  which_group
+  !> x y z coordinats of the group
+  INTEGER(idp)    :: x_group_coords, y_group_coords, z_group_coords
+  !> coordinates of each proc in its group
+  INTEGER(isp)  ::  group_coordinates(3)
+  !> local_size and local rank
+  INTEGER(isp)    :: local_size, local_rank
+  !> MPI_GROUP associated to mpi_comm_world
+  INTEGER(isp)    :: MPI_WORLD_GROUP
+  !> ARRAY of  MPI_GROUP associated to each mpi task (!= mpi_group_null or
+  !mpi_comm_null if and  only if i == which group + 1
+  INTEGER(isp), DIMENSION(:), ALLOCATABLE :: MPI_GROUP_ID, MPI_COMM_GROUP_ID
+  !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
+  !ranks in the mpi_root_comm
+  INTEGER(isp)  :: MPI_ROOT_COMM, MPI_ROOT_GROUP, root_rank, root_size
+  !> Field cell  sizes in groups without guardcells
+  INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
+  !> Field grid sizes in groups whithout guardcells
+  INTEGER(idp)  :: nx_group_global_grid, ny_group_global_grid, nz_group_global_grid
+  !> Field cell  sizes in groups with guardcells
+  INTEGER(idp)  :: nx_group, ny_group, nz_group
+  !> Field grid sizes in groups with guardcells
+  INTEGER(idp)  :: nx_group_grid, ny_group_grid, nz_group_grid
+
+  !> Group guard cells in : (only nzg_group is relevant for now)
+  INTEGER(idp)  :: nzg_group, nyg_group, nxg_group
+  !> Nz grid min max group index
+  INTEGER(idp)  ::   nz_grid_min_grp, nz_grid_max_grp, nz_grid_grp
+  !> This flag is true if MPI task is on the edge of its group (so need
+  !additional comm
+  LOGICAL(lp)  ::  is_on_boarder = .FALSE.
+  !> This flag is true if the MPI rank is at the inferior z group boundary
+  LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
+  !> This flag is true if the MPI rank is at the superior z group boundary
+  LOGICAL(lp)  :: group_z_max_boundary = .FALSE.
+  !> minimum and maximum cell numbers in each group :
+  INTEGER(idp), DIMENSION(:), POINTER  :: cell_z_min_group, cell_z_max_group
+  !> physical limits of group domains
+  REAL(num)                                 :: z_min_group, z_max_group
+  REAL(num)                                 :: y_min_group, y_max_group
+  REAL(num)                                 :: x_min_group, x_max_group
+
+END MODULE
+
+#endif
+
 
 ! ________________________________________________________________________________________
 !> Module for the data shared with Python.
@@ -1015,7 +1112,11 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi, fftw_threads_ok
+  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid,    &
+  hybrid_2
+  !> First and last indexes of real data in group (only z is relevant for now)
+  INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
+
   !> Error code for MPI
   INTEGER(isp) :: errcode
   !> Variable used by MPI
@@ -1327,6 +1428,10 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho, rhoold
   !> Electric Field divergence
   REAL(num), POINTER, DIMENSION(:, :, :) :: dive
+  !> Current divergence
+  REAL(num), POINTER, DIMENSION(:, :, :) :: divj
+  !> Magnetic Field divergence
+  REAL(num), POINTER, DIMENSIOn(:, :, :) :: divb
 
   ! Values used for load balancing
   REAL(num) :: mpitime_per_it
@@ -1343,27 +1448,7 @@ END MODULE shared_data
 #if defined(FFTW)
 MODULE fourier!#do not parse
   USE constants
-  ! Fourier k-vectors
-  ! -- Along X
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kxunmod, kxunit, kxunit_mod
-  ! -- Along Y
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kyunmod, kyunit, kyunit_mod
-  ! -- Along Z
-  REAL(num), DIMENSION(:), ALLOCATABLE :: kzunmod, kzunit, kzunit_mod
-  ! - 3D k vectors
-  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kxn, kyn, kzn, k, kx, ky, kz, kmag
-  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: kx_unmod, ky_unmod, kz_unmod
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxmn, kxpn
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kymn, kypn
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzmn, kzpn
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kxm, kxp
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kym, kyp
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: kzm, kzp
   INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
-
-  ! - PSATD Coefficients
-  COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: coswdt, sinwdt, EJmult, ERhomult,  &
-  ERhooldmult, BJmult, axm, axp, aym, ayp, azm, azp
 END MODULE fourier
 #endif
 

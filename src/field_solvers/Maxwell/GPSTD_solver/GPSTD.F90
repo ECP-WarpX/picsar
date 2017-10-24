@@ -50,6 +50,7 @@ MODULE matrix_data
   ! Maximum number of instances (matrix_blocks and vector_blocks)
   INTEGER(idp), PARAMETER ::  ns_max=40
   INTEGER(idp) :: nmatrixes=0
+  INTEGER(idp) :: nmatrixes2=0
 END MODULE matrix_data
 
 ! ________________________________________________________________________________________
@@ -87,7 +88,7 @@ MODULE matrix_coefficients!#do not parse
   ! (contaning 3d blocks coefficients for GPSTD_Maxwell, GPSTD_Maxwell_PML etc.)
   TYPE(matrix_blocks), POINTER, DIMENSION(:) :: cc_mat
   ! Arrays of 1D block vectors  (containing 3d blocks Ex, Ey, Ez etc.)
-  TYPE(vector_blocks), POINTER, DIMENSION(:) :: vnew, vold
+  TYPE(vector_blocks), POINTER, DIMENSION(:) :: vnew, vold, KSPACE, AT_OP
 END MODULE matrix_coefficients
 
 

@@ -62,8 +62,9 @@ SUBROUTINE step(nst)
   USE simple_io
   USE sorting
   USE mpi_routines
+  USE gpstd_solver
 #if defined(FFTW)
-  USE fourier_psaotd
+  USE mpi_fftw3
 #endif
 #if (defined(VTUNE) && VTUNE>0)
   USE ITT_FORTRAN
@@ -104,6 +105,8 @@ SUBROUTINE step(nst)
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
 
+    rhoold=0.0_num
+    rho = 0.0_num
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
 
@@ -122,8 +125,11 @@ SUBROUTINE step(nst)
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
         IF (l_spectral) THEN
-          rhoold=rho
+          CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
+                nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
+                nz+2*nzguards+1)
           CALL pxrdepose_rho_on_grid
+          CALL charge_bcs
         ENDIF
         !!! --- Particle Sorting
         !write(0, *), 'Sorting'
@@ -139,7 +145,10 @@ SUBROUTINE step(nst)
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
+        !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_3d
+        !IF (rank .EQ. 0) PRINT *, "#0"
+        !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
       ELSE
@@ -268,6 +277,7 @@ SUBROUTINE initall
   USE time_stat
 #if defined(FFTW)
   USE fourier_psaotd
+  USE gpstd_solver
 #endif
   USE precomputed
 
@@ -396,7 +406,11 @@ SUBROUTINE initall
     write(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
     write(0, *) ''
     write(0, '(" FFTW - parameters ")')
+    IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
     IF (fftw_with_mpi) write(0, '(" FFTW distributed version - MPI ")')
+    IF (fftw_hybrid)   write(0, '(" FFTW distributed version, - MPI GROUPS")')
+    IF (hybrid_2)   write(0, '(" FFTW distributed version, - MPI GROUPS ALOG 3        &
+    AXIS")')
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     ! Sorting
     IF (sorting_activated.gt.0) THEN
@@ -478,7 +492,7 @@ SUBROUTINE initall
 #if defined(FFTW)
   ! -Init Fourier
   IF (l_spectral) THEN
-    CALL init_fourier
+    CALL init_plans_blocks
   ENDIF
 #endif
   ! - Estimate tile size
@@ -654,6 +668,6 @@ SUBROUTINE current_debug
   !jz(1, 1, 1) = 0.5
   !jz(nx, ny, nz) = 0.5
   !!! --- End debug
-END SUBROUTINE
+END SUBROUTINE current_debug
 
 ! ______________________________________

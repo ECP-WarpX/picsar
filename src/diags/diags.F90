@@ -151,6 +151,49 @@ MODULE diagnostics
 
   END SUBROUTINE calc_field_div
 
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Computes B field divergence.
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  !
+  ! ______________________________________________________________________________________
+  SUBROUTINE calc_field_divB(divbb, bbx, bby, bbz, nx, ny, nz, nxguard, nyguard,&
+    nzguard, dx, dy, dz)
+    IMPLICIT NONE
+    INTEGER(idp) ::  j, k, l
+    INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard
+    REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,&
+    -nzguard:nz+nzguard), intent(in) :: bbx, bby, bbz
+    REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,&
+    -nzguard:nz+nzguard), intent(in out) :: divbb
+    REAL(num)    :: dx, dy, dz, invdx, invdy, invdz
+
+    invdx=1.0_num/dx
+    invdy=1.0_num/dy
+    invdz=1.0_num/dz
+    !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, j, k)
+    !$OMP DO COLLAPSE(3)
+    DO l = 1, nz
+      DO k = 1, ny
+        DO j = 1, nx
+          divbb(j, k, l) = invdx*(bbx(j+1, k, l)-bbx(j, k, l))+ invdy*(bby(j, k+1,& 
+          l)-bby(j, k, l))+invdz*(bbz(j, k, l+1)-bbz(j, k, l))
+        END DO
+      END DO
+    END DO
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+  END SUBROUTINE calc_field_divB
+
+
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Initialization of the different diags.
@@ -318,8 +361,9 @@ MODULE diagnostics
       end if
 
       ! Each mpi task will write in a given file according to their rank
+      CALL MPI_BARRIER(comm,errcode)
       IF (nproc.ge.temdiag_nb) then
-        IF ((rank.ge.0).and.(rank.le.temdiag_nb)) then
+        IF ((rank.ge.0).and.(rank.lt.temdiag_nb)) then
           if (temdiag_act_list(rank+1).gt.0) then
             write(0, '(" Rank ", I3, ", creation of the file ", A30)') rank,          &
             "./RESULTS/"//trim(adjustl(temdiag_name_list(rank+1)))

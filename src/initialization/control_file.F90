@@ -52,6 +52,9 @@ MODULE control_file
   USE params
   USE output_data
   USE time_stat
+#if defined(FFTW)
+  USE group_parameters
+#endif
   IMPLICIT NONE
   INTEGER(idp) :: ios=0
   INTEGER(idp), PARAMETER :: fh_input = 15
@@ -99,6 +102,11 @@ MODULE control_file
     nyjguards=MAX(noy, 2_idp)
     nzjguards=MAX(noz, 2_idp)
 
+#if defined(FFTW)
+    nxg_group=max(nox, 2_idp)
+    nyg_group=max(noy, 2_idp)
+    nzg_group=max(noz, 2_idp)
+#endif
     ! Topology
     topology = 0
 
@@ -209,6 +217,9 @@ MODULE control_file
 
     ! SET FFTW WITH MPI FLAG
     fftw_with_mpi = .FALSE.
+    fftw_hybrid = .FALSE.
+    hybrid_2 = .FALSE.
+    fftw_mpi_transpose = .FALSE.
   END SUBROUTINE default_init
 
   ! ______________________________________________________________________________________
@@ -543,6 +554,20 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_with_mpi') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_with_mpi
+      ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) fftw_mpi_transpose
+      ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) fftw_hybrid
+      ELSE IF (INDEX(buffer, 'hybrid_2') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) hybrid_2
+#if defined(FFTW)
+      ELSE IF (INDEX(buffer, 'nb_group') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nb_group
+#endif
       ELSE IF (INDEX(buffer, 'fg_p_pp_separated') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') fg_p_pp_separated
@@ -730,12 +755,21 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nguardsx') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nxguards
+#if defined(FFTW)
+        nxg_group=nxguards
+#endif
       ELSE IF (INDEX(buffer, 'nguardsy') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nyguards
+#if defined(FFTW)
+        nyg_group=nyguards
+#endif
       ELSE IF (INDEX(buffer, 'nguardsz') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzguards
+#if defined(FFTW)
+        nzg_group=nzguards
+#endif
       ELSE IF (INDEX(buffer, 'njguardsx') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nxjguards
@@ -745,6 +779,11 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'njguardsz') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzjguards
+#if defined(FFTW)
+      ELSE IF (INDEX(buffer, 'gzgrp') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nzg_group
+#endif
       ELSE IF (INDEX(buffer, 'l_plasma') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_plasma
@@ -1039,6 +1078,12 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'dive') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') c_output_dive
+      ELSE IF (INDEX(buffer, 'divj') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_divj
+      ELSE IF (INDEX(buffer, 'divb') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_divb
       ELSE IF (INDEX(buffer, 'end::output') .GT. 0) THEN
         end_section =.TRUE.
       END IF
@@ -1107,7 +1152,7 @@ MODULE control_file
       ENDIF
     ENDDO
     RETURN
-  END SUBROUTINE
+  END SUBROUTINE read_temporal_output_section
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1172,6 +1217,7 @@ MODULE control_file
     curr%antenna_params%is_lens = .FALSE.
     curr%antenna_params%laser_zf = 0._num
     curr%antenna_params%focal_length = 0._num
+    curr%antenna_params%time_window = 0_idp
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer, '#') .GT. 0) THEN
@@ -1225,6 +1271,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'temporal_order') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') curr%antenna_params%temporal_order
+      ELSE IF (INDEX(buffer, 'window') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)')curr%antenna_params%time_window
       ELSE IF (INDEX(buffer, 'is_lens') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) curr%antenna_params%is_lens

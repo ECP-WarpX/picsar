@@ -108,6 +108,10 @@ listfiles=["modules/modules.F90", \
            "field_solvers/Maxwell/yee_solver/yee.F90", \
            "field_solvers/Maxwell/karkainnen_solver/karkainnen.F90", \
            "field_solvers/Maxwell/GPSTD_solver/GPSTD.F90", \
+           "field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.F90", \
+           "field_solvers/Maxwell/GPSTD_solver/fastfft.F90", \
+           "field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.F90", \
+           "particle_pushers/kin_energy.F90", \
            "parallelization/tiling/tiling.F90", \
            "particle_pushers/boris_pusher/boris_2d.F90", \
            "particle_pushers/boris_pusher/boris_3d.F90", \
