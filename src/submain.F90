@@ -62,8 +62,8 @@ SUBROUTINE step(nst)
   USE simple_io
   USE sorting
   USE mpi_routines
-  USE gpstd_solver
 #if defined(FFTW)
+  USE gpstd_solver
   USE mpi_fftw3
 #endif
 #if (defined(VTUNE) && VTUNE>0)
@@ -124,6 +124,7 @@ SUBROUTINE step(nst)
         !!! --- Apply BC on particles
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
+#if defined(FFTW)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                 nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
@@ -131,6 +132,7 @@ SUBROUTINE step(nst)
           CALL pxrdepose_rho_on_grid
           CALL charge_bcs
         ENDIF
+#endif
         !!! --- Particle Sorting
         !write(0, *), 'Sorting'
         CALL pxr_particle_sorting
