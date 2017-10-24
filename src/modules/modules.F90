@@ -848,10 +848,10 @@ MODULE time_stat!#do not parse
   !> MPI local times for the initialization
   REAL(num), dimension(5)                :: init_localtimes
   !> MPI local times for the main loop
-  REAL(num), dimension(20)               :: localtimes
-  REAL(num), DIMENSION(20)               :: mintimes, init_mintimes
-  REAL(num), DIMENSION(20)               :: maxtimes, init_maxtimes
-  REAL(num), DIMENSION(20)               :: avetimes, init_avetimes
+  REAL(num), dimension(24)               :: localtimes
+  REAL(num), DIMENSION(24)               :: mintimes, init_mintimes
+  REAL(num), DIMENSION(24)               :: maxtimes, init_maxtimes
+  REAL(num), DIMENSION(24)               :: avetimes, init_avetimes
   !> Buffer for the output
   REAL(num), DIMENSION(:, :), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat

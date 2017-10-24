@@ -386,12 +386,20 @@ USE shared_data
 USE fields
 USE fourier
 USE fastfft
+USE time_stat
+USE params
+
 IMPLICIT NONE
 INTEGER(idp) :: nfftx,nffty,nfftz, nxx,nyy,nzz
+REAL(num)    :: tmptime
 nfftx=nx+2*nxguards
 nffty=ny+2*nyguards
 nfftz=nz+2*nzguards
 nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 
 ! Init fourier fields fields
 call normalize_Fourier(ex_r,nfftx,nffty,nfftz,ex,nxx,nyy,nzz,1.0_num)
@@ -405,8 +413,14 @@ call normalize_Fourier(jy_r,nfftx,nffty,nfftz,jy,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(jz_r,nfftx,nffty,nfftz,jz,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(rho_r,nfftx,nffty,nfftz,rho,nxx,nyy,nzz,1.0_num)
 call normalize_Fourier(rhoold_r,nfftx,nffty,nfftz,rhoold,nxx,nyy,nzz,1.0_num)
+IF (it.ge.timestat_itstart) THEN
+  localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+ENDIF
 
 ! Do Fourier Transform
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ex_r, exf, plan_r2c)
 CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ey_r, eyf, plan_r2c)
 CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,ez_r, ezf, plan_r2c)
@@ -418,6 +432,9 @@ CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jy_r, jyf, plan_r2c)
 CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,jz_r, jzf, plan_r2c)
 CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rhoold_r, rhooldf, plan_r2c)
 CALL fast_fftw3d_r2c_with_plan(nfftx,nffty,nfftz,rho_r, rhof, plan_r2c)
+IF (it.ge.timestat_itstart) THEN
+  localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+ENDIF
 
 END SUBROUTINE get_Ffields
 
@@ -426,10 +443,14 @@ SUBROUTINE get_Ffields_mpi
 USE shared_data
 USE fields
 USE mpi_fftw3
+USE time_stat
+USE params
 IMPLICIT NONE
 INTEGER(idp) :: ix,iy,iz
-
-
+REAL(num)    :: tmptime
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 ! Copy array values before FFT
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nz
@@ -450,9 +471,15 @@ DO iz=1,nz
 	END DO
 END DO
 !$OMP END PARALLEL DO
+IF (it.ge.timestat_itstart) THEN
+  localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+ENDIF
 
 
 ! Get global Fourier transform of all fields components and currents
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
@@ -465,6 +492,9 @@ CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
 CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+IF (it.ge.timestat_itstart) THEN
+  localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+ENDIF
 
 END SUBROUTINE get_Ffields_mpi
 
@@ -475,12 +505,17 @@ USE shared_data
 USE fields
 USE fourier
 USE fastfft
+USE time_stat
 IMPLICIT NONE
-REAL(num) :: coeff_norm
+REAL(num) :: coeff_norm,tmptime
 INTEGER(idp) :: ix,iy,iz,nxx,nyy,nzz,nfftx,nffty,nfftz
 nfftx=nx+2*nxguards
 nffty=ny+2*nyguards
 nfftz=nz+2*nzguards
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
+
 ! Get Inverse Fourier transform of all fields components and currents
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,exf, ex_r, plan_c2r)
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,eyf, ey_r, plan_c2r)
@@ -494,8 +529,16 @@ CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,jzf, jz_r, plan_c2r)
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhof, rho_r, plan_c2r)
 CALL fast_fftw3d_c2r_with_plan(nfftx,nffty,nfftz,rhooldf, rhoold_r, plan_c2r)
 
+IF (it.ge.timestat_itstart) THEN
+  localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+ENDIF
+
 coeff_norm= 1._num/SIZE(ex_r)
 nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 call normalize_Fourier(ex,nxx,nyy,nzz,ex_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(ey,nxx,nyy,nzz,ey_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(ez,nxx,nyy,nzz,ez_r,nfftx,nffty,nfftz,coeff_norm)
@@ -507,6 +550,11 @@ call normalize_Fourier(jy,nxx,nyy,nzz,jy_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(jz,nxx,nyy,nzz,jz_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(rho,nxx,nyy,nzz,rho_r,nfftx,nffty,nfftz,coeff_norm)
 call normalize_Fourier(rhoold,nxx,nyy,nzz,rhoold_r,nfftx,nffty,nfftz,coeff_norm)
+
+IF (it.ge.timestat_itstart) THEN
+  localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+ENDIF
+
 END SUBROUTINE get_fields
 
 SUBROUTINE normalize_Fourier(ex_out,n1,n2,n3,ex_in,nxx,nyy,nzz,coeff_norm)
@@ -520,7 +568,7 @@ INTEGER(idp) :: ix,iy,iz
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,MIN(nzz,n3)
 	DO iy=1,MIN(nyy,n2)
-		DO ix=1,MIN(nyy,n1)
+		DO ix=1,MIN(nxx,n1)
 				ex_out(ix,iy,iz)=ex_in(ix,iy,iz)*coeff_norm
 		END DO
 	END DO
@@ -533,11 +581,16 @@ SUBROUTINE get_fields_mpi
 USE shared_data
 USE fields
 USE mpi_fftw3
+USE time_stat
+USE params
 IMPLICIT NONE
-REAL(num) :: coeff_norm
+REAL(num) :: coeff_norm,tmptime
 INTEGER(idp) :: ix,iy,iz
 
 ! Get global Fourier transform of all fields components and currents
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
@@ -550,8 +603,15 @@ CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, rhof, rho_r)
 CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, rhooldf, rhoold_r)
+IF (it.ge.timestat_itstart) THEN
+  localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+ENDIF
 
 coeff_norm=(nx_global)*(ny_global)*(nz_global)
+
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nz
 	DO iy=1,ny_global
@@ -571,6 +631,9 @@ DO iz=1,nz
 	END DO
 END DO
 !$OMP END PARALLEL DO
+IF (it.ge.timestat_itstart) THEN
+  localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+ENDIF
 
 END SUBROUTINE get_fields_mpi
 
@@ -623,10 +686,16 @@ SUBROUTINE push_psaotd_ebfielfs
 USE shared_data
 USE fields
 USE fourier
+USE time_stat
+USE params
 IMPLICIT NONE
 INTEGER(idp) ::  ix, iy, iz
-REAL(num) :: invc
+REAL(num) :: invc,tmptime
 invc=1.0_num/clight
+IF (it.ge.timestat_itstart) THEN
+  tmptime = MPI_WTIME()
+ENDIF
+
 ! - Push B a full time step
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy,iz) COLLAPSE(3)
 DO iz=1,nkz
@@ -681,6 +750,9 @@ DO iz=1,nkz
 	END DO
 END DO
 !$OMP END PARALLEL DO
+IF (it.ge.timestat_itstart) THEN
+  localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
+ENDIF
 
 END SUBROUTINE push_psaotd_ebfielfs
 
