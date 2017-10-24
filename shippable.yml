@@ -29,6 +29,7 @@ build:
     # Add Picsar Dynamic library to LD_LIBRARY_PATH
     - export LD_LIBRARY_PATH=/path_to_libpxr.iso:$LD_LIBRARY_PATH
     # Compile the Fortran kernel of Picsar
+    - sed -i 's/MODE=library/MODE=prod/g' Makefile
     - make clean
     - make
     # Add path to pythonpath
