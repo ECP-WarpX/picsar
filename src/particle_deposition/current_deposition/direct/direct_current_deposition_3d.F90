@@ -1388,7 +1388,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-      DO ix = MAX(jorig, -jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1))
+      DO ix = MAX(jorig, -jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1)-2)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jx(ix,iy+myoff(1),iz+mzoff(1))=jx(ix,iy+myoff(1),iz+mzoff(1))+jxcells(1, ic)
@@ -1422,7 +1422,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-    DO ix = MAX(jorig, -jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1))
+    DO ix = MAX(jorig, -jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1)-2)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jy(ix,iy+myoff(1),iz+mzoff(1))=jy(ix,iy+myoff(1),iz+mzoff(1))+jycells(1, ic)
@@ -1456,7 +1456,7 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-    DO ix = MAX(jorig, -jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1))
+    DO ix = MAX(jorig, -jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1)-2)
         ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
         ! Compute linearized index
         jz(ix,iy+myoff(1),iz+mzoff(1))=jz(ix,iy+myoff(1),iz+mzoff(1))+jzcells(1, ic)
@@ -2929,7 +2929,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-       DO ix = MAX(jorig, -jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1))
+       DO ix = MAX(jorig, -jx_nguard(1)), MIN(jorig+ncx-1, jx_nvalid(1)+jx_nguard(1)-2)
            ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
            ! Compute linearized index
            jx(ix,iy+myoff(1),iz+mzoff(1))=jx(ix,iy+myoff(1),iz+mzoff(1))+jxcells(1, ic)
@@ -2963,7 +2963,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-       DO ix = MAX(jorig, -jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1))
+       DO ix = MAX(jorig, -jy_nguard(1)), MIN(jorig+ncx-1, jy_nvalid(1)+jy_nguard(1)-2)
            ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
            ! Compute linearized index
            jy(ix,iy+myoff(1),iz+mzoff(1))=jy(ix,iy+myoff(1),iz+mzoff(1))+jycells(1, ic)
@@ -2997,7 +2997,7 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
 #elif defined __INTEL_COMPILER
       !$DIR SIMD
 #endif
-       DO ix = MAX(jorig, -jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1))
+       DO ix = MAX(jorig, -jz_nguard(1)), MIN(jorig+ncx-1, jz_nvalid(1)+jz_nguard(1)-2)
            ic = 1 + (ix-jorig) + (iy-korig)*ncx + (iz-lorig)*ncxy
            ! Compute linearized index
            jz(ix,iy+myoff(1),iz+mzoff(1))=jz(ix,iy+myoff(1),iz+mzoff(1))+jzcells(1, ic)
