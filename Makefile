@@ -926,6 +926,96 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
 
+build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/housekeeping/sorting.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/submain.o \
+	$(SRCDIR)/initialization/control_file.o \
+	Acceptance_testing/Gcov_tests/maxwell_3d_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/maxwell_3d_test \
+	$(SRCDIR)/modules/modules.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/housekeeping/sorting.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/submain.o \
+	$(SRCDIR)/initialization/control_file.o \
+	Acceptance_testing/Gcov_tests/maxwell_3d_test.o $(LDFLAGS)
+
 # Compilation of all the tests
 build_test: createdir \
 	build_tile_field_gathering_3d_test \
@@ -939,6 +1029,9 @@ build_test: createdir \
 	build_esirkepov_3d_test \
 	build_esirkepov_2d_test \
 	build_tile_mpi_part_com_test
+
+build_test_spectral: createdir \
+	build_maxwell_3d_test
 
 #	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
 

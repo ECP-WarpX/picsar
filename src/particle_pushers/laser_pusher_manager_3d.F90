@@ -29,7 +29,7 @@ SUBROUTINE push_laser_particles
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles: start"
 #endif
-  real_time=(it+0.5)*dt
+  real_time=it*dt+dt/2.0_num
 
   IF (nspecies .EQ. 0_idp) RETURN
   tdeb=MPI_WTIME()
@@ -141,7 +141,7 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-    !$OMP SIMD
+    !!$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
@@ -168,7 +168,7 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-    !$OMP END SIMD
+    !!$OMP END SIMD
 #endif
 #endif
   ENDDO
@@ -228,7 +228,7 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
 #endif
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-    !$OMP SIMD
+    !!$OMP SIMD
 #endif
 #elif defined __IBMBGQ__
     !IBM* SIMD_LEVEL
@@ -254,7 +254,7 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-    !$OMP END SIMD
+    !!$OMP END SIMD
 #endif
 #endif
   ENDDO
@@ -274,9 +274,9 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP DECLARE SIMD(gaussian_profile) UNIFORM(emax, emax1, emax2, polvector1,        &
-  !$OMP polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order,      &
-  !$OMP polangle)
+  !!$OMP DECLARE SIMD(gaussian_profile) UNIFORM(emax, emax1, emax2, polvector1,        &
+  !!$OMP polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order,      &
+  !!$OMP polangle)
 #endif
 #elif defined __INTEL_COMPILER
   !DIR$ ATTRIBUTES VECTOR :                                  &
@@ -299,10 +299,15 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   COMPLEX(cpx)                               :: j, u1, u2
 
   j=(0.0_num, 1.0_num)
-  u1 = j*k0_laser*clight*(real_time-t_peak)- j*k0_laser*(xx**2+yy**2)/(2*q_z) -       &
-  ((real_time - t_peak )/laser_tau)**temporal_order
-  u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
-  ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
+  IF (temporal_order .EQ. 0_idp) THEN 
+    u1 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(q_z)
+    u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(q_z)
+  ELSE
+    u1 = j*k0_laser*clight*(real_time-t_peak)- j*k0_laser*(xx**2+yy**2)/(2*q_z) -       &
+    ((real_time - t_peak )/laser_tau)**temporal_order
+    u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
+    ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
+  ENDIF 
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
@@ -327,8 +332,8 @@ SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvect
   polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
-  !$OMP DECLARE SIMD(hanning_profile) UNIFORM(emax, emax1, emax2, polvector1,         &
-  !$OMP polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
+  !!$OMP DECLARE SIMD(hanning_profile) UNIFORM(emax, emax1, emax2, polvector1,         &
+  !!$OMP polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
 #endif
 #elif defined __INTEL_COMPILER
   !DIR$ ATTRIBUTES VECTOR :                       &

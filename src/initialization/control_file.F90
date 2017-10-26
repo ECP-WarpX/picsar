@@ -1217,6 +1217,7 @@ MODULE control_file
     curr%antenna_params%is_lens = .FALSE.
     curr%antenna_params%laser_zf = 0._num
     curr%antenna_params%focal_length = 0._num
+    curr%antenna_params%t_peak = 0._num
     curr%antenna_params%time_window = 0_idp
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
