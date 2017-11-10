@@ -452,14 +452,65 @@ MODULE diagnostics
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine determine the total number of particles in the domain
+  !> This subroutine determine the total number of particles in one MPI domain
+  !> from species of index is.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE get_local_number_of_particles_from_species(is, nptot_loc)
+    USE particle_tilemodule
+    USE particle_speciesmodule
+    USE tile_params
+    USE particles
+    USE mpi_derived_types
+    USE shared_data
+    USE tiling
+    IMPLICIT NONE
+
+    INTEGER(idp), DIMENSION(1), INTENT(INOUT) :: nptot_loc
+    INTEGER(idp), INTENT(IN) :: is
+    INTEGER(idp) :: ix,iy,iz
+    TYPE(particle_tile), POINTER :: curr_tile
+    TYPE(particle_species), POINTER :: curr
+
+    ! Current species
+    curr=>species_parray(is)
+    nptot_loc(1) = 0_idp
+    ! Loop over the tiles
+    !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
+    !$OMP SHARED(curr, ntilex,ntiley,ntilez) &
+    !$OMP PRIVATE(ix,iy,iz,is,curr_tile) &
+    !$OMP reduction(+:nptot_loc)
+    DO iz=1, ntilez
+      DO iy=1, ntiley
+        DO ix=1, ntilex
+
+          curr_tile=>curr%array_of_tiles(ix,iy,iz)
+          nptot_loc(1) = nptot_loc(1) + curr_tile%np_tile(1)
+
+        End do
+      End do
+    End do
+    !$OMP END PARALLEL DO
+
+  END SUBROUTINE get_local_number_of_particles_from_species
+
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine determine the total number of particles in the MPI domain
   !> from species of index is.
   !
   !> @author
   !> Mathieu Lobet
+  !> Guillaume Blaclard
   !
-  !> @creation
-  !> May 2016
+  !> @date
+  !> Creation: May 2016
   ! ______________________________________________________________________________________
   SUBROUTINE get_tot_number_of_particles_from_species(is, nptot)
     USE particle_tilemodule
@@ -471,71 +522,306 @@ MODULE diagnostics
     USE tiling
     IMPLICIT NONE
 
-    INTEGER(idp), INTENT(INOUT) :: nptot
+    INTEGER(idp), DIMENSION(1), INTENT(INOUT) :: nptot
     INTEGER(idp), INTENT(IN) :: is
-    INTEGER(idp) :: nptot_loc
-    INTEGER(idp) :: ix, iy, iz, ip, n
-    TYPE(particle_tile), POINTER :: curr_tile
-    TYPE(particle_species), POINTER :: curr
+    INTEGER(idp), DIMENSION(1) :: nptot_loc
 
-    nptot = 0
-
-    ! Current species
-    curr=>species_parray(is)
-
-    ! Loop over the tiles
-    !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(curr,        &
-    !$OMP ntilex, ntiley, ntilez) PRIVATE(ix, iy, iz, n, is, curr_tile, ip)           &
-    !$OMP reduction(+:nptot_loc)
-    DO iz=1, ntilez
-      DO iy=1, ntiley
-        DO ix=1, ntilex
-
-          curr_tile=>curr%array_of_tiles(ix, iy, iz)
-          nptot_loc = nptot_loc + curr_tile%np_tile(1)
-
-        End do
-      End do
-    End do
-    !$OMP END PARALLEL DO
+    nptot(1) = 0_idp
+    nptot_loc(1) = 0_idp
+    CALL get_local_number_of_particles_from_species(is, nptot_loc)
 
     ! All MPI reduction
-    call MPI_ALLREDUCE(nptot_loc, nptot, 1_isp, mpidbl, MPI_SUM, comm, errcode)
+    CALL MPI_ALLREDUCE(nptot_loc(1), nptot(1), 1_isp, MPI_INTEGER8, MPI_SUM,          &
+    comm,errcode)
 
-  END SUBROUTINE
+  END SUBROUTINE get_tot_number_of_particles_from_species
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine determine the total number of particles all species included
+  !> This subroutine returns a given position, a momentum or a field of a particle in
+  !> the domain from species of index ispecies.
+  !> For x, y, z, ux, uy, uz, quantity must be egal respectively to 1, 2, 3, 4, 5, 6.
+  !> For ex, ey, ez, bx, by, bz, quantity must be egal respectively to 7, 8, 9, 10, 11
+  !> and 12.
   !
   !> @author
-  !> Mathieu Lobet
+  !> Guillaume Blaclard
   !
-  !> @date
-  !> Creation: May 2016
+  !> @creation
+  !> June 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE get_tot_number_of_particles(nptot)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
-    USE mpi_derived_types
-    USE shared_data
-    USE tiling
-    IMPLICIT NONE
+  SUBROUTINE getquantity(ispecies, quantity, nptot, quantityarray)
+      USE particle_tilemodule
+      USE particle_speciesmodule
+      USE tile_params
+      USE particles
+      USE tiling
+      IMPLICIT NONE
 
-    INTEGER(idp), INTENT(OUT) :: nptot
-    INTEGER(idp)              :: is, nptottmp
+      INTEGER(idp), INTENT(IN) :: ispecies
+      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: quantity
+      INTEGER(idp) :: ix, iy, iz, np
+      INTEGER(idp) :: compt
+      TYPE(particle_tile), POINTER :: curr_tile
+      TYPE(particle_species), POINTER :: curr
 
-    nptot = 0
+      curr=>species_parray(ispecies)
+      compt = 1
 
-    DO is=1, nspecies
-      nptottmp = 0
-      CALL get_tot_number_of_particles_from_species(is, nptottmp)
-      nptot = nptot + nptottmp
-    ENDDO
+      ! Loop over the tiles
+      DO iz=1, ntilez
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+            curr_tile=>curr%array_of_tiles(ix,iy,iz)
+            np = curr_tile%np_tile(1)
 
-  END SUBROUTINE
+            SELECT CASE (quantity)
+              CASE  (1)
+                quantityarray(compt:compt+np-1) = curr_tile%part_x(1:np)
+              CASE  (2)
+                quantityarray(compt:compt+np-1) = curr_tile%part_y(1:np)
+              CASE  (3)
+                quantityarray(compt:compt+np-1) = curr_tile%part_z(1:np)
+              CASE  (4)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ux(1:np)
+              CASE  (5)
+                quantityarray(compt:compt+np-1) = curr_tile%part_uy(1:np)
+              CASE  (6)
+                quantityarray(compt:compt+np-1) = curr_tile%part_uz(1:np)
+              CASE  (7)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ex(1:np)
+              CASE  (8)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ey(1:np)
+              CASE  (9)
+                quantityarray(compt:compt+np-1) = curr_tile%part_ez(1:np)
+              CASE (10)
+                quantityarray(compt:compt+np-1) = curr_tile%part_bx(1:np)
+              CASE (11)
+                quantityarray(compt:compt+np-1) = curr_tile%part_by(1:np)
+              CASE (12)
+                quantityarray(compt:compt+np-1) = curr_tile%part_bz(1:np)
+            END SELECT
+
+            compt = compt + np
+          END DO
+        END DO
+      END DO
+
+  END SUBROUTINE getquantity
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine returns the given variable from pid arrays of particles in
+  !> the domain from species of index ispecies.
+  !> Then quantity_pid corresponds to something like xoldpid, wpid etc..
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE getquantity_pid(ispecies, quantitypid, nptot, quantityarray)
+      USE particle_tilemodule
+      USE particle_speciesmodule
+      USE tile_params
+      USE particles
+      USE tiling
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: ispecies
+      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: quantitypid
+      INTEGER(idp) :: ix, iy, iz, np
+      INTEGER(idp) :: compt
+      TYPE(particle_tile), POINTER :: curr_tile
+      TYPE(particle_species), POINTER :: curr
+
+      curr=>species_parray(ispecies)
+      compt = 1
+
+      ! Loop over the tiles
+      DO iz=1, ntilez
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+            curr_tile=>curr%array_of_tiles(ix, iy, iz)
+            np = curr_tile%np_tile(1)
+            quantityarray(compt:compt+np-1) = curr_tile%pid(1:np, quantitypid)
+            compt = compt + np
+          END DO
+        END DO
+      END DO
+
+  END SUBROUTINE getquantity_pid
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Load particle quantity and select particles which cross a moving plane and return
+  !> their indexes and the number of True. Assume that the inital total number of particles
+  !> is known.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE load_test_plane(nptot, plane_position, plane_position_old,                 &
+  plane_normal_vector, particle_x, particle_y, particle_z, particle_x_old,              &
+  particle_y_old, particle_z_old, npnew, index_particle, particle_relative_position,    &
+  particle_relative_position_old)
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: nptot
+      REAL(num), DIMENSION(3), INTENT(IN) :: plane_position
+      REAL(num), DIMENSION(3), INTENT(IN) :: plane_position_old
+      REAL(num), DIMENSION(3), INTENT(IN) :: plane_normal_vector
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_x
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_y
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_z
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_x_old
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_y_old
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_z_old
+      INTEGER(idp), INTENT(OUT) :: npnew
+      INTEGER(idp), DIMENSION(nptot), INTENT(OUT) :: index_particle
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_relative_position
+      REAL(num), DIMENSION(nptot), INTENT(OUT) :: particle_relative_position_old
+
+      INTEGER(idp) :: i
+      npnew = 0_idp
+      DO i=1, nptot
+        particle_relative_position_old(i) =                                             &
+        plane_normal_vector(1)*(particle_x_old(i) - plane_position_old(1))              &
+        + plane_normal_vector(2)*(particle_y_old(i) - plane_position_old(2))            &
+        + plane_normal_vector(3)*(particle_z_old(i) - plane_position_old(3))
+
+        particle_relative_position(i) =                                                 &
+        plane_normal_vector(1)*(particle_x(i) - plane_position(1))                      &
+        + plane_normal_vector(2)*(particle_y(i) - plane_position(2))                    &
+        + plane_normal_vector(3)*(particle_z(i) - plane_position(3))
+
+        IF ( particle_relative_position_old(i) <= 0 .AND.                               &
+        particle_relative_position(i) >0) THEN
+          index_particle(i) = 1
+          npnew = npnew +1
+
+        END IF
+      END DO
+
+  END SUBROUTINE load_test_plane
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Select a particle quantity thanks to the mask index_particle.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE select_quantity(nptot, npnew, index_particle, quantity_array_tot,          &
+  quantity_array_new)
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: npnew
+      INTEGER(idp), DIMENSION(nptot), INTENT(IN) :: index_particle
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: quantity_array_tot
+      REAL(num), DIMENSION(npnew), INTENT(OUT) :: quantity_array_new
+      INTEGER(idp) :: compt
+      INTEGER(idp) :: i
+
+      compt = 1
+      DO i=1, nptot
+        IF ( index_particle(i) == 1 ) THEN
+          quantity_array_new(compt) = quantity_array_tot(i)
+          compt = compt + 1
+        END IF
+      END DO
+  END SUBROUTINE select_quantity
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Return the value of captured_quantity, interpolated value between previous_quantity
+  !> and current_quantity on the plane.
+  !
+  !> @author
+  !> Guillaume Blaclard
+  !
+  !> @creation
+  !> June 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE interpolate_quantity( index_particle, nptot, npnew, previous_quantity,     &
+  current_quantity, particle_relative_position, particle_relative_position_old,         &
+  captured_quantity)
+
+      IMPLICIT NONE
+
+      INTEGER(idp), INTENT(IN) :: nptot
+      INTEGER(idp), INTENT(IN) :: npnew
+      INTEGER(idp), DIMENSION(nptot), INTENT(IN) :: index_particle
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: previous_quantity
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: current_quantity
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_relative_position
+      REAL(num), DIMENSION(nptot), INTENT(IN) :: particle_relative_position_old
+      REAL(num), DIMENSION(npnew), INTENT(OUT) :: captured_quantity
+      REAL(num), DIMENSION(:), ALLOCATABLE :: previous_quantity_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: current_quantity_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: particle_relative_position_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: particle_relative_position_old_sbs
+      REAL(num), DIMENSION(:), ALLOCATABLE :: norm_factor
+      REAL(num), DIMENSION(:), ALLOCATABLE :: interp_current
+      REAL(num), DIMENSION(:), ALLOCATABLE :: interp_previous
+      INTEGER(idp) :: i
+
+      IF (npnew > 0) THEN
+        ALLOCATE (particle_relative_position_sbs(npnew))
+        ALLOCATE (particle_relative_position_old_sbs(npnew))
+        ALLOCATE (previous_quantity_sbs(npnew))
+        ALLOCATE (current_quantity_sbs(npnew))
+        ALLOCATE (interp_current(npnew))
+        ALLOCATE (interp_previous(npnew))
+        ALLOCATE (norm_factor(npnew))
+
+        ! Take the index of particles where index_particle is true
+        CALL select_quantity(nptot, npnew, index_particle, previous_quantity,           &
+        previous_quantity_sbs)
+        CALL select_quantity(nptot, npnew, index_particle, current_quantity,            &
+        current_quantity_sbs)
+        CALL select_quantity(nptot, npnew, index_particle,                              &
+        particle_relative_position, particle_relative_position_sbs)
+        CALL select_quantity(nptot, npnew, index_particle,                              &
+        particle_relative_position_old, particle_relative_position_old_sbs)
+
+        ! Interpolate particle quantity to the time when they cross the plane
+        !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(i) SHARED(npnew, norm_factor,           &
+        !$OMP particle_relative_position_old_sbs, interp_current, interp_previous,      &
+        !$OMP particle_relative_position_sbs, previous_quantity_sbs,                    &
+        !$OMP current_quantity_sbs, captured_quantity)
+        DO i=1, npnew
+          norm_factor(i) = 1 / ( ABS(particle_relative_position_old_sbs(i))             &
+                      + particle_relative_position_sbs(i) )
+          interp_current(i) = ABS(particle_relative_position_old_sbs(i)) * norm_factor(i)
+          interp_previous(i) = particle_relative_position_sbs(i) * norm_factor(i)
+
+          captured_quantity(i) = interp_current(i) * current_quantity_sbs(i)            &
+                               + interp_previous(i) * previous_quantity_sbs(i)
+        END DO
+        !$OMP END PARALLEL DO
+        DEALLOCATE (particle_relative_position_sbs)
+        DEALLOCATE (particle_relative_position_old_sbs)
+        DEALLOCATE (previous_quantity_sbs)
+        DEALLOCATE (current_quantity_sbs)
+        DEALLOCATE (interp_current)
+        DEALLOCATE (interp_previous)
+        DEALLOCATE (norm_factor)
+      END IF
+  END SUBROUTINE interpolate_quantity
+
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -577,7 +863,6 @@ MODULE diagnostics
     !$OMP PARALLEL DEFAULT(NONE) SHARED(curr, ntilex, ntiley, ntilez) PRIVATE(ix, iy, &
     !$OMP iz, ispecies, curr_tile, ip, np, n, gaminv, partgam)                        &
     !$OMP reduction(+:kinetic_energy_loc)
-
     !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
     DO iz=1, ntilez
       DO iy=1, ntiley
@@ -615,9 +900,9 @@ MODULE diagnostics
               kinetic_energy_loc = kinetic_energy_loc +                               &
               (partgam-1.)*curr_tile%pid(ip+(n-1), wpid)
 
-            end do
+            END DO
 
-          End do
+          END DO
 
           deallocate(gaminv)
           !write(0, *) " Total Local kinetic energy", total_kinetic_energy_loc
@@ -851,7 +1136,6 @@ MODULE diagnostics
 
   END SUBROUTINE
 
-
   ! ______________________________________________________________________________________
   !> @brief
   !> Get the energy of the field component field
@@ -1041,4 +1325,5 @@ MODULE diagnostics
     norm = sqrt(norm)
 
   END SUBROUTINE
+
 END MODULE diagnostics
