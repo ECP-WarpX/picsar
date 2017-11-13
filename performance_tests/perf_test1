@@ -1,0 +1,163 @@
+######################### INPUT FILE FOR THE CODE PICSAR
+section::cpusplit
+ nprocx = 2
+ nprocy = 4
+ nprocz = 4
+ topology = 0
+ 
+ # MPI com type
+ mpicom_curr = 0
+ 
+ # LVEC size for the current deposition
+ lvec_curr_depo = 8
+ 
+ # LVEC size for the charge deposition
+ lvec_charge_depo = 64
+
+ # LVEC size for the charge deposition
+ lvec_fieldgathe = 256
+ 
+ # Size of the local mpi buffers
+ mpi_buf_size = 100
+ 
+end::cpusplit
+
+section::main
+ # Number of grid points in x,y,z
+ nx = 128
+ ny = 128
+ nz = 128
+
+ # Origin of simulation axes
+ xmin = -20e-6
+ ymin = -20e-6
+ zmin = -20e-6
+ xmax = 20e-6
+ ymax = 20e-6
+ zmax = 20e-6
+ # Simulation duration (in 1/w0)
+ nsteps = 100
+ 
+ ntilex = 5
+ ntiley = 5
+ ntilez = 5
+ 
+ # Guard cells
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
+ 
+end::main
+
+section::solver
+ # Maxwell solver order
+ norderx = 2
+ nordery = 2
+ norderz = 2
+ 
+ nox = 1
+ noy = 1
+ noz = 1
+
+ # Current deposition method
+ currdepo = 0
+ 
+ # Field gathering method
+ fieldgathe = 0 
+ 
+ # Type of particle communication
+ partcom = 1
+ 
+ # Charge deposition method
+ rhodepo = 0
+ 
+ # Particle pusher and field gathering seperated
+ fg_p_pp_separated = 1
+ 
+ # Particle pusher algorithm
+ particle_pusher = 0
+
+end::solver
+
+section::sorting
+ activation = 0
+ dx=1.
+ dy=1.
+ dz=1.
+ shiftx=-0.5
+ shifty=-0.5
+ shiftz=-0.5
+end::sorting 
+
+section::plasma
+
+ nlab=1e25
+ gamma0=1.
+ 
+ # Initialization type
+ pdistr=1
+ 
+end::plasma
+
+section::species
+ name = electron
+ mass = 1.
+ charge = -1
+ nppcell = 32
+ x_min = -20e-6
+ y_min = -20e-6
+ z_min = -20e-6
+ x_max = 20e-6
+ y_max = 20e-6
+ z_max = 20e-6
+ ! Drift velocity (in clight)
+ vdrift_x = 0.0
+ vdrift_y = 0.0
+ vdrift_z = 0.0
+ ! Thermal velocity (in clight)
+ vth_x = 0.01
+ vth_y = 0.01
+ vth_z = 0.01
+ sorting_period=1000
+ sorting_start=1000
+end::species
+
+#section::output
+# output_frequency = 10
+# output_step_min  = 0
+# output_step_max  = 1000
+# ex = 1
+# ey = 1
+# ez = 1
+# bx = 1
+# by = 1
+# bz = 1
+# rho = 1
+# dive = 1
+# jy = 1
+#end::output
+
+section::timestat
+  activation=1
+  period=1
+  buffersize=10
+end::timestat
+
+section::temporal
+  frequency=1
+  # Output 0 - binary, 1 - ascii
+  format=0
+  kinE=1
+  exE=1
+  eyE=1
+  ezE=1
+  bxE=1
+  byE=1
+  bzE=1
+  divE-rho=1
+  divE=1
+  rho=1
+end::temporal
