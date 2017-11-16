@@ -51,7 +51,8 @@ parser.add_argument( '--mode', choices=['run', 'read'], default='run',
 parser.add_argument( '--log_file', dest = 'log_file', default='my_performance_log.txt',
     help='name of log file where data will be written. ignored if option --commit is used')
 parser.add_argument('--n_node', dest='n_node', default=1, help='nomber of nodes for the runs')
-parser.add_argument('--input_file', dest='input_file', default=1, help='input file to run')
+parser.add_argument('--input_file', dest='input_file', default='input_file.pixr', 
+    type=str, help='input file to run')
 
 args = parser.parse_args()
 
@@ -114,8 +115,7 @@ if args.recompile == True:
     # makefile_text = re.sub('\nSYS.*', '\nCOMP=%s' %args.machine, makefile_text)
     with open(cwd + 'Makefile_perftest', 'w') as makefile_handler:
         makefile_handler.write( makefile_text )
-    print(config_command + " make clean ; " + " rm *.mod; make SYS=" + args.machine + " MODE=prod")
-    os.system(config_command + " make clean ; " + " rm *.mod; make SYS=" + args.machine + " MODE=prod")
+    os.system(config_command + " make -f Makefile_perftest clean ; " + " rm *.mod; make -f Makefile_perftest SYS=" + args.machine + " MODE=prod")
 
 # Define functions to run a test and analyse results
 # --------------------------------------------------
@@ -249,7 +249,9 @@ def process_analysis():
     batch_string += '#SBATCH -o read_output.txt\n'
     batch_string += '#SBATCH --mail-type=end\n'
     batch_string += '#SBATCH --account=m2852\n'
-    batch_string += 'python ' + __file__ + ' --no-recompile --compiler=' + args.compiler + ' --machine=' + args.machine + ' --mode=read' + ' --log_file=' + log_file
+    batch_string += 'python ' + __file__ + ' --no-recompile --compiler=' + args.compiler + \
+                    ' --machine=' + args.machine + ' --mode=read' + ' --log_file=' + log_file + \
+                    ' --input_file=' + args.input_file
     if args.commit == True:
         batch_string += ' --commit'
     batch_string += '\n'
@@ -282,19 +284,16 @@ filename1 = args.input_file
 #test_list.extend([[filename1, 1, 1, 2, 128, 128, 128, 4, 4, 4, 64]]*n_repeat)
 #test_list.extend([[filename1, 1, 1, 1, 128, 128, 128, 4, 4, 4, 128]]*n_repeat)
 
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 1, 1, 1, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 2, 2, 2, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 4, 4, 4, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 6, 6, 6, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 8, 8, 8, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 10, 10, 10, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 12, 12, 12, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 14, 14, 14, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 16, 16, 16, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 18, 18, 18, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 20, 20, 20, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 25, 25, 25, 16]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 30, 30, 30, 16]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 1, 1, 1, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 2, 2, 2, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 4, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 6, 6, 6, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 8, 8, 8, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 10, 10, 10, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 12, 12, 12, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 14, 14, 14, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 16, 16, 16, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 18, 18, 18, 2]]*n_repeat)
 
 n_tests   = len(test_list)
 
@@ -307,7 +306,7 @@ if args.mode == 'run':
     n_steps  = get_nsteps(cwd + run_name)
     res_dir = res_dir_base
     res_dir += '_'.join([year, month, day, args.compiler,\
-                         args.machine, str(args.n_node)]) + '/'
+                         args.machine, args.input_file]) + '/'
     run_batch_nnode(test_list, res_dir, n_node=int(args.n_node))
     os.chdir(cwd)
     process_analysis()
@@ -324,7 +323,7 @@ if args.mode == 'read':
         f_log.close()
     res_dir = res_dir_base
     res_dir += '_'.join([year, month, day, args.compiler,\
-                         args.machine, str(args.n_node)]) + '/'
+                         args.machine, args.input_file]) + '/'
     n_node   = args.n_node
     for count, test_item in enumerate(test_list):
         # Results folder
@@ -335,10 +334,10 @@ if args.mode == 'read':
         nx, ny, nz = test_item[4:7]
         ntilex, ntiley, ntilez = test_item[7:10]
         n_omp = test_item[10]
-        output_filename = 'out_' + '_'.join([runname, str(n_node), str(nprocx), str(nprocy), \
-                            str(nprocz), str(n_omp), str(nx), str(ny), str(nz), str(ntilex), \
-                            str(ntiley), str(ntilez)]) + '.txt'
-        n_steps  = get_nsteps(cwd  + run_name)
+        output_filename = 'out_' + '_'.join([str(runname), str(n_node), str(nprocx), str(nprocy), \
+                          str(nprocz), str(n_omp), str(nx), str(ny), str(nz), str(ntilex), \
+                          str(ntiley), str(ntilez)]) + '.txt'
+        n_steps  = get_nsteps(cwd  + args.input_file)
         print('n_steps = ' + str(n_steps))
         # Read performance data from the output file
         timing_list = read_run_perf(res_dir + output_filename)
