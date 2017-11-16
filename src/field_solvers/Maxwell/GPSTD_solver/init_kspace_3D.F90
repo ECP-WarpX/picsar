@@ -117,9 +117,8 @@ MODULE gpstd_solver
     USE omp_lib
     USE shared_data
     USE fields, ONLY : nxguards, nyguards, nzguards
-    USE fields, ONLY : norderx, nordery, norderz
+    USE fields, ONLY : norderx, nordery, norderz, l_staggered
     USE params, ONLY : dt
-    LOGICAL(lp)                                   :: l_stg
     REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
     COMPLEX(cpx)                                  :: ii
@@ -146,9 +145,8 @@ MODULE gpstd_solver
       ALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1, nffty, nfftz))
     ENDDO
     !construct kspace
-    l_stg = .TRUE.
     ii=DCMPLX(0.0_num, 1.0_num)
-    CALL compute_k_vec(l_stg)
+    CALL compute_k_vec(l_staggered)
     DO i = 1, nfftx/2+1
       DO j = 1, nffty
         DO k = 1, nfftz
@@ -342,7 +340,9 @@ MODULE gpstd_solver
       kxf=kxc
       kxb=kxc
       kyf=kyc
-      kzb=kzc
+      kyb=kyc
+      kzf=kzc
+      kyb=kzc
     ENDIF
     IF(fftw_with_mpi) THEN
       IF(.NOT. fftw_mpi_transpose) THEN

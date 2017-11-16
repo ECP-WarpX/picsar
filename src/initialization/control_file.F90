@@ -89,7 +89,7 @@ MODULE control_file
     norderz = 2
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
-    l_staggered = .TRUE.! (staggered scheme by default - for spectral )
+    l_staggered = .TRUE.! (staggered scheme by default )
     ! --- Order of current deposition/ field gathering
     ! (default is 1 in x, y, z)
     nox = 1
