@@ -157,6 +157,9 @@ def run_batch_nnode(test_list, res_dir, n_node=1):
             cflag_value = max(1, int(32/n_mpi) * 2) # Follow NERSC directives
         elif args.machine == 'cori2':
             cflag_value = max(1, int(64/n_mpi) * 4) # Follow NERSC directives
+        output_filename = 'out_' + '_'.join([runname, str(n_node), str(nprocx), str(nprocy), \
+                          str(nprocz), str(n_omp), str(nx), str(ny), str(nz), str(ntilex), \
+                          str(ntiley), str(ntilez)]) + '.txt'
         srun_string += 'srun --cpu_bind=cores '+ \
                        ' -n ' + str(n_node*n_mpi) + \
                        ' -c ' + str(cflag_value)   + \
@@ -164,7 +167,7 @@ def run_batch_nnode(test_list, res_dir, n_node=1):
                        ' --nx ' + str(nx) + ' --ny ' + str(ny) + ' --nz ' + str(nz) + \
                        ' --nprocx ' + str(nprocx) + ' --nprocy ' + str(nprocy) + ' --nprocz ' + str(nprocz) + \
                        ' --ntilex ' + str(ntilex) + ' --ntiley ' + str(ntiley) + ' --ntilez ' + str(ntilez) + \
-                       ' 2> output_' + runname + '_' + str(count) + '.txt\n'
+                       ' 2> ' + output_filename + '\n'
         batch_string += srun_string
     batch_file = 'slurm'
     f_exe = open(batch_file,'w')
@@ -211,8 +214,9 @@ def read_run_perf(filename):
 # Write time into logfile
 def write_perf_logfile(log_file):
     log_line = ' '.join([year, month, day, runname, args.compiler,\
-                         args.machine, str(n_node), str(nprocx), str(nprocy), str(nprocz), \
-                         str(n_omp), str(nx), str(ny), str(nz), str(n_steps)] +  timing_list + ['\n'])
+                         args.machine, str(n_node), str(nprocx), str(nprocy), str(nprocz), str(n_omp), \
+                         str(nx), str(ny), str(nz), str(ntilex), str(ntiley), str(ntilez), \
+                         str(n_steps)] +  timing_list + ['\n'])
     f_log = open(log_file, 'a')
     f_log.write(log_line)
     f_log.close()
@@ -261,27 +265,36 @@ def process_analysis():
 # -------------------------------------------------
 
 test_list = []
+# TEMPORARY VERSION. USE N_REPEAT=1 AT THE MOMENT. OTHERWISE, SIMILAR RUNS WILL
+# WRITE OUTPUT IN THE SAME FILE.
 n_repeat = 1
 filename1 = args.input_file
 # each element of test_list contains
 # [str runname, int nprocx (total), nprocy (total), nprocz (total),
 #  nx, ny, nz, ntilex, ntiley, ntilez, int n_omp]
-test_list.extend([[filename1, 4, 4, 8, 128, 128, 128, 4, 4, 4, 1]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 4, 4, 4, 2]]*n_repeat)
-test_list.extend([[filename1, 2, 4, 4, 128, 128, 128, 4, 4, 4, 4]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 4, 128, 128, 128, 4, 4, 4, 8]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 4, 4, 4, 16]]*n_repeat)
-test_list.extend([[filename1, 1, 2, 2, 128, 128, 128, 4, 4, 4, 32]]*n_repeat)
-test_list.extend([[filename1, 1, 1, 2, 128, 128, 128, 4, 4, 4, 64]]*n_repeat)
-# test_list.extend([[filename1, 1, 1, 1, 128, 128, 128, 4, 4, 4, 128]]*n_repeat)
 
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 4, 4, 4, 1]]*n_repeat)
-test_list.extend([[filename1, 2, 4, 4, 128, 128, 128, 4, 4, 4, 2]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 4, 128, 128, 128, 4, 4, 4, 4]]*n_repeat)
-test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 4, 4, 4, 8]]*n_repeat)
-test_list.extend([[filename1, 1, 2, 2, 128, 128, 128, 4, 4, 4, 16]]*n_repeat)
-test_list.extend([[filename1, 1, 1, 2, 128, 128, 128, 4, 4, 4, 32]]*n_repeat)
-# test_list.extend([[filename1, 1, 1, 1, 128, 128, 128, 4, 4, 4, 64]]*n_repeat)
+#test_list.extend([[filename1, 4, 4, 8, 128, 128, 128, 4, 4, 4, 1]]*n_repeat)
+#test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 4, 4, 4, 2]]*n_repeat)
+#test_list.extend([[filename1, 2, 4, 4, 128, 128, 128, 4, 4, 4, 4]]*n_repeat)
+#test_list.extend([[filename1, 2, 2, 4, 128, 128, 128, 4, 4, 4, 8]]*n_repeat)
+#test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 4, 4, 4, 16]]*n_repeat)
+#test_list.extend([[filename1, 1, 2, 2, 128, 128, 128, 4, 4, 4, 32]]*n_repeat)
+#test_list.extend([[filename1, 1, 1, 2, 128, 128, 128, 4, 4, 4, 64]]*n_repeat)
+#test_list.extend([[filename1, 1, 1, 1, 128, 128, 128, 4, 4, 4, 128]]*n_repeat)
+
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 1, 1, 1, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 2, 2, 2, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 4, 4, 4, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 6, 6, 6, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 8, 8, 8, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 10, 10, 10, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 12, 12, 12, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 14, 14, 14, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 16, 16, 16, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 18, 18, 18, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 20, 20, 20, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 25, 25, 25, 16]]*n_repeat)
+test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 30, 30, 30, 16]]*n_repeat)
 
 n_tests   = len(test_list)
 
@@ -303,8 +316,8 @@ if args.mode == 'read':
     # Create log_file for performance tests if does not exist
     if not os.path.isfile(log_dir + log_file):
         log_line = '## year, month, day, runname, compiler, machine, n_node, nprocx, nprocy, nprocz, ' +\
-                   'n_omp, nx, ny, nz, n_steps, step, Particle pusher + field g, Particle MPI bound. cond, '+\
-                   'Current deposition, Push bfield fdtd, Push efield fdtd, '+\
+                   'n_omp, nx, ny, nz, ntilex, ntiley, ntilez, n_steps, step, Particle pusher + field g, ' +\
+                   'Particle MPI bound. cond, Current deposition, Push bfield fdtd, Push efield fdtd, '+\
                    'Total time Maxwell solver, Total time bound. cond, Particle OpenMP bound\n'
         f_log = open(log_dir + log_file, 'a')
         f_log.write(log_line)
@@ -322,10 +335,13 @@ if args.mode == 'read':
         nx, ny, nz = test_item[4:7]
         ntilex, ntiley, ntilez = test_item[7:10]
         n_omp = test_item[10]
+        output_filename = 'out_' + '_'.join([runname, str(n_node), str(nprocx), str(nprocy), \
+                            str(nprocz), str(n_omp), str(nx), str(ny), str(nz), str(ntilex), \
+                            str(ntiley), str(ntilez)]) + '.txt'
         n_steps  = get_nsteps(cwd  + run_name)
         print('n_steps = ' + str(n_steps))
         # Read performance data from the output file
-        timing_list = read_run_perf(res_dir + 'output_' + runname + '_' + str(count) + '.txt')
+        timing_list = read_run_perf(res_dir + output_filename)
         # Write performance data to the performance log file
         write_perf_logfile(log_dir + log_file)
 
