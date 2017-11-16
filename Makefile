@@ -1108,3 +1108,23 @@ tile_curr_depo_3d_test:
 tile_rho_depo_3d_test:
 	export OMP_NUM_THREADS=4
 	mpirun -n 1 ./Acceptance_testing/Gcov_tests/tile_rho_depo_3d_test
+
+# __ Execute Maxwell solver tests ____________________________________________________
+
+test_maxwell_solver: test_plane_wave_fdtd 
+
+test_plane_wave_fdtd:
+	cp examples/example_decks_fortran/plane_wave_test.pixr \
+	Acceptance_testing/Gcov_tests/input_file.pixr
+	# 1 OpenMP vary number of MPIs
+	cd Acceptance_testing/Gcov_tests && \
+	export OMP_NUM_THREADS=1 && \
+	mpirun -np 2 ./maxwell_3d_test --lspectral 0 && \
+	mpirun -np 4 ./maxwell_3d_test --lspectral 0 && \
+	mpirun -np 8 ./maxwell_3d_test --lspectral 0 
+	# 4 OpenMP vary number of MPIs 
+	cd Acceptance_testing/Gcov_tests && \
+	export OMP_NUM_THREADS=4 && \
+	mpirun -np 1 ./maxwell_3d_test --lspectral 0 && \
+	mpirun -np 2 ./maxwell_3d_test --lspectral 0 && \
+	mpirun -np 4 ./maxwell_3d_test --lspectral 0

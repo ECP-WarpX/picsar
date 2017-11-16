@@ -1685,10 +1685,8 @@ MODULE tiling
     laser%inv_zr = 1._num/laser%zr
     laser%inv_w02 = 1._num/laser%laser_w0**2
 
-    ! --- Compute laser t_peak (1.5*laser_duration) s
-    laser%t_peak = 2._num*laser%laser_tau
     ! --- Gaussian q parameter at focus
-    laser%q_0 = (0, 1.) * laser%laser_w0**2*pi/laser%lambda_laser
+    laser%q_0 = (0., 1.) * laser%laser_w0**2*pi/laser%lambda_laser
 
     ! --- Gaussian q parameter in antenna_plane
     IF(laser%is_lens .EQV. .FALSE.) THEN
@@ -1705,7 +1703,6 @@ MODULE tiling
       laser%q_z = (M1(1, 1)*laser%q_0  + M1(1, 2))/(M1(2, 1)*laser%q_0+M1(2, 2))
     ENDIF
     ALLOCATE(partpid(npid))
-    !   partpid(wpid) = nc*dx*dz/(curr%nppcell)
 
     ! --- Sanity check on vector normal to antenna plane
     IF (SUM(laser%vector**2)==0) THEN
@@ -1732,14 +1729,11 @@ MODULE tiling
     dst  = (/dx, dy, dz/)
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
-    weight_laser=eps0*laser%Emax*(dx*dy*dz)/(0.01_num)*laser%k0_laser
-
+    weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx*dy
     DO l=1, lmax
+      pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2.0_num
       DO j=1, jmax
-        DO ipart=1, curr%nppcell
-          !CALL RANDOM_NUMBER(rng)
-          pos(i1) = (mins(i1)+(j-1)*dst(i1))+(dst(i1))/2_num
-          pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2_num
+          pos(i1) = (mins(i1)+(j-1)*dst(i1))+(dst(i1))/2.0_num
           pos(inonz) = (intercept-laser%vector(i1)*pos(i1)-laser%vector(i2)*pos(i2))  &
           /laser%vector(inonz)
           ! --- Filter particles in the local domain
@@ -1754,20 +1748,16 @@ MODULE tiling
             ! -- Y_a position of laser particle in antenna frame
             !-- (projection on polvector2)
             partpid(wpid+2_idp) = SUM((pos-spot)*laser%polvector2)
-            ! -- Init particle momenta in the lab frame
-            CALL init_momentum(partvx, partvy, partvz, gaminv, partux, partuy,        &
-            partuz)
             ! -- Add particle to current laser species
-            CALL add_particle_to_species(curr, pos(1), pos(2), pos(3), partux,        &
-            partuy, partuz, gaminv, partpid)
+            CALL add_particle_to_species(curr, pos(1), pos(2), pos(3), 0._num,        &
+            0._num, 0._num, 1._num, partpid)
           ENDIF
-        ENDDO
       ENDDO
     ENDDO
     IF(RANK .EQ. 0) THEN
       WRITE(0,*) 'Laser Waist',laser%laser_w0,"m"
-      WRITE(0,*) 'Laser temporal waist',laser%laser_tau,'s'
-      WRITE(0,*) 'Laser temporal waist',laser%laser_tau/dt,'dt'
+      WRITE(0,*) 'Laser duration',laser%laser_tau,' (in s)'
+      WRITE(0,*) 'Laser duration',laser%laser_tau/dt,' (in dt)'
       WRITE(0,*) 'Laser peak ',laser%t_peak/dt,"dt"
       WRITE(0,*) 'Laser longitudinal length',laser%laser_ctau,'m'
       WRITE(0,*) 'Laser temporal frequency w_laser',laser%k0_laser*clight,'s^-1'
@@ -1787,19 +1777,6 @@ MODULE tiling
     END DO
   END SUBROUTINE load_laser
 
-  SUBROUTINE init_momentum(partvx, partvy, partvz, gaminv, partux, partuy, partuz)
-
-    IMPLICIT NONE
-    REAL(num), INTENT(INOUT)  ::  partvx, partvy, partvz, gaminv, partux, partuy,     &
-    partuz
-
-    partvx = 0._num; partvy = 0._num; partvz = 0._num;
-    gaminv = 1.
-    partux = partvx /gaminv
-    partuy = partvy /gaminv
-    partuz = partvz /gaminv
-
-  END SUBROUTINE init_momentum
 
   SUBROUTINE product_matrix_2c2(M1, M2, M3)
     REAL(num), INTENT(IN), DIMENSION(2, 2)     :: M1, M2

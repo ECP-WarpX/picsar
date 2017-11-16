@@ -16,8 +16,13 @@ build:
 
     # Compile the unit tests
     - make build_test
-    # Run the unit test
+    # Run tests on particle routines 
     - make test_gcov
+    # Run tests on Maxwell solver (plane wave test)
+    - make clean 
+    - sed -i 's/MODE=prod_spectral/MODE=library/g' Makefile
+    - make build_test_spectral 
+    - make test_maxwell_solver
     # Compile Picsar with fftw
     - make clean
     - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
