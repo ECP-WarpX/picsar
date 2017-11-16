@@ -732,9 +732,17 @@ all_cells, all_nz, all_nzp
       IF(fftw_mpi_transpose) THEN
         alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group, nx_group,   &
         MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
+        IF(local_nz .EQ. 0_idp .OR. local_ny .EQ. 0_idp) THEN
+          WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank',rank
+          CALL MPI_ABORT(comm,errcode,ierr)
+        ENDIF
       ELSE
         alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group,              &
         MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+        IF(local_nz .EQ. 0_idp ) THEN
+          WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
+          CALL MPI_ABORT(comm,errcode,ierr)
+        ENDIF
       ENDIF
     ENDIF
   
@@ -750,7 +758,8 @@ all_cells, all_nz, all_nzp
   IF(iz_min_r .GE. iz_max_r) THEN
     WRITE(0, *) '*** ERROR ***'
     WRITE(0, *) '*** iz_max_r < iz_min_r ***'
-    STOP
+    CALL MPI_ABORT(comm,errcode,ierr)
+
   ENDIF
   
   nz = iz_max_r - iz_min_r +1

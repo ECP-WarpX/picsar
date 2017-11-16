@@ -414,6 +414,7 @@ SUBROUTINE initall
     IF (hybrid_2)   write(0, '(" FFTW distributed version, - MPI GROUPS ALOG 3        &
     AXIS")')
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
+    IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
     ! Sorting
     IF (sorting_activated.gt.0) THEN
       write(0, *) 'Particle sorting activated'
