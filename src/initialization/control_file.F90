@@ -314,6 +314,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_plasma') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_plasma
+      ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) l_spectral
       ELSE IF (INDEX(buffer, 'lvec_charge_depo') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) lvec_charge_depo
@@ -1217,6 +1220,7 @@ MODULE control_file
     curr%antenna_params%is_lens = .FALSE.
     curr%antenna_params%laser_zf = 0._num
     curr%antenna_params%focal_length = 0._num
+    curr%antenna_params%t_peak = 0._num
     curr%antenna_params%time_window = 0_idp
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
@@ -1256,6 +1260,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'laser_ctau') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_ctau
+      ELSE IF (INDEX(buffer, 't_peak') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%t_peak
       ELSE IF (INDEX(buffer, 'laser_a_1') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_a_1

@@ -29,7 +29,7 @@ SUBROUTINE push_laser_particles
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles: start"
 #endif
-  real_time=(it+0.5)*dt
+  real_time=it*dt   -dt/2.0_num
 
   IF (nspecies .EQ. 0_idp) RETURN
   tdeb=MPI_WTIME()
@@ -299,18 +299,23 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   COMPLEX(cpx)                               :: j, u1, u2
 
   j=(0.0_num, 1.0_num)
-  u1 = j*k0_laser*clight*(real_time-t_peak)- j*k0_laser*(xx**2+yy**2)/(2*q_z) -       &
-  ((real_time - t_peak )/laser_tau)**temporal_order
-  u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
-  ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
+  IF (temporal_order .EQ. 0_idp) THEN 
+    u1 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
+    u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
+  ELSE
+    u1 = j*k0_laser*clight*(real_time-t_peak)- j*k0_laser*(xx**2+yy**2)/(2*q_z) -       &
+    ((real_time - t_peak )/laser_tau)**temporal_order
+    u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
+    ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
+  ENDIF 
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
-  amp1 = REAL(arg(1), num)
+  amp1 = AIMAG(arg(1))
   arg(2) = (u1*polvector1(2) + u2*polvector2(2))
-  amp2 = REAL(arg(2), num)
+  amp2 = AIMAG(arg(2))
   arg(3) = (u1*polvector1(3) + u2*polvector2(3))
-  amp3 = REAL(arg(3), num)
+  amp3 = AIMAG(arg(3))
 
 END SUBROUTINE gaussian_profile
 ! ________________________________________________________________________________________
