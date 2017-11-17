@@ -112,6 +112,7 @@ To test the import of the python module, try in parallel within an interactive
 shell:
 
 `salloc -N 1 --qos interactive -t 00:30:00 -C knl -L SCRATCH` for KNL
+
 `salloc -N 1 --qos interactive -t 00:30:00 -C haswell -L SCRATCH` for Haswell
 
 Then:
