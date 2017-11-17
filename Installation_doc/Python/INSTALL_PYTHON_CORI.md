@@ -95,7 +95,7 @@ TESTDIR=examples/example_scripts_python
 
 Note that by default, the flags are respectively set to `gnu` and `cpu`.
 
-For good performances on knl architecture, always use the intel compiler.
+For good performances on knl architecture, we recommend to use the Intel compiler.
 
 ## **5. Compiling and installing**
 
