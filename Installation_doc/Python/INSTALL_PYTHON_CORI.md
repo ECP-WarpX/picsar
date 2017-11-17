@@ -108,9 +108,15 @@ Then `cd` into the directory `python_module` and run `python setup.py install --
 
 ## **6. Python import**
 
-To test the import of the python module, try in a `python` shell:
+To test the import of the python module, try in parallel within an interactive
+shell:
+
 ```
-from picsar_python import picsarpy as pxrpy
+salloc -N 1 --qos premium -t 00:30:00 -L SCRATCH
 ```
 
-(Note that it must be used in parallel on NERSC machines.)
+Then:
+
+```
+srun -n 2 python-mpi -c 'from picsar_python import picsarpy as pxrpy'
+```
