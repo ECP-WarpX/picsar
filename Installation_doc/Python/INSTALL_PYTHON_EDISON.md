@@ -19,7 +19,6 @@ then
   module load python/2.7-anaconda
   module swap PrgEnv-intel PrgEnv-gnu
   export PATH=$HOME/.local/edison/2.7-anaconda/bin:$PATH
-  export PYTHONPATH=$HOME/picsar/python_libs:$HOME/picsar/python_bin:$PYTHONPATH
 fi
 ```
 
@@ -30,7 +29,6 @@ if [ "$NERSC_HOST" == "edison" ]
 then
   module load python/2.7-anaconda
   export PATH=$HOME/.local/edison/2.7-anaconda/bin:$PATH
-  export PYTHONPATH=$HOME/picsar/python_libs:$HOME/picsar/python_bin:$PYTHONPATH
 fi
 ```
 
@@ -42,7 +40,7 @@ environment for the next installation steps.
 ## **3. Installing Forthon**
 
 If you have already installed Warp, this step is already done.
-If not, simply type `pip install Forthon --user`
+If not, simply type `pip install Forthon --user`.
 
 ## **4. Makefile_Forthon configuration**
 
@@ -50,40 +48,35 @@ Clone `picsar` where you want to install it.
 If you have already installed Warp,
 we recommend to put it in the same installation directory: `$SCRATCH/warp_install`.
 
-Then modify the `Makefile_Forthon` to have the correct configuration.
+After `cd` in the `picsar` directory, use the command `./configure` to prepare
+the `Makefile`.  After this step, a file `Makefile_Forthon` must have been generated
+and must look like:
 
-To use the GNU compiler:
 ```
+# Source directory
 SRCDIR= src
-BINDIR = python_bin
+# Binary directory (.so) after compilation
+BINDIR = python_module/picsar_python
+# Application name
 APPNAME=picsar
+# Python binary name
 PYTHON_NAME=picsarpy
-UTIL=utils
+# Path where the parser is located
+UTIL=utils/forthon_parser
+# We use Forthon to interface Fortran and Python
 FC=Forthon
 FCARGS=-v --no2underscores  --nowritemodules
+# Fortran compiler
 FCOMP=gfortran
 FCOMPEXEC=ftn
+# Fortan compilation arguments
 FARGS="-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"
+# Library directory
 LIBDIR=
-LIBS= -lgomp
-TESTDIR=example_scripts_python
-```
-
-To use the Intel compiler
-```
-SRCDIR= src
-BINDIR = python_bin
-APPNAME=picsar
-PYTHON_NAME=picsarpy
-UTIL=utils
-FC=Forthon
-FCARGS=-v --no2underscores  --nowritemodules
-FCOMP=intel
-FCOMPEXEC=ftn
-FARGS="-O3 -qopenmp -xAVX -align array64byte"
-LIBDIR=
-LIBS=
-TESTDIR=example_scripts_python
+# Library names
+LIBS=-lgomp
+# Location of the test scripts
+TESTDIR=examples/example_scripts_python
 ```
 
 ## **5. Compiling and installing**
