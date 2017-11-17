@@ -32,23 +32,7 @@ pip install mpi4py
 ## **3. Installing Forthon**
 
 If you have already installed Warp, this step is already done.
-
-Before creating the python module picsarpy for picsar,
-you must install the Forthon compiler.
-To do so:
-
-* Copy the last stable version of Forthon by typing:
-```
-git clone https://github.com/dpgrote/Forthon.git
-```
-
-* Then `cd` into the directory `Forthon` and run python `setup.py install --home=$PATH`
-
-Here, `PATH` is where you want the `bin` and `lib` folder to be created
-and the Forthon files to be located.
-
-NB: **On the cluster Edison at NERSC**:  
-Simply type `pip install Forthon --user`
+If not, simply type `pip install Forthon`
 
 ## **4. Makefile_Forthon configuration**
 
@@ -78,18 +62,15 @@ You will need to edit the file `Makefile_Forthon` and indicate the following env
 - LIBS: required libraries for the install. With Open-MPI, the compilation of picsar requires the following libraries: -lmpi, -lmpi_usempi, -lmpi_mpifh, -lgomp. For open-mpi>1.8.x, you should use -lmpi_usempif08 instead of -lmpi_usempi. For a Macports install of mpich, you should use -lmpifort -lmpi -lpmpi.   
 
 
-
 ## **5. Compiling and installing**
 
 
-To compile, invoke the rule "all":
+To compile and test, invoke the rule "all":
 ```
 make -f Makefile_Forthon all
 ```
-Then make sure that the folders `python_libs` and `python_bin` are in
-your `$PYTHONPATH`.
+Then `cd` into the directory `python_module` and run `python setup.py install`.
 
-On Edison and Cori, this is ensured by the setup of your `~/.bashrc.ext`.
 
 ## **6. Testing**
 
