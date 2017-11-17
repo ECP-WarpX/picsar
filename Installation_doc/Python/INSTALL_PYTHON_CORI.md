@@ -64,7 +64,7 @@ and `--architecture cpu`/`--architecture knl`.
 
 For example, if you want to use `picsar` on the knl architecture with the intel
 compiler, juste type `./configure --compiler intel --architecture knl`.
-Then, a file  `Makefile_Forthon` must have been generated and must look like:
+This step should return 'Configure succeeded'. Then, a file  `Makefile_Forthon` must have been generated and must look like:
 
 ```
 # Source directory
