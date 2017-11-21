@@ -9,14 +9,13 @@ import argparse, re, time
 # Before running performance tests, make sure you have the latest version 
 # of performance_log.txt
 # A typical execution reads:
-# > python run_alltests.py --no-recompile --compiler=gnu --machine=cori1 --mode=run --input_file=input --n_node=1 --log_file='my_performance_log.txt'
+# > python run_alltests.py --no-recompile --compiler=gnu --machine=cori1 --mode=run --input_file=input_file.pixr --n_node=1 --log_file='my_performance_log.txt'
 # These are default values, and will give the same result as 
 # > python run_alltests.py
 # To add a new test item, extent the test_list with a line like
-# test_list.extend([['my_input_file', n_node, n_mpi, n_omp]]*3)
-# - my_input_file must be in warpx/performance_tests
-# - the test will run 3 times, to have some statistics
-# - the test must take <1h or it will timeout
+# test_list.extend([[input_file, nprocx, nprocy, nprocz, nx, ny, nz, ntilex, ntiley, ntilez, n_omp]]*n_repeat)
+# - my_input_file must be in picsar/performance_tests
+# - the tests must take <10 min on average or they will timeout
 
 # ---- Developer's manual ----
 # This script can run in two modes:
@@ -111,8 +110,6 @@ if args.mode == 'run':
 if args.recompile == True:
     with open(cwd + 'Makefile_perftest') as makefile_handler:
         makefile_text = makefile_handler.read()
-    # makefile_text = re.sub('\nCOMP.*', '\nCOMP=%s' %compiler_name[args.compiler], makefile_text)
-    # makefile_text = re.sub('\nSYS.*', '\nCOMP=%s' %args.machine, makefile_text)
     with open(cwd + 'Makefile_perftest', 'w') as makefile_handler:
         makefile_handler.write( makefile_text )
     os.system(config_command + " make -f Makefile_perftest clean ; " + " rm *.mod; make -f Makefile_perftest SYS=" + args.machine + " MODE=prod")
@@ -142,8 +139,9 @@ def run_batch_nnode(test_list, res_dir, n_node=1):
     batch_string += '#SBATCH -e error.txt\n'
     batch_string += '#SBATCH --account=m2852\n'
     for count, test_item in enumerate(test_list):
-        # [str runname, int nprocx (total), nprocy (total), nprocz (total),                                                                                                                                 
-        #  nx, ny, nz, ntilex, ntiley, ntilez, int n_omp]                                                                                                                                                               
+        # test_item reads
+        # [runname, nprocx (total), nprocy (total), nprocz (total),                                                                                                                                 
+        #  nx, ny, nz, ntilex, ntiley, ntilez, int n_omp]                                                                                                                                                       
         runname = test_item[0];
         nprocx, nprocy, nprocz = test_item[1:4]
         n_mpi = (nprocx * nprocy * nprocz) / n_node
@@ -192,7 +190,6 @@ def read_run_perf(filename):
     file_handler.close()
     with open(filename) as file_handler:
         output_text = file_handler.read()
-    # search_area = output_text.partition(partition_limit)[2].partition(partition_limit2)[0]
     pattern_list = ['Particle pusher \+ field g.*',\
                     'Particle MPI bound\. cond.*',\
                     'Current deposition.*',\
@@ -221,8 +218,6 @@ def write_perf_logfile(log_file):
     f_log.write(log_line)
     f_log.close()
     return 0
-        # [str runname, int nprocx (total), nprocy (total), nprocz (total),
-        #  nx, ny, nz, ntilex, ntiley, ntilez, int n_omp]
 
 def get_nsteps(runname):
     with open(runname) as file_handler:
@@ -274,26 +269,19 @@ filename1 = args.input_file
 # each element of test_list contains
 # [str runname, int nprocx (total), nprocy (total), nprocz (total),
 #  nx, ny, nz, ntilex, ntiley, ntilez, int n_omp]
-
-#test_list.extend([[filename1, 4, 4, 8, 128, 128, 128, 4, 4, 4, 1]]*n_repeat)
-#test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 4, 4, 4, 2]]*n_repeat)
-#test_list.extend([[filename1, 2, 4, 4, 128, 128, 128, 4, 4, 4, 4]]*n_repeat)
-#test_list.extend([[filename1, 2, 2, 4, 128, 128, 128, 4, 4, 4, 8]]*n_repeat)
-#test_list.extend([[filename1, 2, 2, 2, 128, 128, 128, 4, 4, 4, 16]]*n_repeat)
-#test_list.extend([[filename1, 1, 2, 2, 128, 128, 128, 4, 4, 4, 32]]*n_repeat)
-#test_list.extend([[filename1, 1, 1, 2, 128, 128, 128, 4, 4, 4, 64]]*n_repeat)
-#test_list.extend([[filename1, 1, 1, 1, 128, 128, 128, 4, 4, 4, 128]]*n_repeat)
-
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 1, 1, 1, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 2, 2, 2, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 1, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 2, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 3, 4, 4, 2]]*n_repeat)
 test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 4, 4, 4, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 6, 6, 6, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 8, 8, 8, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 10, 10, 10, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 12, 12, 12, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 14, 14, 14, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 16, 16, 16, 2]]*n_repeat)
-test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 18, 18, 18, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 5, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 6, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 8, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 10, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 12, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 14, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 16, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 18, 4, 4, 2]]*n_repeat)
+test_list.extend([[filename1, 4, 4, 4, 128, 128, 128, 20, 4, 4, 2]]*n_repeat)
 
 n_tests   = len(test_list)
 
