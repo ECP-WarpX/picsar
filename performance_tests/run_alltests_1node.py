@@ -9,7 +9,7 @@ import argparse, re, time
 # Before running performance tests, make sure you have the latest version 
 # of performance_log.txt
 # A typical execution reads:
-# > python run_alltests.py --no-recompile --compiler=gnu --machine=cori1 --mode=run --input_file=input_file.pixr --n_node=1 --log_file='my_performance_log.txt'
+# > python run_alltests_1node.py --no-recompile --compiler=gnu --machine=cori1 --mode=run --input_file=input_file.pixr --n_node=1 --log_file='my_performance_log.txt'
 # These are default values, and will give the same result as 
 # > python run_alltests.py
 # To add a new test item, extent the test_list with a line like
