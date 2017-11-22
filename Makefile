@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod
+MODE=prod_spectral
 
 # System (SYS)
 # - cori2
@@ -52,9 +52,8 @@ FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 
 # External libs 
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
-FFTW3_INCLUDE=/usr/include
+FFTW3_INCLUDE=/usr/includ
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
-
 
 
 # Source directory
@@ -1111,7 +1110,9 @@ tile_rho_depo_3d_test:
 
 # __ Execute Maxwell solver tests ____________________________________________________
 
-test_maxwell_solver: test_plane_wave_fdtd 
+test_maxwell_solver: test_plane_wave_fdtd \
+		test_plane_wave_psatd\
+		test_plane_wave_psatd_global 
 
 test_plane_wave_fdtd:
 	cp examples/example_decks_fortran/plane_wave_test.pixr \
@@ -1119,12 +1120,34 @@ test_plane_wave_fdtd:
 	# 1 OpenMP vary number of MPIs
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 && \
-	mpirun -np 2 ./maxwell_3d_test --lspectral 0 && \
-	mpirun -np 4 ./maxwell_3d_test --lspectral 0 && \
-	mpirun -np 8 ./maxwell_3d_test --lspectral 0 
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 4 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 8 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106
 	# 4 OpenMP vary number of MPIs 
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=4 && \
-	mpirun -np 1 ./maxwell_3d_test --lspectral 0 && \
-	mpirun -np 2 ./maxwell_3d_test --lspectral 0 && \
-	mpirun -np 4 ./maxwell_3d_test --lspectral 0
+	mpirun -np 1 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 4 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106
+test_plane_wave_psatd:
+	cd Acceptance_testing/Gcov_tests && \
+	export OMP_NUM_THREADS=1 && \
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 4 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 8 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61
+	cd Acceptance_testing/Gcov_tests && \
+	export OMP_NUM_THREADS=4 && \
+	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 4 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61
+test_plane_wave_psatd_global:
+	cd Acceptance_testing/Gcov_tests && \
+	export OMP_NUM_THREADS=4 && \
+	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --fftw_with_mpi .TRUE. --nsteps 61  && \
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
+	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
+	--fftw_mpi_tr .TRUE. 
+
+
