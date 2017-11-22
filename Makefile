@@ -1111,8 +1111,7 @@ tile_rho_depo_3d_test:
 # __ Execute Maxwell solver tests ____________________________________________________
 
 test_maxwell_solver: test_plane_wave_fdtd \
-		test_plane_wave_psatd\
-		test_plane_wave_psatd_global 
+		test_plane_wave_psatd
 
 test_plane_wave_fdtd:
 	cp examples/example_decks_fortran/plane_wave_test.pixr \
