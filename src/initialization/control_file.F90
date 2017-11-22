@@ -341,9 +341,11 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nsteps') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nsteps
+#if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nb_group') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nb_group
+#endif
       ELSE IF (INDEX(buffer, 'c_dim') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) c_dim
