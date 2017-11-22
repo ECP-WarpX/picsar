@@ -52,7 +52,7 @@ FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 
 # External libs 
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
-FFTW3_INCLUDE=/usr/includ
+FFTW3_INCLUDE=/usr/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
 
