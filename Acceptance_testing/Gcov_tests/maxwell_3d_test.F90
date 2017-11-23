@@ -208,7 +208,7 @@ zslice, err_vec)
     ! -- Get field in the slice 
     ALLOCATE(eslice(nx,ny))
     islice=NINT((zslice-z_min_local)/dz,idp)
-    zslice_g=islice*dz+z_min_local+dz/2.0_num 
+    zslice_g=islice*dz+z_min_local+dz/2.0_num
     eslice(1:nx,1:ny)=ex(0:nx-1,0:ny-1,islice)
     ! -- x and y axis local 
     ALLOCATE(x_ax_loc(nx), y_ax_loc(ny))
@@ -216,7 +216,7 @@ zslice, err_vec)
 	  x_ax_loc(ix) = x_min_local-x0 + (ix-1) * dx
 	ENDDO
 	DO iy = 1, ny
-	  y_ax_loc(iy) = y_min_local-y0 + (iy-1) * dy 
+	  y_ax_loc(iy) = y_min_local-y0 + (iy-1) * dy
 	ENDDO
     ! -- Get theoretical field in the slice (here w0>>lambda_laser to simulate plane wave)
     ALLOCATE(eth(nx,ny))
@@ -229,7 +229,7 @@ zslice, err_vec)
 	DO ix = 1, nx
 	  DO iy = 1, ny
 	      eth(ix,iy)= Emax*w0/wslice*EXP(-(x_ax_loc(ix)**2+y_ax_loc(iy)**2)/wslice**2)   &
-	      *(-1.0_num)*SIN(zetas+omega_laser*(ttime-tpeak)-k_laser*(zslice_g-z0)-                   &
+	      *(-1.0_num)*SIN(zetas+omega_laser*(ttime-tpeak)-k_laser*(zslice_g-z0)-         &
 	      k_laser*(x_ax_loc(ix)**2+                                                      &
 	      y_ax_loc(iy)**2)/(2*Rslice))
 	  END DO 

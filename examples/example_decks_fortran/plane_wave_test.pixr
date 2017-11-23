@@ -55,7 +55,7 @@ section::solver
  # Maxwell solver order
  norderx =2 
  nordery =2 
- norderz = 2
+ norderz =2
  # Shape factor order
  nox =1 
  noy =1 
