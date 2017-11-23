@@ -1133,6 +1133,7 @@ test_plane_wave_psatd:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 && \
 	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --norderz 8 --nordery 8 --norderx 8  && \
 	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
 	mpirun -np 4 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
 	mpirun -np 8 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61
