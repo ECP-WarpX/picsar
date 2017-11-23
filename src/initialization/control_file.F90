@@ -317,6 +317,15 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_spectral
+      ELSE IF (INDEX(buffer, 'fftw_with_mpi') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) fftw_with_mpi
+      ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) fftw_hybrid
+      ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) fftw_mpi_transpose
       ELSE IF (INDEX(buffer, 'lvec_charge_depo') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) lvec_charge_depo
@@ -332,6 +341,11 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nsteps') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nsteps
+#if defined(FFTW)
+      ELSE IF (INDEX(buffer, 'nb_group') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nb_group
+#endif
       ELSE IF (INDEX(buffer, 'c_dim') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) c_dim

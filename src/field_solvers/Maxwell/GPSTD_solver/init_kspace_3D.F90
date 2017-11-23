@@ -231,8 +231,11 @@ MODULE gpstd_solver
     INTEGER(idp)                                  :: nfftx, nffty, nfftz
     REAL(num)                                     :: sd
     INTEGER(idp)                                  :: temp_order
-    ii = DCMPLX(0.0_num, 1.0_num)
+
 #if defined(LIBRARY)
+    !Due to different staggering in PICSAR and SMILEI
+    ii = DCMPLX(0.0_num, -1.0_num)
+#else
     ii = DCMPLX(0.0_num, 1.0_num)
 #endif
     IF(fftw_mpi_transpose) THEN

@@ -229,7 +229,7 @@ zslice, err_vec)
 	DO ix = 1, nx
 	  DO iy = 1, ny
 	      eth(ix,iy)= Emax*w0/wslice*EXP(-(x_ax_loc(ix)**2+y_ax_loc(iy)**2)/wslice**2)   &
-	      *-SIN(zetas+omega_laser*(ttime-tpeak)-k_laser*(zslice_g-z0)-                   &
+	      *(-1.0_num)*SIN(zetas+omega_laser*(ttime-tpeak)-k_laser*(zslice_g-z0)-         &
 	      k_laser*(x_ax_loc(ix)**2+                                                      &
 	      y_ax_loc(iy)**2)/(2*Rslice))
 	  END DO 
