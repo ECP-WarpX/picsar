@@ -559,8 +559,8 @@ MODULE diagnostics
       IMPLICIT NONE
 
       INTEGER(idp), INTENT(IN) :: ispecies
-      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
       INTEGER(idp), INTENT(IN) :: nptot
+      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
       INTEGER(idp), INTENT(IN) :: quantity
       INTEGER(idp) :: ix, iy, iz, np
       INTEGER(idp) :: compt
@@ -632,8 +632,8 @@ MODULE diagnostics
       IMPLICIT NONE
 
       INTEGER(idp), INTENT(IN) :: ispecies
-      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
       INTEGER(idp), INTENT(IN) :: nptot
+      REAL(num), dimension(nptot), INTENT(OUT) :: quantityarray
       INTEGER(idp), INTENT(IN) :: quantitypid
       INTEGER(idp) :: ix, iy, iz, np
       INTEGER(idp) :: compt
