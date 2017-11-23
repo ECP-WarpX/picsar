@@ -233,6 +233,7 @@ MODULE gpstd_solver
     INTEGER(idp)                                  :: temp_order
 
 #if defined(LIBRARY)
+    !Due to different staggering in PICSAR and SMILEI
     ii = DCMPLX(0.0_num, -1.0_num)
 #else
     ii = DCMPLX(0.0_num, 1.0_num)
