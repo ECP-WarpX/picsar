@@ -1102,7 +1102,16 @@ MODULE group_parameters!#do not parse
   REAL(num)                                 :: z_min_group, z_max_group
   REAL(num)                                 :: y_min_group, y_max_group
   REAL(num)                                 :: x_min_group, x_max_group
-
+  !> ARRAY FOR load balancing r_2_f same fields in same proc 
+  INTEGER(idp),  ALLOCATABLE, DIMENSION(:)   :: shift_rf_m2m_min, shift_rf_m2m_max, Ishift_rf_m2m,  &
+        shift_rf_l2m_min,shift_rf_l2m_max,Ishift_rf_l2m, size_to_send_left_rf,                      &
+        shift_rf_r2m_min,shift_rf_r2m_max,Ishift_rf_r2m,size_to_send_right_rf
+  !> ARRAY FOR load balancing f_2_r same fields in same proc 
+  INTEGER(idp),  ALLOCATABLE, DIMENSION(:)   :: shift_fr_m2m_min,shift_fr_m2m_max, Ishift_fr_m2m,  &
+        shift_fr_l2m_min,shift_fr_l2m_max,Ishift_fr_l2m, size_to_send_left_fr, &
+        shift_fr_r2m_min,shift_fr_r2m_max,Ishift_fr_r2m,size_to_send_right_fr
+  REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
+  INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
 END MODULE
 
 #endif
@@ -1120,6 +1129,8 @@ MODULE shared_data
   !> FFTW distributed
   LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid,    &
   hybrid_2
+  !> is load balancing activated in groups 
+  LOGICAL(lp)                                :: is_lb_grp
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 
@@ -1215,9 +1226,9 @@ MODULE shared_data
   !> Maximal cell number in y for each MPI process
   INTEGER(idp), DIMENSION(:), POINTER :: cell_y_max
   !> Minimum cell number in z for each MPI process
-  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_min_r, cell_z_min_f
   !> Maximal cell number in z for each MPI process
-  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_max
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_max, cell_z_max_r, cell_z_max_f
   !> Used in em3dsolverPXR.py
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min
   !> Used in em3dsolverPXR.py
@@ -1259,6 +1270,10 @@ MODULE shared_data
   INTEGER(idp)                        :: ny
   !> local number of cells in z
   INTEGER(idp)                        :: nz
+  !> local number of cells in z for  mpi groups load balancing 
+  INTEGER(idp)                        :: nz_lb
+  !> local number of grid points in z for  mpi groups load balancing 
+  INTEGER(idp)                        :: nz_grid_lb
   !> local number of grid points in x
   INTEGER(idp)                        :: nx_grid
   !> local number of grid points in y

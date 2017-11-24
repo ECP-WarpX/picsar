@@ -147,6 +147,9 @@ MODULE mpi_routines
   !>                             Cartesian topology.
   ! ______________________________________________________________________________________
   SUBROUTINE setup_communicator
+#if defined(FFTW) 
+    USE group_parameters , ONLY : nb_group
+#endif
     INTEGER(isp), PARAMETER :: ndims = 3
     INTEGER(idp) :: idim
     INTEGER(isp) :: nproc_comm, dims(ndims), old_comm, ierr, neighb
@@ -162,9 +165,18 @@ MODULE mpi_routines
     INTEGER(idp), dimension(:, :, :), allocatable :: topo_array
     REAL(num) :: r
 
+
     nx_global=nx_global_grid-1
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
+!temporary: adjust nz so that it is a multiple of nb_group
+if(fftw_with_mpi .and. fftw_hybrid) then
+if (modulo(nz_global_grid-1_isp,nb_group) .NE. 0_idp) then
+write(0,*) 'ADJUST GRID nz/nbgroup*nb_group-nz != 0'
+nz_global_grid = ((nz_global_grid-1_idp)/nb_group+1_idp)*nb_group +1
+if (modulo(nz_global_grid-1_isp,nb_group) .NE. 1_idp) stop
+endif
+endif
 
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
@@ -564,7 +576,7 @@ INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
 INTEGER(isp)                                :: roots_grp, roots_comm
 INTEGER(idp)  :: i,j,temp
 INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
-all_cells, all_nz, all_nzp
+all_cells, all_nz_lb, all_nzp
 
 #if defined(FFTW)
 #if defined(DEBUG)
@@ -690,23 +702,20 @@ all_cells, all_nz, all_nzp
     group_z_max_boundary = .TRUE.
   ENDIF
   
-  nx_group_global = nx_global
-  ny_group_global = ny_global
-  nz_group_global = nz_global/nb_group
+  nx_group_global = nx
+  ny_group_global = ny
   
   IF(hybrid_2) THEN
-    nx_group_global = nx
-    ny_group_global = ny
     nz_group_global = nz_global/(nb_group/(nprocx*nprocy))
+  ELSE 
+  nz_group_global = nz_global/nb_group
   ENDIF
   
   IF(nz_global .NE. nz_group_global*(nb_group/(nprocx*nprocy))) THEN
-  
     temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy, idp)
     IF(INT(nb_group/nprocx/nprocy-1-z_group_coords, idp) .LT. temp) THEN
       nz_group_global=nz_group_global+1
     ENDIF
-  
   ENDIF
   
   y_min_group=ymin
@@ -801,22 +810,22 @@ all_cells, all_nz, all_nzp
 
   ENDIF
   
-  nz = iz_max_r - iz_min_r +1
-  nz_grid = nz+1
+  nz_lb = iz_max_r - iz_min_r +1
+  nz_grid_lb = nz+1
   
-  ALLOCATE(all_nz(nproc), all_nzp(nprocz))
+  ALLOCATE(all_nz_lb(nproc), all_nzp(nprocz))
   
-  CALL MPI_ALLGATHER(nz, 1_isp, MPI_LONG_LONG_INT, all_nz, INT(1, isp),                 &
+  CALL MPI_ALLGATHER(nz_lb, 1_isp, MPI_LONG_LONG_INT, all_nz_lb, INT(1, isp),                 &
   MPI_LONG_LONG_INT, comm, errcode)
   
   DO i=1, nprocz
-    all_nzp(i) = all_nz((i-1)*nprocx*nprocy+1)
+    all_nzp(i) = all_nz_lb((i-1)*nprocx*nprocy+1)
   ENDDO
   
-  z_min_local = zmin
-  z_max_local = zmax
-  z_min_local = z_min_local + dz*sum(all_nzp(1:z_coords))
-  z_max_local = z_min_local +nz*dz
+  z_min_local_lb = zmin
+  z_max_local_lb = zmax
+  z_min_local_lb = z_min_local_lb + dz*sum(all_nzp(1:z_coords))
+  z_max_local_lb = z_min_local_lb +nz_lb*dz
   cell_z_min(1) = 0
   cell_z_max(1) = all_nzp(1) - 1
   
@@ -831,10 +840,10 @@ all_cells, all_nz, all_nzp
   iy_min_r = 1
   iy_max_r = ny + 2*nyguards
   
-  nz_global_grid_min = cell_z_min(z_coords+1)
-  nz_global_grid_max = cell_z_max(z_coords+1)+1
+  nz_global_grid_min_lb = cell_z_min(z_coords+1)
+  nz_global_grid_max_lb = cell_z_max(z_coords+1)+1
   
-  DEALLOCATE(all_nz, all_nzp)
+  DEALLOCATE(all_nz_lb, all_nzp)
   DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
 
 #if defined(DEBUG)
@@ -844,6 +853,234 @@ all_cells, all_nz, all_nzp
 #endif
 
 END SUBROUTINE setup_groups
+
+
+SUBROUTINE compute_load_balancing_boundaries_me2me()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE shared_data
+  USE group_parameters
+  USE picsar_precision
+  USE params
+  USE mpi 
+  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
+
+  ALLOCATE(shift_rf_m2m_min(0:nprocz-1),shift_rf_m2m_max(0:nprocz-1),Ishift_rf_m2m(0:nprocz-1))
+  ind_r = cell_z_min_r(z_coords+1)
+  ind_f = cell_z_min_f(z_coords+1)
+  IF(ind_f .GE. ind_r) THEN
+   izi = 1
+   dec = ind_f - ind_r
+  ELSE IF(ind_f .LT. ind_r) THEN 
+   dec = 0_idp
+   izi = ind_r - ind_f +1 
+  ENDIF
+  
+  ind_r = cell_z_max_r(z_coords+1)
+  ind_f = cell_z_max_f(z_coords+1)
+ ! IF(ind_r .GE. ind_f) THEN
+ !  izl = cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp
+ ! ELSE IF(ind_r .LT. ind_f ) THEN  
+ !  izl =  cell_z_max_r(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp 
+ ! ENDIF
+  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
+  Ishift_rf_m2m(z_coords) = dec
+  shift_rf_m2m_min(z_coords) = izi
+  shift_rf_m2m_max(z_coords) = izl
+#endif
+
+END SUBROUTINE compute_load_balancing_boundaries_me2me
+
+SUBROUTINE compute_load_balancing_boundaries_l2me()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE shared_data
+  USE group_parameters
+  USE picsar_precision
+  USE params
+  USE mpi
+  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
+  ALLOCATE(size_to_send_left_rf(0:nprocz-1),shift_rf_l2m_min(0:nprocz-1),             &
+        shift_rf_l2m_max(0:nprocz-1),Ishift_rf_l2m(0:nprocz-1))
+  IF(group_z_min_boundary) THEN
+    size_to_send_left_rf(z_coords) = 0_idp  
+    shift_rf_l2m_min(z_coords) =  0_idp
+    shift_rf_l2m_max(z_coords) = 0_idp 
+    Ishift_rf_l2m(z_coords) = 0_idp
+  ELSE
+  ind_r = cell_z_min_r(z_coords)
+  ind_f = cell_z_min_f(z_coords+1)
+  IF(ind_f .GE. ind_r) THEN
+   izi = 1
+   dec = ind_f - ind_r
+  ELSE IF(ind_f .LT. ind_r) THEN
+   dec = 0_idp
+   izi = ind_r - ind_f +1
+  ENDIF
+  ind_r = cell_z_max_r(z_coords)
+  ind_f = cell_z_max_f(z_coords+1)
+  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
+  Ishift_rf_l2m(z_coords) = dec
+  shift_rf_l2m_min(z_coords) = izi
+  shift_rf_l2m_max(z_coords) = izl
+  size_to_send_left_rf(z_coords) = shift_rf_l2m_max(z_coords) - shift_rf_l2m_min(z_coords) + 1_idp
+  ENDIF
+#endif
+END SUBROUTINE compute_load_balancing_boundaries_l2me 
+
+
+SUBROUTINE compute_load_balancing_boundaries_r2me()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE shared_data
+  USE group_parameters
+  USE picsar_precision
+  USE params
+  USE mpi
+  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
+  ALLOCATE(size_to_send_right_rf(0:nprocz-1),shift_rf_r2m_min(0:nprocz-1),             &
+        shift_rf_r2m_max(0:nprocz-1),Ishift_rf_r2m(0:nprocz-1))
+  IF(group_z_max_boundary) THEN 
+    size_to_send_right_rf(z_coords) = 0_idp
+    shift_rf_r2m_min(z_coords) =  0_idp
+    shift_rf_r2m_max(z_coords) = 0_idp
+    Ishift_rf_r2m(z_coords) = 0_idp
+  ELSE
+  ind_r = cell_z_min_r(z_coords+1)
+  ind_f = cell_z_min_f(z_coords)
+  IF(ind_f .GE. ind_r) THEN
+   izi = 1
+   dec = ind_f - ind_r
+  ELSE IF(ind_f .LT. ind_r) THEN
+   dec = 0_idp
+   izi = ind_r - ind_f +1
+  ENDIF
+  ind_r = cell_z_max_r(z_coords+1)
+  ind_f = cell_z_max_f(z_coords)
+  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
+  Ishift_rf_r2m(z_coords) = dec
+  shift_rf_r2m_min(z_coords) = izi
+  shift_rf_r2m_max(z_coords) = izl
+  size_to_send_left_rf(z_coords) = shift_rf_l2m_max(z_coords) - shift_rf_l2m_min(z_coords) + 1_idp
+  ENDIF
+#endif
+END SUBROUTINE compute_load_balancing_boundaries_r2me
+
+
+
+SUBROUTINE compute_load_balancing_boundaries_me2me_back()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE shared_data
+  USE group_parameters
+  USE picsar_precision
+  USE params
+  USE mpi 
+  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
+
+  ALLOCATE(shift_fr_m2m_min(0:nprocz-1),shift_fr_m2m_max(0:nprocz-1),Ishift_fr_m2m(0:nprocz-1))
+  ind_r = cell_z_min_r(z_coords+1)
+  ind_f = cell_z_min_f(z_coords+1)
+  IF(ind_f .GE. ind_r) THEN
+   izi = 1
+   dec = ind_f - ind_r
+  ELSE IF(ind_f .LT. ind_r) THEN 
+   dec = 0_idp
+   izi = ind_r - ind_f +1 
+  ENDIF
+  
+  ind_r = cell_z_max_r(z_coords+1)
+  ind_f = cell_z_max_f(z_coords+1)
+ ! IF(ind_r .GE. ind_f) THEN
+ !  izl = cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp
+ ! ELSE IF(ind_r .LT. ind_f ) THEN  
+ !  izl =  cell_z_max_r(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp 
+ ! ENDIF
+  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
+  Ishift_fr_m2m(z_coords) = dec
+  shift_fr_m2m_min(z_coords) = izi
+  shift_fr_m2m_max(z_coords) = izl
+#endif
+
+END SUBROUTINE compute_load_balancing_boundaries_me2me_back
+
+SUBROUTINE compute_load_balancing_boundaries_l2me_back()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE shared_data
+  USE group_parameters
+  USE picsar_precision
+  USE params
+  USE mpi
+  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
+  ALLOCATE(size_to_send_left_fr(0:nprocz-1),shift_fr_l2m_min(0:nprocz-1),             &
+        shift_fr_l2m_max(0:nprocz-1),Ishift_fr_l2m(0:nprocz-1))
+  IF(group_z_min_boundary) THEN
+    size_to_send_left_fr(z_coords) = 0_idp  
+    shift_fr_l2m_min(z_coords) =  0_idp
+    shift_fr_l2m_max(z_coords) = 0_idp 
+    Ishift_fr_l2m(z_coords) = 0_idp
+  ELSE
+  ind_r = cell_z_min_r(z_coords)
+  ind_f = cell_z_min_f(z_coords+1)
+  IF(ind_f .GE. ind_r) THEN
+   izi = 1
+   dec = ind_f - ind_r
+  ELSE IF(ind_f .LT. ind_r) THEN
+   dec = 0_idp
+   izi = ind_r - ind_f +1
+  ENDIF
+  ind_r = cell_z_max_r(z_coords)
+  ind_f = cell_z_max_f(z_coords+1)
+  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
+  Ishift_fr_l2m(z_coords) = dec
+  shift_fr_l2m_min(z_coords) = izi
+  shift_fr_l2m_max(z_coords) = izl
+  size_to_send_left_fr(z_coords) = shift_fr_l2m_max(z_coords) - shift_fr_l2m_min(z_coords) + 1_idp
+  ENDIF
+#endif
+END SUBROUTINE compute_load_balancing_boundaries_l2me_back
+
+
+SUBROUTINE compute_load_balancing_boundaries_r2me_back()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE shared_data
+  USE group_parameters
+  USE picsar_precision
+  USE params
+  USE mpi
+  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
+  ALLOCATE(size_to_send_right_fr(0:nprocz-1),shift_fr_r2m_min(0:nprocz-1),             &
+        shift_fr_r2m_max(0:nprocz-1),Ishift_fr_r2m(0:nprocz-1))
+  IF(group_z_max_boundary) THEN 
+    size_to_send_right_fr(z_coords) = 0_idp
+    shift_fr_r2m_min(z_coords) =  0_idp
+    shift_fr_r2m_max(z_coords) = 0_idp
+    Ishift_fr_r2m(z_coords) = 0_idp
+  ELSE
+  ind_r = cell_z_min_r(z_coords+1)
+  ind_f = cell_z_min_f(z_coords)
+  IF(ind_f .GE. ind_r) THEN
+   izi = 1
+   dec = ind_f - ind_r
+  ELSE IF(ind_f .LT. ind_r) THEN
+   dec = 0_idp
+   izi = ind_r - ind_f +1
+  ENDIF
+  ind_r = cell_z_max_r(z_coords+1)
+  ind_f = cell_z_max_f(z_coords)
+  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
+  Ishift_fr_r2m(z_coords) = dec
+  shift_fr_r2m_min(z_coords) = izi
+  shift_fr_r2m_max(z_coords) = izl
+  size_to_send_left_fr(z_coords) = shift_fr_l2m_max(z_coords) - shift_fr_l2m_min(z_coords) + 1_idp
+  ENDIF
+#endif
+END SUBROUTINE compute_load_balancing_boundaries_r2me_back
+
+
+
 
 
 SUBROUTINE adjust_grid_mpi_global
@@ -1014,7 +1251,6 @@ DO idim = nzp+1, nprocz
   cell_z_max(idim) = cell_z_min(idim)+nz0
 ENDDO
 
-
 nx_global_grid_min = cell_x_min(x_coords+1)
 nx_global_grid_max = cell_x_max(x_coords+1)+1
 
@@ -1069,15 +1305,46 @@ ENDIF
 IF(fftw_with_mpi ) THEN
   IF(.NOT. fftw_hybrid) THEN
     CALL adjust_grid_mpi_global
+    IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
+      WRITE(*, *), 'ERROR IN AJUSTING THE GRID'
+      STOP
+    ENDIF
   ELSE
+    ALLOCATE(cell_z_min_r(1:nprocz),cell_z_max_r(1:nprocz))
+    cell_z_min_r = cell_z_min
+    cell_z_max_r = cell_z_max
     CALL setup_groups
-  ENDIF
-  IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
-    WRITE(*, *), 'ERROR IN AJUSTING THE GRID'
-    STOP
+    IF(nz_lb .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
+      WRITE(*, *), 'ERROR IN AJUSTING THE GRID'
+      STOP
+    ENDIF
   ENDIF
 ENDIF
 
+IF(fftw_hybrid) THEN 
+  ALLOCATE(cell_z_min_f(1:nprocz),cell_z_max_f(1:nprocz))
+  cell_z_min_f = cell_z_min
+  cell_z_max_f = cell_z_max
+  IF(is_lb_grp) THEN
+    cell_z_min = cell_z_min_r
+    cell_z_max = cell_z_max_r
+    CALL compute_load_balancing_boundaries_me2me
+    CALL compute_load_balancing_boundaries_l2me
+    CALL compute_load_balancing_boundaries_r2me
+    CALL compute_load_balancing_boundaries_me2me_back
+    CALL compute_load_balancing_boundaries_l2me_back
+    CALL compute_load_balancing_boundaries_r2me_back
+  ELSE IF(.NOT. is_lb_grp) THEN
+    cell_z_min = cell_z_min_f
+    cell_z_min = cell_z_max_f
+    nz = nz_lb
+    nz_grid = nz_grid_lb
+    nz_global_grid_min = nz_global_grid_min_lb
+    nz_global_grid_max = nz_global_grid_max_lb
+    z_min_local = z_min_local_lb
+    z_max_local = z_max_local_lb
+  ENDIF
+ENDIF
 #endif
 !!! --- Set up global grid limits
 

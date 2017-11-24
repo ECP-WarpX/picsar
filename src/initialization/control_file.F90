@@ -219,6 +219,7 @@ MODULE control_file
     fftw_with_mpi = .FALSE.
     fftw_hybrid = .FALSE.
     hybrid_2 = .FALSE.
+    is_lb_grp = .FALSE.
     fftw_mpi_transpose = .FALSE.
   END SUBROUTINE default_init
 
@@ -323,6 +324,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_hybrid
+      ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) is_lb_grp
       ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_mpi_transpose
@@ -577,6 +581,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_hybrid
+      ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) is_lb_grp
       ELSE IF (INDEX(buffer, 'hybrid_2') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) hybrid_2

@@ -168,7 +168,72 @@ MODULE fourier_psaotd
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
   END SUBROUTINE get_Ffields
+ 
+  SUBROUTINE get_Ffields_mpi_lb()
+    USE shared_data
+    USE fields
+    USE mpi_fftw3
+    USE time_stat
+    USE params
+    USE group_parameters
+    USE field_boundary
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz, iz1,iz2,dec
+    REAL(num)    :: tmptime
+    LOGICAL(lp)  :: is_source
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    iz1 = shift_rf_m2m_min(z_coords)
+    iz2 = shift_rf_m2m_max(z_coords)
+    dec = Ishift_rf_m2m(z_coords)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=iz1,iz2
+      DO iy=iy_min_r,iy_max_r
+        DO ix =ix_min_r,ix_max_r
+           ex_r(ix,iy,iz) = ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           ey_r(ix,iy,iz) = ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           ez_r(ix,iy,iz) = ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           bx_r(ix,iy,iz) = bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           by_r(ix,iy,iz) = by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           bz_r(ix,iy,iz) = bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           jx_r(ix,iy,iz) = jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           jy_r(ix,iy,iz) = jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           jz_r(ix,iy,iz) = jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
+           rho_r(ix,iy,iz) = rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-nzguards+dec)
+           rhoold_r(ix,iy,iz) = rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-nzguards+dec)
+        ENDDO
+      ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+    
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+    is_source = .TRUE.
+    CALL ebj_field_bcs_groups(is_source)
+    !CALL load_balancing_communications_rf_lm(is_source)
+    !CALL load_balancing_communications_rf_rm(is_source)
+    ! Get global Fourier transform of all fields components and currents
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+    IF (it.GE.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
 
+  END SUBROUTINE get_Ffields_mpi_lb 
 
   SUBROUTINE get_Ffields_mpi
     USE shared_data
@@ -409,6 +474,80 @@ MODULE fourier_psaotd
     ENDIF
 
   END SUBROUTINE get_fields_mpi
+
+
+
+
+
+
+  SUBROUTINE get_fields_mpi_lb
+    USE shared_data
+    USE fields
+    USE mpi_fftw3
+    USE time_stat
+    USE params
+    USE group_parameters
+    IMPLICIT NONE
+    REAL(num) :: coeff_norm, tmptime
+    INTEGER(idp) :: ix, iy, iz,iz1,iz2,dec
+
+    iz1 = shift_rf_m2m_min(z_coords)
+    iz2 = shift_rf_m2m_max(z_coords)
+    dec = Ishift_rf_m2m(z_coords)-1_idp
+
+    ! Get global Fourier transform of all fields components and currents
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+    coeff_norm=(nx_global)*(ny_global)*(nz_global)
+    IF(fftw_hybrid) coeff_norm = nx_group*ny_group*nz_group
+    coeff_norm=1.0_num/coeff_norm
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=iz1,iz2
+      DO iy=iy_min_r, iy_max_r
+        DO ix=ix_min_r, ix_max_r
+          ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = ex_r(ix,iy, iz)*coeff_norm
+          ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = ey_r(ix,iy, iz)*coeff_norm
+          ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = ez_r(ix,iy, iz)*coeff_norm
+          bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = bx_r(ix,iy, iz)*coeff_norm
+          by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = by_r(ix,iy, iz)*coeff_norm
+          bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = bz_r(ix,iy, iz)*coeff_norm
+        END DO
+      END DO
+    END DO
+    !CALL load_balancing_communications_fr_lm(coeff_norm)
+    !CALL load_balancing_communications_fr_rm(coeff_norm)
+
+    !$OMP END PARALLEL DO
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+  END SUBROUTINE get_fields_mpi_lb
+
+
+
+
+
+
+
+
+
+
 
   SUBROUTINE push_psaotd_ebfielfs_2d() bind(C, name='push_psaotd_ebfields_2d')
     USE shared_data
