@@ -259,45 +259,87 @@ SUBROUTINE output_temporal_diagnostics
 
     ! Ex energy
     if (temdiag_act_list(2).gt.0) then
+      IF(c_dim ==3) THEN
       CALL get_loc_field_energy(ex, nx, ny, nz, dx, dy, dz, nxguards, nyguards,       &
       nzguards, local_values(temdiag_i_list(2)))
       local_values(temdiag_i_list(2)) = local_values(temdiag_i_list(2))*eps0
+      ELSE IF(c_dim==2) THEN 
+          CALL get_loc_field_energy_2d(ex, nx, nz, dx, dz, nxguards,nzguards,         &
+         local_values(temdiag_i_list(2)))
+         local_values(temdiag_i_list(2)) = local_values(temdiag_i_list(2))*eps0
+      ENDIF
     end if
 
     ! Ey energy
     if (temdiag_act_list(3).gt.0) then
-      CALL get_loc_field_energy(ey, nx, ny, nz, dx, dy, dz, nxguards, nyguards,       &
-      nzguards, local_values(temdiag_i_list(3)))
-      local_values(temdiag_i_list(3)) = local_values(temdiag_i_list(3))*eps0
+      IF(c_dim == 3) THEN
+        CALL get_loc_field_energy(ey, nx, ny, nz, dx, dy, dz, nxguards, nyguards,     &
+        nzguards, local_values(temdiag_i_list(3)))
+        local_values(temdiag_i_list(3)) = local_values(temdiag_i_list(3))*eps0
+      ELSE IF(c_dim==2) THEN 
+          CALL get_loc_field_energy_2d(ey, nx, nz, dx, dz, nxguards,nzguards,         &
+         local_values(temdiag_i_list(3)))
+         local_values(temdiag_i_list(3)) = local_values(temdiag_i_list(3))*eps0
+      ENDIF
+
     end if
 
 
     ! Ez energy
     if (temdiag_act_list(4).gt.0) then
-      CALL get_loc_field_energy(ez, nx, ny, nz, dx, dy, dz, nxguards, nyguards,       &
-      nzguards, local_values(temdiag_i_list(4)))
-      local_values(temdiag_i_list(4)) = local_values(temdiag_i_list(4))*eps0
+      IF(c_dim == 3) THEN
+        CALL get_loc_field_energy(ez, nx, ny, nz, dx, dy, dz, nxguards, nyguards,     &
+        nzguards, local_values(temdiag_i_list(4)))
+        local_values(temdiag_i_list(4)) = local_values(temdiag_i_list(4))*eps0
+      ELSE IF(c_dim==2) THEN
+        CALL get_loc_field_energy_2d(ez, nx, nz, dx, dz, nxguards,nzguards,           &
+        local_values(temdiag_i_list(4)))
+        local_values(temdiag_i_list(4)) = local_values(temdiag_i_list(4))*eps0
+      ENDIF
+
+         
     end if
 
     ! Bx energy
     if (temdiag_act_list(5).gt.0) then
-      CALL get_loc_field_energy(bx, nx, ny, nz, dx, dy, dz, nxguards, nyguards,       &
-      nzguards, local_values(temdiag_i_list(5)))
-      local_values(temdiag_i_list(5)) = local_values(temdiag_i_list(5))*imu0
+      IF(c_dim == 3) THEN
+        CALL get_loc_field_energy(bx, nx, ny, nz, dx, dy, dz, nxguards, nyguards,     &
+        nzguards, local_values(temdiag_i_list(5)))
+        local_values(temdiag_i_list(5)) = local_values(temdiag_i_list(5))*imu0
+      ELSE IF(c_dim==2) THEN
+         CALL get_loc_field_energy_2d(bx, nx, nz, dx, dz, nxguards,nzguards,          &
+         local_values(temdiag_i_list(5)))
+         local_values(temdiag_i_list(5)) = local_values(temdiag_i_list(5))*imu0
+      ENDIF
+
     end if
 
     ! By energy
     if (temdiag_act_list(6).gt.0) then
-      CALL get_loc_field_energy(by, nx, ny, nz, dx, dy, dz, nxguards, nyguards,       &
-      nzguards, local_values(temdiag_i_list(6)))
-      local_values(temdiag_i_list(6)) = local_values(temdiag_i_list(6))*imu0
+      IF(c_dim == 3) THEN
+        CALL get_loc_field_energy(by, nx, ny, nz, dx, dy, dz, nxguards, nyguards,     &
+        nzguards, local_values(temdiag_i_list(6)))
+        local_values(temdiag_i_list(6)) = local_values(temdiag_i_list(6))*imu0
+      ELSE IF(c_dim==2) THEN
+         CALL get_loc_field_energy_2d(by, nx, nz, dx, dz, nxguards,nzguards,          &
+         local_values(temdiag_i_list(6)))
+         local_values(temdiag_i_list(6)) = local_values(temdiag_i_list(6))*imu0
+      ENDIF
+      
     end if
 
     ! Bz energy
     if (temdiag_act_list(7).gt.0) then
-      CALL get_loc_field_energy(bz, nx, ny, nz, dx, dy, dz, nxguards, nyguards,       &
-      nzguards, local_values(temdiag_i_list(7)))
-      local_values(temdiag_i_list(7)) = local_values(temdiag_i_list(7))*imu0
+      IF(c_dim == 3) THEN
+        CALL get_loc_field_energy(bz, nx, ny, nz, dx, dy, dz, nxguards, nyguards,       &
+        nzguards, local_values(temdiag_i_list(7)))
+        local_values(temdiag_i_list(7)) = local_values(temdiag_i_list(7))*imu0
+      ELSE IF(c_dim==2) THEN
+         CALL get_loc_field_energy_2d(bz, nx, nz, dx, dz, nxguards,nzguards,            &
+         local_values(temdiag_i_list(7)))
+         local_values(temdiag_i_list(7)) = local_values(temdiag_i_list(7))*imu0
+      ENDIF
+
     end if
 
     ! ||DivE*eps0 - rho||

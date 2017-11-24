@@ -188,10 +188,10 @@ SUBROUTINE push_bfield_2d
   ENDIF
 
   ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2)) then
+  IF ((norderx.eq.2).AND.(norderz.eq.2)) then
 
     CALL pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0._num,             &
-    0.5_num*dt/dz, nx, 0_idp, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
+    0.5_num*dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
     l_nodalgrid)
 
     ! Yee scheme arbitrary order
@@ -209,6 +209,52 @@ SUBROUTINE push_bfield_2d
 
 END SUBROUTINE push_bfield_2d
 
+
+! ________________________________________________________________________________________
+!> @brief
+!> PUSH B field half a time step in 2D
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+SUBROUTINE push_efield_2d
+  USE constants
+  USE params
+  USE fields
+  USE shared_data
+  USE time_stat
+  IMPLICIT NONE
+
+  REAL(num) :: tmptime,mdt
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+  mdt = mu0*clight**2*dt
+  ! Yee scheme at order 2
+  IF ((norderx.eq.2).AND.(norderz.eq.2)) then
+    CALL pxrpush_em2d_evec(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
+    clight**2*dt/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
+    l_nodalgrid)
+
+    ! Yee scheme arbitrary order
+  ELSE
+
+    CALL pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx*xcoeffs,&
+    clight**2*dt/dy*ycoeffs, clight**2*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery,&
+    norderz, nxguards, nyguards, nzguards, nxs, 0_idp, nzs, l_nodalgrid)
+
+  ENDIF
+
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END SUBROUTINE push_efield_2d
+
+
 ! ________________________________________________________________________________________
 !> @brief
 !> PUSH E, B PSAOTD a full time step
@@ -216,7 +262,6 @@ END SUBROUTINE push_bfield_2d
 !> the PSATD solver.
 !
 !> @details
-!> Time spent in this subroutine is stored in the electric field timer.
 !
 !> @author
 !> Henri Vincenti
@@ -261,4 +306,56 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
   ENDIF
 END SUBROUTINE
+
+!> @brief
+!> PUSH E, B PSAOTD a full time step
+!> This subroutine pushes the electric and the magnetic fields using
+!> the PSATD solver.
+!
+!> @details
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!
+!> @date
+!> Creation March 29 2017
+! ________________________________________________________________________________________
+SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
+  USE constants
+  USE time_stat
+  USE params
+  USE shared_data
+  USE fields
+#if defined(FFTW)
+  USE fourier_psaotd
+#endif
+  IMPLICIT NONE
+
+  REAL(num) :: tmptime
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+#if defined(FFTW)
+  ! - Fourier Transform R2C
+  IF (fftw_with_mpi) THEN
+    CALL get_Ffields_mpi! - global FFT
+  ELSE
+    CALL get_Ffields! - local FFT
+  ENDIF
+
+  CALL push_psaotd_ebfielfs_2d! - PUSH PSATD
+
+  ! - Inverse Fourier Transform C2R
+  IF (fftw_with_mpi) THEN
+    CALL get_fields_mpi! global IFFT
+  ELSE
+    CALL get_fields! local IFFT
+  ENDIF
+#endif
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
+  ENDIF
+END SUBROUTINE
+
 

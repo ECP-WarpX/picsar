@@ -209,6 +209,7 @@ SUBROUTINE step(nst)
 
       !!! --- Field gather & particle push
       CALL field_gathering_plus_particle_pusher
+      call push_laser_particles()
 
       !!! --- Apply BC on particles
       CALL particle_bcs_2d
@@ -218,12 +219,47 @@ SUBROUTINE step(nst)
 
       !!! --- Boundary conditions for currents
       CALL current_bcs
+#if defined(FFTW)
+        IF (l_spectral) THEN
+          CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
+                nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
+                nz+2*nzguards+1)
+          CALL pxrdepose_rho_on_grid
+          CALL charge_bcs
+        ENDIF
+#endif
 
       !!! --- Push B field half a time step
-      CALL push_bfield_2d
-
-      it = it+1
+#if defined(FFTW)
+      IF (l_spectral) THEN
+        !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
+        CALL push_psatd_ebfield_2d
+        !IF (rank .EQ. 0) PRINT *, "#0"
+        !!! --- Boundary conditions for E AND B
+        CALL efield_bcs
+        CALL bfield_bcs
+      ELSE
+#endif
+        CALL push_bfield_2d
+        CALL bfield_bcs
+        CALL push_efield_2d
+        CALL efield_bcs
+        CALL push_bfield_2d
+        CALL bfield_bcs
+#if defined(FFTW)
+      ENDIF
+#endif
+      !IF (rank .EQ. 0) PRINT *, "#12"
+      !!! --- Computes derived quantities
+      CALL calc_diags
+      !IF (rank .EQ. 0) PRINT *, "#13"
+      !!! --- Output simulation results
+      CALL output_routines
+      !IF (rank .EQ. 0) PRINT *, "#14"
+      it = it +1
       timeit=MPI_WTIME()
+
+      CALL time_statistics_per_iteration
 
       IF (rank .EQ. 0)  THEN
         WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
@@ -296,11 +332,16 @@ SUBROUTINE initall
 
   ! Dimension parameter check
   IF (c_dim.eq.2) THEN
-    dy = 1.
-    ntiley = 1
-    ymin = 0
-    ymax = 0
-    ny = 1
+    dy = HUGE(1.0_num)
+    ntiley = 1_idp
+    ymin = 0_idp
+    ymax = 0_idp
+    ny = 1_idp
+    nyguards = 0_idp
+    ymin = -HUGE(1.0_num) 
+    ymax = HUGE(1.0_num) 
+    y_min_local = -HUGE(1.0_num)
+    y_max_local = HUGE(1.0_num)
   ENDIF
 
   ! Few calculations and updates
@@ -319,7 +360,11 @@ SUBROUTINE initall
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
   ELSE IF (c_dim.eq.2) THEN
-    dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
+    IF (l_spectral) THEN 
+      dt=MIN(dx,dz)/clight
+    ELSE
+      dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
+    ENDIF
   ENDIF
   it = 0
 
@@ -415,6 +460,7 @@ SUBROUTINE initall
     AXIS")')
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
+
     ! Sorting
     IF (sorting_activated.gt.0) THEN
       write(0, *) 'Particle sorting activated'
@@ -488,6 +534,7 @@ SUBROUTINE initall
 
   ! - Load laser antenna particles
   CALL load_laser
+
   IF (rank .EQ. 0) write(0, *) "Creation of the particles: done"
 
   init_localtimes(1) = MPI_WTIME() - tdeb

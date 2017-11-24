@@ -20,7 +20,7 @@ MODULE link_external_tools
   USE iso_c_binding
   CONTAINS 
   SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
-      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
+      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim) &
       BIND(C,name='init_params_picsar') 
     USE params
     USE shared_data
@@ -33,18 +33,21 @@ MODULE link_external_tools
     USE fourier
 #endif 
     IMPLICIT NONE 
-    INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3
+    INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3,cdim
     REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,-ng1:n1+ng1) :: &
         field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
     REAL(C_DOUBLE) , INTENT(IN) ::d1,d2,d3,dtt
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
     LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
     LOGICAL(lp)                      :: l_stg
+
+    PRINT*, 'BEGIN INIT EXTERNAL'
     l_spectral  = LOGICAL(is_spec,lp) 
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
     hybrid_2 = .FALSE.
     fftw_mpi_transpose = .FALSE.
+    c_dim = INT(cdim,idp)
     nx = INT(n3,idp)
     ny = INT(n2,idp)
     nz = INT(n1,idp)
@@ -55,14 +58,15 @@ MODULE link_external_tools
     dy = d2
     dz = d1
     dt = dtt
+
     norderx = INT(nor3,idp)
     nordery = INT(nor2,idp)
     norderz = INT(nor1,idp) 
+
     IF(.NOT. l_spectral) THEN
       ex => field3
       ey => field2
       ez => field1
-
       bx => field6
       by => field5
       bz => field4
@@ -74,7 +78,6 @@ MODULE link_external_tools
       ex_r => field3
       ey_r => field2
       ez_r => field1
-
       bx_r => field6
       by_r => field5
       bz_r => field4
@@ -84,9 +87,11 @@ MODULE link_external_tools
       jz_r => field7
       rho_r =>field10
       rhoold_r =>field11
+
       nkx=(2*nxguards+nx+1)/2+1! Real To Complex Transform
       nky=(2*nyguards+ny+1)
       nkz=(2*nzguards+nz+1)
+
       IF(.NOT. ASSOCIATED(exf)) ALLOCATE(exf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(eyf)) ALLOCATE(eyf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(ezf)) ALLOCATE(ezf(nkx, nky, nkz))
@@ -98,6 +103,7 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(jzf)) ALLOCATE(jzf(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhof)) ALLOCATE(rhof(nkx, nky, nkz))
       IF(.NOT. ASSOCIATED(rhooldf)) ALLOCATE(rhooldf(nkx, nky, nkz))
+
     ENDIF
     IF(l_spectral) CALL init_plans_blocks
     IF(.NOT. l_spectral) THEN 
@@ -112,6 +118,7 @@ MODULE link_external_tools
       ycoeffs = dt/dy*ycoeffs
       zcoeffs = dt/dz*zcoeffs
     ENDIF 
+    PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &

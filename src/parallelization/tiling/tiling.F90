@@ -270,7 +270,7 @@ MODULE tiling
   SUBROUTINE add_particle_to_species_2d(currsp, partx, partz, partux, partuy, partuz, &
     gaminv, partpid)
     IMPLICIT NONE
-    REAL(num) :: partx, partz, partux, partuy, partuz, gaminv
+    REAL(num), INTENT(IN) :: partx, partz, partux, partuy, partuz, gaminv
     REAL(num), DIMENSION(:) :: partpid
     TYPE(particle_species), POINTER, INTENT(IN OUT) :: currsp
     INTEGER(idp) :: nx0_grid_tile, nz0_grid_tile
@@ -1639,7 +1639,14 @@ MODULE tiling
     INTEGER(idp) :: i1, i2, inonz
     TYPE(particle_antenna), POINTER ::  laser
     REAL(num), DIMENSION(2, 2)      :: M1, M2, M3
+
     laser=>curr%antenna_params
+
+    IF(c_dim == 2) THEN
+      laser%vector_y = 0.0_num
+      laser%spot_y = 0.0_num
+    ENDIF
+
     ! --- Initing laser wave vector (vector normal to laser injection plane)
     laser%vector(1) = laser%vector_x
     laser%vector(2) = laser%vector_y
@@ -1713,14 +1720,22 @@ MODULE tiling
     IF(laser%vector(3) .NE. 0._num) THEN
       i1=1; i2=2; inonz=3;
       jmax = NINT((x_max_local - x_min_local)/dx)
-      lmax = NINT((y_max_local - y_min_local)/dy)
+      IF(c_dim == 3) THEN
+        lmax = NINT((y_max_local - y_min_local)/dy)
+      ELSE IF(c_dim==2) THEN
+        lmax = 1_idp
+      ENDIF 
     ELSE IF (laser%vector(2) .NE. 0._num) THEN
       i1=1; i2=3; inonz=2;
       jmax = NINT((x_max_local - x_min_local)/dx)
       lmax = NINT((z_max_local - z_min_local)/dz)
     ELSE IF (laser%vector(1) .NE. 0._num) THEN
       i1=2; i2=3; inonz=1;
-      jmax = NINT((y_max_local - y_min_local)/dy)
+      IF(c_dim == 3) THEN
+        jmax = NINT((y_max_local - y_min_local)/dy)
+      ELSE IF(c_dim == 2) THEN 
+        jmax = 1_idp
+      ENDIF
       lmax = NINT((z_max_local - z_min_local)/dz)
     ENDIF
     ! --- init laser particle positions
@@ -1729,13 +1744,20 @@ MODULE tiling
     dst  = (/dx, dy, dz/)
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
-    weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx*dy
+    IF(c_dim == 3) THEN
+      weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx*dy
+    ELSE IF(c_dim == 2) THEN 
+       weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx
+    ENDIF  
     DO l=1, lmax
       pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2.0_num
       DO j=1, jmax
           pos(i1) = (mins(i1)+(j-1)*dst(i1))+(dst(i1))/2.0_num
           pos(inonz) = (intercept-laser%vector(i1)*pos(i1)-laser%vector(i2)*pos(i2))  &
           /laser%vector(inonz)
+          IF(c_dim == 2) THEN 
+            pos(2) = 0.0_num
+          ENDIF
           ! --- Filter particles in the local domain
           ! --- If in local domain, store its coordinates (two doubles) in
           ! --- the plane of the antenna in pids
@@ -1749,12 +1771,22 @@ MODULE tiling
             !-- (projection on polvector2)
             partpid(wpid+2_idp) = SUM((pos-spot)*laser%polvector2)
             ! -- Add particle to current laser species
-            CALL add_particle_to_species(curr, pos(1), pos(2), pos(3), 0._num,        &
-            0._num, 0._num, 1._num, partpid)
+            IF(c_dim == 3) THEN
+              CALL add_particle_to_species(curr, pos(1), pos(2), pos(3), 0._num,      &
+              0._num, 0._num, 1._num, partpid)
+            ELSE IF(c_dim ==2) THEN
+              CALL add_particle_to_species_2d(curr,pos(1),pos(3),0._num,0._num,      &
+              0.0_num, 1.0_num, partpid)
+            ENDIF
           ENDIF
       ENDDO
     ENDDO
     IF(RANK .EQ. 0) THEN
+      IF(c_dim == 3) THEN
+        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
+      ELSE IF(c_dim == 2) THEN
+        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
+      ENDIF
       WRITE(0,*) 'Laser Waist',laser%laser_w0,"m"
       WRITE(0,*) 'Laser duration',laser%laser_tau,' (in s)'
       WRITE(0,*) 'Laser duration',laser%laser_tau/dt,' (in dt)'
@@ -1764,7 +1796,7 @@ MODULE tiling
       WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight),'s'
       WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
       WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
-      WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
+      WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
    ENDIF
   END SUBROUTINE load_laser_species
 

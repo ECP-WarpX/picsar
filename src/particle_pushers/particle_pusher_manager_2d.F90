@@ -140,6 +140,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
           ! - Get current tile properties
           ! - Init current tile variables
           curr=>species_parray(ispecies)
+          IF (curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, 1, iz)
           count=curr_tile%np_tile(1)
 

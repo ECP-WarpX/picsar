@@ -75,21 +75,34 @@ MODULE fourier_psaotd
       nz_cint=nz_global
       ny_cint=ny_global
       nx_cint=nx_global
-      plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r, exf,   &
-      comm, planner_flag_1)
-      plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf, ex_r,   &
-      comm, planner_flag_2)
+      IF(c_dim == 3) THEN 
+        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r, exf,   &
+        comm, planner_flag_1)
+        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf, ex_r,   &
+        comm, planner_flag_2)
+      ELSE IF(c_dim == 2) THEN
+        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,ex_r, exf,   &
+        comm, planner_flag_1)
+        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint,nx_cint, exf,ex_r,   &
+        comm, planner_flag_2)
+      ENDIF
     ELSE
       nz_cint = nz_group
       ny_cint = ny_group
       nx_cint = nx_group
       DO i=1, nb_group
         IF(MPI_COMM_GROUP_ID(i) .NE. MPI_COMM_NULL) THEN
-          plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r,    &
-          exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
-          plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf,     &
-          ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
-
+          IF(c_dim == 3) THEN
+            plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r,    &
+            exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
+            plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf,     &
+            ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
+          ELSE IF(c_dim == 2) THEN
+            plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,ex_r,    &
+            exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
+            plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint, nx_cint,exf,     &
+            ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
+          ENDIF
         ENDIF
       ENDDO
     ENDIF
@@ -397,6 +410,95 @@ MODULE fourier_psaotd
 
   END SUBROUTINE get_fields_mpi
 
+  SUBROUTINE push_psaotd_ebfielfs_2d() bind(C, name='push_psaotd_ebfields_2d')
+    USE shared_data
+    USE fields
+    USE fourier
+    USE time_stat
+    USE params
+    USE mpi_fftw3
+    IMPLICIT NONE
+    INTEGER(idp) ::  ix, iy, iz, nxx, nzz
+    REAL(num) :: tmptime
+    COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    nxx=size(exf(:, 1, 1))
+    nzz=size(exf(1, 1, :))
+    iy=1_idp
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iz, exfold, eyfold, ezfold,     &
+    !$OMP bxfold, byfold, bzfold) COLLAPSE(2)
+    DO iz=1, nzz
+        DO ix=1, nxx
+          ! - Bx
+          exfold=exf(ix, iy, iz)
+          eyfold=eyf(ix, iy, iz)
+          ezfold=ezf(ix, iy, iz)
+          bxfold=bxf(ix, iy, iz)
+          byfold=byf(ix, iy, iz)
+          bzfold=bzf(ix, iy, iz)
+
+          bxf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,   &
+          iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
+          iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
+          iz)*jyf(ix, iy, iz)  
+          ! - By
+          byf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,   &
+          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
+          iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
+          iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
+          iz)*jxf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,   &
+          iy, iz)*jzf(ix, iy, iz)
+
+
+          ! - Bz
+          bzf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,   &
+          iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,        &
+          iz)*eyfold +         cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,    &
+          iy, iz)*jyf(ix, iy, iz)
+
+          ! Push E a full time step
+          ! - Ex
+          exf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,   &
+          iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
+          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
+          iz)*jxf(ix, iy, iz)     + cc_mat(nmatrixes)%block_matrix2d(1,               &
+          11)%block3dc(ix, iy, iz)*rhof(ix, iy, iz) +                                 &
+          cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldf(ix,    &
+          iy, iz)
+
+          ! - Ey
+          eyf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,   &
+          iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
+          iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
+          iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
+          iz)*jyf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,  &
+          iy, iz)*rhof(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2,              &
+          10)%block3dc(ix, iy, iz)*rhooldf(ix, iy, iz)
+
+
+          ! - Ez
+          ezf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
+          iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
+          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
+          iz)*jzf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,  &
+          iy, iz)*rhof(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(3,              &
+          10)%block3dc(ix, iy, iz)*rhooldf(ix, iy, iz)
+
+
+        END DO
+    END DO
+    !$OMP END PARALLEL DO
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
+    ENDIF
+  END SUBROUTINE push_psaotd_ebfielfs_2d
+
+
+
+
   SUBROUTINE push_psaotd_ebfielfs() bind(C, name='push_psaotd_ebfields')
     USE shared_data
     USE fields
@@ -492,6 +594,8 @@ MODULE fourier_psaotd
     ENDIF
   END SUBROUTINE push_psaotd_ebfielfs
 
+
+
   SUBROUTINE init_plans_blocks() bind(C, name='init_plans_blocks_pxr')
     USE shared_data
     USE fastfft
@@ -528,10 +632,17 @@ MODULE fourier_psaotd
     IF (fftw_with_mpi) THEN
       CALL init_plans_fourier_mpi(nopenmp)
     ELSE
-      CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz, ex_r, exf,  &
-      plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-      CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf, ex_r,  &
-      plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+      IF(c_dim ==3) THEN
+        CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
+        plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
+        CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,ex_r,  &
+        plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+      ELSE IF(c_dim == 2) THEN
+        CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,&
+        plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
+        CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,&
+        plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+      ENDIF
     ENDIF
     IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
   END SUBROUTINE init_plans_blocks

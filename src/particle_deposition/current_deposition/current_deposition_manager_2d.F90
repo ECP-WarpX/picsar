@@ -371,7 +371,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
         ENDIF
 
         ! Depose current in jtile
-        CALL curr_depo_sub( currg%jxtile, currg%jytile, currg%jztile, count,          &
+        CALL curr_depo_sub( currg%jxtile(:,0,:), currg%jytile(:,0,:), currg%jztile(:,0,:), count,          &
         curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,      &
         curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%pid(1, &
         wpid), curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min,     &
