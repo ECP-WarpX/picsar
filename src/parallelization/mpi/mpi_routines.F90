@@ -207,18 +207,6 @@ MODULE mpi_routines
       ENDIF
   ENDIF
 
-  IF (nx_global_grid .LT. nxguards .OR. ny_global_grid .LT. nyguards .OR.             &
-    nz_global_grid .LT. nzguards) THEN
-    IF (rank .EQ. 0) THEN
-      WRITE(0, *) '*** ERROR ***'
-      WRITE(0, *) 'Simulation domain is too small.'
-      WRITE(0, *) 'nx_global_grid', nx_global_grid, 'nxguards', nxguards
-      WRITE(0, *) ny_global_grid, nyguards
-      WRITE(0, *) nz_global_grid, nzguards
-    ENDIF
-    CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
-  ENDIF
-
   IF(c_dim == 3) THEN
     IF (nx_global_grid .LT. nxguards .OR. ny_global_grid .LT. nyguards .OR.           &
       nz_global_grid .LT. nzguards) THEN
