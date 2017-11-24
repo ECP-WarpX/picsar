@@ -18,7 +18,7 @@
 ! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
-! MAXWELL_3D_FDTD_TEST.F90
+! MAXWELL_2D_FDTD_TEST.F90
 !
 ! Test Maxwell solver of PICSAR in 3D geometry by considering propagation of
 ! a plane wave laser in vacuum. 
@@ -26,7 +26,7 @@
 ! It is performed for FDTD solvers parallelized with the standard cartesian domain 
 ! decomposition. 
 !
-! @author: Henri VINCENTI, 2017.10
+! @author: Haithem Kallala
 ! ______________________________________________________________________________
 
 PROGRAM maxwell_2d_test
