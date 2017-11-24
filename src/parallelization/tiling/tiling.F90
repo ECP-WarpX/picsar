@@ -1796,6 +1796,11 @@ MODULE tiling
       WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight),'s'
       WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
       WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
+      IF(c_dim ==3) THEN
+        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
+      ELSE IF(c_dim ==2) THEN
+        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
+      ENDIF
       WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
    ENDIF
   END SUBROUTINE load_laser_species
