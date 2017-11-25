@@ -811,8 +811,8 @@ all_cells, all_nz_lb, all_nzp
   ENDIF
   
   nz_lb = iz_max_r - iz_min_r +1
-  nz_grid_lb = nz+1
-  
+  nz_grid_lb = nz_lb+1
+
   ALLOCATE(all_nz_lb(nproc), all_nzp(nprocz))
   
   CALL MPI_ALLGATHER(nz_lb, 1_isp, MPI_LONG_LONG_INT, all_nz_lb, INT(1, isp),                 &
@@ -1336,15 +1336,16 @@ IF(fftw_hybrid) THEN
     CALL compute_load_balancing_boundaries_r2me_back
   ELSE IF(.NOT. is_lb_grp) THEN
     cell_z_min = cell_z_min_f
-    cell_z_min = cell_z_max_f
+    cell_z_max = cell_z_max_f
     nz = nz_lb
-    nz_grid = nz_grid_lb
+    nz_grid = nz_grid_lb 
     nz_global_grid_min = nz_global_grid_min_lb
     nz_global_grid_max = nz_global_grid_max_lb
     z_min_local = z_min_local_lb
     z_max_local = z_max_local_lb
   ENDIF
 ENDIF
+call mpi_barrier(comm,errcode)
 #endif
 !!! --- Set up global grid limits
 

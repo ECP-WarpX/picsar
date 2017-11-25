@@ -460,6 +460,7 @@ SUBROUTINE initall
     AXIS")')
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
+    IF (is_lb_grp) write(0, '(" FFTW hybrid balanced ")')
 
     ! Sorting
     IF (sorting_activated.gt.0) THEN
