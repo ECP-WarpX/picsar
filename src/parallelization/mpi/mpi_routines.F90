@@ -855,7 +855,7 @@ all_cells, all_nz_lb, all_nzp
 END SUBROUTINE setup_groups
 
 
-SUBROUTINE compute_load_balancing_boundaries_me2me()
+SUBROUTINE compute_load_balancing_local()
 #if defined(FFTW)
   USE mpi_fftw3
   USE shared_data
@@ -863,35 +863,43 @@ SUBROUTINE compute_load_balancing_boundaries_me2me()
   USE picsar_precision
   USE params
   USE mpi 
-  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
+  INTEGER(idp)  :: index_r_first, index_r_last, index_g_first, index_g_last
+  INTEGER(idp)  :: g_f,g_l,r_f,r_l,i
+  INTEGER(isp)  :: ierr
 
-  ALLOCATE(shift_rf_m2m_min(0:nprocz-1),shift_rf_m2m_max(0:nprocz-1),Ishift_rf_m2m(0:nprocz-1))
-  ind_r = cell_z_min_r(z_coords+1)
-  ind_f = cell_z_min_f(z_coords+1)
-  IF(ind_f .GE. ind_r) THEN
-   izi = 1
-   dec = ind_f - ind_r
-  ELSE IF(ind_f .LT. ind_r) THEN 
-   dec = 0_idp
-   izi = ind_r - ind_f +1 
+  index_r_first = cell_z_min_r(z_coords+1)
+  index_g_first = cell_z_min_f(z_coords+1)
+  index_r_last = cell_z_max_r(z_coords+1) 
+  index_g_last = cell_z_max_f(z_coords+1)
+  g_f = MAX(index_g_first,index_r_first) - index_g_first
+  r_f = MAX(index_g_first,index_r_first) - index_r_first
+  g_l = MIN(index_g_last,index_r_last) - index_g_first
+  r_l = MIN(index_g_last,index_r_last) - index_r_first
+!CHECK NOT WRONG 
+  IF((r_l - r_f) .NE. (g_l - g_f)) THEN
+    WRITE(0,*) 'error in load balancing 1 '
+    CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
-  
-  ind_r = cell_z_max_r(z_coords+1)
-  ind_f = cell_z_max_f(z_coords+1)
- ! IF(ind_r .GE. ind_f) THEN
- !  izl = cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp
- ! ELSE IF(ind_r .LT. ind_f ) THEN  
- !  izl =  cell_z_max_r(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp 
- ! ENDIF
-  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
-  Ishift_rf_m2m(z_coords) = dec
-  shift_rf_m2m_min(z_coords) = izi
-  shift_rf_m2m_max(z_coords) = izl
+  IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+    WRITE(0,*) 'error in load balancing 2' 
+    CALL MPI_ABORT(comm,errcode,ierr)
+  ENDIF
+  size_local = r_l - r_f +1
+  ALLOCATE(g_local(size_local),r_local(size_local))
+  IF(size_local .GE. 1_idp) THEN
+    g_local(1) = g_f + 1
+    IF(group_z_min_boundary) g_local(1) = g_local(1) + nzg_group
+    r_local(1) = r_f
+    DO i = 2,size_local
+      g_local(i) = g_local(i-1) +1
+      r_local(i) = r_local(i-1) +1
+    ENDDO
+  ENDIF
 #endif
+END SUBROUTINE compute_load_balancing_local
 
-END SUBROUTINE compute_load_balancing_boundaries_me2me
 
-SUBROUTINE compute_load_balancing_boundaries_l2me()
+SUBROUTINE compute_load_balancing_from_left()
 #if defined(FFTW)
   USE mpi_fftw3
   USE shared_data
@@ -899,37 +907,50 @@ SUBROUTINE compute_load_balancing_boundaries_l2me()
   USE picsar_precision
   USE params
   USE mpi
-  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
-  ALLOCATE(size_to_send_left_rf(0:nprocz-1),shift_rf_l2m_min(0:nprocz-1),             &
-        shift_rf_l2m_max(0:nprocz-1),Ishift_rf_l2m(0:nprocz-1))
+
+  INTEGER(idp)  :: index_r_first, index_r_last, index_g_first, index_g_last
+  INTEGER(idp)  :: g_f,g_l,r_f,r_l,i
+  INTEGER(isp)  :: ierr
   IF(group_z_min_boundary) THEN
-    size_to_send_left_rf(z_coords) = 0_idp  
-    shift_rf_l2m_min(z_coords) =  0_idp
-    shift_rf_l2m_max(z_coords) = 0_idp 
-    Ishift_rf_l2m(z_coords) = 0_idp
-  ELSE
-  ind_r = cell_z_min_r(z_coords)
-  ind_f = cell_z_min_f(z_coords+1)
-  IF(ind_f .GE. ind_r) THEN
-   izi = 1
-   dec = ind_f - ind_r
-  ELSE IF(ind_f .LT. ind_r) THEN
-   dec = 0_idp
-   izi = ind_r - ind_f +1
+   size_left = 0_idp
+   RETURN
   ENDIF
-  ind_r = cell_z_max_r(z_coords)
-  ind_f = cell_z_max_f(z_coords+1)
-  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
-  Ishift_rf_l2m(z_coords) = dec
-  shift_rf_l2m_min(z_coords) = izi
-  shift_rf_l2m_max(z_coords) = izl
-  size_to_send_left_rf(z_coords) = shift_rf_l2m_max(z_coords) - shift_rf_l2m_min(z_coords) + 1_idp
+  index_r_first = cell_z_min_r(z_coords)
+  index_g_first = cell_z_min_f(z_coords+1)
+  index_r_last = cell_z_max_r(z_coords)
+  index_g_last = cell_z_max_f(z_coords+1)
+  IF(index_r_last .LT. index_g_first)  THEN
+   size_left = 0_idp
+   RETURN
+  ENDIF
+  g_f = MAX(index_g_first,index_r_first) - index_g_first
+  r_f = MAX(index_g_first,index_r_first) - index_r_first
+  g_l = MIN(index_g_last,index_r_last) - index_g_first
+  r_l = MIN(index_g_last,index_r_last) - index_r_first
+!CHECK NOT WRONG 
+  IF((r_l - r_f) .NE. (g_l - g_f)) THEN
+    WRITE(0,*) 'error in load balancing 11 '
+    CALL MPI_ABORT(comm,errcode,ierr)
+  ENDIF
+  IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+    WRITE(0,*) 'error in load balancing 21'
+    CALL MPI_ABORT(comm,errcode,ierr)
+  ENDIF
+  size_left = r_l - r_f +1
+  ALLOCATE(g_left(size_left),r_left(size_left))
+  IF(size_left .GE. 1_idp) THEN
+    g_left(1) = g_f + 1
+    r_left(1) = r_f
+    DO i = 2,size_left
+      g_left(i) = g_left(i-1) +1
+      r_left(i) = r_left(i-1) +1
+    ENDDO
   ENDIF
 #endif
-END SUBROUTINE compute_load_balancing_boundaries_l2me 
+END SUBROUTINE compute_load_balancing_from_left
 
 
-SUBROUTINE compute_load_balancing_boundaries_r2me()
+SUBROUTINE compute_load_balancing_from_right()
 #if defined(FFTW)
   USE mpi_fftw3
   USE shared_data
@@ -937,151 +958,50 @@ SUBROUTINE compute_load_balancing_boundaries_r2me()
   USE picsar_precision
   USE params
   USE mpi
-  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
-  ALLOCATE(size_to_send_right_rf(0:nprocz-1),shift_rf_r2m_min(0:nprocz-1),             &
-        shift_rf_r2m_max(0:nprocz-1),Ishift_rf_r2m(0:nprocz-1))
-  IF(group_z_max_boundary) THEN 
-    size_to_send_right_rf(z_coords) = 0_idp
-    shift_rf_r2m_min(z_coords) =  0_idp
-    shift_rf_r2m_max(z_coords) = 0_idp
-    Ishift_rf_r2m(z_coords) = 0_idp
-  ELSE
-  ind_r = cell_z_min_r(z_coords+1)
-  ind_f = cell_z_min_f(z_coords)
-  IF(ind_f .GE. ind_r) THEN
-   izi = 1
-   dec = ind_f - ind_r
-  ELSE IF(ind_f .LT. ind_r) THEN
-   dec = 0_idp
-   izi = ind_r - ind_f +1
+
+  INTEGER(idp)  :: index_r_first, index_r_last, index_g_first, index_g_last
+  INTEGER(idp)  :: g_f,g_l,r_f,r_l,i
+  INTEGER(isp)  :: ierr
+
+  IF(group_z_max_boundary) THEN
+   size_right = 0_idp
+   RETURN
   ENDIF
-  ind_r = cell_z_max_r(z_coords+1)
-  ind_f = cell_z_max_f(z_coords)
-  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
-  Ishift_rf_r2m(z_coords) = dec
-  shift_rf_r2m_min(z_coords) = izi
-  shift_rf_r2m_max(z_coords) = izl
-  size_to_send_left_rf(z_coords) = shift_rf_l2m_max(z_coords) - shift_rf_l2m_min(z_coords) + 1_idp
+  index_r_first = cell_z_min_r(z_coords+2)
+  index_g_first = cell_z_min_f(z_coords+1)
+  index_r_last = cell_z_max_r(z_coords+2)
+  index_g_last = cell_z_max_f(z_coords+1)
+  IF(index_g_last .LT. index_r_first) THEN
+    size_right = 0_idp
+   RETURN 
   ENDIF
-#endif
-END SUBROUTINE compute_load_balancing_boundaries_r2me
-
-
-
-SUBROUTINE compute_load_balancing_boundaries_me2me_back()
-#if defined(FFTW)
-  USE mpi_fftw3
-  USE shared_data
-  USE group_parameters
-  USE picsar_precision
-  USE params
-  USE mpi 
-  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
-
-  ALLOCATE(shift_fr_m2m_min(0:nprocz-1),shift_fr_m2m_max(0:nprocz-1),Ishift_fr_m2m(0:nprocz-1))
-  ind_r = cell_z_min_r(z_coords+1)
-  ind_f = cell_z_min_f(z_coords+1)
-  IF(ind_f .GE. ind_r) THEN
-   izi = 1
-   dec = ind_f - ind_r
-  ELSE IF(ind_f .LT. ind_r) THEN 
-   dec = 0_idp
-   izi = ind_r - ind_f +1 
+  g_f = MAX(index_g_first,index_r_first) - index_g_first
+  r_f = MAX(index_g_first,index_r_first) - index_r_first
+  g_l = MIN(index_g_last,index_r_last) - index_g_first
+  r_l = MIN(index_g_last,index_r_last) - index_r_first
+!CHECK NOT WRONG 
+  IF((r_l - r_f) .NE. (g_l - g_f)) THEN
+    WRITE(0,*) 'error in load balancing 12 '
+    CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
-  
-  ind_r = cell_z_max_r(z_coords+1)
-  ind_f = cell_z_max_f(z_coords+1)
- ! IF(ind_r .GE. ind_f) THEN
- !  izl = cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp
- ! ELSE IF(ind_r .LT. ind_f ) THEN  
- !  izl =  cell_z_max_r(z_coords+1) - cell_z_min_f(z_coords+1) +1_idp 
- ! ENDIF
-  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
-  Ishift_fr_m2m(z_coords) = dec
-  shift_fr_m2m_min(z_coords) = izi
-  shift_fr_m2m_max(z_coords) = izl
-#endif
-
-END SUBROUTINE compute_load_balancing_boundaries_me2me_back
-
-SUBROUTINE compute_load_balancing_boundaries_l2me_back()
-#if defined(FFTW)
-  USE mpi_fftw3
-  USE shared_data
-  USE group_parameters
-  USE picsar_precision
-  USE params
-  USE mpi
-  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
-  ALLOCATE(size_to_send_left_fr(0:nprocz-1),shift_fr_l2m_min(0:nprocz-1),             &
-        shift_fr_l2m_max(0:nprocz-1),Ishift_fr_l2m(0:nprocz-1))
-  IF(group_z_min_boundary) THEN
-    size_to_send_left_fr(z_coords) = 0_idp  
-    shift_fr_l2m_min(z_coords) =  0_idp
-    shift_fr_l2m_max(z_coords) = 0_idp 
-    Ishift_fr_l2m(z_coords) = 0_idp
-  ELSE
-  ind_r = cell_z_min_r(z_coords)
-  ind_f = cell_z_min_f(z_coords+1)
-  IF(ind_f .GE. ind_r) THEN
-   izi = 1
-   dec = ind_f - ind_r
-  ELSE IF(ind_f .LT. ind_r) THEN
-   dec = 0_idp
-   izi = ind_r - ind_f +1
+  IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+    WRITE(0,*) 'error in load balancing 22',rank,r_l,r_f,index_r_first,index_r_last,index_g_last
+print*,rank,index_g_first
+    CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
-  ind_r = cell_z_max_r(z_coords)
-  ind_f = cell_z_max_f(z_coords+1)
-  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
-  Ishift_fr_l2m(z_coords) = dec
-  shift_fr_l2m_min(z_coords) = izi
-  shift_fr_l2m_max(z_coords) = izl
-  size_to_send_left_fr(z_coords) = shift_fr_l2m_max(z_coords) - shift_fr_l2m_min(z_coords) + 1_idp
+  size_right = r_l - r_f +1
+  ALLOCATE(g_right(size_right),r_right(size_right))
+  IF(size_right .GE. 1_idp) THEN
+    g_right(1) = g_f + 1
+    IF(group_z_min_boundary) g_local(1) = g_local(1) + nzg_group
+    r_right(1) = r_f
+    DO i = 2,size_left
+      g_right(i) = g_right(i-1) +1
+      r_right(i) = r_right(i-1) +1
+    ENDDO
   ENDIF
 #endif
-END SUBROUTINE compute_load_balancing_boundaries_l2me_back
-
-
-SUBROUTINE compute_load_balancing_boundaries_r2me_back()
-#if defined(FFTW)
-  USE mpi_fftw3
-  USE shared_data
-  USE group_parameters
-  USE picsar_precision
-  USE params
-  USE mpi
-  INTEGER(idp)  :: ind_r,ind_f,izi,izl,dec
-  ALLOCATE(size_to_send_right_fr(0:nprocz-1),shift_fr_r2m_min(0:nprocz-1),             &
-        shift_fr_r2m_max(0:nprocz-1),Ishift_fr_r2m(0:nprocz-1))
-  IF(group_z_max_boundary) THEN 
-    size_to_send_right_fr(z_coords) = 0_idp
-    shift_fr_r2m_min(z_coords) =  0_idp
-    shift_fr_r2m_max(z_coords) = 0_idp
-    Ishift_fr_r2m(z_coords) = 0_idp
-  ELSE
-  ind_r = cell_z_min_r(z_coords+1)
-  ind_f = cell_z_min_f(z_coords)
-  IF(ind_f .GE. ind_r) THEN
-   izi = 1
-   dec = ind_f - ind_r
-  ELSE IF(ind_f .LT. ind_r) THEN
-   dec = 0_idp
-   izi = ind_r - ind_f +1
-  ENDIF
-  ind_r = cell_z_max_r(z_coords+1)
-  ind_f = cell_z_max_f(z_coords)
-  izl = MIN(ind_r,ind_f) - cell_z_min_f(z_coords+1) +1_idp
-  Ishift_fr_r2m(z_coords) = dec
-  shift_fr_r2m_min(z_coords) = izi
-  shift_fr_r2m_max(z_coords) = izl
-  size_to_send_left_fr(z_coords) = shift_fr_l2m_max(z_coords) - shift_fr_l2m_min(z_coords) + 1_idp
-  ENDIF
-#endif
-END SUBROUTINE compute_load_balancing_boundaries_r2me_back
-
-
-
-
+END SUBROUTINE compute_load_balancing_from_right
 
 SUBROUTINE adjust_grid_mpi_global
 
@@ -1328,12 +1248,10 @@ IF(fftw_hybrid) THEN
   IF(is_lb_grp) THEN
     cell_z_min = cell_z_min_r
     cell_z_max = cell_z_max_r
-    CALL compute_load_balancing_boundaries_me2me
-    CALL compute_load_balancing_boundaries_l2me
-    CALL compute_load_balancing_boundaries_r2me
-    CALL compute_load_balancing_boundaries_me2me_back
-    CALL compute_load_balancing_boundaries_l2me_back
-    CALL compute_load_balancing_boundaries_r2me_back
+    CALL compute_load_balancing_local
+    CALL compute_load_balancing_from_left
+    CALL compute_load_balancing_from_right
+print*,"aaaa";stop
   ELSE IF(.NOT. is_lb_grp) THEN
     cell_z_min = cell_z_min_f
     cell_z_max = cell_z_max_f

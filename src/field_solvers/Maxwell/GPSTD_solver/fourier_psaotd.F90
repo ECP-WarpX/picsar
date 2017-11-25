@@ -177,31 +177,29 @@ MODULE fourier_psaotd
     USE params
     USE group_parameters
     USE field_boundary
+
     IMPLICIT NONE
-    INTEGER(idp) :: ix, iy, iz, iz1,iz2,dec
+    INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
     LOGICAL(lp)  :: is_source
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    iz1 = shift_rf_m2m_min(z_coords)
-    iz2 = shift_rf_m2m_max(z_coords)
-    dec = Ishift_rf_m2m(z_coords)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=iz1,iz2
+    DO iz=1,size_local
       DO iy=iy_min_r,iy_max_r
         DO ix =ix_min_r,ix_max_r
-           ex_r(ix,iy,iz) = ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           ey_r(ix,iy,iz) = ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           ez_r(ix,iy,iz) = ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           bx_r(ix,iy,iz) = bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           by_r(ix,iy,iz) = by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           bz_r(ix,iy,iz) = bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           jx_r(ix,iy,iz) = jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           jy_r(ix,iy,iz) = jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           jz_r(ix,iy,iz) = jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-nzguards+dec)
-           rho_r(ix,iy,iz) = rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-nzguards+dec)
-           rhoold_r(ix,iy,iz) = rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-nzguards+dec)
+           ex_r(ix,iy,g_local(iz)) = ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           ey_r(ix,iy,g_local(iz)) = ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           ez_r(ix,iy,g_local(iz)) = ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           bx_r(ix,iy,g_local(iz)) = bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           by_r(ix,iy,g_local(iz)) = by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           bz_r(ix,iy,g_local(iz)) = bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           jx_r(ix,iy,g_local(iz)) = jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           jy_r(ix,iy,g_local(iz)) = jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           jz_r(ix,iy,g_local(iz)) = jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           rho_r(ix,iy,g_local(iz)) = rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,r_local(iz))
+           rhoold_r(ix,iy,g_local(iz)) = rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,r_local(iz))
         ENDDO
       ENDDO
     ENDDO

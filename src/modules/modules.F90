@@ -1102,14 +1102,9 @@ MODULE group_parameters!#do not parse
   REAL(num)                                 :: z_min_group, z_max_group
   REAL(num)                                 :: y_min_group, y_max_group
   REAL(num)                                 :: x_min_group, x_max_group
-  !> ARRAY FOR load balancing r_2_f same fields in same proc 
-  INTEGER(idp),  ALLOCATABLE, DIMENSION(:)   :: shift_rf_m2m_min, shift_rf_m2m_max, Ishift_rf_m2m,  &
-        shift_rf_l2m_min,shift_rf_l2m_max,Ishift_rf_l2m, size_to_send_left_rf,                      &
-        shift_rf_r2m_min,shift_rf_r2m_max,Ishift_rf_r2m,size_to_send_right_rf
-  !> ARRAY FOR load balancing f_2_r same fields in same proc 
-  INTEGER(idp),  ALLOCATABLE, DIMENSION(:)   :: shift_fr_m2m_min,shift_fr_m2m_max, Ishift_fr_m2m,  &
-        shift_fr_l2m_min,shift_fr_l2m_max,Ishift_fr_l2m, size_to_send_left_fr, &
-        shift_fr_r2m_min,shift_fr_r2m_max,Ishift_fr_r2m,size_to_send_right_fr
+  !> Arrays FOR load balancing 
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local, r_local , g_left, r_left, g_right, r_right
+  INTEGER(idp)                            :: size_local, size_left, size_right
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
 END MODULE
