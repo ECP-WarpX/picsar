@@ -586,12 +586,13 @@ MODULE field_boundary
   SUBROUTINE field_bc_group_blocking(field, nxx, nyy, nzz, ngroupz)
 #if defined(FFTW)
     USE group_parameters
+#endif
     USE shared_data
     INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, ngroupz
     REAL(num), INTENT(INOUT), DIMENSION(1:nxx, 1:nyy, 1:nzz)  :: field
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(isp) :: basetype
-!
+#if defined(FFTW)
 !    basetype = mpidbl
 !    sizes(1) = nxx
 !    sizes(2) = nyy
@@ -703,10 +704,11 @@ MODULE field_boundary
   SUBROUTINE load_balancing_group_communication_backward(coeff_norm)
 #if defined(FFTW)
   USE group_parameters
+  USE mpi_fftw3
+#endif
   USE shared_data
   USE mpi  
   USE omp_lib
-  USE mpi_fftw3
   USE time_stat
   REAL(num)  ,INTENT(IN)  :: coeff_norm
   INTEGER(idp) , DIMENSION(c_ndims) :: sizes, subsizes_left, subsizes_right , starts
@@ -714,7 +716,7 @@ MODULE field_boundary
   INTEGER(isp) :: requests_1(1)
   INTEGER(idp)  :: nxx,nyy,nzz
   REAL(num)     :: tmptime
-
+#if defined(FFTW)
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
@@ -784,15 +786,13 @@ MODULE field_boundary
   IF (it.ge.timestat_itstart) THEN
     localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
   ENDIF
-
-
-
 #endif
   END SUBROUTINE load_balancing_group_communication_backward
 
   SUBROUTINE SEND_TO_RIGHT_f2r(field_in,field_out,nxx,nyy,nzz,subsizes_left,coeff_norm)
 #if defined(FFTW)
    USE group_parameters
+#endif
    USE shared_data
    USE mpi
    REAL(num) , INTENT(IN) :: coeff_norm
@@ -803,6 +803,7 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
+#if defined(FFTW)
     IF(.NOT. group_z_max_boundary .AND. size_right .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(1,1,g_right(1)),1_isp,mpi_dtypes(40),&
       INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
@@ -830,6 +831,7 @@ MODULE field_boundary
   SUBROUTINE SEND_TO_LEFT_f2r(field_in,field_out,nxx,nyy,nzz,subsizes_right,coeff_norm)
 #if defined(FFTW)
    USE group_parameters
+#endif
    USE shared_data
    USE mpi
    REAL(num) , INTENT(IN) :: coeff_norm
@@ -840,6 +842,8 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_right
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_left
+
+#if defined(FFTW)
     IF(.NOT. group_z_min_boundary .AND. size_left .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(1,1,g_left(1)),1_isp,mpi_dtypes(42),&
       INT(proc_z_min,isp),tag,comm,requests_1(1),errcode)
@@ -869,10 +873,11 @@ MODULE field_boundary
   SUBROUTINE load_balancing_group_communication_forward
 #if defined(FFTW)
     USE group_parameters
+    USE mpi_fftw3
+#endif
     USE shared_data
     USE mpi 
     USE omp_lib
-    USE mpi_fftw3
     USE time_stat
     REAL(num) , ALLOCATABLE, DIMENSION(:,:,:) :: temp_from_right
     INTEGER(idp) , DIMENSION(c_ndims) :: sizes, subsizes_left, subsizes_right , starts
@@ -880,7 +885,7 @@ MODULE field_boundary
     INTEGER(isp) :: requests_1(1)
     INTEGER(idp)  :: nxx,nyy,nzz
     REAL(num)     :: tmptime
-
+#if defined(FFTW)
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -958,6 +963,7 @@ MODULE field_boundary
   SUBROUTINE SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_left)
 #if defined(FFTW)
    USE group_parameters
+#endif
    USE shared_data
    USE mpi
    INTEGER(idp) , INTENT(IN)  :: nxx,nyy,nzz 
@@ -967,6 +973,8 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz   
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
+
+#if defined(FFTW)
     IF(.NOT. group_z_max_boundary .AND. rsize_right .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(-nxguards,-nyguards,rr_right(1)),1_isp,mpi_dtypes(30),           &
       INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
@@ -995,6 +1003,7 @@ MODULE field_boundary
   SUBROUTINE SEND_TO_LEFT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_right)
 #if defined(FFTW)
    USE group_parameters
+#endif
    USE shared_data
    USE mpi
    INTEGER(idp) , INTENT(IN)  :: nxx,nyy,nzz 
@@ -1004,6 +1013,8 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz   
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_right
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_left
+
+#if defined(FFTW)
     IF(.NOT. group_z_min_boundary .AND. rsize_left .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(-nxguards,-nyguards,rr_left(1)),1_isp,mpi_dtypes(32),           &
       INT(proc_z_min,isp),tag,comm,requests_1(1),errcode)
