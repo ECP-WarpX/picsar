@@ -699,7 +699,43 @@ MODULE field_boundary
 
 #endif
   END SUBROUTINE field_bc_group_non_blocking
+  
 
+  !> Routine for load balancing groups from zcoords-1 tp zcorrds
+  !> @author Haithem Kallala
+  SUBROUTINE load_balancing_group_communication_rf_from_zp_z()
+#if defined(FFTW)
+    USE group_parameters
+    USE shared_data
+    USE mpi 
+    REAL(num) , ALLOCATABLE, DIMENSION(:,:,:) :: temp
+    INTEGER(idp) , DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: basetype
+    INTEGER(isp):: requests_1(2), requests_2(2)
+    IF(size_left .NE. 0_idp) THEN
+    basetype = mpidbl
+    sizes(1) = nx+nxguards+1
+    sizes(2) = ny+nyguards+1
+    sizes(3) = nz+nzguards+1
+    starts=1
+    subsizes(1) = sizes(1)
+    subsizes(2) = sizes(2)
+    subsizes(3) = size_left
+    ALLOCATE(temp(subsizes(1),subsizes(2),subsizes(3)))
+    IF (is_dtype_init(30)) THEN
+      mpi_dtypes(30) = create_3d_array_derived_type(basetype, subsizes, sizes,        &
+      starts)
+      is_dtype_init(30) = .FALSE.
+    ENDIF
+    CALL MPI_ISEND(ex(-nxguards,-nyguards,r_left(1)),1_isp,mpi_dtypes(30),INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
+    CALL MPI_IRECV(temp,1_isp,mpi_dtypes(30),Int(proc_z_min,isp),tag,comm,requests_1(2),errcode)
+    CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+    
+
+
+    ENDIF
+#endif
+  END SUBROUTINE load_balancing_group_communication_rf_from_zp_z
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains
   ! nonblocking version

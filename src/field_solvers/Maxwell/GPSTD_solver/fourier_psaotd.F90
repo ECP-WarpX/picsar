@@ -487,11 +487,7 @@ MODULE fourier_psaotd
     USE group_parameters
     IMPLICIT NONE
     REAL(num) :: coeff_norm, tmptime
-    INTEGER(idp) :: ix, iy, iz,iz1,iz2,dec
-
-    iz1 = shift_rf_m2m_min(z_coords)
-    iz2 = shift_rf_m2m_max(z_coords)
-    dec = Ishift_rf_m2m(z_coords)-1_idp
+    INTEGER(idp) :: ix, iy, iz
 
     ! Get global Fourier transform of all fields components and currents
     IF (it.ge.timestat_itstart) THEN
@@ -516,15 +512,15 @@ MODULE fourier_psaotd
     ENDIF
 
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=iz1,iz2
+    DO iz=1,size_local
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = ex_r(ix,iy, iz)*coeff_norm
-          ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = ey_r(ix,iy, iz)*coeff_norm
-          ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = ez_r(ix,iy, iz)*coeff_norm
-          bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = bx_r(ix,iy, iz)*coeff_norm
-          by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = by_r(ix,iy, iz)*coeff_norm
-          bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, iz-nzguards+dec) = bz_r(ix,iy, iz)*coeff_norm
+          ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ex_r(ix,iy, g_local(iz))*coeff_norm
+          ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ey_r(ix,iy, g_local(iz))*coeff_norm
+          ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ez_r(ix,iy, g_local(iz))*coeff_norm
+          bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bx_r(ix,iy, g_local(iz))*coeff_norm
+          by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = by_r(ix,iy, g_local(iz))*coeff_norm
+          bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bz_r(ix,iy, g_local(iz))*coeff_norm
         END DO
       END DO
     END DO

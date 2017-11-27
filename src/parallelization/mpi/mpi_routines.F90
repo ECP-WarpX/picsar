@@ -170,6 +170,7 @@ MODULE mpi_routines
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
 !temporary: adjust nz so that it is a multiple of nb_group
+#if defined(FFTW)
 if(fftw_with_mpi .and. fftw_hybrid) then
 if (modulo(nz_global_grid-1_isp,nb_group) .NE. 0_idp) then
 write(0,*) 'ADJUST GRID nz/nbgroup*nb_group-nz != 0'
@@ -177,6 +178,7 @@ nz_global_grid = ((nz_global_grid-1_idp)/nb_group+1_idp)*nb_group +1
 if (modulo(nz_global_grid-1_isp,nb_group) .NE. 1_idp) stop
 endif
 endif
+#endif
 
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
