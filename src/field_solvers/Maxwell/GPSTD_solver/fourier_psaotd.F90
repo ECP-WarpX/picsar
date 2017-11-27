@@ -204,7 +204,6 @@ MODULE fourier_psaotd
       ENDDO
     ENDDO
     !$OMP END PARALLEL DO
-     
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -473,10 +472,6 @@ MODULE fourier_psaotd
   END SUBROUTINE get_fields_mpi
 
 
-
-
-
-
   SUBROUTINE get_fields_mpi_lb
     USE shared_data
     USE fields
@@ -525,20 +520,12 @@ MODULE fourier_psaotd
       END DO
     END DO
     !$OMP END PARALLEL DO
+
     CALL load_balancing_group_communication_backward(coeff_norm)
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
   END SUBROUTINE get_fields_mpi_lb
-
-
-
-
-
-
-
-
-
 
 
   SUBROUTINE push_psaotd_ebfielfs_2d() bind(C, name='push_psaotd_ebfields_2d')

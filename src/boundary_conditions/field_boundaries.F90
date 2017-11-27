@@ -751,13 +751,7 @@ MODULE field_boundary
   CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_left,coeff_norm)
   CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,subsizes_left,coeff_norm)
   CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(rho_r,rhoold,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(rhoold_r,rhoold,nxx,nyy,nzz,subsizes_left,coeff_norm)
   CALL MPI_BARRIER(comm,errcode)
-
   
   subsizes_left(3) = size_left
   subsizes_right(3) = rsize_right
@@ -766,10 +760,10 @@ MODULE field_boundary
     starts)
     is_dtype_init(42) = .FALSE.
   ENDIF
-  IF (is_dtype_init(42)) THEN
-    mpi_dtypes(42) = create_3d_array_derived_type(basetype,subsizes_right,sizes,&
+  IF (is_dtype_init(43)) THEN
+    mpi_dtypes(43) = create_3d_array_derived_type(basetype,subsizes_right,sizes,&
     starts)
-    is_dtype_init(42) = .FALSE.
+    is_dtype_init(43) = .FALSE.
   ENDIF
   CALL SEND_TO_LEFT_f2r(ex_r,ex,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL SEND_TO_LEFT_f2r(ey_r,ey,nxx,nyy,nzz,subsizes_right,coeff_norm)
@@ -777,12 +771,8 @@ MODULE field_boundary
   CALL SEND_TO_LEFT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL SEND_TO_LEFT_f2r(by_r,by,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL SEND_TO_LEFT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(rho_r,rhoold,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(rhoold_r,rhoold,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL MPI_BARRIER(comm,errcode)
+
   IF (it.ge.timestat_itstart) THEN
     localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
   ENDIF
@@ -928,7 +918,6 @@ MODULE field_boundary
     CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_left)
     CALL MPI_BARRIER(comm,errcode)   
  
-
     subsizes_right(3) = size_right
     subsizes_left(3) = rsize_left
     IF (is_dtype_init(32)) THEN
@@ -956,7 +945,6 @@ MODULE field_boundary
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
-
 #endif
   END SUBROUTINE load_balancing_group_communication_forward
    
