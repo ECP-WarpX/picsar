@@ -1103,8 +1103,8 @@ MODULE group_parameters!#do not parse
   REAL(num)                                 :: y_min_group, y_max_group
   REAL(num)                                 :: x_min_group, x_max_group
   !> Arrays FOR load balancing 
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local, r_local , g_left, r_left, g_right, r_right
-  INTEGER(idp)                            :: size_local, size_left, size_right
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local, r_local , g_left, r_left, g_right, r_right, rg_left,rr_left, rg_right,rr_right
+  INTEGER(idp)                            :: size_local, size_left, size_right,rsize_left,rsize_right
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
 END MODULE

@@ -915,38 +915,38 @@ SUBROUTINE compute_load_balancing_from_left()
   INTEGER(isp)  :: ierr
   IF(group_z_min_boundary) THEN
    size_left = 0_idp
-   RETURN
-  ENDIF
-  index_r_first = cell_z_min_r(z_coords)
-  index_g_first = cell_z_min_f(z_coords+1)
-  index_r_last = cell_z_max_r(z_coords)
-  index_g_last = cell_z_max_f(z_coords+1)
-  IF(index_r_last .LT. index_g_first)  THEN
-   size_left = 0_idp
-   RETURN
-  ENDIF
-  g_f = MAX(index_g_first,index_r_first) - index_g_first
-  r_f = MAX(index_g_first,index_r_first) - index_r_first
-  g_l = MIN(index_g_last,index_r_last) - index_g_first
-  r_l = MIN(index_g_last,index_r_last) - index_r_first
-!CHECK NOT WRONG 
-  IF((r_l - r_f) .NE. (g_l - g_f)) THEN
-    WRITE(0,*) 'error in load balancing 11 '
-    CALL MPI_ABORT(comm,errcode,ierr)
-  ENDIF
-  IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
-    WRITE(0,*) 'error in load balancing 21'
-    CALL MPI_ABORT(comm,errcode,ierr)
-  ENDIF
-  size_left = r_l - r_f +1
-  ALLOCATE(g_left(size_left),r_left(size_left))
-  IF(size_left .GE. 1_idp) THEN
-    g_left(1) = g_f + 1
-    r_left(1) = r_f
-    DO i = 2,size_left
-      g_left(i) = g_left(i-1) +1
-      r_left(i) = r_left(i-1) +1
-    ENDDO
+    ELSE
+    index_r_first = cell_z_min_r(z_coords)
+    index_g_first = cell_z_min_f(z_coords+1)
+    index_r_last = cell_z_max_r(z_coords)
+    index_g_last = cell_z_max_f(z_coords+1)
+    IF(index_r_last .LT. index_g_first)  THEN
+     size_left = 0_idp
+      ELSE
+      g_f = MAX(index_g_first,index_r_first) - index_g_first
+      r_f = MAX(index_g_first,index_r_first) - index_r_first
+      g_l = MIN(index_g_last,index_r_last) - index_g_first
+      r_l = MIN(index_g_last,index_r_last) - index_r_first
+    !CHECK NOT WRONG 
+      IF((r_l - r_f) .NE. (g_l - g_f)) THEN
+        WRITE(0,*) 'error in load balancing 11 '
+        CALL MPI_ABORT(comm,errcode,ierr)
+      ENDIF
+      IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+        WRITE(0,*) 'error in load balancing 21'
+        CALL MPI_ABORT(comm,errcode,ierr)
+      ENDIF
+      size_left = r_l - r_f +1
+      ALLOCATE(g_left(size_left),r_left(size_left))
+      IF(size_left .GE. 1_idp) THEN
+        g_left(1) = g_f + 1
+        r_left(1) = r_f
+        DO i = 2,size_left
+          g_left(i) = g_left(i-1) +1
+          r_left(i) = r_left(i-1) +1
+        ENDDO
+      ENDIF
+    ENDIF
   ENDIF
 #endif
 END SUBROUTINE compute_load_balancing_from_left
@@ -967,43 +967,115 @@ SUBROUTINE compute_load_balancing_from_right()
 
   IF(group_z_max_boundary) THEN
    size_right = 0_idp
-   RETURN
-  ENDIF
-  index_r_first = cell_z_min_r(z_coords+2)
-  index_g_first = cell_z_min_f(z_coords+1)
-  index_r_last = cell_z_max_r(z_coords+2)
-  index_g_last = cell_z_max_f(z_coords+1)
-  IF(index_g_last .LT. index_r_first) THEN
-    size_right = 0_idp
-   RETURN 
-  ENDIF
-  g_f = MAX(index_g_first,index_r_first) - index_g_first
-  r_f = MAX(index_g_first,index_r_first) - index_r_first
-  g_l = MIN(index_g_last,index_r_last) - index_g_first
-  r_l = MIN(index_g_last,index_r_last) - index_r_first
-!CHECK NOT WRONG 
-  IF((r_l - r_f) .NE. (g_l - g_f)) THEN
-    WRITE(0,*) 'error in load balancing 12 '
-    CALL MPI_ABORT(comm,errcode,ierr)
-  ENDIF
-  IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
-    WRITE(0,*) 'error in load balancing 22',rank,r_l,r_f,index_r_first,index_r_last,index_g_last
-print*,rank,index_g_first
-    CALL MPI_ABORT(comm,errcode,ierr)
-  ENDIF
-  size_right = r_l - r_f +1
-  ALLOCATE(g_right(size_right),r_right(size_right))
-  IF(size_right .GE. 1_idp) THEN
-    g_right(1) = g_f + 1
-    IF(group_z_min_boundary) g_local(1) = g_local(1) + nzg_group
-    r_right(1) = r_f
-    DO i = 2,size_left
-      g_right(i) = g_right(i-1) +1
-      r_right(i) = r_right(i-1) +1
-    ENDDO
+  ELSE
+    index_r_first = cell_z_min_r(z_coords+2)
+    index_g_first = cell_z_min_f(z_coords+1)
+    index_r_last = cell_z_max_r(z_coords+2)
+    index_g_last = cell_z_max_f(z_coords+1)
+    IF(index_g_last .LT. index_r_first) THEN
+      size_right = 0_idp
+    ELSE
+      g_f = MAX(index_g_first,index_r_first) - index_g_first
+      r_f = MAX(index_g_first,index_r_first) - index_r_first
+      g_l = MIN(index_g_last,index_r_last) - index_g_first
+      r_l = MIN(index_g_last,index_r_last) - index_r_first
+    !CHECK NOT WRONG 
+      IF((r_l - r_f) .NE. (g_l - g_f)) THEN
+        WRITE(0,*) 'error in load balancing 12 '
+        CALL MPI_ABORT(comm,errcode,ierr)
+      ENDIF
+      IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+        WRITE(0,*) 'error in load balancing 22',rank,r_l,r_f,index_r_first,index_r_last,index_g_last
+        CALL MPI_ABORT(comm,errcode,ierr)
+      ENDIF
+      size_right = r_l - r_f +1
+      ALLOCATE(g_right(size_right),r_right(size_right))
+      IF(size_right .GE. 1_idp) THEN
+        g_right(1) = g_f + 1
+        IF(group_z_min_boundary) g_local(1) = g_local(1) + nzg_group
+        r_right(1) = r_f
+        DO i = 2,size_right
+          g_right(i) = g_right(i-1) +1
+          r_right(i) = r_right(i-1) +1
+        ENDDO
+      ENDIF
+    ENDIF
   ENDIF
 #endif
 END SUBROUTINE compute_load_balancing_from_right
+
+SUBROUTINE Sync_exchange_load_balancing_arrays_1
+#if defined(FFTW)
+  USE group_parameters
+  USE shared_data
+  USE mpi
+  INTEGER(isp)  :: requests(1)
+ IF(.NOT. group_z_max_boundary) THEN
+   CALL MPI_ISEND(size_right,1_isp,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ IF(.NOT. group_z_min_boundary) THEN
+   CALL MPI_IRECV(rsize_left,1_isp,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ CALL MPI_BARRIER(comm,errcode)
+ ALLOCATE(rr_left(rsize_left))
+ ALLOCATE(rg_left(rsize_left))
+ IF(.NOT. group_z_max_boundary) THEN
+   CALL MPI_ISEND(r_right,size_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ IF(.NOT. group_z_min_boundary) THEN
+   CALL MPI_IRECV(rr_left,rsize_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF  
+ IF(.NOT. group_z_max_boundary) THEN
+   CALL MPI_ISEND(g_right,size_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ IF(.NOT. group_z_min_boundary) THEN
+   CALL MPI_IRECV(rg_left,rsize_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+#endif
+END SUBROUTINE Sync_exchange_load_balancing_arrays_1
+
+SUBROUTINE Sync_exchange_load_balancing_arrays_2
+#if defined(FFTW)
+  USE group_parameters
+  USE shared_data
+  USE mpi
+  INTEGER(isp)  :: requests(1)
+ IF(.NOT. group_z_min_boundary) THEN
+   CALL MPI_ISEND(size_left,1_isp,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ IF(.NOT. group_z_max_boundary) THEN
+   CALL MPI_IRECV(rsize_right,1_isp,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ CALL MPI_BARRIER(comm,errcode)
+ ALLOCATE(rr_right(rsize_right))
+ ALLOCATE(rg_right(rsize_right))
+ IF(.NOT. group_z_min_boundary) THEN
+   CALL MPI_ISEND(r_left,size_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ IF(.NOT. group_z_max_boundary) THEN
+   CALL MPI_IRECV(rr_right,rsize_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ IF(.NOT. group_z_min_boundary) THEN
+   CALL MPI_ISEND(g_left,size_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+ IF(.NOT. group_z_max_boundary) THEN
+   CALL MPI_IRECV(rg_right,rsize_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
+   CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+ ENDIF
+#endif
+END SUBROUTINE Sync_exchange_load_balancing_arrays_2
+
 
 SUBROUTINE adjust_grid_mpi_global
 
@@ -1253,7 +1325,8 @@ IF(fftw_hybrid) THEN
     CALL compute_load_balancing_local
     CALL compute_load_balancing_from_left
     CALL compute_load_balancing_from_right
-print*,"aaaa";stop
+    CALL Sync_exchange_load_balancing_arrays_2
+    CALL Sync_exchange_load_balancing_arrays_1
   ELSE IF(.NOT. is_lb_grp) THEN
     cell_z_min = cell_z_min_f
     cell_z_max = cell_z_max_f
