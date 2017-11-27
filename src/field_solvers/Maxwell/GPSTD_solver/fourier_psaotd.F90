@@ -209,8 +209,8 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
     is_source = .TRUE.
-    CALL ebj_field_bcs_groups(is_source)
     CALL load_balancing_group_communication_forward()
+    CALL ebj_field_bcs_groups(is_source)
     ! Get global Fourier transform of all fields components and currents
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
