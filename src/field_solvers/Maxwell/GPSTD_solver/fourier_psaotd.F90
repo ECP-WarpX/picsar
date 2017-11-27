@@ -210,6 +210,18 @@ MODULE fourier_psaotd
     is_source = .TRUE.
     CALL load_balancing_group_communication_forward()
     CALL ebj_field_bcs_groups(is_source)
+    call mpi_barrier(comm,errcode)
+
+if (rank==1)then
+do iz=1,local_nz
+        print*,iz,rank,jy_r(102,1,iz)
+enddo
+endif
+!if(rank==0) then
+!do iz=-nzguards,nz+nzguards
+!print*,rank,iz,jy(100,0,iz)
+!enddo
+!endif
     ! Get global Fourier transform of all fields components and currents
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -495,6 +507,10 @@ MODULE fourier_psaotd
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jxf, jx_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)
+
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -516,11 +532,15 @@ MODULE fourier_psaotd
           bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bx_r(ix,iy, g_local(iz))*coeff_norm
           by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = by_r(ix,iy, g_local(iz))*coeff_norm
           bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bz_r(ix,iy, g_local(iz))*coeff_norm
+
+          jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jx_r(ix,iy, g_local(iz))*coeff_norm
+          jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jy_r(ix,iy, g_local(iz))*coeff_norm
+          jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jz_r(ix,iy, g_local(iz))*coeff_norm
+
         END DO
       END DO
     END DO
     !$OMP END PARALLEL DO
-
     CALL load_balancing_group_communication_backward(coeff_norm)
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)

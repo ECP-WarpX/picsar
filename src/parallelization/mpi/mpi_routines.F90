@@ -169,16 +169,16 @@ MODULE mpi_routines
     nx_global=nx_global_grid-1
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
-!temporary: adjust nz so that it is a multiple of nb_group
-#if defined(FFTW)
-    IF(fftw_with_mpi .AND. fftw_hybrid) THEN
-    IF (modulo(nz_global_grid-1_isp,nb_group) .NE. 0_idp) THEN
-    write(0,*) 'ADJUST GRID nz/nbgroup*nb_group-nz != 0'
-    nz_global_grid = ((nz_global_grid-1_idp)/nb_group+1_idp)*nb_group +1
-    IF (modulo(nz_global_grid-1_isp,nb_group) .NE. 1_idp) stop
-    ENDIF
-    ENDIF
-#endif
+!!temporary: adjust nz so that it is a multiple of nb_group
+!#if defined(FFTW)
+!    IF(fftw_with_mpi .AND. fftw_hybrid) THEN
+!    IF (modulo(nz_global_grid-1_isp,nb_group) .NE. 0_idp) THEN
+!    write(0,*) 'ADJUST GRID nz/nbgroup*nb_group-nz != 0'
+!    nz_global_grid = ((nz_global_grid-1_idp)/nb_group+1_idp)*nb_group +1
+!    IF (modulo(nz_global_grid-1_isp,nb_group) .NE. 1_idp) stop
+!    ENDIF
+!    ENDIF
+!#endif
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)
@@ -912,13 +912,14 @@ SUBROUTINE compute_load_balancing_from_left()
   INTEGER(idp)  :: index_r_first, index_r_last, index_g_first, index_g_last
   INTEGER(idp)  :: g_f,g_l,r_f,r_l,i
   INTEGER(isp)  :: ierr
-  IF(group_z_min_boundary) THEN
+  IF(z_coords == 0) THEN
    size_left = 0_idp
     ELSE
     index_r_first = cell_z_min_r(z_coords)
     index_g_first = cell_z_min_f(z_coords+1)
     index_r_last = cell_z_max_r(z_coords)
     index_g_last = cell_z_max_f(z_coords+1)
+
     IF(index_r_last .LT. index_g_first)  THEN
      size_left = 0_idp
       ELSE
@@ -964,7 +965,7 @@ SUBROUTINE compute_load_balancing_from_right()
   INTEGER(idp)  :: g_f,g_l,r_f,r_l,i
   INTEGER(isp)  :: ierr
 
-  IF(group_z_max_boundary) THEN
+  IF(z_coords == nprocz-1) THEN
    size_right = 0_idp
   ELSE
     index_r_first = cell_z_min_r(z_coords+2)
@@ -1009,30 +1010,32 @@ SUBROUTINE Sync_exchange_load_balancing_arrays_1
   USE shared_data
   USE mpi
   INTEGER(isp)  :: requests(1)
- IF(.NOT. group_z_max_boundary) THEN
+ IF(z_coords .NE. nprocz-1) THEN
    CALL MPI_ISEND(size_right,1_isp,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- IF(.NOT. group_z_min_boundary) THEN
+ IF(z_coords .NE. 0) THEN
    CALL MPI_IRECV(rsize_left,1_isp,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
  CALL MPI_BARRIER(comm,errcode)
+
  ALLOCATE(rr_left(rsize_left))
  ALLOCATE(rg_left(rsize_left))
- IF(.NOT. group_z_max_boundary) THEN
+
+ IF(z_coords .NE. nprocz-1) THEN
    CALL MPI_ISEND(r_right,size_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- IF(.NOT. group_z_min_boundary) THEN
+ IF(z_coords .NE. 0) THEN
    CALL MPI_IRECV(rr_left,rsize_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF  
- IF(.NOT. group_z_max_boundary) THEN
+ IF(z_coords .NE. nprocz-1) THEN
    CALL MPI_ISEND(g_right,size_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- IF(.NOT. group_z_min_boundary) THEN
+ IF(z_coords .NE. 0) THEN
    CALL MPI_IRECV(rg_left,rsize_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
@@ -1045,30 +1048,32 @@ SUBROUTINE Sync_exchange_load_balancing_arrays_2
   USE shared_data
   USE mpi
   INTEGER(isp)  :: requests(1)
- IF(.NOT. group_z_min_boundary) THEN
+ IF(z_coords .NE. 0) THEN
    CALL MPI_ISEND(size_left,1_isp,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- IF(.NOT. group_z_max_boundary) THEN
+ IF(z_coords .NE. nprocz-1) THEN
    CALL MPI_IRECV(rsize_right,1_isp,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
  CALL MPI_BARRIER(comm,errcode)
+
  ALLOCATE(rr_right(rsize_right))
  ALLOCATE(rg_right(rsize_right))
- IF(.NOT. group_z_min_boundary) THEN
+
+ IF(z_coords .NE. 0) THEN
    CALL MPI_ISEND(r_left,size_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- IF(.NOT. group_z_max_boundary) THEN
+ IF(z_coords .NE. nprocz-1) THEN
    CALL MPI_IRECV(rr_right,rsize_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- IF(.NOT. group_z_min_boundary) THEN
+ IF(z_coords .NE. 0) THEN
    CALL MPI_ISEND(g_left,size_left,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- IF(.NOT. group_z_max_boundary) THEN
+ IF(z_coords .NE. nprocz-1) THEN
    CALL MPI_IRECV(rg_right,rsize_right,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
@@ -1137,10 +1142,11 @@ SUBROUTINE mpi_initialise
 USE mpi_fftw3
 USE group_parameters
 #endif
-INTEGER(isp) :: idim
+INTEGER(isp) :: idim,ierr
 INTEGER(isp) :: nx0, nxp
 INTEGER(isp) :: ny0, nyp
 INTEGER(isp) :: nz0, nzp
+INTEGER(idp) :: iz
 #if defined(FFTW)
 INTEGER(C_INTPTR_T) :: kx, ly, mz
 INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs, all_nz
@@ -1304,8 +1310,10 @@ IF(fftw_with_mpi ) THEN
     ENDIF
   ELSE
     ALLOCATE(cell_z_min_r(1:nprocz),cell_z_max_r(1:nprocz))
-    cell_z_min_r = cell_z_min
-    cell_z_max_r = cell_z_max
+    DO iz=1,nprocz
+      cell_z_min_r(iz) = cell_z_min(iz)
+      cell_z_max_r(iz) = cell_z_max(iz)
+    ENDDO
     CALL setup_groups
     IF(nz_lb .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
       WRITE(*, *), 'ERROR IN AJUSTING THE GRID'
@@ -1313,22 +1321,33 @@ IF(fftw_with_mpi ) THEN
     ENDIF
   ENDIF
 ENDIF
-
 IF(fftw_hybrid) THEN 
   ALLOCATE(cell_z_min_f(1:nprocz),cell_z_max_f(1:nprocz))
   cell_z_min_f = cell_z_min
   cell_z_max_f = cell_z_max
   IF(is_lb_grp) THEN
-    cell_z_min = cell_z_min_r
-    cell_z_max = cell_z_max_r
+    DO iz=1,nprocz
+      cell_z_min(iz) = cell_z_min_r(iz)
+      cell_z_max(iz) = cell_z_max_r(iz)
+    ENDDO
     CALL compute_load_balancing_local
     CALL compute_load_balancing_from_left
     CALL compute_load_balancing_from_right
     CALL Sync_exchange_load_balancing_arrays_2
     CALL Sync_exchange_load_balancing_arrays_1
+    IF(size_local + size_left + size_right .NE. nz_lb) THEN
+      WRITE(*,*), 'ERROR IN LOAD BALANCING'
+      CALL MPI_ABORT(comm,errcode,ierr) 
+    ENDIF
+    IF(size_local + rsize_left+ rsize_right .NE. nz) THEN
+      WRITE(*,*)  'EROOR IN LOAD BALANCING(REAL Indice'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
   ELSE IF(.NOT. is_lb_grp) THEN
-    cell_z_min = cell_z_min_f
-    cell_z_max = cell_z_max_f
+    DO iz=1,nprocz
+      cell_z_min(iz) = cell_z_min_f(iz)
+      cell_z_max(iz) = cell_z_max_f(iz)
+    ENDDO
     nz = nz_lb
     nz_grid = nz_grid_lb 
     nz_global_grid_min = nz_global_grid_min_lb

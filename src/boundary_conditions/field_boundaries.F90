@@ -751,6 +751,10 @@ MODULE field_boundary
   CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_left,coeff_norm)
   CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,subsizes_left,coeff_norm)
   CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_left,coeff_norm)
+
   CALL MPI_BARRIER(comm,errcode)
   
   subsizes_left(3) = size_left
@@ -771,6 +775,10 @@ MODULE field_boundary
   CALL SEND_TO_LEFT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL SEND_TO_LEFT_f2r(by_r,by,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL SEND_TO_LEFT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_right,coeff_norm)
+
   CALL MPI_BARRIER(comm,errcode)
 
   IF (it.ge.timestat_itstart) THEN
@@ -794,12 +802,12 @@ MODULE field_boundary
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
 #if defined(FFTW)
-    IF(.NOT. group_z_max_boundary .AND. size_right .NE. 0_isp) THEN
+    IF(z_coords .NE. nprocz-1 .AND. size_right .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(1,1,g_right(1)),1_isp,mpi_dtypes(40),&
       INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
     ENDIF
-    IF(.NOT. group_z_min_boundary .AND. rsize_left .NE. 0_idp) THEN
+    IF(z_coords .NE. 0 .AND. rsize_left .NE. 0_idp) THEN
       ALLOCATE(temp_from_right(subsizes_left(1),subsizes_left(2),subsizes_left(3)))
       CALL MPI_IRECV(temp_from_right,1_isp,mpi_dtypes(41),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
@@ -834,12 +842,12 @@ MODULE field_boundary
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_left
 
 #if defined(FFTW)
-    IF(.NOT. group_z_min_boundary .AND. size_left .NE. 0_isp) THEN
+    IF(z_coords .NE. 0 .AND. size_left .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(1,1,g_left(1)),1_isp,mpi_dtypes(42),&
       INT(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
     ENDIF
-    IF(.NOT. group_z_max_boundary .AND. rsize_right .NE. 0_idp) THEN
+    IF(z_coords .NE. nprocz-1 .AND. rsize_right .NE. 0_idp) THEN
       ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(43),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
@@ -905,17 +913,17 @@ MODULE field_boundary
     ENDIF
 
     !SEND ex to  ex_r (proc_z_max)
-    CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(bx,bx_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(by,by_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(bz,bz_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(jx,jx_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(jy,jy_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_left)
-    CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(bx,bx_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(by,by_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(bz,bz_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(jx,jx_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(jy,jy_r,nxx,nyy,nzz,subsizes_left,1_idp)
+    CALL SEND_TO_RIGHT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_left,0_idp)
     CALL MPI_BARRIER(comm,errcode)   
  
     subsizes_right(3) = size_right
@@ -948,7 +956,7 @@ MODULE field_boundary
 #endif
   END SUBROUTINE load_balancing_group_communication_forward
    
-  SUBROUTINE SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_left)
+  SUBROUTINE  SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_left,indexa)
 #if defined(FFTW)
    USE group_parameters
 #endif
@@ -961,23 +969,25 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz   
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
-
+   integer(idp),intent(in) :: indexa
 #if defined(FFTW)
-    IF(.NOT. group_z_max_boundary .AND. rsize_right .NE. 0_isp) THEN
+    IF(z_coords .NE. nprocz-1 .AND. rsize_right .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(-nxguards,-nyguards,rr_right(1)),1_isp,mpi_dtypes(30),           &
       INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+if(rank==0.and.indexa==1_idp)print*,field_in(99,0,rr_right(:))
     ENDIF
 
-    IF(.NOT. group_z_min_boundary .AND. size_left .NE. 0_idp) THEN
+    IF(z_coords .NE. 0 .AND. size_left .NE. 0_idp) THEN
       ALLOCATE(temp_from_right(subsizes_left(1),subsizes_left(2),subsizes_left(3)))
-      CALL MPI_IRECV(temp_from_right,1_isp,mpi_dtypes(31),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
+      CALL MPI_IRECV(temp_from_right(1,1,1),1_isp,mpi_dtypes(31),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
           DO iz=1,size_left
              field_out(ix,iy,g_left(iz)) = temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+   if(indexa==1_idp .and. rank==1 .AND. ix==102 .AND. iy==1) print*,field_out(ix,iy,g_left(iz)),temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
           ENDDO
         ENDDO
       ENDDO
@@ -1003,13 +1013,13 @@ MODULE field_boundary
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_left
 
 #if defined(FFTW)
-    IF(.NOT. group_z_min_boundary .AND. rsize_left .NE. 0_isp) THEN
+    IF(z_coords .NE. 0 .AND. rsize_left .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(-nxguards,-nyguards,rr_left(1)),1_isp,mpi_dtypes(32),           &
       INT(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
     ENDIF
 
-    IF(.NOT. group_z_max_boundary .AND. size_right .NE. 0_idp) THEN
+    IF(z_coords .NE. nprocz-1 .AND. size_right .NE. 0_idp) THEN
       ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(33),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
