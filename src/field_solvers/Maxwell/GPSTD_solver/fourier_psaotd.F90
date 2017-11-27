@@ -204,14 +204,13 @@ MODULE fourier_psaotd
       ENDDO
     ENDDO
     !$OMP END PARALLEL DO
-    
+     
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
     is_source = .TRUE.
     CALL ebj_field_bcs_groups(is_source)
-    !CALL load_balancing_communications_rf_lm(is_source)
-    !CALL load_balancing_communications_rf_rm(is_source)
+    CALL load_balancing_group_communication_forward()
     ! Get global Fourier transform of all fields components and currents
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -485,6 +484,7 @@ MODULE fourier_psaotd
     USE time_stat
     USE params
     USE group_parameters
+    USE field_boundary
     IMPLICIT NONE
     REAL(num) :: coeff_norm, tmptime
     INTEGER(idp) :: ix, iy, iz
@@ -524,10 +524,8 @@ MODULE fourier_psaotd
         END DO
       END DO
     END DO
-    !CALL load_balancing_communications_fr_lm(coeff_norm)
-    !CALL load_balancing_communications_fr_rm(coeff_norm)
-
     !$OMP END PARALLEL DO
+    CALL load_balancing_group_communication_backward(coeff_norm)
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF

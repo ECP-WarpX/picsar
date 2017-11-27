@@ -637,6 +637,7 @@ MODULE field_boundary
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, subsizes2, starts
     INTEGER(isp) :: basetype
     INTEGER(isp):: requests_1(2), requests_2(2),requests_4(4)
+
     basetype = mpidbl
     sizes(1) = nxx
     sizes(2) = nyy
@@ -699,6 +700,170 @@ MODULE field_boundary
 #endif
   END SUBROUTINE field_bc_group_non_blocking
 
+  SUBROUTINE load_balancing_group_communication_backward(coeff_norm)
+#if defined(FFTW)
+  USE group_parameters
+  USE shared_data
+  USE mpi  
+  USE omp_lib
+  USE mpi_fftw3
+  USE time_stat
+  REAL(num)  ,INTENT(IN)  :: coeff_norm
+  INTEGER(idp) , DIMENSION(c_ndims) :: sizes, subsizes_left, subsizes_right , starts
+  INTEGER(isp) :: basetype
+  INTEGER(isp) :: requests_1(1)
+  INTEGER(idp)  :: nxx,nyy,nzz
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+  basetype = mpidbl
+  nxx = 2*(nx_group/2+1)
+  nyy = ny_group
+  nzz = local_nz
+  sizes(1) =nxx 
+  sizes(2) =nyy 
+  sizes(3) =nzz 
+  starts=1
+  subsizes_right(1) = sizes(1)
+  subsizes_right(2) = sizes(2) 
+  subsizes_right(3) = size_right
+  subsizes_left(1) = sizes(1) 
+  subsizes_left(2) = sizes(2)  
+  subsizes_left(3) = rsize_left
+  IF (is_dtype_init(40)) THEN
+    mpi_dtypes(40) = create_3d_array_derived_type(basetype, subsizes_right,sizes,  &
+    starts)
+    is_dtype_init(40) = .FALSE.
+  ENDIF
+  IF (is_dtype_init(41)) THEN
+    mpi_dtypes(41) = create_3d_array_derived_type(basetype,subsizes_left,sizes,  &
+    starts)
+    is_dtype_init(41) = .FALSE.
+  ENDIF
+  !send ex_r to ex  proc_z_max
+  CALL SEND_TO_RIGHT_f2r(ex_r,ex,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(ey_r,ey,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(ez_r,ez,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(rho_r,rhoold,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL SEND_TO_RIGHT_f2r(rhoold_r,rhoold,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  CALL MPI_BARRIER(comm,errcode)
+
+  
+  subsizes_left(3) = size_left
+  subsizes_right(3) = rsize_right
+  IF (is_dtype_init(42)) THEN
+    mpi_dtypes(42) = create_3d_array_derived_type(basetype,subsizes_left,sizes,  &
+    starts)
+    is_dtype_init(42) = .FALSE.
+  ENDIF
+  IF (is_dtype_init(42)) THEN
+    mpi_dtypes(42) = create_3d_array_derived_type(basetype,subsizes_right,sizes,&
+    starts)
+    is_dtype_init(42) = .FALSE.
+  ENDIF
+  CALL SEND_TO_LEFT_f2r(ex_r,ex,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(ey_r,ey,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(ez_r,ez,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(by_r,by,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(rho_r,rhoold,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL SEND_TO_LEFT_f2r(rhoold_r,rhoold,nxx,nyy,nzz,subsizes_right,coeff_norm)
+  CALL MPI_BARRIER(comm,errcode)
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+
+
+#endif
+  END SUBROUTINE load_balancing_group_communication_backward
+
+  SUBROUTINE SEND_TO_RIGHT_f2r(field_in,field_out,nxx,nyy,nzz,subsizes_left,coeff_norm)
+#if defined(FFTW)
+   USE group_parameters
+   USE shared_data
+   USE mpi
+   REAL(num) , INTENT(IN) :: coeff_norm
+   INTEGER(idp) , INTENT(IN)  :: nxx,nyy,nzz
+   REAL(num) , INTENT(INOUT)  , DIMENSION(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards) ::field_out
+   REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_in
+   INTEGER(isp)   :: requests_1(1)
+   INTEGER(idp)   :: ix,iy,iz
+   INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
+   REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
+    IF(.NOT. group_z_max_boundary .AND. size_right .NE. 0_isp) THEN
+      CALL MPI_ISEND(field_in(1,1,g_right(1)),1_isp,mpi_dtypes(40),&
+      INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
+      CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+    ENDIF
+    IF(.NOT. group_z_min_boundary .AND. rsize_left .NE. 0_idp) THEN
+      ALLOCATE(temp_from_right(subsizes_left(1),subsizes_left(2),subsizes_left(3)))
+      CALL MPI_IRECV(temp_from_right,1_isp,mpi_dtypes(41),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
+      CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iy=iy_min_r, iy_max_r
+        DO ix=ix_min_r, ix_max_r
+          DO iz=1,rsize_left
+             field_out(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,rr_left(iz)) = coeff_norm*temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$OMP END PARALLEL DO
+      DEALLOCATE(temp_from_right)
+    ENDIF
+#endif
+  END SUBROUTINE SEND_TO_RIGHT_f2r
+
+
+  SUBROUTINE SEND_TO_LEFT_f2r(field_in,field_out,nxx,nyy,nzz,subsizes_right,coeff_norm)
+#if defined(FFTW)
+   USE group_parameters
+   USE shared_data
+   USE mpi
+   REAL(num) , INTENT(IN) :: coeff_norm
+   INTEGER(idp) , INTENT(IN)  :: nxx,nyy,nzz
+   REAL(num) , INTENT(INOUT)  , DIMENSION(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards) ::field_out
+   REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_in
+   INTEGER(isp)   :: requests_1(1)
+   INTEGER(idp)   :: ix,iy,iz
+   INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_right
+   REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_left
+    IF(.NOT. group_z_min_boundary .AND. size_left .NE. 0_isp) THEN
+      CALL MPI_ISEND(field_in(1,1,g_left(1)),1_isp,mpi_dtypes(42),&
+      INT(proc_z_min,isp),tag,comm,requests_1(1),errcode)
+      CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+    ENDIF
+    IF(.NOT. group_z_max_boundary .AND. rsize_right .NE. 0_idp) THEN
+      ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
+      CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(43),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
+      CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iy=iy_min_r, iy_max_r
+        DO ix=ix_min_r, ix_max_r
+          DO iz=1,rsize_right
+             field_out(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,rr_right(iz)) = coeff_norm*temp_from_left(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$OMP END PARALLEL DO
+      DEALLOCATE(temp_from_left)
+    ENDIF
+#endif
+  END SUBROUTINE SEND_TO_LEFT_f2r
+
+
     
   !> @author Haithem Kallala
   SUBROUTINE load_balancing_group_communication_forward
@@ -708,16 +873,24 @@ MODULE field_boundary
     USE mpi 
     USE omp_lib
     USE mpi_fftw3
+    USE time_stat
     REAL(num) , ALLOCATABLE, DIMENSION(:,:,:) :: temp_from_right
     INTEGER(idp) , DIMENSION(c_ndims) :: sizes, subsizes_left, subsizes_right , starts
     INTEGER(isp) :: basetype
     INTEGER(isp) :: requests_1(1)
     INTEGER(idp)  :: nxx,nyy,nzz
+    REAL(num)     :: tmptime
 
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
     basetype = mpidbl
     sizes(1) = nx+nxguards+1
     sizes(2) = ny+nyguards+1
     sizes(3) = nz+nzguards+1
+    nxx = 2*(nx_group/2+1)
+    nyy = ny_group
+    nzz = local_nz
     starts=1
     subsizes_left(1) = sizes(1)
     subsizes_left(2) = sizes(2)
@@ -725,9 +898,6 @@ MODULE field_boundary
     subsizes_right(1) = sizes(1)
     subsizes_right(2) = sizes(2)
     subsizes_right(3) = rsize_right
-    nxx = 2*(nx_group/2+1)
-    nyy = ny_group
-    nzz = local_nz
     IF (is_dtype_init(30)) THEN
       mpi_dtypes(30) = create_3d_array_derived_type(basetype, subsizes_right, sizes,  &
       starts)
@@ -739,7 +909,7 @@ MODULE field_boundary
       is_dtype_init(31) = .FALSE.
     ENDIF
 
-    !SEND Fields to proc_z_max
+    !SEND ex to  ex_r (proc_z_max)
     CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_left)
     CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_left)
     CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_left)
@@ -778,6 +948,10 @@ MODULE field_boundary
     CALL SEND_TO_LEFT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_right)
     CALL SEND_TO_LEFT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_right)
     CALL MPI_BARRIER(comm,errcode)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
+    ENDIF
+
 #endif
   END SUBROUTINE load_balancing_group_communication_forward
    
@@ -836,7 +1010,7 @@ MODULE field_boundary
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
     ENDIF
 
-    IF(.NOT. group_z_min_boundary .AND. size_left .NE. 0_idp) THEN
+    IF(.NOT. group_z_max_boundary .AND. size_right .NE. 0_idp) THEN
       ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(33),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
