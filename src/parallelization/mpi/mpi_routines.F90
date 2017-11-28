@@ -169,16 +169,7 @@ MODULE mpi_routines
     nx_global=nx_global_grid-1
     ny_global=ny_global_grid-1
     nz_global=nz_global_grid-1
-!!temporary: adjust nz so that it is a multiple of nb_group
-!#if defined(FFTW)
-!    IF(fftw_with_mpi .AND. fftw_hybrid) THEN
-!    IF (modulo(nz_global_grid-1_isp,nb_group) .NE. 0_idp) THEN
-!    write(0,*) 'ADJUST GRID nz/nbgroup*nb_group-nz != 0'
-!    nz_global_grid = ((nz_global_grid-1_idp)/nb_group+1_idp)*nb_group +1
-!    IF (modulo(nz_global_grid-1_isp,nb_group) .NE. 1_idp) stop
-!    ENDIF
-!    ENDIF
-!#endif
+
     !!! --- NB: CPU Split performed on number of grid points (not cells)
 
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc_comm, ierr)

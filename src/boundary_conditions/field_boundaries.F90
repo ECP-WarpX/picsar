@@ -815,7 +815,8 @@ MODULE field_boundary
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
           DO iz=1,rsize_left
-             field_out(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,rr_left(iz)) = coeff_norm*temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+             field_out(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,rr_left(iz)) =&
+                 coeff_norm*temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
           ENDDO
         ENDDO
       ENDDO
@@ -855,7 +856,8 @@ MODULE field_boundary
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
           DO iz=1,rsize_right
-             field_out(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,rr_right(iz)) = coeff_norm*temp_from_left(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+             field_out(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,rr_right(iz)) =&
+                 coeff_norm*temp_from_left(ix-ix_min_r+1,iy-iy_min_r+1,iz)
           ENDDO
         ENDDO
       ENDDO
