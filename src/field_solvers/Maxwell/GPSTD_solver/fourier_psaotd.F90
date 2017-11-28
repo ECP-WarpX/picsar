@@ -210,7 +210,6 @@ MODULE fourier_psaotd
     is_source = .TRUE.
     CALL load_balancing_group_communication_forward()
     CALL ebj_field_bcs_groups(is_source)
-    call mpi_barrier(comm,errcode)
 
     ! Get global Fourier transform of all fields components and currents
     IF (it.ge.timestat_itstart) THEN
@@ -531,10 +530,10 @@ MODULE fourier_psaotd
       END DO
     END DO
     !$OMP END PARALLEL DO
-    CALL load_balancing_group_communication_backward(coeff_norm)
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
+    CALL load_balancing_group_communication_backward(coeff_norm)
   END SUBROUTINE get_fields_mpi_lb
 
 
