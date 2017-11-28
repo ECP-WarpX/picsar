@@ -751,11 +751,10 @@ MODULE field_boundary
   CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_left,coeff_norm)
   CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,subsizes_left,coeff_norm)
   CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_left,coeff_norm)
-  CALL SEND_TO_RIGHT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  !CALL SEND_TO_RIGHT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  !CALL SEND_TO_RIGHT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_left,coeff_norm)
+  !CALL SEND_TO_RIGHT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_left,coeff_norm)
 
-  CALL MPI_BARRIER(comm,errcode)
   
   subsizes_left(3) = size_left
   subsizes_right(3) = rsize_right
@@ -775,11 +774,11 @@ MODULE field_boundary
   CALL SEND_TO_LEFT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL SEND_TO_LEFT_f2r(by_r,by,nxx,nyy,nzz,subsizes_right,coeff_norm)
   CALL SEND_TO_LEFT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_right,coeff_norm)
-  CALL SEND_TO_LEFT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_right,coeff_norm)
-
-  CALL MPI_BARRIER(comm,errcode)
+!  CALL SEND_TO_LEFT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_right,coeff_norm)
+!  CALL SEND_TO_LEFT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_right,coeff_norm)
+!  CALL SEND_TO_LEFT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_right,coeff_norm)
+!
+!  CALL MPI_BARRIER(comm,errcode)
 
   IF (it.ge.timestat_itstart) THEN
     localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)

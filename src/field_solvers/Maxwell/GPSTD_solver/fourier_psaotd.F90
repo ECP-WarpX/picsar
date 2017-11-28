@@ -497,9 +497,9 @@ MODULE fourier_psaotd
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jxf, jx_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)
+!    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jxf, jx_r)
+!    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
+!    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)
 
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -523,9 +523,9 @@ MODULE fourier_psaotd
           by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = by_r(ix,iy, g_local(iz))*coeff_norm
           bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bz_r(ix,iy, g_local(iz))*coeff_norm
 
-          jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jx_r(ix,iy, g_local(iz))*coeff_norm
-          jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jy_r(ix,iy, g_local(iz))*coeff_norm
-          jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jz_r(ix,iy, g_local(iz))*coeff_norm
+!          jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jx_r(ix,iy, g_local(iz))*coeff_norm
+!          jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jy_r(ix,iy, g_local(iz))*coeff_norm
+!          jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) =jz_r(ix,iy, g_local(iz))*coeff_norm
 
         END DO
       END DO
