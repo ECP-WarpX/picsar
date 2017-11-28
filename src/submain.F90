@@ -215,6 +215,8 @@ SUBROUTINE step(nst)
       CALL particle_bcs_2d
 
       !!! --- Deposit current of particle species on the grid
+      CALL pxr_particle_sorting
+
       CALL pxrdepose_currents_on_grid_jxjyjz_2d
 
       !!! --- Boundary conditions for currents
