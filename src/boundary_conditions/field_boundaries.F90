@@ -777,8 +777,7 @@ MODULE field_boundary
 !  CALL SEND_TO_LEFT_f2r(jx_r,jx,nxx,nyy,nzz,subsizes_right,coeff_norm)
 !  CALL SEND_TO_LEFT_f2r(jy_r,jy,nxx,nyy,nzz,subsizes_right,coeff_norm)
 !  CALL SEND_TO_LEFT_f2r(jz_r,jz,nxx,nyy,nzz,subsizes_right,coeff_norm)
-!
-!  CALL MPI_BARRIER(comm,errcode)
+
 
   IF (it.ge.timestat_itstart) THEN
     localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -925,7 +924,6 @@ MODULE field_boundary
     CALL SEND_TO_RIGHT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_left)
     CALL SEND_TO_RIGHT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_left)
     CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_left)
-    CALL MPI_BARRIER(comm,errcode)   
  
     subsizes_right(3) = size_right
     subsizes_left(3) = rsize_left
@@ -950,7 +948,6 @@ MODULE field_boundary
     CALL SEND_TO_LEFT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_right)
     CALL SEND_TO_LEFT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_right)
     CALL SEND_TO_LEFT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_right)
-    CALL MPI_BARRIER(comm,errcode)
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF

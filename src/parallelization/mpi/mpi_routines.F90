@@ -1009,7 +1009,6 @@ SUBROUTINE Sync_exchange_load_balancing_arrays_1
    CALL MPI_IRECV(rsize_left,1_isp,MPI_LONG_LONG_INT,INT(proc_z_min,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- CALL MPI_BARRIER(comm,errcode)
 
  ALLOCATE(rr_left(rsize_left))
  ALLOCATE(rg_left(rsize_left))
@@ -1047,7 +1046,6 @@ SUBROUTINE Sync_exchange_load_balancing_arrays_2
    CALL MPI_IRECV(rsize_right,1_isp,MPI_LONG_LONG_INT,INT(proc_z_max,isp),tag,comm,requests(1),errcode)
    CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
  ENDIF
- CALL MPI_BARRIER(comm,errcode)
 
  ALLOCATE(rr_right(rsize_right))
  ALLOCATE(rg_right(rsize_right))
