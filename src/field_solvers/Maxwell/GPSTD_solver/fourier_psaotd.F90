@@ -212,16 +212,6 @@ MODULE fourier_psaotd
     CALL ebj_field_bcs_groups(is_source)
     call mpi_barrier(comm,errcode)
 
-if (rank==1)then
-do iz=1,local_nz
-        print*,iz,rank,jy_r(102,1,iz)
-enddo
-endif
-!if(rank==0) then
-!do iz=-nzguards,nz+nzguards
-!print*,rank,iz,jy(100,0,iz)
-!enddo
-!endif
     ! Get global Fourier transform of all fields components and currents
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()

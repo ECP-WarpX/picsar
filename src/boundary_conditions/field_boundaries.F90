@@ -888,9 +888,9 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
     basetype = mpidbl
-    sizes(1) = nx+nxguards+1
-    sizes(2) = ny+nyguards+1
-    sizes(3) = nz+nzguards+1
+    sizes(1) = nx+2*nxguards+1
+    sizes(2) = ny+2*nyguards+1
+    sizes(3) = nz+2*nzguards+1
     nxx = 2*(nx_group/2+1)
     nyy = ny_group
     nzz = local_nz
@@ -913,17 +913,17 @@ MODULE field_boundary
     ENDIF
 
     !SEND ex to  ex_r (proc_z_max)
-    CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(bx,bx_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(by,by_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(bz,bz_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(jx,jx_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(jy,jy_r,nxx,nyy,nzz,subsizes_left,1_idp)
-    CALL SEND_TO_RIGHT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_left,0_idp)
-    CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_left,0_idp)
+    CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(bx,bx_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(by,by_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(bz,bz_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(jx,jx_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(jy,jy_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_left)
+    CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_left)
     CALL MPI_BARRIER(comm,errcode)   
  
     subsizes_right(3) = size_right
@@ -956,7 +956,7 @@ MODULE field_boundary
 #endif
   END SUBROUTINE load_balancing_group_communication_forward
    
-  SUBROUTINE  SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_left,indexa)
+  SUBROUTINE  SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_left)
 #if defined(FFTW)
    USE group_parameters
 #endif
@@ -969,13 +969,11 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz   
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
-   integer(idp),intent(in) :: indexa
 #if defined(FFTW)
     IF(z_coords .NE. nprocz-1 .AND. rsize_right .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(-nxguards,-nyguards,rr_right(1)),1_isp,mpi_dtypes(30),           &
       INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-if(rank==0.and.indexa==1_idp)print*,field_in(99,0,rr_right(:))
     ENDIF
 
     IF(z_coords .NE. 0 .AND. size_left .NE. 0_idp) THEN
@@ -983,11 +981,10 @@ if(rank==0.and.indexa==1_idp)print*,field_in(99,0,rr_right(:))
       CALL MPI_IRECV(temp_from_right(1,1,1),1_isp,mpi_dtypes(31),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-      DO iy=iy_min_r, iy_max_r
-        DO ix=ix_min_r, ix_max_r
-          DO iz=1,size_left
-             field_out(ix,iy,g_left(iz)) = temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
-   if(indexa==1_idp .and. rank==1 .AND. ix==102 .AND. iy==1) print*,field_out(ix,iy,g_left(iz)),temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+      DO iz=1,size_left
+        DO iy=iy_min_r, iy_max_r
+          DO ix=ix_min_r, ix_max_r
+           field_out(ix,iy,g_left(iz)) = temp_from_right(ix-ix_min_r+1,iy-iy_min_r+1,iz)
           ENDDO
         ENDDO
       ENDDO
@@ -1024,9 +1021,9 @@ if(rank==0.and.indexa==1_idp)print*,field_in(99,0,rr_right(:))
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(33),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-      DO iy=iy_min_r, iy_max_r
-        DO ix=ix_min_r, ix_max_r
-          DO iz=1,size_right
+      DO iz=1,size_right
+        DO iy=iy_min_r, iy_max_r
+          DO ix=ix_min_r, ix_max_r
              field_out(ix,iy,g_right(iz)) = temp_from_left(ix-ix_min_r+1,iy-iy_min_r+1,iz)
           ENDDO
         ENDDO
