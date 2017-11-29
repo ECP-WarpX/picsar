@@ -1355,7 +1355,6 @@ IF(fftw_hybrid) THEN
     z_max_local = z_max_local_lb
   ENDIF
 ENDIF
-call mpi_barrier(comm,errcode)
 #endif
 !!! --- Set up global grid limits
 
