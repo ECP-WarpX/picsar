@@ -508,13 +508,12 @@ MODULE field_boundary
   !
   !
   ! ______________________________________________________________________________________
-  SUBROUTINE ebj_field_bcs_groups(is_source)
+  SUBROUTINE ebj_field_bcs_groups()
 #if defined(FFTW)
     USE group_parameters
     USE mpi_fftw3
 #endif
     USE shared_data
-    LOGICAL(lp), INTENT(IN)  :: is_source
     REAL(num) :: tmptime
     INTEGER(idp)     ::  size_nx
 #if defined(DEBUG)
@@ -529,52 +528,32 @@ MODULE field_boundary
       CALL field_bc_group_non_blocking(ex_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_non_blocking(ey_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_non_blocking(ez_r, size_nx, ny_group, local_nz, nzg_group)
-      IF (it.ge.timestat_itstart) THEN
-        localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
-        tmptime = MPI_WTIME()
-      ENDIF
       CALL field_bc_group_non_blocking(bx_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_non_blocking(by_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_non_blocking(bz_r, size_nx, ny_group, local_nz, nzg_group)
-      IF (it.ge.timestat_itstart) THEN
-        localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
-        tmptime = MPI_WTIME()
-      ENDIF
-      IF(is_source) THEN
-        CALL field_bc_group_non_blocking(jx_r, size_nx, ny_group, local_nz,           &
-        nzg_group)
-        CALL field_bc_group_non_blocking(jy_r, size_nx, ny_group, local_nz,           &
-        nzg_group)
-        CALL field_bc_group_non_blocking(jz_r, size_nx, ny_group, local_nz,           &
-        nzg_group)
-        CALL field_bc_group_non_blocking(rho_r, size_nx, ny_group, local_nz,          &
-        nzg_group)
-        CALL field_bc_group_non_blocking(rhoold_r, size_nx, ny_group, local_nz,       &
-        nzg_group)
-      ENDIF
+      CALL field_bc_group_non_blocking(jx_r, size_nx, ny_group, local_nz,           &
+      nzg_group)
+      CALL field_bc_group_non_blocking(jy_r, size_nx, ny_group, local_nz,           &
+      nzg_group)
+      CALL field_bc_group_non_blocking(jz_r, size_nx, ny_group, local_nz,           &
+      nzg_group)
+      CALL field_bc_group_non_blocking(rho_r, size_nx, ny_group, local_nz,          &
+      nzg_group)
+      CALL field_bc_group_non_blocking(rhoold_r, size_nx, ny_group, local_nz,       &
+      nzg_group)
     ELSE
       CALL field_bc_group_blocking(ex_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_blocking(ey_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_blocking(ez_r, size_nx, ny_group, local_nz, nzg_group)
-      IF (it.ge.timestat_itstart) THEN
-        localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
-        tmptime = MPI_WTIME()
-      ENDIF
       CALL field_bc_group_blocking(bx_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_blocking(by_r, size_nx, ny_group, local_nz, nzg_group)
       CALL field_bc_group_blocking(bz_r, size_nx, ny_group, local_nz, nzg_group)
-      IF (it.ge.timestat_itstart) THEN
-        localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
-        tmptime = MPI_WTIME()
-      ENDIF
-      IF(is_source) THEN
-        CALL field_bc_group_blocking(jx_r, size_nx, ny_group, local_nz, nzg_group)
-        CALL field_bc_group_blocking(jy_r, size_nx, ny_group, local_nz, nzg_group)
-        CALL field_bc_group_blocking(jz_r, size_nx, ny_group, local_nz, nzg_group)
-        CALL field_bc_group_blocking(rho_r, size_nx, ny_group, local_nz, nzg_group)
-        CALL field_bc_group_blocking(rhoold_r, size_nx, ny_group, local_nz,           &
-        nzg_group)
-      ENDIF
+      CALL field_bc_group_blocking(jx_r, size_nx, ny_group, local_nz, nzg_group)
+      CALL field_bc_group_blocking(jy_r, size_nx, ny_group, local_nz, nzg_group)
+      CALL field_bc_group_blocking(jz_r, size_nx, ny_group, local_nz, nzg_group)
+      CALL field_bc_group_blocking(rho_r, size_nx, ny_group, local_nz, nzg_group)
+      CALL field_bc_group_blocking(rhoold_r, size_nx, ny_group, local_nz,           &
+      nzg_group)
 
     ENDIF
     IF (it.ge.timestat_itstart) THEN
@@ -593,39 +572,50 @@ MODULE field_boundary
     USE shared_data
     INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, ngroupz
     REAL(num), INTENT(INOUT), DIMENSION(1:nxx, 1:nyy, 1:nzz)  :: field
-    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts,subsizes2
     INTEGER(isp) :: basetype
 #if defined(FFTW)
-!    basetype = mpidbl
-!    sizes(1) = nxx
-!    sizes(2) = nyy
-!    sizes(3) = nzz
-!    starts=1
-!    subsizes(1) = sizes(1)
-!    subsizes(2) = sizes(2)
-!    subsizes(3) = ngroupz
-!    IF (is_dtype_init(20)) THEN
-!      mpi_dtypes(20) = create_3d_array_derived_type(basetype, subsizes, sizes,        &
-!      starts)
-!      is_dtype_init(20) = .FALSE.
-!    ENDIF
-!#if defined(FFTW)
-!    IF(group_z_min_boundary) THEN
-!      CALL MPI_SEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,     &
-!      isp), tag, comm, errcode)
-!    ENDIF
-!    IF(group_z_max_boundary) THEN
-!      CALL MPI_RECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max,   &
-!      isp), tag, comm, errcode)
-!    ENDIF
-!    IF(group_z_max_boundary) THEN
-!      CALL MPI_SEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),          &
-!      INT(proc_z_max, isp), tag, comm, errcode)
-!    ENDIF
-!    IF(group_z_min_boundary) THEN
-!      CALL MPI_RECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min, isp), tag, &
-!      comm, errcode)
-!    ENDIF
+    basetype = mpidbl
+    sizes(1) = nxx
+    sizes(2) = nyy
+    sizes(3) = nzz
+    starts=1
+    subsizes(1) = sizes(1)
+    subsizes(2) = sizes(2)
+    subsizes(3) = ngroupz
+    subsizes2(1) = sizes(1)
+    subsizes2(2) = sizes(2)
+    subsizes2(3) = ngroupz+1
+
+    IF (is_dtype_init(20)) THEN
+      mpi_dtypes(20) = create_3d_array_derived_type(basetype, subsizes, sizes,        &
+      starts)
+      is_dtype_init(20) = .FALSE.
+    ENDIF
+
+    IF (is_dtype_init(21)) THEN
+      mpi_dtypes(21) = create_3d_array_derived_type(basetype, subsizes2, sizes,&
+      starts)
+      is_dtype_init(21) = .FALSE.
+    ENDIF
+
+
+    IF(group_z_min_boundary) THEN
+      CALL MPI_SEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,     &
+      isp), tag, comm, errcode)
+    ENDIF
+    IF(group_z_max_boundary) THEN
+      CALL MPI_RECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max,   &
+      isp), tag, comm,MPI_STATUS_IGNORE, errcode)
+    ENDIF
+    IF(group_z_max_boundary) THEN
+      CALL MPI_SEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(21),          &
+      INT(proc_z_max, isp), tag, comm, errcode)
+    ENDIF
+    IF(group_z_min_boundary) THEN
+      CALL MPI_RECV(field(1, 1, 1), 1_isp, mpi_dtypes(21), INT(proc_z_min, isp), tag, &
+      comm,MPI_STATUS_IGNORE, errcode)
+    ENDIF
 #endif
   END SUBROUTINE field_bc_group_blocking
 
@@ -666,22 +656,15 @@ MODULE field_boundary
 !CASE Where each group has more than one mpi task
     IF ((group_z_min_boundary .AND. .NOT. group_z_max_boundary)  .OR. &
          (group_z_max_boundary  .AND. .NOT. group_z_min_boundary)) THEN
-      IF(group_z_min_boundary .AND. .NOT. group_z_max_boundary) THEN
+      IF(group_z_min_boundary .OR. group_z_max_boundary) THEN
         CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,    &
         isp), tag, comm, requests_1(1), errcode)
-        CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-      ENDIF
-      IF(group_z_max_boundary .AND. .NOT. group_z_min_boundary) THEN
         CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max,  &
         isp), tag, comm, requests_2(1), errcode)
         CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
-      ENDIF
-      IF(group_z_max_boundary .AND. .NOT. group_z_min_boundary) THEN
         CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(21),         &
         INT(proc_z_max, isp), tag, comm, requests_1(1), errcode)
         CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-      ENDIF
-      IF(group_z_min_boundary .AND. .NOT. group_z_max_boundary) THEN
         CALL MPI_IRECV(field(1, 1, 1), 1_isp, mpi_dtypes(21), INT(proc_z_min, isp),     &
         tag, comm, requests_2(1), errcode)
         CALL MPI_WAITALL(1_isp, requests_2, MPI_STATUSES_IGNORE, errcode)

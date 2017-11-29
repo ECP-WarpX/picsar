@@ -194,7 +194,7 @@ MODULE fourier_psaotd
     ENDIF
     is_source = .TRUE.
     CALL load_balancing_group_communication_forward()
-    CALL ebj_field_bcs_groups(is_source)
+    CALL ebj_field_bcs_groups()
 
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
@@ -274,7 +274,7 @@ MODULE fourier_psaotd
     ENDIF
     IF(fftw_hybrid) THEN
       is_source = .TRUE.
-      CALL ebj_field_bcs_groups(is_source)
+      CALL ebj_field_bcs_groups()
     ENDIF
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi
