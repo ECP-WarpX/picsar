@@ -166,7 +166,6 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
-    LOGICAL(lp)  :: is_source
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -192,7 +191,6 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    is_source = .TRUE.
     CALL load_balancing_group_communication_forward()
     CALL ebj_field_bcs_groups()
 
@@ -212,7 +210,6 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
-    LOGICAL(lp)  :: is_source
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -273,7 +270,6 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
     IF(fftw_hybrid) THEN
-      is_source = .TRUE.
       CALL ebj_field_bcs_groups()
     ENDIF
     ! Get global Fourier transform of all fields components and currents

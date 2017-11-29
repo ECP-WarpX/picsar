@@ -640,7 +640,7 @@ MODULE field_boundary
           ENDDO
         ENDDO
       ENDIF
-    DEALLOCATE(temp)
+      DEALLOCATE(temp)
     ENDIF
 #endif
   END SUBROUTINE field_bc_group_blocking
@@ -673,37 +673,35 @@ MODULE field_boundary
     ENDIF
 #if defined(FFTW)
 !CASE Where each group has more than one mpi task
-    IF ((group_z_min_boundary .AND. .NOT. group_z_max_boundary)  .OR. &
-         (group_z_max_boundary  .AND. .NOT. group_z_min_boundary)) THEN
-        IF(group_z_min_boundary) THEN
-          CALL MPI_IRECV(field(1, 1, 1), 1_isp,mpi_dtypes(20),INT(proc_z_min,isp),     &
-          tag, comm, requests_1(1), errcode)
-          CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,    &
-          isp), tag, comm, requests_1(2), errcode)
-          CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-        ENDIF
-        IF(group_z_max_boundary) THEN
-          CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max,  &
-          isp), tag, comm, requests_2(1), errcode)
-          CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),&
-          INT(proc_z_max, isp), tag, comm, requests_2(2), errcode)
-          CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
-        ENDIF
+    IF (XOR(group_z_min_boundary,group_z_max_boundary))  THEN
+      IF(group_z_min_boundary) THEN
+        CALL MPI_IRECV(field(1, 1, 1), 1_isp,mpi_dtypes(20),INT(proc_z_min,isp),      &
+        tag, comm, requests_1(1), errcode)
+        CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,   &
+        isp), tag, comm, requests_1(2), errcode)
+        CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+      ENDIF
+      IF(group_z_max_boundary) THEN
+        CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max, &
+        isp), tag, comm, requests_2(1), errcode)
+        CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),       &
+        INT(proc_z_max, isp), tag, comm, requests_2(2), errcode)
+        CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
+      ENDIF
     ENDIF
 !case where each group has one mpi task 
     IF(group_z_min_boundary .AND. group_z_max_boundary) THEN
-      CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,    &
+      CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,     &
       isp), tag, comm, requests_1(1), errcode)
-      CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max,  &
+      CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max,   &
       isp), tag, comm, requests_1(2), errcode)
       CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-      CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),&
+      CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),         &
       INT(proc_z_max, isp), tag, comm, requests_2(1), errcode)
-      CALL MPI_IRECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp),     &
+      CALL MPI_IRECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp),      &
       tag, comm, requests_2(2), errcode)
       CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
     ENDIF
-
 #endif
   END SUBROUTINE field_bc_group_non_blocking
 
