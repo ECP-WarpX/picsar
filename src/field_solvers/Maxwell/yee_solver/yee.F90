@@ -21,7 +21,7 @@
 ! YEE.F90
 !
 ! Purpose:
-! This file contains subroutines for the FDTD solver of K, Yee
+! This file contains SUBROUTINEs for the FDTD solver of K, Yee
 ! and the generalization at order n.
 !
 ! Authors:
@@ -43,84 +43,84 @@
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
+SUBROUTINE pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  use constants
+  USE constants
 
-  integer(idp), intent(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  integer(idp), intent(IN) :: norderx, nordery, norderz
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  INTEGER(idp), INTENT(IN) :: norderx, nordery, norderz
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
   -nzguard:nz+nzguard) :: Jx, Jy, Jz
-  real(num), intent(IN) :: mudt, dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
-  integer(idp) :: i, j, k, l, ist
+  REAL(num), INTENT(IN) :: mudt, dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
+  INTEGER(idp) :: i, j, k, l, ist
   LOGICAL(lp)  :: l_nodalgrid
 
-  if (l_nodalgrid) then
+  IF (l_nodalgrid) THEN
     ist = 0
-  else
+  ELSE
     ist = 1
-  end if
+  END IF
 
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
   !$OMP DO COLLAPSE(3)
   ! advance Ex
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
         Ex(j, k, l) = Ex(j, k, l) - mudt  * Jx(j, k, l)
-        do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           Ex(j, k, l) = Ex(j, k, l) + dtsdy(i) * (Bz(j, k+i-ist, l)   - Bz(j, k-i, l  &
           ))
-        end do
-        do i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        END DO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           Ex(j, k, l) = Ex(j, k, l) - dtsdz(i) * (By(j, k, l+i-ist)   - By(j, k,      &
           l-i))
-        end do
-      end do
-    end do
-  end do
+        END DO
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
   ! advance Ey
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
         Ey(j, k, l) = Ey(j, k, l) - mudt  * Jy(j, k, l)
-        do i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           Ey(j, k, l) = Ey(j, k, l) - dtsdx(i) * (Bz(j+i-ist, k, l)   - Bz(j-i, k,    &
           l))
-        end do
-        do i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        END DO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           Ey(j, k, l) = Ey(j, k, l) + dtsdz(i) * (Bx(j, k, l+i-ist)   - Bx(j, k,      &
           l-i))
-        end do
-      end do
-    end do
-  end do
+        END DO
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
   ! advance Ez
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
         Ez(j, k, l) = Ez(j, k, l) - mudt  * Jz(j, k, l)
-        do i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           Ez(j, k, l) = Ez(j, k, l) + dtsdx(i) * (By(j+i-ist, k, l) - By(j-i, k, l))
-        end do
-        do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+        END DO
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           Ez(j, k, l) = Ez(j, k, l) - dtsdy(i) * (Bx(j, k+i-ist, l) - Bx(j, k-i, l))
-        end do
-      end do
-    end do
-  end do
+        END DO
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
 
-  return
-end subroutine pxrpush_em3d_evec_norder
+  RETURN
+END SUBROUTINE pxrpush_em3d_evec_norder
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -132,70 +132,70 @@ end subroutine pxrpush_em3d_evec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
+SUBROUTINE pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  use constants
-  integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
+  USE constants
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
   -nzguard:nz+nzguard) :: Jx, Jy, Jz
-  real(num), intent(IN) :: mudt, dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
-  integer(idp) :: i, j, k, l, ist
-  LOGICAL(lp)  :: l_nodalgrid
+  REAL(num), INTENT(IN) :: mudt, dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
+  INTEGER(idp) :: i, j, k, l, ist
+  LOGICAL(lp), INTENT(IN)  :: l_nodalgrid
 
-  if (l_nodalgrid) then
+  IF (l_nodalgrid) THEN
     ist = 0
-  else
+  ELSE
     ist = 1
-  end if
+  END IF
 
   k = 0
 
   ! advance Ex
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Ex(j, k, l) = Ex(j, k, l) - mudt  * Jx(j, k, l)
-      do i = 1, norderz/2
+      DO i = 1, norderz/2
         Ex(j, k, l) = Ex(j, k, l) - dtsdz(i) * (By(j, k, l+i-ist)   - By(j, k, l-i))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
 
   ! advance Ey
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Ey(j, k, l) = Ey(j, k, l) - mudt  * Jy(j, k, l)
-      do i = 1, norderx/2
+      DO i = 1, norderx/2
         Ey(j, k, l) = Ey(j, k, l) - dtsdx(i) * (Bz(j+i-ist, k, l)   - Bz(j-i, k, l))
-      end do
-      do i = 1, norderz/2
+      END DO
+      DO i = 1, norderz/2
         Ey(j, k, l) = Ey(j, k, l) + dtsdz(i) * (Bx(j, k, l+i-ist)   - Bx(j, k, l-i))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
 
   ! advance Ez
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Ez(j, k, l) = Ez(j, k, l) - mudt  * Jz(j, k, l)
-      do i = 1, norderx/2
+      DO i = 1, norderx/2
         Ez(j, k, l) = Ez(j, k, l) + dtsdx(i) * (By(j+i-ist, k, l) - By(j-i, k, l))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
-  return
-end subroutine pxrpush_em2d_evec_norder
+  RETURN
+END SUBROUTINE pxrpush_em2d_evec_norder
 
 
 ! ________________________________________________________________________________________
@@ -208,62 +208,58 @@ end subroutine pxrpush_em2d_evec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
+SUBROUTINE pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-  use constants
-  integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  USE constants
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
-  -nzguard:nz+nzguard) :: Jx, Jy, Jz
-  real(num) :: mudt, dtsdx, dtsdy, dtsdz
-  integer(idp) :: j, k, l, ist
-  LOGICAL(lp) ,intent(in) :: l_nodalgrid
-  if (l_nodalgrid) then
+  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+  -nzguard:nz+nzguard)    :: Jx, Jy, Jz
+  REAL(num) , INTENT(IN)  :: mudt, dtsdx, dtsdy, dtsdz
+  INTEGER(idp) :: j, k, l, ist
+  LOGICAL(lp) ,INTENT(IN) :: l_nodalgrid
+  IF (l_nodalgrid) THEN
     ist = 0
-  else
+  ELSE
     ist = 1
-  end if
+  END IF
 
   k = 0_idp
   ! advance Ex
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Ex(j, k, l) = Ex(j, k, l) - mudt  * Jx(j, k, l)
       Ex(j, k, l) = Ex(j, k, l) - dtsdz * (By(j, k, l+1-ist)   - By(j, k, l-1))
-    end do
-  end do
+    END DO
+  END DO
   !$OMP END DO
-  !$OMP END PARALLEL
 
   ! advance Ey
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Ey(j, k, l) = Ey(j, k, l) - mudt  * Jy(j, k, l)
       Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j+1-ist, k, l)   - Bz(j-1, k, l))
       Ey(j, k, l) = Ey(j, k, l) + dtsdz * (Bx(j, k, l+1-ist)   - Bx(j, k, l-1))
-    end do
-  end do
+    END DO
+  END DO
   !$OMP END DO
-  !$OMP END PARALLEL
 
   ! advance Ez
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Ez(j, k, l) = Ez(j, k, l) - mudt  * Jz(j, k, l)
       Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j+1-ist, k, l) - By(j-1, k, l))
-    end do
-  end do
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
-  return
-end subroutine pxrpush_em2d_evec
+  RETURN
+END SUBROUTINE pxrpush_em2d_evec
 
 
 ! ________________________________________________________________________________________
@@ -276,55 +272,55 @@ end subroutine pxrpush_em2d_evec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
+SUBROUTINE pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-  use constants
-  integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  USE constants
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
   -nzguard:nz+nzguard) :: jx, jy, jz
-  real(num), intent(IN) :: mudt, dtsdx, dtsdy, dtsdz
-  integer(idp):: j, k, l
+  REAL(num), INTENT(IN) :: mudt, dtsdx, dtsdy, dtsdz
+  INTEGER(idp):: j, k, l
   LOGICAL(lp)  :: l_nodalgrid
 
   ! advance Ex
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
         Ex(j, k, l) = Ex(j, k, l) + dtsdy * (Bz(j, k, l)   - Bz(j, k-1, l  )) - dtsdz &
         * (By(j, k, l)   - By(j, k, l-1)) - mudt  * jx(j, k, l)
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   ! advance Ey
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
         Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j, k, l)   - Bz(j-1, k, l)) + dtsdz * &
         (Bx(j, k, l)   - Bx(j, k, l-1)) - mudt  * jy(j, k, l)
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   ! advance Ez
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
         Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j, k, l) - By(j-1, k, l)) - dtsdy *   &
         (Bx(j, k, l) - Bx(j, k-1, l)) - mudt  * jz(j, k, l)
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
-  return
-end subroutine pxrpush_em3d_evec
+  RETURN
+END SUBROUTINE pxrpush_em3d_evec
 
 
 ! ________________________________________________________________________________________
@@ -337,76 +333,76 @@ end subroutine pxrpush_em3d_evec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
+SUBROUTINE pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  use constants
-  integer(idp), intent(in)    :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs,      &
+  USE constants
+  INTEGER(idp), INTENT(IN)    :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs,      &
   norderx, nordery, norderz
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN) :: dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
-  integer(idp)          :: i, j, k, l, ist
-  LOGICAL(lp), intent(in) :: l_nodalgrid
+  REAL(num), INTENT(IN) :: dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
+  INTEGER(idp)          :: i, j, k, l, ist
+  LOGICAL(lp), INTENT(IN) :: l_nodalgrid
 
-  if (l_nodalgrid) then
+  IF (l_nodalgrid) THEN
     ist = 0
-  else
+  ELSE
     ist = 1
-  end if
+  END IF
 
   ! advance Bx
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
-        do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           Bx(j, k, l) = Bx(j, k, l) - dtsdy(i) * (Ez(j, k+i, l  ) - Ez(j, k-i+ist,    &
           l))
-        end do
-        do i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        END DO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           Bx(j, k, l) = Bx(j, k, l) + dtsdz(i) * (Ey(j, k, l+i) - Ey(j, k, l-i+ist))
-        end do
-      end do
-    end do
-  end do
+        END DO
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   ! advance By
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
-        do i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           By(j, k, l) = By(j, k, l) + dtsdx(i) * (Ez(j+i, k, l  ) - Ez(j-i+ist, k,    &
           l))
-        end do
-        do i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
+        END DO
+        DO i = 1, MIN(MIN(norderz/2, (nz-l)+nzguard), l+nzguard)
           By(j, k, l) = By(j, k, l) - dtsdz(i) * (Ex(j, k, l+i) - Ex(j, k, l-i+ist))
-        end do
-      end do
-    end do
-  end do
+        END DO
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   ! advance Bz
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs
-        do i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs
+        DO i = 1, MIN(MIN(norderx/2, (nx-j)+nxguard), j+nxguard)
           Bz(j, k, l) = Bz(j, k, l) - dtsdx(i) * (Ey(j+i, k, l) - Ey(j-i+ist, k, l))
-        end do
-        do i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
+        END DO
+        DO i = 1, MIN(MIN(nordery/2, (ny-k)+nyguard), k+nyguard)
           Bz(j, k, l) = Bz(j, k, l) + dtsdy(i) * (Ex(j, k+i, l) - Ex(j, k-i+ist, l))
-        end do
-      end do
-    end do
-  end do
+        END DO
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
-  return
+  RETURN
 
-end subroutine pxrpush_em3d_bvec_norder
+END SUBROUTINE pxrpush_em3d_bvec_norder
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -418,66 +414,66 @@ end subroutine pxrpush_em3d_bvec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
+SUBROUTINE pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  use constants
-  integer(idp) , intent(in) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
+  USE constants
+  INTEGER(idp) , INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN) :: dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
-  integer(idp) :: i, j, k, l, ist
-  LOGICAL(lp) ,intent(in) :: l_nodalgrid
+  REAL(num), INTENT(IN) :: dtsdx(norderx/2), dtsdy(nordery/2), dtsdz(norderz/2)
+  INTEGER(idp) :: i, j, k, l, ist
+  LOGICAL(lp) ,INTENT(IN) :: l_nodalgrid
 
-  if (l_nodalgrid) then
+  IF (l_nodalgrid) THEN
     ist = 0
-  else
+  ELSE
     ist = 1
-  end if
+  END IF
 
   k = 0
 
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j, i)
   ! advance Bx
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
-      do i = 1, norderz/2
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      DO i = 1, norderz/2
         Bx(j, k, l) = Bx(j, k, l) + dtsdz(i) * (Ey(j, k, l+i) - Ey(j, k, l-i+ist))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
 
   ! advance By
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
-      do i = 1, norderx/2
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      DO i = 1, norderx/2
         By(j, k, l) = By(j, k, l) + dtsdx(i) * (Ez(j+i, k, l  ) - Ez(j-i+ist, k, l))
-      end do
-      do i = 1, norderz/2
+      END DO
+      DO i = 1, norderz/2
         By(j, k, l) = By(j, k, l) - dtsdz(i) * (Ex(j, k, l+i) - Ex(j, k, l-i+ist))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
 
   ! advance Bz
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
-      do i = 1, norderx/2
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      DO i = 1, norderx/2
         Bz(j, k, l) = Bz(j, k, l) - dtsdx(i) * (Ey(j+i, k, l) - Ey(j-i+ist, k, l))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
-  return
+  RETURN
 
-end subroutine pxrpush_em2d_bvec_norder
+END SUBROUTINE pxrpush_em2d_bvec_norder
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -489,52 +485,52 @@ end subroutine pxrpush_em2d_bvec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
+SUBROUTINE pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
   nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-  use constants
-  integer(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  USE constants
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz
-  integer(idp) :: j, k, l, ist
+  REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz
+  INTEGER(idp) :: j, k, l, ist
   LOGICAL(lp)  :: l_nodalgrid
 
-  if (l_nodalgrid) then
+  IF (l_nodalgrid) THEN
     ist = 0
-  else
+  ELSE
     ist = 1
-  end if
+  END IF
   k = 0_idp
   ! advance Bx
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
-    end do
-  end do
+    END DO
+  END DO
   !$OMP END DO
   ! advance By
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       By(j, 0, l) = By(j, 0, l) + dtsdx * (Ez(j+1, 0, l  ) - Ez(j-1+ist, 0, l))
       By(j, 0, l) = By(j, 0, l) - dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))
-    end do
-  end do
+    END DO
+  END DO
   !$OMP END DO
   ! advance Bz
   !$OMP DO COLLAPSE(2)
-  do l = -nzs, nz+nzs
-    do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       Bz(j, 0, l) = Bz(j, 0, l) - dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l))
-    end do
-  end do
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
-  return
+  RETURN
 
-end subroutine pxrpush_em2d_bvec
+END SUBROUTINE pxrpush_em2d_bvec
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -546,49 +542,49 @@ end subroutine pxrpush_em2d_bvec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
+SUBROUTINE pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
   nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-  use constants
-  integer(idp):: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  real(num), intent(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  USE constants
+  INTEGER(idp):: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz
-  integer(idp) :: j, k, l
+  REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz
+  INTEGER(idp) :: j, k, l
   LOGICAL(lp)  :: l_nodalgrid
 
   ! advance Bx
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs-1
-    do k = -nys, ny+nys-1
-      do j = -nxs, nx+nxs
+  DO l = -nzs, nz+nzs-1
+    DO k = -nys, ny+nys-1
+      DO j = -nxs, nx+nxs
         Bx(j, k, l) = Bx(j, k, l) - dtsdy * (Ez(j, k+1, l  ) - Ez(j, k, l)) + dtsdz * &
         (Ey(j, k, l+1) - Ey(j, k, l))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   ! advance By
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs-1
-    do k = -nys, ny+nys
-      do j = -nxs, nx+nxs-1
+  DO l = -nzs, nz+nzs-1
+    DO k = -nys, ny+nys
+      DO j = -nxs, nx+nxs-1
         By(j, k, l) = By(j, k, l) + dtsdx * (Ez(j+1, k, l  ) - Ez(j, k, l)) - dtsdz * &
         (Ex(j, k, l+1) - Ex(j, k, l))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   ! advance Bz
   !$OMP DO COLLAPSE(3)
-  do l = -nzs, nz+nzs
-    do k = -nys, ny+nys-1
-      do j = -nxs, nx+nxs-1
+  DO l = -nzs, nz+nzs
+    DO k = -nys, ny+nys-1
+      DO j = -nxs, nx+nxs-1
         Bz(j, k, l) = Bz(j, k, l) - dtsdx * (Ey(j+1, k, l) - Ey(j, k, l)) + dtsdy *   &
         (Ex(j, k+1, l) - Ex(j, k, l))
-      end do
-    end do
-  end do
+      END DO
+    END DO
+  END DO
   !$OMP END DO
   !$OMP END PARALLEL
-end subroutine pxrpush_em3d_bvec
+END SUBROUTINE pxrpush_em3d_bvec
