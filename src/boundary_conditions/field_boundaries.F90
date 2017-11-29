@@ -759,12 +759,12 @@ MODULE field_boundary
   ENDIF
 
   !Send ex_r to ex  of proc_z_max
-  CALL SEND_TO_RIGHT_f2r(ex_r,ex,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(ey_r,ey,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(ez_r,ez,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(ex_r,ex,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(ey_r,ey,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(ez_r,ez,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
 
   
   subsizes_left(3) = size_left
@@ -783,12 +783,12 @@ MODULE field_boundary
   ENDIF
 
   !> Send ex_r to ex of proc_z_min
-  CALL SEND_TO_LEFT_f2r(ex_r,ex,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_LEFT_f2r(ey_r,ey,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_LEFT_f2r(ez_r,ez,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_LEFT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_LEFT_f2r(by_r,by,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_LEFT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_LEFT_f2r(ex_r,ex,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_LEFT_f2r(ey_r,ey,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_LEFT_f2r(ez_r,ez,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_LEFT_f2r(bx_r,bx,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_LEFT_f2r(by_r,by,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_LEFT_f2r(bz_r,bz,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
 
   IF (it.ge.timestat_itstart) THEN
     localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -796,7 +796,7 @@ MODULE field_boundary
 #endif
   END SUBROUTINE load_balancing_group_communication_backward
 
-  SUBROUTINE SEND_TO_RIGHT_f2r(field_in,field_out,nxx,nyy,nzz,subsizes_left,coeff_norm,nx1,ny1,nz1,nxg,nyg,nzg)
+  SUBROUTINE SEND_TO_RIGHT_f2r(field_in,field_out,nxx,nyy,nzz,coeff_norm,nx1,ny1,nz1,nxg,nyg,nzg)
 #if defined(FFTW)
    USE group_parameters
 #endif
@@ -808,7 +808,6 @@ MODULE field_boundary
    REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_in
    INTEGER(isp)   :: requests_1(1)
    INTEGER(idp)   :: ix,iy,iz
-   INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
 
 #if defined(FFTW)
@@ -819,7 +818,7 @@ MODULE field_boundary
     ENDIF
 
     IF(z_coords .NE. 0 .AND. rsize_left .NE. 0_idp) THEN
-      ALLOCATE(temp_from_right(subsizes_left(1),subsizes_left(2),subsizes_left(3)))
+      ALLOCATE(temp_from_right(nxx,nyy,rsize_left))
 
       CALL MPI_IRECV(temp_from_right,1_isp,mpi_dtypes(41),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
@@ -841,7 +840,7 @@ MODULE field_boundary
   END SUBROUTINE SEND_TO_RIGHT_f2r
 
 
-  SUBROUTINE SEND_TO_LEFT_f2r(field_in,field_out,nxx,nyy,nzz,subsizes_right,coeff_norm,nx1,ny1,nz1,nxg,nyg,nzg)
+  SUBROUTINE SEND_TO_LEFT_f2r(field_in,field_out,nxx,nyy,nzz,coeff_norm,nx1,ny1,nz1,nxg,nyg,nzg)
 #if defined(FFTW)
    USE group_parameters
 #endif
@@ -853,7 +852,6 @@ MODULE field_boundary
    REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_in
    INTEGER(isp)   :: requests_1(1)
    INTEGER(idp)   :: ix,iy,iz
-   INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_right
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_left
 
 #if defined(FFTW)
@@ -864,7 +862,7 @@ MODULE field_boundary
     ENDIF
 
     IF(z_coords .NE. nprocz-1 .AND. rsize_right .NE. 0_idp) THEN
-      ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
+      ALLOCATE(temp_from_left(nxx,nyy,rsize_right))
 
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(43),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
@@ -938,19 +936,6 @@ MODULE field_boundary
       is_dtype_init(31) = .FALSE.
     ENDIF
 
-    !SEND ex to  ex_r  at(proc_z_max)
-    CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(bx,bx_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(by,by_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(bz,bz_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(jx,jx_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(jy,jy_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
- 
     subsizes_right(3) = size_right
     subsizes_left(3) = rsize_left
     IF (is_dtype_init(32)) THEN
@@ -964,18 +949,31 @@ MODULE field_boundary
       is_dtype_init(33) = .FALSE.
     ENDIF
 
+    !SEND ex to  ex_r  at(proc_z_max)
+    CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(bx,bx_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(by,by_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(bz,bz_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(jx,jx_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(jy,jy_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(jz,jz_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(rho,rhoold_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_RIGHT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+ 
     !> Send ex to ex_r at (proc_z_min)
-    CALL SEND_TO_LEFT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(bx,bx_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(by,by_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(bz,bz_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(jx,jx_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(jy,jy_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
-    CALL SEND_TO_LEFT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(ex,ex_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(ey,ey_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(ez,ez_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(bx,bx_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(by,by_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(bz,bz_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(jx,jx_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(jy,jy_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(jz,jz_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(rho,rhoold_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
+    CALL SEND_TO_LEFT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,nx,ny,nz,nxguards,nyguards,nzguards)
 
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -983,7 +981,7 @@ MODULE field_boundary
 #endif
   END SUBROUTINE load_balancing_group_communication_forward
    
-  SUBROUTINE SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_left,nx1,ny1,nz1,nxg,nyg,nzg)
+  SUBROUTINE SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,nx1,ny1,nz1,nxg,nyg,nzg)
 #if defined(FFTW)
    USE group_parameters
 #endif
@@ -994,7 +992,6 @@ MODULE field_boundary
    REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_out
    INTEGER(isp)   :: requests_1(1)
    INTEGER(idp)   :: ix,iy,iz   
-   INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
 
 #if defined(FFTW)
@@ -1005,7 +1002,7 @@ MODULE field_boundary
     ENDIF
 
     IF(z_coords .NE. 0 .AND. size_left .NE. 0_idp) THEN
-      ALLOCATE(temp_from_right(subsizes_left(1),subsizes_left(2),subsizes_left(3)))
+      ALLOCATE(temp_from_right(nx1+2*nxg+1,ny1+2*nyg+1,size_left))
       CALL MPI_IRECV(temp_from_right(1,1,1),1_isp,mpi_dtypes(31),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
 
@@ -1025,7 +1022,7 @@ MODULE field_boundary
   END SUBROUTINE SEND_TO_RIGHT_r2f 
 
 
-  SUBROUTINE SEND_TO_LEFT_r2f(field_in,field_out,nxx,nyy,nzz,subsizes_right,nx1,ny1,nz1,nxg,nyg,nzg)
+  SUBROUTINE SEND_TO_LEFT_r2f(field_in,field_out,nxx,nyy,nzz,nx1,ny1,nz1,nxg,nyg,nzg)
 #if defined(FFTW)
    USE group_parameters
 #endif
@@ -1036,7 +1033,6 @@ MODULE field_boundary
    REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_out
    INTEGER(isp)   :: requests_1(1)
    INTEGER(idp)   :: ix,iy,iz   
-   INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_right
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_left
 
 #if defined(FFTW)
@@ -1048,7 +1044,7 @@ MODULE field_boundary
 
     IF(z_coords .NE. nprocz-1 .AND. size_right .NE. 0_idp) THEN
 
-      ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
+      ALLOCATE(temp_from_left(nx1+2*nxg+1,ny1+2*nyg+1,size_right))
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(33),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
 
