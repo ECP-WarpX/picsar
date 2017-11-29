@@ -190,7 +190,7 @@ MODULE sorting
                 szmin = curr_tile%z_tile_min + sorting_shiftz
 
                 CALL pxr_particle_bin_sorting_2d(count, curr_tile%part_x,              &
-                 curr_tile%part_z, curr_tile%part_ux,&
+                curr_tile%part_z, curr_tile%part_ux,                                   &
                 curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,           &
                 curr_tile%pid, wpid, sxmin,  szmin, curr_tile%x_tile_max +             &
                 sorting_dx                         ,curr_tile%z_tile_max +             &
