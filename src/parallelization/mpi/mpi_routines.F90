@@ -846,7 +846,9 @@ all_cells, all_nz_lb, all_nzp
 
 END SUBROUTINE setup_groups
 
-
+!> Computes r_local and g_local arrays (corresponding indexes between field_r(at
+!mpi task rank) and field(at mpi task rank)
+!> Haithem kallala 2017
 SUBROUTINE compute_load_balancing_local()
 #if defined(FFTW)
   USE mpi_fftw3
@@ -890,7 +892,9 @@ SUBROUTINE compute_load_balancing_local()
 #endif
 END SUBROUTINE compute_load_balancing_local
 
-
+!>Computes r_left and g_left (corresponding indexes between field_r(at mpi task
+!>rank) and field(at mpi task rank-1)
+!>Haithem Kallala 2017
 SUBROUTINE compute_load_balancing_from_left()
 #if defined(FFTW)
   USE mpi_fftw3
@@ -942,7 +946,8 @@ SUBROUTINE compute_load_balancing_from_left()
 #endif
 END SUBROUTINE compute_load_balancing_from_left
 
-
+!>Computes corresponding r_right and g_right indexes between field_r(at mpi task
+!rank) and field(at mpi task rank+1)
 SUBROUTINE compute_load_balancing_from_right()
 #if defined(FFTW)
   USE mpi_fftw3
@@ -994,7 +999,7 @@ SUBROUTINE compute_load_balancing_from_right()
   ENDIF
 #endif
 END SUBROUTINE compute_load_balancing_from_right
-
+!>Send r_right and g_right to rr_left and rg_left of rank+1  respectively
 SUBROUTINE Sync_exchange_load_balancing_arrays_1
 #if defined(FFTW)
   USE group_parameters
@@ -1032,6 +1037,7 @@ SUBROUTINE Sync_exchange_load_balancing_arrays_1
 #endif
 END SUBROUTINE Sync_exchange_load_balancing_arrays_1
 
+!>Sends r_left and g_left to rr_right and rg_right of rank-1 respectively
 SUBROUTINE Sync_exchange_load_balancing_arrays_2
 #if defined(FFTW)
   USE group_parameters
@@ -1319,9 +1325,11 @@ IF(fftw_hybrid) THEN
       cell_z_min(iz) = cell_z_min_r(iz)
       cell_z_max(iz) = cell_z_max_r(iz)
     ENDDO
+    !> Computes field array indexes
     CALL compute_load_balancing_local
     CALL compute_load_balancing_from_left
     CALL compute_load_balancing_from_right
+    !> Synchronizes array indexes between adjacent procs
     CALL Sync_exchange_load_balancing_arrays_2
     CALL Sync_exchange_load_balancing_arrays_1
     IF(size_local + size_left + size_right .NE. nz_lb) THEN
@@ -1329,9 +1337,11 @@ IF(fftw_hybrid) THEN
       CALL MPI_ABORT(comm,errcode,ierr) 
     ENDIF
     IF(size_local + rsize_left+ rsize_right .NE. nz) THEN
-      WRITE(*,*)  'EROOR IN LOAD BALANCING(REAL Indice'
+      WRITE(*,*)  'EROOR IN LOAD BALANCING(REAL Indice)'
       CALL MPI_ABORT(comm,errcode,ierr)
     ENDIF
+  ! IF is_lb_grp == .FALSE. THEN set grid DD params to that of
+  ! fftw_mpi_local_size (Unbalanced grid for particles)
   ELSE IF(.NOT. is_lb_grp) THEN
     DO iz=1,nprocz
       cell_z_min(iz) = cell_z_min_f(iz)
