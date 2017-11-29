@@ -583,6 +583,9 @@ MODULE field_boundary
 #endif
   END SUBROUTINE ebj_field_bcs_groups
 
+
+!This subroutine is still not working correctly so please use mpicom_curr=0 with
+!groups 
   SUBROUTINE field_bc_group_blocking(field, nxx, nyy, nzz, ngroupz)
 #if defined(FFTW)
     USE group_parameters
@@ -765,6 +768,7 @@ MODULE field_boundary
   
   subsizes_left(3) = size_left
   subsizes_right(3) = rsize_right
+
   IF (is_dtype_init(42)) THEN
 
     mpi_dtypes(42) = create_3d_array_derived_type(basetype,subsizes_left,sizes,  &
