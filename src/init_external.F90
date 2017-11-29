@@ -45,7 +45,6 @@ MODULE link_external_tools
     l_spectral  = LOGICAL(is_spec,lp) 
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
-    hybrid_2 = .FALSE.
     fftw_mpi_transpose = .FALSE.
     c_dim = INT(cdim,idp)
     nx = INT(n3,idp)

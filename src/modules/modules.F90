@@ -1147,8 +1147,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid,    &
-  hybrid_2
+  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
   !> is load balancing activated in groups 
   LOGICAL(lp)                                :: is_lb_grp
   !> First and last indexes of real data in group (only z is relevant for now)

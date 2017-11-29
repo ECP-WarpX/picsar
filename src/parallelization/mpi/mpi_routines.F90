@@ -176,7 +176,7 @@ MODULE mpi_routines
     nproc=INT(nproc_comm, idp)
 
     ! With fftw can only do CPU split with respect to Z direction (X in C-order)
-    IF (fftw_with_mpi .AND. .NOT. hybrid_2) THEN
+    IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
       nprocx=1
       nprocy=1
       nprocz=nproc
@@ -577,9 +577,7 @@ all_cells, all_nz_lb, all_nzp
 
   CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
   
-  IF(hybrid_2) THEN
-    nb_group = nprocx*nprocy*nb_group
-  ENDIF
+  nb_group = nprocx*nprocy*nb_group
   
   group_size = nproc/nb_group
   
@@ -595,28 +593,19 @@ all_cells, all_nz_lb, all_nzp
     grp_id(i) = MPI_GROUP_NULL
   ENDDO
 
-  DO j=1, nb_group
-    local_roots_rank(j) = (j-1)*group_size
-    DO i=1, group_size
-      grp_ranks(i, j) = INT(i-1+(j-1)*group_size, isp)
+  DO j=1, nprocx*nprocy
+    local_roots_rank(j) = INT(j-1, isp)
+  ENDDO
+  DO j=nprocx*nprocy+1, nb_group
+    i = j-nprocx*nprocy
+    local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy
+  ENDDO
+  DO j = 1, nb_group
+    grp_ranks(1, j) = local_roots_rank(j)
+    DO i = 2, group_size
+      grp_ranks(i, j) = grp_ranks(i-1, j) + nprocx*nprocy
     ENDDO
   ENDDO
-  
-  IF(hybrid_2) THEN
-    DO j=1, nprocx*nprocy
-      local_roots_rank(j) = INT(j-1, isp)
-    ENDDO
-    DO j=nprocx*nprocy+1, nb_group
-      i = j-nprocx*nprocy
-      local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy
-    ENDDO
-    DO j = 1, nb_group
-      grp_ranks(1, j) = local_roots_rank(j)
-      DO i = 2, group_size
-        grp_ranks(i, j) = grp_ranks(i-1, j) + nprocx*nprocy
-      ENDDO
-    ENDDO
-  ENDIF
  
   DO i= 1, nb_group
     CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),       &
@@ -659,16 +648,11 @@ all_cells, all_nz_lb, all_nzp
       errcode)
       
       which_group = i-1
-      z_group_coords = which_group
-      x_group_coords = 0_idp
-      y_group_coords = 0_idp
       
-      IF(hybrid_2) THEN
-        z_group_coords = which_group/nprocx/nprocy
-        y_group_coords = (which_group-z_group_coords*nprocx*nprocy)/nprocx
-        x_group_coords = (which_group-z_group_coords*nprocx*nprocy) -                 &
-        nprocx*y_group_coords
-      ENDIF
+      z_group_coords = which_group/nprocx/nprocy
+      y_group_coords = (which_group-z_group_coords*nprocx*nprocy)/nprocx
+      x_group_coords = (which_group-z_group_coords*nprocx*nprocy) -                   &
+      nprocx*y_group_coords
   
     ENDIF
   ENDDO
@@ -697,11 +681,7 @@ all_cells, all_nz_lb, all_nzp
   nx_group_global = nx
   ny_group_global = ny
   
-  IF(hybrid_2) THEN
-    nz_group_global = nz_global/(nb_group/(nprocx*nprocy))
-  ELSE 
-  nz_group_global = nz_global/nb_group
-  ENDIF
+  nz_group_global = nz_global/(nb_group/(nprocx*nprocy))
   
   IF(nz_global .NE. nz_group_global*(nb_group/(nprocx*nprocy))) THEN
     temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy, idp)

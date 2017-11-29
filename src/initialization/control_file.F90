@@ -218,7 +218,6 @@ MODULE control_file
     ! SET FFTW WITH MPI FLAG
     fftw_with_mpi = .FALSE.
     fftw_hybrid = .FALSE.
-    hybrid_2 = .FALSE.
     is_lb_grp = .FALSE.
     fftw_mpi_transpose = .FALSE.
   END SUBROUTINE default_init
@@ -584,9 +583,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) is_lb_grp
-      ELSE IF (INDEX(buffer, 'hybrid_2') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) hybrid_2
 #if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nb_group') .GT. 0) THEN
         ix = INDEX(buffer, "=")

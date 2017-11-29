@@ -457,8 +457,7 @@ SUBROUTINE initall
     write(0, '(" FFTW - parameters ")')
     IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
     IF (fftw_with_mpi) write(0, '(" FFTW distributed version - MPI ")')
-    IF (fftw_hybrid)   write(0, '(" FFTW distributed version, - MPI GROUPS")')
-    IF (hybrid_2)   write(0, '(" FFTW distributed version, - MPI GROUPS ALOG 3        &
+    IF (fftw_hybrid)   write(0, '(" FFTW distributed version, - MPI GROUPS ALOG 3      &
     AXIS")')
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
