@@ -77,7 +77,11 @@ class Field:
     self.z = np.linspace(self.zmin,self.zmax,self.nz, endpoint=False)
     
     self.dx = self.x[1] - self.x[0]
-    self.dy = self.y[1] - self.y[0]
+    if(self.ny > 1):
+	self.dy = self.y[1] - self.y[0]
+    else:
+	#2d case
+	self.dy = 1
     self.dz = self.z[1] - self.z[0]
             
     self.f = np.zeros([self.nz,self.ny,self.nx])  

@@ -163,7 +163,9 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
       gaminv(nn) = 1.0_num
       ! --- Push x, y, z
       xp(nn)  = xp(nn) + dt*uxp(nn)
-      yp(nn)  = yp(nn) + dt*uyp(nn)
+      IF(c_dim == 3) THEN
+        yp(nn)  = yp(nn) + dt*uyp(nn)
+      ENDIF
       zp(nn)  = zp(nn) + dt*uzp(nn)
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307
@@ -249,7 +251,9 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
       gaminv(nn) = 1.0_num
       ! --- Push x, y, z
       xp(nn)  = xp(nn) + dt*uxp(nn)
-      yp(nn)  = yp(nn) + dt*uyp(nn)
+      IF(c_dim ==3) THEN
+        yp(nn)  = yp(nn) + dt*uyp(nn)
+      ENDIF
       zp(nn)  = zp(nn) + dt*uzp(nn)
     ENDDO
 #if defined _OPENMP && _OPENMP>=201307

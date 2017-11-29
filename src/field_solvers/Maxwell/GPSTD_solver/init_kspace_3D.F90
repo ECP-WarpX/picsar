@@ -64,8 +64,12 @@ MODULE gpstd_solver
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
 #endif
+      IF(c_dim ==2) THEN
+        nffty = 1
+      ENDIF
     ENDIF
   END SUBROUTINE select_case_dims_local
+
   SUBROUTINE select_case_dims_global(nfftx, nffty, nfftz)
     USE shared_data
     USE mpi_fftw3
@@ -106,6 +110,9 @@ MODULE gpstd_solver
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
 #endif
+    ENDIF
+    IF(c_dim ==2) THEN
+      nffty=1
     ENDIF
   END SUBROUTINE select_case_dims_global
 
@@ -154,9 +161,15 @@ MODULE gpstd_solver
             Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
             Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
             Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
-            Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
-            Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
-            Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+            IF(c_dim == 3) THEN
+              Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+              Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+              Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+            ELSE IF(c_dim == 2) THEN
+              Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+              Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
+              Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+            ENDIF
             Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
             Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
             Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
@@ -178,6 +191,7 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
+ 
     switch = .FALSE.
     ALLOCATE(temp(nfftx/2+1, nffty, nfftz))
     ALLOCATE(temp2(nfftx/2+1, nffty, nfftz))

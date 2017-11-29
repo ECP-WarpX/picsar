@@ -926,6 +926,97 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	Acceptance_testing/Gcov_tests/esirkepov_2d_test.o
 
+
+build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/housekeeping/sorting.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/submain.o \
+	$(SRCDIR)/initialization/control_file.o \
+	Acceptance_testing/Gcov_tests/maxwell_2d_test.o
+	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/maxwell_2d_test \
+	$(SRCDIR)/modules/modules.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/housekeeping/sorting.o \
+	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
+	$(SRCDIR)/particle_pushers/boris_pusher/boris_2d.o \
+	$(SRCDIR)/particle_pushers/kin_energy.o \
+	$(SRCDIR)/particle_pushers/laser_pusher_manager_3d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_2d.o \
+	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_2d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_2d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
+	$(SRCDIR)/diags/diags.o \
+	$(SRCDIR)/ios/simple_io.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/submain.o \
+	$(SRCDIR)/initialization/control_file.o \
+	Acceptance_testing/Gcov_tests/maxwell_2d_test.o $(LDFLAGS)
+
 build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
@@ -1030,8 +1121,10 @@ build_test: createdir \
 	build_esirkepov_2d_test \
 	build_tile_mpi_part_com_test
 
-build_test_spectral: createdir \
+build_test_spectral_3d: createdir \
 	build_maxwell_3d_test
+build_test_spectral_2d: createdir \
+	build_maxwell_2d_test
 
 #	$(FC) -g -O0 -ftest-coverage -JModules -o Acceptance_testing/Gcov_tests/field_gathering_3d_test $(SRCDIR)/*.o Acceptance_testing/Gcov_tests/field_gathering_test.o
 
@@ -1111,10 +1204,33 @@ tile_rho_depo_3d_test:
 
 # __ Execute Maxwell solver tests ____________________________________________________
 
-test_maxwell_solver: test_plane_wave_fdtd \
-		test_plane_wave_psatd
+test_maxwell_solver_3d: test_plane_wave_fdtd_3d \
+		test_plane_wave_psatd_3d
 
-test_plane_wave_fdtd:
+test_maxwell_solver_2d:	test_plane_wave_fdtd_2d \
+		test_plane_wave_psatd_2d
+
+
+test_plane_wave_fdtd_2d:
+	cp examples/example_decks_fortran/plane_wave_test_2d.pixr \
+	Acceptance_testing/Gcov_tests/input_file.pixr
+	# 1 OpenMP vary number of MPIs
+	export OMP_NUM_THREADS=1
+	cd Acceptance_testing/Gcov_tests && \
+	mpirun -np 1 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. &&\
+	mpirun -np 2 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. --nprocz 2 &&\
+	mpirun -np 4 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. --nprocz 2 --nprocx 2 
+test_plane_wave_psatd_2d: 
+	cp examples/example_decks_fortran/plane_wave_test_2d.pixr \
+	Acceptance_testing/Gcov_tests/input_file.pixr
+	# 1 OpenMP vary number of MPIs
+	export OMP_NUM_THREADS=1
+	cd Acceptance_testing/Gcov_tests && \
+	mpirun -np 1 ./maxwell_2d_test --nsteps 81 --l_spectral .TRUE. &&\
+	mpirun -np 2 ./maxwell_2d_test --nsteps 81 --l_spectral .TRUE. --nprocz 2 &&\
+	mpirun -np 4 ./maxwell_2d_test --nsteps 81 --l_spectral .TRUE. --nprocz 2 --nprocx 2
+
+test_plane_wave_fdtd_3d:
 	cp examples/example_decks_fortran/plane_wave_test.pixr \
 	Acceptance_testing/Gcov_tests/input_file.pixr
 	# 1 OpenMP vary number of MPIs
@@ -1129,7 +1245,7 @@ test_plane_wave_fdtd:
 	mpirun -np 1 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
 	mpirun -np 2 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
 	mpirun -np 4 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106
-test_plane_wave_psatd:
+test_plane_wave_psatd_3d:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 && \
 	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
@@ -1137,7 +1253,7 @@ test_plane_wave_psatd:
 	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
 	mpirun -np 4 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
 	mpirun -np 8 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61
-test_plane_wave_psatd_global:
+test_plane_wave_psatd_global_3d:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=4 && \
 	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --fftw_with_mpi .TRUE. --nsteps 61  && \

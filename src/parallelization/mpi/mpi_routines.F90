@@ -177,6 +177,13 @@ MODULE mpi_routines
       nprocy=1
       nprocz=nproc
     ENDIF
+    ! check if c_dim = 2 and fftw_mpi_transpose = false 
+    IF(c_dim ==2 .AND. fftw_mpi_transpose .EQV. .TRUE.) THEN
+      fftw_mpi_transpose = .FALSE. 
+      WRITE(0, *) 'WARING fftw_mpi_transpose flag unavailable in dim 2'
+      WRITE(0, *) 'fftw_mpi_transpose set to .FALSE.'
+      fftw_mpi_transpose = .FALSE. 
+    ENDIF
 
     dims = (/nprocz, nprocy, nprocx/)
 
@@ -188,7 +195,7 @@ MODULE mpi_routines
       nprocz = INT(dims(1), idp)
     ENDIF
 
-    IF (nproc .NE. nprocx*nprocy*nprocz) THEN
+  IF (nproc .NE. nprocx*nprocy*nprocz) THEN
       IF (rank .EQ. 0) THEN
         WRITE(0, *) '*** ERROR ***'
         WRITE(0, *) 'nprocx*nprocy*nprocz =/ # of MPI processes'
@@ -198,34 +205,56 @@ MODULE mpi_routines
         nprocz
         CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
       ENDIF
-    ENDIF
-
-    IF (nx_global_grid .LT. nxguards .OR. ny_global_grid .LT. nyguards .OR.           &
-    nz_global_grid .LT. nzguards) THEN
-    IF (rank .EQ. 0) THEN
-      WRITE(0, *) '*** ERROR ***'
-      WRITE(0, *) 'Simulation domain is too small.'
-      WRITE(0, *) 'nx_global_grid', nx_global_grid, 'nxguards', nxguards
-      WRITE(0, *) ny_global_grid, nyguards
-      WRITE(0, *) nz_global_grid, nzguards
-    ENDIF
-    CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
   ENDIF
 
+  IF(c_dim == 3) THEN
+    IF (nx_global_grid .LT. nxguards .OR. ny_global_grid .LT. nyguards .OR.           &
+      nz_global_grid .LT. nzguards) THEN
+      IF (rank .EQ. 0) THEN
+        WRITE(0, *) '*** ERROR ***'
+        WRITE(0, *) 'Simulation domain is too small.'
+        WRITE(0, *) 'nx_global_grid', nx_global_grid, 'nxguards', nxguards
+        WRITE(0, *) 'ny_global_grid', ny_global_grid, 'nyguards', nyguards
+        WRITE(0, *) 'nz_global_grid', nz_global_grid, 'nzguards', nzguards
+      ENDIF
+      CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+    ENDIF
+  ELSE IF(c_dim == 2) THEN
+    IF (nx_global_grid .LT. nxguards .OR. nz_global_grid .LT. nzguards) THEN
+      IF (rank .EQ. 0) THEN
+        WRITE(0, *) '*** ERROR ***'
+        WRITE(0, *) 'Simulation domain is too small.'
+        WRITE(0, *) 'nx_global_grid', nx_global_grid, 'nxguards', nxguards
+        WRITE(0, *) 'nz_global_grid', nz_global_grid, 'nzguards', nzguards
+      ENDIF
+      CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+    ENDIF
+  ENDIF
   IF (nprocx * nprocy * nprocz .GT. 0) THEN
     nxsplit = nx_global_grid / nprocx
     nysplit = ny_global_grid / nprocy
     nzsplit = nz_global_grid / nprocz
-    IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. nzguards)  &
-    THEN
-    IF (rank .EQ. 0) THEN
-      WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards'
-      WRITE(0, *) nxsplit, nysplit, nzsplit
-      WRITE(0, *) nx_global_grid, ny_global_grid, nz_global_grid
-      CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+    IF(c_dim == 3 ) THEN
+      IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. &
+         nzguards)  THEN
+        IF (rank .EQ. 0) THEN
+          WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards'
+          WRITE(0, *) nxsplit, nysplit, nzsplit
+          WRITE(0, *) nx_global_grid, ny_global_grid, nz_global_grid
+          CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+        ENDIF
+      ENDIF
+    ELSE IF(c_dim ==2) THEN 
+      IF (nxsplit .LT. nxguards .OR. nzsplit .LT.  nzguards)  THEN
+        IF (rank .EQ. 0) THEN
+          WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards'
+          WRITE(0, *) nxsplit, nzsplit
+          WRITE(0, *) nx_global_grid, nz_global_grid
+          CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+        ENDIF
+      ENDIF 
     ENDIF
   ENDIF
-ENDIF
 
 periods = .FALSE.
 reorder = .TRUE.
@@ -586,7 +615,7 @@ all_cells, all_nz, all_nzp
   ENDIF
  
   DO i= 1, nb_group
-    CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),         &
+    CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),       &
     grp_id(i), errcode)
     CALL MPI_COMM_CREATE_GROUP(comm, grp_id(i), 0, grp_comm(i), errcode)
   ENDDO
@@ -594,8 +623,8 @@ all_cells, all_nz, all_nzp
   roots_grp = MPI_GROUP_NULL
   roots_comm = MPI_COMM_NULL
   
-  CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(nb_group, isp), local_roots_rank, roots_grp, &
-  errcode)
+  CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(nb_group, isp), local_roots_rank,          &
+  roots_grp,  errcode)
   
   CALL MPI_COMM_CREATE_GROUP(comm, roots_grp, 0, roots_comm, errcode)
   MPI_ROOT_GROUP = MPI_GROUP_NULL
@@ -617,12 +646,12 @@ all_cells, all_nz, all_nzp
   DO i = 1, nb_group
     IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
      
-      CALL MPI_CART_CREATE(grp_comm(i), ndims, dims, periods, reorder,                  &
+      CALL MPI_CART_CREATE(grp_comm(i), ndims, dims, periods, reorder,                &
       MPI_COMM_GROUP_ID(i), errcode)
       CALL MPI_COMM_GROUP(MPI_COMM_GROUP_ID(i), MPI_GROUP_ID(i), errcode)
       CALL MPI_COMM_SIZE(MPI_COMM_GROUP_ID(i), local_size, errcode)
       CALL MPI_COMM_RANK(MPI_COMM_GROUP_ID(i), local_rank, errcode)
-      CALL MPI_CART_COORDS(MPI_COMM_GROUP_ID(i), local_rank, ndims, group_coordinates,  &
+      CALL MPI_CART_COORDS(MPI_COMM_GROUP_ID(i), local_rank, ndims, group_coordinates,&
       errcode)
       
       which_group = i-1
@@ -633,7 +662,7 @@ all_cells, all_nz, all_nzp
       IF(hybrid_2) THEN
         z_group_coords = which_group/nprocx/nprocy
         y_group_coords = (which_group-z_group_coords*nprocx*nprocy)/nprocx
-        x_group_coords = (which_group-z_group_coords*nprocx*nprocy) -                   &
+        x_group_coords = (which_group-z_group_coords*nprocx*nprocy) -                 &
         nprocx*y_group_coords
       ENDIF
   
@@ -690,7 +719,7 @@ all_cells, all_nz, all_nzp
   IF(MPI_ROOT_COMM .NE. MPI_COMM_NULL) THEN
   
     ALLOCATE(all_nz_group(nb_group))
-    CALL MPI_ALLGATHER(nz_group_global, 1_isp, MPI_LONG_LONG_INT, all_nz_group, 1_isp,  &
+    CALL MPI_ALLGATHER(nz_group_global, 1_isp, MPI_LONG_LONG_INT, all_nz_group, 1_isp,&
     MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
     CALL MPI_BARRIER(MPI_ROOT_COMM, errcode)
     IF(root_rank .NE. 0_isp) THEN
@@ -706,14 +735,17 @@ all_cells, all_nz, all_nzp
   DO i=1, nb_group
   
     IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
-      CALL MPI_BCAST(z_min_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),       &
+      CALL MPI_BCAST(z_min_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),     &
       errcode)
-      CALL MPI_BCAST(z_max_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),       &
+      CALL MPI_BCAST(z_max_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),     &
       errcode)
     ENDIF
   
   ENDDO
-  
+
+  IF(c_dim ==  2 ) THEN
+    nyg_group = 0 
+  ENDIF 
   nx_group_global_grid = nx_group_global+1
   ny_group_global_grid = ny_group_global+1
   nz_group_global_grid = nz_group_global+1
@@ -727,17 +759,25 @@ all_cells, all_nz, all_nzp
   nz_group_grid = nz_group_global_grid + 2*nzg_group
   
   DO i=1, nb_group
-  
     IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
-      IF(fftw_mpi_transpose) THEN
-        alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group, nx_group,   &
-        MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
-        IF(local_nz .EQ. 0_idp .OR. local_ny .EQ. 0_idp) THEN
-          WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank',rank
-          CALL MPI_ABORT(comm,errcode,ierr)
+      IF(c_dim == 3) THEN
+        IF(fftw_mpi_transpose) THEN
+          alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
+          nx_group, MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
+          IF(local_nz .EQ. 0_idp .OR. local_ny .EQ. 0_idp) THEN
+            WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank',rank
+            CALL MPI_ABORT(comm,errcode,ierr)
+          ENDIF
+        ELSE
+          alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group,          &
+          MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+          IF(local_nz .EQ. 0_idp ) THEN
+            WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
+            CALL MPI_ABORT(comm,errcode,ierr)
+          ENDIF
         ENDIF
-      ELSE
-        alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group,              &
+      ELSE IF(c_dim == 2) THEN
+        alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group,                      &
         MPI_COMM_GROUP_ID(i), local_nz, local_z0)
         IF(local_nz .EQ. 0_idp ) THEN
           WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
@@ -745,7 +785,6 @@ all_cells, all_nz, all_nzp
         ENDIF
       ENDIF
     ENDIF
-  
   ENDDO
   
   iz_min_r = 1
@@ -1011,6 +1050,16 @@ length_z = zmax - zmin
 dz = length_z / REAL(nz_global, num)
 z_grid_min = zmin
 z_grid_max = zmax
+
+IF(c_dim == 2) THEN
+  ny = 1_idp
+  ny_global = 1_idp 
+  cell_y_min(y_coords+1) = 1
+  cell_y_max(y_coords+1) = 2 
+  ny_grid = 2_idp
+  nyguards = 0_idp
+  nyjguards = 0_idp
+ENDIF
 
 !!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
 !two are computed differently

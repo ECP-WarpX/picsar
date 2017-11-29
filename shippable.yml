@@ -24,8 +24,11 @@ build:
     - make
     # Compile and run tests on Maxwell solver (plane wave test)
     - make clean 
-    - make build_test_spectral 
-    - make test_maxwell_solver
+    - make build_test_spectral_3d
+    - make test_maxwell_solver_3d
+    - make clean
+    - make build_test_spectral_2d
+    - make test_maxwell_solver_2d 
     # Compile Picsar as library
     - make clean
     - sed -i 's/MODE=prod_spectral/MODE=library/g' Makefile
