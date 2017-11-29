@@ -352,9 +352,11 @@ MODULE fourier_psaotd
     ! Get global Fourier transform of all fields components 
     CALL fft_forward_c2r_mpi
 
-    coeff_norm=(nx_global)*(ny_global)*(nz_global)
-    IF(fftw_hybrid) coeff_norm = nx_group*ny_group*nz_group
-    coeff_norm=1.0_num/coeff_norm
+    IF(fftw_hybrid) THEN 
+      coeff_norm  = 1.0_num/(nx_group*ny_group*nz_group)
+    ELSE 
+       coeff_norm = 1.0_num/(nx_global*ny_global*nz_global)
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -418,9 +420,7 @@ MODULE fourier_psaotd
     ! Get global Fourier transform of all fields components 
     CALL fft_forward_c2r_mpi
 
-    coeff_norm=(nx_global)*(ny_global)*(nz_global)
-    IF(fftw_hybrid) coeff_norm = nx_group*ny_group*nz_group
-    coeff_norm=1.0_num/coeff_norm
+    coeff_norm = 1.0_num/(nx_group*ny_group*nz_group)
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
