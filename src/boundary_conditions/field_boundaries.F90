@@ -701,6 +701,9 @@ MODULE field_boundary
 #endif
   END SUBROUTINE field_bc_group_non_blocking
 
+  !>This subroutine Synchronizes ex with ex_r after Maxwell push when using load
+  !>balanced groups 
+  !>Haithem Kallala 2017
   SUBROUTINE load_balancing_group_communication_backward(coeff_norm)
 #if defined(FFTW)
   USE group_parameters
@@ -716,6 +719,7 @@ MODULE field_boundary
   INTEGER(isp) :: requests_1(1)
   INTEGER(idp)  :: nxx,nyy,nzz
   REAL(num)     :: tmptime
+
 #if defined(FFTW)
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
@@ -724,27 +728,33 @@ MODULE field_boundary
   nxx = 2*(nx_group/2+1)
   nyy = ny_group
   nzz = local_nz
+
   sizes(1) =nxx 
   sizes(2) =nyy 
   sizes(3) =nzz 
   starts=1
+
   subsizes_right(1) = sizes(1)
   subsizes_right(2) = sizes(2) 
   subsizes_right(3) = size_right
+
   subsizes_left(1) = sizes(1) 
   subsizes_left(2) = sizes(2)  
   subsizes_left(3) = rsize_left
+
   IF (is_dtype_init(40)) THEN
     mpi_dtypes(40) = create_3d_array_derived_type(basetype, subsizes_right,sizes,  &
     starts)
     is_dtype_init(40) = .FALSE.
   ENDIF
+
   IF (is_dtype_init(41)) THEN
     mpi_dtypes(41) = create_3d_array_derived_type(basetype,subsizes_left,sizes,  &
     starts)
     is_dtype_init(41) = .FALSE.
   ENDIF
-  !send ex_r to ex  proc_z_max
+
+  !Send ex_r to ex  of proc_z_max
   CALL SEND_TO_RIGHT_f2r(ex_r,ex,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_RIGHT_f2r(ey_r,ey,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_RIGHT_f2r(ez_r,ez,nxx,nyy,nzz,subsizes_left,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
@@ -756,6 +766,7 @@ MODULE field_boundary
   subsizes_left(3) = size_left
   subsizes_right(3) = rsize_right
   IF (is_dtype_init(42)) THEN
+
     mpi_dtypes(42) = create_3d_array_derived_type(basetype,subsizes_left,sizes,  &
     starts)
     is_dtype_init(42) = .FALSE.
@@ -765,13 +776,14 @@ MODULE field_boundary
     starts)
     is_dtype_init(43) = .FALSE.
   ENDIF
+
+  !> Send ex_r to ex of proc_z_min
   CALL SEND_TO_LEFT_f2r(ex_r,ex,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_LEFT_f2r(ey_r,ey,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_LEFT_f2r(ez_r,ez,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_LEFT_f2r(bx_r,bx,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_LEFT_f2r(by_r,by,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_LEFT_f2r(bz_r,bz,nxx,nyy,nzz,subsizes_right,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-
 
   IF (it.ge.timestat_itstart) THEN
     localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -793,16 +805,20 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
+
 #if defined(FFTW)
     IF(z_coords .NE. nprocz-1 .AND. size_right .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(1,1,g_right(1)),1_isp,mpi_dtypes(40),&
       INT(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
     ENDIF
+
     IF(z_coords .NE. 0 .AND. rsize_left .NE. 0_idp) THEN
       ALLOCATE(temp_from_right(subsizes_left(1),subsizes_left(2),subsizes_left(3)))
+
       CALL MPI_IRECV(temp_from_right,1_isp,mpi_dtypes(41),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
@@ -813,6 +829,7 @@ MODULE field_boundary
         ENDDO
       ENDDO
       !$OMP END PARALLEL DO
+
       DEALLOCATE(temp_from_right)
     ENDIF
 #endif
@@ -828,7 +845,6 @@ MODULE field_boundary
    REAL(num) , INTENT(IN) :: coeff_norm
    INTEGER(idp) , INTENT(IN)  :: nxx,nyy,nzz,nx1,ny1,nz1,nxg,nyg,nzg
    REAL(num) , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg) ::field_out
-
    REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_in
    INTEGER(isp)   :: requests_1(1)
    INTEGER(idp)   :: ix,iy,iz
@@ -841,10 +857,13 @@ MODULE field_boundary
       INT(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
     ENDIF
+
     IF(z_coords .NE. nprocz-1 .AND. rsize_right .NE. 0_idp) THEN
       ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
+
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(43),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
@@ -855,14 +874,15 @@ MODULE field_boundary
         ENDDO
       ENDDO
       !$OMP END PARALLEL DO
+
       DEALLOCATE(temp_from_left)
     ENDIF
 #endif
   END SUBROUTINE SEND_TO_LEFT_f2r
 
 
-    
-  !> @author Haithem Kallala
+  !> This subroutine synchronizes ex_r with ex before Maxwell Push    
+  !> @author Haithem Kallala 2017
   SUBROUTINE load_balancing_group_communication_forward
 #if defined(FFTW)
     USE group_parameters
@@ -878,6 +898,7 @@ MODULE field_boundary
     INTEGER(isp) :: requests_1(1)
     INTEGER(idp)  :: nxx,nyy,nzz
     REAL(num)     :: tmptime
+
 #if defined(FFTW)
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -886,28 +907,33 @@ MODULE field_boundary
     sizes(1) = nx+2*nxguards+1
     sizes(2) = ny+2*nyguards+1
     sizes(3) = nz+2*nzguards+1
+
     nxx = 2*(nx_group/2+1)
     nyy = ny_group
     nzz = local_nz
     starts=1
+
     subsizes_left(1) = sizes(1)
     subsizes_left(2) = sizes(2)
     subsizes_left(3) = size_left
+
     subsizes_right(1) = sizes(1)
     subsizes_right(2) = sizes(2)
     subsizes_right(3) = rsize_right
+
     IF (is_dtype_init(30)) THEN
       mpi_dtypes(30) = create_3d_array_derived_type(basetype, subsizes_right, sizes,  &
       starts)
       is_dtype_init(30) = .FALSE.
     ENDIF
+
     IF (is_dtype_init(31)) THEN
       mpi_dtypes(31) = create_3d_array_derived_type(basetype, subsizes_left, sizes,   &
       starts)
       is_dtype_init(31) = .FALSE.
     ENDIF
 
-    !SEND ex to  ex_r (proc_z_max)
+    !SEND ex to  ex_r  at(proc_z_max)
     CALL SEND_TO_RIGHT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
     CALL SEND_TO_RIGHT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
     CALL SEND_TO_RIGHT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_left,nx,ny,nz,nxguards,nyguards,nzguards)
@@ -932,6 +958,8 @@ MODULE field_boundary
       starts)
       is_dtype_init(33) = .FALSE.
     ENDIF
+
+    !> Send ex to ex_r at (proc_z_min)
     CALL SEND_TO_LEFT_r2f(ex,ex_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
     CALL SEND_TO_LEFT_r2f(ey,ey_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
     CALL SEND_TO_LEFT_r2f(ez,ez_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
@@ -943,6 +971,7 @@ MODULE field_boundary
     CALL SEND_TO_LEFT_r2f(jz,jz_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
     CALL SEND_TO_LEFT_r2f(rho,rhoold_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
     CALL SEND_TO_LEFT_r2f(rhoold,rhoold_r,nxx,nyy,nzz,subsizes_right,nx,ny,nz,nxguards,nyguards,nzguards)
+
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -962,6 +991,7 @@ MODULE field_boundary
    INTEGER(idp)   :: ix,iy,iz   
    INTEGER(idp) , INTENT(IN)  , DIMENSION(3) :: subsizes_left
    REAL(num), ALLOCATABLE, DIMENSION(:,:,:) ::  temp_from_right
+
 #if defined(FFTW)
     IF(z_coords .NE. nprocz-1 .AND. rsize_right .NE. 0_isp) THEN
       CALL MPI_ISEND(field_in(-nxg,-nyg,rr_right(1)),1_isp,mpi_dtypes(30),           &
@@ -973,6 +1003,7 @@ MODULE field_boundary
       ALLOCATE(temp_from_right(subsizes_left(1),subsizes_left(2),subsizes_left(3)))
       CALL MPI_IRECV(temp_from_right(1,1,1),1_isp,mpi_dtypes(31),Int(proc_z_min,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_left
         DO iy=iy_min_r, iy_max_r
@@ -982,6 +1013,7 @@ MODULE field_boundary
         ENDDO
       ENDDO
       !$OMP END PARALLEL DO
+
       DEALLOCATE(temp_from_right)
     ENDIF
 #endif
@@ -996,7 +1028,6 @@ MODULE field_boundary
    USE mpi
    INTEGER(idp) , INTENT(IN)  :: nxx,nyy,nzz ,nx1,ny1,nz1,nxg,nyg,nzg
    REAL(num) , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg) :: field_in
-
    REAL(num) , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz) :: field_out
    INTEGER(isp)   :: requests_1(1)
    INTEGER(idp)   :: ix,iy,iz   
@@ -1011,9 +1042,11 @@ MODULE field_boundary
     ENDIF
 
     IF(z_coords .NE. nprocz-1 .AND. size_right .NE. 0_idp) THEN
+
       ALLOCATE(temp_from_left(subsizes_right(1),subsizes_right(2),subsizes_right(3)))
       CALL MPI_IRECV(temp_from_left,1_isp,mpi_dtypes(33),Int(proc_z_max,isp),tag,comm,requests_1(1),errcode)
       CALL MPI_WAITALL(1_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
+
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_right
         DO iy=iy_min_r, iy_max_r
@@ -1023,6 +1056,7 @@ MODULE field_boundary
         ENDDO
       ENDDO
       !$OMP END PARALLEL DO
+
       DEALLOCATE(temp_from_left)
     ENDIF
 #endif
