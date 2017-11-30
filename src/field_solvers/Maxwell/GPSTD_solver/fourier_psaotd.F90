@@ -191,7 +191,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    CALL load_balancing_group_communication_forward()
+    CALL group_communication_forward()
     CALL ebj_field_bcs_groups()
 
     ! Get global Fourier transform of all fields components and currents
@@ -438,7 +438,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    CALL load_balancing_group_communication_backward(coeff_norm)
+    CALL group_communication_backward(coeff_norm)
   END SUBROUTINE get_fields_mpi_lb
   
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 

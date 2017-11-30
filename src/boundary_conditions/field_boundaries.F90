@@ -594,27 +594,22 @@ MODULE field_boundary
 
     IF(XOR(group_z_min_boundary,group_z_max_boundary)) THEN
       IF(group_z_min_boundary) THEN
-        CALL MPI_SEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,     &
+        CALL MPI_SEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,   &
         isp), tag, comm, errcode)
+        CALL MPI_RECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp), tag,&
+        comm,MPI_STATUS_IGNORE, errcode)
+
       ENDIF
       IF(group_z_max_boundary) THEN
-        CALL MPI_RECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max,   &
+        CALL MPI_RECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max, &
         isp), tag, comm,MPI_STATUS_IGNORE, errcode)
-      ENDIF
-      IF(group_z_max_boundary) THEN
-        CALL MPI_SEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),          &
+        CALL MPI_SEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),        &
         INT(proc_z_max, isp), tag, comm, errcode)
       ENDIF
-      IF(group_z_min_boundary) THEN
-        CALL MPI_RECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min, isp), tag, &
-        comm,MPI_STATUS_IGNORE, errcode)
-      ENDIF
     ELSE 
-      !CALL field_bc_group_non_blocking(field, nxx, nyy, nzz, ngroupz)
-      !IF(rank == 0) PRINT*,'WARNING  call for non blocking exchange for grps'
       sz  = subsizes(1)*subsizes(2)*subsizes(3)
       ALLOCATE(temp(sz))
-      CALL MPI_SENDRECV(field(1,1,iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,     &
+      CALL MPI_SENDRECV(field(1,1,iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,    &
       isp), tag, temp, sz, basetype, INT(proc_z_max, isp), tag, comm, status,errcode)
       IF(proc_z_max .NE. MPI_PROC_NULL) THEN
         n=1
@@ -627,8 +622,9 @@ MODULE field_boundary
           ENDDO
         ENDDO
       ENDIF
-      CALL MPI_SENDRECV(field(1,1,iz_max_r-ngroupz+1), 1_isp,mpi_dtypes(20),INT(proc_z_max,     &
-      isp), tag, temp, sz, basetype, INT(proc_z_min, isp), tag, comm,status,errcode)
+      CALL MPI_SENDRECV(field(1,1,iz_max_r-ngroupz+1), 1_isp,mpi_dtypes(20),          &
+      INT(proc_z_max,isp), tag, temp, sz, basetype, INT(proc_z_min, isp), tag, comm,  &
+      status,errcode)
       IF(proc_z_min .NE. MPI_PROC_NULL) THEN
         n=1
         DO iz= 1,ngroupz
@@ -691,24 +687,31 @@ MODULE field_boundary
     ENDIF
 !case where each group has one mpi task 
     IF(group_z_min_boundary .AND. group_z_max_boundary) THEN
+      CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp,mpi_dtypes(20),INT(proc_z_max,   &
+      isp), tag, comm, requests_1(2), errcode)
       CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,     &
       isp), tag, comm, requests_1(1), errcode)
-      CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max,   &
-      isp), tag, comm, requests_1(2), errcode)
       CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-      CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),         &
-      INT(proc_z_max, isp), tag, comm, requests_2(1), errcode)
+
       CALL MPI_IRECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp),      &
       tag, comm, requests_2(2), errcode)
+      CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),         &
+      INT(proc_z_max, isp), tag, comm, requests_2(1), errcode)
       CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
     ENDIF
 #endif
   END SUBROUTINE field_bc_group_non_blocking
-
-  !>This subroutine Synchronizes ex with ex_r after Maxwell push when using load
-  !>balanced groups 
-  !>Haithem Kallala 2017
-  SUBROUTINE load_balancing_group_communication_backward(coeff_norm)
+  ! ______________________________________________________________________________________
+  !> Routine for backward communications between groups
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017  
+  !
+  ! ______________________________________________________________________________________
+  SUBROUTINE group_communication_backward(coeff_norm)
 #if defined(FFTW)
   USE group_parameters
   USE mpi_fftw3
@@ -795,7 +798,7 @@ MODULE field_boundary
     localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
   ENDIF
 #endif
-  END SUBROUTINE load_balancing_group_communication_backward
+  END SUBROUTINE group_communication_backward
 
   SUBROUTINE SEND_TO_RIGHT_f2r(field_in,field_out,nxx,nyy,nzz,coeff_norm,nx1,ny1,nz1,nxg,nyg,nzg)
 #if defined(FFTW)
@@ -885,9 +888,17 @@ MODULE field_boundary
   END SUBROUTINE SEND_TO_LEFT_f2r
 
 
-  !> This subroutine synchronizes ex_r with ex before Maxwell Push    
-  !> @author Haithem Kallala 2017
-  SUBROUTINE load_balancing_group_communication_forward
+  ! ______________________________________________________________________________________
+  !> Routine for forward comms between groups
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2015
+  !
+  ! ______________________________________________________________________________________
+  SUBROUTINE group_communication_forward
 #if defined(FFTW)
     USE group_parameters
     USE mpi_fftw3
@@ -980,7 +991,7 @@ MODULE field_boundary
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
 #endif
-  END SUBROUTINE load_balancing_group_communication_forward
+  END SUBROUTINE group_communication_forward
    
   SUBROUTINE SEND_TO_RIGHT_r2f(field_in,field_out,nxx,nyy,nzz,nx1,ny1,nz1,nxg,nyg,nzg)
 #if defined(FFTW)
