@@ -598,7 +598,6 @@ MODULE field_boundary
         isp), tag, comm, errcode)
         CALL MPI_RECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp), tag,&
         comm,MPI_STATUS_IGNORE, errcode)
-
       ENDIF
       IF(group_z_max_boundary) THEN
         CALL MPI_RECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max, &
