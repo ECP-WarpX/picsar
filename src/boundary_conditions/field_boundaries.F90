@@ -758,21 +758,12 @@ MODULE field_boundary
     is_dtype_init(41) = .FALSE.
   ENDIF
 
-  !Send ex_r to ex  of proc_z_max
-  CALL SEND_TO_RIGHT_f2r(ex_r,ex,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(ey_r,ey,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(ez_r,ez,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-  CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
-
-  
   subsizes_left(3) = size_left
   subsizes_right(3) = rsize_right
 
   IF (is_dtype_init(42)) THEN
 
-    mpi_dtypes(42) = create_3d_array_derived_type(basetype,subsizes_left,sizes,  &
+    mpi_dtypes(42) = create_3d_array_derived_type(basetype,subsizes_left,sizes,&
     starts)
     is_dtype_init(42) = .FALSE.
   ENDIF
@@ -782,6 +773,16 @@ MODULE field_boundary
     is_dtype_init(43) = .FALSE.
   ENDIF
 
+
+  !Send ex_r to ex  of proc_z_max
+  CALL SEND_TO_RIGHT_f2r(ex_r,ex,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(ey_r,ey,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(ez_r,ez,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(bx_r,bx,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(by_r,by,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+  CALL SEND_TO_RIGHT_f2r(bz_r,bz,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
+
+  
   !> Send ex_r to ex of proc_z_min
   CALL SEND_TO_LEFT_f2r(ex_r,ex,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
   CALL SEND_TO_LEFT_f2r(ey_r,ey,nxx,nyy,nzz,coeff_norm,nx,ny,nz,nxguards,nyguards,nzguards)
