@@ -87,7 +87,6 @@ section::solver
  fftw_with_mpi = .FALSE.
  fftw_mpi_tr = .FALSE.
  fftw_hybrid = .FALSE.
- hybrid_2=.FALSE.
  nb_group=2
 
 end::solver

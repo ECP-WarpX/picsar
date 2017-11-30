@@ -150,25 +150,54 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
     ! Do Fourier Transform
+    CALL fft_forward_r2c_local(nfftx,nffty,nfftz)
+
+  END SUBROUTINE get_Ffields
+ 
+  SUBROUTINE get_Ffields_mpi_lb()
+    USE shared_data
+    USE fields
+    USE mpi_fftw3
+    USE time_stat
+    USE params
+    USE group_parameters
+    USE field_boundary
+
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz
+    REAL(num)    :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r, exf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r, eyf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r, ezf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r, bxf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r, byf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r, bzf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r, jxf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r, jyf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r, jzf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r, rhooldf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r, rhof, plan_r2c)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=1,size_local
+      DO iy=iy_min_r,iy_max_r
+        DO ix =ix_min_r,ix_max_r
+           ex_r(ix,iy,g_local(iz)) = ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           ey_r(ix,iy,g_local(iz)) = ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           ez_r(ix,iy,g_local(iz)) = ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           bx_r(ix,iy,g_local(iz)) = bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           by_r(ix,iy,g_local(iz)) = by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           bz_r(ix,iy,g_local(iz)) = bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           jx_r(ix,iy,g_local(iz)) = jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           jy_r(ix,iy,g_local(iz)) = jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           jz_r(ix,iy,g_local(iz)) = jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
+           rho_r(ix,iy,g_local(iz)) = rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,r_local(iz))
+           rhoold_r(ix,iy,g_local(iz)) = rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,r_local(iz))
+        ENDDO
+      ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
     IF (it.ge.timestat_itstart) THEN
-      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-  END SUBROUTINE get_Ffields
+    CALL group_communication_forward()
+    CALL ebj_field_bcs_groups()
 
+    ! Get global Fourier transform of all fields components and currents
+    CALL fft_forward_r2c_mpi() 
+
+  END SUBROUTINE get_Ffields_mpi_lb 
 
   SUBROUTINE get_Ffields_mpi
     USE shared_data
@@ -181,7 +210,6 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
-    LOGICAL(lp)  :: is_source
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -242,27 +270,10 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
     IF(fftw_hybrid) THEN
-      is_source = .TRUE.
-      CALL ebj_field_bcs_groups(is_source)
+      CALL ebj_field_bcs_groups()
     ENDIF
     ! Get global Fourier transform of all fields components and currents
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
-    ENDIF
+    CALL fft_forward_r2c_mpi
 
   END SUBROUTINE get_Ffields_mpi
 
@@ -277,9 +288,6 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     REAL(num) :: coeff_norm, tmptime
     INTEGER(idp) :: ix, iy, iz, nxx, nyy, nzz, nfftx, nffty, nfftz
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
     nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
 #if defined(LIBRARY)
     nfftx=nx+2*nxguards+1
@@ -292,16 +300,8 @@ MODULE fourier_psaotd
 #endif
     coeff_norm=1.0_num/(nfftx*nffty*nfftz)
 
-    ! Get Inverse Fourier transform of all fields components and currents
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, exf, ex_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, eyf, ey_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, ezf, ez_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bxf, bx_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, byf, by_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
-    ENDIF
+    ! Get Inverse Fourier transform of all fields components 
+    CALL fft_backward_c2r_local(nfftx,nffty,nfftz)
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -345,24 +345,14 @@ MODULE fourier_psaotd
     REAL(num) :: coeff_norm, tmptime
     INTEGER(idp) :: ix, iy, iz
 
-    ! Get global Fourier transform of all fields components and currents
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
+    ! Get global Fourier transform of all fields components 
+    CALL fft_forward_c2r_mpi
 
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    IF(fftw_hybrid) THEN 
+      coeff_norm  = 1.0_num/(nx_group*ny_group*nz_group)
+    ELSE 
+       coeff_norm = 1.0_num/(nx_global*ny_global*nz_global)
     ENDIF
-
-    coeff_norm=(nx_global)*(ny_global)*(nz_global)
-    IF(fftw_hybrid) coeff_norm = nx_group*ny_group*nz_group
-    coeff_norm=1.0_num/coeff_norm
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -409,6 +399,155 @@ MODULE fourier_psaotd
     ENDIF
 
   END SUBROUTINE get_fields_mpi
+
+
+  SUBROUTINE get_fields_mpi_lb
+    USE shared_data
+    USE fields
+    USE mpi_fftw3
+    USE time_stat
+    USE params
+    USE group_parameters
+    USE field_boundary
+    IMPLICIT NONE
+    REAL(num) :: coeff_norm, tmptime
+    INTEGER(idp) :: ix, iy, iz
+
+    ! Get global Fourier transform of all fields components 
+    CALL fft_forward_c2r_mpi
+
+    coeff_norm = 1.0_num/(nx_group*ny_group*nz_group)
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=1,size_local
+      DO iy=iy_min_r, iy_max_r
+        DO ix=ix_min_r, ix_max_r
+          ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ex_r(ix,iy, g_local(iz))*coeff_norm
+          ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ey_r(ix,iy, g_local(iz))*coeff_norm
+          ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ez_r(ix,iy, g_local(iz))*coeff_norm
+          bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bx_r(ix,iy, g_local(iz))*coeff_norm
+          by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = by_r(ix,iy, g_local(iz))*coeff_norm
+          bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bz_r(ix,iy, g_local(iz))*coeff_norm
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+    CALL group_communication_backward(coeff_norm)
+  END SUBROUTINE get_fields_mpi_lb
+  
+  SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
+    USE fields
+    USE fastfft
+    USE fourier
+    USE time_stat
+    USE shared_data
+    USE params
+    REAL(num)   :: tmptime
+    INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
+    
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r, exf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r, eyf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r, ezf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r, bxf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r, byf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r, bzf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r, jxf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r, jyf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r, jzf, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r, rhooldf,plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r, rhof, plan_r2c) 
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+  END SUBROUTINE fft_forward_r2c_local
+
+  SUBROUTINE fft_forward_r2c_mpi()
+    USE fields
+    USE fastfft
+    USE mpi_fftw3
+    USE time_stat
+    USE shared_data
+    USE params
+    REAL(num)   :: tmptime
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
+    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+  END SUBROUTINE fft_forward_r2c_mpi
+
+  SUBROUTINE fft_backward_c2r_local(nfftx,nffty,nfftz)
+    USE fields
+    USE fourier
+    USE fastfft
+    USE time_stat
+    USE shared_data
+    USE params
+    REAL(num)   :: tmptime
+    INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, exf, ex_r, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, eyf, ey_r, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, ezf, ez_r, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bxf, bx_r, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, byf, by_r, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+  END SUBROUTINE fft_backward_c2r_local
+
+  SUBROUTINE fft_forward_c2r_mpi()
+    USE fields
+    USE fastfft
+    USE mpi_fftw3
+    USE time_stat
+    USE shared_data
+    USE params
+    REAL(num)   :: tmptime
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
+    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+  END SUBROUTINE fft_forward_c2r_mpi
 
   SUBROUTINE push_psaotd_ebfielfs_2d() bind(C, name='push_psaotd_ebfields_2d')
     USE shared_data

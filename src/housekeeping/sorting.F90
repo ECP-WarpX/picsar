@@ -124,7 +124,7 @@ MODULE sorting
 
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,      &
     !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, dx, dy, dz, it,    &
-    !$OMP rank, sorting_shiftx, sorting_shifty, sorting_shiftz, sorting_dx,           &
+    !$OMP rank, sorting_shiftx, sorting_shifty, sorting_shiftz, sorting_dx,c_dim,     &
     !$OMP sorting_dy, sorting_dz, sorting_verbose) PRIVATE(ix, iy, iz, ispecies,      &
     !$OMP curr, curr_tile, currg, count, nxc, nyc, nzc, nxjg, nyjg, nzjg, isgathered, &
     !$OMP sxmin, symin, szmin)
@@ -174,17 +174,29 @@ MODULE sorting
               IF (count .EQ. 0) CYCLE
 
               ! Sorting algorithm inside the tiles
+              IF(c_dim ==3) THEN
+                sxmin = curr_tile%x_tile_min + sorting_shiftx
+                symin = curr_tile%y_tile_min + sorting_shifty
+                szmin = curr_tile%z_tile_min + sorting_shiftz
 
-              sxmin = curr_tile%x_tile_min + sorting_shiftx
-              symin = curr_tile%y_tile_min + sorting_shifty
-              szmin = curr_tile%z_tile_min + sorting_shiftz
+                CALL pxr_particle_bin_sorting(count, curr_tile%part_x,                &
+                curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,                &
+                curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,          &
+                curr_tile%pid, wpid, sxmin, symin, szmin, curr_tile%x_tile_max +      &
+                sorting_dx, curr_tile%y_tile_max + sorting_dy, curr_tile%z_tile_max + &
+                sorting_dz, sorting_dx, sorting_dy, sorting_dz)
+              ELSE
+                sxmin = curr_tile%x_tile_min + sorting_shiftx
+                szmin = curr_tile%z_tile_min + sorting_shiftz
 
-              CALL pxr_particle_bin_sorting(count, curr_tile%part_x,                &
-              curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,                &
-              curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,          &
-              curr_tile%pid, wpid, sxmin, symin, szmin, curr_tile%x_tile_max +      &
-              sorting_dx, curr_tile%y_tile_max + sorting_dy, curr_tile%z_tile_max + &
-              sorting_dz, sorting_dx, sorting_dy, sorting_dz)
+                CALL pxr_particle_bin_sorting_2d(count, curr_tile%part_x,              &
+                curr_tile%part_z, curr_tile%part_ux,                                   &
+                curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,           &
+                curr_tile%pid, wpid, sxmin,  szmin, curr_tile%x_tile_max +             &
+                sorting_dx                         ,curr_tile%z_tile_max +             &
+                sorting_dz, sorting_dx, sorting_dz)
+
+              ENDIF
             ENDIF
           END DO! END LOOP ON SPECIES
         ENDIF
@@ -340,5 +352,117 @@ SUBROUTINE pxr_particle_bin_sorting(np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,
   deallocate(piihc, nbppc)
 
 END SUBROUTINE
+
+
+SUBROUTINE pxr_particle_bin_sorting_2d(np2, xp, zp, ux, uy, uz, gam, pid, wpid,    &
+  xmin2,  zmin2, xmax2,  zmax2, dxf,  dzf)
+  USE constants
+  implicit none
+  integer(idp) :: ip, np2
+  integer(idp) :: k, ic, nbhc
+  integer(idp) :: ix,  iz
+  integer(idp) :: nx3,  nz3
+  integer(idp) :: wpid
+  real(num)    :: dxi, dzi
+  real(num)    :: dxf, dzf
+  real(num)    :: x2, z2
+  real(num)    :: xmin2,  zmin2
+  real(num)    :: xmax2,  zmax2
+  real(num), dimension(np2), intent(inout)      :: xp,  zp
+  real(num), dimension(np2), intent(inout)      :: ux, uy, uz
+  real(num), dimension(np2), intent(inout)      :: gam
+  REAL(num), DIMENSION(np2, 1), intent(inout)    :: pid
+  real(num), dimension(np2)                     :: xps, zps
+  real(num), dimension(np2)                     :: uxs, uys, uzs
+  real(num), dimension(np2)                     :: gams
+  real(num), dimension(np2, wpid)                :: pids
+  integer(idp), dimension(np2)                  :: hcnb! Cell number
+  integer(idp), dimension(:), allocatable        :: piihc! Particle indexes in the grid
+  integer(idp), dimension(:), allocatable        :: nbppc! Number of particles per cells
+
+  ! Bin sizes
+  dxi = 1./dxf
+  dzi = 1./dzf
+
+  nx3 = ceiling((xmax2-xmin2)*dxi)
+  nz3 = ceiling((zmax2-zmin2)*dzi)
+
+  ! Number of bins
+  nbhc = nx3*nz3
+
+  allocate(piihc(nbhc))
+  allocate(nbppc(nbhc))
+
+  hcnb = 0
+  piihc = 0
+  nbppc = 0
+
+  ! Counting sort
+  ! The criteria is the position in term of bin position
+  DO ip=1, np2
+    x2 = (xp(ip)-xmin2)*dxi
+    z2 = (zp(ip)-zmin2)*dzi
+
+    ix = floor(x2)
+    iz = floor(z2)
+
+    ! Bin id
+    hcnb(ip) = iz*nx3 +  ix+1
+#if defined(DEBUG)
+    IF ((hcnb(ip) > nbhc).OR.(hcnb(ip)<1)) THEN
+      print*, 'Bin id', ip, hcnb(ip), nbhc
+      print*, 'Particle ix, iz', ix,  iz
+      print*, 'Particle x,  z', xp(ip), zp(ip)
+      print*, 'Particle x2, z2', x2,  z2
+      print*, 'xmin,  zmin', xmin2,  zmin2
+      print*, 'xmax,  zmax', xmax2,  zmax2
+      print*, 'Particle dx, dz', dxi, dzi
+      print*, 'Particle nx, nz', nx3, nz3
+      stop
+    ENDIF
+#endif
+    ! We count the number of particles in each bin
+    nbppc(hcnb(ip)) = nbppc(hcnb(ip))+1
+
+  ENDDO
+
+  ! Determine particle indexes in the bin grid
+  k=0
+  DO ic = 1, nbhc
+    piihc(ic) = k
+    k = k+nbppc(ic)
+  END DO
+
+  ! Sorting of the particles including their properties
+  !if (rank.eq.0) print*, 'Counting sort, phase 3'
+  DO ip=1, np2
+
+    k = hcnb(ip)
+    piihc(k) = piihc(k) + 1
+    pids(piihc(k), :) = pid(ip, :)
+
+    xps(piihc(k)) = xp(ip)
+    zps(piihc(k)) = zp(ip)
+
+    uxs(piihc(k)) = ux(ip)
+    uys(piihc(k)) = uy(ip)
+    uzs(piihc(k)) = uz(ip)
+
+    gams(piihc(k)) = gam(ip)
+  END DO
+
+  ! Copy back to the original arrays
+  pid = pids
+  xp = xps
+  zp = zps
+  ux = uxs
+  uy = uys
+  uz = uzs
+  gam = gams
+
+  deallocate(piihc, nbppc)
+
+END SUBROUTINE pxr_particle_bin_sorting_2d
+
 
 END MODULE sorting

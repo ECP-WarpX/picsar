@@ -1102,7 +1102,36 @@ MODULE group_parameters!#do not parse
   REAL(num)                                 :: z_min_group, z_max_group
   REAL(num)                                 :: y_min_group, y_max_group
   REAL(num)                                 :: x_min_group, x_max_group
+  !> Arrays FOR load balancing 
 
+  !> Array of corresponding indexes between  ex_r(rank) and ex(rank)
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local ,r_local  
+  !> Array of corresponding indexes between ex_r(rank) and ex(rank-1)
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  g_left, r_left
+  !> Array of corresponding indexes between ex_r(rank) and ex(rank+1)
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_right, r_right
+  !> Array of corresponding indexes between ex(rank)  and ex(rank+1)
+  !rr_left[AT PROC RANK] = r_right[AT PROC RANK-1] AND  rg_left[AT PROC RANK] = g_right[AT PROC RANK-1]
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: rr_left, rg_left
+  !> Array of corresponding indexes between ex(rank)  and ex(rank-)
+  !rr_right[AT PROC RANK] = r_left[AT PROC RANK+1] AND  rg_right[AT PROC RANK] =
+  !g_left[AT PROC RANK+1]
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  rr_right, rg_right
+
+  !> Sizes of load_balancing arrays indexes 
+  !> Size of r_local and g_local
+  INTEGER(idp)                            :: size_local
+  !>Size of r_left and g_left 
+  INTEGER(idp)                            :: size_left
+  !> Size of r_right and g_right
+  INTEGER(idp)                            :: size_right
+  !> Size of rr_left and rg_left
+  INTEGER(idp)                            :: rsize_left
+  !> Size of rr_right and rg_right 
+  INTEGER(idp)                            :: rsize_right
+  !> Subdomain limit related to  fftw_local_sizes decomposition
+  REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
+  INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
 END MODULE
 
 #endif
@@ -1118,8 +1147,9 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid,    &
-  hybrid_2
+  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  !> is load balancing activated in groups 
+  LOGICAL(lp)                                :: is_lb_grp
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 
@@ -1215,9 +1245,9 @@ MODULE shared_data
   !> Maximal cell number in y for each MPI process
   INTEGER(idp), DIMENSION(:), POINTER :: cell_y_max
   !> Minimum cell number in z for each MPI process
-  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_min_r, cell_z_min_f
   !> Maximal cell number in z for each MPI process
-  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_max
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_z_max, cell_z_max_r, cell_z_max_f
   !> Used in em3dsolverPXR.py
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min
   !> Used in em3dsolverPXR.py
@@ -1259,6 +1289,10 @@ MODULE shared_data
   INTEGER(idp)                        :: ny
   !> local number of cells in z
   INTEGER(idp)                        :: nz
+  !> local number of cells in z for  mpi groups load balancing 
+  INTEGER(idp)                        :: nz_lb
+  !> local number of grid points in z for  mpi groups load balancing 
+  INTEGER(idp)                        :: nz_grid_lb
   !> local number of grid points in x
   INTEGER(idp)                        :: nx_grid
   !> local number of grid points in y
