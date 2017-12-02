@@ -11,8 +11,8 @@
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
-! and the U.S. Government consequently retains certain rights. As such, the U.S.
-! Government has been granted for itself and others acting on its behalf a
+! and the U.S. Government consequently retains certain rights. As such, the
+! U.S.g,'cooc'! Government has been granted for itself and others acting on its behalf a
 ! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
 ! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
@@ -568,7 +568,8 @@ INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
 INTEGER(isp)                                :: roots_grp, roots_comm
 INTEGER(idp)  :: i,j,temp
 INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
-all_cells, all_nz_lb, all_nzp
+all_cells, all_nz_lb, all_nzp, all_iz_min_lbg, all_iz_max_lbg
+INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
 
 #if defined(FFTW)
 #if defined(DEBUG)
@@ -682,12 +683,17 @@ all_cells, all_nz_lb, all_nzp
   ny_group_global = ny
   
   nz_group_global = nz_global/(nb_group/(nprocx*nprocy))
-  
+   
   IF(nz_global .NE. nz_group_global*(nb_group/(nprocx*nprocy))) THEN
     temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy, idp)
     IF(INT(nb_group/nprocx/nprocy-1-z_group_coords, idp) .LT. temp) THEN
       nz_group_global=nz_group_global+1
     ENDIF
+  ENDIF
+  ! THE NEXT ERROR COULD BE REMOVED WITH ADVANCED LOAD BALANCING 
+  IF(nz_group_global .LE. 2*nzg_group) THEN
+    WRITE(*,*) '**ERROR **, nz_group too small compared to nzg_group'
+    CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
   
   y_min_group=ymin
@@ -738,7 +744,7 @@ all_cells, all_nz_lb, all_nzp
   nx_group_grid = nx_group_global_grid + 2*nxg_group
   ny_group_grid = ny_group_global_grid + 2*nyg_group
   nz_group_grid = nz_group_global_grid + 2*nzg_group
-  
+   
   DO i=1, nb_group
     IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
       IF(c_dim == 3) THEN
@@ -770,24 +776,52 @@ all_cells, all_nz_lb, all_nzp
   
   iz_min_r = 1
   iz_max_r = local_nz
-  
+        
   IF(group_z_min_boundary) iz_min_r = nzg_group+1
-  
   IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
-  
-  IF(iz_min_r .GE. iz_max_r) THEN
-    WRITE(0, *) '*** ERROR ***'
-    WRITE(0, *) '*** iz_max_r < iz_min_r ***'
-    CALL MPI_ABORT(comm,errcode,ierr)
 
+  ! case where some procs solve maxwell in ghost region exclusively is only
+  ! supported by load balancing
+  IF(.NOT. is_lb_grp) THEN 
+    IF(iz_min_r .GT. iz_max_r) THEN
+      WRITE(0, *) '*** ERROR ***'
+      WRITE(0, *) '*** iz_max_r < iz_min_r ***'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
   ENDIF
-  
-  nz_lb = iz_max_r - iz_min_r +1
+  IF(is_lb_grp) THEN
+    iz_min_lbg = local_z0-nzg_group*(z_group_coords+1)
+    iz_max_lbg = iz_min_lbg + local_nz - 1 
+    ALLOCATE(cell_z_min_lbg(nprocz),cell_z_max_lbg(nprocz))
+    ALLOCATE(all_iz_min_lbg(nproc),all_iz_max_lbg(nproc))
+
+    CALL MPI_ALLGATHER(iz_min_lbg,1_isp, MPI_LONG_LONG_INT, all_iz_min_lbg,           &
+    INT(1,isp), MPI_LONG_LONG_INT, comm, errcode)
+
+    CALL MPI_ALLGATHER(iz_max_lbg,1_isp, MPI_LONG_LONG_INT, all_iz_max_lbg,           &
+    INT(1,isp), MPI_LONG_LONG_INT, comm, errcode)
+
+    DO i=1, nprocz
+      cell_z_min_lbg(i) = all_iz_min_lbg((i-1)*nprocx*nprocy+1)
+      cell_z_max_lbg(i) = all_iz_max_lbg((i-1)*nprocx*nprocy+1)
+    ENDDO
+    DEALLOCATE(all_iz_max_lbg,all_iz_min_lbg)
+    DO i = 1, nprocz
+      IF(i-1 == z_coords) THEN
+        IF(cell_z_max_lbg(i) - cell_z_min_lbg(i) + 1  .NE. local_nz) THEN
+          WRITE(*,*) 'ERROR in load balancing indexes'
+          CALL MPI_ABORT(comm, errcode,ierr)
+        ENDIF
+      ENDIF
+    ENDDO
+  ENDIF
+  !to take into account odd cases
+  nz_lb = MIN(iz_max_r - iz_min_r +1,0)
   nz_grid_lb = nz_lb+1
 
   ALLOCATE(all_nz_lb(nproc), all_nzp(nprocz))
   
-  CALL MPI_ALLGATHER(nz_lb, 1_isp, MPI_LONG_LONG_INT, all_nz_lb, INT(1, isp),                 &
+  CALL MPI_ALLGATHER(nz_lb, 1_isp, MPI_LONG_LONG_INT, all_nz_lb, INT(1, isp),         &
   MPI_LONG_LONG_INT, comm, errcode)
   
   DO i=1, nprocz
@@ -798,12 +832,12 @@ all_cells, all_nz_lb, all_nzp
   z_max_local_lb = zmax
   z_min_local_lb = z_min_local_lb + dz*sum(all_nzp(1:z_coords))
   z_max_local_lb = z_min_local_lb +nz_lb*dz
-  cell_z_min(1) = 0
-  cell_z_max(1) = all_nzp(1) - 1
+  cell_z_min_f(1) = 0
+  cell_z_max_f(1) = all_nzp(1) - 1
   
   DO i =2, nprocz
-    cell_z_min(i) = cell_z_max(i-1) + 1
-    cell_z_max(i) = cell_z_min(i)-1 + all_nzp(i)
+    cell_z_min_f(i) = cell_z_max(i-1) + 1
+    cell_z_max_f(i) = cell_z_min(i)-1 + all_nzp(i)
   ENDDO
   
   ix_min_r = 1
@@ -812,8 +846,8 @@ all_cells, all_nz_lb, all_nzp
   iy_min_r = 1
   iy_max_r = ny + 2*nyguards
   
-  nz_global_grid_min_lb = cell_z_min(z_coords+1)
-  nz_global_grid_max_lb = cell_z_max(z_coords+1)+1
+  nz_global_grid_min_lb = cell_z_min_f(z_coords+1)
+  nz_global_grid_max_lb = cell_z_max_f(z_coords+1)+1
   
   DEALLOCATE(all_nz_lb, all_nzp)
   DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
@@ -854,11 +888,11 @@ SUBROUTINE compute_load_balancing_local()
     WRITE(0,*) 'error in load balancing 1 '
     CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
-  IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
-    WRITE(0,*) 'error in load balancing 2' 
-    CALL MPI_ABORT(comm,errcode,ierr)
-  ENDIF
-  size_local = r_l - r_f +1
+!  IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+!    WRITE(0,*) 'error in load balancing 2' 
+!    CALL MPI_ABORT(comm,errcode,ierr)
+!  ENDIF
+  size_local = MIN(r_l - r_f +1,0_idp)
   ALLOCATE(g_local(size_local),r_local(size_local))
   IF(size_local .GE. 1_idp) THEN
     g_local(1) = g_f + 1
@@ -907,11 +941,11 @@ SUBROUTINE compute_load_balancing_from_left()
         WRITE(0,*) 'error in load balancing 11 '
         CALL MPI_ABORT(comm,errcode,ierr)
       ENDIF
-      IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
-        WRITE(0,*) 'error in load balancing 21'
-        CALL MPI_ABORT(comm,errcode,ierr)
-      ENDIF
-      size_left = r_l - r_f +1
+ !     IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+ !       WRITE(0,*) 'error in load balancing 21'
+ !       CALL MPI_ABORT(comm,errcode,ierr)
+ !     ENDIF
+      size_left = MIN(r_l - r_f +1,0_idp)
       ALLOCATE(g_left(size_left),r_left(size_left))
       IF(size_left .GE. 1_idp) THEN
         g_left(1) = g_f + 1
@@ -960,11 +994,11 @@ SUBROUTINE compute_load_balancing_from_right()
         WRITE(0,*) 'error in load balancing 12 '
         CALL MPI_ABORT(comm,errcode,ierr)
       ENDIF
-      IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
-        WRITE(0,*) 'error in load balancing 22',rank,r_l,r_f,index_r_first,index_r_last,index_g_last
-        CALL MPI_ABORT(comm,errcode,ierr)
-      ENDIF
-      size_right = r_l - r_f +1
+   !   IF((r_l - r_f .LT. 0_idp) .OR. (g_l - g_f .LT. 0_idp)) THEN
+   !     WRITE(0,*) 'error in load balancing 22',rank,r_l,r_f,index_r_first,index_r_last,index_g_last
+   !     CALL MPI_ABORT(comm,errcode,ierr)
+   !   ENDIF
+      size_right = MIN(r_l - r_f +1,0_idp)
       ALLOCATE(g_right(size_right),r_right(size_right))
       IF(size_right .GE. 1_idp) THEN
         g_right(1) = g_f + 1
@@ -1116,6 +1150,7 @@ SUBROUTINE mpi_initialise
 #if defined(FFTW)
 USE mpi_fftw3
 USE group_parameters
+USE load_balance
 #endif
 INTEGER(isp) :: idim,ierr
 INTEGER(isp) :: nx0, nxp
@@ -1280,38 +1315,34 @@ IF(fftw_with_mpi ) THEN
   IF(.NOT. fftw_hybrid) THEN
     CALL adjust_grid_mpi_global
     IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
-      WRITE(*, *), 'ERROR IN AJUSTING THE GRID'
+      WRITE(*, *), 'ERROR IN AJUSTING THE GRID 1'
       STOP
     ENDIF
   ELSE
     ALLOCATE(cell_z_min_r(1:nprocz),cell_z_max_r(1:nprocz))
-    DO iz=1,nprocz
-      cell_z_min_r(iz) = cell_z_min(iz)
-      cell_z_max_r(iz) = cell_z_max(iz)
-    ENDDO
+    cell_z_min_r = cell_z_min
+    cell_z_max_r = cell_z_max
+    ALLOCATE(cell_z_min_f(1:nprocz),cell_z_max_f(1:nprocz))
     CALL setup_groups
-    IF(nz_lb .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
-      WRITE(*, *), 'ERROR IN AJUSTING THE GRID'
+    IF(nz_lb .NE. cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1)+1) THEN
+      WRITE(*, *), 'ERROR IN AJUSTING THE GRID 2'
       STOP
     ENDIF
   ENDIF
 ENDIF
 IF(fftw_hybrid) THEN 
   ALLOCATE(cell_z_min_f(1:nprocz),cell_z_max_f(1:nprocz))
-  cell_z_min_f = cell_z_min
-  cell_z_max_f = cell_z_max
   IF(is_lb_grp) THEN
-    DO iz=1,nprocz
-      cell_z_min(iz) = cell_z_min_r(iz)
-      cell_z_max(iz) = cell_z_max_r(iz)
-    ENDDO
+    call get1D_intersection_group_mpi()
+call mpi_barrier(comm ,errcode) 
+stop
     !> Computes field array indexes
     CALL compute_load_balancing_local
     CALL compute_load_balancing_from_left
     CALL compute_load_balancing_from_right
     !> Synchronizes array indexes between adjacent procs
-    CALL Sync_exchange_load_balancing_arrays_2
-    CALL Sync_exchange_load_balancing_arrays_1
+   ! CALL Sync_exchange_load_balancing_arrays_2
+   ! CALL Sync_exchange_load_balancing_arrays_1
     IF(size_local + size_left + size_right .NE. nz_lb) THEN
       WRITE(*,*), 'ERROR IN LOAD BALANCING'
       CALL MPI_ABORT(comm,errcode,ierr) 

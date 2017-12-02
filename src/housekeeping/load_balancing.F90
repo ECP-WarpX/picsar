@@ -161,13 +161,13 @@ MODULE load_balance
     nx_old, nz_old, nxg, nzg, ix1old, ix2old, iz1old, iz2old, ix1new, ix2new, iz1new,   &
     iz2new, iproc, np)
     IMPLICIT NONE
+    INTEGER(idp), INTENT(IN) :: iproc, nx_new, nz_new, nx_old, nz_old, np, nxg,nzg
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg, 1, -nzg:nz_new+nzg) ::      &
     field_new
     REAL(num), INTENT(IN), DIMENSION(-nxg:nx_old+nxg, 1, -nzg:nz_old+nzg) ::          &
     field_old
     INTEGER(idp), DIMENSION(0:np-1), INTENT(IN) ::  ix1old, ix2old, iz1old, iz2old
     INTEGER(idp), DIMENSION(0:np-1), INTENT(IN) ::  ix1new, ix2new, iz1new, iz2new
-    INTEGER(idp), INTENT(IN) :: iproc, nx_new, nz_new, nx_old, nz_old, np, nxg, nzg
 
     INTEGER(isp) :: curr_rank, ix, iy, iz
 
@@ -191,6 +191,8 @@ MODULE load_balance
     field_old, nx_old, ny_old, nz_old, nxg, nyg, nzg, ix1old, ix2old, iy1old, iy2old,   &
     iz1old, iz2old, ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, iproc, np)
     IMPLICIT NONE
+    INTEGER(idp), INTENT(IN) :: iproc, nx_new, ny_new, nz_new, nx_old, ny_old,&
+    nz_old, np, nxg, nyg, nzg
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg, -nyg:ny_new+nyg,            &
     -nzg:nz_new+nzg) :: field_new
     REAL(num), INTENT(IN), DIMENSION(-nxg:nx_old+nxg, -nyg:ny_old+nyg,                &
@@ -199,8 +201,6 @@ MODULE load_balance
     iz1old, iz2old
     INTEGER(idp), DIMENSION(0:np-1), INTENT(IN) ::  ix1new, ix2new, iy1new, iy2new,   &
     iz1new, iz2new
-    INTEGER(idp), INTENT(IN) :: iproc, nx_new, ny_new, nz_new, nx_old, ny_old,        &
-    nz_old, np, nxg, nyg, nzg
 
     INTEGER(isp) :: curr_rank, ix, iy, iz
 
@@ -677,7 +677,230 @@ MODULE load_balance
 
   END SUBROUTINE get_2Dintersection
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine get intersection area between two 1D z_axis domains(emfield
+  !> emfield_r)
+  !> If no intersection l_is_intersection is .FALSE.
+  !> Useful to determine wether to send/recv datas bases on new CPU split
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE get1D_intersection_group_mpi()
+#if defined(FFTW)
+    USE group_parameters
+    USE mpi_fftw3
+#endif
+    USE shared_data
+    USE mpi
+    USE mpi_derived_types
+    USE fields , ONLY : nxguards, nyguards, nzguards
+   
+    IMPLICIT NONE
+    INTEGER(idp)                   :: i 
+    INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  ! 1-> ex_r 2->ex
+    INTEGER(isp)                   :: ierr, basetype
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    
+#if defined(FFTW)
 
+   basetype = mpidbl
+
+   ! IF is_containing_physical_cells == .TRUE. THEN ex_r is at least containing
+   ! one real cell
+   ! ELSE all ex_r are corresponding to a nz_group_guardcell region  
+   ALLOCATE(is_containing_physical_cells(nprocz))
+   DO i=1,nprocz
+     IF(cell_z_min_lbg(i) .GE. 0_idp .OR. cell_z_max_lbg(i) .LE. nz_global-1)THEN
+       is_containing_physical_cells(i) = .TRUE.
+     ELSE
+       is_containing_physical_cells(i) = .FALSE.
+     ENDIF
+   ENDDO
+
+   !begin field_f perspective by computing indexes OF ex_r to exchange with ex
+   ALLOCATE(sizes_to_exchange_f(nprocz));sizes_to_exchange_f = 0_idp
+   ALLOCATE(f_first_cell(nprocz)); f_first_cell = 0_idp
+
+   iz1min = cell_z_min_lbg(z_coords+1) 
+   iz1max = cell_z_max_lbg(z_coords+1)
+
+   ALLOCATE(l_is_intersection_lbg_f(nprocz))
+   l_is_intersection_lbg_f = .FALSE.
+
+   DO i = 1,nprocz
+     iz2min = cell_z_min(i)
+     iz2max = cell_z_max(i)  
+     CALL compute_findex(iz1min, iz1max, iz2min, iz2max, l_is_intersection_lbg_f(i),        &
+     sizes_to_exchange_f(i),f_first_cell(i))
+   ENDDO
+
+   ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY LOCAL_NZ VALUES
+   IF(SUM(sizes_to_exchange_f) .NE. local_nz) THEN
+     WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE'
+     CALL MPI_ABORT(comm,errcode,ierr)
+   ENDIF
+
+   ! CONSTRUCTS mpi_type for exchanges 
+   ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
+   send_type_f = MPI_DATATYPE_NULL
+   recv_type_f = MPI_DATATYPE_NULL 
+
+   DO i = 1,nprocz
+     IF(sizes_to_exchange_f(i) .GT. 0_idp) THEN
+
+       ! create rcv type
+       sizes(1) = 2*nxguards + nx + 1  
+       sizes(2) = 2*nyguards + ny + 1
+       sizes(3) = 2*nzguards + nz + 1
+       subsizes(1) = 2*nxguards + nx + 1
+       subsizes(2) = 2*nyguards + ny + 1 
+       subsizes(3) = sizes_to_exchange_f(i)
+       starts = 1
+       recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
+ 
+       ! create send type
+       sizes(1) = 2*(nx_group/2+1) 
+       sizes(2) = ny_group
+       sizes(3) = local_nz
+       subsizes(1) = 2*(nx_group/2+1)
+       subsizes(2) = ny_group
+       subsizes(3) = sizes_to_exchange_f(i)
+       send_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
+
+     ENDIF
+   ENDDO
+
+!END OF Field_f perspective, begin field perspective
+!**************************************************************************!
+!begin field perspective by computing indexes OF ex to exchange with ex_r
+
+   ALLOCATE(sizes_to_exchange_r(nprocz));sizes_to_exchange_r = 0_idp
+   ALLOCATE(r_first_cell(nprocz)); r_first_cell = 0_idp
+
+   iz1min = cell_z_min(z_coords+1)
+   iz1max = cell_z_max(z_coords+1)
+   ALLOCATE(l_is_intersection_lbg_r(nprocz))
+   l_is_intersection_lbg_f = .FALSE.
+
+   DO i=1,nprocz
+     iz2min = cell_z_min_lbg(i)
+     iz2max = cell_z_max_lbg(i) 
+     CALL compute_rindex(iz1min,iz1max,iz2min,iz2max,l_is_intersection_lbg_r(i),      &
+     sizes_to_exchange_r(i),r_first_cell(i))
+   ENDDO
+
+   ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY LOCAL_NZ VALUES
+   IF(SUM(sizes_to_exchange_r) .NE. nz) THEN
+     WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE'
+     CALL MPI_ABORT(comm,errcode,ierr)
+   ENDIF
+
+   ALLOCATE(send_type_r(nprocz),recv_type_r(nprocz))
+   send_type_r = MPI_DATATYPE_NULL
+   recv_type_r = MPI_DATATYPE_NULL
+
+   DO i = 1,nprocz
+     IF(sizes_to_exchange_r(i) .GT. 0_idp) THEN
+
+       ! create rcv type
+       sizes(1) = 2*(nx_group/2+1)
+       sizes(2) = ny_group
+       sizes(3) = local_nz
+       subsizes(1) = 2*(nx_group/2+1)
+       subsizes(2) = ny_group
+       subsizes(3) = sizes_to_exchange_r(i)
+       starts = 1
+       recv_type_r(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
+
+       ! create send type
+       sizes(1) = 2*nxguards + nx + 1
+       sizes(2) = 2*nyguards + ny + 1
+       sizes(3) = 2*nzguards + nz + 1 
+       subsizes(1) = 2*nxguards + nx + 1
+       subsizes(2) = 2*nyguards + ny + 1
+       subsizes(3) = sizes_to_exchange_f(i)
+       send_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+
+     ENDIF
+   ENDDO
+
+#endif
+  END SUBROUTINE get1D_intersection_group_mpi
+  
+  SUBROUTINE compute_findex(iz1min,iz1max,iz2min,iz2max,l_is_intersection,            &
+                             size_to_exchange,first_cell)
+#if defined(FFTW)
+    USE group_parameters
+#endif
+    USE shared_data
+    INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
+    INTEGER(idp)               :: iz1min_temp
+    LOGICAL(lp)  , INTENT(INOUT)  ::   l_is_intersection
+    INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange, first_cell
+    INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
+    INTEGER(idp)                  :: select_case
+
+    IF(iz1min .GE. 0_idp .AND. iz1max .GE. 0_idp .AND. iz1min .LT. nz_global .AND. iz1max .LT. nz_global)  THEN
+       select_case = 0_idp  ! most trivial case 
+    ELSE IF((iz1min .LT. 0_idp .AND. iz1max .LT. 0_idp) .OR. (iz1min .GE. nz_global .AND. iz1max .GE. nz_global)) THEN
+       select_case = 1      ! all the er_field is in a ghost region
+    ELSE IF (iz1min .LT. 0_idp .AND. iz1max .GE. 0_idp) THEN 
+       select_case = 2      ! er_field begins in ghost region and ends in real domain
+    ELSE IF (iz1min .LT. nz_global .AND. iz1max .GE. nz_global) THEN
+       select_case = 3      ! er_field begins real domain and ends in ghost region
+   ENDIF
+
+    l_is_intersection = .FALSE.
+    index_rf = iz2min
+    index_rl = iz2max
+    IF(select_case == 0_idp) THEN   ! most trivial case 
+      index_ff = iz1min
+      index_fl = iz1max
+      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell = MAX(index_ff,index_rf) - index_ff + 1
+      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE. 
+
+    ELSE IF(select_case == 1_idp) THEN
+      index_ff = modulo(iz1min,nz_global)
+      index_fl = modulo(iz1max,nz_global)
+      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell = MAX(index_ff,index_rf) - index_ff + 1 
+      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+    ELSE IF(select_case == 2) THEN
+      index_ff = modulo(iz1min,nz_global)
+      index_fl = nz_global - 1_idp
+      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell = MAX(index_ff,index_rf) - index_ff + 1 
+      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+      IF(l_is_intersection .EQV. .FALSE.) THEN
+        index_ff = 0_idp 
+        index_fl = iz1max
+        size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+        first_cell = MAX(index_ff,index_rf) - index_ff + 1 
+        IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+      ENDIF
+    ELSE IF(select_case == 3) THEN
+      index_ff = iz1min
+      index_fl = nz_global - 1_idp
+      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell = MAX(index_ff,index_rf) - index_ff + 1 
+      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+      IF(l_is_intersection .EQV. .FALSE.) THEN
+        index_ff = 0_idp 
+        index_fl = modulo(iz1max,nz_global)
+        size_to_exchange = size_to_exchange + &
+           MAX(MIN(index_fl,index_rl) - index_rf -(MAX(index_ff,index_rf) -index_ff) + 1_idp,0_idp)
+        first_cell = MAX(index_ff,index_rf) - index_ff + 1
+        IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+      ENDIF
+    ENDIF 
+   
+  END SUBROUTINE compute_findex 
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the total time per part for particle subroutines
@@ -857,9 +1080,9 @@ MODULE load_balance
   ! ______________________________________________________________________________________
   SUBROUTINE balance_in_dir(load_in_dir, ncellmaxdir, nproc_in_dir, idirmin, idirmax)
     IMPLICIT NONE
+    INTEGER(idp), INTENT(IN) :: nproc_in_dir, ncellmaxdir
     REAL(num), DIMENSION(0:ncellmaxdir-1), INTENT(IN) :: load_in_dir
     INTEGER(idp), DIMENSION(0:nproc_in_dir-1), INTENT(IN OUT) :: idirmin, idirmax
-    INTEGER(idp), INTENT(IN) :: nproc_in_dir, ncellmaxdir
     INTEGER(idp) :: iproc, icell
     REAL(num) :: balanced_load=0_num, curr_balanced_load=0_num, curr_proc_load=0_num
     LOGICAL(lp)  :: not_balanced

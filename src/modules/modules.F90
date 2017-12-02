@@ -1132,6 +1132,28 @@ MODULE group_parameters!#do not parse
   !> Subdomain limit related to  fftw_local_sizes decomposition
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
+  !> Cell domain for load balancing general case (taking into account guardcells
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_lbg, cell_z_max_lbg
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f, sizes_to_exchange_r
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell, r_first_cell
+  LOGICAL(lp)   , DIMENSION(:) , ALLOCATABLE :: l_is_intersection_lbg_f, l_is_intersection_lbg_r
+  LOGICAL(lp)   , DIMENSION(:) , ALLOCATABLE :: is_containing_physical_cells
+
+  !> TYPE IN WHICH ex_r will be recieving
+  !> so recv_type_f is ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_f   
+  !> TYPE IN WHICH ex_r will be sending
+  !> so recv_type_f is ( 2*(nx_group/2+1) , ny_group, size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_f
+  !> TYPE IN WHICH ex will be recieving
+  !> so recv_type_f is (2*(nx_group/2+1),ny_group,size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_r
+  !> TYPE IN WHICH ex_r will be sending
+  !> so recv_type_f is  ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_r
+
+
+
 END MODULE
 
 #endif
