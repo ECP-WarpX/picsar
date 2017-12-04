@@ -46,6 +46,7 @@ MODULE link_external_tools
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
+    l_staggered = .TRUE.
     c_dim = INT(cdim,idp)
     nx = INT(n3,idp)
     ny = INT(n2,idp)
