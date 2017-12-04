@@ -836,8 +836,8 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
   cell_z_max_f(1) = all_nzp(1) - 1
   
   DO i =2, nprocz
-    cell_z_min_f(i) = cell_z_max(i-1) + 1
-    cell_z_max_f(i) = cell_z_min(i)-1 + all_nzp(i)
+    cell_z_min_f(i) = cell_z_max_f(i-1) + 1
+    cell_z_max_f(i) = cell_z_min_f(i)-1 + all_nzp(i)
   ENDDO
   
   ix_min_r = 1
@@ -1331,33 +1331,28 @@ IF(fftw_with_mpi ) THEN
   ENDIF
 ENDIF
 IF(fftw_hybrid) THEN 
-  ALLOCATE(cell_z_min_f(1:nprocz),cell_z_max_f(1:nprocz))
   IF(is_lb_grp) THEN
     call get1D_intersection_group_mpi()
-call mpi_barrier(comm ,errcode) 
-stop
     !> Computes field array indexes
-    CALL compute_load_balancing_local
-    CALL compute_load_balancing_from_left
-    CALL compute_load_balancing_from_right
+!    CALL compute_load_balancing_local
+!    CALL compute_load_balancing_from_left
+!    CALL compute_load_balancing_from_right
     !> Synchronizes array indexes between adjacent procs
    ! CALL Sync_exchange_load_balancing_arrays_2
    ! CALL Sync_exchange_load_balancing_arrays_1
-    IF(size_local + size_left + size_right .NE. nz_lb) THEN
-      WRITE(*,*), 'ERROR IN LOAD BALANCING'
-      CALL MPI_ABORT(comm,errcode,ierr) 
-    ENDIF
-    IF(size_local + rsize_left+ rsize_right .NE. nz) THEN
-      WRITE(*,*)  'EROOR IN LOAD BALANCING(REAL Indice)'
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
+!    IF(size_local + size_left + size_right .NE. nz_lb) THEN
+!      WRITE(*,*), 'ERROR IN LOAD BALANCING'
+!      CALL MPI_ABORT(comm,errcode,ierr) 
+!    ENDIF
+!    IF(size_local + rsize_left+ rsize_right .NE. nz) THEN
+!      WRITE(*,*)  'EROOR IN LOAD BALANCING(REAL Indice)'
+!      CALL MPI_ABORT(comm,errcode,ierr)
+!    ENDIF
   ! IF is_lb_grp == .FALSE. THEN set grid DD params to that of
   ! fftw_mpi_local_size (Unbalanced grid for particles)
   ELSE IF(.NOT. is_lb_grp) THEN
-    DO iz=1,nprocz
-      cell_z_min(iz) = cell_z_min_f(iz)
-      cell_z_max(iz) = cell_z_max_f(iz)
-    ENDDO
+    cell_z_min(iz) = cell_z_min_f(iz)
+    cell_z_max(iz) = cell_z_max_f(iz)
     nz = nz_lb
     nz_grid = nz_grid_lb 
     nz_global_grid_min = nz_global_grid_min_lb

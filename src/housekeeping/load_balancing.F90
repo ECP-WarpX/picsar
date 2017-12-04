@@ -705,42 +705,51 @@ MODULE load_balance
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  ! 1-> ex_r 2->ex
     INTEGER(isp)                   :: ierr, basetype
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    
+
 #if defined(FFTW)
+   ALLOCATE(array_of_ranks_to_send_to(nprocz))
+   array_of_ranks_to_send_to(1) = INT(rank,isp)
+   DO i=2,nprocz
+     array_of_ranks_to_send_to(i) = MODULO(array_of_ranks_to_send_to(i-1) + INT(nprocx*nprocy,isp),INT(nproc,isp))
+   ENDDO
+   ALLOCATE(array_of_ranks_to_recv_from(nprocz))
+   array_of_ranks_to_recv_from(1) = INT(rank,isp)
+   DO i=2,nprocz
+     array_of_ranks_to_recv_from(i) = MODULO(array_of_ranks_to_recv_from(i-1) - INT(nprocx*nprocy,isp),INT(nproc,isp))
+   ENDDO
 
    basetype = mpidbl
 
    ! IF is_containing_physical_cells == .TRUE. THEN ex_r is at least containing
    ! one real cell
    ! ELSE all ex_r are corresponding to a nz_group_guardcell region  
-   ALLOCATE(is_containing_physical_cells(nprocz))
-   DO i=1,nprocz
-     IF(cell_z_min_lbg(i) .GE. 0_idp .OR. cell_z_max_lbg(i) .LE. nz_global-1)THEN
-       is_containing_physical_cells(i) = .TRUE.
-     ELSE
-       is_containing_physical_cells(i) = .FALSE.
-     ENDIF
-   ENDDO
+   !DO i=1,nprocz
+   !  IF(cell_z_min_lbg(i) .GE. 0_idp .OR. cell_z_max_lbg(i) .LE. nz_global-1)THEN
+   !    is_containing_physical_cells(i) = .TRUE.
+   !  ELSE
+   !    is_containing_physical_cells(i) = .FALSE.
+   !  ENDIF
+   !ENDDO
 
    !begin field_f perspective by computing indexes OF ex_r to exchange with ex
-   ALLOCATE(sizes_to_exchange_f(nprocz));sizes_to_exchange_f = 0_idp
-   ALLOCATE(f_first_cell(nprocz)); f_first_cell = 0_idp
-
+   ALLOCATE(sizes_to_exchange_f_to_recv(nprocz));sizes_to_exchange_f_to_recv = 0_idp
+   ALLOCATE(f_first_cell_to_recv(nprocz)); f_first_cell_to_recv = 0_idp
+   ALLOCATE(sizes_to_exchange_f_to_send(nprocz));sizes_to_exchange_f_to_send = 0_idp
+   ALLOCATE(f_first_cell_to_send(nprocz)); f_first_cell_to_send = 0_idp
    iz1min = cell_z_min_lbg(z_coords+1) 
    iz1max = cell_z_max_lbg(z_coords+1)
 
-   ALLOCATE(l_is_intersection_lbg_f(nprocz))
-   l_is_intersection_lbg_f = .FALSE.
 
    DO i = 1,nprocz
      iz2min = cell_z_min(i)
      iz2max = cell_z_max(i)  
-     CALL compute_findex(iz1min, iz1max, iz2min, iz2max, l_is_intersection_lbg_f(i),        &
-     sizes_to_exchange_f(i),f_first_cell(i))
+     CALL compute_findex(iz1min, iz1max, iz2min, iz2max,        &
+     sizes_to_exchange_f_to_recv(i),f_first_cell_to_recv(i),sizes_to_exchange_f_to_send(i),f_first_cell_to_send(i))
    ENDDO
-
+   CALL MPI_BARRIER(comm,errcode)   
+ 
    ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY LOCAL_NZ VALUES
-   IF(SUM(sizes_to_exchange_f) .NE. local_nz) THEN
+   IF(SUM(sizes_to_exchange_f_to_recv) .NE. local_nz) THEN
      WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE'
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
@@ -751,7 +760,7 @@ MODULE load_balance
    recv_type_f = MPI_DATATYPE_NULL 
 
    DO i = 1,nprocz
-     IF(sizes_to_exchange_f(i) .GT. 0_idp) THEN
+  !   IF(sizes_to_exchange_f(i) .GT. 0_idp) THEN
 
        ! create rcv type
        sizes(1) = 2*nxguards + nx + 1  
@@ -759,7 +768,7 @@ MODULE load_balance
        sizes(3) = 2*nzguards + nz + 1
        subsizes(1) = 2*nxguards + nx + 1
        subsizes(2) = 2*nyguards + ny + 1 
-       subsizes(3) = sizes_to_exchange_f(i)
+       subsizes(3) = sizes_to_exchange_f_to_recv(i)
        starts = 1
        recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
  
@@ -769,43 +778,43 @@ MODULE load_balance
        sizes(3) = local_nz
        subsizes(1) = 2*(nx_group/2+1)
        subsizes(2) = ny_group
-       subsizes(3) = sizes_to_exchange_f(i)
+       subsizes(3) = sizes_to_exchange_f_to_send(i)
        send_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
 
-     ENDIF
+ !    ENDIF
    ENDDO
 
 !END OF Field_f perspective, begin field perspective
 !**************************************************************************!
 !begin field perspective by computing indexes OF ex to exchange with ex_r
 
-   ALLOCATE(sizes_to_exchange_r(nprocz));sizes_to_exchange_r = 0_idp
-   ALLOCATE(r_first_cell(nprocz)); r_first_cell = 0_idp
+   ALLOCATE(sizes_to_exchange_r_to_recv(nprocz));sizes_to_exchange_r_to_recv = 0_idp
+   ALLOCATE(r_first_cell_to_recv(nprocz)); r_first_cell_to_recv = 0_idp
 
    iz1min = cell_z_min(z_coords+1)
    iz1max = cell_z_max(z_coords+1)
-   ALLOCATE(l_is_intersection_lbg_r(nprocz))
-   l_is_intersection_lbg_f = .FALSE.
 
    DO i=1,nprocz
      iz2min = cell_z_min_lbg(i)
      iz2max = cell_z_max_lbg(i) 
-     CALL compute_rindex(iz1min,iz1max,iz2min,iz2max,l_is_intersection_lbg_r(i),      &
-     sizes_to_exchange_r(i),r_first_cell(i))
+     CALL compute_rindex(iz1min,iz1max,iz2min,iz2max,      &
+     sizes_to_exchange_r_to_recv(i),r_first_cell_to_recv(i),sizes_to_exchange_r_to_send(i),r_first_cell_to_send(i))
    ENDDO
+   CALL MPI_BARRIER(comm,errcode)
 
    ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY LOCAL_NZ VALUES
-   IF(SUM(sizes_to_exchange_r) .NE. nz) THEN
+   IF(SUM(sizes_to_exchange_r_to_recv) .NE. nz) THEN
      WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE'
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
 
    ALLOCATE(send_type_r(nprocz),recv_type_r(nprocz))
+
    send_type_r = MPI_DATATYPE_NULL
    recv_type_r = MPI_DATATYPE_NULL
 
    DO i = 1,nprocz
-     IF(sizes_to_exchange_r(i) .GT. 0_idp) THEN
+     IF(sizes_to_exchange_r_to_recv(i) .GT. 0_idp) THEN
 
        ! create rcv type
        sizes(1) = 2*(nx_group/2+1)
@@ -813,7 +822,7 @@ MODULE load_balance
        sizes(3) = local_nz
        subsizes(1) = 2*(nx_group/2+1)
        subsizes(2) = ny_group
-       subsizes(3) = sizes_to_exchange_r(i)
+       subsizes(3) = sizes_to_exchange_r_to_recv(i)
        starts = 1
        recv_type_r(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
 
@@ -823,25 +832,110 @@ MODULE load_balance
        sizes(3) = 2*nzguards + nz + 1 
        subsizes(1) = 2*nxguards + nx + 1
        subsizes(2) = 2*nyguards + ny + 1
-       subsizes(3) = sizes_to_exchange_f(i)
+       subsizes(3) = sizes_to_exchange_r_to_send(i)
        send_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
 
      ENDIF
    ENDDO
+  !DO i =1,nprocz
+  !  IF(sizes_to_exchange_f(i) .NE. sizes_to_exchange_r(i)) THEN
+  !   WRITE(*,*) ' ERROR HERE10',i,sizes_to_exchange_f(i),sizes_to_exchange_r(i)
+  !   CALL MPI_ABORT(comm,errcode,ierr)
+  !  ENDIF
+  !ENDDO
 
 #endif
   END SUBROUTINE get1D_intersection_group_mpi
+
+
+  SUBROUTINE compute_rindex(iz1min ,iz1max ,iz2min ,iz2max , &
+             size_to_exchange_recv, first_cell_recv,size_to_exchange_send,first_cell_send)
+#if defined(FFTW)
+    USE group_parameters
+#endif
+    USE shared_data
+    INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
+    INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv, first_cell_recv
+    INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_send, first_cell_send
+    INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
+    INTEGER(idp)                  :: select_case
+    
+    index_ff = iz2min
+    index_fl = iz2max
+    IF(group_z_min_boundary) index_ff = index_ff + nzg_group
+    IF(group_z_max_boundary) index_fl = index_fl - nzg_group
+    
+    index_rf = iz1min
+    index_rl = iz1max
+    IF(index_fl .GE. index_ff) THEN
+      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
+      first_cell_recv = MAX(index_rf,index_ff) - index_rf 
+    ELSE
+      size_to_exchange_recv = 0_idp
+      first_cell_recv = 0_idp
+    ENDIF
+
+
+    index_ff = iz2min
+    index_fl = iz2max
+    size_to_exchange_send = 0_idp 
+    IF(iz2min .GE. 0_idp .AND. iz2max .GE. 0_idp .AND. iz2min .LT. nz_global .AND. iz1max .LT. nz_global)  THEN
+       select_case = 0_idp  ! most trivial case 
+    ELSE IF((iz2min .LT. 0_idp .AND. iz2max .LT. 0_idp) .OR. (iz2min .GE. nz_global .AND. iz1max .GE. nz_global)) THEN
+       select_case = 1      ! all the er_field is in a ghost region
+    ELSE IF (iz2min .LT. 0_idp .AND. iz2max .GE. 0_idp) THEN
+       select_case = 2      ! er_field begins in ghost region and ends in real domain
+    ELSE IF (iz2min .LT. nz_global .AND. iz2max .GE. nz_global) THEN
+       select_case = 3      ! er_field begins real domain and ends in ghost region
+   ENDIF
+   IF(select_case == 0) THEN
+      index_ff = iz2min
+      index_fl = iz2max
+     size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
+     first_cell_send = MAX(index_rf,index_ff) - index_rf
+   ELSE IF(select_case ==  1) THEN
+      index_ff = MODULO(iz2min,nz_global)
+      index_fl = MODULO(iz2max,nz_global)
+      size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
+      first_cell_send = MAX(index_rf,index_ff) - index_rf
+   ELSE IF(select_case ==2) THEN
+      index_ff = MODULO(iz2min,nz_global)
+      index_fl = nz_global - 1_idp
+      size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
+      first_cell_send = MAX(index_rf,index_ff) - index_rf
+
+      IF(size_to_exchange_send .EQ. 0_idp) THEN
+        index_ff = 0_idp
+        index_fl = iz2max
+        size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
+        first_cell_send = MAX(index_rf,index_ff) - index_rf
+      ENDIF
+    ELSE IF(select_case == 3) THEN
+      index_ff = iz2min
+      index_fl = nz_global - 1_idp
+        size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
+        first_cell_send = MAX(index_rf,index_ff) - index_rf
+      IF(size_to_exchange_send .EQ. 0_idp) THEN
+        index_ff = 0_idp
+        index_fl = MODULO(iz2max,nz_global)
+        size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
+        first_cell_send = MAX(index_rf,index_ff) - index_rf
+      ENDIF
+    ENDIF
+
+
+  END SUBROUTINE compute_rindex
+
   
-  SUBROUTINE compute_findex(iz1min,iz1max,iz2min,iz2max,l_is_intersection,            &
-                             size_to_exchange,first_cell)
+  SUBROUTINE compute_findex(iz1min,iz1max,iz2min,iz2max,            &
+                             size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send)
 #if defined(FFTW)
     USE group_parameters
 #endif
     USE shared_data
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
     INTEGER(idp)               :: iz1min_temp
-    LOGICAL(lp)  , INTENT(INOUT)  ::   l_is_intersection
-    INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange, first_cell
+    INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send
     INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
     INTEGER(idp)                  :: select_case
 
@@ -855,52 +949,61 @@ MODULE load_balance
        select_case = 3      ! er_field begins real domain and ends in ghost region
    ENDIF
 
-    l_is_intersection = .FALSE.
     index_rf = iz2min
     index_rl = iz2max
     IF(select_case == 0_idp) THEN   ! most trivial case 
       index_ff = iz1min
       index_fl = iz1max
-      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
-      first_cell = MAX(index_ff,index_rf) - index_ff + 1
-      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE. 
-
+      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1
     ELSE IF(select_case == 1_idp) THEN
-      index_ff = modulo(iz1min,nz_global)
-      index_fl = modulo(iz1max,nz_global)
-      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
-      first_cell = MAX(index_ff,index_rf) - index_ff + 1 
-      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+      index_ff = MODULO(iz1min,nz_global)
+      index_fl = MODULO(iz1max,nz_global)
+      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
     ELSE IF(select_case == 2) THEN
-      index_ff = modulo(iz1min,nz_global)
+      index_ff = MODULO(iz1min,nz_global)
       index_fl = nz_global - 1_idp
-      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
-      first_cell = MAX(index_ff,index_rf) - index_ff + 1 
-      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
-      IF(l_is_intersection .EQV. .FALSE.) THEN
+      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
+      IF(size_to_exchange_recv .EQ. 0_idp) THEN
         index_ff = 0_idp 
         index_fl = iz1max
-        size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
-        first_cell = MAX(index_ff,index_rf) - index_ff + 1 
-        IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+        size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
       ENDIF
     ELSE IF(select_case == 3) THEN
       index_ff = iz1min
       index_fl = nz_global - 1_idp
-      size_to_exchange = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
-      first_cell = MAX(index_ff,index_rf) - index_ff + 1 
-      IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
-      IF(l_is_intersection .EQV. .FALSE.) THEN
+      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
+      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
+      IF(size_to_exchange_recv .EQ. 0_idp) THEN
         index_ff = 0_idp 
-        index_fl = modulo(iz1max,nz_global)
-        size_to_exchange = size_to_exchange + &
-           MAX(MIN(index_fl,index_rl) - index_rf -(MAX(index_ff,index_rf) -index_ff) + 1_idp,0_idp)
-        first_cell = MAX(index_ff,index_rf) - index_ff + 1
-        IF(size_to_exchange .GT. 0_idp) l_is_intersection = .TRUE.
+        index_fl = MODULO(iz1max,nz_global)
+        size_to_exchange_recv =  MAX(MIN(index_fl,index_rl) - index_rf -(MAX(index_ff,index_rf) -index_ff) + 1_idp,0_idp)
+        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1
       ENDIF
     ENDIF 
-   
-  END SUBROUTINE compute_findex 
+    size_to_exchange_send = 0_idp
+    first_cell_send = 0_idp 
+    IF((group_z_min_boundary .OR. group_z_max_boundary) .AND. (iz1max - iz1min+1) .LE. nzg_group) THEN
+      RETURN
+    ENDIF
+    IF(group_z_min_boundary) THEN
+      index_ff = iz1min + nzg_group
+    ENDIF
+    IF(group_z_max_boundary) THEN 
+      index_fl = iz1max - nzg_group
+    ENDIF
+    IF(index_fl .GE. nz_global .OR. index_ff .LT. 0_idp) THEN
+      PRINT*,"stop here 0"
+      STOP
+    ENDIF
+    index_rf = iz2min
+    index_rl = iz2max 
+    size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
+    first_cell_send = MAX(index_ff,index_rf) - index_ff + 1
+  END SUBROUTINE compute_findex
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes the total time per part for particle subroutines

@@ -1074,7 +1074,213 @@ MODULE field_boundary
 #endif
   END SUBROUTINE SEND_TO_LEFT_r2f 
 
+
+
+
+  SUBROUTINE generalized_comms_group_r2f()
+#if defined(FFTW) 
+    USE group_parameters
+    USE mpi_fftw3
+#endif
+    USE time_stat
+    USE shared_data
+    USE load_balance  
+    USE fields
+#if defined(FFTW)
+    INTEGER(idp)  :: nxx, nyy, nzz
+    REAL(num)                                   :: tmptime
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    nxx = 2*(nx_group/2+1)
+    nyy = ny_group
+    nzz = local_nz
+    CALL sendrecv_rf_generilized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(jx,nx,nxguards,ny,nyguards,nz,nzguards,jx_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(jz,nx,nxguards,ny,nyguards,nz,nzguards,jz_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(rho,nx,nxguards,ny,nyguards,nz,nzguards,rho_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generilized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,rhoold_r,nxx,nyy,nzz)
+
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
+    ENDIF
+#endif
+
+  END SUBROUTINE generalized_comms_group_r2f
   
+  SUBROUTINE sendrecv_rf_generilized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+
+    USE load_balance
+#if defined(FFTW)
+    USE group_parameters
+#endif
+    INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    INTEGER(idp)                                ::  i , j , k , ix , iy , iz
+    REAL(num) , ALLOCATABLE , DIMENSION(:,:,:)  :: temp_recv
+    INTEGER(isp)                                :: requests(2)
+    INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
+#if defined(FFTW)
+    !  i-1 = mpi test in z direction for exchanges
+    ! example :
+    ! i-1=0 exchange between current rank and itself
+    ! i-1=1 send to right (proc_z_max)
+    ! i-1=nprocz-1 send to left(proc_z_min)
+    DO i=1,nprocz
+      IF(i == 1 ) CYCLE
+      j = MODULO(z_coords+i-1,nprocz) +1
+      ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
+      ! k corresponds to the z_coords(+1) of mpi task from which the recv is
+      ! done
+      k = MODULO(z_coords-(i-1),nprocz) +1
+
+      rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
+      IF(sizes_to_exchange_f(k) == 0) rank_to_recv_from=mpi_proc_null  
+      ALLOCATE(temp_recv(2*nxg+nx1+1,2*nyg+ny1+1,sizes_to_exchange_f(k)))
+if(z_coords==7)print*,'aaaaaa',sizes_to_exchange_r(1),j
+if(z_coords==0) print*,"bbbbb",sizes_to_exchange_f(8),k
+
+if(send_type_r(j) == mpi_datatype_null) rank_to_send_to = mpi_proc_null
+        if(send_type_r(j) .NE. mpi_datatype_null)then 
+print*,"begin send",z_coords,rank_to_send_to
+      CALL MPI_ISEND(field(1,1,r_first_cell(j)),1_isp,send_type_r(j),      &
+      rank_to_send_to,tag,comm,requests(1),errcode)
+      
+      CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+print*,"end send",z_coords
+endif
+if (recv_type_f(k) == mpi_datatype_null)  rank_to_recv_from = mpi_proc_null
+if(rank_to_recv_from .ne. mpi_proc_null ) then
+print*,"begin recv",z_coords,rank_to_recv_from
+      CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_f(k),                &
+      rank_to_recv_from,tag,comm,requests(1),errcode)
+
+      CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+print*,"end recv",z_coords
+endif
+
+
+!print*,"haaaaaahh",z_coords
+call mpi_barrier(comm,errcode)
+
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=1,sizes_to_exchange_f(k)
+        DO iy=iy_min_r, iy_max_r
+          DO ix=ix_min_r, ix_max_r
+             field_f(ix,iy,iz-1+f_first_cell) = temp_recv(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$OMP END PARALLEL DO
+      DEALLOCATE(temp_recv)
+    ENDDO
+call mpi_barrier(comm,errcode)
+print*,"fin rf",i
+call mpi_barrier(comm,errcode)
+#endif
+  END SUBROUTINE  sendrecv_rf_generilized
+
+  SUBROUTINE generalized_comms_group_f2r(coeff_norm)
+#if defined(FFTW) 
+    USE group_parameters
+    USE mpi_fftw3
+#endif
+    USE time_stat
+    USE shared_data
+    USE load_balance  
+    USE fields
+#if defined(FFTW)
+    REAL(num)  , INTENT(IN)  :: coeff_norm
+    INTEGER(idp)  :: nxx, nyy, nzz
+    REAL(num)     :: tmptime
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    nxx = 2*(nx_group/2+1)
+    nyy = ny_group
+    nzz = local_nz
+    CALL sendrecv_fr_generilized(coeff_norm,ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generilized(coeff_norm,ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generilized(coeff_norm,ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generilized(coeff_norm,bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generilized(coeff_norm,by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generilized(coeff_norm,bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
+    ENDIF
+#endif
+
+  END SUBROUTINE generalized_comms_group_f2r
+
+  SUBROUTINE sendrecv_fr_generilized(coeff_norm,field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+
+    USE load_balance
+#if defined(FFTW)
+    USE group_parameters
+#endif
+    REAL(num)   , INTENT(IN)                      :: coeff_norm
+    INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
+    REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
+    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    INTEGER(idp)        ::  i , j , k , ix , iy , iz
+    REAL(num)   , ALLOCATABLE , DIMENSION(:,:,:)  :: temp_recv
+    INTEGER(isp)                                  :: requests(2)
+    INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
+#if defined(FFTW)
+    !  i-1 = mpi test in z direction for exchanges
+    ! example :
+    ! i-1=0 exchange between current rank and itself
+    ! i-1=1 send to right (proc_z_max)
+    ! i-1=nprocz-1 send to left(proc_z_min)
+    DO i=1,nprocz
+      IF(i == 1 ) CYCLE
+      j = MODULO(z_coords+i-1,nprocz) +1
+      ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
+      ! k corresponds to the z_coords(+1) of mpi task from which the recv is
+      ! done
+      k = MODULO(z_coords-(i-1),nprocz) +1
+
+      rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
+
+      ALLOCATE(temp_recv(nxx,nyy,sizes_to_exchange_r(k)))
+
+      CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_r(k),                &
+      rank_to_recv_from,tag,comm,requests(1),errcode)
+
+      CALL MPI_ISEND(field_f(1,1,f_first_cell(j)),1_isp,send_type_f(j),      &
+      rank_to_send_to,tag,comm,requests(2),errcode)
+      
+      CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=1,sizes_to_exchange_r(k)
+        DO iy=iy_min_r, iy_max_r
+          DO ix=ix_min_r, ix_max_r
+             field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell) = temp_recv(ix-ix_min_r+1,iy-iy_min_r+1,iz)*coeff_norm
+          ENDDO
+        ENDDO
+      ENDDO
+      !$OMP END PARALLEL DO
+      DEALLOCATE(temp_recv)
+    ENDDO
+#endif
+  END SUBROUTINE  sendrecv_fr_generilized
+
+
   
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains

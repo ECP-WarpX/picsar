@@ -170,20 +170,20 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,size_local
+    DO iz=1,sizes_to_exchange_f(z_coords+1)
       DO iy=iy_min_r,iy_max_r
         DO ix =ix_min_r,ix_max_r
-           ex_r(ix,iy,g_local(iz)) = ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           ey_r(ix,iy,g_local(iz)) = ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           ez_r(ix,iy,g_local(iz)) = ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           bx_r(ix,iy,g_local(iz)) = bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           by_r(ix,iy,g_local(iz)) = by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           bz_r(ix,iy,g_local(iz)) = bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           jx_r(ix,iy,g_local(iz)) = jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           jy_r(ix,iy,g_local(iz)) = jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           jz_r(ix,iy,g_local(iz)) = jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,r_local(iz))
-           rho_r(ix,iy,g_local(iz)) = rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,r_local(iz))
-           rhoold_r(ix,iy,g_local(iz)) = rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,r_local(iz))
+           ex_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           ey_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           ez_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           bx_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           by_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           bz_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           jx_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           jy_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           jz_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           rho_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           rhoold_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
         ENDDO
       ENDDO
     ENDDO
@@ -191,8 +191,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    CALL group_communication_forward()
-    CALL ebj_field_bcs_groups()
+    CALL generalized_comms_group_r2f()
+!    CALL ebj_field_bcs_groups()
 
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
@@ -425,12 +425,13 @@ MODULE fourier_psaotd
     DO iz=1,size_local
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ex_r(ix,iy, g_local(iz))*coeff_norm
-          ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ey_r(ix,iy, g_local(iz))*coeff_norm
-          ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = ez_r(ix,iy, g_local(iz))*coeff_norm
-          bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bx_r(ix,iy, g_local(iz))*coeff_norm
-          by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = by_r(ix,iy, g_local(iz))*coeff_norm
-          bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards, r_local(iz)) = bz_r(ix,iy, g_local(iz))*coeff_norm
+          ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = ex_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
+          ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = ey_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
+          ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = ez_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
+          bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = bx_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
+          by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = by_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
+          bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = bz_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
+
         END DO
       END DO
     END DO
@@ -438,7 +439,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    CALL group_communication_backward(coeff_norm)
+  CALL generalized_comms_group_f2r(coeff_norm)
+  !  CALL group_communication_backward(coeff_norm)
   END SUBROUTINE get_fields_mpi_lb
   
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
