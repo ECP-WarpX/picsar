@@ -153,7 +153,6 @@ MODULE gpstd_solver
     ENDDO
     !construct kspace
     ii=DCMPLX(0.0_num, 1.0_num)
-    l_staggered = .TRUE.
     CALL compute_k_vec(l_staggered)
     DO i = 1, nfftx/2+1
       DO j = 1, nffty
