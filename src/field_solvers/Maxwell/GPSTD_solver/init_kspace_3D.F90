@@ -153,6 +153,7 @@ MODULE gpstd_solver
     ENDDO
     !construct kspace
     ii=DCMPLX(0.0_num, 1.0_num)
+    l_staggered = .TRUE.
     CALL compute_k_vec(l_staggered)
     DO i = 1, nfftx/2+1
       DO j = 1, nffty
@@ -359,7 +360,7 @@ MODULE gpstd_solver
       kyf=kyc
       kyb=kyc
       kzf=kzc
-      kyb=kzc
+      kzb=kzc
     ENDIF
     IF(fftw_with_mpi) THEN
       IF(.NOT. fftw_mpi_transpose) THEN
