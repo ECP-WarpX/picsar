@@ -701,13 +701,14 @@ MODULE load_balance
     USE fields , ONLY : nxguards, nyguards, nzguards
    
     IMPLICIT NONE
-    INTEGER(idp)                   :: i 
+    INTEGER(idp)                   :: i,j 
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  ! 1-> ex_r 2->ex
     INTEGER(isp)                   :: ierr, basetype
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(idp)                     :: phy_cell
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
     INTEGER(idp)                     :: nb_proc_per_group
+    INTEGER(idp)           , ALLOCATABLE, DIMENSION(:,:) :: check1,check2
 #if defined(FFTW)
    ALLOCATE(array_of_ranks_to_send_to(nprocz))
    array_of_ranks_to_send_to(1) = INT(rank,isp)
@@ -757,12 +758,12 @@ MODULE load_balance
    ENDIF
 
    phy_cell = local_nz
-   IF(group_z_min_boundary) phy_cell = phy_cell - nzg_group
-   IF(group_z_max_boundary) phy_cell = phy_cell - nzg_group
-   phy_cell = MAX(phy_cell,0_idp)
-   IF(SUM(sizes_to_exchange_f_to_send) .NE. phy_cell) THEN
-     WRITE(*,*) 'ERROR IN LOAD BALANCING',rank,phy_cell,SUM(sizes_to_exchange_f_to_send)
-   ENDIF
+  ! IF(group_z_min_boundary) phy_cell = phy_cell - nzg_group
+  ! IF(group_z_max_boundary) phy_cell = phy_cell - nzg_group
+  ! phy_cell = MAX(phy_cell,0_idp)
+  ! IF(SUM(sizes_to_exchange_f_to_send) .NE. phy_cell) THEN
+  !   WRITE(*,*) 'ERROR IN LOAD BALANCING 007',rank,phy_cell,SUM(sizes_to_exchange_f_to_send)
+  ! ENDIF
    ! CONSTRUCTS mpi_type for exchanges 
    ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
    send_type_f = MPI_DATATYPE_NULL
@@ -809,16 +810,17 @@ MODULE load_balance
    DO i=1,nprocz
      iz2min = cell_z_min_lbg(i)
      iz2max = cell_z_max_lbg(i) 
-     IF(MODULO(i-1_idp,nb_proc_per_group) ==0_idp) THEN
+     IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
        is_grp_min = .TRUE.
      ELSE 
        is_grp_min = .FALSE.
      ENDIF
-     IF(MODULO(i,nb_proc_per_group) == 0_idp) THEN
+     IF(MODULO(i,nb_proc_per_group) == 0) THEN
        is_grp_max = .TRUE.
      ELSE 
        is_grp_max = .FALSE.
      ENDIF
+
      CALL compute_rindex(iz1min,iz1max,iz2min,iz2max,      &
      sizes_to_exchange_r_to_recv(i),r_first_cell_to_recv(i),sizes_to_exchange_r_to_send(i),&
      r_first_cell_to_send(i),is_grp_min,is_grp_max)
@@ -877,6 +879,32 @@ MODULE load_balance
   !ENDDO
 
 #endif
+  ALLOCATE(check1(nprocz,nprocz))
+  ALLOCATE(check2(nprocz,nprocz))
+  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_send,int(nprocz,isp),MPI_LONG_LONG_INT,check1,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_recv,int(nprocz,isp),MPI_LONG_LONG_INT,check2,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+
+  DO i=1,nprocz
+    DO j=1,nprocz
+      IF(check1(i,j) .NE. check2(j,i)) THEN
+        WRITE(*,*)'ERROR 2000'
+        CALL MPI_ABORT(comm,errcode,ierr)
+      ENDIF
+    ENDDO
+  ENDDO
+  check1=0*check1
+  check2=0*check2
+  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send,int(nprocz,isp),MPI_LONG_LONG_INT,check1,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv,int(nprocz,isp),MPI_LONG_LONG_INT,check2,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+  DO i=1,nprocz
+    DO j=1,nprocz
+      IF(check1(i,j) .NE. check2(j,i)) THEN
+        WRITE(*,*)'ERROR 2100'
+        CALL MPI_ABORT(comm,errcode,ierr)
+      ENDIF
+    ENDDO
+  ENDDO
+  DEALLOCATE(check1,check2) 
   END SUBROUTINE get1D_intersection_group_mpi
 
 
@@ -911,15 +939,16 @@ MODULE load_balance
     index_ff = iz2min
     index_fl = iz2max
     size_to_exchange_send = 0_idp 
-    IF(iz2min .GE. 0_idp .AND. iz2max .GE. 0_idp .AND. iz2min .LT. nz_global .AND. iz1max .LT. nz_global)  THEN
+    IF(iz2min .GE. 0_idp .AND. iz2max .GE. 0_idp .AND. iz2min .LT. nz_global .AND. iz2max .LT. nz_global)  THEN
        select_case = 0_idp  ! most trivial case 
-    ELSE IF((iz2min .LT. 0_idp .AND. iz2max .LT. 0_idp) .OR. (iz2min .GE. nz_global .AND. iz1max .GE. nz_global)) THEN
+    ELSE IF((iz2min .LT. 0_idp .AND. iz2max .LT. 0_idp) .OR. (iz2min .GE. nz_global .AND. iz2max .GE. nz_global)) THEN
        select_case = 1      ! all the er_field is in a ghost region
     ELSE IF (iz2min .LT. 0_idp .AND. iz2max .GE. 0_idp) THEN
        select_case = 2      ! er_field begins in ghost region and ends in real domain
     ELSE IF (iz2min .LT. nz_global .AND. iz2max .GE. nz_global) THEN
        select_case = 3      ! er_field begins real domain and ends in ghost region
    ENDIF
+
    IF(select_case == 0) THEN
       index_ff = iz2min
       index_fl = iz2max
@@ -953,6 +982,9 @@ MODULE load_balance
         size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
         first_cell_send = MAX(index_rf,index_ff) - index_rf
       ENDIF
+    ELSE 
+         WRITE(*,*)'ERROR'
+         STOP
     ENDIF
 
 
@@ -1033,6 +1065,8 @@ MODULE load_balance
     ENDIF
     index_rf = iz2min
     index_rl = iz2max 
+    index_ff = iz1min
+    index_fl = iz1max
     size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
     first_cell_send = MAX(index_ff,index_rf) - index_ff + 1
   END SUBROUTINE compute_findex
