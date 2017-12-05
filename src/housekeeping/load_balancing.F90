@@ -742,12 +742,24 @@ MODULE load_balance
    iz1min = cell_z_min_lbg(z_coords+1) 
    iz1max = cell_z_max_lbg(z_coords+1)
 
+   nb_proc_per_group = nproc/(nb_group)!/nprocx/nprocy)
 
    DO i = 1,nprocz
      iz2min = cell_z_min(i)
      iz2max = cell_z_max(i)  
+     IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
+       is_grp_min = .TRUE.
+     ELSE
+       is_grp_min = .FALSE.
+     ENDIF
+     IF(MODULO(i,nb_proc_per_group) == 0) THEN
+       is_grp_max = .TRUE.
+     ELSE
+       is_grp_max = .FALSE.
+     ENDIF
+
      CALL compute_findex(iz1min, iz1max, iz2min, iz2max,        &
-     sizes_to_exchange_f_to_recv(i),f_first_cell_to_recv(i),sizes_to_exchange_f_to_send(i),f_first_cell_to_send(i))
+     sizes_to_exchange_f_to_recv(i),f_first_cell_to_recv(i),sizes_to_exchange_f_to_send(i),f_first_cell_to_send(i),is_grp_min,is_grp_max)
    ENDDO
    CALL MPI_BARRIER(comm,errcode)   
  
@@ -992,11 +1004,12 @@ MODULE load_balance
 
   
   SUBROUTINE compute_findex(iz1min,iz1max,iz2min,iz2max,            &
-                             size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send)
+                             size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send,is_group_min,is_group_max)
 #if defined(FFTW)
     USE group_parameters
 #endif
     USE shared_data
+    LOGICAL(lp)   , INTENT(IN)  :: is_group_max,is_group_min
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
     INTEGER(idp)               :: iz1min_temp
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send
@@ -1067,8 +1080,12 @@ MODULE load_balance
     index_rl = iz2max 
     index_ff = iz1min
     index_fl = iz1max
+    IF(is_group_min) index_ff = index_ff + nzg_group
+    IF(is_group_max) index_fl = index_fl - nzg_group
     size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
     first_cell_send = MAX(index_ff,index_rf) - index_ff + 1
+    IF(index_ff .GT. index_fl) size_to_exchange_send = 0_idp
+    IF(select_case==1_idp) size_to_exchange_send = 0_idp
   END SUBROUTINE compute_findex
   ! ______________________________________________________________________________________
   !> @brief
