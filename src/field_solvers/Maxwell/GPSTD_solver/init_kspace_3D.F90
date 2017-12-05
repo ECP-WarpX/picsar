@@ -359,7 +359,7 @@ MODULE gpstd_solver
       kyf=kyc
       kyb=kyc
       kzf=kzc
-      kyb=kzc
+      kzb=kzc
     ENDIF
     IF(fftw_with_mpi) THEN
       IF(.NOT. fftw_mpi_transpose) THEN
