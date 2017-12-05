@@ -1096,6 +1096,8 @@ MODULE group_parameters!#do not parse
   LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the superior z group boundary
   LOGICAL(lp)  :: group_z_max_boundary = .FALSE.
+!  LOGICAL(lp)  , ALLOCATABLE , DIMENSION(:) ::group_z_min_boundary_array
+!  LOGICAL(lp)  , ALLOCATABLE , DIMENSION(:) ::group_z_max_boundary_array
   !> minimum and maximum cell numbers in each group :
   INTEGER(idp), DIMENSION(:), POINTER  :: cell_z_min_group, cell_z_max_group
   !> physical limits of group domains

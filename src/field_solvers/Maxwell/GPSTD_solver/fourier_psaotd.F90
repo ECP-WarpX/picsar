@@ -170,20 +170,31 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,sizes_to_exchange_f(z_coords+1)
+    DO iz=1,sizes_to_exchange_f_to_recv(z_coords+1)
       DO iy=iy_min_r,iy_max_r
         DO ix =ix_min_r,ix_max_r
-           ex_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           ey_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           ez_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           bx_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           by_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           bz_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           jx_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           jy_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           jz_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           rho_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
-           rhoold_r(ix,iy,iz-1+f_first_cell(z_coords+1)) = rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1))
+           ex_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
+                 ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           ey_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
+                 ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           ez_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
+                 ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           bx_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
+                 bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           by_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
+                 by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           bz_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =& 
+                bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           jx_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =& 
+                jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           jy_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
+                 jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           jz_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =& 
+                jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           rho_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) = &
+                 rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
+           rhoold_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
+                 rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
         ENDDO
       ENDDO
     ENDDO
@@ -422,15 +433,21 @@ MODULE fourier_psaotd
     ENDIF
 
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,size_local
+    DO iz=1,sizes_to_exchange_r_to_recv(z_coords+1)
       DO iy=iy_min_r, iy_max_r
         DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = ex_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
-          ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = ey_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
-          ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = ez_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
-          bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = bx_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
-          by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = by_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
-          bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell(z_coords+1)) = bz_r(ix,iy,iz-1+f_first_cell(z_coords+1))*coeff_norm
+          ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1)) =&
+                 ex_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
+          ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1)) =& 
+                ey_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
+          ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1)) =&
+                 ez_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
+          bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1)) =& 
+                bx_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
+          by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1)) =&
+                 by_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
+          bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1)) =&
+                 bz_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
 
         END DO
       END DO

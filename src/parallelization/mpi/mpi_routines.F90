@@ -570,7 +570,6 @@ INTEGER(idp)  :: i,j,temp
 INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
 all_cells, all_nz_lb, all_nzp, all_iz_min_lbg, all_iz_max_lbg
 INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
-
 #if defined(FFTW)
 #if defined(DEBUG)
   WRITE(0, *) "setup_groups : start"
@@ -1333,6 +1332,9 @@ ENDIF
 IF(fftw_hybrid) THEN 
   IF(is_lb_grp) THEN
     call get1D_intersection_group_mpi()
+call mpi_barrier(comm,errcode)
+print*,"SUCCESS INIT RANKS FOR LBG",rank
+call mpi_barrier(comm,errcode)
     !> Computes field array indexes
 !    CALL compute_load_balancing_local
 !    CALL compute_load_balancing_from_left
