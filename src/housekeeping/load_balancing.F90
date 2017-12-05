@@ -768,15 +768,15 @@ MODULE load_balance
      WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE'
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
-
-   phy_cell = local_nz
-  ! IF(group_z_min_boundary) phy_cell = phy_cell - nzg_group
-  ! IF(group_z_max_boundary) phy_cell = phy_cell - nzg_group
-  ! phy_cell = MAX(phy_cell,0_idp)
-  ! IF(SUM(sizes_to_exchange_f_to_send) .NE. phy_cell) THEN
-  !   WRITE(*,*) 'ERROR IN LOAD BALANCING 007',rank,phy_cell,SUM(sizes_to_exchange_f_to_send)
-  ! ENDIF
-   ! CONSTRUCTS mpi_type for exchanges 
+   !phy_cell = local_nz
+   !  IF(group_z_min_boundary) phy_cell = phy_cell - nzg_group
+   !  IF(group_z_max_boundary) phy_cell = phy_cell - nzg_group
+   !  
+   !phy_cell = MAX(phy_cell,0_idp)
+   !IF(SUM(sizes_to_exchange_f_to_send) .NE. phy_cell) THEN
+   !  WRITE(*,*) 'ERROR IN LOAD BALANCING 007',z_coords,phy_cell,SUM(sizes_to_exchange_f_to_send),local_nz
+   !ENDIF
+   !! CONSTRUCTS mpi_type for exchanges 
    ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
    send_type_f = MPI_DATATYPE_NULL
    recv_type_f = MPI_DATATYPE_NULL 
@@ -917,6 +917,14 @@ MODULE load_balance
     ENDDO
   ENDDO
   DEALLOCATE(check1,check2) 
+  DO i=1,nprocz
+    IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) =-10000_idp
+    IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -10000_idp
+    IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) =-10000_idp
+    IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -10000_idp
+  ENDDO
+      if(z_coords==0)  print*,(f_first_cell_to_recv)
+        if(z_coords==0)print*,sizes_to_exchange_f_to_recv
   END SUBROUTINE get1D_intersection_group_mpi
 
 
@@ -1063,29 +1071,24 @@ MODULE load_balance
     ENDIF 
     size_to_exchange_send = 0_idp
     first_cell_send = 0_idp 
-    IF((group_z_min_boundary .OR. group_z_max_boundary) .AND. (iz1max - iz1min+1) .LE. nzg_group) THEN
-      RETURN
-    ENDIF
-    IF(group_z_min_boundary) THEN
-      index_ff = iz1min + nzg_group
-    ENDIF
-    IF(group_z_max_boundary) THEN 
-      index_fl = iz1max - nzg_group
-    ENDIF
-    IF(index_fl .GE. nz_global .OR. index_ff .LT. 0_idp) THEN
-      PRINT*,"stop here 0"
-      STOP
-    ENDIF
     index_rf = iz2min
     index_rl = iz2max 
+
     index_ff = iz1min
     index_fl = iz1max
-    IF(is_group_min) index_ff = index_ff + nzg_group
-    IF(is_group_max) index_fl = index_fl - nzg_group
+    IF(group_z_min_boundary) index_ff = index_ff + nzg_group
+    IF(group_z_max_boundary) index_fl = index_fl - nzg_group
+
+   index_ff= Max(index_ff,0)
+   index_fl=min(index_fl,nz_global-1)
+
+
     size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
     first_cell_send = MAX(index_ff,index_rf) - index_ff + 1
-    IF(index_ff .GT. index_fl) size_to_exchange_send = 0_idp
-    IF(select_case==1_idp) size_to_exchange_send = 0_idp
+   IF(select_case==1_idp) size_to_exchange_send = 0_idp
+   IF(index_ff .GT. index_fl) size_to_exchange_send = 0_idp
+
+
   END SUBROUTINE compute_findex
   ! ______________________________________________________________________________________
   !> @brief

@@ -1333,7 +1333,6 @@ IF(fftw_hybrid) THEN
   IF(is_lb_grp) THEN
     call get1D_intersection_group_mpi()
 call mpi_barrier(comm,errcode)
-print*,"SUCCESS INIT RANKS FOR LBG",rank
 call mpi_barrier(comm,errcode)
     !> Computes field array indexes
 !    CALL compute_load_balancing_local
