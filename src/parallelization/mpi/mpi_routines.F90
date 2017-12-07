@@ -1333,12 +1333,11 @@ IF(fftw_hybrid) THEN
   IF(is_lb_grp) THEN
     call get1D_intersection_group_mpi()
 call mpi_barrier(comm,errcode)
-call mpi_barrier(comm,errcode)
     !> Computes field array indexes
-!    CALL compute_load_balancing_local
-!    CALL compute_load_balancing_from_left
-!    CALL compute_load_balancing_from_right
-    !> Synchronizes array indexes between adjacent procs
+   ! CALL compute_load_balancing_local
+   ! CALL compute_load_balancing_from_left
+   ! CALL compute_load_balancing_from_right
+   ! !> Synchronizes array indexes between adjacent procs
    ! CALL Sync_exchange_load_balancing_arrays_2
    ! CALL Sync_exchange_load_balancing_arrays_1
 !    IF(size_local + size_left + size_right .NE. nz_lb) THEN

@@ -218,7 +218,9 @@ SUBROUTINE step(nst)
       CALL pxr_particle_sorting
 
       CALL pxrdepose_currents_on_grid_jxjyjz_2d
-
+jy=0.
+jx=0.
+jz=0.
       !!! --- Boundary conditions for currents
       CALL current_bcs
 #if defined(FFTW)

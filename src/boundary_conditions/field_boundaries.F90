@@ -1097,22 +1097,17 @@ MODULE field_boundary
     nxx = 2*(nx_group/2+1)
     nyy = ny_group
     nzz = local_nz
-call mpi_barrier(comm,errcode)
-    CALL sendrecv_rf_generilized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-call mpi_barrier(comm,errcode);print*,"55cooco";call mpi_barrier(comm,errcode)
-    CALL sendrecv_rf_generilized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(jx,nx,nxguards,ny,nyguards,nz,nzguards,jx_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(jz,nx,nxguards,ny,nyguards,nz,nzguards,jz_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(rho,nx,nxguards,ny,nyguards,nz,nzguards,rho_r,nxx,nyy,nzz)
-    CALL sendrecv_rf_generilized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,rhoold_r,nxx,nyy,nzz)
-call mpi_barrier(comm,errcode)
-print*,"yes1"
-call mpi_barrier(comm,errcode)
+   ! CALL sendrecv_rf_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,jx_r,nxx,nyy,nzz)
+    CALL sendrecv_rf_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,jz_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,rho_r,nxx,nyy,nzz)
+   ! CALL sendrecv_rf_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,rhoold_r,nxx,nyy,nzz)
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1120,7 +1115,7 @@ call mpi_barrier(comm,errcode)
 
   END SUBROUTINE generalized_comms_group_r2f
   
-  SUBROUTINE sendrecv_rf_generilized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_rf_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
     USE load_balance
 #if defined(FFTW)
@@ -1151,42 +1146,55 @@ call mpi_barrier(comm,errcode)
 
       rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
+      IF(sizes_to_exchange_f_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(sizes_to_exchange_r_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
+
       ALLOCATE(temp_recv(2*nxg+nx1+1,2*nyg+ny1+1,sizes_to_exchange_f_to_recv(k)))
-      IF(send_type_r(j) .NE.  MPI_DATATYPE_NULL) THEN
-        print*,'send      ',int(z_coords),int(rank_to_send_to),int(i),int(sizes_to_exchange_r_to_send(j))
-        n=n+1
-        CALL MPI_ISEND(field(1,1,r_first_cell_to_send(j)),1_isp,send_type_r(j),      &
-        rank_to_send_to,tag,comm,requests(n),errcode)
-        print*,'send after',int(z_coords),int(rank_to_send_to),int(i),int(sizes_to_exchange_r_to_send(j))
+!      IF(sizes_to_exchange_r_to_send(j) .GT. 0) THEN
+!        CALL MPI_SEND(field(1,1,r_first_cell_to_send(j)),1_isp,send_type_r(j), &
+!             rank_to_send_to,tag,comm,errcode)
+!                endif
+!        if(sizes_to_exchange_f_to_recv(k) .GT. 0) then
+!         call mpi_recv(temp_recv(1,1,1),1_isp,recv_type_f(k),rank_to_recv_from,tag,comm,status,errcode)
+!        endif
 
-      !  CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
-      ENDIF
+      CALL MPI_SENDRECV(field(1,1,r_first_cell_to_send(j)),1_isp,send_type_r(j),&
+      rank_to_send_to,tag,temp_recv(1,1,1),1_isp,recv_type_f(k),rank_to_recv_from,tag,comm,status,errcode)
+    !  ALLOCATE(temp_recv(2*nxg+nx1+1,2*nyg+ny1+1,sizes_to_exchange_f_to_recv(k)))
+    !  IF(send_type_r(j) .NE.  MPI_DATATYPE_NULL) THEN
+    !    print*,'send      ',int(z_coords),int(rank_to_send_to),int(i),int(sizes_to_exchange_r_to_send(j))
+    !    n=n+1
+    !    CALL MPI_ISEND(field(1,1,r_first_cell_to_send(j)),1_isp,send_type_r(j),      &
+    !    rank_to_send_to,tag,comm,requests(n),errcode)
 
-      IF(recv_type_f(k) .NE. MPI_DATATYPE_NULL) THEN
-        print*,'recv      ',int(z_coords),int(rank_to_recv_from),int(i),int(sizes_to_exchange_f_to_recv(k))
-        n=n+1
-        CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_f(k),                &
-        rank_to_recv_from,tag,comm,requests(n),errcode)
-        print*,'recv after',int(z_coords),int(rank_to_recv_from),int(i),int(sizes_to_exchange_f_to_recv(k))
-       ! CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
-     ENDIF
-        IF(n .GT. 0_idp)        CALL MPI_WAITALL(INT(n,isp), requests(1), MPI_STATUSES_IGNORE, errcode)
-        IF(sizes_to_exchange_f_to_recv(k) .GT. 0_idp) THEN
-          !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-          DO iz=1,sizes_to_exchange_f_to_recv(k)
-            DO iy=iy_min_r, iy_max_r
-              DO ix=ix_min_r, ix_max_r
-                 field_f(ix,iy,iz-1+f_first_cell_to_recv) = temp_recv(ix-ix_min_r+1,iy-iy_min_r+1,iz)
-              ENDDO
+    !  !  CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    !  ENDIF
+
+    !  IF(recv_type_f(k) .NE. MPI_DATATYPE_NULL) THEN
+    !    print*,'recv      ',int(z_coords),int(rank_to_recv_from),int(i),int(sizes_to_exchange_f_to_recv(k))
+    !    n=n+1
+    !    CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_f(k),                &
+    !    rank_to_recv_from,tag,comm,requests(n),errcode)
+    !   ! CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    ! ENDIF
+    !    IF(n .GT. 0_idp)        CALL MPI_WAITALL(INT(n,isp), requests(1), MPI_STATUSES_IGNORE, errcode)
+      IF(sizes_to_exchange_f_to_recv(k) .GT. 0_idp) THEN
+!print*,"sum abs temp recv",sum(abs(temp_recv)),sizes_to_exchange_f_to_recv(k)
+        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+        DO iz=1,sizes_to_exchange_f_to_recv(k)
+          DO iy=iy_min_r, iy_max_r
+            DO ix=ix_min_r, ix_max_r
+               field_f(ix,iy,iz-1+f_first_cell_to_recv) = temp_recv(ix-ix_min_r+1,iy-iy_min_r+1,iz)
             ENDDO
           ENDDO
-          !$OMP END PARALLEL DO
-        ENDIF
+        ENDDO
+      !$OMP END PARALLEL DO
+      ENDIF
       DEALLOCATE(temp_recv)
-        call mpi_barrier(comm,errcode)
+      CALL MPI_BARRIER(comm,errcode)
     ENDDO
 #endif
-  END SUBROUTINE  sendrecv_rf_generilized
+  END SUBROUTINE  sendrecv_rf_generalized
 
   SUBROUTINE generalized_comms_group_f2r(coeff_norm)
 #if defined(FFTW) 
@@ -1209,16 +1217,16 @@ call mpi_barrier(comm,errcode)
     nxx = 2*(nx_group/2+1)
     nyy = ny_group
     nzz = local_nz
-print*,"cc"
-call mpi_barrier(comm,errcode)
-    CALL sendrecv_fr_generilized(coeff_norm,ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generilized(coeff_norm,ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generilized(coeff_norm,ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generilized(coeff_norm,bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generilized(coeff_norm,by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generilized(coeff_norm,bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
-print*,"yes2"
-call mpi_barrier(comm,errcode)
+ !   CALL sendrecv_fr_generalized(coeff_norm,ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
+ !   CALL sendrecv_fr_generalized(coeff_norm,ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
+ !   CALL sendrecv_fr_generalized(coeff_norm,ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
+ !   CALL sendrecv_fr_generalized(coeff_norm,bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
+ !   CALL sendrecv_fr_generalized(coeff_norm,by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
+ !   CALL sendrecv_fr_generalized(coeff_norm,bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+ !   CALL sendrecv_fr_generalized(coeff_norm,jx,nx,nxguards,ny,nyguards,nz,nzguards,jx_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generalized(coeff_norm,jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
+ !   CALL sendrecv_fr_generalized(coeff_norm,jz,nx,nxguards,ny,nyguards,nz,nzguards,jz_r,nxx,nyy,nzz)
+
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1226,7 +1234,7 @@ call mpi_barrier(comm,errcode)
 
   END SUBROUTINE generalized_comms_group_f2r
 
-  SUBROUTINE sendrecv_fr_generilized(coeff_norm,field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_fr_generalized(coeff_norm,field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
     USE load_balance
 #if defined(FFTW)
@@ -1256,24 +1264,31 @@ call mpi_barrier(comm,errcode)
 
       rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
+      IF(sizes_to_exchange_r_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(sizes_to_exchange_f_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
 
       ALLOCATE(temp_recv(nxx,nyy,sizes_to_exchange_r_to_recv(k)))
-      IF(send_type_f(j) .NE. MPI_DATATYPE_NULL) THEN
-        CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(j)),1_isp,send_type_f(j),      &
-        rank_to_send_to,tag,comm,requests(1),errcode)
-        
-        CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
-      ENDIF
-      IF(recv_type_r(k) .NE. MPI_DATATYPE_NULL) THEN
-        CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_r(k),                &
-        rank_to_recv_from,tag,comm,requests(1),errcode)
-        CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+      CALL MPI_SENDRECV(field_f(1,1,r_first_cell_to_send(j)),1_isp,send_type_f(j),&
+      rank_to_send_to,tag,temp_recv(1,1,1),1_isp,recv_type_r(k),rank_to_recv_from,tag,comm,status,errcode)
 
+!      IF(send_type_f(j) .NE. MPI_DATATYPE_NULL) THEN
+!        CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(j)),1_isp,send_type_f(j),      &
+!        rank_to_send_to,tag,comm,requests(1),errcode)
+!        
+!        CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+!      ENDIF
+!      IF(recv_type_r(k) .NE. MPI_DATATYPE_NULL) THEN
+!        CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_r(k),                &
+!        rank_to_recv_from,tag,comm,requests(1),errcode)
+!        CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
+        IF(sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
         !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
         DO iz=1,sizes_to_exchange_r_to_recv(k)
           DO iy=iy_min_r, iy_max_r
             DO ix=ix_min_r, ix_max_r
-               field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell_to_recv) = temp_recv(ix-ix_min_r+1,iy-iy_min_r+1,iz)*coeff_norm
+     field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell_to_recv) = &
+                 temp_recv(ix,iy,iz)*coeff_norm  +&
+        field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell_to_recv)
             ENDDO
           ENDDO
         ENDDO
@@ -1282,7 +1297,7 @@ call mpi_barrier(comm,errcode)
       DEALLOCATE(temp_recv)
     ENDDO
 #endif
-  END SUBROUTINE  sendrecv_fr_generilized
+  END SUBROUTINE  sendrecv_fr_generalized
 
 
   

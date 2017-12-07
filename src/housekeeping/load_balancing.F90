@@ -709,6 +709,7 @@ MODULE load_balance
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
     INTEGER(idp)                     :: nb_proc_per_group
     INTEGER(idp)           , ALLOCATABLE, DIMENSION(:,:) :: check1,check2
+    INTEGER(isp)           , ALLOCATABLE, DIMENSION(:,:) :: check3,check4
 #if defined(FFTW)
    ALLOCATE(array_of_ranks_to_send_to(nprocz))
    array_of_ranks_to_send_to(1) = INT(rank,isp)
@@ -765,7 +766,7 @@ MODULE load_balance
  
    ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY LOCAL_NZ VALUES
    IF(SUM(sizes_to_exchange_f_to_recv) .NE. local_nz) THEN
-     WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE'
+     WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE',rank,local_nz,sizes_to_exchange_f_to_recv
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
    !phy_cell = local_nz
@@ -778,11 +779,11 @@ MODULE load_balance
    !ENDIF
    !! CONSTRUCTS mpi_type for exchanges 
    ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
-   send_type_f = MPI_DATATYPE_NULL
-   recv_type_f = MPI_DATATYPE_NULL 
+!   send_type_f = MPI_DATATYPE_NULL
+!   recv_type_f = MPI_DATATYPE_NULL 
 
    DO i = 1,nprocz
-     IF(sizes_to_exchange_f_to_recv(i) .GT. 0_idp) THEN
+!     IF(sizes_to_exchange_f_to_recv(i) .GT. 0_idp) THEN
 
        ! create rcv type
        sizes(1) = 2*nxguards + nx + 1  
@@ -793,8 +794,8 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_f_to_recv(i)
        starts = 1
        recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
-     ENDIF
-     IF(sizes_to_exchange_f_to_send(i)  .GE. 0_idp) THEN
+!     ENDIF
+!     IF(sizes_to_exchange_f_to_send(i)  .GE. 0_idp) THEN
        ! create send type
        sizes(1) = 2*(nx_group/2+1) 
        sizes(2) = ny_group
@@ -804,7 +805,7 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_f_to_send(i)
        send_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
 
-     ENDIF
+!     ENDIF
    ENDDO
 !END OF Field_f perspective, begin field perspective
 !**************************************************************************!
@@ -854,11 +855,11 @@ MODULE load_balance
 
    ALLOCATE(send_type_r(nprocz),recv_type_r(nprocz))
 
-   send_type_r = MPI_DATATYPE_NULL
-   recv_type_r = MPI_DATATYPE_NULL
+!   send_type_r = MPI_DATATYPE_NULL
+!   recv_type_r = MPI_DATATYPE_NULL
 
    DO i = 1,nprocz
-     IF(sizes_to_exchange_r_to_recv(i) .GT. 0_idp) THEN
+ !    IF(sizes_to_exchange_r_to_recv(i) .GT. 0_idp) THEN
 
        ! create rcv type
        sizes(1) = 2*(nx_group/2+1)
@@ -869,8 +870,8 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_r_to_recv(i)
        starts = 1
        recv_type_r(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
-     ENDIF
-     IF(sizes_to_exchange_r_to_send(i) .GT. 0_idp) THEN
+  !   ENDIF
+  !   IF(sizes_to_exchange_r_to_send(i) .GT. 0_idp) THEN
        ! create send type
        sizes(1) = 2*nxguards + nx + 1
        sizes(2) = 2*nyguards + ny + 1
@@ -880,7 +881,7 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_r_to_send(i)
        send_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
 
-     ENDIF
+  !   ENDIF
    ENDDO
 
   !DO i =1,nprocz
@@ -890,7 +891,6 @@ MODULE load_balance
   !  ENDIF
   !ENDDO
 
-#endif
   ALLOCATE(check1(nprocz,nprocz))
   ALLOCATE(check2(nprocz,nprocz))
   CALL MPI_ALLGATHER(sizes_to_exchange_r_to_send,int(nprocz,isp),MPI_LONG_LONG_INT,check1,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
@@ -906,8 +906,10 @@ MODULE load_balance
   ENDDO
   check1=0*check1
   check2=0*check2
-  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send,int(nprocz,isp),MPI_LONG_LONG_INT,check1,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
-  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv,int(nprocz,isp),MPI_LONG_LONG_INT,check2,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send,&
+        int(nprocz,isp),MPI_LONG_LONG_INT,check1,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv,&
+        int(nprocz,isp),MPI_LONG_LONG_INT,check2,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
   DO i=1,nprocz
     DO j=1,nprocz
       IF(check1(i,j) .NE. check2(j,i)) THEN
@@ -918,13 +920,31 @@ MODULE load_balance
   ENDDO
   DEALLOCATE(check1,check2) 
   DO i=1,nprocz
-    IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) =-10000_idp
-    IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -10000_idp
-    IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) =-10000_idp
-    IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -10000_idp
+    IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1_idp
+    IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -1_idp
+    IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) = -1_idp
+    IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -1_idp
   ENDDO
-      if(z_coords==0)  print*,(f_first_cell_to_recv)
-        if(z_coords==0)print*,sizes_to_exchange_f_to_recv
+
+if(rank==3) THEN
+print*,cell_z_min
+print*,cell_z_max
+print*,cell_z_min_lbg
+print*,cell_z_max_lbg
+print*,'**********'
+print*,sizes_to_exchange_r_to_send
+print*,sizes_to_exchange_r_to_recv
+print*,r_first_cell_to_send
+print*,r_first_cell_to_recv
+
+print*,'**********'
+print*,sizes_to_exchange_f_to_send
+print*,sizes_to_exchange_f_to_recv
+print*,f_first_cell_to_send
+print*,f_first_cell_to_recv
+!stop
+endif
+#endif
   END SUBROUTINE get1D_intersection_group_mpi
 
 
@@ -1000,7 +1020,7 @@ MODULE load_balance
         index_ff = 0_idp
         index_fl = MODULO(iz2max,nz_global)
         size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
-        first_cell_send = MAX(index_rf,index_ff) - index_rf
+        first_cell_send = MAX(index_rf,index_ff) - index_rf 
       ENDIF
     ELSE 
          WRITE(*,*)'ERROR'
@@ -1055,7 +1075,7 @@ MODULE load_balance
         index_ff = 0_idp 
         index_fl = iz1max
         size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0)
-        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
+        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 - iz1min 
       ENDIF
     ELSE IF(select_case == 3) THEN
       index_ff = iz1min
@@ -1065,8 +1085,8 @@ MODULE load_balance
       IF(size_to_exchange_recv .EQ. 0_idp) THEN
         index_ff = 0_idp 
         index_fl = MODULO(iz1max,nz_global)
-        size_to_exchange_recv =  MAX(MIN(index_fl,index_rl) - index_rf -(MAX(index_ff,index_rf) -index_ff) + 1_idp,0_idp)
-        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1
+        size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
+        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 + (nz_global - iz1min)
       ENDIF
     ENDIF 
     size_to_exchange_send = 0_idp
@@ -1080,8 +1100,7 @@ MODULE load_balance
     IF(group_z_max_boundary) index_fl = index_fl - nzg_group
 
    index_ff= Max(index_ff,0)
-   index_fl=min(index_fl,nz_global-1)
-
+   index_fl=MIN(index_fl,nz_global-1)
 
     size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
     first_cell_send = MAX(index_ff,index_rf) - index_ff + 1
