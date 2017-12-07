@@ -145,6 +145,7 @@ SUBROUTINE step(nst)
         !write(0, *), 'Current_bcs'
         CALL current_bcs
       ENDIF
+
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
@@ -218,9 +219,6 @@ SUBROUTINE step(nst)
       CALL pxr_particle_sorting
 
       CALL pxrdepose_currents_on_grid_jxjyjz_2d
-jy=0.
-jx=0.
-jz=0.
       !!! --- Boundary conditions for currents
       CALL current_bcs
 #if defined(FFTW)
@@ -232,7 +230,6 @@ jz=0.
           CALL charge_bcs
         ENDIF
 #endif
-
       !!! --- Push B field half a time step
 #if defined(FFTW)
       IF (l_spectral) THEN
