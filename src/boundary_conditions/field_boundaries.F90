@@ -1184,7 +1184,7 @@ MODULE field_boundary
         DO iz=1,sizes_to_exchange_f_to_recv(k)
           DO iy=iy_min_r, iy_max_r
             DO ix=ix_min_r, ix_max_r
-               field_f(ix,iy,iz-1+f_first_cell_to_recv) = temp_recv(ix-ix_min_r+1,iy-iy_min_r+1,iz)
+               field_f(ix,iy,iz-1+f_first_cell_to_recv(k)) = temp_recv(ix-ix_min_r+1,iy-iy_min_r+1,iz)
             ENDDO
           ENDDO
         ENDDO
@@ -1266,10 +1266,13 @@ MODULE field_boundary
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
       IF(sizes_to_exchange_r_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
       IF(sizes_to_exchange_f_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-
+if(rank==1 .and. i==4) print*,"sooooo",sizes_to_exchange_f_to_send(j),f_first_cell_to_send(j),field_f(1,1,f_first_cell_to_send(j):sizes_to_exchange_f_to_send(j))
       ALLOCATE(temp_recv(nxx,nyy,sizes_to_exchange_r_to_recv(k)))
-      CALL MPI_SENDRECV(field_f(1,1,r_first_cell_to_send(j)),1_isp,send_type_f(j),&
+      CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(j)),1_isp,send_type_f(j),&
       rank_to_send_to,tag,temp_recv(1,1,1),1_isp,recv_type_r(k),rank_to_recv_from,tag,comm,status,errcode)
+if(i==4 .AND. rank==0)print*,"coco",sizes_to_exchange_r_to_recv(k),k,r_first_cell_to_recv(k)
+call mpi_barrier(comm,errcode)
+    if(rank== 0 .and. i==4)   print*,temp_recv(103,1,:)
 
 !      IF(send_type_f(j) .NE. MPI_DATATYPE_NULL) THEN
 !        CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(j)),1_isp,send_type_f(j),      &
@@ -1286,9 +1289,10 @@ MODULE field_boundary
         DO iz=1,sizes_to_exchange_r_to_recv(k)
           DO iy=iy_min_r, iy_max_r
             DO ix=ix_min_r, ix_max_r
-     field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell_to_recv) = &
-                 temp_recv(ix,iy,iz)*coeff_norm  +&
-        field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell_to_recv)
+     field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-1+r_first_cell_to_recv(k)) = &
+                 temp_recv(ix,iy,iz)*coeff_norm  !+&
+        
+      !  field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell_to_recv(k))
             ENDDO
           ENDDO
         ENDDO

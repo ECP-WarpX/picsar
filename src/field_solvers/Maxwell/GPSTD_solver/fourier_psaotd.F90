@@ -442,8 +442,7 @@ pprime(1)=5.0_num
 pprime(2)=7.0_num
 pprime(3)=13.0_num
 pprime(4)=19.0_num
-print*,"array_of_ranks_to_send_to",array_of_ranks_to_send_to
-if(rank==1)print*,r_first_cell_to_recv
+if(rank==0)print*,sizes_to_exchange_r_to_recv,r_first_cell_to_recv,"mmmmmmm"
 jy_r(103,1,:)=pprime(rank+1)!1._num
 call mpi_barrier(comm,errcode)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
