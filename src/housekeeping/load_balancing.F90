@@ -844,7 +844,7 @@ MODULE load_balance
    ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY LOCAL_NZ VALUES
    IF(SUM(sizes_to_exchange_r_to_recv) .NE. nz) THEN
      WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE 1400'&
-        ,z_coords,nz,SUM(sizes_to_exchange_r_to_recv),cell_z_min(z_coords+1),cell_z_max(z_coords+1)
+        ,rank,nz,SUM(sizes_to_exchange_r_to_recv)
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
     IF(SUM(sizes_to_exchange_r_to_send) .LT. nz) THEN
@@ -884,21 +884,17 @@ MODULE load_balance
   !   ENDIF
    ENDDO
 
-  !DO i =1,nprocz
-  !  IF(sizes_to_exchange_f(i) .NE. sizes_to_exchange_r(i)) THEN
-  !   WRITE(*,*) ' ERROR HERE10',i,sizes_to_exchange_f(i),sizes_to_exchange_r(i)
-  !   CALL MPI_ABORT(comm,errcode,ierr)
-  !  ENDIF
-  !ENDDO
 
-  ALLOCATE(check1(nprocz,nprocz))
-  ALLOCATE(check2(nprocz,nprocz))
-  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_send,int(nprocz,isp),MPI_LONG_LONG_INT,check1,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
-  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_recv,int(nprocz,isp),MPI_LONG_LONG_INT,check2,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+  ALLOCATE(check1(nprocz,nproc))
+  ALLOCATE(check2(nprocz,nproc))
+  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_send,INT(nprocz,isp),MPI_LONG_LONG_INT,check1, &
+        INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_recv,INT(nprocz,isp),MPI_LONG_LONG_INT,check2, &
+        INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
 
   DO i=1,nprocz
     DO j=1,nprocz
-      IF(check1(i,j) .NE. check2(j,i)) THEN
+      IF(check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE. check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
         WRITE(*,*)'ERROR 2000'
         CALL MPI_ABORT(comm,errcode,ierr)
       ENDIF
@@ -907,12 +903,12 @@ MODULE load_balance
   check1=0*check1
   check2=0*check2
   CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send,&
-        int(nprocz,isp),MPI_LONG_LONG_INT,check1,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+        INT(nprocz,isp),MPI_LONG_LONG_INT,check1,INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
   CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv,&
-        int(nprocz,isp),MPI_LONG_LONG_INT,check2,int(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
+        INT(nprocz,isp),MPI_LONG_LONG_INT,check2,INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
   DO i=1,nprocz
     DO j=1,nprocz
-      IF(check1(i,j) .NE. check2(j,i)) THEN
+      IF(check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE. check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
         WRITE(*,*)'ERROR 2100'
         CALL MPI_ABORT(comm,errcode,ierr)
       ENDIF
@@ -926,24 +922,6 @@ MODULE load_balance
     IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -1_idp
   ENDDO
 
-if(rank==3) THEN
-print*,cell_z_min
-print*,cell_z_max
-print*,cell_z_min_lbg
-print*,cell_z_max_lbg
-print*,'**********'
-print*,sizes_to_exchange_r_to_send
-print*,sizes_to_exchange_r_to_recv
-print*,r_first_cell_to_send
-print*,r_first_cell_to_recv
-
-print*,'**********'
-print*,sizes_to_exchange_f_to_send
-print*,sizes_to_exchange_f_to_recv
-print*,f_first_cell_to_send
-print*,f_first_cell_to_recv
-!stop
-endif
 #endif
   END SUBROUTINE get1D_intersection_group_mpi
 

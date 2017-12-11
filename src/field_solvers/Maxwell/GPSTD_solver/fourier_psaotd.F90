@@ -208,7 +208,6 @@ call mpi_barrier(comm,errcode)
     ENDIF
     CALL generalized_comms_group_r2f()
 call mpi_barrier(comm,errcode)
-!print*,jy_r(103,1,:),rank,"mm"
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
 
@@ -226,6 +225,7 @@ call mpi_barrier(comm,errcode)
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
+
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -364,7 +364,6 @@ call mpi_barrier(comm,errcode)
 
     ! Get global Fourier transform of all fields components 
     CALL fft_forward_c2r_mpi
-
     IF(fftw_hybrid) THEN 
       coeff_norm  = 1.0_num/(nx_group*ny_group*nz_group)
     ELSE 

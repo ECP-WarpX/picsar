@@ -789,7 +789,11 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     ENDIF
   ENDIF
   IF(is_lb_grp) THEN
-    iz_min_lbg = local_z0-nzg_group*(z_group_coords+1)
+    IF(0 .NE. MODULO(nz_global,nb_group/(nprocx*nprocy))) THEN
+     WRITE(0,*) 'PROBLEM HERE, PLEASE SET nz as a multiple of nb_group'
+     CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
+    iz_min_lbg = local_z0-nzg_group + nz_group_global*z_group_coords
     iz_max_lbg = iz_min_lbg + local_nz - 1 
     ALLOCATE(cell_z_min_lbg(nprocz),cell_z_max_lbg(nprocz))
     ALLOCATE(all_iz_min_lbg(nproc),all_iz_max_lbg(nproc))
@@ -815,18 +819,18 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     ENDDO
   ENDIF
   !to take into account odd cases
-  nz_lb = MIN(iz_max_r - iz_min_r +1,0)
+  nz_lb = MAX(iz_max_r - iz_min_r +1,0)
   nz_grid_lb = nz_lb+1
 
   ALLOCATE(all_nz_lb(nproc), all_nzp(nprocz))
   
-  CALL MPI_ALLGATHER(nz_lb, 1_isp, MPI_LONG_LONG_INT, all_nz_lb, INT(1, isp),         &
+  CALL MPI_ALLGATHER(nz_lb, 1_isp, MPI_LONG_LONG_INT, all_nz_lb, 1_isp      ,         &
   MPI_LONG_LONG_INT, comm, errcode)
   
   DO i=1, nprocz
     all_nzp(i) = all_nz_lb((i-1)*nprocx*nprocy+1)
   ENDDO
-  
+
   z_min_local_lb = zmin
   z_max_local_lb = zmax
   z_min_local_lb = z_min_local_lb + dz*sum(all_nzp(1:z_coords))
@@ -1160,6 +1164,11 @@ INTEGER(idp) :: iz
 INTEGER(C_INTPTR_T) :: kx, ly, mz
 INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs, all_nz
 #endif
+
+#if defined(DEBUG)
+  WRITE(0, *) "mpi_initialize : start"
+#endif
+
 ! Init number of guard cells of subdomains in each dimension
 IF (l_smooth_compensate) THEN
   nxguards = nxguards + 1
@@ -1298,8 +1307,8 @@ z_grid_max = zmax
 IF(c_dim == 2) THEN
   ny = 1_idp
   ny_global = 1_idp 
-  cell_y_min(y_coords+1) = 1
-  cell_y_max(y_coords+1) = 2 
+!  cell_y_min(y_coords+1) = 1
+!  cell_y_max(y_coords+1) = 1 
   ny_grid = 2_idp
   nyguards = 0_idp
   nyjguards = 0_idp
@@ -1351,8 +1360,9 @@ call mpi_barrier(comm,errcode)
   ! IF is_lb_grp == .FALSE. THEN set grid DD params to that of
   ! fftw_mpi_local_size (Unbalanced grid for particles)
   ELSE IF(.NOT. is_lb_grp) THEN
-    cell_z_min(iz) = cell_z_min_f(iz)
-    cell_z_max(iz) = cell_z_max_f(iz)
+    cell_z_min = cell_z_min_f
+    cell_z_max = cell_z_max_f
+print*,cell_z_min_f,cell_z_max_f
     nz = nz_lb
     nz_grid = nz_grid_lb 
     nz_global_grid_min = nz_global_grid_min_lb
@@ -1481,6 +1491,10 @@ ENDIF
 length_x_part = xmax_part - xmin_part
 length_y_part = ymax_part - ymin_part
 length_z_part = zmax_part - zmin_part
+
+#if defined(DEBUG)
+  WRITE(0, *) "mpi_initialize : end" 
+#endif
 END SUBROUTINE mpi_initialise
 
 ! ______________________________________________________________________________________
@@ -1510,7 +1524,7 @@ IF (.NOT. l_axis_allocated) THEN
   ALLOCATE(z_global(-nzguards:nz_global+nzguards))
   l_axis_allocated=.TRUE.
 ENDIF
-
+print*,"cocococo",size(y_global),cell_y_max
 !!! --- Set up global grid
 DO ix = -nxguards, nx_global+nxguards
   x_global(ix) = x_grid_min + ix * dx

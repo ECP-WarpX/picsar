@@ -282,9 +282,15 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   IMPLICIT NONE
 
   REAL(num) :: tmptime
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 3d: start"
+#endif
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
+
 #if defined(FFTW)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
@@ -313,6 +319,11 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   IF (it.ge.timestat_itstart) THEN
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
   ENDIF
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 3d: end"
+#endif
+
 END SUBROUTINE
 
 !> @brief
@@ -341,6 +352,11 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
   IMPLICIT NONE
 
   REAL(num) :: tmptime
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 2d: start"
+#endif
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
@@ -373,6 +389,11 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
   IF (it.ge.timestat_itstart) THEN
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
   ENDIF
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 2d: end"
+#endif
+
 END SUBROUTINE
 
 
