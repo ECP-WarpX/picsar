@@ -1362,7 +1362,6 @@ call mpi_barrier(comm,errcode)
   ELSE IF(.NOT. is_lb_grp) THEN
     cell_z_min = cell_z_min_f
     cell_z_max = cell_z_max_f
-print*,cell_z_min_f,cell_z_max_f
     nz = nz_lb
     nz_grid = nz_grid_lb 
     nz_global_grid_min = nz_global_grid_min_lb
@@ -1524,7 +1523,6 @@ IF (.NOT. l_axis_allocated) THEN
   ALLOCATE(z_global(-nzguards:nz_global+nzguards))
   l_axis_allocated=.TRUE.
 ENDIF
-print*,"cocococo",size(y_global),cell_y_max
 !!! --- Set up global grid
 DO ix = -nxguards, nx_global+nxguards
   x_global(ix) = x_grid_min + ix * dx
