@@ -46,6 +46,8 @@ MODULE link_external_tools
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
+    fftw_threads_ok = .TRUE.
+    is_lb_grp = .FALSE.
     c_dim = INT(cdim,idp)
     nx = INT(n3,idp)
     ny = INT(n2,idp)
