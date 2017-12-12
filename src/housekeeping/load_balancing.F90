@@ -709,7 +709,6 @@ MODULE load_balance
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
     INTEGER(idp)                     :: nb_proc_per_group
     INTEGER(idp)           , ALLOCATABLE, DIMENSION(:,:) :: check1,check2
-    INTEGER(isp)           , ALLOCATABLE, DIMENSION(:,:) :: check3,check4
 #if defined(FFTW)
    ALLOCATE(array_of_ranks_to_send_to(nprocz))
    array_of_ranks_to_send_to(1) = INT(rank,isp)
@@ -724,16 +723,6 @@ MODULE load_balance
 
    basetype = mpidbl
 
-   ! IF is_containing_physical_cells == .TRUE. THEN ex_r is at least containing
-   ! one real cell
-   ! ELSE all ex_r are corresponding to a nz_group_guardcell region  
-   !DO i=1,nprocz
-   !  IF(cell_z_min_lbg(i) .GE. 0_idp .OR. cell_z_max_lbg(i) .LE. nz_global-1)THEN
-   !    is_containing_physical_cells(i) = .TRUE.
-   !  ELSE
-   !    is_containing_physical_cells(i) = .FALSE.
-   !  ENDIF
-   !ENDDO
 
    !begin field_f perspective by computing indexes OF ex_r to exchange with ex
    ALLOCATE(sizes_to_exchange_f_to_recv(nprocz));sizes_to_exchange_f_to_recv = 0_idp
@@ -770,21 +759,9 @@ MODULE load_balance
      WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE',rank,local_nz,sizes_to_exchange_f_to_recv
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
-   !phy_cell = local_nz
-   !  IF(group_z_min_boundary) phy_cell = phy_cell - nzg_group
-   !  IF(group_z_max_boundary) phy_cell = phy_cell - nzg_group
-   !  
-   !phy_cell = MAX(phy_cell,0_idp)
-   !IF(SUM(sizes_to_exchange_f_to_send) .NE. phy_cell) THEN
-   !  WRITE(*,*) 'ERROR IN LOAD BALANCING 007',z_coords,phy_cell,SUM(sizes_to_exchange_f_to_send),local_nz
-   !ENDIF
-   !! CONSTRUCTS mpi_type for exchanges 
    ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
-!   send_type_f = MPI_DATATYPE_NULL
-!   recv_type_f = MPI_DATATYPE_NULL 
 
    DO i = 1,nprocz
-!     IF(sizes_to_exchange_f_to_recv(i) .GT. 0_idp) THEN
 
        ! create rcv type
        sizes(1) = 2*nxguards + nx + 1  
@@ -795,8 +772,7 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_f_to_recv(i)
        starts = 1
        recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
-!     ENDIF
-!     IF(sizes_to_exchange_f_to_send(i)  .GE. 0_idp) THEN
+
        ! create send type
        sizes(1) = 2*(nx_group/2+1) 
        sizes(2) = ny_group
@@ -806,7 +782,6 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_f_to_send(i)
        send_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
 
-!     ENDIF
    ENDDO
 !END OF Field_f perspective, begin field perspective
 !**************************************************************************!
@@ -856,8 +831,6 @@ MODULE load_balance
 
    ALLOCATE(send_type_r(nprocz),recv_type_r(nprocz))
 
-!   send_type_r = MPI_DATATYPE_NULL
-!   recv_type_r = MPI_DATATYPE_NULL
 
    DO i = 1,nprocz
  !    IF(sizes_to_exchange_r_to_recv(i) .GT. 0_idp) THEN
@@ -871,8 +844,7 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_r_to_recv(i)
        starts = 1
        recv_type_r(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
-  !   ENDIF
-  !   IF(sizes_to_exchange_r_to_send(i) .GT. 0_idp) THEN
+
        ! create send type
        sizes(1) = 2*nxguards + nx + 1
        sizes(2) = 2*nyguards + ny + 1
@@ -882,10 +854,8 @@ MODULE load_balance
        subsizes(3) = sizes_to_exchange_r_to_send(i)
        send_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
 
-  !   ENDIF
    ENDDO
-
-
+  ! check that r_type_to_send is the same as f_type_to_recv and vice versa
   ALLOCATE(check1(nprocz,nproc))
   ALLOCATE(check2(nprocz,nproc))
   CALL MPI_ALLGATHER(sizes_to_exchange_r_to_send,INT(nprocz,isp),MPI_LONG_LONG_INT,check1, &
@@ -917,6 +887,7 @@ MODULE load_balance
   ENDDO
   DEALLOCATE(check1,check2) 
   DO i=1,nprocz
+    !INIT useless first_cells to a huge negative number 
     IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1000_idp
     IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -1000_idp
     IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) = -1000_idp

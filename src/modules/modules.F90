@@ -1102,34 +1102,7 @@ MODULE group_parameters!#do not parse
   REAL(num)                                 :: z_min_group, z_max_group
   REAL(num)                                 :: y_min_group, y_max_group
   REAL(num)                                 :: x_min_group, x_max_group
-  !> Arrays FOR load balancing 
 
-!  !> Array of corresponding indexes between  ex_r(rank) and ex(rank)
-!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local ,r_local  
-!  !> Array of corresponding indexes between ex_r(rank) and ex(rank-1)
-!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  g_left, r_left
-!  !> Array of corresponding indexes between ex_r(rank) and ex(rank+1)
-!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_right, r_right
-!  !> Array of corresponding indexes between ex(rank)  and ex(rank+1)
-!  !rr_left[AT PROC RANK] = r_right[AT PROC RANK-1] AND  rg_left[AT PROC RANK] = g_right[AT PROC RANK-1]
-!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: rr_left, rg_left
-!  !> Array of corresponding indexes between ex(rank)  and ex(rank-)
-!  !rr_right[AT PROC RANK] = r_left[AT PROC RANK+1] AND  rg_right[AT PROC RANK] =
-!  !g_left[AT PROC RANK+1]
-!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  rr_right, rg_right
-!
-!  !> Sizes of load_balancing arrays indexes 
-!  !> Size of r_local and g_local
-!  INTEGER(idp)                            :: size_local
-!  !>Size of r_left and g_left 
-!  INTEGER(idp)                            :: size_left
-!  !> Size of r_right and g_right
-!  INTEGER(idp)                            :: size_right
-!  !> Size of rr_left and rg_left
-!  INTEGER(idp)                            :: rsize_left
-!  > Size of rr_right and rg_right 
-!  INTEGER(idp)                            :: rsize_right
-  !> Subdomain limit related to  fftw_local_sizes decomposition
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
   !> Cell domain for load balancing general case (taking into account guardcells
@@ -1138,8 +1111,6 @@ MODULE group_parameters!#do not parse
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_send,sizes_to_exchange_r_to_send 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recv,r_first_cell_to_recv
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_send,r_first_cell_to_send
-
-  
   !> TYPE IN WHICH ex_r will be recieving
   !> so recv_type_f is ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_f   
@@ -1152,8 +1123,6 @@ MODULE group_parameters!#do not parse
   !> TYPE IN WHICH ex will be sending
   !> so recv_type_f is  ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_r
-
- 
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from
 

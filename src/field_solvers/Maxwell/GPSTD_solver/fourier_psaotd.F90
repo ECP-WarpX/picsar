@@ -187,11 +187,8 @@ MODULE fourier_psaotd
                 bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
            jx_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =& 
                 jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
-
-
            jy_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =&
                  jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
-
            jz_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) =& 
                 jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(z_coords+1))
            rho_r(ix,iy,iz-1+f_first_cell_to_recv(z_coords+1)) = &
@@ -448,12 +445,6 @@ MODULE fourier_psaotd
                  by_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
           bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1)) =&
                  bz_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
-          jx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1))=&
-                jx_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
-          jy(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1))=&
-                jy_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
-          jz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(z_coords+1))=&
-                 jz_r(ix,iy,iz-1+f_first_cell_to_send(z_coords+1))*coeff_norm
         END DO
       END DO
     END DO
@@ -543,9 +534,6 @@ MODULE fourier_psaotd
     CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bxf, bx_r, plan_c2r)
     CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, byf, by_r, plan_c2r)
     CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, jxf, jx_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, jyf, jy_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, jzf, jz_r, plan_c2r)
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -570,9 +558,6 @@ MODULE fourier_psaotd
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jxf, jx_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jzf, jz_r)
 
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
