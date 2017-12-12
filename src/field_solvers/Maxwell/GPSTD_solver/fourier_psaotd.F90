@@ -169,7 +169,6 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-call mpi_barrier(comm,errcode)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1,sizes_to_exchange_f_to_recv(z_coords+1)
       DO iy=iy_min_r,iy_max_r
@@ -207,7 +206,6 @@ call mpi_barrier(comm,errcode)
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
     CALL generalized_comms_group_r2f()
-call mpi_barrier(comm,errcode)
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
 

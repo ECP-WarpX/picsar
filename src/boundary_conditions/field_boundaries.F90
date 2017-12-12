@@ -1143,43 +1143,15 @@ MODULE field_boundary
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is
       ! done
       k = MODULO(z_coords-(i-1),nprocz) +1
-
       rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
       IF(sizes_to_exchange_f_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
       IF(sizes_to_exchange_r_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-
       ALLOCATE(temp_recv(-nxg:nxg+nx1,-nyg:nyg+ny1,1:sizes_to_exchange_f_to_recv(k)))
-!      IF(sizes_to_exchange_r_to_send(j) .GT. 0) THEN
-!        CALL MPI_SEND(field(1,1,r_first_cell_to_send(j)),1_isp,send_type_r(j), &
-!             rank_to_send_to,tag,comm,errcode)
-!                endif
-!        if(sizes_to_exchange_f_to_recv(k) .GT. 0) then
-!         call mpi_recv(temp_recv(1,1,1),1_isp,recv_type_f(k),rank_to_recv_from,tag,comm,status,errcode)
-!        endif
-
       CALL MPI_SENDRECV(field(-nxg,-nyg,r_first_cell_to_send(j)),1_isp,send_type_r(j),&
       rank_to_send_to,tag,temp_recv(-nxg,-nyg,1),1_isp,recv_type_f(k),rank_to_recv_from,tag,comm,status,errcode)
-    !  ALLOCATE(temp_recv(2*nxg+nx1+1,2*nyg+ny1+1,sizes_to_exchange_f_to_recv(k)))
-    !  IF(send_type_r(j) .NE.  MPI_DATATYPE_NULL) THEN
-    !    print*,'send      ',int(z_coords),int(rank_to_send_to),int(i),int(sizes_to_exchange_r_to_send(j))
-    !    n=n+1
-    !    CALL MPI_ISEND(field(1,1,r_first_cell_to_send(j)),1_isp,send_type_r(j),      &
-    !    rank_to_send_to,tag,comm,requests(n),errcode)
-
-    !  !  CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
-    !  ENDIF
-
-    !  IF(recv_type_f(k) .NE. MPI_DATATYPE_NULL) THEN
-    !    print*,'recv      ',int(z_coords),int(rank_to_recv_from),int(i),int(sizes_to_exchange_f_to_recv(k))
-    !    n=n+1
-    !    CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_f(k),                &
-    !    rank_to_recv_from,tag,comm,requests(n),errcode)
-    !   ! CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
-    ! ENDIF
-    !    IF(n .GT. 0_idp)        CALL MPI_WAITALL(INT(n,isp), requests(1), MPI_STATUSES_IGNORE, errcode)
       IF(sizes_to_exchange_f_to_recv(k) .GT. 0_idp) THEN
-!        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
         DO iz=1,sizes_to_exchange_f_to_recv(k)
           DO iy=iy_min_r, iy_max_r
             DO ix=ix_min_r, ix_max_r
@@ -1187,7 +1159,7 @@ MODULE field_boundary
             ENDDO
           ENDDO
         ENDDO
- !     !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
       ENDIF
       DEALLOCATE(temp_recv)
       CALL MPI_BARRIER(comm,errcode)
