@@ -791,7 +791,7 @@ MODULE field_boundary
 #endif
   END SUBROUTINE  sendrecv_rf_generalized
 
-  SUBROUTINE generalized_comms_group_f2r(coeff_norm)
+  SUBROUTINE generalized_comms_group_f2r()
 #if defined(FFTW) 
     USE group_parameters
     USE mpi_fftw3
@@ -800,7 +800,6 @@ MODULE field_boundary
     USE time_stat
     USE shared_data
     USE fields
-    REAL(num)  , INTENT(IN)  :: coeff_norm
     INTEGER(idp)  :: nxx, nyy, nzz
     REAL(num)     :: tmptime
 #if defined(FFTW)
@@ -811,12 +810,12 @@ MODULE field_boundary
     nxx = 2*(nx_group/2+1)
     nyy = ny_group
     nzz = local_nz
-    CALL sendrecv_fr_generalized(coeff_norm,ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(coeff_norm,ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(coeff_norm,ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(coeff_norm,bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(coeff_norm,by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(coeff_norm,bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
+    CALL sendrecv_fr_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
 
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -825,13 +824,12 @@ MODULE field_boundary
 
   END SUBROUTINE generalized_comms_group_f2r
 
-  SUBROUTINE sendrecv_fr_generalized(coeff_norm,field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_fr_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
     USE group_parameters
 #endif
-    REAL(num)   , INTENT(IN)                      :: coeff_norm
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
@@ -868,7 +866,7 @@ MODULE field_boundary
           DO iy=iy_min_r, iy_max_r
             DO ix=ix_min_r, ix_max_r
               field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-1+r_first_cell_to_recv(k)) = &
-                 temp_recv(ix,iy,iz)*coeff_norm  
+                 temp_recv(ix,iy,iz)  
             ENDDO
           ENDDO
         ENDDO

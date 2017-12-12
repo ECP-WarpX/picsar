@@ -528,6 +528,7 @@ MODULE gpstd_solver
     LOGICAL(lp)            :: needed
     INTEGER(idp)           :: nfftx, nffty, nfftz
     LOGICAL(lp)            :: switch
+    REAL(num)              :: coeff_norm
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     ii=DCMPLX(0., 1.)
@@ -676,6 +677,16 @@ MODULE gpstd_solver
     IF(switch) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
+    CALL select_case_dims_global(nfftx,nffty,nfftz)
+    coeff_norm = 1.0_num/(nfftx*nffty*nfftz)  
+    DO i=1,6
+      DO j=1,11
+        CALL is_calculation_needed(i, j, needed)
+        IF(needed) THEN
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc = coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
+        ENDIF
+      ENDDO
+    ENDDO
     CALL delete_arrays
   END SUBROUTINE init_gpstd
 
@@ -735,25 +746,6 @@ MODULE gpstd_solver
     RETURN
   END FUNCTION logfactorial
 
-  SUBROUTINE normalize_Fourier(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz, coeff_norm)
-    USE PICSAR_precision
-    USE omp_lib
-    IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, n1, n2, n3
-    REAL(num), INTENT(IN) :: coeff_norm
-    REAL(num), DIMENSION(nxx, nyy, nzz), INTENT(IN OUT) :: ex_in
-    REAL(num), DIMENSION(n1, n2, n3), INTENT(IN OUT) :: ex_out
-    INTEGER(idp) :: ix, iy, iz
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1, MIN(nzz, n3)
-      DO iy=1, MIN(nyy, n2)
-        DO ix=1, MIN(nxx, n1)
-          ex_out(ix, iy, iz)=ex_in(ix, iy, iz)*coeff_norm
-        END DO
-      END DO
-    END DO
-    !$OMP END PARALLEL DO
-  END SUBROUTINE normalize_Fourier
 
   SUBROUTINE copy_field(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz)
     USE PICSAR_precision
