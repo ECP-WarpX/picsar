@@ -721,6 +721,48 @@ MODULE load_balance
    DO i=2,nprocz
      array_of_ranks_to_recv_from(i) = MODULO(array_of_ranks_to_recv_from(i-1) - INT(nprocx*nprocy,isp),INT(nproc,isp))
    ENDDO
+if(rank==0) then
+array_of_ranks_to_send_to(1)=0
+array_of_ranks_to_send_to(2)=1
+array_of_ranks_to_send_to(3)=2
+array_of_ranks_to_send_to(4)=3
+array_of_ranks_to_recv_from(1)=0
+array_of_ranks_to_recv_from(2)=3
+array_of_ranks_to_recv_from(3)=2
+array_of_ranks_to_recv_from(4)=1
+endif
+if(rank==1) then
+array_of_ranks_to_send_to(1)=1
+array_of_ranks_to_send_to(2)=2
+array_of_ranks_to_send_to(3)=3
+array_of_ranks_to_send_to(4)=0
+array_of_ranks_to_recv_from(1)=1
+array_of_ranks_to_recv_from(2)=0
+array_of_ranks_to_recv_from(3)=3
+array_of_ranks_to_recv_from(4)=2
+endif
+if(rank==2) then
+array_of_ranks_to_send_to(1)=2
+array_of_ranks_to_send_to(2)=3
+array_of_ranks_to_send_to(3)=0
+array_of_ranks_to_send_to(4)=1
+array_of_ranks_to_recv_from(1)=2
+array_of_ranks_to_recv_from(2)=1
+array_of_ranks_to_recv_from(3)=0
+array_of_ranks_to_recv_from(4)=3
+endif
+if(rank==3) then
+array_of_ranks_to_send_to(1)=3
+array_of_ranks_to_send_to(2)=0
+array_of_ranks_to_send_to(3)=1
+array_of_ranks_to_send_to(4)=2
+array_of_ranks_to_recv_from(1)=3
+array_of_ranks_to_recv_from(2)=2
+array_of_ranks_to_recv_from(3)=1
+array_of_ranks_to_recv_from(4)=0
+endif
+
+
 
    basetype = mpidbl
 
@@ -760,7 +802,8 @@ MODULE load_balance
      ENDIF
 
      CALL compute_findex(iz1min, iz1max, iz2min, iz2max,        &
-     sizes_to_exchange_f_to_recv(i),f_first_cell_to_recv(i),sizes_to_exchange_f_to_send(i),f_first_cell_to_send(i),is_grp_min,is_grp_max)
+     sizes_to_exchange_f_to_recv(i),f_first_cell_to_recv(i),sizes_to_exchange_f_to_send(i),&
+        f_first_cell_to_send(i),is_grp_min,is_grp_max)
    ENDDO
    CALL MPI_BARRIER(comm,errcode)   
  
@@ -916,10 +959,10 @@ MODULE load_balance
   ENDDO
   DEALLOCATE(check1,check2) 
   DO i=1,nprocz
-    IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1_idp
-    IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -1_idp
-    IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) = -1_idp
-    IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -1_idp
+    IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1000_idp
+    IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -1000_idp
+    IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) = -1000_idp
+    IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -1000_idp
   ENDDO
 
 #endif
@@ -1081,7 +1124,7 @@ MODULE load_balance
    index_fl=MIN(index_fl,nz_global-1)
 
     size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
-    first_cell_send = MAX(index_ff,index_rf) - index_ff + 1
+    first_cell_send = MAX(index_ff,index_rf) - iz1min + 1
    IF(select_case==1_idp) size_to_exchange_send = 0_idp
    IF(index_ff .GT. index_fl) size_to_exchange_send = 0_idp
 

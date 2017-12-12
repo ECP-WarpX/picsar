@@ -1096,8 +1096,6 @@ MODULE group_parameters!#do not parse
   LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the superior z group boundary
   LOGICAL(lp)  :: group_z_max_boundary = .FALSE.
-!  LOGICAL(lp)  , ALLOCATABLE , DIMENSION(:) ::group_z_min_boundary_array
-!  LOGICAL(lp)  , ALLOCATABLE , DIMENSION(:) ::group_z_max_boundary_array
   !> minimum and maximum cell numbers in each group :
   INTEGER(idp), DIMENSION(:), POINTER  :: cell_z_min_group, cell_z_max_group
   !> physical limits of group domains
@@ -1106,31 +1104,31 @@ MODULE group_parameters!#do not parse
   REAL(num)                                 :: x_min_group, x_max_group
   !> Arrays FOR load balancing 
 
-  !> Array of corresponding indexes between  ex_r(rank) and ex(rank)
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local ,r_local  
-  !> Array of corresponding indexes between ex_r(rank) and ex(rank-1)
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  g_left, r_left
-  !> Array of corresponding indexes between ex_r(rank) and ex(rank+1)
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_right, r_right
-  !> Array of corresponding indexes between ex(rank)  and ex(rank+1)
-  !rr_left[AT PROC RANK] = r_right[AT PROC RANK-1] AND  rg_left[AT PROC RANK] = g_right[AT PROC RANK-1]
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: rr_left, rg_left
-  !> Array of corresponding indexes between ex(rank)  and ex(rank-)
-  !rr_right[AT PROC RANK] = r_left[AT PROC RANK+1] AND  rg_right[AT PROC RANK] =
-  !g_left[AT PROC RANK+1]
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  rr_right, rg_right
-
-  !> Sizes of load_balancing arrays indexes 
-  !> Size of r_local and g_local
-  INTEGER(idp)                            :: size_local
-  !>Size of r_left and g_left 
-  INTEGER(idp)                            :: size_left
-  !> Size of r_right and g_right
-  INTEGER(idp)                            :: size_right
-  !> Size of rr_left and rg_left
-  INTEGER(idp)                            :: rsize_left
-  !> Size of rr_right and rg_right 
-  INTEGER(idp)                            :: rsize_right
+!  !> Array of corresponding indexes between  ex_r(rank) and ex(rank)
+!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local ,r_local  
+!  !> Array of corresponding indexes between ex_r(rank) and ex(rank-1)
+!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  g_left, r_left
+!  !> Array of corresponding indexes between ex_r(rank) and ex(rank+1)
+!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_right, r_right
+!  !> Array of corresponding indexes between ex(rank)  and ex(rank+1)
+!  !rr_left[AT PROC RANK] = r_right[AT PROC RANK-1] AND  rg_left[AT PROC RANK] = g_right[AT PROC RANK-1]
+!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: rr_left, rg_left
+!  !> Array of corresponding indexes between ex(rank)  and ex(rank-)
+!  !rr_right[AT PROC RANK] = r_left[AT PROC RANK+1] AND  rg_right[AT PROC RANK] =
+!  !g_left[AT PROC RANK+1]
+!  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  rr_right, rg_right
+!
+!  !> Sizes of load_balancing arrays indexes 
+!  !> Size of r_local and g_local
+!  INTEGER(idp)                            :: size_local
+!  !>Size of r_left and g_left 
+!  INTEGER(idp)                            :: size_left
+!  !> Size of r_right and g_right
+!  INTEGER(idp)                            :: size_right
+!  !> Size of rr_left and rg_left
+!  INTEGER(idp)                            :: rsize_left
+!  > Size of rr_right and rg_right 
+!  INTEGER(idp)                            :: rsize_right
   !> Subdomain limit related to  fftw_local_sizes decomposition
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
