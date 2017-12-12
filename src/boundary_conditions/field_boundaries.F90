@@ -1081,10 +1081,10 @@ MODULE field_boundary
 #if defined(FFTW) 
     USE group_parameters
     USE mpi_fftw3
+    USE load_balance
 #endif
     USE time_stat
     USE shared_data
-    USE load_balance  
     USE fields
 #if defined(FFTW)
     INTEGER(idp)  :: nxx, nyy, nzz
