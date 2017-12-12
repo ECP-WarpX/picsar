@@ -1117,8 +1117,8 @@ MODULE field_boundary
   
   SUBROUTINE sendrecv_rf_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
-    USE load_balance
 #if defined(FFTW)
+    USE load_balance
     USE group_parameters
 #endif
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
@@ -1171,16 +1171,15 @@ MODULE field_boundary
 #if defined(FFTW) 
     USE group_parameters
     USE mpi_fftw3
+    USE load_balance
 #endif
     USE time_stat
     USE shared_data
-    USE load_balance  
     USE fields
-#if defined(FFTW)
     REAL(num)  , INTENT(IN)  :: coeff_norm
     INTEGER(idp)  :: nxx, nyy, nzz
     REAL(num)     :: tmptime
-
+#if defined(FFTW)
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -1207,8 +1206,8 @@ MODULE field_boundary
 
   SUBROUTINE sendrecv_fr_generalized(coeff_norm,field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
-    USE load_balance
 #if defined(FFTW)
+    USE load_balance
     USE group_parameters
 #endif
     REAL(num)   , INTENT(IN)                      :: coeff_norm
