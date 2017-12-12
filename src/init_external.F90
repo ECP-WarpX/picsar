@@ -42,7 +42,6 @@ MODULE link_external_tools
     LOGICAL(lp)                      :: l_stg
 
     IF(rank==0) PRINT*, 'BEGIN INIT EXTERNAL'
-    fftw_threads_ok = .TRUE.
     l_spectral  = LOGICAL(is_spec,lp) 
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
