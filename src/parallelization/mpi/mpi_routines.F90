@@ -690,11 +690,17 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     ENDIF
   ENDIF
   ! THE NEXT ERROR COULD BE REMOVED WITH ADVANCED LOAD BALANCING 
-  IF(nz_group_global .LE. 2*nzg_group) THEN
-    WRITE(*,*) '**ERROR **, nz_group too small compared to nzg_group'
-    CALL MPI_ABORT(comm,errcode,ierr)
+  IF(is_lb_grp .EQV. .FALSE.) THEN 
+    IF(nz_group_global .LE. 2*nzg_group) THEN
+      WRITE(*,*) '**ERROR **, nz_group too small compared to nzg_group'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
+  ELSE 
+    IF(nz_global .LE. 2*nzg_group) THEN
+      WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
   ENDIF
-  
   y_min_group=ymin
   y_max_group=ymax
   x_min_group=xmin

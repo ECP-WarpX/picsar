@@ -1162,8 +1162,8 @@ MODULE field_boundary
       !$OMP END PARALLEL DO
       ENDIF
       DEALLOCATE(temp_recv)
-      CALL MPI_BARRIER(comm,errcode)
     ENDDO
+    CALL MPI_BARRIER(comm,errcode)
 #endif
   END SUBROUTINE  sendrecv_rf_generalized
 
@@ -1219,6 +1219,7 @@ MODULE field_boundary
     REAL(num)   , ALLOCATABLE , DIMENSION(:,:,:)  :: temp_recv
     INTEGER(isp)                                  :: requests(2)
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
+
 #if defined(FFTW)
     !  i-1 = mpi test in z direction for exchanges
     ! example :
@@ -1240,27 +1241,14 @@ MODULE field_boundary
       ALLOCATE(temp_recv(nxx,nyy,sizes_to_exchange_r_to_recv(k)))
       CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(j)),1_isp,send_type_f(j),&
       rank_to_send_to,tag,temp_recv(1,1,1),1_isp,recv_type_r(k),rank_to_recv_from,tag,comm,status,errcode)
-call mpi_barrier(comm,errcode)
 
-!      IF(send_type_f(j) .NE. MPI_DATATYPE_NULL) THEN
-!        CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(j)),1_isp,send_type_f(j),      &
-!        rank_to_send_to,tag,comm,requests(1),errcode)
-!        
-!        CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
-!      ENDIF
-!      IF(recv_type_r(k) .NE. MPI_DATATYPE_NULL) THEN
-!        CALL MPI_IRecv(temp_recv(1,1,1),1_isp,recv_type_r(k),                &
-!        rank_to_recv_from,tag,comm,requests(1),errcode)
-!        CALL MPI_WAITALL(1_isp, requests, MPI_STATUSES_IGNORE, errcode)
         IF(sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
         !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
         DO iz=1,sizes_to_exchange_r_to_recv(k)
           DO iy=iy_min_r, iy_max_r
             DO ix=ix_min_r, ix_max_r
-     field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-1+r_first_cell_to_recv(k)) = &
-                 temp_recv(ix,iy,iz)*coeff_norm  !+&
-        
-      !  field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-nzguards+r_first_cell_to_recv(k))
+              field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-1+r_first_cell_to_recv(k)) = &
+                 temp_recv(ix,iy,iz)*coeff_norm  
             ENDDO
           ENDDO
         ENDDO
@@ -1268,6 +1256,7 @@ call mpi_barrier(comm,errcode)
       ENDIF
       DEALLOCATE(temp_recv)
     ENDDO
+    CALL MPI_BARRIER(comm,errcode)
 #endif
   END SUBROUTINE  sendrecv_fr_generalized
 

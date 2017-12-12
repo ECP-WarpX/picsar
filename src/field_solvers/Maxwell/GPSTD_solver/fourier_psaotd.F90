@@ -429,11 +429,9 @@ MODULE fourier_psaotd
     ! Get global Fourier transform of all fields components 
     CALL fft_forward_c2r_mpi
     coeff_norm = 1.0_num/(nx_group*ny_group*nz_group)
-!coeff_norm=1.0_num
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-call mpi_barrier(comm,errcode)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1,sizes_to_exchange_r_to_recv(z_coords+1)
       DO iy=iy_min_r, iy_max_r
@@ -464,7 +462,7 @@ call mpi_barrier(comm,errcode)
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
   CALL generalized_comms_group_f2r(coeff_norm)
-call mpi_barrier(comm,errcode)
+  CALL MPI_BARRIER(comm,errcode)
   END SUBROUTINE get_fields_mpi_lb
   
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
