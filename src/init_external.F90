@@ -41,14 +41,12 @@ MODULE link_external_tools
     LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
     LOGICAL(lp)                      :: l_stg
 
-    PRINT*, 'BEGIN INIT EXTERNAL'
+    IF(rank==0) PRINT*, 'BEGIN INIT EXTERNAL'
     l_spectral  = LOGICAL(is_spec,lp) 
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
     l_staggered = .TRUE.
-    fftw_threads_ok = .TRUE.
-    is_lb_grp = .FALSE.
     c_dim = INT(cdim,idp)
     nx = INT(n3,idp)
     ny = INT(n2,idp)
@@ -120,7 +118,7 @@ MODULE link_external_tools
       ycoeffs = dt/dy*ycoeffs
       zcoeffs = dt/dz*zcoeffs
     ENDIF 
-    PRINT*, 'END INIT EXTERNAL'
+    IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
