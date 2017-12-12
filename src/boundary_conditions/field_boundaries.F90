@@ -771,21 +771,8 @@ MODULE field_boundary
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
       IF(sizes_to_exchange_f_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
       IF(sizes_to_exchange_r_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-      ALLOCATE(temp_recv(-nxg:nxg+nx1,-nyg:nyg+ny1,1:sizes_to_exchange_f_to_recv(k)))
       CALL MPI_SENDRECV(field(-nxg,-nyg,r_first_cell_to_send(j)),1_isp,send_type_r(j),&
-      rank_to_send_to,tag,temp_recv(-nxg,-nyg,1),1_isp,recv_type_f(k),rank_to_recv_from,tag,comm,status,errcode)
-      IF(sizes_to_exchange_f_to_recv(k) .GT. 0_idp) THEN
-        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-        DO iz=1,sizes_to_exchange_f_to_recv(k)
-          DO iy=iy_min_r, iy_max_r
-            DO ix=ix_min_r, ix_max_r
-               field_f(ix,iy,iz-1+f_first_cell_to_recv(k)) = temp_recv(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz)
-            ENDDO
-          ENDDO
-        ENDDO
-      !$OMP END PARALLEL DO
-      ENDIF
-      DEALLOCATE(temp_recv)
+      rank_to_send_to,tag,field_f(1,1,f_first_cell_to_recv(k)),1_isp,recv_type_f(k),rank_to_recv_from,tag,comm,status,errcode)
     ENDDO
     CALL MPI_BARRIER(comm,errcode)
 #endif
@@ -856,23 +843,9 @@ MODULE field_boundary
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
       IF(sizes_to_exchange_r_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
       IF(sizes_to_exchange_f_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-      ALLOCATE(temp_recv(nxx,nyy,sizes_to_exchange_r_to_recv(k)))
       CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(j)),1_isp,send_type_f(j),&
-      rank_to_send_to,tag,temp_recv(1,1,1),1_isp,recv_type_r(k),rank_to_recv_from,tag,comm,status,errcode)
+      rank_to_send_to,tag,field(-nxg,-nyg,r_first_cell_to_recv(k)),1_isp,recv_type_r(k),rank_to_recv_from,tag,comm,status,errcode)
 
-        IF(sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
-        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-        DO iz=1,sizes_to_exchange_r_to_recv(k)
-          DO iy=iy_min_r, iy_max_r
-            DO ix=ix_min_r, ix_max_r
-              field(ix-ix_min_r-nxg,iy-iy_min_r-nyg,iz-1+r_first_cell_to_recv(k)) = &
-                 temp_recv(ix,iy,iz)  
-            ENDDO
-          ENDDO
-        ENDDO
-        !$OMP END PARALLEL DO
-      ENDIF
-      DEALLOCATE(temp_recv)
     ENDDO
     CALL MPI_BARRIER(comm,errcode)
 #endif

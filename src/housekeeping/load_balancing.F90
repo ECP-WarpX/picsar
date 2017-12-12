@@ -764,11 +764,11 @@ MODULE load_balance
    DO i = 1,nprocz
 
        ! create rcv type
-       sizes(1) = 2*nxguards + nx + 1  
-       sizes(2) = 2*nyguards + ny + 1
-       sizes(3) = 2*nzguards + nz + 1
-       subsizes(1) = 2*nxguards + nx + 1
-       subsizes(2) = 2*nyguards + ny + 1 
+       sizes(1) =  2*(nx_group/2+1)
+       sizes(2) = ny_group
+       sizes(3) = local_nz
+       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
        subsizes(3) = sizes_to_exchange_f_to_recv(i)
        starts = 1
        recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
@@ -777,8 +777,8 @@ MODULE load_balance
        sizes(1) = 2*(nx_group/2+1) 
        sizes(2) = ny_group
        sizes(3) = local_nz
-       subsizes(1) = 2*(nx_group/2+1)
-       subsizes(2) = ny_group
+       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
        subsizes(3) = sizes_to_exchange_f_to_send(i)
        send_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
 
@@ -836,11 +836,11 @@ MODULE load_balance
  !    IF(sizes_to_exchange_r_to_recv(i) .GT. 0_idp) THEN
 
        ! create rcv type
-       sizes(1) = 2*(nx_group/2+1)
-       sizes(2) = ny_group
-       sizes(3) = local_nz
-       subsizes(1) = 2*(nx_group/2+1)
-       subsizes(2) = ny_group
+       sizes(1) = 2*nxguards + nx + 1
+       sizes(2) = 2*nyguards + ny + 1
+       sizes(3) = 2*nzguards + nz + 1
+       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
        subsizes(3) = sizes_to_exchange_r_to_recv(i)
        starts = 1
        recv_type_r(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
@@ -849,8 +849,8 @@ MODULE load_balance
        sizes(1) = 2*nxguards + nx + 1
        sizes(2) = 2*nyguards + ny + 1
        sizes(3) = 2*nzguards + nz + 1 
-       subsizes(1) = 2*nxguards + nx + 1
-       subsizes(2) = 2*nyguards + ny + 1
+       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
        subsizes(3) = sizes_to_exchange_r_to_send(i)
        send_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
 
