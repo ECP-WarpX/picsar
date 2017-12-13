@@ -938,9 +938,6 @@ MODULE load_balance
         size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp, 0_idp)
         first_cell_send = MAX(index_rf,index_ff) - index_rf 
       ENDIF
-    ELSE 
-         WRITE(0,*)'ERROR'
-         STOP
     ENDIF
 #endif
   END SUBROUTINE compute_rindex
