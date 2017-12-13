@@ -1116,8 +1116,10 @@ IF(fftw_with_mpi ) THEN
 ENDIF
 IF(fftw_hybrid) THEN 
   IF(is_lb_grp) THEN
+    ! computes subdomains and group fields intersection
     CALL get1D_intersection_group_mpi()
   ELSE IF(.NOT. is_lb_grp) THEN
+    !In this case abort load balancing
     cell_z_min = cell_z_min_f
     cell_z_max = cell_z_max_f
     nz = nz_lb

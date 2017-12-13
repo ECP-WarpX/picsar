@@ -754,7 +754,11 @@ MODULE field_boundary
   !> Routine for blocking communication filling ex_r from ex
   !> @author
   !> Haithem Kallala
-  !
+  !> The input :
+  !> field = ex field 
+  !> field_f = ex_r field
+  !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
+  !> nxx,nyy,nzz: sizes of ex_r field
   !> @date
   !> Creation 2017
   !
@@ -772,14 +776,12 @@ MODULE field_boundary
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)  :: n
 #if defined(FFTW)
-    !  i-1 = mpi test in z direction for exchanges
+    !  i-1 = mpi task in z direction for exchanges
     ! example :
     ! i-1=0 exchange between current rank and itself
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
-    DO i=1,nprocz
-        n=0
-      IF(i == 1 ) CYCLE
+    DO i=2,nprocz
       j = MODULO(z_coords+i-1,nprocz) +1
       ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is
@@ -842,7 +844,11 @@ MODULE field_boundary
   !> Routine for blocking communication filling ex from ex_r
   !> @author
   !> Haithem Kallala
-  !
+  !> The input :
+  !> field = ex field 
+  !> field_f = ex_r field
+  !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
+  !> nxx,nyy,nzz: sizes of ex_r field
   !> @date
   !> Creation 2017
   !
@@ -866,8 +872,7 @@ MODULE field_boundary
     ! i-1=0 exchange between current rank and itself
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
-    DO i=1,nprocz
-      IF(i == 1 ) CYCLE
+    DO i=2,nprocz
       j = MODULO(z_coords+i-1,nprocz) +1
       ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is
