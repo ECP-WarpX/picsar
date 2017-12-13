@@ -912,19 +912,19 @@ MODULE field_boundary
     nyy = ny_group
     nzz = local_nz
     IF(mpicom_curr ==1) THEN
-    CALL sendrecv_fr_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
     ELSE 
-    CALL sendrecv_fr_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-    CALL sendrecv_fr_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
+      CALL sendrecv_fr_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
  
     ENDIF
     IF (it.ge.timestat_itstart) THEN
