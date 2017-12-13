@@ -724,10 +724,14 @@ MODULE load_balance
     ENDDO
 
     !begin field_f perspective by computing indexes OF ex_r to exchange with ex
-    ALLOCATE(sizes_to_exchange_f_to_recv(nprocz));sizes_to_exchange_f_to_recv = 0_idp
-    ALLOCATE(f_first_cell_to_recv(nprocz)); f_first_cell_to_recv = 0_idp
-    ALLOCATE(sizes_to_exchange_f_to_send(nprocz));sizes_to_exchange_f_to_send = 0_idp
-    ALLOCATE(f_first_cell_to_send(nprocz)); f_first_cell_to_send = 0_idp
+    ALLOCATE(sizes_to_exchange_f_to_recv(nprocz))
+    sizes_to_exchange_f_to_recv = 0_idp
+    ALLOCATE(f_first_cell_to_recv(nprocz))
+    f_first_cell_to_recv = 0_idp
+    ALLOCATE(sizes_to_exchange_f_to_send(nprocz))
+    sizes_to_exchange_f_to_send = 0_idp
+    ALLOCATE(f_first_cell_to_send(nprocz))
+    f_first_cell_to_send = 0_idp
 
     nb_proc_per_group = nproc/(nb_group)
 
@@ -736,20 +740,10 @@ MODULE load_balance
     DO i = 1,nprocz
       iz2min = cell_z_min(i)
       iz2max = cell_z_max(i)  
-      IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
-        is_grp_min = .TRUE.
-      ELSE
-        is_grp_min = .FALSE.
-      ENDIF
-      IF(MODULO(i,nb_proc_per_group) == 0) THEN
-        is_grp_max = .TRUE.
-      ELSE
-        is_grp_max = .FALSE.
-      ENDIF
 
       CALL compute_findex(iz1min, iz1max, iz2min, iz2max,                             &
       sizes_to_exchange_f_to_recv(i), f_first_cell_to_recv(i),                        &
-      sizes_to_exchange_f_to_send(i), f_first_cell_to_send(i),is_grp_min,is_grp_max)
+      sizes_to_exchange_f_to_send(i), f_first_cell_to_send(i))
     ENDDO
   
     !END OF Field_f perspective, begin field perspective
@@ -968,12 +962,11 @@ MODULE load_balance
   ! ______________________________________________________________________________________
   SUBROUTINE compute_findex(iz1min,iz1max,iz2min,iz2max,            &
                            size_to_exchange_recv,first_cell_recv,   &
-                           size_to_exchange_send,first_cell_send,is_group_min,is_group_max)
+                           size_to_exchange_send,first_cell_send)
 #if defined(FFTW)
     USE group_parameters
 #endif
     USE shared_data
-    LOGICAL(lp)   , INTENT(IN)  :: is_group_max,is_group_min
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
     INTEGER(idp)               :: iz1min_temp
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send
