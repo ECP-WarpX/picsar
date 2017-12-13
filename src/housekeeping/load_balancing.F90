@@ -191,7 +191,7 @@ MODULE load_balance
     field_old, nx_old, ny_old, nz_old, nxg, nyg, nzg, ix1old, ix2old, iy1old, iy2old,   &
     iz1old, iz2old, ix1new, ix2new, iy1new, iy2new, iz1new, iz2new, iproc, np)
     IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) :: iproc, nx_new, ny_new, nz_new, nx_old, ny_old,&
+    INTEGER(idp), INTENT(IN) :: iproc, nx_new, ny_new, nz_new, nx_old, ny_old,        &
     nz_old, np, nxg, nyg, nzg
     REAL(num), INTENT(IN OUT), DIMENSION(-nxg:nx_new+nxg, -nyg:ny_new+nyg,            &
     -nzg:nz_new+nzg) :: field_new
