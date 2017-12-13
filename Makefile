@@ -354,6 +354,7 @@ build_lib:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/housekeeping/load_balancing.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
