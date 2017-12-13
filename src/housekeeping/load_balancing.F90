@@ -702,14 +702,11 @@ MODULE load_balance
     USE fields , ONLY : nxguards, nyguards, nzguards
    
     IMPLICIT NONE
-    INTEGER(idp)                   :: i,j 
+    INTEGER(idp)                   :: i 
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
     INTEGER(isp)                   :: ierr
-    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(idp)                     :: phy_cell
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
     INTEGER(idp)                     :: nb_proc_per_group
-    INTEGER(idp)           , ALLOCATABLE, DIMENSION(:,:) :: check1,check2
 
 #if defined(FFTW)
     ALLOCATE(array_of_ranks_to_send_to(nprocz))
@@ -755,12 +752,6 @@ MODULE load_balance
       sizes_to_exchange_f_to_send(i), f_first_cell_to_send(i),is_grp_min,is_grp_max)
     ENDDO
   
-    IF(SUM(sizes_to_exchange_f_to_recv) .NE. local_nz) THEN
-      WRITE(0,*) 'ERROR   1100'
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-
-
     !END OF Field_f perspective, begin field perspective
 
     !begin field perspective by computing indexes OF ex to exchange with ex_r
@@ -773,8 +764,6 @@ MODULE load_balance
     sizes_to_exchange_r_to_send = 0_idp 
     ALLOCATE(r_first_cell_to_send(nprocz))
     r_first_cell_to_send = 0_idp
-
-    nb_proc_per_group = nproc/(nb_group)
 
     iz1min = cell_z_min(z_coords+1)
     iz1max = cell_z_max(z_coords+1)
@@ -797,66 +786,8 @@ MODULE load_balance
       sizes_to_exchange_r_to_send(i), r_first_cell_to_send(i), is_grp_min,is_grp_max)
     ENDDO
 
-
-    ! check that every ex field will recieve and send nz data
-    IF(SUM(sizes_to_exchange_r_to_recv) .NE. nz) THEN
-      WRITE(0,*) 'ERROR  1400'                                 &
-         ,rank,nz,SUM(sizes_to_exchange_r_to_recv)
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-     IF(SUM(sizes_to_exchange_r_to_send) .LT. nz) THEN
-      WRITE(0,*) 'ERROR  1500'
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-
     ! Create mpi_derived_types for group communications
     CALL create_derived_types_groups()
-
-    ! check that r_sizes_to_send is the same as f_sizes_to_recv and vice versa
-    ALLOCATE(check1(nprocz,nproc))
-    ALLOCATE(check2(nprocz,nproc))
-
-    CALL MPI_ALLGATHER (sizes_to_exchange_r_to_send, INT(nprocz,isp),                 &
-    MPI_LONG_LONG_INT, check1, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
-    CALL MPI_ALLGATHER(sizes_to_exchange_f_to_recv, INT(nprocz,isp),                  &
-    MPI_LONG_LONG_INT, check2, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
-
-    DO i = 1 , nprocz
-      DO j = 1 , nprocz
-        IF (check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE.                                &
-        check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
-          WRITE(0,*)'ERROR 2000'
-          CALL MPI_ABORT(comm , errcode , ierr)
-        ENDIF
-      ENDDO
-    ENDDO
-
-    check1=0*check1
-    check2=0*check2
-
-    ! CHeck that f_sizes_to_send is the same as r_sizes_to_recv and  vice versa
-    CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send, INT(nprocz,isp),                  &
-    MPI_LONG_LONG_INT, check1, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
-    CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv, INT(nprocz,isp),                  &
-    MPI_LONG_LONG_INT, check2, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
-    DO i = 1,nprocz
-      DO j = 1,nprocz
-        IF(check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE.                                 &
-        check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
-          WRITE(0,*)'ERROR 2100'
-          CALL MPI_ABORT( comm, errcode, ierr)
-        ENDIF
-      ENDDO
-    ENDDO
-    DEALLOCATE(check1,check2) 
-
-    DO i=1,nprocz
-      !INIT useless first_cells to a huge negative number 
-      IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1000_idp
-      IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -1000_idp
-      IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) = -1000_idp
-      IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -1000_idp
-    ENDDO
 
 #endif
   END SUBROUTINE get1D_intersection_group_mpi
