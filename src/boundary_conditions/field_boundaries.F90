@@ -948,7 +948,7 @@ MODULE field_boundary
   !
   ! ______________________________________________________________________________________
 
-  SUBROUTINE sendrecv_fr_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_fr_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -1002,10 +1002,10 @@ MODULE field_boundary
     CALL MPI_WAITALL(n,requests, MPI_STATUSES_IGNORE, errcode)
     DEALLOCATE(requests)
 #endif
-  END SUBROUTINE  sendrecv_fr_generalized
+  END SUBROUTINE  sendrecv_fr_generalized_non_blocking
 
 
-  SUBROUTINE sendrecv_fr_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_fr_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -1040,7 +1040,7 @@ MODULE field_boundary
 
     ENDDO
 #endif
-  END SUBROUTINE  sendrecv_fr_generalized_non_blocking
+  END SUBROUTINE  sendrecv_fr_generalized
 
 
   
