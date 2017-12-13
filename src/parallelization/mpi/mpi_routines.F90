@@ -11,8 +11,8 @@
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
-! and the U.S. Government consequently retains certain rights. As such, the
-! U.S.g,'cooc'! Government has been granted for itself and others acting on its behalf a
+! and the U.S. Government consequently retains certain rights. As such, the U.S.
+! Government has been granted for itself and others acting on its behalf a
 ! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
 ! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
@@ -1116,10 +1116,13 @@ IF(fftw_with_mpi ) THEN
 ENDIF
 IF(fftw_hybrid) THEN 
   IF(is_lb_grp) THEN
+
     ! computes subdomains and group fields intersection
     CALL get1D_intersection_group_mpi()
   ELSE IF(.NOT. is_lb_grp) THEN
-    !In this case abort load balancing
+
+    ! Load balancing is not used ,grid decomposition is that of
+    ! fftw_local_size_3d
     cell_z_min = cell_z_min_f
     cell_z_max = cell_z_max_f
     nz = nz_lb
@@ -1131,6 +1134,7 @@ IF(fftw_hybrid) THEN
   ENDIF
 ENDIF
 #endif
+
 !!! --- Set up global grid limits
 
 CALL compute_simulation_axis()
