@@ -664,17 +664,17 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     ENDIF
   ENDDO
   
-  is_on_boarder = .FALSE.
+  is_on_boundary = .FALSE.
   group_z_min_boundary = .FALSE.
   group_z_max_boundary = .FALSE.
   
   IF(local_rank  .EQ. 0_idp) THEN
-    is_on_boarder = .TRUE.
+    is_on_boundary = .TRUE.
     group_z_min_boundary = .TRUE.
   ENDIF
   
   IF(local_rank .EQ. local_size-1) THEN
-    is_on_boarder = .TRUE.
+    is_on_boundary = .TRUE.
     group_z_max_boundary = .TRUE.
   ENDIF
   

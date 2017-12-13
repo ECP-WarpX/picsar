@@ -1091,7 +1091,7 @@ MODULE group_parameters!#do not parse
   INTEGER(idp)  ::   nz_grid_min_grp, nz_grid_max_grp, nz_grid_grp
   !> This flag is true if MPI task is on the edge of its group (so need
   !additional comm
-  LOGICAL(lp)  ::  is_on_boarder = .FALSE.
+  LOGICAL(lp)  ::  is_on_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the inferior z group boundary
   LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the superior z group boundary
