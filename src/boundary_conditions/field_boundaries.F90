@@ -591,7 +591,6 @@ MODULE field_boundary
       starts)
       is_dtype_init(20) = .FALSE.
     ENDIF
-
     IF(XOR(group_z_min_boundary,group_z_max_boundary)) THEN
       IF(group_z_min_boundary) THEN
         CALL MPI_SEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,   &
@@ -605,7 +604,7 @@ MODULE field_boundary
         CALL MPI_SEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),        &
         INT(proc_z_max, isp), tag, comm, errcode)
       ENDIF
-    ELSE 
+    ELSE IF( group_z_min_boundary .AND. group_z_max_boundary) THEN
       sz  = subsizes(1)*subsizes(2)*subsizes(3)
       ALLOCATE(temp(sz))
       CALL MPI_SENDRECV(field(1,1,iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,    &
