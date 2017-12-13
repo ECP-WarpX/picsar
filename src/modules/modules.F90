@@ -1125,6 +1125,7 @@ MODULE group_parameters!#do not parse
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_r
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_rf, requests_fr
 
 
 END MODULE

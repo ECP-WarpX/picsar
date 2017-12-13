@@ -702,7 +702,7 @@ MODULE load_balance
     USE fields , ONLY : nxguards, nyguards, nzguards
    
     IMPLICIT NONE
-    INTEGER(idp)                   :: i 
+    INTEGER(idp)                   :: i, n
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
     INTEGER(isp)                   :: ierr
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
@@ -782,6 +782,20 @@ MODULE load_balance
 
     ! Create mpi_derived_types for group communications
     CALL create_derived_types_groups()
+    n=0
+    DO i=2,nprocz
+      IF(sizes_to_exchange_r_to_send(i) .GT. 0) n = n + 1
+      IF(sizes_to_exchange_f_to_recv(i) .GT. 0) n = n +1
+    ENDDO
+    ALLOCATE(requests_rf(n))
+    n=0
+    DO i=2,nprocz
+      IF(sizes_to_exchange_f_to_send(i) .GT. 0) n = n+1
+      IF(sizes_to_exchange_r_to_recv(i) .GT. 0) n = n+1
+    ENDDO
+    ALLOCATE(requests_fr(n))
+
+
 
 #endif
   END SUBROUTINE get1D_intersection_group_mpi

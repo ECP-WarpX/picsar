@@ -837,14 +837,7 @@ MODULE field_boundary
     INTEGER(idp)                                ::  i , j , k , ix , iy , iz
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
-    INTEGER(isp)    ,ALLOCATABLE, DIMENSION(:)  :: requests
 #if defined(FFTW)
-    n=0
-    DO i=2,nprocz
-      IF(sizes_to_exchange_r_to_send(i) .GT. 0) n = n + 1
-      IF(sizes_to_exchange_f_to_recv(i) .GT. 0) n = n +1
-    ENDDO
-    ALLOCATE(requests(n))
     n=0
     !  i-1 = mpi task in z direction for exchanges
     ! example :
@@ -859,21 +852,19 @@ MODULE field_boundary
       k = MODULO(z_coords-(i-1),nprocz) +1
       rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
-      IF(sizes_to_exchange_f_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_r_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
+
       IF(sizes_to_exchange_f_to_recv(k) .GT. 0)   THEN 
         n=n+1
         CALL MPI_IRECV(field_f(1, 1, f_first_cell_to_recv(k)), 1_isp,recv_type_f(k), &
-        rank_to_recv_from,tag,comm,requests(n),errcode)
+        rank_to_recv_from,tag,comm,requests_rf(n),errcode)
       ENDIF
       IF(sizes_to_exchange_r_to_send(j) .GT. 0) THEN
         n=n+1
         CALL MPI_ISEND(field(-nxg, -nyg, r_first_cell_to_send(j)), 1_isp, send_type_r(j) &
-        ,rank_to_send_to,tag,comm,requests(n),errcode)
+        ,rank_to_send_to,tag,comm,requests_rf(n),errcode)
       ENDIF
     ENDDO
-    CALL MPI_WAITALL(n,requests, MPI_STATUSES_IGNORE, errcode)
-    DEALLOCATE(requests)
+    CALL MPI_WAITALL(n,requests_rf, MPI_STATUSES_IGNORE, errcode)
 #endif
   END SUBROUTINE  sendrecv_rf_generalized_non_blocking
 
@@ -959,15 +950,8 @@ MODULE field_boundary
     INTEGER(idp)        ::  i , j , k , ix , iy , iz
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
-    INTEGER(isp)    ,ALLOCATABLE, DIMENSION(:)  :: requests
 
 #if defined(FFTW)
-    n=0
-    DO i=2,nprocz
-      IF(sizes_to_exchange_f_to_send(i) .GT. 0) n = n+1
-      IF(sizes_to_exchange_r_to_recv(i) .GT. 0) n = n+1
-    ENDDO
-    ALLOCATE(requests(n))
     n = 0
     !  i-1 = mpi test in z direction for exchanges
     ! example :
@@ -984,23 +968,19 @@ MODULE field_boundary
       rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
  
-      IF(sizes_to_exchange_r_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_f_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-
       IF(sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
         n=n+1
         CALL MPI_IRECV(field(-nxg, -nyg, r_first_cell_to_recv(k)), 1_isp,recv_type_r(k)&
-        , rank_to_recv_from,tag,comm,requests(n),errcode)
+        , rank_to_recv_from,tag,comm,requests_fr(n),errcode)
       ENDIF
       IF(sizes_to_exchange_f_to_send(j) .GT. 0) THEN
         n=n+1
         CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(j)) ,1_isp,send_type_f(j),    &
-        rank_to_send_to,tag,comm,requests(n),errcode)   
+        rank_to_send_to,tag,comm,requests_fr(n),errcode)   
       ENDIF
 
     ENDDO
-    CALL MPI_WAITALL(n,requests, MPI_STATUSES_IGNORE, errcode)
-    DEALLOCATE(requests)
+    CALL MPI_WAITALL(n,requests_fr, MPI_STATUSES_IGNORE, errcode)
 #endif
   END SUBROUTINE  sendrecv_fr_generalized_non_blocking
 
