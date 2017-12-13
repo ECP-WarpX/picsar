@@ -703,7 +703,7 @@ MODULE load_balance
     IMPLICIT NONE
     INTEGER(idp)                   :: i,j 
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  ! 1-> ex_r 2->ex
-    INTEGER(isp)                   :: ierr, basetype
+    INTEGER(isp)                   :: ierr
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(idp)                     :: phy_cell
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
@@ -721,7 +721,6 @@ MODULE load_balance
      array_of_ranks_to_recv_from(i) = MODULO(array_of_ranks_to_recv_from(i-1) - INT(nprocx*nprocy,isp),INT(nproc,isp))
    ENDDO
 
-   basetype = mpidbl
 
 
    !begin field_f perspective by computing indexes OF ex_r to exchange with ex
@@ -729,11 +728,11 @@ MODULE load_balance
    ALLOCATE(f_first_cell_to_recv(nprocz)); f_first_cell_to_recv = 0_idp
    ALLOCATE(sizes_to_exchange_f_to_send(nprocz));sizes_to_exchange_f_to_send = 0_idp
    ALLOCATE(f_first_cell_to_send(nprocz)); f_first_cell_to_send = 0_idp
-   iz1min = cell_z_min_lbg(z_coords+1) 
-   iz1max = cell_z_max_lbg(z_coords+1)
 
    nb_proc_per_group = nproc/(nb_group)!/nprocx/nprocy)
 
+   iz1min = cell_z_min_lbg(z_coords+1) 
+   iz1max = cell_z_max_lbg(z_coords+1)
    DO i = 1,nprocz
      iz2min = cell_z_min(i)
      iz2max = cell_z_max(i)  
@@ -759,30 +758,8 @@ MODULE load_balance
      WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE',rank,local_nz,sizes_to_exchange_f_to_recv
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
-   ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
 
-   DO i = 1,nprocz
 
-       ! create rcv type
-       sizes(1) =  2*(nx_group/2+1)
-       sizes(2) = ny_group
-       sizes(3) = local_nz
-       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
-       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
-       subsizes(3) = sizes_to_exchange_f_to_recv(i)
-       starts = 1
-       recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes, sizes,starts)
-
-       ! create send type
-       sizes(1) = 2*(nx_group/2+1) 
-       sizes(2) = ny_group
-       sizes(3) = local_nz
-       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
-       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
-       subsizes(3) = sizes_to_exchange_f_to_send(i)
-       send_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
-
-   ENDDO
 !END OF Field_f perspective, begin field perspective
 !**************************************************************************!
 !begin field perspective by computing indexes OF ex to exchange with ex_r
@@ -792,10 +769,10 @@ MODULE load_balance
    ALLOCATE(sizes_to_exchange_r_to_send(nprocz));sizes_to_exchange_r_to_send = 0_idp 
    ALLOCATE(r_first_cell_to_send(nprocz)); r_first_cell_to_send = 0_idp
 
+   nb_proc_per_group = nproc/(nb_group)!/nprocx/nprocy)
+
    iz1min = cell_z_min(z_coords+1)
    iz1max = cell_z_max(z_coords+1)
-   nb_proc_per_group = nproc/(nb_group)!/nprocx/nprocy)
-   
    DO i=1,nprocz
      iz2min = cell_z_min_lbg(i)
      iz2max = cell_z_max_lbg(i) 
@@ -828,36 +805,13 @@ MODULE load_balance
      CALL MPI_ABORT(comm,errcode,ierr)
    ENDIF
 
+   ! Create mpi_derived_types for group communications
+   CALL create_derived_types_groups()
 
-   ALLOCATE(send_type_r(nprocz),recv_type_r(nprocz))
-
-
-   DO i = 1,nprocz
- !    IF(sizes_to_exchange_r_to_recv(i) .GT. 0_idp) THEN
-
-       ! create rcv type
-       sizes(1) = 2*nxguards + nx + 1
-       sizes(2) = 2*nyguards + ny + 1
-       sizes(3) = 2*nzguards + nz + 1
-       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
-       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
-       subsizes(3) = sizes_to_exchange_r_to_recv(i)
-       starts = 1
-       recv_type_r(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
-
-       ! create send type
-       sizes(1) = 2*nxguards + nx + 1
-       sizes(2) = 2*nyguards + ny + 1
-       sizes(3) = 2*nzguards + nz + 1 
-       subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
-       subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
-       subsizes(3) = sizes_to_exchange_r_to_send(i)
-       send_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
-
-   ENDDO
-  ! check that r_type_to_send is the same as f_type_to_recv and vice versa
+  ! check that r_sizes_to_send is the same as f_sizes_to_recv and vice versa
   ALLOCATE(check1(nprocz,nproc))
   ALLOCATE(check2(nprocz,nproc))
+
   CALL MPI_ALLGATHER(sizes_to_exchange_r_to_send,INT(nprocz,isp),MPI_LONG_LONG_INT,check1, &
         INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
   CALL MPI_ALLGATHER(sizes_to_exchange_f_to_recv,INT(nprocz,isp),MPI_LONG_LONG_INT,check2, &
@@ -871,8 +825,11 @@ MODULE load_balance
       ENDIF
     ENDDO
   ENDDO
+
   check1=0*check1
   check2=0*check2
+
+  ! CHeck that f_sizes_to_send is the same as r_sizes_to_recv and  vice versa
   CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send,&
         INT(nprocz,isp),MPI_LONG_LONG_INT,check1,INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
   CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv,&
@@ -886,6 +843,7 @@ MODULE load_balance
     ENDDO
   ENDDO
   DEALLOCATE(check1,check2) 
+
   DO i=1,nprocz
     !INIT useless first_cells to a huge negative number 
     IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1000_idp
@@ -897,6 +855,82 @@ MODULE load_balance
 #endif
   END SUBROUTINE get1D_intersection_group_mpi
 
+
+  SUBROUTINE create_derived_types_groups()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE group_parameters
+#endif
+  USE shared_data
+  USE mpi
+  USE mpi_derived_types
+  USE fields , ONLY : nxguards, nyguards, nzguards
+  INTEGER(idp)         ::  i 
+  INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+  INTEGER(isp)                     :: basetype 
+
+#if defined(FFTW)
+   basetype = mpidbl
+   ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
+   DO i = 1,nprocz
+     ! create rcv type
+     sizes(1) =  2*(nx_group/2+1)
+     sizes(2) = ny_group
+     sizes(3) = local_nz
+     subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+     subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
+     subsizes(3) = sizes_to_exchange_f_to_recv(i)
+     starts = 1
+     recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
+
+     ! create send type
+     sizes(1) = 2*(nx_group/2+1)
+     sizes(2) = ny_group
+     sizes(3) = local_nz
+     subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+     subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
+     subsizes(3) = sizes_to_exchange_f_to_send(i)
+     send_type_f(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+   ENDDO
+
+   ALLOCATE(send_type_r(nprocz),recv_type_r(nprocz))
+   DO i = 1,nprocz
+ !  IF(sizes_to_exchange_r_to_recv(i) .GT. 0_idp) THEN
+
+     ! create rcv type
+     sizes(1) = 2*nxguards + nx + 1
+     sizes(2) = 2*nyguards + ny + 1
+     sizes(3) = 2*nzguards + nz + 1
+     subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+     subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
+     subsizes(3) = sizes_to_exchange_r_to_recv(i)
+     starts = 1
+     recv_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+
+     ! create send type
+     sizes(1) = 2*nxguards + nx + 1
+     sizes(2) = 2*nyguards + ny + 1
+     sizes(3) = 2*nzguards + nz + 1
+     subsizes(1) = MIN(2*nxguards + nx + 1,2*(nx_group/2+1))
+     subsizes(2) = MIN(2*nyguards + ny + 1,ny_group)
+     subsizes(3) = sizes_to_exchange_r_to_send(i)
+     send_type_r(i) =create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+   ENDDO
+#endif
+  END SUBROUTINE create_derived_types_groups
+
+
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes r_index to send and recv for groups
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
 
   SUBROUTINE compute_rindex(iz1min ,iz1max ,iz2min ,iz2max , &
              size_to_exchange_recv, first_cell_recv,size_to_exchange_send,first_cell_send,is_grp_min,is_grp_max)
@@ -976,10 +1010,19 @@ MODULE load_balance
          WRITE(*,*)'ERROR'
          STOP
     ENDIF
-
-
   END SUBROUTINE compute_rindex
 
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes f_index to send and recv for groups
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   
   SUBROUTINE compute_findex(iz1min,iz1max,iz2min,iz2max,            &
                              size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send,is_group_min,is_group_max)

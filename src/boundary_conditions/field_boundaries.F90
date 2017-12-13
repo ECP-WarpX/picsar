@@ -701,6 +701,16 @@ MODULE field_boundary
 #endif
   END SUBROUTINE field_bc_group_non_blocking
 
+  ! ______________________________________________________________________________________
+  !> Routine for filling ex_r fields with ex fields  
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  !
+  ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_r2f()
 #if defined(FFTW) 
     USE group_parameters
@@ -738,7 +748,17 @@ MODULE field_boundary
 #endif
 
   END SUBROUTINE generalized_comms_group_r2f
-  
+ 
+
+  ! ______________________________________________________________________________________
+  !> Routine for blocking communication filling ex_r from ex
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  !
+  ! ______________________________________________________________________________________
   SUBROUTINE sendrecv_rf_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
 #if defined(FFTW)
@@ -749,8 +769,6 @@ MODULE field_boundary
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
     INTEGER(idp)                                ::  i , j , k , ix , iy , iz
-    REAL(num) , ALLOCATABLE , DIMENSION(:,:,:)  :: temp_recv
-    INTEGER(isp)                                :: requests(2)
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)  :: n
 #if defined(FFTW)
@@ -774,9 +792,18 @@ MODULE field_boundary
       CALL MPI_SENDRECV(field(-nxg,-nyg,r_first_cell_to_send(j)),1_isp,send_type_r(j),&
       rank_to_send_to,tag,field_f(1,1,f_first_cell_to_recv(k)),1_isp,recv_type_f(k),rank_to_recv_from,tag,comm,status,errcode)
     ENDDO
-    CALL MPI_BARRIER(comm,errcode)
 #endif
   END SUBROUTINE  sendrecv_rf_generalized
+  ! ______________________________________________________________________________________
+  !> Routine for filling ex fields with ex_r fields  
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  !
+  ! ______________________________________________________________________________________
 
   SUBROUTINE generalized_comms_group_f2r()
 #if defined(FFTW) 
@@ -811,6 +838,16 @@ MODULE field_boundary
 
   END SUBROUTINE generalized_comms_group_f2r
 
+  ! ______________________________________________________________________________________
+  !> Routine for blocking communication filling ex from ex_r
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  !
+  ! ______________________________________________________________________________________
+
   SUBROUTINE sendrecv_fr_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
 
 #if defined(FFTW)
@@ -821,8 +858,6 @@ MODULE field_boundary
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
     INTEGER(idp)        ::  i , j , k , ix , iy , iz
-    REAL(num)   , ALLOCATABLE , DIMENSION(:,:,:)  :: temp_recv
-    INTEGER(isp)                                  :: requests(2)
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
 
 #if defined(FFTW)
@@ -847,7 +882,6 @@ MODULE field_boundary
       rank_to_send_to,tag,field(-nxg,-nyg,r_first_cell_to_recv(k)),1_isp,recv_type_r(k),rank_to_recv_from,tag,comm,status,errcode)
 
     ENDDO
-    CALL MPI_BARRIER(comm,errcode)
 #endif
   END SUBROUTINE  sendrecv_fr_generalized
 
