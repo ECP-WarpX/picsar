@@ -433,7 +433,6 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
   CALL generalized_comms_group_f2r()
-  CALL MPI_BARRIER(comm,errcode)
   END SUBROUTINE get_fields_mpi_lb
   
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
