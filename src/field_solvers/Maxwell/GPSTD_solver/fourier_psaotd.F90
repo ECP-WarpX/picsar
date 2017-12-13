@@ -65,11 +65,12 @@ MODULE fourier_psaotd
     IF  (fftw_threads_ok) THEN
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
-    planner_flag_1 = FFTW_MEASURE
-    planner_flag_2 = FFTW_MEASURE
     IF(fftw_mpi_transpose) THEN
       planner_flag_1 = FFTW_MPI_TRANSPOSED_OUT
       planner_flag_2 = FFTW_MPI_TRANSPOSED_IN
+    ELSE
+      planner_flag_1 = FFTW_MEASURE
+      planner_flag_2 = FFTW_MEASURE
     ENDIF
     IF(.NOT. fftw_hybrid) THEN
       nz_cint=nz_global
