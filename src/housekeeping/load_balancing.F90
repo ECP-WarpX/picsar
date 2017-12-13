@@ -683,12 +683,15 @@ MODULE load_balance
   !> emfield_r)
   !> Useful to determine wether to send/recv datas bases on new CPU split
   !> Also computes mpi derived types for comms
+  !
   !> @author
   !> Haithem Kallala
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE get1D_intersection_group_mpi()
+
+  SUBROUTINE get1D_intersection_group_mpi
+
 #if defined(FFTW)
     USE group_parameters
     USE mpi_fftw3
@@ -700,7 +703,7 @@ MODULE load_balance
    
     IMPLICIT NONE
     INTEGER(idp)                   :: i,j 
-    INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  ! 1-> ex_r 2->ex
+    INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
     INTEGER(isp)                   :: ierr
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(idp)                     :: phy_cell
@@ -709,145 +712,151 @@ MODULE load_balance
     INTEGER(idp)           , ALLOCATABLE, DIMENSION(:,:) :: check1,check2
 
 #if defined(FFTW)
-   ALLOCATE(array_of_ranks_to_send_to(nprocz))
-   array_of_ranks_to_send_to(1) = INT(rank,isp)
-   DO i=2,nprocz
-     array_of_ranks_to_send_to(i) = MODULO(array_of_ranks_to_send_to(i-1) + INT(nprocx*nprocy,isp),INT(nproc,isp))
-   ENDDO
-   ALLOCATE(array_of_ranks_to_recv_from(nprocz))
-   array_of_ranks_to_recv_from(1) = INT(rank,isp)
-   DO i=2,nprocz
-     array_of_ranks_to_recv_from(i) = MODULO(array_of_ranks_to_recv_from(i-1) - INT(nprocx*nprocy,isp),INT(nproc,isp))
-   ENDDO
-
-   !begin field_f perspective by computing indexes OF ex_r to exchange with ex
-   ALLOCATE(sizes_to_exchange_f_to_recv(nprocz));sizes_to_exchange_f_to_recv = 0_idp
-   ALLOCATE(f_first_cell_to_recv(nprocz)); f_first_cell_to_recv = 0_idp
-   ALLOCATE(sizes_to_exchange_f_to_send(nprocz));sizes_to_exchange_f_to_send = 0_idp
-   ALLOCATE(f_first_cell_to_send(nprocz)); f_first_cell_to_send = 0_idp
-
-   nb_proc_per_group = nproc/(nb_group)
-
-   iz1min = cell_z_min_lbg(z_coords+1) 
-   iz1max = cell_z_max_lbg(z_coords+1)
-   DO i = 1,nprocz
-     iz2min = cell_z_min(i)
-     iz2max = cell_z_max(i)  
-     IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
-       is_grp_min = .TRUE.
-     ELSE
-       is_grp_min = .FALSE.
-     ENDIF
-     IF(MODULO(i,nb_proc_per_group) == 0) THEN
-       is_grp_max = .TRUE.
-     ELSE
-       is_grp_max = .FALSE.
-     ENDIF
-
-     CALL compute_findex(iz1min, iz1max, iz2min, iz2max,        &
-     sizes_to_exchange_f_to_recv(i),f_first_cell_to_recv(i),sizes_to_exchange_f_to_send(i),&
-        f_first_cell_to_send(i),is_grp_min,is_grp_max)
-   ENDDO
-   CALL MPI_BARRIER(comm,errcode)   
- 
-   ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY LOCAL_NZ VALUES
-   IF(SUM(sizes_to_exchange_f_to_recv) .NE. local_nz) THEN
-     WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE 1100'
-     CALL MPI_ABORT(comm,errcode,ierr)
-   ENDIF
-
-
-!END OF Field_f perspective, begin field perspective
-!**************************************************************************!
-!begin field perspective by computing indexes OF ex to exchange with ex_r
-
-   ALLOCATE(sizes_to_exchange_r_to_recv(nprocz));sizes_to_exchange_r_to_recv = 0_idp
-   ALLOCATE(r_first_cell_to_recv(nprocz)); r_first_cell_to_recv = 0_idp
-   ALLOCATE(sizes_to_exchange_r_to_send(nprocz));sizes_to_exchange_r_to_send = 0_idp 
-   ALLOCATE(r_first_cell_to_send(nprocz)); r_first_cell_to_send = 0_idp
-
-   nb_proc_per_group = nproc/(nb_group)
-
-   iz1min = cell_z_min(z_coords+1)
-   iz1max = cell_z_max(z_coords+1)
-   DO i=1,nprocz
-     iz2min = cell_z_min_lbg(i)
-     iz2max = cell_z_max_lbg(i) 
-     IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
-       is_grp_min = .TRUE.
-     ELSE 
-       is_grp_min = .FALSE.
-     ENDIF
-     IF(MODULO(i,nb_proc_per_group) == 0) THEN
-       is_grp_max = .TRUE.
-     ELSE 
-       is_grp_max = .FALSE.
-     ENDIF
-
-     CALL compute_rindex(iz1min,iz1max,iz2min,iz2max,      &
-     sizes_to_exchange_r_to_recv(i),r_first_cell_to_recv(i),sizes_to_exchange_r_to_send(i),&
-     r_first_cell_to_send(i),is_grp_min,is_grp_max)
-   ENDDO
-   CALL MPI_BARRIER(comm,errcode)
-
-
-   ! CHECK THAT  EVERY PROC WILL EXCHANGE OR COPY nz VALUES
-   IF(SUM(sizes_to_exchange_r_to_recv) .NE. nz) THEN
-     WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE 1400'&
-        ,rank,nz,SUM(sizes_to_exchange_r_to_recv)
-     CALL MPI_ABORT(comm,errcode,ierr)
-   ENDIF
-    IF(SUM(sizes_to_exchange_r_to_send) .LT. nz) THEN
-     WRITE(*,*) 'ERROR IN LOAD BALANCING MODULE 1500'
-     CALL MPI_ABORT(comm,errcode,ierr)
-   ENDIF
-
-   ! Create mpi_derived_types for group communications
-   CALL create_derived_types_groups()
-
-  ! check that r_sizes_to_send is the same as f_sizes_to_recv and vice versa
-  ALLOCATE(check1(nprocz,nproc))
-  ALLOCATE(check2(nprocz,nproc))
-
-  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_send,INT(nprocz,isp),MPI_LONG_LONG_INT,check1, &
-        INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
-  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_recv,INT(nprocz,isp),MPI_LONG_LONG_INT,check2, &
-        INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
-
-  DO i=1,nprocz
-    DO j=1,nprocz
-      IF(check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE. check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
-        WRITE(*,*)'ERROR 2000'
-        CALL MPI_ABORT(comm,errcode,ierr)
-      ENDIF
+    ALLOCATE(array_of_ranks_to_send_to(nprocz))
+    array_of_ranks_to_send_to(1) = INT(rank,isp)
+    DO i=2,nprocz
+      array_of_ranks_to_send_to(i) = MODULO(array_of_ranks_to_send_to(i-1) +          &
+      INT(nprocx*nprocy,isp),INT(nproc,isp))
     ENDDO
-  ENDDO
 
-  check1=0*check1
-  check2=0*check2
-
-  ! CHeck that f_sizes_to_send is the same as r_sizes_to_recv and  vice versa
-  CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send,&
-        INT(nprocz,isp),MPI_LONG_LONG_INT,check1,INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
-  CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv,&
-        INT(nprocz,isp),MPI_LONG_LONG_INT,check2,INT(nprocz,isp),MPI_LONG_LONG_INT,comm,errcode)
-  DO i=1,nprocz
-    DO j=1,nprocz
-      IF(check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE. check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
-        WRITE(*,*)'ERROR 2100'
-        CALL MPI_ABORT(comm,errcode,ierr)
-      ENDIF
+    ALLOCATE(array_of_ranks_to_recv_from(nprocz))
+    array_of_ranks_to_recv_from(1) = INT(rank,isp)
+    DO i=2,nprocz
+      array_of_ranks_to_recv_from(i) = MODULO(array_of_ranks_to_recv_from(i-1) -      &
+      INT(nprocx*nprocy,isp),INT(nproc,isp))
     ENDDO
-  ENDDO
-  DEALLOCATE(check1,check2) 
 
-  DO i=1,nprocz
-    !INIT useless first_cells to a huge negative number 
-    IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1000_idp
-    IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -1000_idp
-    IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) = -1000_idp
-    IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -1000_idp
-  ENDDO
+    !begin field_f perspective by computing indexes OF ex_r to exchange with ex
+    ALLOCATE(sizes_to_exchange_f_to_recv(nprocz));sizes_to_exchange_f_to_recv = 0_idp
+    ALLOCATE(f_first_cell_to_recv(nprocz)); f_first_cell_to_recv = 0_idp
+    ALLOCATE(sizes_to_exchange_f_to_send(nprocz));sizes_to_exchange_f_to_send = 0_idp
+    ALLOCATE(f_first_cell_to_send(nprocz)); f_first_cell_to_send = 0_idp
+
+    nb_proc_per_group = nproc/(nb_group)
+
+    iz1min = cell_z_min_lbg(z_coords+1) 
+    iz1max = cell_z_max_lbg(z_coords+1)
+    DO i = 1,nprocz
+      iz2min = cell_z_min(i)
+      iz2max = cell_z_max(i)  
+      IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
+        is_grp_min = .TRUE.
+      ELSE
+        is_grp_min = .FALSE.
+      ENDIF
+      IF(MODULO(i,nb_proc_per_group) == 0) THEN
+        is_grp_max = .TRUE.
+      ELSE
+        is_grp_max = .FALSE.
+      ENDIF
+
+      CALL compute_findex(iz1min, iz1max, iz2min, iz2max,                             &
+      sizes_to_exchange_f_to_recv(i), f_first_cell_to_recv(i),                        &
+      sizes_to_exchange_f_to_send(i), f_first_cell_to_send(i),is_grp_min,is_grp_max)
+    ENDDO
+  
+    IF(SUM(sizes_to_exchange_f_to_recv) .NE. local_nz) THEN
+      WRITE(0,*) 'ERROR   1100'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
+
+
+    !END OF Field_f perspective, begin field perspective
+
+    !begin field perspective by computing indexes OF ex to exchange with ex_r
+
+    ALLOCATE(sizes_to_exchange_r_to_recv(nprocz)) 
+    sizes_to_exchange_r_to_recv = 0_idp
+    ALLOCATE(r_first_cell_to_recv(nprocz))
+    r_first_cell_to_recv = 0_idp
+    ALLOCATE(sizes_to_exchange_r_to_send(nprocz))
+    sizes_to_exchange_r_to_send = 0_idp 
+    ALLOCATE(r_first_cell_to_send(nprocz))
+    r_first_cell_to_send = 0_idp
+
+    nb_proc_per_group = nproc/(nb_group)
+
+    iz1min = cell_z_min(z_coords+1)
+    iz1max = cell_z_max(z_coords+1)
+    DO i=1,nprocz
+      iz2min = cell_z_min_lbg(i)
+      iz2max = cell_z_max_lbg(i) 
+      IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
+        is_grp_min = .TRUE.
+      ELSE 
+        is_grp_min = .FALSE.
+      ENDIF
+      IF(MODULO(i,nb_proc_per_group) == 0) THEN
+        is_grp_max = .TRUE.
+      ELSE 
+        is_grp_max = .FALSE.
+      ENDIF
+
+      CALL compute_rindex(iz1min, iz1max, iz2min, iz2max,                             &
+      sizes_to_exchange_r_to_recv(i), r_first_cell_to_recv(i),                        &
+      sizes_to_exchange_r_to_send(i), r_first_cell_to_send(i), is_grp_min,is_grp_max)
+    ENDDO
+
+
+    ! check that every ex field will recieve and send nz data
+    IF(SUM(sizes_to_exchange_r_to_recv) .NE. nz) THEN
+      WRITE(0,*) 'ERROR  1400'                                 &
+         ,rank,nz,SUM(sizes_to_exchange_r_to_recv)
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
+     IF(SUM(sizes_to_exchange_r_to_send) .LT. nz) THEN
+      WRITE(0,*) 'ERROR  1500'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
+
+    ! Create mpi_derived_types for group communications
+    CALL create_derived_types_groups()
+
+    ! check that r_sizes_to_send is the same as f_sizes_to_recv and vice versa
+    ALLOCATE(check1(nprocz,nproc))
+    ALLOCATE(check2(nprocz,nproc))
+
+    CALL MPI_ALLGATHER (sizes_to_exchange_r_to_send, INT(nprocz,isp),                 &
+    MPI_LONG_LONG_INT, check1, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
+    CALL MPI_ALLGATHER(sizes_to_exchange_f_to_recv, INT(nprocz,isp),                  &
+    MPI_LONG_LONG_INT, check2, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
+
+    DO i = 1 , nprocz
+      DO j = 1 , nprocz
+        IF (check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE.                                &
+        check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
+          WRITE(0,*)'ERROR 2000'
+          CALL MPI_ABORT(comm , errcode , ierr)
+        ENDIF
+      ENDDO
+    ENDDO
+
+    check1=0*check1
+    check2=0*check2
+
+    ! CHeck that f_sizes_to_send is the same as r_sizes_to_recv and  vice versa
+    CALL MPI_ALLGATHER(sizes_to_exchange_f_to_send, INT(nprocz,isp),                  &
+    MPI_LONG_LONG_INT, check1, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
+    CALL MPI_ALLGATHER(sizes_to_exchange_r_to_recv, INT(nprocz,isp),                  &
+    MPI_LONG_LONG_INT, check2, INT(nprocz,isp), MPI_LONG_LONG_INT, comm, errcode)
+    DO i = 1,nprocz
+      DO j = 1,nprocz
+        IF(check1((i-1)+1,nprocx*nprocy*(j-1)+1) .NE.                                 &
+        check2((j-1)+1,nprocx*nprocy*(i-1)+1)) THEN
+          WRITE(0,*)'ERROR 2100'
+          CALL MPI_ABORT( comm, errcode, ierr)
+        ENDIF
+      ENDDO
+    ENDDO
+    DEALLOCATE(check1,check2) 
+
+    DO i=1,nprocz
+      !INIT useless first_cells to a huge negative number 
+      IF(sizes_to_exchange_f_to_send(i) == 0) f_first_cell_to_send(i) = -1000_idp
+      IF(sizes_to_exchange_f_to_recv(i) == 0) f_first_cell_to_recv(i) = -1000_idp
+      IF(sizes_to_exchange_r_to_send(i) == 0) r_first_cell_to_send(i) = -1000_idp
+      IF(sizes_to_exchange_r_to_recv(i) == 0) r_first_cell_to_recv(i) = -1000_idp
+    ENDDO
 
 #endif
   END SUBROUTINE get1D_intersection_group_mpi
@@ -941,7 +950,8 @@ MODULE load_balance
     INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
     INTEGER(idp)                  :: select_case
     LOGICAL(lp) , INTENT(IN)      :: is_grp_min,is_grp_max
-    
+
+#if defined(FFTW)    
     index_ff = iz2min
     index_fl = iz2max
     IF(is_grp_min) index_ff = index_ff + nzg_group
@@ -1004,9 +1014,10 @@ MODULE load_balance
         first_cell_send = MAX(index_rf,index_ff) - index_rf 
       ENDIF
     ELSE 
-         WRITE(*,*)'ERROR'
+         WRITE(0,*)'ERROR'
          STOP
     ENDIF
+#endif
   END SUBROUTINE compute_rindex
 
 
@@ -1038,6 +1049,7 @@ MODULE load_balance
     INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
     INTEGER(idp)                  :: select_case
 
+#if defined(FFTW)
     IF(iz1min .GE. 0_idp .AND. iz1max .GE. 0_idp .AND. iz1min .LT. nz_global .AND. iz1max .LT. nz_global)  THEN
        select_case = 0_idp  ! most trivial case 
     ELSE IF((iz1min .LT. 0_idp .AND. iz1max .LT. 0_idp) .OR. (iz1min .GE. nz_global .AND. iz1max .GE. nz_global)) THEN
@@ -1101,7 +1113,7 @@ MODULE load_balance
    IF(select_case==1_idp) size_to_exchange_send = 0_idp
    IF(index_ff .GT. index_fl) size_to_exchange_send = 0_idp
 
-
+#endif
   END SUBROUTINE compute_findex
   ! ______________________________________________________________________________________
   !> @brief
