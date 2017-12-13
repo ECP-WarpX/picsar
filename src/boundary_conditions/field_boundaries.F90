@@ -837,7 +837,9 @@ MODULE field_boundary
     INTEGER(idp)                                ::  i , j , k , ix , iy , iz
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
+
 #if defined(FFTW)
+    requests_rf = 0
     n=0
     !  i-1 = mpi task in z direction for exchanges
     ! example :
@@ -950,8 +952,9 @@ MODULE field_boundary
     INTEGER(idp)        ::  i , j , k , ix , iy , iz
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
-
+   
 #if defined(FFTW)
+    requests_fr = 0 
     n = 0
     !  i-1 = mpi test in z direction for exchanges
     ! example :
