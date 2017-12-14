@@ -490,7 +490,7 @@ MODULE gpstd_solver
     ENDDO
     DEALLOCATE(Kspace(nmatrixes2)%block_vector)
     DEALLOCATE(AT_OP(nmatrixes2)%block_vector)
-    DO i = 1, 6
+    DO i = 1,11 
       DO j=1, 11
         CALL is_calculation_needed(i, j, needed)
         IF(needed .EQV. .FALSE.) THEN
@@ -520,7 +520,8 @@ MODULE gpstd_solver
     USE mpi_fftw3
     USE omp_lib
     USE shared_data!, ONLY : dx, dy, dz, nx, ny, nz
-    USE fields, ONLY : norderx, nordery, norderz, nxguards, nyguards, nzguards
+    USE fields, ONLY : g_spectral, norderx, nordery, norderz, nxguards, nyguards,     &
+         nzguards, exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhooldf, rhof
     USE params, ONLY : dt
 
     INTEGER(idp)           :: i, j, k, p
@@ -534,17 +535,48 @@ MODULE gpstd_solver
     ii=DCMPLX(0., 1.)
     CALL allocate_new_matrix_vector(11_idp)
     CALL init_kspace
-    DO i=1_idp, 6_idp
+    DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
-        CALL is_calculation_needed(i, j, needed)
-        IF(.NOT. needed) CYCLE
-        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftx/2+1, nffty,    &
-        nfftz))
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftx/2+1
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+          CALL is_calculation_needed(i, j, needed)
+          IF(g_spectral .OR. needed) THEN
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftx/2+1, nffty,    &
+            nfftz))
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftx/2+1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+          ENDIF
       ENDDO
     ENDDO
+    IF(g_spectral) THEN
+        vold(nmatrixes)%block_vector(1)%block3dc => exf
+        vold(nmatrixes)%block_vector(2)%block3dc => eyf
+        vold(nmatrixes)%block_vector(3)%block3dc => ezf       
+        vold(nmatrixes)%block_vector(4)%block3dc => bxf
+        vold(nmatrixes)%block_vector(5)%block3dc => byf
+        vold(nmatrixes)%block_vector(6)%block3dc => bzf
+        vold(nmatrixes)%block_vector(7)%block3dc => jxf
+        vold(nmatrixes)%block_vector(8)%block3dc => jyf
+        vold(nmatrixes)%block_vector(9)%block3dc => jzf
+        vold(nmatrixes)%block_vector(10)%block3dc => rhooldf
+        vold(nmatrixes)%block_vector(11)%block3dc => rhof
+      DO i=1_idp,11_idp
+        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1, nffty,&
+        nfftz))
+        vnew(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vnew(nmatrixes)%block_vector(i)%ny = nffty
+        vnew(nmatrixes)%block_vector(i)%nz = nfftz
+        vold(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vold(nmatrixes)%block_vector(i)%ny = nffty
+        vold(nmatrixes)%block_vector(i)%nz = nfftz
+      ENDDO
+      DO i = 1,11
+        DO j=1,11 
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
+        ENDDO
+          cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc = CMPLX(1.0_num,0.0_num) 
+      ENDDO
+    ENDIF
+
 
     cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc = -                               &
     ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
@@ -679,15 +711,15 @@ MODULE gpstd_solver
     ENDIF
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     coeff_norm = 1.0_num/(nfftx*nffty*nfftz)  
-    DO i=1,6
+    DO i=1,11
       DO j=1,11
         CALL is_calculation_needed(i, j, needed)
-        IF(needed) THEN
+        IF(needed .OR. g_spectral) THEN
           cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc = coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
         ENDIF
       ENDDO
     ENDDO
-    CALL delete_arrays
+    IF(.NOT. g_spectral)  CALL delete_arrays
   END SUBROUTINE init_gpstd
 
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)

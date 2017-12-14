@@ -131,6 +131,8 @@ MODULE fields
   LOGICAL(lp) :: l_nodalgrid
   !> Flag: use of PSAOTD spectral solver
   LOGICAL(lp) :: l_spectral
+  !> Flag: use psatd with multiply_mat_vector_routine (not suited for prod)
+  LOGICAL(lp) :: g_spectral = .FALSE.
   !> Flag: use of staggered grid
   LOGICAL(lp) :: l_staggered
   !> Flag: this flag needs a description, used in field gathering routines

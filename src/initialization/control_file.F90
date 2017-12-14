@@ -89,6 +89,7 @@ MODULE control_file
     norderz = 2
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
+    g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
     ! --- Order of current deposition/ field gathering
     ! (default is 1 in x, y, z)
@@ -317,6 +318,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_spectral
+      ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) g_spectral
       ELSE IF (INDEX(buffer, 'fftw_with_mpi') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_with_mpi
@@ -568,6 +572,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_spectral
+      ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) g_spectral
       ELSE IF (INDEX(buffer, 'l_staggered') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_staggered

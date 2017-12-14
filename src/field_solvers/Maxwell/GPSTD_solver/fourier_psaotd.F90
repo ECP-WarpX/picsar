@@ -507,12 +507,21 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, exf, ex_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, eyf, ey_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, ezf, ez_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bxf, bx_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, byf, by_r, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
+    IF(.NOT. g_spectral) THEN
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, exf, ex_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, eyf, ey_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, ezf, ez_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bxf, bx_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, byf, by_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
+    ELSE IF(g_spectral) THEN
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(3)%block3dc, ez_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(4)%block3dc, bx_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(5)%block3dc, by_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(6)%block3dc, bz_r, plan_c2r)
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -531,13 +540,21 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+    IF(.NOT. g_spectral) THEN
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
     CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
-
+    ELSE IF(g_spectral) THEN
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
