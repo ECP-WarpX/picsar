@@ -569,6 +569,7 @@ MODULE field_boundary
 #if defined(FFTW)
     USE group_parameters
 #endif
+    USE mpi
     USE shared_data
     INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, ngroupz
     REAL(num), INTENT(INOUT), DIMENSION(1:nxx, 1:nyy, 1:nzz)  :: field
@@ -608,7 +609,7 @@ MODULE field_boundary
       sz  = subsizes(1)*subsizes(2)*subsizes(3)
       ALLOCATE(temp(sz))
       CALL MPI_SENDRECV(field(1,1,iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,    &
-      isp), tag, temp, sz, basetype, INT(proc_z_max, isp), tag, comm, status,errcode)
+      isp), tag, temp, INT(sz,isp), basetype, INT(proc_z_max, isp), tag, comm, status,errcode)
       IF(proc_z_max .NE. MPI_PROC_NULL) THEN
         n=1
         DO iz= iz_max_r+1,nzz
@@ -621,7 +622,7 @@ MODULE field_boundary
         ENDDO
       ENDIF
       CALL MPI_SENDRECV(field(1,1,iz_max_r-ngroupz+1), 1_isp,mpi_dtypes(20),          &
-      INT(proc_z_max,isp), tag, temp, sz, basetype, INT(proc_z_min, isp), tag, comm,  &
+      INT(proc_z_max,isp), tag, temp, INT(sz,isp), basetype, INT(proc_z_min, isp), tag, comm,  &
       status,errcode)
       IF(proc_z_min .NE. MPI_PROC_NULL) THEN
         n=1
@@ -646,6 +647,7 @@ MODULE field_boundary
     USE group_parameters
 #endif
     USE shared_data
+    USE mpi
     INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, ngroupz
     REAL(num), INTENT(INOUT), DIMENSION(1:nxx, 1:nyy, 1:nzz)  :: field
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
@@ -782,6 +784,7 @@ MODULE field_boundary
     USE load_balance
     USE group_parameters
 #endif
+    USE mpi 
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
@@ -830,6 +833,7 @@ MODULE field_boundary
     USE load_balance
     USE group_parameters
 #endif
+    USE mpi
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
@@ -865,7 +869,7 @@ MODULE field_boundary
         ,rank_to_send_to,tag,comm,requests_rf(n),errcode)
       ENDIF
     ENDDO
-    CALL MPI_WAITALL(n,requests_rf, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(INT(n,isp),requests_rf, MPI_STATUSES_IGNORE, errcode)
 #endif
   END SUBROUTINE  sendrecv_rf_generalized_non_blocking
 
@@ -945,6 +949,7 @@ MODULE field_boundary
     USE load_balance
     USE group_parameters
 #endif
+    USE mpi
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
@@ -982,7 +987,7 @@ MODULE field_boundary
       ENDIF
 
     ENDDO
-    CALL MPI_WAITALL(n,requests_fr, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(INT(n,isp),requests_fr, MPI_STATUSES_IGNORE, errcode)
 #endif
   END SUBROUTINE  sendrecv_fr_generalized_non_blocking
 
@@ -993,6 +998,7 @@ MODULE field_boundary
     USE load_balance
     USE group_parameters
 #endif
+    USE mpi
     INTEGER(idp), INTENT(IN)                      :: nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
