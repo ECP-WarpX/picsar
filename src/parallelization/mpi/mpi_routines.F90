@@ -689,18 +689,7 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
       nz_group_global=nz_group_global+1
     ENDIF
   ENDIF
-  ! THE NEXT ERROR COULD BE REMOVED WITH ADVANCED LOAD BALANCING 
-  IF(is_lb_grp .EQV. .FALSE.) THEN 
-    IF(local_nz .LE. nzg_group) THEN
-      WRITE(*,*) '**ERROR **, nz_group too small compared to nzg_group'
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-  ELSE 
-    IF(nz_global .LE. 2*nzg_group) THEN
-      WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-  ENDIF
+  ALLOCATE(nz_group_global_array(nb_group))
   y_min_group=ymin
   y_max_group=ymax
   x_min_group=xmin
@@ -720,10 +709,9 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
       ENDDO
     ENDIF
     z_max_group = z_min_group + nz_group_global*dz
+    nz_group_global_array = all_nz_group
     DEALLOCATE(all_nz_group)
-  
   ENDIF
-  
   DO i=1, nb_group
   
     IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
@@ -731,6 +719,9 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
       errcode)
       CALL MPI_BCAST(z_max_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),     &
       errcode)
+      CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,0_isp,MPI_COMM_GROUP_ID(i),&
+	errcode)
+	if(MPI_ROOT_COMM .NE. MPI_COMM_NULL) print*,local_rank
     ENDIF
   
   ENDDO
@@ -755,13 +746,13 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
       IF(c_dim == 3) THEN
         IF(fftw_mpi_transpose) THEN
           alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
-          nx_group, MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
+          nx_group/2+1, MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
           IF(local_nz .EQ. 0_idp .OR. local_ny .EQ. 0_idp) THEN
             WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank',rank
             CALL MPI_ABORT(comm,errcode,ierr)
           ENDIF
         ELSE
-          alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group,          &
+          alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,          &
           MPI_COMM_GROUP_ID(i), local_nz, local_z0)
           IF(local_nz .EQ. 0_idp ) THEN
             WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
@@ -769,7 +760,7 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
           ENDIF
         ENDIF
       ELSE IF(c_dim == 2) THEN
-        alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group,                      &
+        alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                      &
         MPI_COMM_GROUP_ID(i), local_nz, local_z0)
         IF(local_nz .EQ. 0_idp ) THEN
           WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
@@ -778,6 +769,19 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
       ENDIF
     ENDIF
   ENDDO
+
+  ! THE NEXT ERROR COULD BE REMOVED WITH ADVANCED LOAD BALANCING 
+  IF(is_lb_grp .EQV. .FALSE.) THEN
+    IF(local_nz .LE. nzg_group) THEN
+      WRITE(*,*) '**ERROR **, nz_group too small compared to nzg_group'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
+  ELSE
+    IF(nz_global .LE. 2*nzg_group) THEN
+      WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
+      CALL MPI_ABORT(comm,errcode,ierr)
+    ENDIF
+  ENDIF
   
   iz_min_r = 1
   iz_max_r = local_nz
@@ -796,10 +800,10 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
   ENDIF
   IF(is_lb_grp) THEN
     IF(0 .NE. MODULO(nz_global,nb_group/(nprocx*nprocy))) THEN
-     WRITE(0,*) 'PROBLEM HERE, PLEASE SET nz as a multiple of nb_group'
-     CALL MPI_ABORT(comm,errcode,ierr)
+   !  WRITE(0,*) 'PROBLEM HERE, PLEASE SET nz as a multiple of nb_group'
+   !  CALL MPI_ABORT(comm,errcode,ierr)
     ENDIF
-    iz_min_lbg = local_z0-nzg_group + nz_group_global*z_group_coords
+    iz_min_lbg = local_z0-nzg_group + sum(nz_group_global_array(1:z_group_coords))! nz_group_global*z_group_coords
     iz_max_lbg = iz_min_lbg + local_nz - 1 
     ALLOCATE(cell_z_min_lbg(nprocz),cell_z_max_lbg(nprocz))
     ALLOCATE(all_iz_min_lbg(nproc),all_iz_max_lbg(nproc))
@@ -878,10 +882,8 @@ SUBROUTINE adjust_grid_mpi_global
   USE picsar_precision
   INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: all_nz
   INTEGER(idp)  :: idim
-  
   nz = local_nz
   nz_grid = nz + 1
-  
   ALLOCATE(all_nz(1:nprocz))
   
   CALL MPI_ALLGATHER(nz, 1_isp, MPI_LONG_LONG_INT, all_nz, 1_isp, MPI_LONG_LONG_INT,    &
@@ -937,7 +939,7 @@ INTEGER(isp) :: ny0, nyp
 INTEGER(isp) :: nz0, nzp
 INTEGER(idp) :: iz
 #if defined(FFTW)
-INTEGER(C_INTPTR_T) :: kx, ly, mz
+INTEGER(C_INTPTR_T):: kx, ly, mz
 INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs, all_nz
 #endif
 
@@ -964,10 +966,17 @@ ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 #if defined(FFTW)
 ! With fftw_with_mpi CPU split is performed only along z
 IF (fftw_with_mpi) THEN
-  mz=nz_global; ly=ny_global; kx=nx_global
+  mz=INT(nz_global,C_INTPTR_T); ly=INT(ny_global,C_INTPTR_T); kx=INT(nx_global,C_INTPTR_T)
   !   get local data size and allocate (note dimension reversal)
   IF(.NOT. fftw_mpi_transpose) THEN
-    alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
+   ! alloc_local = fftw_mpi_local_size_many(3,nn,howmany,INT(nz,C_INTPTR_T),comm, local_nz, local_z0)
+ alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
+
+!print*,mz,nz_global,local_nz,"aa"
+!if(local_nz==0) then
+!print*,"error",rank,local_nz
+!write(*,*)'error',rank,local_nz
+!endif
   ELSE
     alloc_local = fftw_mpi_local_size_3d_transposed(mz, ly, kx/2+1, comm, local_nz,   &
     local_z0, local_ny, local_y0)

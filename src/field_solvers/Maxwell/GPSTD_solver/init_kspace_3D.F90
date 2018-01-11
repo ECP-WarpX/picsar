@@ -798,6 +798,59 @@ MODULE gpstd_solver
     !$OMP END PARALLEL DO
   END SUBROUTINE copy_field
 
+  SUBROUTINE copy_field_forward()
+    USE PICSAR_precision
+    USE omp_lib
+    USE fields
+    USE shared_data
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=-nzguards, nz+nzguards-1
+      DO iy=-nyguards,ny+nyguards-1
+        DO ix=-nxguards,nx+nxguards-1
+          ex_r(ix, iy, iz)=ex(ix, iy, iz)
+          ey_r(ix, iy, iz)=ey(ix, iy, iz)
+          ez_r(ix, iy, iz)=ez(ix, iy, iz)
+          bx_r(ix, iy, iz)=jx(ix, iy, iz)
+          by_r(ix, iy, iz)=jy(ix, iy, iz)
+          bz_r(ix, iy, iz)=jz(ix, iy, iz)
+          jx_r(ix, iy, iz)=bx(ix, iy, iz)
+          jy_r(ix, iy, iz)=by(ix, iy, iz)
+          jz_r(ix, iy, iz)=bz(ix, iy, iz)
+          rho_r(ix, iy, iz)=rho(ix, iy, iz)
+          rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE copy_field_forward
+
+  SUBROUTINE copy_field_backward()
+    USE PICSAR_precision
+    USE omp_lib
+    USE fields
+    USE shared_data
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=-nzguards, nz+nzguards-1
+      DO iy=-nyguards,ny+nyguards-1
+        DO ix=-nxguards,nx+nxguards-1
+          ex(ix, iy, iz)=ex_r(ix, iy, iz)
+          ey(ix, iy, iz)=ey_r(ix, iy, iz)
+          ez(ix, iy, iz)=ez_r(ix, iy, iz)
+          bx(ix, iy, iz)=jx_r(ix, iy, iz)
+          by(ix, iy, iz)=jy_r(ix, iy, iz)
+          bz(ix, iy, iz)=jz_r(ix, iy, iz)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE copy_field_backward
+
 
   SUBROUTINE is_calculation_needed(irow, icol, needed)
     USE picsar_precision

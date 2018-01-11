@@ -1080,6 +1080,7 @@ MODULE group_parameters!#do not parse
   INTEGER(isp)  :: MPI_ROOT_COMM, MPI_ROOT_GROUP, root_rank, root_size
   !> Field cell  sizes in groups without guardcells
   INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
+  INTEGER(idp) , DIMENSION(:), ALLOCATABLE ::  nz_group_global_array
   !> Field grid sizes in groups whithout guardcells
   INTEGER(idp)  :: nx_group_global_grid, ny_group_global_grid, nz_group_global_grid
   !> Field cell  sizes in groups with guardcells

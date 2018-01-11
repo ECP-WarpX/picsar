@@ -135,17 +135,18 @@ MODULE fourier_psaotd
     ENDIF
     ! Init fourier fields fields
 #if !defined(LIBRARY)
-    CALL copy_field(ex_r, nfftx, nffty, nfftz, ex, nxx, nyy, nzz)
-    CALL copy_field(ey_r, nfftx, nffty, nfftz, ey, nxx, nyy, nzz)
-    CALL copy_field(ez_r, nfftx, nffty, nfftz, ez, nxx, nyy, nzz)
-    CALL copy_field(bx_r, nfftx, nffty, nfftz, bx, nxx, nyy, nzz)
-    CALL copy_field(by_r, nfftx, nffty, nfftz, by, nxx, nyy, nzz)
-    CALL copy_field(bz_r, nfftx, nffty, nfftz, bz, nxx, nyy, nzz)
-    CALL copy_field(jx_r, nfftx, nffty, nfftz, jx, nxx, nyy, nzz)
-    CALL copy_field(jy_r, nfftx, nffty, nfftz, jy, nxx, nyy, nzz)
-    CALL copy_field(jz_r, nfftx, nffty, nfftz, jz, nxx, nyy, nzz)
-    CALL copy_field(rho_r, nfftx, nffty, nfftz, rho, nxx, nyy, nzz)
-    CALL copy_field(rhoold_r, nfftx, nffty, nfftz, rhoold, nxx, nyy, nzz)
+!    CALL copy_field(ex_r, nfftx, nffty, nfftz, ex, nxx, nyy, nzz)
+!    CALL copy_field(ey_r, nfftx, nffty, nfftz, ey, nxx, nyy, nzz)
+!    CALL copy_field(ez_r, nfftx, nffty, nfftz, ez, nxx, nyy, nzz)
+!    CALL copy_field(bx_r, nfftx, nffty, nfftz, bx, nxx, nyy, nzz)
+!    CALL copy_field(by_r, nfftx, nffty, nfftz, by, nxx, nyy, nzz)
+!    CALL copy_field(bz_r, nfftx, nffty, nfftz, bz, nxx, nyy, nzz)
+!    CALL copy_field(jx_r, nfftx, nffty, nfftz, jx, nxx, nyy, nzz)
+!    CALL copy_field(jy_r, nfftx, nffty, nfftz, jy, nxx, nyy, nzz)
+!    CALL copy_field(jz_r, nfftx, nffty, nfftz, jz, nxx, nyy, nzz)
+!    CALL copy_field(rho_r, nfftx, nffty, nfftz, rho, nxx, nyy, nzz)
+!    CALL copy_field(rhoold_r, nfftx, nffty, nfftz, rhoold, nxx, nyy, nzz)
+     CALL copy_field_forward()
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -319,12 +320,13 @@ MODULE fourier_psaotd
     ENDIF
 
 #if !defined (LIBRARY)
-    CALL copy_field(ex, nxx, nyy, nzz, ex_r, nfftx, nffty, nfftz)
-    CALL copy_field(ey, nxx, nyy, nzz, ey_r, nfftx, nffty, nfftz)
-    CALL copy_field(ez, nxx, nyy, nzz, ez_r, nfftx, nffty, nfftz)
-    CALL copy_field(bx, nxx, nyy, nzz, bx_r, nfftx, nffty, nfftz)
-    CALL copy_field(by, nxx, nyy, nzz, by_r, nfftx, nffty, nfftz)
-    CALL copy_field(bz, nxx, nyy, nzz, bz_r, nfftx, nffty, nfftz)
+!    CALL copy_field(ex, nxx, nyy, nzz, ex_r, nfftx, nffty, nfftz)
+!    CALL copy_field(ey, nxx, nyy, nzz, ey_r, nfftx, nffty, nfftz)
+!    CALL copy_field(ez, nxx, nyy, nzz, ez_r, nfftx, nffty, nfftz)
+!    CALL copy_field(bx, nxx, nyy, nzz, bx_r, nfftx, nffty, nfftz)
+!    CALL copy_field(by, nxx, nyy, nzz, by_r, nfftx, nffty, nfftz)
+!    CALL copy_field(bz, nxx, nyy, nzz, bz_r, nfftx, nffty, nfftz)
+     CALL copy_field_backward
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
