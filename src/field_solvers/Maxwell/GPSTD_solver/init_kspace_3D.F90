@@ -813,12 +813,12 @@ MODULE gpstd_solver
           ex_r(ix, iy, iz)=ex(ix, iy, iz)
           ey_r(ix, iy, iz)=ey(ix, iy, iz)
           ez_r(ix, iy, iz)=ez(ix, iy, iz)
-          bx_r(ix, iy, iz)=jx(ix, iy, iz)
-          by_r(ix, iy, iz)=jy(ix, iy, iz)
-          bz_r(ix, iy, iz)=jz(ix, iy, iz)
-          jx_r(ix, iy, iz)=bx(ix, iy, iz)
-          jy_r(ix, iy, iz)=by(ix, iy, iz)
-          jz_r(ix, iy, iz)=bz(ix, iy, iz)
+          bx_r(ix, iy, iz)=bx(ix, iy, iz)
+          by_r(ix, iy, iz)=by(ix, iy, iz)
+          bz_r(ix, iy, iz)=bz(ix, iy, iz)
+          jx_r(ix, iy, iz)=jx(ix, iy, iz)
+          jy_r(ix, iy, iz)=jy(ix, iy, iz)
+          jz_r(ix, iy, iz)=jz(ix, iy, iz)
           rho_r(ix, iy, iz)=rho(ix, iy, iz)
           rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
         END DO
@@ -842,9 +842,9 @@ MODULE gpstd_solver
           ex(ix, iy, iz)=ex_r(ix, iy, iz)
           ey(ix, iy, iz)=ey_r(ix, iy, iz)
           ez(ix, iy, iz)=ez_r(ix, iy, iz)
-          bx(ix, iy, iz)=jx_r(ix, iy, iz)
-          by(ix, iy, iz)=jy_r(ix, iy, iz)
-          bz(ix, iy, iz)=jz_r(ix, iy, iz)
+          bx(ix, iy, iz)=bx_r(ix, iy, iz)
+          by(ix, iy, iz)=by_r(ix, iy, iz)
+          bz(ix, iy, iz)=bz_r(ix, iy, iz)
         END DO
       END DO
     END DO
