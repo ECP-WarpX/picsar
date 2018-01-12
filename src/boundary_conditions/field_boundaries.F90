@@ -788,7 +788,7 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)                                ::  i , j , k , ix , iy , iz
+    INTEGER(idp)                                ::  ii,i , j , k , ix , iy , iz
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
 #if defined(FFTW)
     !  i-1 = mpi task in z direction for exchanges
@@ -796,7 +796,9 @@ MODULE field_boundary
     ! i-1=0 exchange between current rank and itself
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
-    DO i=2,nprocz
+    DO ii=1,nb_comms_rf
+      i = work_array_rf(ii)
+
       j = MODULO(z_coords+i-1,nprocz) +1
       ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is
@@ -837,7 +839,7 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)                                ::  i , j , k , ix , iy , iz
+    INTEGER(idp)                                ::  ii,i , j , k , ix , iy , iz
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
 
@@ -849,7 +851,9 @@ MODULE field_boundary
     ! i-1=0 exchange between current rank and itself
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
-    DO i=2,nprocz
+    DO ii=1,nb_comms_rf
+      i = work_array_rf(ii)
+
       j = MODULO(z_coords+i-1,nprocz) +1
       ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is
@@ -953,7 +957,7 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)        ::  i , j , k , ix , iy , iz
+    INTEGER(idp)        :: ii, i , j , k , ix , iy , iz
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
    
@@ -965,7 +969,8 @@ MODULE field_boundary
     ! i-1=0 exchange between current rank and itself
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
-    DO i=2,nprocz
+    DO ii=1,nb_comms_fr
+      i = work_array_fr(ii)
       j = MODULO(z_coords+i-1,nprocz) +1
       ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is
@@ -1002,7 +1007,7 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                      :: nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)        ::  i , j , k , ix , iy , iz
+    INTEGER(idp)        ::ii,  i , j , k , ix , iy , iz
     INTEGER(isp)                                  :: rank_to_send_to,rank_to_recv_from
 
 #if defined(FFTW)
@@ -1011,7 +1016,9 @@ MODULE field_boundary
     ! i-1=0 exchange between current rank and itself
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
-    DO i=2,nprocz
+    DO ii=1,nb_comms_fr
+      i = work_array_fr(ii)
+
       j = MODULO(z_coords+i-1,nprocz) +1
       ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is

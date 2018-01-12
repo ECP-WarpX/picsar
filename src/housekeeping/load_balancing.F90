@@ -702,7 +702,7 @@ MODULE load_balance
     USE fields , ONLY : nxguards, nyguards, nzguards
    
     IMPLICIT NONE
-    INTEGER(idp)                   :: i, n
+    INTEGER(idp)                   :: i, n,j,k
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
     INTEGER(isp)                   :: ierr
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
@@ -795,6 +795,52 @@ MODULE load_balance
     ENDDO
     ALLOCATE(requests_fr(n))
 
+    n=0
+    DO i=2,nprocz
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+      IF(sizes_to_exchange_r_to_send(j) .GT. 0 .OR.sizes_to_exchange_f_to_recv(k) .GT. 0) THEN
+        n=n+1
+      ENDIF
+    ENDDO
+    ALLOCATE(work_array_rf(n))
+    work_array_rf=0
+    n=0
+    DO i=2,nprocz
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+      IF(sizes_to_exchange_r_to_send(j) .GT. 0 .OR.sizes_to_exchange_f_to_recv(k) .GT. 0) THEN
+        n=n+1
+        work_array_rf(n)=i
+      ENDIF
+    ENDDO
+
+    n=0
+    DO i=2,nprocz 
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+
+      IF(sizes_to_exchange_f_to_send(j) .GT. 0 .OR.sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
+        n=n+1
+      ENDIF
+    ENDDO
+    ALLOCATE(work_array_fr(n))
+
+    work_array_fr=0
+    n=0
+    DO i=2,nprocz
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+
+      IF(sizes_to_exchange_f_to_send(j) .GT. 0 .OR.sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
+        n=n+1
+        work_array_fr(n)=i
+      ENDIF
+    ENDDO
+    nb_comms_rf = size(work_array_rf)
+    nb_comms_fr = size(work_array_fr)
+print*,nb_comms_rf,nb_comms_fr,rank
+if(rank==3)print*,"kiki",work_array_rf
 
 
 #endif
