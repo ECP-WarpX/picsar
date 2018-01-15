@@ -131,6 +131,8 @@ MODULE fields
   LOGICAL(lp) :: l_nodalgrid
   !> Flag: use of PSAOTD spectral solver
   LOGICAL(lp) :: l_spectral
+  !> Flag: use psatd with multiply_mat_vector_routine (not suited for prod)
+  LOGICAL(lp) :: g_spectral = .FALSE.
   !> Flag: use of staggered grid
   LOGICAL(lp) :: l_staggered
   !> Flag: this flag needs a description, used in field gathering routines
@@ -1078,6 +1080,7 @@ MODULE group_parameters!#do not parse
   INTEGER(isp)  :: MPI_ROOT_COMM, MPI_ROOT_GROUP, root_rank, root_size
   !> Field cell  sizes in groups without guardcells
   INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
+  INTEGER(idp) , DIMENSION(:), ALLOCATABLE ::  nz_group_global_array
   !> Field grid sizes in groups whithout guardcells
   INTEGER(idp)  :: nx_group_global_grid, ny_group_global_grid, nz_group_global_grid
   !> Field cell  sizes in groups with guardcells
@@ -1091,7 +1094,7 @@ MODULE group_parameters!#do not parse
   INTEGER(idp)  ::   nz_grid_min_grp, nz_grid_max_grp, nz_grid_grp
   !> This flag is true if MPI task is on the edge of its group (so need
   !additional comm
-  LOGICAL(lp)  ::  is_on_boarder = .FALSE.
+  LOGICAL(lp)  ::  is_on_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the inferior z group boundary
   LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the superior z group boundary
@@ -1102,36 +1105,35 @@ MODULE group_parameters!#do not parse
   REAL(num)                                 :: z_min_group, z_max_group
   REAL(num)                                 :: y_min_group, y_max_group
   REAL(num)                                 :: x_min_group, x_max_group
-  !> Arrays FOR load balancing 
 
-  !> Array of corresponding indexes between  ex_r(rank) and ex(rank)
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_local ,r_local  
-  !> Array of corresponding indexes between ex_r(rank) and ex(rank-1)
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  g_left, r_left
-  !> Array of corresponding indexes between ex_r(rank) and ex(rank+1)
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: g_right, r_right
-  !> Array of corresponding indexes between ex(rank)  and ex(rank+1)
-  !rr_left[AT PROC RANK] = r_right[AT PROC RANK-1] AND  rg_left[AT PROC RANK] = g_right[AT PROC RANK-1]
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: rr_left, rg_left
-  !> Array of corresponding indexes between ex(rank)  and ex(rank-)
-  !rr_right[AT PROC RANK] = r_left[AT PROC RANK+1] AND  rg_right[AT PROC RANK] =
-  !g_left[AT PROC RANK+1]
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) ::  rr_right, rg_right
-
-  !> Sizes of load_balancing arrays indexes 
-  !> Size of r_local and g_local
-  INTEGER(idp)                            :: size_local
-  !>Size of r_left and g_left 
-  INTEGER(idp)                            :: size_left
-  !> Size of r_right and g_right
-  INTEGER(idp)                            :: size_right
-  !> Size of rr_left and rg_left
-  INTEGER(idp)                            :: rsize_left
-  !> Size of rr_right and rg_right 
-  INTEGER(idp)                            :: rsize_right
-  !> Subdomain limit related to  fftw_local_sizes decomposition
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
+  !> Cell domain for load balancing general case (taking into account guardcells
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_lbg, cell_z_max_lbg
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recv, sizes_to_exchange_r_to_recv
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_send,sizes_to_exchange_r_to_send 
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recv,r_first_cell_to_recv
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_send,r_first_cell_to_send
+  !> TYPE IN WHICH ex_r will be recieving
+  !> so recv_type_f is ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_f   
+  !> TYPE IN WHICH ex_r will be sending
+  !> so recv_type_f is ( 2*(nx_group/2+1) , ny_group, size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_f
+  !> TYPE IN WHICH ex will be recieving
+  !> so recv_type_f is (2*(nx_group/2+1),ny_group,size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_r
+  !> TYPE IN WHICH ex will be sending
+  !> so recv_type_f is  ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_r
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_rf, requests_fr
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: work_array_fr, work_array_rf
+  INTEGER(idp)  :: nb_comms_rf,nb_comms_fr
+
+
+
 END MODULE
 
 #endif

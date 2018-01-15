@@ -231,7 +231,6 @@ SUBROUTINE step(nst)
         ENDIF
 #endif
 
-      !!! --- Push B field half a time step
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
@@ -242,12 +241,26 @@ SUBROUTINE step(nst)
         CALL bfield_bcs
       ELSE
 #endif
+        !IF (rank .EQ. 0) PRINT *, "#6"
+        !!! --- Push B field half a time step
+        !write(0, *), 'push_bfield'
         CALL push_bfield_2d
+        !IF (rank .EQ. 0) PRINT *, "#7"
+        !!! --- Boundary conditions for B
         CALL bfield_bcs
+        !IF (rank .EQ. 0) PRINT *, "#8"
+        !!! --- Push E field  a full time step
         CALL push_efield_2d
+        !IF (rank .EQ. 0) PRINT *, "#9"
+        !!! --- Boundary conditions for E
         CALL efield_bcs
+        !IF (rank .EQ. 0) PRINT *, "#10"
+        !!! --- push B field half a time step
         CALL push_bfield_2d
+        !IF (rank .EQ. 0) PRINT *, "#11"
+        !!! --- Boundary conditions for B
         CALL bfield_bcs
+
 #if defined(FFTW)
       ENDIF
 #endif

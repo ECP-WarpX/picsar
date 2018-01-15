@@ -278,13 +278,20 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   USE fields
 #if defined(FFTW)
   USE fourier_psaotd
+  USE matrix_coefficients
 #endif
   IMPLICIT NONE
 
-  REAL(num) :: tmptime
+  REAL(num) :: tmptime, tmptime_m
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 3d: start"
+#endif
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
+
 #if defined(FFTW)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
@@ -296,9 +303,17 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   ELSE
     CALL get_Ffields! - local FFT
   ENDIF
-
-  CALL push_psaotd_ebfielfs! - PUSH PSATD
-
+  IF(g_spectral) THEN
+    IF (it.ge.timestat_itstart) THEN
+      tmptime_m = MPI_WTIME()
+    ENDIF
+    CALL multiply_mat_vector(nmatrixes)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
+    ENDIF
+  ELSE 
+    CALL push_psaotd_ebfielfs! - PUSH PSATD
+  ENDIF
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN
     IF(is_lb_grp) THEN
@@ -313,6 +328,11 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   IF (it.ge.timestat_itstart) THEN
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
   ENDIF
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 3d: end"
+#endif
+
 END SUBROUTINE
 
 !> @brief
@@ -337,10 +357,16 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
   USE fields
 #if defined(FFTW)
   USE fourier_psaotd
+  USE matrix_coefficients
 #endif
   IMPLICIT NONE
 
-  REAL(num) :: tmptime
+  REAL(num) :: tmptime, tmptime_m
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 2d: start"
+#endif
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
@@ -357,8 +383,20 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
     CALL get_Ffields! - local FFT
   ENDIF
 
-  CALL push_psaotd_ebfielfs_2d! - PUSH PSATD
+  IF(g_spectral) THEN
+    IF (it.ge.timestat_itstart) THEN
+      tmptime_m = MPI_WTIME()
+    ENDIF
 
+    CALL multiply_mat_vector(nmatrixes)
+
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
+    ENDIF
+
+  ELSE
+    CALL push_psaotd_ebfielfs_2d! - PUSH PSATD
+  ENDIF
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN
     IF(is_lb_grp) THEN
@@ -373,6 +411,11 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
   IF (it.ge.timestat_itstart) THEN
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
   ENDIF
+
+#if defined(DEBUG)
+  WRITE(0, *) "push psatd ebfield 2d: end"
+#endif
+
 END SUBROUTINE
 
 

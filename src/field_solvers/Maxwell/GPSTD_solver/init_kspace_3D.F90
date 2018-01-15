@@ -490,7 +490,7 @@ MODULE gpstd_solver
     ENDDO
     DEALLOCATE(Kspace(nmatrixes2)%block_vector)
     DEALLOCATE(AT_OP(nmatrixes2)%block_vector)
-    DO i = 1, 6
+    DO i = 1,11 
       DO j=1, 11
         CALL is_calculation_needed(i, j, needed)
         IF(needed .EQV. .FALSE.) THEN
@@ -520,7 +520,8 @@ MODULE gpstd_solver
     USE mpi_fftw3
     USE omp_lib
     USE shared_data!, ONLY : dx, dy, dz, nx, ny, nz
-    USE fields, ONLY : norderx, nordery, norderz, nxguards, nyguards, nzguards
+    USE fields, ONLY : g_spectral, norderx, nordery, norderz, nxguards, nyguards,     &
+         nzguards, exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhooldf, rhof
     USE params, ONLY : dt
 
     INTEGER(idp)           :: i, j, k, p
@@ -528,22 +529,54 @@ MODULE gpstd_solver
     LOGICAL(lp)            :: needed
     INTEGER(idp)           :: nfftx, nffty, nfftz
     LOGICAL(lp)            :: switch
+    REAL(num)              :: coeff_norm
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     ii=DCMPLX(0., 1.)
     CALL allocate_new_matrix_vector(11_idp)
     CALL init_kspace
-    DO i=1_idp, 6_idp
+    DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
-        CALL is_calculation_needed(i, j, needed)
-        IF(.NOT. needed) CYCLE
-        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftx/2+1, nffty,    &
-        nfftz))
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftx/2+1
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+          CALL is_calculation_needed(i, j, needed)
+          IF(g_spectral .OR. needed) THEN
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftx/2+1, nffty,    &
+            nfftz))
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftx/2+1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+          ENDIF
       ENDDO
     ENDDO
+    IF(g_spectral) THEN
+        vold(nmatrixes)%block_vector(1)%block3dc => exf
+        vold(nmatrixes)%block_vector(2)%block3dc => eyf
+        vold(nmatrixes)%block_vector(3)%block3dc => ezf       
+        vold(nmatrixes)%block_vector(4)%block3dc => bxf
+        vold(nmatrixes)%block_vector(5)%block3dc => byf
+        vold(nmatrixes)%block_vector(6)%block3dc => bzf
+        vold(nmatrixes)%block_vector(7)%block3dc => jxf
+        vold(nmatrixes)%block_vector(8)%block3dc => jyf
+        vold(nmatrixes)%block_vector(9)%block3dc => jzf
+        vold(nmatrixes)%block_vector(10)%block3dc => rhooldf
+        vold(nmatrixes)%block_vector(11)%block3dc => rhof
+      DO i=1_idp,11_idp
+        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1, nffty,&
+        nfftz))
+        vnew(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vnew(nmatrixes)%block_vector(i)%ny = nffty
+        vnew(nmatrixes)%block_vector(i)%nz = nfftz
+        vold(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vold(nmatrixes)%block_vector(i)%ny = nffty
+        vold(nmatrixes)%block_vector(i)%nz = nfftz
+      ENDDO
+      DO i = 1,11
+        DO j=1,11 
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
+        ENDDO
+          cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc = CMPLX(1.0_num,0.0_num) 
+      ENDDO
+    ENDIF
+
 
     cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc = -                               &
     ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
@@ -676,7 +709,17 @@ MODULE gpstd_solver
     IF(switch) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
-    CALL delete_arrays
+    CALL select_case_dims_global(nfftx,nffty,nfftz)
+    coeff_norm = 1.0_num/(nfftx*nffty*nfftz)  
+    DO i=1,11
+      DO j=1,11
+        CALL is_calculation_needed(i, j, needed)
+        IF(needed .OR. g_spectral) THEN
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc = coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
+        ENDIF
+      ENDDO
+    ENDDO
+    IF(.NOT. g_spectral)  CALL delete_arrays
   END SUBROUTINE init_gpstd
 
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
@@ -735,25 +778,6 @@ MODULE gpstd_solver
     RETURN
   END FUNCTION logfactorial
 
-  SUBROUTINE normalize_Fourier(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz, coeff_norm)
-    USE PICSAR_precision
-    USE omp_lib
-    IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, n1, n2, n3
-    REAL(num), INTENT(IN) :: coeff_norm
-    REAL(num), DIMENSION(nxx, nyy, nzz), INTENT(IN OUT) :: ex_in
-    REAL(num), DIMENSION(n1, n2, n3), INTENT(IN OUT) :: ex_out
-    INTEGER(idp) :: ix, iy, iz
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1, MIN(nzz, n3)
-      DO iy=1, MIN(nyy, n2)
-        DO ix=1, MIN(nxx, n1)
-          ex_out(ix, iy, iz)=ex_in(ix, iy, iz)*coeff_norm
-        END DO
-      END DO
-    END DO
-    !$OMP END PARALLEL DO
-  END SUBROUTINE normalize_Fourier
 
   SUBROUTINE copy_field(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz)
     USE PICSAR_precision
@@ -773,6 +797,59 @@ MODULE gpstd_solver
     END DO
     !$OMP END PARALLEL DO
   END SUBROUTINE copy_field
+
+  SUBROUTINE copy_field_forward()
+    USE PICSAR_precision
+    USE omp_lib
+    USE fields
+    USE shared_data
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=-nzguards, nz+nzguards-1
+      DO iy=-nyguards,ny+nyguards-1
+        DO ix=-nxguards,nx+nxguards-1
+          ex_r(ix, iy, iz)=ex(ix, iy, iz)
+          ey_r(ix, iy, iz)=ey(ix, iy, iz)
+          ez_r(ix, iy, iz)=ez(ix, iy, iz)
+          bx_r(ix, iy, iz)=bx(ix, iy, iz)
+          by_r(ix, iy, iz)=by(ix, iy, iz)
+          bz_r(ix, iy, iz)=bz(ix, iy, iz)
+          jx_r(ix, iy, iz)=jx(ix, iy, iz)
+          jy_r(ix, iy, iz)=jy(ix, iy, iz)
+          jz_r(ix, iy, iz)=jz(ix, iy, iz)
+          rho_r(ix, iy, iz)=rho(ix, iy, iz)
+          rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE copy_field_forward
+
+  SUBROUTINE copy_field_backward()
+    USE PICSAR_precision
+    USE omp_lib
+    USE fields
+    USE shared_data
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=-nzguards, nz+nzguards-1
+      DO iy=-nyguards,ny+nyguards-1
+        DO ix=-nxguards,nx+nxguards-1
+          ex(ix, iy, iz)=ex_r(ix, iy, iz)
+          ey(ix, iy, iz)=ey_r(ix, iy, iz)
+          ez(ix, iy, iz)=ez_r(ix, iy, iz)
+          bx(ix, iy, iz)=bx_r(ix, iy, iz)
+          by(ix, iy, iz)=by_r(ix, iy, iz)
+          bz(ix, iy, iz)=bz_r(ix, iy, iz)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE copy_field_backward
 
 
   SUBROUTINE is_calculation_needed(irow, icol, needed)
