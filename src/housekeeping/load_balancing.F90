@@ -700,6 +700,7 @@ MODULE load_balance
     USE mpi
     USE mpi_derived_types
     USE fields , ONLY : nxguards, nyguards, nzguards
+    USE params , ONLY : mpicom_curr
    
     IMPLICIT NONE
     INTEGER(idp)                   :: i, n,j,k
@@ -782,19 +783,28 @@ MODULE load_balance
 
     ! Create mpi_derived_types for group communications
     CALL create_derived_types_groups()
-    n=0
-    DO i=2,nprocz
-      IF(sizes_to_exchange_r_to_send(i) .GT. 0) n = n + 1
-      IF(sizes_to_exchange_f_to_recv(i) .GT. 0) n = n +1
-    ENDDO
-    ALLOCATE(requests_rf(n))
-    n=0
-    DO i=2,nprocz
-      IF(sizes_to_exchange_f_to_send(i) .GT. 0) n = n+1
-      IF(sizes_to_exchange_r_to_recv(i) .GT. 0) n = n+1
-    ENDDO
-    ALLOCATE(requests_fr(n))
 
+    ! if non blocking communications then computes array of mpi requests to be used
+    ! for isend and irecv calls, the size of request array are computed here
+    IF(mpicom_curr .EQ. 0) THEN
+      n=0
+      DO i=2,nprocz
+        IF(sizes_to_exchange_r_to_send(i) .GT. 0) n = n + 1
+        IF(sizes_to_exchange_f_to_recv(i) .GT. 0) n = n +1
+      ENDDO
+      ! mpi request array for r->f communication
+      ALLOCATE(requests_rf(n))
+      n=0
+      DO i=2,nprocz
+        IF(sizes_to_exchange_f_to_send(i) .GT. 0) n = n+1
+        IF(sizes_to_exchange_r_to_recv(i) .GT. 0) n = n+1
+      ENDDO
+      ! mpi request array for r->f
+      ALLOCATE(requests_fr(n))
+    ENDIF
+    ! Computes z_coords of procs with which communications are performed.
+    ! Theses z_coords are stored in work_array_fr and work_array_rf
+    ! Each processor has different work_array_fr and work_array_rf arrays
     n=0
     DO i=2,nprocz
       j = MODULO(z_coords+i-1,nprocz) +1
@@ -837,8 +847,12 @@ MODULE load_balance
         work_array_fr(n)=i
       ENDIF
     ENDDO
+
     nb_comms_rf = size(work_array_rf)
     nb_comms_fr = size(work_array_fr)
+
+    ! if size to exchange ==0 then sets firt_cell_index to 1 to avoid seg fault
+    ! in case of f-bound_check compilation
     DO i=1,nprocz
       IF(sizes_to_exchange_f_to_send(i) .LE. 0) THEN 
         f_first_cell_to_send(i)=1

@@ -1129,8 +1129,14 @@ MODULE group_parameters!#do not parse
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_rf, requests_fr
+  !> Work_array_fr and Work_array_rf contain only non null zcoords ranks with which
+  !> exchanges are done during r->f and f-> communications respectively
+  !> Its sizes are nb_comms_fr and  nb_comms_rf   respectively
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: work_array_fr, work_array_rf
-  INTEGER(idp)  :: nb_comms_rf,nb_comms_fr
+  !> Nb_comms_fr and nb_comms_rf are equal to the number of send + recv calls
+  !done by each mpi in mpi comms group during r->f and f-> communications respectively
+  INTEGER(idp)  :: nb_comms_fr,nb_comms_rf
+  
 
 
 
