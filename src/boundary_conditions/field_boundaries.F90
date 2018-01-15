@@ -797,6 +797,7 @@ MODULE field_boundary
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
     DO ii=1,nb_comms_rf
+    if (ii==1) cycle
       i = work_array_rf(ii)
 
       j = MODULO(z_coords+i-1,nprocz) +1
@@ -806,10 +807,10 @@ MODULE field_boundary
       k = MODULO(z_coords-(i-1),nprocz) +1
       rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
-      IF(sizes_to_exchange_f_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_r_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-      CALL MPI_SENDRECV(field(-nxg, -nyg, r_first_cell_to_send(j)), 1_isp, send_type_r(j),   &
-      rank_to_send_to,tag,field_f(1, 1, f_first_cell_to_recv(k)), 1_isp, recv_type_f(k),  &
+      IF(sizes_to_exchange_f_to_recv(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(sizes_to_exchange_r_to_send(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      CALL MPI_SENDRECV(field(-nxg, -nyg, r_first_cell_to_send(ii)), 1_isp, send_type_r(j),   &
+      rank_to_send_to,tag,field_f(1, 1, f_first_cell_to_recv(ii)), 1_isp, recv_type_f(k),  &
       rank_to_recv_from ,tag ,comm ,status ,errcode)
     ENDDO
 #endif
@@ -1018,7 +1019,7 @@ MODULE field_boundary
     ! i-1=nprocz-1 send to left(proc_z_min)
     DO ii=1,nb_comms_fr
       i = work_array_fr(ii)
-
+if(ii==1)cycle
       j = MODULO(z_coords+i-1,nprocz) +1
       ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
       ! k corresponds to the z_coords(+1) of mpi task from which the recv is
@@ -1027,10 +1028,14 @@ MODULE field_boundary
 
       rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
-      IF(sizes_to_exchange_r_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_f_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-      CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(j)) ,1_isp,send_type_f(j), &
-      rank_to_send_to,tag,field(-nxg, -nyg, r_first_cell_to_recv(k)), 1_isp,&
+  !    IF(sizes_to_exchange_r_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
+  !    IF(sizes_to_exchange_f_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
+
+      IF(sizes_to_exchange_r_to_recv(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(sizes_to_exchange_f_to_send(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+
+      CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(ii)) ,1_isp,send_type_f(j), &
+      rank_to_send_to,tag,field(-nxg, -nyg, r_first_cell_to_recv(ii)), 1_isp,&
       recv_type_r(k), rank_to_recv_from, tag, comm, status, errcode)
 
     ENDDO

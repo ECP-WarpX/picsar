@@ -703,11 +703,12 @@ MODULE load_balance
     USE params , ONLY : mpicom_curr
    
     IMPLICIT NONE
-    INTEGER(idp)                   :: i, n,j,k
+    INTEGER(idp)                   :: i, n,j,k,ii
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
     INTEGER(isp)                   :: ierr
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
     INTEGER(idp)                     :: nb_proc_per_group
+    INTEGER(idp) , ALLOCATABLE, DIMENSION(:) :: temp1,temp2,temp3,temp4
 
 #if defined(FFTW)
     ALLOCATE(array_of_ranks_to_send_to(nprocz))
@@ -806,7 +807,7 @@ MODULE load_balance
     ! Theses z_coords are stored in work_array_fr and work_array_rf
     ! Each processor has different work_array_fr and work_array_rf arrays
     n=0
-    DO i=2,nprocz
+    DO i=1,nprocz
       j = MODULO(z_coords+i-1,nprocz) +1
       k = MODULO(z_coords-(i-1),nprocz) +1
       IF(sizes_to_exchange_r_to_send(j) .GT. 0 .OR.sizes_to_exchange_f_to_recv(k) .GT. 0) THEN
@@ -816,7 +817,7 @@ MODULE load_balance
     ALLOCATE(work_array_rf(n))
     work_array_rf=0
     n=0
-    DO i=2,nprocz
+    DO i=1,nprocz
       j = MODULO(z_coords+i-1,nprocz) +1
       k = MODULO(z_coords-(i-1),nprocz) +1
       IF(sizes_to_exchange_r_to_send(j) .GT. 0 .OR.sizes_to_exchange_f_to_recv(k) .GT. 0) THEN
@@ -826,7 +827,7 @@ MODULE load_balance
     ENDDO
 
     n=0
-    DO i=2,nprocz 
+    DO i=1,nprocz 
       j = MODULO(z_coords+i-1,nprocz) +1
       k = MODULO(z_coords-(i-1),nprocz) +1
 
@@ -838,7 +839,7 @@ MODULE load_balance
 
     work_array_fr=0
     n=0
-    DO i=2,nprocz
+    DO i=1,nprocz
       j = MODULO(z_coords+i-1,nprocz) +1
       k = MODULO(z_coords-(i-1),nprocz) +1
 
@@ -867,6 +868,57 @@ MODULE load_balance
         r_first_cell_to_recv(i)=1
       ENDIF
     ENDDO
+    ALLOCATE(temp1(nprocz),temp2(nprocz),temp3(nprocz),temp4(nprocz))
+    temp1 = sizes_to_exchange_f_to_send
+    temp2 = f_first_cell_to_send
+    temp3 = sizes_to_exchange_r_to_recv
+    temp4 = r_first_cell_to_recv
+    DEALLOCATE(sizes_to_exchange_f_to_send)
+    DEALLOCATE(f_first_cell_to_send)
+    DEALLOCATE(sizes_to_exchange_r_to_recv)
+    DEALLOCATE(r_first_cell_to_recv)
+    ALLOCATE(sizes_to_exchange_f_to_send(nb_comms_fr))
+    ALLOCATE(f_first_cell_to_send(nb_comms_fr))
+    ALLOCATE(sizes_to_exchange_r_to_recv(nb_comms_fr))
+    ALLOCATE(r_first_cell_to_recv(nb_comms_fr))
+    DO ii = 1 , nb_comms_fr
+      i = work_array_fr(ii)
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+      sizes_to_exchange_f_to_send(ii) = temp1(j)
+      f_first_cell_to_send(ii) = temp2(j)
+      sizes_to_exchange_r_to_recv(ii) = temp3(k)
+      r_first_cell_to_recv(ii) = temp4(k) 
+    ENDDO
+
+    temp1 = sizes_to_exchange_r_to_send
+    temp2 = r_first_cell_to_send
+    temp3 = sizes_to_exchange_f_to_recv
+    temp4 = f_first_cell_to_recv
+
+    DEALLOCATE(sizes_to_exchange_r_to_send)
+    DEALLOCATE(r_first_cell_to_send)
+    DEALLOCATE(sizes_to_exchange_f_to_recv)
+    DEALLOCATE(f_first_cell_to_recv)
+    ALLOCATE(sizes_to_exchange_r_to_send(nb_comms_rf))
+    ALLOCATE(r_first_cell_to_send(nb_comms_rf))
+    ALLOCATE(sizes_to_exchange_f_to_recv(nb_comms_rf))
+    ALLOCATE(f_first_cell_to_recv(nb_comms_rf))
+
+    DO ii=1,nb_comms_rf
+      i = work_array_rf(ii)
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+      sizes_to_exchange_r_to_send(ii) = temp1(j)
+      r_first_cell_to_send(ii) = temp2(j)
+      sizes_to_exchange_f_to_recv(ii) = temp3(k)
+      f_first_cell_to_recv(ii) = temp4(k)
+   ENDDO
+
+
+
+
+     
 
 
 
