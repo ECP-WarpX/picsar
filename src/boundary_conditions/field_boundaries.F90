@@ -788,28 +788,20 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)                                ::  ii,i , j , k , ix , iy , iz
+    INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
 #if defined(FFTW)
-    !  i-1 = mpi task in z direction for exchanges
-    ! example :
-    ! i-1=0 exchange between current rank and itself
-    ! i-1=1 send to right (proc_z_max)
-    ! i-1=nprocz-1 send to left(proc_z_min)
     DO ii=1,nb_comms_rf
-      i = work_array_rf(ii)
+      IF (ii==1) CYCLE
 
-      j = MODULO(z_coords+i-1,nprocz) +1
-      ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
-      ! k corresponds to the z_coords(+1) of mpi task from which the recv is
-      ! done
-      k = MODULO(z_coords-(i-1),nprocz) +1
-      rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
-      IF(sizes_to_exchange_f_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_r_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-      CALL MPI_SENDRECV(field(-nxg, -nyg, r_first_cell_to_send(j)), 1_isp, send_type_r(j),   &
-      rank_to_send_to,tag,field_f(1, 1, f_first_cell_to_recv(k)), 1_isp, recv_type_f(k),  &
+      rank_to_send_to = INT(array_of_ranks_to_send_to_rf(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_rf(ii),isp)
+
+      IF(sizes_to_exchange_f_to_recv(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(sizes_to_exchange_r_to_send(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+
+      CALL MPI_SENDRECV(field(-nxg, -nyg, r_first_cell_to_send(ii)), 1_isp, send_type_r(ii),   &
+      rank_to_send_to,tag,field_f(1, 1, f_first_cell_to_recv(ii)), 1_isp, recv_type_f(ii),  &
       rank_to_recv_from ,tag ,comm ,status ,errcode)
     ENDDO
 #endif
@@ -839,37 +831,26 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)                                ::  ii,i , j , k , ix , iy , iz
+    INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
 
 #if defined(FFTW)
     requests_rf = 0
     n=0
-    !  i-1 = mpi task in z direction for exchanges
-    ! example :
-    ! i-1=0 exchange between current rank and itself
-    ! i-1=1 send to right (proc_z_max)
-    ! i-1=nprocz-1 send to left(proc_z_min)
     DO ii=1,nb_comms_rf
-      i = work_array_rf(ii)
+      IF(ii==1) CYCLE
+      rank_to_send_to = INT(array_of_ranks_to_send_to_rf(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_rf(ii),isp)
 
-      j = MODULO(z_coords+i-1,nprocz) +1
-      ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
-      ! k corresponds to the z_coords(+1) of mpi task from which the recv is
-      ! done
-      k = MODULO(z_coords-(i-1),nprocz) +1
-      rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
-
-      IF(sizes_to_exchange_f_to_recv(k) .GT. 0)   THEN 
+      IF(sizes_to_exchange_f_to_recv(ii) .GT. 0)   THEN 
         n=n+1
-        CALL MPI_IRECV(field_f(1, 1, f_first_cell_to_recv(k)), 1_isp,recv_type_f(k), &
+        CALL MPI_IRECV(field_f(1, 1, f_first_cell_to_recv(ii)), 1_isp,recv_type_f(ii), &
         rank_to_recv_from,tag,comm,requests_rf(n),errcode)
       ENDIF
-      IF(sizes_to_exchange_r_to_send(j) .GT. 0) THEN
+      IF(sizes_to_exchange_r_to_send(ii) .GT. 0) THEN
         n=n+1
-        CALL MPI_ISEND(field(-nxg, -nyg, r_first_cell_to_send(j)), 1_isp, send_type_r(j) &
+        CALL MPI_ISEND(field(-nxg, -nyg, r_first_cell_to_send(ii)), 1_isp, send_type_r(ii) &
         ,rank_to_send_to,tag,comm,requests_rf(n),errcode)
       ENDIF
     ENDDO
@@ -957,37 +938,26 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)        :: ii, i , j , k , ix , iy , iz
+    INTEGER(idp)        :: ii
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
    
 #if defined(FFTW)
     requests_fr = 0 
     n = 0
-    !  i-1 = mpi test in z direction for exchanges
-    ! example :
-    ! i-1=0 exchange between current rank and itself
-    ! i-1=1 send to right (proc_z_max)
-    ! i-1=nprocz-1 send to left(proc_z_min)
     DO ii=1,nb_comms_fr
-      i = work_array_fr(ii)
-      j = MODULO(z_coords+i-1,nprocz) +1
-      ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
-      ! k corresponds to the z_coords(+1) of mpi task from which the recv is
-      ! done
-      k = MODULO(z_coords-(i-1),nprocz) +1
-
-      rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
+      IF(ii==1) CYCLE
+      rank_to_send_to = INT(array_of_ranks_to_send_to_fr(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_fr(ii),isp)
  
-      IF(sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
+      IF(sizes_to_exchange_r_to_recv(ii) .GT. 0) THEN
         n=n+1
-        CALL MPI_IRECV(field(-nxg, -nyg, r_first_cell_to_recv(k)), 1_isp,recv_type_r(k)&
+        CALL MPI_IRECV(field(-nxg, -nyg, r_first_cell_to_recv(ii)), 1_isp,recv_type_r(ii)&
         , rank_to_recv_from,tag,comm,requests_fr(n),errcode)
       ENDIF
-      IF(sizes_to_exchange_f_to_send(j) .GT. 0) THEN
+      IF(sizes_to_exchange_f_to_send(ii) .GT. 0) THEN
         n=n+1
-        CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(j)) ,1_isp,send_type_f(j),    &
+        CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(ii)) ,1_isp,send_type_f(ii),    &
         rank_to_send_to,tag,comm,requests_fr(n),errcode)   
       ENDIF
 
@@ -1007,7 +977,7 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN)                      :: nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
-    INTEGER(idp)        ::ii,  i , j , k , ix , iy , iz
+    INTEGER(idp)        ::ii
     INTEGER(isp)                                  :: rank_to_send_to,rank_to_recv_from
 
 #if defined(FFTW)
@@ -1017,21 +987,17 @@ MODULE field_boundary
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
     DO ii=1,nb_comms_fr
-      i = work_array_fr(ii)
+      IF(ii==1) CYCLE
 
-      j = MODULO(z_coords+i-1,nprocz) +1
-      ! j corresponds to the z_coords(+1) of mpi task to which the send is done 
-      ! k corresponds to the z_coords(+1) of mpi task from which the recv is
-      ! done
-      k = MODULO(z_coords-(i-1),nprocz) +1
+      rank_to_send_to = INT(array_of_ranks_to_send_to_fr(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_fr(ii),isp)
 
-      rank_to_send_to = INT(array_of_ranks_to_send_to(i),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from(i),isp)
-      IF(sizes_to_exchange_r_to_recv(k) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_f_to_send(j) == 0) rank_to_send_to = MPI_PROC_NULL
-      CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(j)) ,1_isp,send_type_f(j), &
-      rank_to_send_to,tag,field(-nxg, -nyg, r_first_cell_to_recv(k)), 1_isp,&
-      recv_type_r(k), rank_to_recv_from, tag, comm, status, errcode)
+      IF(sizes_to_exchange_r_to_recv(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(sizes_to_exchange_f_to_send(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+
+      CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(ii)) ,1_isp,send_type_f(ii), &
+      rank_to_send_to,tag,field(-nxg, -nyg, r_first_cell_to_recv(ii)), 1_isp,&
+      recv_type_r(ii), rank_to_recv_from, tag, comm, status, errcode)
 
     ENDDO
 #endif

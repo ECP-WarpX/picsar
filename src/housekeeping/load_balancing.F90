@@ -700,28 +700,15 @@ MODULE load_balance
     USE mpi
     USE mpi_derived_types
     USE fields , ONLY : nxguards, nyguards, nzguards
+    USE params , ONLY : mpicom_curr
    
     IMPLICIT NONE
-    INTEGER(idp)                   :: i, n,j,k
+    INTEGER(idp)                   :: i
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
     INTEGER(isp)                   :: ierr
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
     INTEGER(idp)                     :: nb_proc_per_group
-
 #if defined(FFTW)
-    ALLOCATE(array_of_ranks_to_send_to(nprocz))
-    array_of_ranks_to_send_to(1) = INT(rank,isp)
-    DO i=2,nprocz
-      array_of_ranks_to_send_to(i) = MODULO(array_of_ranks_to_send_to(i-1) +          &
-      INT(nprocx*nprocy,isp),INT(nproc,isp))
-    ENDDO
-
-    ALLOCATE(array_of_ranks_to_recv_from(nprocz))
-    array_of_ranks_to_recv_from(1) = INT(rank,isp)
-    DO i=2,nprocz
-      array_of_ranks_to_recv_from(i) = MODULO(array_of_ranks_to_recv_from(i-1) -      &
-      INT(nprocx*nprocy,isp),INT(nproc,isp))
-    ENDDO
 
     !begin field_f perspective by computing indexes OF ex_r to exchange with ex
     ALLOCATE(sizes_to_exchange_f_to_recv(nprocz))
@@ -782,70 +769,192 @@ MODULE load_balance
 
     ! Create mpi_derived_types for group communications
     CALL create_derived_types_groups()
-    n=0
-    DO i=2,nprocz
-      IF(sizes_to_exchange_r_to_send(i) .GT. 0) n = n + 1
-      IF(sizes_to_exchange_f_to_recv(i) .GT. 0) n = n +1
-    ENDDO
-    ALLOCATE(requests_rf(n))
-    n=0
-    DO i=2,nprocz
-      IF(sizes_to_exchange_f_to_send(i) .GT. 0) n = n+1
-      IF(sizes_to_exchange_r_to_recv(i) .GT. 0) n = n+1
-    ENDDO
-    ALLOCATE(requests_fr(n))
+    ! Cleans computed arrays to delete useless cells (to make the code clearer
+    CALL create_work_group_arrays()
 
-    n=0
+#endif
+  END SUBROUTINE get1D_intersection_group_mpi
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine cleans arrays for mpi group communications (deletes useless
+  !> cells of ranks, sizes, first_indexes, types ...)  
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+  
+  SUBROUTINE create_work_group_arrays() 
+#if defined(FFTW) 
+   USE group_parameters
+   USE params, ONLY : mpicom_curr
+   INTEGER(idp)     :: ii,i,j,k,n
+   INTEGER(idp)  , ALLOCATABLE, DIMENSION(:) :: temp1,temp2,temp3,temp4
+   INTEGER(isp)  , ALLOCATABLE, DIMENSION(:) :: temp_rs, temp_sr
+
+    ALLOCATE(array_of_ranks_to_send_to(nprocz))
+    array_of_ranks_to_send_to(1) = INT(rank,isp)
     DO i=2,nprocz
-      j = MODULO(z_coords+i-1,nprocz) +1
-      k = MODULO(z_coords-(i-1),nprocz) +1
-      IF(sizes_to_exchange_r_to_send(j) .GT. 0 .OR.sizes_to_exchange_f_to_recv(k) .GT. 0) THEN
-        n=n+1
-      ENDIF
+      array_of_ranks_to_send_to(i) = MODULO(array_of_ranks_to_send_to(i-1) +&
+      INT(nprocx*nprocy,isp),INT(nproc,isp))
+    ENDDO
+
+    ALLOCATE(array_of_ranks_to_recv_from(nprocz))
+    array_of_ranks_to_recv_from(1) = INT(rank,isp)
+    DO i=2,nprocz
+      array_of_ranks_to_recv_from(i) = MODULO(array_of_ranks_to_recv_from(i-1) -&
+      INT(nprocx*nprocy,isp),INT(nproc,isp))
+    ENDDO
+    ! if non blocking communications then computes array of mpi requests to be
+    ! used
+    ! for isend and irecv calls, the size of request array are computed here
+    IF(mpicom_curr .EQ. 0) THEN
+      n=0
+      DO i=2,nprocz
+        IF(sizes_to_exchange_r_to_send(i) .GT. 0) n = n + 1
+        IF(sizes_to_exchange_f_to_recv(i) .GT. 0) n = n +1
+      ENDDO
+      ! mpi request array for r->f communication
+      ALLOCATE(requests_rf(n))
+      n=0
+      DO i=2,nprocz
+        IF(sizes_to_exchange_f_to_send(i) .GT. 0) n = n+1
+        IF(sizes_to_exchange_r_to_recv(i) .GT. 0) n = n+1
+      ENDDO
+      ! mpi request array for r->f
+      ALLOCATE(requests_fr(n))
+    ENDIF
+    ! Computes z_coords of procs with which communications are performed.
+    ! Theses z_coords are stored in work_array_fr and work_array_rf
+    ! Each processor has different work_array_fr and work_array_rf arrays
+    n=0
+    DO i=1,nprocz
+      j = MODULO(z_coords+i-1,nprocz) +1; k = MODULO(z_coords-(i-1),nprocz) +1
+      IF(sizes_to_exchange_r_to_send(j) .GT. 0.OR.sizes_to_exchange_f_to_recv(k) .GT. 0)  n=n+1
     ENDDO
     ALLOCATE(work_array_rf(n))
     work_array_rf=0
     n=0
-    DO i=2,nprocz
-      j = MODULO(z_coords+i-1,nprocz) +1
-      k = MODULO(z_coords-(i-1),nprocz) +1
+    DO i=1,nprocz
+      j = MODULO(z_coords+i-1,nprocz) +1; k = MODULO(z_coords-(i-1),nprocz) +1
       IF(sizes_to_exchange_r_to_send(j) .GT. 0 .OR.sizes_to_exchange_f_to_recv(k) .GT. 0) THEN
         n=n+1
         work_array_rf(n)=i
       ENDIF
     ENDDO
-
     n=0
-    DO i=2,nprocz 
-      j = MODULO(z_coords+i-1,nprocz) +1
-      k = MODULO(z_coords-(i-1),nprocz) +1
-
-      IF(sizes_to_exchange_f_to_send(j) .GT. 0 .OR.sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
-        n=n+1
-      ENDIF
+    DO i=1,nprocz
+      j = MODULO(z_coords+i-1,nprocz) +1; k = MODULO(z_coords-(i-1),nprocz) +1
+      IF(sizes_to_exchange_f_to_send(j) .GT. 0 .OR.sizes_to_exchange_r_to_recv(k) .GT. 0)  n=n+1
     ENDDO
     ALLOCATE(work_array_fr(n))
-
     work_array_fr=0
     n=0
-    DO i=2,nprocz
-      j = MODULO(z_coords+i-1,nprocz) +1
-      k = MODULO(z_coords-(i-1),nprocz) +1
+    DO i=1,nprocz
+      j = MODULO(z_coords+i-1,nprocz) +1; k = MODULO(z_coords-(i-1),nprocz) +1
 
       IF(sizes_to_exchange_f_to_send(j) .GT. 0 .OR.sizes_to_exchange_r_to_recv(k) .GT. 0) THEN
         n=n+1
         work_array_fr(n)=i
       ENDIF
     ENDDO
-    nb_comms_rf = size(work_array_rf)
-    nb_comms_fr = size(work_array_fr)
-print*,nb_comms_rf,nb_comms_fr,rank
-if(rank==3)print*,"kiki",work_array_rf
 
+    nb_comms_rf = SIZE(work_array_rf)
+    nb_comms_fr = SIZE(work_array_fr)
+
+    DO i=1,nprocz
+      IF(sizes_to_exchange_f_to_send(i) .LE. 0) THEN
+        f_first_cell_to_send(i)=1
+      ENDIF
+      IF(sizes_to_exchange_r_to_send(i) .LE. 0) THEN
+        r_first_cell_to_send(i)=1
+      ENDIF
+      IF(sizes_to_exchange_f_to_recv(i) .LE. 0) THEN
+        f_first_cell_to_recv(i)=1
+      ENDIF
+      IF(sizes_to_exchange_r_to_recv(i) .LE. 0) THEN
+        r_first_cell_to_recv(i)=1
+      ENDIF
+    ENDDO
+    ALLOCATE(temp1(nprocz),temp2(nprocz),temp3(nprocz),temp4(nprocz))
+    temp1 = sizes_to_exchange_f_to_send
+    temp2 = f_first_cell_to_send
+    temp3 = sizes_to_exchange_r_to_recv
+    temp4 = r_first_cell_to_recv
+    DEALLOCATE(sizes_to_exchange_f_to_send,f_first_cell_to_send,sizes_to_exchange_r_to_recv,r_first_cell_to_recv)
+    ALLOCATE(sizes_to_exchange_f_to_send(nb_comms_fr),f_first_cell_to_send(nb_comms_fr))
+    ALLOCATE(r_first_cell_to_recv(nb_comms_fr),sizes_to_exchange_r_to_recv(nb_comms_fr))
+    DO ii = 1 , nb_comms_fr
+      i = work_array_fr(ii)
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+      sizes_to_exchange_f_to_send(ii) = temp1(j)
+      f_first_cell_to_send(ii) = temp2(j)
+      sizes_to_exchange_r_to_recv(ii) = temp3(k)
+      r_first_cell_to_recv(ii) = temp4(k)
+    ENDDO
+
+    temp1 = sizes_to_exchange_r_to_send
+    temp2 = r_first_cell_to_send
+    temp3 = sizes_to_exchange_f_to_recv
+    temp4 = f_first_cell_to_recv
+
+    DEALLOCATE(sizes_to_exchange_r_to_send,r_first_cell_to_send,sizes_to_exchange_f_to_recv,f_first_cell_to_recv)
+    ALLOCATE(sizes_to_exchange_r_to_send(nb_comms_rf),r_first_cell_to_send(nb_comms_rf))
+    ALLOCATE(sizes_to_exchange_f_to_recv(nb_comms_rf),f_first_cell_to_recv(nb_comms_rf))
+    DO ii=1,nb_comms_rf
+      i = work_array_rf(ii)
+      j = MODULO(z_coords+i-1,nprocz) +1
+      k = MODULO(z_coords-(i-1),nprocz) +1
+      sizes_to_exchange_r_to_send(ii) = temp1(j)
+      r_first_cell_to_send(ii) = temp2(j)
+      sizes_to_exchange_f_to_recv(ii) = temp3(k)
+      f_first_cell_to_recv(ii) = temp4(k)
+   ENDDO
+   DEALLOCATE(temp1,temp2,temp3,temp4)
+
+   ALLOCATE(array_of_ranks_to_send_to_rf(nb_comms_rf))
+   ALLOCATE(array_of_ranks_to_recv_from_rf(nb_comms_rf))
+   DO ii=1,nb_comms_rf
+      i=work_array_rf(ii)
+      array_of_ranks_to_send_to_rf(ii) = array_of_ranks_to_send_to(i)
+      array_of_ranks_to_recv_from_rf(ii) = array_of_ranks_to_recv_from(i)
+   ENDDO
+
+   ALLOCATE(array_of_ranks_to_send_to_fr(nb_comms_fr))
+   ALLOCATE(array_of_ranks_to_recv_from_fr(nb_comms_fr))
+   DO ii=1,nb_comms_fr
+      i=work_array_fr(ii)
+      array_of_ranks_to_send_to_fr(ii) = array_of_ranks_to_send_to(i)
+      array_of_ranks_to_recv_from_fr(ii) = array_of_ranks_to_recv_from(i)
+   ENDDO
+   DEALLOCATE(array_of_ranks_to_recv_from,array_of_ranks_to_send_to)
+
+   ALLOCATE(temp_rs(nprocz),temp_sr(nprocz))
+   temp_rs = send_type_r;   temp_sr = recv_type_f
+   DEALLOCATE(send_type_r); ALLOCATE(send_type_r(nb_comms_rf))
+   DEALLOCATE(recv_type_f); ALLOCATE(recv_type_f(nb_comms_rf))
+   DO ii=1,nb_comms_rf
+     i = work_array_rf(ii)
+     j = MODULO(z_coords+i-1,nprocz) +1
+     k = MODULO(z_coords-(i-1),nprocz) +1
+     send_type_r(ii) = temp_rs(j)
+     recv_type_f(ii) = temp_sr(k)
+   ENDDO
+   temp_rs = send_type_f;   temp_sr = recv_type_r
+   DEALLOCATE(send_type_f); ALLOCATE(send_type_f(nb_comms_fr))
+   DEALLOCATE(recv_type_r); ALLOCATE(recv_type_r(nb_comms_fr))
+   DO ii=1,nb_comms_fr
+     i = work_array_fr(ii)
+     j = MODULO(z_coords+i-1,nprocz) +1; k = MODULO(z_coords-(i-1),nprocz) +1
+     send_type_f(ii) = temp_rs(j); recv_type_r(ii) = temp_sr(k)
+   ENDDO
+   DEALLOCATE(temp_rs,temp_sr)
 
 #endif
-  END SUBROUTINE get1D_intersection_group_mpi
-
+  END SUBROUTINE
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine creates mpi derived types for group comms
