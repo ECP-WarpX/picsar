@@ -839,8 +839,21 @@ MODULE load_balance
     ENDDO
     nb_comms_rf = size(work_array_rf)
     nb_comms_fr = size(work_array_fr)
-print*,nb_comms_rf,nb_comms_fr,rank
-if(rank==3)print*,"kiki",work_array_rf
+    DO i=1,nprocz
+      IF(sizes_to_exchange_f_to_send(i) .LE. 0) THEN 
+        f_first_cell_to_send(i)=1
+      ENDIF
+      IF(sizes_to_exchange_r_to_send(i) .LE. 0) THEN
+        r_first_cell_to_send(i)=1
+      ENDIF
+      IF(sizes_to_exchange_f_to_recv(i) .LE. 0) THEN
+        f_first_cell_to_recv(i)=1
+      ENDIF
+      IF(sizes_to_exchange_r_to_recv(i) .LE. 0) THEN
+        r_first_cell_to_recv(i)=1
+      ENDIF
+    ENDDO
+
 
 
 #endif
