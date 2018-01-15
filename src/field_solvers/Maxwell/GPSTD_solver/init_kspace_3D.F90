@@ -465,44 +465,6 @@ MODULE gpstd_solver
   END FUNCTION sinc
 
   !> @brief
-  !> This subroutine frees memory from useless blocks
-  !
-  !> @author
-  !> Haithem Kallala
-  !
-  !> @date
-  !> Creation 2017
-  ! ________________________________________________________________________________________
-
-
-  SUBROUTINE delete_arrays
-    USE matrix_coefficients
-    USE shared_data
-    USE fields, ONLY : l_spectral
-    IMPLICIT NONE
-    INTEGER(idp)     ::  i, j
-    LOGICAL(lp)      :: needed
-    DO i = 1_idp, 10_idp
-      DEALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc)
-    ENDDO
-    DO i = 1_idp, 4_idp
-      DEALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc)
-    ENDDO
-    DEALLOCATE(Kspace(nmatrixes2)%block_vector)
-    DEALLOCATE(AT_OP(nmatrixes2)%block_vector)
-    DO i = 1,11 
-      DO j=1, 11
-        CALL is_calculation_needed(i, j, needed)
-        IF(needed .EQV. .FALSE.) THEN
-          IF(ASSOCIATED(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc)) THEN
-            DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc)
-          ENDIF
-        ENDIF
-      ENDDO
-    ENDDO
-
-  END SUBROUTINE delete_arrays
-  !> @brief
   !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
   !
   !> @author
@@ -719,7 +681,6 @@ MODULE gpstd_solver
         ENDIF
       ENDDO
     ENDDO
-    IF(.NOT. g_spectral)  CALL delete_arrays
   END SUBROUTINE init_gpstd
 
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
