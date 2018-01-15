@@ -1126,8 +1126,9 @@ MODULE group_parameters!#do not parse
   !> TYPE IN WHICH ex will be sending
   !> so recv_type_f is  ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_r
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to,array_of_ranks_to_send_to_rf,array_of_ranks_to_send_to_fr
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from,array_of_ranks_to_recv_from_rf,&
+  array_of_ranks_to_recv_from_fr
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_rf, requests_fr
   !> Work_array_fr and Work_array_rf contain only non null zcoords ranks with which
   !> exchanges are done during r->f and f-> communications respectively
