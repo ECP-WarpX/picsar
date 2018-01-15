@@ -464,7 +464,6 @@ MODULE gpstd_solver
     RETURN
   END FUNCTION sinc
 
-
   !> @brief
   !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
   !
