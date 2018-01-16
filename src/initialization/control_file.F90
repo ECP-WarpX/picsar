@@ -222,6 +222,9 @@ MODULE control_file
     is_lb_grp = .FALSE.
     fftw_mpi_transpose = .FALSE.
     p3dfft = .FALSE.
+#if defined(P3DFFT) 
+    p3dfft_stride = .TRUE.
+#endif
   END SUBROUTINE default_init
 
   ! ______________________________________________________________________________________
@@ -825,9 +828,17 @@ MODULE control_file
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzjguards
 #if defined(FFTW)
+#if defined(P3DFFT)
       ELSE IF (INDEX(buffer, 'nzg_group') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzg_group
+      ELSE IF (INDEX(buffer, 'nyg_group') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nyg_group
+      ELSE IF (INDEX(buffer, 'nxg_group') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nxg_group
+#endif
 #endif
       ELSE IF (INDEX(buffer, 'l_plasma') .GT. 0) THEN
         ix = INDEX(buffer, "=")

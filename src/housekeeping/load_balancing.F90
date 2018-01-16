@@ -707,7 +707,7 @@ MODULE load_balance
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
     INTEGER(isp)                   :: ierr
     LOGICAL(lp)                      :: is_grp_min, is_grp_max
-    INTEGER(idp)                     :: nb_proc_per_group
+    INTEGER(idp)                     :: nb_proc_per_group_z
 #if defined(FFTW)
 
     !begin field_f perspective by computing indexes OF ex_r to exchange with ex
@@ -720,7 +720,7 @@ MODULE load_balance
     ALLOCATE(f_first_cell_to_send(nprocz))
     f_first_cell_to_send = 0_idp
 
-    nb_proc_per_group = nproc/(nb_group)
+    nb_proc_per_group_z = nprocz/(nb_group_z)
 
     iz1min = cell_z_min_lbg(z_coords+1) 
     iz1max = cell_z_max_lbg(z_coords+1)
@@ -751,12 +751,12 @@ MODULE load_balance
     DO i=1,nprocz
       iz2min = cell_z_min_lbg(i)
       iz2max = cell_z_max_lbg(i) 
-      IF(MODULO(i-1_idp,nb_proc_per_group) ==0) THEN
+      IF(MODULO(i-1_idp,nb_proc_per_group_z) ==0) THEN
         is_grp_min = .TRUE.
       ELSE 
         is_grp_min = .FALSE.
       ENDIF
-      IF(MODULO(i,nb_proc_per_group) == 0) THEN
+      IF(MODULO(i,nb_proc_per_group_z) == 0) THEN
         is_grp_max = .TRUE.
       ELSE 
         is_grp_max = .FALSE.

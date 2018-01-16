@@ -585,6 +585,12 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   IF(.NOT. p3dfft) THEN
     nb_group_y = nprocy
   ENDIF
+#if defined(P3DFFT) 
+  IF(p3dfft) THEN
+    IF(nb_group_y == nprocy) p3dfft = .FALSE. 
+    !in case of p3dcall and nb_mpi_pergroup_in_y_direction=1 then call fftw instead of p3d
+  ENDIF
+#endif
   IF(c_dim==2 .AND. p3dfft)  THEN
      WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
      CALL MPI_ABORT(comm,errcode,ierr)
@@ -810,7 +816,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
               CALL MPI_ABORT(comm,errcode,ierr)
             ENDIF
             local_ny = ny_group 
-            local_y0 = 0
+            local_y0 =0 
           ENDIF
           local_nx = nx_group  
           local_x0 =0
@@ -883,7 +889,6 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   IF(is_lb_grp) THEN
     j=0
     DO i = 1 ,z_group_coords
-print*,nb_group,z_group_coords
        j = j +  nz_group_global_array(x_group_coords+y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
     ENDDO
     iz_min_lbg = local_z0-nzg_group + j!sum(nz_group_global_array(1:z_group_coords))! nz_group_global*z_group_coords
@@ -1069,11 +1074,6 @@ IF (fftw_with_mpi) THEN
    ! alloc_local = fftw_mpi_local_size_many(3,nn,howmany,INT(nz,C_INTPTR_T),comm, local_nz, local_z0)
  alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
 
-!print*,mz,nz_global,local_nz,"aa"
-!if(local_nz==0) then
-!print*,"error",rank,local_nz
-!write(*,*)'error',rank,local_nz
-!endif
   ELSE
     alloc_local = fftw_mpi_local_size_3d_transposed(mz, ly, kx/2+1, comm, local_nz,   &
     local_z0, local_ny, local_y0)
@@ -1500,6 +1500,11 @@ IF (l_spectral) THEN
         nkz = local_ny
       ENDIF
     ENDIF
+    IF(p3dfft) THEN
+      nkx = p3d_fsize(1)
+      nky = p3d_fsize(2) 
+      nkz = p3d_fsize(3)
+    ENDIF
     ! - Allocate complex arrays
     cdata = fftw_alloc_complex(alloc_local)
     CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
@@ -1536,28 +1541,45 @@ IF (l_spectral) THEN
       nkz = local_nz
     ENDIF
     cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, ey_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, ez_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, bx_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, by_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, bz_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, jx_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, jy_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, jz_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, rho_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
-    CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
-    cin = fftw_alloc_real(2 * alloc_local);
+    IF(.NOT. p3dfft) THEN
+      CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, ey_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, ez_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, bx_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, by_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, bz_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, jx_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, jy_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, jz_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, rho_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+      CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
+      cin = fftw_alloc_real(2 * alloc_local);
+    ELSE
+      nkx = p3d_isize(1) 
+      nky = p3d_isize(2) 
+      nkz = p3d_isize(3) 
+      ALLOCATE(ex_r(nkx,nky,nkz))
+      ALLOCATE(ey_r(nkx,nky,nkz))
+      ALLOCATE(ez_r(nkx,nky,nkz))
+      ALLOCATE(bx_r(nkx,nky,nkz))
+      ALLOCATE(by_r(nkx,nky,nkz))
+      ALLOCATE(bz_r(nkx,nky,nkz))
+      ALLOCATE(jx_r(nkx,nky,nkz))
+      ALLOCATE(jy_r(nkx,nky,nkz))
+      ALLOCATE(jz_r(nkx,nky,nkz))
+      ALLOCATE(rho_r(nkx,nky,nkz))
+      ALLOCATE(rhoold_r(nkx,nky,nkz))
+    ENDIF      
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
