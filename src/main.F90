@@ -42,7 +42,7 @@
 
 
 PROGRAM main
-
+use p3dfft
   USE constants
   USE fields
   USE particles

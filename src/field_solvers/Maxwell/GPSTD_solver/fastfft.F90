@@ -57,7 +57,8 @@ MODULE mpi_fftw3
   ! > Fortran Integer Array where C integer pointers to plans are stored
   integer(idp), DIMENSION(nmaxplan_mpi) :: plans_cint_mpi
   integer(C_INT) :: nplan_mpi=0
-  INTEGER(C_INTPTR_T) :: alloc_local, local_nz, local_z0, local_ny, local_y0
+  INTEGER(C_INTPTR_T) :: alloc_local, local_nz, local_z0, local_ny, local_y0,&
+  local_nx , local_x0
   TYPE(C_PTR) :: plan_r2c_mpi, plan_c2r_mpi 
 END MODULE mpi_fftw3
 

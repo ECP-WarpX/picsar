@@ -1059,7 +1059,7 @@ MODULE group_parameters!#do not parse
   USE picsar_precision
 
   !> number of groups (this is a parameter in the input file
-  INTEGER(idp)    ::  nb_group
+  INTEGER(idp)    ::  nb_group, nb_group_z, nb_group_y, nb_group_x 
   !> group sizes of of all groups
   INTEGER(idp), DIMENSION(:), POINTER :: group_sizes
   !> To which group this mpi task belongs
@@ -1080,7 +1080,7 @@ MODULE group_parameters!#do not parse
   INTEGER(isp)  :: MPI_ROOT_COMM, MPI_ROOT_GROUP, root_rank, root_size
   !> Field cell  sizes in groups without guardcells
   INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
-  INTEGER(idp) , DIMENSION(:), ALLOCATABLE ::  nz_group_global_array
+  INTEGER(idp) , DIMENSION(:), ALLOCATABLE ::  nz_group_global_array, ny_group_global_array, nx_group_global_array
   !> Field grid sizes in groups whithout guardcells
   INTEGER(idp)  :: nx_group_global_grid, ny_group_global_grid, nz_group_global_grid
   !> Field cell  sizes in groups with guardcells
@@ -1094,11 +1094,14 @@ MODULE group_parameters!#do not parse
   INTEGER(idp)  ::   nz_grid_min_grp, nz_grid_max_grp, nz_grid_grp
   !> This flag is true if MPI task is on the edge of its group (so need
   !additional comm
-  LOGICAL(lp)  ::  is_on_boundary = .FALSE.
+  LOGICAL(lp)  ::  is_on_boundary_group_z = .FALSE.
   !> This flag is true if the MPI rank is at the inferior z group boundary
   LOGICAL(lp)  :: group_z_min_boundary = .FALSE.
   !> This flag is true if the MPI rank is at the superior z group boundary
   LOGICAL(lp)  :: group_z_max_boundary = .FALSE.
+  LOGICAL(lp)  :: group_y_min_boundary = .FALSE.
+  LOGICAL(lp)  :: group_y_max_boundary = .FALSE. 
+  LOGICAL(lp)  :: is_on_boundary_group_y = .FALSE.
   !> minimum and maximum cell numbers in each group :
   INTEGER(idp), DIMENSION(:), POINTER  :: cell_z_min_group, cell_z_max_group
   !> physical limits of group domains
@@ -1109,7 +1112,7 @@ MODULE group_parameters!#do not parse
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
   !> Cell domain for load balancing general case (taking into account guardcells
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_lbg, cell_z_max_lbg
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_lbg, cell_z_max_lbg, cell_y_min_lbg, cell_y_max_lbg
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recv, sizes_to_exchange_r_to_recv
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_send,sizes_to_exchange_r_to_send 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recv,r_first_cell_to_recv
@@ -1137,6 +1140,8 @@ MODULE group_parameters!#do not parse
   !> Nb_comms_fr and nb_comms_rf are equal to the number of send + recv calls
   !done by each mpi in mpi comms group during r->f and f-> communications respectively
   INTEGER(idp)  :: nb_comms_fr,nb_comms_rf
+  INTEGER(isp) , DIMENSION(3) :: p3d_istart, p3d_iend , p3d_fstart,p3d_fend, p3d_fsize, p3d_isize
+
   
 
 
@@ -1157,6 +1162,7 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   !> FFTW distributed
   LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  LOGICAL(lp)   :: p3dfft=.FALSE.
   !> is load balancing activated in groups 
   LOGICAL(lp)                                :: is_lb_grp
   !> First and last indexes of real data in group (only z is relevant for now)
@@ -1257,6 +1263,9 @@ MODULE shared_data
   INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_min_r, cell_z_min_f
   !> Maximal cell number in z for each MPI process
   INTEGER(idp), DIMENSION(:), POINTER :: cell_z_max, cell_z_max_r, cell_z_max_f
+#if defined(P3DFFT) 
+  INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min_r,cell_y_max_r,cell_y_min_f,cell_y_max_f
+#endif
   !> Used in em3dsolverPXR.py
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min
   !> Used in em3dsolverPXR.py

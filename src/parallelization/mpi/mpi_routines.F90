@@ -558,7 +558,9 @@ USE mpi_fftw3
 USE picsar_precision
 USE shared_data
 USE mpi
-
+#if defined(P3DFFT) 
+  USE p3dfft
+#endif
 INTEGER(isp), PARAMETER :: ndims = 3
 LOGICAL(isp) :: periods(ndims), reorder
 INTEGER(isp) :: dims(ndims), ierr
@@ -568,19 +570,33 @@ INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
 INTEGER(isp)                                :: roots_grp, roots_comm
 INTEGER(idp)  :: i,j,temp
 INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
-all_cells, all_nz_lb, all_nzp, all_iz_min_lbg, all_iz_max_lbg
-INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
+ all_nz_lb, all_nzp, all_iz_min_lbg, all_iz_max_lbg, all_ny_group, all_nz
+INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg,iy_min_lbg, &
+iy_max_lbg
+INTEGER(isp)                            :: pdims(2)
+INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
+
 #if defined(FFTW)
 #if defined(DEBUG)
   WRITE(0, *) "setup_groups : start"
 #endif
 
   CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
-  
-  nb_group = nprocx*nprocy*nb_group
-  
-  group_size = nproc/nb_group
-  
+  IF(.NOT. p3dfft) THEN
+    nb_group_y = nprocy
+  ENDIF
+  IF(c_dim==2 .AND. p3dfft)  THEN
+     WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
+     CALL MPI_ABORT(comm,errcode,ierr)
+  ENDIF
+
+  nb_group_x = nprocx
+  nb_group = nb_group_z*nb_group_y*nb_group_x
+  group_size = nprocx*nprocy*nprocz
+  z_group_coords = z_coords/(nprocz*nb_group_z)
+  y_group_coords = y_coords/(nprocy*nb_group_y)
+  x_group_coords = x_coords/(nprocx*nb_group_x)
+
   ALLOCATE(grp_id(nb_group), grp_comm(nb_group), local_roots_rank(nb_group))
   ALLOCATE(grp_ranks(group_size, nb_group))
 
@@ -592,13 +608,12 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     grp_comm(i)  = MPI_COMM_NULL
     grp_id(i) = MPI_GROUP_NULL
   ENDDO
-
-  DO j=1, nprocx*nprocy
+  DO j=1, nprocx*nprocy/nb_group_y
     local_roots_rank(j) = INT(j-1, isp)
   ENDDO
-  DO j=nprocx*nprocy+1, nb_group
-    i = j-nprocx*nprocy
-    local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy
+  DO j=nprocx*nprocy/nb_group_y+1, nb_group
+    i = j-nprocx*nprocy/nb_group_y
+    local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy/nb_group_y
   ENDDO
   DO j = 1, nb_group
     grp_ranks(1, j) = local_roots_rank(j)
@@ -647,12 +662,7 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
       CALL MPI_CART_COORDS(MPI_COMM_GROUP_ID(i), local_rank, ndims, group_coordinates,&
       errcode)
       
-      which_group = i-1
-      
-      z_group_coords = which_group/nprocx/nprocy
-      y_group_coords = (which_group-z_group_coords*nprocx*nprocy)/nprocx
-      x_group_coords = (which_group-z_group_coords*nprocx*nprocy) -                   &
-      nprocx*y_group_coords
+      which_group =x_group_coords+y_group_coords*nb_group_x+z_group_coords*nb_group_x*nb_group_y
   
     ENDIF
   ENDDO
@@ -664,32 +674,46 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     ENDIF
   ENDDO
   
-  is_on_boundary = .FALSE.
-  group_z_min_boundary = .FALSE.
-  group_z_max_boundary = .FALSE.
-  
-  IF(local_rank  .EQ. 0_idp) THEN
-    is_on_boundary = .TRUE.
+  IF(group_coordinates(1) .EQ. 0) THEN
+    is_on_boundary_group_z = .TRUE.
     group_z_min_boundary = .TRUE.
   ENDIF
   
-  IF(local_rank .EQ. local_size-1) THEN
-    is_on_boundary = .TRUE.
+  IF(group_coordinates(1) .EQ. nprocz/nb_group_z-1) THEN
+    is_on_boundary_group_z = .TRUE.
     group_z_max_boundary = .TRUE.
   ENDIF
+  IF(group_coordinates(2) .EQ. 0) THEN
+    is_on_boundary_group_y = .TRUE.
+    group_y_min_boundary = .TRUE.
+  ENDIF
+
+  IF(group_coordinates(2) .EQ. nprocy/nb_group_y-1) THEN
+    is_on_boundary_group_y = .TRUE.
+    group_y_max_boundary = .TRUE.
+  ENDIF
+
   
   nx_group_global = nx
-  ny_group_global = ny
-  
-  nz_group_global = nz_global/(nb_group/(nprocx*nprocy))
+  ny_group_global = ny_global/nb_group_y
+  nz_group_global = nz_global/(nb_group_z)
    
-  IF(nz_global .NE. nz_group_global*(nb_group/(nprocx*nprocy))) THEN
-    temp = INT(nz_global - nb_group*nz_group_global/nprocx/nprocy, idp)
-    IF(INT(nb_group/nprocx/nprocy-1-z_group_coords, idp) .LT. temp) THEN
+  IF(nz_global .NE. nz_group_global*(nb_group_z)) THEN
+    temp = INT(nz_global - nb_group_z*nz_group_global, idp)
+    IF(INT(nb_group_z-1-z_group_coords, idp) .LT. temp) THEN
       nz_group_global=nz_group_global+1
     ENDIF
   ENDIF
+  IF(ny_global .NE. ny_group_global*(nb_group_y)) THEN
+    temp = INT(ny_global - nb_group_y*ny_group_global, idp)
+    IF(INT(nb_group_y-1-y_group_coords, idp) .LT. temp) THEN
+      ny_group_global=ny_group_global+1
+    ENDIF
+  ENDIF
+
   ALLOCATE(nz_group_global_array(nb_group))
+  ALLOCATE(ny_group_global_array(nb_group))
+  ALLOCATE(nx_group_global_array(nb_group))
   y_min_group=ymin
   y_max_group=ymax
   x_min_group=xmin
@@ -698,20 +722,33 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
   z_max_group=zmax
   
   IF(MPI_ROOT_COMM .NE. MPI_COMM_NULL) THEN
-  
-    ALLOCATE(all_nz_group(nb_group))
-    CALL MPI_ALLGATHER(nz_group_global, 1_isp, MPI_LONG_LONG_INT, all_nz_group, 1_isp,&
+     
+    CALL MPI_ALLGATHER(nz_group_global, 1_isp, MPI_LONG_LONG_INT, nz_group_global_array, 1_isp,&
     MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
-    CALL MPI_BARRIER(MPI_ROOT_COMM, errcode)
-    IF(root_rank .NE. 0_isp) THEN
+    CALL MPI_ALLGATHER(ny_group_global, 1_isp, MPI_LONG_LONG_INT,nY_group_global_array, 1_isp,&
+    MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
+    CALL MPI_ALLGATHER(nx_group_global, 1_isp, MPI_LONG_LONG_INT,nx_group_global_array, 1_isp,&
+    MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
       DO i=1, z_group_coords
-        z_min_group = z_min_group + all_nz_group(i)*dz
+        j = (i-1)*nb_group_x*nb_group_y+y_group_coords*nb_group_x+x_group_coords+1
+        z_min_group = z_min_group + nz_group_global_array(j)*dz
       ENDDO
-    ENDIF
-    z_max_group = z_min_group + nz_group_global*dz
-    nz_group_global_array = all_nz_group
-    DEALLOCATE(all_nz_group)
+      z_max_group = z_min_group + nz_group_global*dz
+
+      DO i=1, y_group_coords
+        j = z_group_coords*nb_group_x*nb_group_y+(i-1)*nb_group_x+x_group_coords+1
+        y_min_group = y_min_group +ny_group_global_array(j)*dy
+      ENDDO
+      y_max_group = y_min_group + ny_group_global*dy
+
+      DO i=1, x_group_coords
+        j = z_group_coords*nb_group_x*nb_group_y+y_group_coords*nb_group_x+i
+        x_min_group = x_min_group +nx_group_global_array(j)*dx
+      ENDDO
+      x_max_group = x_min_group + nx_group_global*dx
+
   ENDIF
+
   DO i=1, nb_group
   
     IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
@@ -719,9 +756,22 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
       errcode)
       CALL MPI_BCAST(z_max_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),     &
       errcode)
+      CALL MPI_BCAST(y_min_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),     &
+      errcode)
+      CALL MPI_BCAST(y_max_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),     &
+      errcode)
+      CALL MPI_BCAST(x_min_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),     &
+      errcode)
+      CALL MPI_BCAST(x_max_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),     &
+      errcode)
+
+
       CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,0_isp,MPI_COMM_GROUP_ID(i),&
 	errcode)
-	if(MPI_ROOT_COMM .NE. MPI_COMM_NULL) print*,local_rank
+      CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,0_isp,MPI_COMM_GROUP_ID(i),&
+        errcode)
+      CALL MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,0_isp,MPI_COMM_GROUP_ID(i),&
+        errcode)
     ENDIF
   
   ENDDO
@@ -743,29 +793,54 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
    
   DO i=1, nb_group
     IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
-      IF(c_dim == 3) THEN
-        IF(fftw_mpi_transpose) THEN
-          alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
-          nx_group/2+1, MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
-          IF(local_nz .EQ. 0_idp .OR. local_ny .EQ. 0_idp) THEN
-            WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank',rank
-            CALL MPI_ABORT(comm,errcode,ierr)
+      IF(.NOT. p3dfft) THEN
+        IF(c_dim == 3) THEN
+          IF(fftw_mpi_transpose) THEN
+            alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
+            nx_group/2+1, MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
+            IF(local_nz .EQ. 0_idp .OR. local_ny .EQ. 0_idp) THEN
+              WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank',rank
+              CALL MPI_ABORT(comm,errcode,ierr)
+            ENDIF
+          ELSE
+            alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,          &
+            MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+            IF(local_nz .EQ. 0_idp ) THEN
+              WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
+              CALL MPI_ABORT(comm,errcode,ierr)
+            ENDIF
+            local_ny = ny_group 
+            local_y0 = 0
           ENDIF
-        ELSE
-          alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,          &
+          local_nx = nx_group  
+          local_x0 =0
+        ELSE IF(c_dim == 2) THEN
+          alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                      &
           MPI_COMM_GROUP_ID(i), local_nz, local_z0)
           IF(local_nz .EQ. 0_idp ) THEN
             WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
             CALL MPI_ABORT(comm,errcode,ierr)
           ENDIF
+            local_ny = ny_group
+            local_y0 = 0
+            local_nx = nx_group  
+            local_x0 = 0
         ENDIF
-      ELSE IF(c_dim == 2) THEN
-        alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                      &
-        MPI_COMM_GROUP_ID(i), local_nz, local_z0)
-        IF(local_nz .EQ. 0_idp ) THEN
-          WRITE(0,*) 'ERROR local_nz = 0 in rank',rank
-          CALL MPI_ABORT(comm,errcode,ierr)
-        ENDIF
+      ELSE 
+#if defined(P3DFFT)
+       pdims(1) = INT(nprocy/nb_group_y,isp)
+       pdims(2) = INT(nprocz/nb_group_z,isp)
+       CALL p3dfft_setup (pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
+          MPI_COMM_GROUP_ID(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),.FALSE.)
+       CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1)
+       CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2)
+       local_nz = p3d_iend(3) - p3d_istart(3)+1
+       local_ny = p3d_iend(2) - p3d_istart(2)+1  
+       local_nx = p3d_iend(1) - p3d_istart(1)+1
+       local_z0 = p3d_istart(3)
+       local_y0 = p3d_istart(2)
+       local_x0 = p3d_istart(1)
+#endif
       ENDIF
     ENDIF
   ENDDO
@@ -789,6 +864,13 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
   IF(group_z_min_boundary) iz_min_r = nzg_group+1
   IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
 
+  iy_min_r = 1
+  iy_max_r = local_nz
+
+  IF(group_y_min_boundary) iy_min_r = nyg_group+1
+  IF(group_y_max_boundary) iy_max_r = local_ny-nyg_group
+
+
   ! case where some procs solve maxwell in ghost region exclusively is only
   ! supported by load balancing
   IF(.NOT. is_lb_grp) THEN 
@@ -799,11 +881,12 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     ENDIF
   ENDIF
   IF(is_lb_grp) THEN
-    IF(0 .NE. MODULO(nz_global,nb_group/(nprocx*nprocy))) THEN
-   !  WRITE(0,*) 'PROBLEM HERE, PLEASE SET nz as a multiple of nb_group'
-   !  CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-    iz_min_lbg = local_z0-nzg_group + sum(nz_group_global_array(1:z_group_coords))! nz_group_global*z_group_coords
+    j=0
+    DO i = 1 ,z_group_coords
+print*,nb_group,z_group_coords
+       j = j +  nz_group_global_array(x_group_coords+y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
+    ENDDO
+    iz_min_lbg = local_z0-nzg_group + j!sum(nz_group_global_array(1:z_group_coords))! nz_group_global*z_group_coords
     iz_max_lbg = iz_min_lbg + local_nz - 1 
     ALLOCATE(cell_z_min_lbg(nprocz),cell_z_max_lbg(nprocz))
     ALLOCATE(all_iz_min_lbg(nproc),all_iz_max_lbg(nproc))
@@ -815,20 +898,38 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     INT(1,isp), MPI_LONG_LONG_INT, comm, errcode)
 
     DO i=1, nprocz
-      cell_z_min_lbg(i) = all_iz_min_lbg((i-1)*nprocx*nprocy+1)
-      cell_z_max_lbg(i) = all_iz_max_lbg((i-1)*nprocx*nprocy+1)
+      cell_z_min_lbg(i) = all_iz_min_lbg(x_group_coords+y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
+      cell_z_max_lbg(i) = all_iz_max_lbg(x_group_coords+y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
     ENDDO
     DEALLOCATE(all_iz_max_lbg,all_iz_min_lbg)
-    DO i = 1, nprocz
-      IF(i-1 == z_coords) THEN
-        IF(cell_z_max_lbg(i) - cell_z_min_lbg(i) + 1  .NE. local_nz) THEN
-          WRITE(*,*) 'ERROR in load balancing indexes'
-          CALL MPI_ABORT(comm, errcode,ierr)
-        ENDIF
-      ENDIF
+
+
+    j=0
+    DO i = 1 ,y_group_coords
+       j = j +ny_group_global_array(x_group_coords+(i-1)*nb_group_x+z_group_coords*nb_group_x*nb_group_y+1)
     ENDDO
+    iy_min_lbg = local_y0-nyg_group + j
+    iy_max_lbg = iy_min_lbg + local_ny - 1
+    ALLOCATE(cell_y_min_lbg(nprocy),cell_y_max_lbg(nprocy))
+    ALLOCATE(all_iy_min_lbg(nproc),all_iy_max_lbg(nproc))
+
+    CALL MPI_ALLGATHER(iy_min_lbg,1_isp, MPI_LONG_LONG_INT, all_iy_min_lbg,&
+    INT(1,isp), MPI_LONG_LONG_INT, comm, errcode)
+
+    CALL MPI_ALLGATHER(iy_max_lbg,1_isp, MPI_LONG_LONG_INT, all_iy_max_lbg,&
+    INT(1,isp), MPI_LONG_LONG_INT, comm, errcode)
+
+    DO i=1, nprocy
+      cell_y_min_lbg(i) =all_iy_min_lbg(x_group_coords+(i-1)*nb_group_x+z_group_coords*nb_group_x*nb_group_y+1)
+      cell_y_max_lbg(i) =all_iy_max_lbg(x_group_coords+(i-1)*nb_group_x+z_group_coords*nb_group_x*nb_group_y+1)
+    ENDDO
+    DEALLOCATE(all_iy_max_lbg,all_iy_min_lbg)
+
   ENDIF
   !to take into account odd cases
+  ix_min_r = 1
+  ix_max_r = nx + 2*nxg_group
+#if !defined(P3DFFT)
   nz_lb = MAX(iz_max_r - iz_min_r +1,0)
   nz_grid_lb = nz_lb+1
 
@@ -853,16 +954,12 @@ INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg
     cell_z_max_f(i) = cell_z_min_f(i)-1 + all_nzp(i)
   ENDDO
   
-  ix_min_r = 1
-  ix_max_r = nx + 2*nxguards
-  
-  iy_min_r = 1
-  iy_max_r = ny + 2*nyguards
   
   nz_global_grid_min_lb = cell_z_min_f(z_coords+1)
   nz_global_grid_max_lb = cell_z_max_f(z_coords+1)+1
   
   DEALLOCATE(all_nz_lb, all_nzp)
+#endif
   DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
 
 #if defined(DEBUG)
@@ -1116,11 +1213,17 @@ IF(fftw_with_mpi ) THEN
     cell_z_min_r = cell_z_min
     cell_z_max_r = cell_z_max
     ALLOCATE(cell_z_min_f(1:nprocz),cell_z_max_f(1:nprocz))
+#if defined(P3DFFT)
+    ALLOCATE(cell_y_min_r(1:nprocy),cell_y_max_r(1:nprocy))
+    cell_y_min_r = cell_y_min 
+    cell_y_max_r = cell_y_max
+    ALLOCATE(cell_y_min_f(1:nprocy),cell_y_max_f(1:nprocy))
+#endif
     CALL setup_groups
-    IF(nz_lb .NE. cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1)+1) THEN
-      WRITE(*, *), 'ERROR IN AJUSTING THE GRID 2'
-      STOP
-    ENDIF
+   ! IF(nz_lb .NE. cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1)+1) THEN
+   !   WRITE(*, *), 'ERROR IN AJUSTING THE GRID 2'
+   !   STOP
+   ! ENDIF
   ENDIF
 ENDIF
 IF(fftw_hybrid) THEN 
